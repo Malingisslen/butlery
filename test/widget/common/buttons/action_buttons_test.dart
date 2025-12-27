@@ -395,6 +395,7 @@ void main() {
             home: Scaffold(
               body: const FloatingActionButtonWidget(
                 onPressed: null,
+                semanticLabel: 'Lägg till',
                 child: Icon(Icons.add),
               ),
             ),
@@ -433,6 +434,7 @@ void main() {
             home: Scaffold(
               body: FloatingActionButtonWidget(
                 onPressed: () {},
+                semanticLabel: 'Favorit',
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
                 child: const Icon(Icons.favorite),

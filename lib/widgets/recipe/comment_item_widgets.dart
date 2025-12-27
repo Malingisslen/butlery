@@ -135,7 +135,8 @@ class CommentItemWidgets {
         // Replies (recursive, indented, with visual threading)
         if (replies.isNotEmpty && depth < maxDepth)
           Padding(
-            padding: const EdgeInsets.only(left: AppDimensions.paddingXl),
+            padding: const EdgeInsetsDirectional.only(
+                start: AppDimensions.paddingXl),
             child: DecoratedBox(
               decoration: BoxDecoration(
                 border: Border(

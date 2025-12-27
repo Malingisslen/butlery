@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/social/friends_list/search_result_card.dart';
 
@@ -41,7 +42,10 @@ class SearchTab {
           const SizedBox(height: AppDimensions.spacingS),
       itemBuilder: (context, index) {
         final user = viewModel.searchResults[index];
-        return SearchResultCard.build(context, user, viewModel);
+        return AnimatedListItem(
+          index: index,
+          child: SearchResultCard.build(context, user, viewModel),
+        );
       },
     );
   }

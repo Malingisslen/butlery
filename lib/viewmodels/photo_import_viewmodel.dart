@@ -79,9 +79,8 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   Future<void> _initializeOCRService() async {
     try {
       await OCRExtractionService.instance.initialize();
-      debugPrint('✅ [PhotoImport] OCR service initialized successfully');
     } catch (e) {
-      debugPrint('❌ [PhotoImport] Failed to initialize OCR service: $e');
+      // OCR service initialization failed - will be handled when OCR is attempted
     }
   }
 
@@ -334,10 +333,6 @@ class PhotoImportViewModel extends ImportBaseViewModel {
         );
       }
 
-      debugPrint(
-        '🔍 [PhotoImport] Image validated: ${sizeInMB.toStringAsFixed(2)} MB, format: ${fileName.split('.').last}',
-      );
-
       _imageBytes = bytes;
       notifyListeners();
 
@@ -346,14 +341,6 @@ class PhotoImportViewModel extends ImportBaseViewModel {
           await OCRExtractionService.instance.assessImageQuality(bytes);
       _lastQualityScore = qualityAssessment.qualityScore;
       _lastRecommendations = qualityAssessment.recommendations;
-
-      // Show quality warning if poor quality detected
-      if (!qualityAssessment.isGoodQuality) {
-        debugPrint(
-          '⚠️ [PhotoImport] Quality warning: Score ${(_lastQualityScore! * 100).toInt()}%, Issues: ${qualityAssessment.issues.join(', ')}',
-        );
-        // Continue to OCR anyway, but user will see warning in UI
-      }
 
       // Perform OCR
       await _performOcr(bytes);
@@ -374,26 +361,13 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// 6. Comprehensive error handling with user guidance
   /// **Throws**: Exception if no text can be extracted from image.
   Future<void> _performOcr(Uint8List imageBytes) async {
-    final imageSizeKB = imageBytes.length / 1024;
-    debugPrint(
-      '🔍 [PhotoImport] Starting universal OCR processing: ${imageSizeKB.toStringAsFixed(1)} KB',
-    );
-
     try {
       // Use the new universal OCR service
       final ocrResult = await OCRExtractionService.instance.extractText(
         imageBytes,
       );
 
-      debugPrint(
-        '🔍 [PhotoImport] OCR completed - Method: ${ocrResult.processingMethod}, Confidence: ${ocrResult.confidence.toStringAsFixed(2)}',
-      );
-
       if (ocrResult.isSuccessful && ocrResult.text.isNotEmpty) {
-        debugPrint(
-          '✅ [PhotoImport] OCR succeeded, extracted ${ocrResult.text.length} characters',
-        );
-
         _ocrText = ocrResult.text;
         _lastConfidence = ocrResult.confidence;
         notifyListeners();
@@ -404,11 +378,9 @@ class PhotoImportViewModel extends ImportBaseViewModel {
         // Handle OCR failure with enhanced error messaging (Phase 2 Enhancement)
         final errorMessage = _buildEnhancedErrorMessage(ocrResult);
 
-        debugPrint('❌ [PhotoImport] OCR failed: $errorMessage');
         throw Exception(errorMessage);
       }
     } catch (e) {
-      debugPrint('❌ [PhotoImport] OCR processing error: $e');
       rethrow;
     }
   }
@@ -436,7 +408,6 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     } catch (e) {
       // Don't throw error for auto-parsing failures
       // User can still manually parse the OCR text
-      debugPrint('Automatisk parsning misslyckades: $e');
     }
   }
 

@@ -176,10 +176,8 @@ class DiscoverySearchSection {
       ),
       child: Text(
         '$count $label',
-        style: AppTextStyles.bodySmall.copyWith(
+        style: AppTextStyles.labelSmall.copyWith(
           color: AppColors.primary,
-          fontSize: 10,
-          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -219,7 +217,7 @@ class DiscoverySearchSection {
               ],
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            const Text(
+            Text(
               'Innehållstyp',
               style: AppTextStyles.titleSmall,
             ),
@@ -280,13 +278,13 @@ class DiscoverySearchSection {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            const Text(
+            Text(
               'Säg vad du vill söka efter...',
               style: AppTextStyles.titleMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.spacingS),
-            const Text(
+            Text(
               'Tryck på mikrofonen och börja prata',
               style: AppTextStyles.bodySmall,
               textAlign: TextAlign.center,

@@ -49,7 +49,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Avbryt', style: AppTextStyles.labelLarge),
+                child: Text('Avbryt', style: AppTextStyles.labelLarge),
               ),
               if (viewModel.hasSelectedRecipes)
                 FilledButton.icon(
@@ -200,12 +200,12 @@ class GroupRecipeSharingDialog extends StatelessWidget {
           if (viewModel.hasSelectedRecipes)
             TextButton(
               onPressed: viewModel.clearSelections,
-              child: const Text('Rensa val', style: AppTextStyles.labelLarge),
+              child: Text('Rensa val', style: AppTextStyles.labelLarge),
             )
           else if (viewModel.searchQuery.isNotEmpty)
             TextButton(
               onPressed: viewModel.clearSearch,
-              child: const Text('Rensa', style: AppTextStyles.labelLarge),
+              child: Text('Rensa', style: AppTextStyles.labelLarge),
             ),
         ],
       ),
@@ -375,7 +375,7 @@ class GroupRecipeListItem extends StatelessWidget {
             if (recipe.portions != null) ...[
               if (recipe.timeMinutes != null) ...[
                 const SizedBox(width: AppDimensions.spacingM),
-                const Text('•', style: AppTextStyles.bodySmall),
+                Text('•', style: AppTextStyles.bodySmall),
                 const SizedBox(width: AppDimensions.spacingM),
               ],
               Icon(

@@ -260,10 +260,10 @@ class _ShoppingMemberManagementDialogState
         Map<String, SharedListPermission>.from(_localPermissions);
 
     return AlertDialog(
-      title: const Row(
+      title: Row(
         children: [
-          Icon(Icons.manage_accounts, size: AppDimensions.iconSizeAction),
-          SizedBox(width: AppDimensions.spacingM),
+          const Icon(Icons.manage_accounts, size: AppDimensions.iconSizeAction),
+          const SizedBox(width: AppDimensions.spacingM),
           Expanded(
             child: Text(
               'Hantera delning',

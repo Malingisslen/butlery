@@ -6,7 +6,6 @@
 /// PERFORMANCE TARGET: <1 second initialization (vs 15+ seconds for full app)
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 // Import REAL UI components for authentic testing
@@ -87,10 +86,6 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
   /// Initialize minimal ServiceLocator with mocked services for E2E testing
   /// RESILIENT APPROACH: Ensure ServiceLocator always initializes successfully
   Future<void> _initializeE2EServices() async {
-    if (kDebugMode) {
-      debugPrint('🔧 E2E: Using resilient mock ServiceLocator initialization');
-    }
-
     try {
       // Initialize Firebase for E2E testing to resolve Firebase dependencies
       if (!Firebase.apps.any((app) => app.name == '[DEFAULT]')) {
@@ -102,9 +97,6 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
             projectId: 'mock-project-id',
           ),
         );
-        if (kDebugMode) {
-          debugPrint('✅ E2E Firebase mock initialization successful');
-        }
       }
 
       // Reset ServiceLocator to ensure clean state
@@ -116,22 +108,11 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
       // ALWAYS initialize ServiceLocator first, even with empty container
       ServiceLocator.initialize(container);
 
-      if (kDebugMode) {
-        debugPrint('✅ E2E ServiceLocator base initialization successful');
-      }
-
       // Register mocked services directly with DIContainer's GetIt instance
       // This can fail, but ServiceLocator is already initialized
       await _registerE2EMockServicesDirect(container);
-
-      if (kDebugMode) {
-        debugPrint('✅ E2E Mock services registered successfully');
-      }
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('⚠️ E2E Service registration error: $e');
-        debugPrint('   ServiceLocator base initialization still successful');
-      }
+      // ServiceLocator base initialization still successful
     }
 
     // ALWAYS mark as initialized - ServiceLocator itself is working
@@ -144,51 +125,43 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
   /// RESILIENT APPROACH: Register each service safely, continue if some fail
   Future<void> _registerE2EMockServicesDirect(DIContainer container) async {
     final getIt = container.container;
-    int successCount = 0;
 
-    // 🔐 Authentication Services
+    // Authentication Services
     try {
       final mockAuthService = _MockAuthService();
       getIt.registerSingleton<AuthService>(mockAuthService);
-      successCount++;
     } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Failed to register AuthService: $e');
+      // Failed to register AuthService
     }
 
     try {
       final mockAuthViewModel = _MockAuthViewModel();
       getIt.registerSingleton<AuthViewModel>(mockAuthViewModel);
-      successCount++;
     } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Failed to register AuthViewModel: $e');
+      // Failed to register AuthViewModel
     }
 
-    // 🍳 Recipe Management Services (for Recipe Lifecycle E2E)
+    // Recipe Management Services (for Recipe Lifecycle E2E)
     try {
       final mockRecipeListViewModel =
           _E2EStubFactory.createRecipeListViewModel();
       getIt.registerSingleton<RecipeListViewModel>(mockRecipeListViewModel);
-      successCount++;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('⚠️ Failed to register RecipeListViewModel: $e');
-      }
+      // Failed to register RecipeListViewModel
     }
 
     try {
       final mockUserService = _E2EStubFactory.createUserService();
       getIt.registerSingleton<UserService>(mockUserService);
-      successCount++;
     } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Failed to register UserService: $e');
+      // Failed to register UserService
     }
 
     try {
       final mockFriendsViewModel = _E2EStubFactory.createFriendsViewModel();
       getIt.registerSingleton<FriendsViewModel>(mockFriendsViewModel);
-      successCount++;
     } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Failed to register FriendsViewModel: $e');
+      // Failed to register FriendsViewModel
     }
 
     try {
@@ -196,46 +169,31 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
           _E2EStubFactory.createSharedContentCoordinator();
       getIt.registerSingleton<SharedContentCoordinatorViewModel>(
           mockSharedContentCoordinator);
-      successCount++;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint(
-            '⚠️ Failed to register SharedContentCoordinatorViewModel: $e');
-      }
+      // Failed to register SharedContentCoordinatorViewModel
     }
 
     try {
       final mockOfflineService = _E2EStubFactory.createOfflineService();
       getIt.registerSingleton<offline_service.OfflineService>(
           mockOfflineService);
-      successCount++;
     } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Failed to register OfflineService: $e');
+      // Failed to register OfflineService
     }
 
     try {
       final mockUnifiedRecipeService =
           _E2EStubFactory.createUnifiedRecipeService();
       getIt.registerSingleton<UnifiedRecipeService>(mockUnifiedRecipeService);
-      successCount++;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('⚠️ Failed to register UnifiedRecipeService: $e');
-      }
+      // Failed to register UnifiedRecipeService
     }
 
     try {
       final mockAnalyticsService = _E2EStubFactory.createAnalyticsService();
       getIt.registerSingleton<AnalyticsService>(mockAnalyticsService);
-      successCount++;
     } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Failed to register AnalyticsService: $e');
-    }
-
-    if (kDebugMode) {
-      debugPrint(
-          '🔧 E2E: Successfully registered $successCount/9 mock services');
-      debugPrint('   📊 Service registration resilience test completed');
+      // Failed to register AnalyticsService
     }
   }
 
@@ -419,10 +377,6 @@ class _MockAuthService extends AuthService {
     }
 
     _isLoading = false;
-
-    if (kDebugMode) {
-      debugPrint('✅ E2E Mock AuthService: User signed in - $email');
-    }
     return true;
   }
 
@@ -445,11 +399,6 @@ class _MockAuthService extends AuthService {
     }
 
     _isLoading = false;
-
-    if (kDebugMode) {
-      debugPrint(
-          '✅ E2E Mock AuthService: User registered - $displayName ($email)');
-    }
     return true;
   }
 
@@ -458,10 +407,6 @@ class _MockAuthService extends AuthService {
     _isLoading = true;
     await Future.delayed(const Duration(milliseconds: 300));
     _isLoading = false;
-
-    if (kDebugMode) {
-      debugPrint('✅ E2E Mock AuthService: Password reset sent to $email');
-    }
     return true;
   }
 
@@ -522,9 +467,6 @@ class _MockAuthViewModel extends AuthViewModel {
       return false;
     }
 
-    if (kDebugMode) {
-      debugPrint('✅ E2E Mock AuthViewModel: User signed in - $email');
-    }
     return true;
   }
 
@@ -543,18 +485,11 @@ class _MockAuthViewModel extends AuthViewModel {
       return false;
     }
 
-    if (kDebugMode) {
-      debugPrint(
-          '✅ E2E Mock AuthViewModel: User registered - $displayName ($email)');
-    }
     return true;
   }
 
   @override
   Future<bool> sendPasswordReset(String email) async {
-    if (kDebugMode) {
-      debugPrint('✅ E2E Mock AuthViewModel: Password reset sent to $email');
-    }
     return true;
   }
 }
@@ -571,65 +506,42 @@ class _MockAuthViewModel extends AuthViewModel {
 class _E2EStubFactory {
   /// Create RecipeListViewModel stub - handles all constructor dependencies
   static RecipeListViewModel createRecipeListViewModel() {
-    if (kDebugMode) {
-      debugPrint('✅ E2E Factory: Creating RecipeListViewModel stub');
-    }
     // Return basic instance that won't crash UI - let production class handle defaults
     return RecipeListViewModel();
   }
 
   /// Create UserService stub - simplified mock approach
   static dynamic createUserService() {
-    if (kDebugMode) {
-      debugPrint('✅ E2E Factory: Creating simplified UserService mock');
-    }
     // Create a simplified mock that provides basic functionality without Firebase complexity
     return _E2EUserServiceMock();
   }
 
   /// Create FriendsViewModel stub - simplified mock approach
   static dynamic createFriendsViewModel() {
-    if (kDebugMode) {
-      debugPrint('✅ E2E Factory: Creating simplified FriendsViewModel mock');
-    }
     // Create a simplified mock that provides basic functionality without complex dependencies
     return _E2EFriendsViewModelMock();
   }
 
   /// Create SharedContentCoordinatorViewModel stub - simplified mock approach
   static dynamic createSharedContentCoordinator() {
-    if (kDebugMode) {
-      debugPrint(
-          '✅ E2E Factory: Creating simplified SharedContentCoordinatorViewModel mock');
-    }
     // Create a simplified mock that provides basic functionality without complex dependencies
     return _E2ESharedContentCoordinatorMock();
   }
 
   /// Create OfflineService stub - simplified mock approach
   static dynamic createOfflineService() {
-    if (kDebugMode) {
-      debugPrint('✅ E2E Factory: Creating simplified OfflineService mock');
-    }
     // Create a simplified mock that provides basic functionality
     return _E2EOfflineServiceMock();
   }
 
   /// Create UnifiedRecipeService stub - simplified mock approach
   static dynamic createUnifiedRecipeService() {
-    if (kDebugMode) {
-      debugPrint(
-          '✅ E2E Factory: Creating simplified UnifiedRecipeService mock');
-    }
     // Create a simplified mock that provides basic functionality
     return _E2EUnifiedRecipeServiceMock();
   }
 
   /// Create AnalyticsService stub - simplified mock approach
   static dynamic createAnalyticsService() {
-    if (kDebugMode) {
-      debugPrint('✅ E2E Factory: Creating simplified AnalyticsService mock');
-    }
     // Create a simplified mock that provides basic functionality
     return _E2EAnalyticsServiceMock();
   }

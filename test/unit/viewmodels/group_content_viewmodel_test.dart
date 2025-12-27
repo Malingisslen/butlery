@@ -266,8 +266,8 @@ void main() {
 
       expect(viewModel.searchQuery, equals('pasta'));
       expect(viewModel.filteredGroupRecipes.length, equals(1));
-      expect(viewModel.filteredGroupRecipes.first.recipeSnapshot.title,
-          contains('Pasta'));
+      expect(
+          viewModel.filteredGroupRecipes.first.recipeTitle, contains('Pasta'));
     });
 
     test('should filter recipes by title', () {
@@ -405,7 +405,7 @@ void main() {
       expect(viewModel.groupSharedRecipes.length, equals(1));
 
       final recipe = viewModel.groupSharedRecipes.first;
-      expect(recipe.recipeSnapshot.title, equals('Test Recipe'));
+      expect(recipe.recipeTitle, equals('Test Recipe'));
       expect(recipe.sharedByDisplayName, equals('Test Owner'));
       expect(recipe.shareMessage, equals('Try this!'));
       expect(recipe.allowImport, isTrue);
@@ -502,7 +502,7 @@ void main() {
       expect(viewModel.groupSharedRecipes.length, equals(1));
 
       final recipe = viewModel.groupSharedRecipes.first;
-      expect(recipe.recipeSnapshot.title, equals('Namnlöst recept'));
+      expect(recipe.recipeTitle, equals('Namnlöst recept'));
       expect(recipe.sharedByDisplayName, equals('Okänd användare'));
     });
   });

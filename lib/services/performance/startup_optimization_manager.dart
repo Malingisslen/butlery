@@ -9,6 +9,9 @@
 /// - Startup performance metrics
 
 import 'dart:async';
+import 'dart:io' show Platform;
+import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -370,8 +373,71 @@ class StartupOptimizationManager {
   }
 
   Future<void> _warmUpShaders() async {
-    // Warm up common shaders to prevent jank
-    // This would be implemented based on specific app needs
+    // Shader warm-up primarily benefits iOS with Impeller renderer
+    // Android uses Skia which handles shader compilation differently
+    if (!Platform.isIOS) return;
+
+    try {
+      AppLogger.debug('Warming up shaders for iOS...');
+
+      // Create off-screen picture recorder to compile common shaders
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder);
+
+      final paint = Paint()
+        ..color = Colors.blue
+        ..style = PaintingStyle.fill;
+
+      // Warm up rounded rectangle shader (cards, buttons, chips)
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          const Rect.fromLTWH(0, 0, 100, 50),
+          const Radius.circular(8),
+        ),
+        paint,
+      );
+
+      // Warm up shadow shader (elevation, Material surfaces)
+      canvas.drawShadow(
+        Path()..addRect(const Rect.fromLTWH(0, 0, 100, 100)),
+        Colors.black,
+        4.0,
+        false,
+      );
+
+      // Warm up gradient shader (app bar, buttons, decorations)
+      paint.shader = const LinearGradient(
+        colors: [Colors.blue, Colors.purple],
+      ).createShader(const Rect.fromLTWH(0, 0, 100, 100));
+      canvas.drawRect(const Rect.fromLTWH(0, 0, 100, 100), paint);
+
+      // Warm up circle shader (avatars, FAB, icons)
+      paint.shader = null;
+      paint.color = Colors.green;
+      canvas.drawCircle(const Offset(50, 50), 25, paint);
+
+      // Warm up border shader (outlined buttons, text fields)
+      paint.style = PaintingStyle.stroke;
+      paint.strokeWidth = 2.0;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          const Rect.fromLTWH(0, 0, 100, 40),
+          const Radius.circular(20),
+        ),
+        paint,
+      );
+
+      // Complete recording and render to trigger shader compilation
+      final picture = recorder.endRecording();
+      final image = await picture.toImage(100, 100);
+      image.dispose();
+      picture.dispose();
+
+      AppLogger.debug('Shader warm-up complete');
+    } catch (e) {
+      // Non-critical - app will still work, just with potential first-frame jank
+      AppLogger.debug('Shader warm-up failed (non-critical): $e');
+    }
   }
 
   /// Log detailed startup metrics

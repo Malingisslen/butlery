@@ -4,6 +4,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
 
 /// Recently shared section showing latest shared content in user's network.
 class RecentlySharedSection {
@@ -12,8 +13,13 @@ class RecentlySharedSection {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(),
-        const SizedBox(height: AppDimensions.spacingM),
+        DiscoverySectionHeader(
+          title: 'Nyligen delat',
+          icon: Icons.access_time,
+          iconColor: AppColors.secondary,
+          count: viewModel.friendActivity.length,
+        ),
+        const SizedBox(height: AppDimensions.spacingS),
         Text(
           'Senast delade innehåll i ditt nätverk',
           style: AppTextStyles.bodySmall.copyWith(
@@ -25,24 +31,6 @@ class RecentlySharedSection {
           _buildActivityList(viewModel)
         else
           _buildEmptyState(),
-      ],
-    );
-  }
-
-  static Widget _buildHeader() {
-    return Row(
-      children: [
-        const Icon(
-          Icons.access_time,
-          color: AppColors.secondary,
-          size: AppDimensions.iconSizeM,
-        ),
-        const SizedBox(width: AppDimensions.spacingS),
-        Text(
-          'Nyligen delat',
-          style:
-              AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w600),
-        ),
       ],
     );
   }

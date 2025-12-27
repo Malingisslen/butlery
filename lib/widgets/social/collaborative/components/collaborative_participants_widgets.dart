@@ -32,7 +32,8 @@ class CollaborativeParticipantsWidgets {
                 (index) => Container(
                       width: avatarSize,
                       height: avatarSize,
-                      margin: EdgeInsets.only(left: index > 0 ? 4 : 0),
+                      margin:
+                          EdgeInsetsDirectional.only(start: index > 0 ? 4 : 0),
                       decoration: BoxDecoration(
                         color: AppColors.primaryBlue.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
@@ -141,8 +142,6 @@ class CollaborativeParticipantsWidgets {
       // Use SocialRecipeService for optimized participant loading
       final socialRecipeService = ServiceLocator.get<SocialRecipeService>();
 
-      debugPrint('🔍 Loading participants for $contentType: $contentId');
-
       List<UserProfile> participants = [];
 
       switch (contentType) {
@@ -162,20 +161,11 @@ class CollaborativeParticipantsWidgets {
           break;
 
         default:
-          debugPrint('🔍 Unknown content type: $contentType');
           return [];
       }
 
-      debugPrint(
-          '🔍 Found ${participants.length} participants for $contentType $contentId');
-      for (final participant in participants) {
-        debugPrint(
-            '🔍 Participant: ${participant.displayName} (${participant.uid})');
-      }
-
       return participants;
-    } catch (e) {
-      debugPrint('❌ Error loading participants for $contentId: $e');
+    } catch (_) {
       return [];
     }
   }

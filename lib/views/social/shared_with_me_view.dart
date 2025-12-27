@@ -120,17 +120,17 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
   Widget _buildContent(
       BuildContext context, SharedContentCoordinatorViewModel viewModel) {
     if (viewModel.isGloballyLoading) {
-      return const SliverFillRemaining(
+      return SliverFillRemaining(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(
+              const SizedBox(
                 width: AppDimensions.iconSizeL,
                 height: AppDimensions.iconSizeL,
                 child: CircularProgressIndicator(),
               ),
-              SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.spacingXl),
               Text(
                 'Laddar delat innehåll...',
                 style: AppTextStyles.titleMedium,

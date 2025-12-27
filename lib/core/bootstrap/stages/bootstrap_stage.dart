@@ -4,8 +4,6 @@
 /// and can have dependencies on specific modules being available.
 library;
 
-import 'package:flutter/foundation.dart';
-
 /// Interface for application bootstrap stages.
 /// Each stage represents a phase of application initialization:
 /// - Platform setup (Flutter bindings, environment)
@@ -105,8 +103,7 @@ mixin BootstrapStageHelpers {
   /// Log stage operation with consistent formatting.
   void logStageOperation(String stageName, String operation,
       {String? details}) {
-    final detailStr = details != null ? ' - $details' : '';
-    debugPrint('🚀 [$stageName] $operation$detailStr');
+    // Logging removed - use structured logging if needed
   }
 
   /// Validate environment variable is set.

@@ -110,22 +110,22 @@ class SocialCollaborativeComponents {
           horizontal: AppDimensions.spacingSm,
           vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
-        color: (activeColor ?? Colors.green).withValues(alpha: 0.1),
+        color: (activeColor ?? AppColors.success).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-        border: Border.all(color: activeColor ?? Colors.green),
+        border: Border.all(color: activeColor ?? AppColors.success),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.sync,
               size: AppDimensions.iconSizeXs,
-              color: activeColor ?? Colors.green),
+              color: activeColor ?? AppColors.success),
           if (showText) ...[
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               'Aktiv',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: activeColor ?? Colors.green,
+                    color: activeColor ?? AppColors.success,
                   ),
             ),
           ],
@@ -218,20 +218,21 @@ class SocialCollaborativeComponents {
           horizontal: AppDimensions.spacingSm,
           vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
-        color: color ?? Colors.green.withValues(alpha: 0.1),
+        color: color ?? AppColors.success.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-        border: Border.all(color: color ?? Colors.green),
+        border: Border.all(color: color ?? AppColors.success),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon,
-              size: AppDimensions.iconSizeXs, color: color ?? Colors.green),
+              size: AppDimensions.iconSizeXs,
+              color: color ?? AppColors.success),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: color ?? Colors.green,
+                  color: color ?? AppColors.success,
                   fontWeight: FontWeight.w500,
                 ),
           ),
@@ -457,7 +458,7 @@ class SocialCollaborativeComponents {
         return const _PermissionConfig(
           icon: Icons.edit,
           label: 'Redigera',
-          color: Colors.blue,
+          color: AppColors.primaryBlue,
         );
       case 'viewer':
         return const _PermissionConfig(

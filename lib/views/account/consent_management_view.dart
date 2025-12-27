@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// GDPR Article 7 - Consent Management View for user consent preferences
@@ -52,15 +53,16 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _buildHeaderSection(viewModel),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: AppDimensions.spacingLg),
                       _buildRequiredConsentsSection(),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: AppDimensions.spacingLg),
                       _buildOptionalConsentsSection(viewModel),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: AppDimensions.spacingLg),
                       if (viewModel.hasError) _buildErrorMessage(viewModel),
-                      if (viewModel.hasError) const SizedBox(height: 16),
+                      if (viewModel.hasError)
+                        const SizedBox(height: AppDimensions.spacingMd),
                       _buildActionButtons(viewModel),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: AppDimensions.spacingLg),
                       _buildInfoSection(),
                     ],
                   ),
@@ -93,7 +95,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                   size: 32,
                   color: AppColors.primary,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppDimensions.spacingL),
                 Expanded(
                   child: Text('Dina samtycken',
                       style: Theme.of(context)
@@ -103,15 +105,15 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             Text(
                 'Enligt GDPR har du full kontroll över hur vi behandlar dina personuppgifter. Du kan när som helst ändra eller återkalla dina samtycken.',
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium
-                    ?.copyWith(color: Colors.grey[700], height: 1.5)),
+                    ?.copyWith(color: AppColors.textMedium, height: 1.5)),
             if (viewModel.hasConsent) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppDimensions.spacingL),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -124,7 +126,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                   children: [
                     const Icon(Icons.info_outline,
                         color: AppColors.info, size: 20),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                         child: Text(
                             'Senast uppdaterad: ${viewModel.getConsentTimestampText()}',
@@ -145,7 +147,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   Widget _buildRequiredConsentsSection() {
     return Card(
       elevation: 0,
-      color: Colors.grey[100],
+      color: AppColors.backgroundTint,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -153,8 +155,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           children: [
             Row(
               children: [
-                Icon(Icons.lock, color: Colors.grey[700], size: 20),
-                const SizedBox(width: 8),
+                const Icon(Icons.lock, color: AppColors.textMedium, size: 20),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Text('Nödvändiga samtycken',
                     style: Theme.of(context)
                         .textTheme
@@ -162,20 +164,20 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                         ?.copyWith(fontWeight: FontWeight.bold)),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.spacingSm),
             Text(
                 'Dessa samtycken krävs för att appen ska fungera och kan inte inaktiveras.',
                 style: Theme.of(context)
                     .textTheme
                     .bodySmall
-                    ?.copyWith(color: Colors.grey[600])),
-            const SizedBox(height: 16),
+                    ?.copyWith(color: AppColors.textMedium)),
+            const SizedBox(height: AppDimensions.spacingMd),
             _buildRequiredConsentItem(
               'Grundläggande tjänster',
               'Autentisering, säkerhet och grundläggande funktioner.',
               Icons.security,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppDimensions.spacingL),
             _buildRequiredConsentItem(
               'Databehandling',
               'Lagring och behandling av recept, menyer och inköpslistor.',
@@ -193,7 +195,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(icon, size: 20, color: AppColors.success),
-        const SizedBox(width: 12),
+        const SizedBox(width: AppDimensions.spacingL),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,12 +205,12 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                       .textTheme
                       .bodyMedium
                       ?.copyWith(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 4),
+              const SizedBox(height: AppDimensions.spacingXs),
               Text(description,
                   style: Theme.of(context)
                       .textTheme
                       .bodySmall
-                      ?.copyWith(color: Colors.grey[700], height: 1.4)),
+                      ?.copyWith(color: AppColors.textMedium, height: 1.4)),
             ],
           ),
         ),
@@ -240,13 +242,13 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppDimensions.spacingXs),
         Text('Du kan när som helst aktivera eller inaktivera dessa samtycken.',
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
-                ?.copyWith(color: Colors.grey[600])),
-        const SizedBox(height: 16),
+                ?.copyWith(color: AppColors.textMedium)),
+        const SizedBox(height: AppDimensions.spacingMd),
         _buildConsentToggle(
           viewModel,
           'Analysdata',
@@ -255,7 +257,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           viewModel.analytics,
           viewModel.setAnalytics,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppDimensions.spacingL),
         _buildConsentToggle(
           viewModel,
           'Marknadsföring',
@@ -264,7 +266,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           viewModel.marketing,
           viewModel.setMarketing,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppDimensions.spacingL),
         _buildConsentToggle(
           viewModel,
           'Sociala funktioner',
@@ -273,7 +275,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           viewModel.socialFeatures,
           viewModel.setSocialFeatures,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppDimensions.spacingL),
         _buildConsentToggle(
           viewModel,
           'Push-notiser',
@@ -301,7 +303,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         side: BorderSide(
           color: value
               ? AppColors.primary.withValues(alpha: 0.5)
-              : Colors.grey[300]!,
+              : AppColors.divider,
           width: value ? 2 : 1,
         ),
       ),
@@ -314,16 +316,16 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               decoration: BoxDecoration(
                 color: value
                     ? AppColors.primary.withValues(alpha: 0.1)
-                    : Colors.grey[200],
+                    : AppColors.backgroundTint,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 icon,
                 size: 24,
-                color: value ? AppColors.primary : Colors.grey[600],
+                color: value ? AppColors.primary : AppColors.textMedium,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppDimensions.spacingL),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,18 +336,18 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                           fontWeight: FontWeight.w600,
                         ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AppDimensions.spacingTight),
                   Text(
                     description,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[700],
+                          color: AppColors.textMedium,
                           height: 1.4,
                         ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppDimensions.spacingSm),
             Switch(
               value: value,
               onChanged: viewModel.isSaving ? null : onChanged,
@@ -368,7 +370,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
       child: Row(
         children: [
           const Icon(Icons.error_outline, color: AppColors.error, size: 20),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(
               viewModel.errorMessage!,
@@ -388,7 +390,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           viewModel.isSaving ? null : () => _handleSaveConsent(viewModel),
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.cardWhite,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -400,14 +402,14 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               width: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
               ),
             )
           : Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(Icons.save_rounded, size: 20),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   'Spara ändringar',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -430,7 +432,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             Row(
               children: [
                 const Icon(Icons.info_outline, color: AppColors.info, size: 20),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   'Bra att veta',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -439,7 +441,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppDimensions.spacingL),
             _buildInfoItem('Dina ändringar träder i kraft omedelbart'),
             _buildInfoItem('Du kan ändra dina samtycken när som helst'),
             _buildInfoItem(
@@ -461,14 +463,14 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           Text(
             '• ',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[700],
+                  color: AppColors.textMedium,
                 ),
           ),
           Expanded(
             child: Text(
               text,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[700],
+                    color: AppColors.textMedium,
                     height: 1.4,
                   ),
             ),
@@ -486,7 +488,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         const SnackBar(
           content: Row(
             children: [
-              Icon(Icons.check_circle, color: Colors.white),
+              Icon(Icons.check_circle, color: AppColors.cardWhite),
               SizedBox(width: 8),
               Text('Samtycken har sparats'),
             ],
@@ -528,7 +530,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           const SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.white),
+                Icon(Icons.check_circle, color: AppColors.cardWhite),
                 SizedBox(width: 8),
                 Text('Alla valfria samtycken har återkallats'),
               ],

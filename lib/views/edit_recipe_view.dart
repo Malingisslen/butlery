@@ -184,7 +184,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             actions: [
               if (isCollaborative)
                 Padding(
-                  padding: const EdgeInsets.only(right: AppDimensions.spacingL),
+                  padding: const EdgeInsetsDirectional.only(
+                      end: AppDimensions.spacingL),
                   child: Center(
                     child:
                         SocialCollaborativeComponents.collaborativeStatusBadge(

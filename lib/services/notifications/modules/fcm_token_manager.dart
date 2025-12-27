@@ -5,9 +5,11 @@
 // ✅ Architecture: Clean separation between service logic and data persistence
 
 import 'dart:async';
+import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/notifications/notification_repository.dart';
 import 'package:butlery/models/notification_preferences.dart';
@@ -66,6 +68,12 @@ class FCMTokenManager {
   // Local storage keys
   static const String _tokenStorageKey = 'fcm_token';
   static const String _tokenTimestampKey = 'fcm_token_timestamp';
+
+  // Secure storage instance for sensitive FCM token data
+  static const _secureStorage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+  );
 
   FCMTokenManager({
     required String userId,
@@ -157,8 +165,7 @@ class FCMTokenManager {
 
       // Only update if token actually changed
       if (oldToken != newToken) {
-        AppLogger.info(
-            '🔑 FCM token updated: ${newToken.substring(0, newToken.length.clamp(0, 20))}...');
+        AppLogger.info('FCM token updated successfully');
 
         // Save to Firestore
         await _saveTokenToFirestore(newToken);
@@ -315,7 +322,7 @@ class FCMTokenManager {
 
       await _repository.saveTokenToFirestore(
         _tokensCollection,
-        '${_userId}_${_getDeviceId()}',
+        '${_userId}_${await _getDeviceId()}',
         tokenDoc,
       );
     } catch (e) {
@@ -324,16 +331,15 @@ class FCMTokenManager {
     }
   }
 
-  /// Save token locally for offline access
+  /// Save token locally for offline access using secure storage
   Future<void> _saveTokenLocally(String token) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_tokenStorageKey, token);
-      await prefs.setString(
-          _tokenTimestampKey, DateTime.now().toIso8601String());
-      AppLogger.debug('✅ Saved FCM token locally');
+      await _secureStorage.write(key: _tokenStorageKey, value: token);
+      await _secureStorage.write(
+          key: _tokenTimestampKey, value: DateTime.now().toIso8601String());
+      AppLogger.debug('Saved FCM token to secure storage');
     } catch (e) {
-      AppLogger.warning('⚠️ Failed to save token locally: $e');
+      AppLogger.warning('Failed to save token to secure storage: $e');
     }
   }
 
@@ -342,7 +348,7 @@ class FCMTokenManager {
     try {
       final deviceDoc = {
         'userId': _userId,
-        'deviceId': _getDeviceId(),
+        'deviceId': await _getDeviceId(),
         'platform': _getPlatformName(),
         'fcmToken': token,
         'lastSeen': FieldValue.serverTimestamp(),
@@ -351,7 +357,7 @@ class FCMTokenManager {
 
       await _repository.updateDeviceInfo(
         _deviceInfoCollection,
-        '${_userId}_${_getDeviceId()}',
+        '${_userId}_${await _getDeviceId()}',
         deviceDoc,
       );
     } catch (e) {
@@ -364,7 +370,7 @@ class FCMTokenManager {
     try {
       await _repository.updateTokenTimestamp(
         _tokensCollection,
-        '${_userId}_${_getDeviceId()}',
+        '${_userId}_${await _getDeviceId()}',
       );
     } catch (e) {
       AppLogger.warning('⚠️ Failed to update token timestamp: $e');
@@ -402,18 +408,43 @@ class FCMTokenManager {
     return age.inHours < 1;
   }
 
-  /// Get a unique device identifier
-  String _getDeviceId() {
-    // This would typically use a device ID package
-    // For now, use a simple hash based on platform and timestamp
-    return DateTime.now().millisecondsSinceEpoch.toString().substring(7);
+  /// Cached device ID to avoid repeated async calls
+  String? _cachedDeviceId;
+
+  /// Get a unique device identifier using device_info_plus
+  Future<String> _getDeviceId() async {
+    if (_cachedDeviceId != null) return _cachedDeviceId!;
+
+    try {
+      final deviceInfo = DeviceInfoPlugin();
+      if (Platform.isAndroid) {
+        final android = await deviceInfo.androidInfo;
+        _cachedDeviceId = android.id;
+      } else if (Platform.isIOS) {
+        final ios = await deviceInfo.iosInfo;
+        _cachedDeviceId = ios.identifierForVendor ?? _fallbackDeviceId();
+      } else {
+        _cachedDeviceId = _fallbackDeviceId();
+      }
+    } catch (e) {
+      AppLogger.warning('Failed to get device ID: $e');
+      _cachedDeviceId = _fallbackDeviceId();
+    }
+    return _cachedDeviceId!;
   }
+
+  /// Fallback device ID when platform-specific ID is unavailable
+  String _fallbackDeviceId() =>
+      'fallback_${DateTime.now().millisecondsSinceEpoch}';
 
   /// Get platform name for tracking
   String _getPlatformName() {
-    // This would typically use Platform.operatingSystem
-    // For now, assume it's available from somewhere
-    return 'android'; // or 'ios', 'web', etc.
+    if (Platform.isAndroid) return 'android';
+    if (Platform.isIOS) return 'ios';
+    if (Platform.isMacOS) return 'macos';
+    if (Platform.isWindows) return 'windows';
+    if (Platform.isLinux) return 'linux';
+    return 'unknown';
   }
 
   /// Get all active tokens for the current user (for admin purposes)
@@ -452,7 +483,7 @@ class FCMTokenManager {
       try {
         await _repository.markDeviceInactive(
           _deviceInfoCollection,
-          '${_userId}_${_getDeviceId()}',
+          '${_userId}_${await _getDeviceId()}',
         );
       } catch (e) {
         AppLogger.warning('⚠️ Failed to mark device as inactive: $e');

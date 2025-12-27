@@ -13,14 +13,18 @@ import 'package:butlery/services/upload/upload_models.dart';
 /// - Background notification coordination
 /// **Used by:** RecipeImageManager for user feedback during uploads
 class ImageUploadNotificationManager {
-  /// Stream controller for upload notification events
-  static final StreamController<UploadNotificationEvent>
-      _notificationController =
-      StreamController<UploadNotificationEvent>.broadcast();
+  /// Stream controller for upload notification events (lazy initialized)
+  static StreamController<UploadNotificationEvent>? _notificationController;
+
+  static StreamController<UploadNotificationEvent> get _safeController {
+    _notificationController ??=
+        StreamController<UploadNotificationEvent>.broadcast();
+    return _notificationController!;
+  }
 
   /// Stream of upload notification events for UI subscription
   static Stream<UploadNotificationEvent> get notificationStream =>
-      _notificationController.stream;
+      _safeController.stream;
 
   /// Cooldown duration to prevent notification spam
   static const Duration _notificationCooldown = Duration(seconds: 3);
@@ -48,7 +52,7 @@ class ImageUploadNotificationManager {
 
     _lastNotificationTime = DateTime.now();
     _notificationTriggers.add(event.trigger);
-    _notificationController.add(event);
+    _safeController.add(event);
 
     AppLogger.info(
         '🔔 NOTIFICATION: Sent ${event.trigger.name} notification: ${event.message}');
@@ -180,8 +184,10 @@ class ImageUploadNotificationManager {
     };
   }
 
-  /// Dispose of resources (close stream controller)
+  /// Dispose of resources. Safe to call multiple times.
+  /// After disposal, the controller will be recreated on next use.
   static void dispose() {
-    _notificationController.close();
+    _notificationController?.close();
+    _notificationController = null;
   }
 }

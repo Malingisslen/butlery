@@ -20,6 +20,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/core/providers/locale_provider.dart';
+import 'package:butlery/services/theme_service.dart';
 
 class UserProfileEditView extends StatelessWidget {
   const UserProfileEditView({super.key});
@@ -47,6 +48,7 @@ class _UserProfileEditViewContentState
   final _displayNameController = TextEditingController();
   final _displayNameFocusNode = FocusNode();
   late final LocaleProvider _localeProvider;
+  late final ThemeService _themeService;
 
   bool _hasInitialized = false;
 
@@ -55,12 +57,18 @@ class _UserProfileEditViewContentState
     super.initState();
     _localeProvider = ServiceLocator.get<LocaleProvider>();
     _localeProvider.addListener(_onLocaleChanged);
+    _themeService = ServiceLocator.get<ThemeService>();
+    _themeService.addListener(_onThemeChanged);
 
     // Listen for focus changes to check display name availability
     _displayNameFocusNode.addListener(_onFocusChanged);
   }
 
   void _onLocaleChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _onThemeChanged() {
     if (mounted) setState(() {});
   }
 
@@ -73,6 +81,7 @@ class _UserProfileEditViewContentState
   @override
   void dispose() {
     _localeProvider.removeListener(_onLocaleChanged);
+    _themeService.removeListener(_onThemeChanged);
     _displayNameFocusNode.removeListener(_onFocusChanged);
     _displayNameController.dispose();
     _displayNameFocusNode.dispose();
@@ -291,6 +300,10 @@ class _UserProfileEditViewContentState
 
           // Language settings
           _buildLanguageSettings(),
+          const SizedBox(height: AppDimensions.spacingXl),
+
+          // Theme settings
+          _buildThemeSettings(),
           const SizedBox(height: AppDimensions.spacingXxl),
 
           // Action buttons
@@ -359,7 +372,7 @@ class _UserProfileEditViewContentState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Visningsnamn',
           style: AppTextStyles.labelMedium,
         ),
@@ -408,7 +421,7 @@ class _UserProfileEditViewContentState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Integritetsinställningar',
           style: AppTextStyles.titleMedium,
         ),
@@ -444,7 +457,7 @@ class _UserProfileEditViewContentState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Språk',
           style: AppTextStyles.titleMedium,
         ),
@@ -469,6 +482,50 @@ class _UserProfileEditViewContentState
                 },
                 secondary: Icon(
                   isSelected ? Icons.check_circle : Icons.language,
+                  color: isSelected ? AppColors.success : null,
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildThemeSettings() {
+    final themeModes = [
+      (ThemeMode.system, 'Systemets inställning', Icons.settings_suggest),
+      (ThemeMode.light, 'Ljust läge', Icons.light_mode),
+      (ThemeMode.dark, 'Mörkt läge', Icons.dark_mode),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Tema',
+          style: AppTextStyles.titleMedium,
+        ),
+        const SizedBox(height: AppDimensions.spacingL),
+        BorderedContainer(
+          child: Column(
+            children: themeModes.map((mode) {
+              final isSelected = _themeService.themeMode == mode.$1;
+              return RadioListTile<ThemeMode>(
+                title: Text(mode.$2),
+                value: mode.$1,
+                groupValue: _themeService.themeMode,
+                onChanged: (value) {
+                  if (value != null) {
+                    _themeService.setThemeMode(value);
+                    SnackBarUtils.showSuccess(
+                      context,
+                      'Tema ändrat till ${mode.$2}',
+                    );
+                  }
+                },
+                secondary: Icon(
+                  isSelected ? Icons.check_circle : mode.$3,
                   color: isSelected ? AppColors.success : null,
                 ),
               );
@@ -524,14 +581,14 @@ class _UserProfileEditViewContentState
               border:
                   Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.warning_amber,
                   color: AppColors.warning,
                   size: AppDimensions.iconSizeM,
                 ),
-                SizedBox(width: AppDimensions.spacingXs),
+                const SizedBox(width: AppDimensions.spacingXs),
                 Expanded(
                   child: Text(
                     'Du har osparade ändringar',

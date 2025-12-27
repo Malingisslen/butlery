@@ -497,6 +497,26 @@ class IntelligentCacheManager {
     AppLogger.info('Cleared all intelligent caches');
   }
 
+  /// Pause background operations when app goes to background.
+  /// Stops prefetch timer and behavior save timer to save battery.
+  void onAppPaused() {
+    _prefetchTimer?.cancel();
+    _prefetchTimer = null;
+    _behaviorSaveTimer?.cancel();
+    _behaviorSaveTimer = null;
+    _saveBehaviorPattern(); // Save before pausing
+    AppLogger.debug(
+        'IntelligentCacheManager paused - background operations stopped');
+  }
+
+  /// Resume background operations when app returns to foreground.
+  void onAppResumed() {
+    _startPrefetchTimer();
+    _startBehaviorSaveTimer();
+    AppLogger.debug(
+        'IntelligentCacheManager resumed - background operations started');
+  }
+
   /// Handle system memory pressure by aggressively clearing caches.
   /// Called when the system is running low on memory and needs apps to free resources.
   /// This method clears all caches except the current user's essential data.

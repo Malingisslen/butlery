@@ -165,7 +165,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
       'isDeleted': false,
-      'likedByUserIds': [],
+      'likesCount': 0,
       'replyCount': 0,
     };
 
@@ -333,6 +333,19 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     final likeDoc =
         await collection.doc(commentId).collection('likes').doc(userId).get();
     return likeDoc.exists;
+  }
+
+  @override
+  Future<List<String>> getCommentLikers(String commentId,
+      {int limit = 100}) async {
+    final likesSnapshot = await collection
+        .doc(commentId)
+        .collection('likes')
+        .orderBy('likedAt', descending: true)
+        .limit(limit)
+        .get();
+
+    return likesSnapshot.docs.map((doc) => doc.id).toList();
   }
 
   @override

@@ -100,6 +100,9 @@ class FirebaseSharedMenuRepository
   String get contentTypeName => 'menu';
 
   @override
+  String get counterTypeKey => 'shared_menus';
+
+  @override
   String get resourceType => 'shared_menu';
 
   @override

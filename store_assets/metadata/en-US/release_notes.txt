@@ -1,0 +1,7 @@
+What's new in this version:
+
+- Dark mode that follows your system settings
+- English language support
+- Improved startup performance
+- Biometric login (Face ID/Touch ID)
+- Bug fixes and improvements

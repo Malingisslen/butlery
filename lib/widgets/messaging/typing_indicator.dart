@@ -1,6 +1,7 @@
 // lib/widgets/messaging/typing_indicator.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -29,6 +30,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
@@ -48,6 +50,18 @@ class _TypingIndicatorState extends State<TypingIndicator>
 
     if (widget.typingUserNames.isNotEmpty) {
       _animationController.forward();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = !AnimationUtils.shouldAnimate(context);
+    if (_reduceMotion) {
+      // Complete animation instantly when reduced motion is enabled
+      _animationController.duration = Duration.zero;
+    } else {
+      _animationController.duration = widget.animationDuration;
     }
   }
 
@@ -154,6 +168,18 @@ class _TypingIndicatorState extends State<TypingIndicator>
   }
 
   Widget _buildDot(int index) {
+    // Show static dots when reduced motion is enabled
+    if (_reduceMotion) {
+      return Container(
+        width: 4,
+        height: 4,
+        decoration: const BoxDecoration(
+          color: AppColors.textMedium,
+          shape: BoxShape.circle,
+        ),
+      );
+    }
+
     return AnimatedBuilder(
       animation: _animationController,
       builder: (context, child) {

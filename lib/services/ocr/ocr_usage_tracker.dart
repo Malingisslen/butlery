@@ -1,7 +1,5 @@
 // lib/services/ocr/ocr_usage_tracker.dart
 
-import 'package:flutter/foundation.dart';
-
 /// Tracks OCR API usage for cost monitoring and rate limiting.
 /// Provides usage statistics, warnings, and cost estimates.
 class OCRUsageTracker {
@@ -49,7 +47,6 @@ class OCRUsageTracker {
         _monthStartDate!.year != now.year) {
       _monthlyRequestCount = 0;
       _monthStartDate = now;
-      debugPrint('[OCR] New month started - usage counters reset');
     }
 
     // Increment counters
@@ -62,43 +59,14 @@ class OCRUsageTracker {
     _checkUsageWarnings();
   }
 
-  /// Log current usage statistics.
+  /// Log current usage statistics (disabled - use getUsageStats() for monitoring).
   void _logUsageStats() {
-    if (kDebugMode) {
-      final total = _providerUsage.values.fold(0, (a, b) => a + b);
-      debugPrint(
-        '[OCR Usage] Today: $_dailyRequestCount | Month: $_monthlyRequestCount/$freeMonthlyLimit',
-      );
-      if (total > 0) {
-        final cacheHitPercent =
-            ((_providerUsage['cache_hits'] ?? 0) / total * 100).toInt();
-        debugPrint(
-          '[OCR Providers] OCR.space: ${_providerUsage['ocr_space']} | '
-          'Google Vision: ${_providerUsage['google_vision']} | '
-          'Tesseract: ${_providerUsage['tesseract']} | '
-          'Cache hits: ${_providerUsage['cache_hits']} ($cacheHitPercent%)',
-        );
-      }
-    }
+    // Usage stats available via getUsageStats() method
   }
 
-  /// Check and warn about approaching usage limits.
+  /// Check and warn about approaching usage limits (disabled - use getUsageWarnings()).
   void _checkUsageWarnings() {
-    if (_monthlyRequestCount >= freeMonthlyLimit) {
-      debugPrint(
-        '[OCR] EXCEEDED FREE TIER! Monthly usage: $_monthlyRequestCount/$freeMonthlyLimit',
-      );
-      debugPrint(
-        '[OCR] Action required: Upgrade to paid tier (\$19/month) or add fallback provider',
-      );
-    } else if (_monthlyRequestCount >= (freeMonthlyLimit * _warningThreshold)) {
-      final percentUsed =
-          ((_monthlyRequestCount / freeMonthlyLimit) * 100).toInt();
-      debugPrint(
-        '[OCR] Approaching limit: $_monthlyRequestCount/$freeMonthlyLimit ($percentUsed%)',
-      );
-      debugPrint('[OCR] Consider: Upgrade soon or optimize caching');
-    }
+    // Warnings available via getUsageWarnings() method
   }
 
   /// Get usage statistics (for monitoring dashboard).

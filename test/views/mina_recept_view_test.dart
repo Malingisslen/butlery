@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 /// Comprehensive MinaReceptView test suite using ultrathink methodology and gold standard patterns.
 ///
 /// This test suite validates MinaReceptView's complex multi-provider architecture, Swedish localization,

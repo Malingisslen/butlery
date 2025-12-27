@@ -446,6 +446,11 @@ class FriendsViewModel extends ChangeNotifier
     _friendsService.removeListener(_onFriendsServiceChanged);
     _userService.removeListener(_onUserServiceChanged);
 
+    // Remove manager listeners BEFORE disposing managers
+    _searchManager.removeListener(_onSearchChanged);
+    _profileCacheManager.removeListener(_onProfileCacheChanged);
+    _selectionManager.removeListener(_onSelectionChanged);
+
     // Dispose managers
     _searchManager.dispose();
     _profileCacheManager.dispose();

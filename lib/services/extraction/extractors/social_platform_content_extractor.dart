@@ -1,6 +1,5 @@
 // lib/services/extraction/extractors/social_platform_content_extractor.dart
 
-import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:butlery/services/extraction/platform_detector.dart' as pd;
 
@@ -17,8 +16,6 @@ class SocialPlatformContentExtractor {
   /// Extract content from Facebook post
   Future<String?> extractFacebook(InAppWebViewController controller) async {
     if (isDisposed()) return null;
-
-    debugPrint('📘 Extracting from Facebook...');
 
     final selectors = platformSelectors[pd.SourcePlatform.facebook] ?? [];
 
@@ -49,8 +46,6 @@ class SocialPlatformContentExtractor {
   Future<String?> extractTikTok(InAppWebViewController controller) async {
     if (isDisposed()) return null;
 
-    debugPrint('🎵 Extracting from TikTok...');
-
     final selectors = platformSelectors[pd.SourcePlatform.tiktok] ?? [];
 
     for (final selector in selectors) {
@@ -79,8 +74,6 @@ class SocialPlatformContentExtractor {
   /// Extract content from generic website
   Future<String?> extractGeneric(InAppWebViewController controller) async {
     if (isDisposed()) return null;
-
-    debugPrint('🌐 Generic text extraction...');
 
     final result = await controller.evaluateJavascript(
       source: '''

@@ -1,6 +1,7 @@
 // lib/widgets/common/input/portion_scaler_ui.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -187,7 +188,7 @@ class PortionScalerUI {
     required VoidCallback? onPressed,
   }) {
     return Material(
-      color: Colors.transparent,
+      color: AppColors.transparent,
       child: InkWell(
         onTap: onPressed,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),

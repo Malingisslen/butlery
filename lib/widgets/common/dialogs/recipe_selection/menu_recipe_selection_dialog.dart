@@ -302,7 +302,7 @@ class MenuRecipeListItem extends StatelessWidget {
             if (recipe.portions != null) ...[
               if (recipe.timeMinutes != null) ...[
                 const SizedBox(width: AppDimensions.spacingS),
-                const Text('•', style: AppTextStyles.bodySmall),
+                Text('•', style: AppTextStyles.bodySmall),
                 const SizedBox(width: AppDimensions.spacingS),
               ],
               const Icon(

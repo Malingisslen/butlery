@@ -100,13 +100,16 @@ class FirebaseSharedRecipeRepository
   String get contentTypeName => 'recipe';
 
   @override
+  String get counterTypeKey => 'shared_recipes';
+
+  @override
   String get resourceType => 'shared_recipe';
 
   @override
-  List<String> get createRequiredFields => ['recipeSnapshot'];
+  List<String> get createRequiredFields => ['recipeTitle'];
 
   @override
-  String getContentTitle(SharedRecipe entity) => entity.recipeSnapshot.title;
+  String getContentTitle(SharedRecipe entity) => entity.recipeTitle;
 
   @override
   String get importAction => 'imported';
@@ -226,7 +229,7 @@ class FirebaseSharedRecipeRepository
       resource: 'shared_recipe',
       operation: 'read',
       granted: true,
-      details: 'Recipe: "${sharedRecipe.recipeSnapshot.title}" ($recipeId)',
+      details: 'Recipe: "${sharedRecipe.recipeTitle}" ($recipeId)',
     );
 
     return sharedRecipe;

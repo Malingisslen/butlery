@@ -8,7 +8,6 @@
 /// - Staging approach provides realistic integration testing with external services
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -59,10 +58,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 /// ```
 Future<void> main() async {
   try {
-    if (kDebugMode) {
-      debugPrint('🚀 Starting Butlery E2E Staging System');
-    }
-
     // Ensure Flutter binding is initialized
     WidgetsFlutterBinding.ensureInitialized();
 
@@ -76,10 +71,6 @@ Future<void> main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    if (kDebugMode) {
-      debugPrint('✅ Firebase initialized for E2E staging testing');
-    }
-
     // Initialize Firebase App Check for staging (more lenient than production)
     await _initializeStagingAppCheck();
 
@@ -88,16 +79,7 @@ Future<void> main() async {
 
     // Start the application
     runApp(const ButleryApp());
-
-    if (kDebugMode) {
-      debugPrint('✅ E2E Staging system started successfully');
-    }
   } catch (e, stackTrace) {
-    if (kDebugMode) {
-      debugPrint('❌ E2E Staging application startup failed: $e');
-      debugPrint('Stack trace: $stackTrace');
-    }
-
     // Show error app with E2E-specific message
     runApp(_E2EStagingErrorApp(
         'E2E Staging initialization failed: $e\n\nStack trace:\n$stackTrace'));
@@ -111,14 +93,7 @@ Future<void> _loadStagingEnvironment() async {
   try {
     // Load staging-specific environment file
     await dotenv.load(fileName: '.env.staging');
-
-    if (kDebugMode) {
-      debugPrint('✅ Staging environment variables loaded');
-    }
   } catch (e) {
-    if (kDebugMode) {
-      debugPrint('⚠️ No staging environment file found, using defaults');
-    }
     // Continue without staging env - use defaults
   }
 }
@@ -128,10 +103,6 @@ Future<void> _loadStagingEnvironment() async {
 /// typically more lenient than production but more secure than debug.
 Future<void> _initializeStagingAppCheck() async {
   try {
-    if (kDebugMode) {
-      debugPrint('🔒 Initializing Firebase App Check for staging...');
-    }
-
     // Use debug provider for staging to avoid quota issues
     // In a real staging environment, you might use actual providers
     await FirebaseAppCheck.instance.activate(
@@ -140,15 +111,7 @@ Future<void> _initializeStagingAppCheck() async {
       providerAndroid: const AndroidDebugProvider(),
       providerApple: const AppleDebugProvider(),
     );
-
-    if (kDebugMode) {
-      debugPrint('✅ Firebase App Check activated for staging');
-    }
   } catch (e) {
-    if (kDebugMode) {
-      debugPrint('⚠️ Firebase App Check activation failed for staging: $e');
-      debugPrint('Continuing without App Check for staging tests');
-    }
     // Continue without App Check for staging tests
   }
 }
@@ -157,10 +120,6 @@ Future<void> _initializeStagingAppCheck() async {
 /// This creates the same modular system as production configured for
 /// staging environment with production-like Firebase integration.
 Future<void> _initializeE2EStagingSystem() async {
-  if (kDebugMode) {
-    debugPrint('🔧 Initializing E2E Staging modular system...');
-  }
-
   // Create DI modules in dependency order - same as production
   final modules = [
     CoreModule(),
@@ -187,10 +146,6 @@ Future<void> _initializeE2EStagingSystem() async {
     modules: modules,
     stages: stages,
   );
-
-  if (kDebugMode) {
-    debugPrint('✅ E2E Staging modular system initialized successfully');
-  }
 }
 
 /// Error app widget for E2E staging initialization failures

@@ -66,6 +66,13 @@ class FriendCategory {
   final int sortOrder; // For custom ordering
   final bool isDefault; // Built-in categories like "Alla vänner"
 
+  /// Whether this category uses subcollection for members (scalability pattern).
+  /// When true, friendUserIds may be stale and members should be read from subcollection.
+  final bool usesSubcollectionMembers;
+
+  /// Cached member count (source of truth when usesSubcollectionMembers is true).
+  final int? memberCount;
+
   FriendCategory({
     required this.id,
     required this.ownerId,
@@ -77,6 +84,8 @@ class FriendCategory {
     DateTime? updatedAt,
     this.sortOrder = 0,
     this.isDefault = false,
+    this.usesSubcollectionMembers = false,
+    this.memberCount,
   })  : createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
@@ -112,6 +121,8 @@ class FriendCategory {
     DateTime? updatedAt,
     int? sortOrder,
     bool? isDefault,
+    bool? usesSubcollectionMembers,
+    int? memberCount,
   }) {
     return FriendCategory(
       id: id,
@@ -124,6 +135,9 @@ class FriendCategory {
       updatedAt: updatedAt ?? DateTime.now(),
       sortOrder: sortOrder ?? this.sortOrder,
       isDefault: isDefault ?? this.isDefault,
+      usesSubcollectionMembers:
+          usesSubcollectionMembers ?? this.usesSubcollectionMembers,
+      memberCount: memberCount ?? this.memberCount,
     );
   }
 
@@ -164,9 +178,11 @@ class FriendCategory {
   }
 
   // Getters
-  int get friendCount => friendUserIds.length;
-  bool get isEmpty => friendUserIds.isEmpty;
-  bool get isNotEmpty => friendUserIds.isNotEmpty;
+  /// Returns the friend count - from memberCount if using subcollection, otherwise from inline list.
+  int get friendCount =>
+      usesSubcollectionMembers ? (memberCount ?? 0) : friendUserIds.length;
+  bool get isEmpty => friendCount == 0;
+  bool get isNotEmpty => friendCount > 0;
 
   /// Compatibility getter for operations that expect memberIds
   List<String> get memberIds => friendUserIds;
@@ -209,6 +225,8 @@ class FriendCategory {
       'updatedAt': AppTimestamp.fromDateTime(updatedAt).toFirestore(),
       'sortOrder': sortOrder,
       'isDefault': isDefault,
+      'usesSubcollectionMembers': usesSubcollectionMembers,
+      if (memberCount != null) 'memberCount': memberCount,
     };
   }
 
@@ -225,6 +243,9 @@ class FriendCategory {
       updatedAt: _parseTimestamp(data['updatedAt']) ?? DateTime.now(),
       sortOrder: data['sortOrder'] as int? ?? 0,
       isDefault: data['isDefault'] as bool? ?? false,
+      usesSubcollectionMembers:
+          data['usesSubcollectionMembers'] as bool? ?? false,
+      memberCount: data['memberCount'] as int?,
     );
   }
 
@@ -241,6 +262,8 @@ class FriendCategory {
       'updatedAt': updatedAt.toIso8601String(),
       'sortOrder': sortOrder,
       'isDefault': isDefault,
+      'usesSubcollectionMembers': usesSubcollectionMembers,
+      if (memberCount != null) 'memberCount': memberCount,
     };
   }
 
@@ -256,6 +279,9 @@ class FriendCategory {
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       sortOrder: json['sortOrder'] as int? ?? 0,
       isDefault: json['isDefault'] as bool? ?? false,
+      usesSubcollectionMembers:
+          json['usesSubcollectionMembers'] as bool? ?? false,
+      memberCount: json['memberCount'] as int?,
     );
   }
 

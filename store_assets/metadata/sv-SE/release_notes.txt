@@ -1,0 +1,7 @@
+Nyheter i denna version:
+
+- Mörkt läge som följer dina systeminställningar
+- Stöd för engelska
+- Förbättrad prestanda vid start
+- Biometrisk inloggning (Face ID/Touch ID)
+- Buggfixar och förbättringar

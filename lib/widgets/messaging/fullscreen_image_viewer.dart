@@ -40,9 +40,9 @@ class FullscreenImageViewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.textDark,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: AppColors.textDark,
         foregroundColor: AppColors.cardWhite,
         leading: IconButton(
           icon: const Icon(Icons.close),
@@ -97,7 +97,7 @@ class FullscreenImageViewer extends StatelessWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingL),
-              color: Colors.black.withValues(alpha: 0.8),
+              color: AppColors.textDark.withValues(alpha: 0.8),
               child: SafeArea(
                 top: false,
                 child: Text(

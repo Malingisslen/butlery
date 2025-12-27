@@ -15,7 +15,6 @@
 /// ```
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 
 /// Interface for dependency injection modules.
@@ -99,12 +98,5 @@ mixin DIModuleHelpers {
     } catch (e) {
       return false;
     }
-  }
-
-  /// Log module operation with consistent formatting.
-  void logModuleOperation(String moduleName, String operation,
-      {String? details}) {
-    final detailStr = details != null ? ' - $details' : '';
-    debugPrint('🔧 [$moduleName] $operation$detailStr');
   }
 }

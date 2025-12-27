@@ -125,6 +125,7 @@ abstract class BaseService with ErrorHandlingMixin {
     }
 
     if (requiresNetwork && !await _isNetworkAvailable()) {
+      // ignore: deprecated_member_use_from_same_package
       _handleUserError(AppStrings.networkError);
       return defaultValue;
     }
@@ -162,6 +163,7 @@ abstract class BaseService with ErrorHandlingMixin {
     }
 
     if (requiresNetwork && !await _isNetworkAvailable()) {
+      // ignore: deprecated_member_use_from_same_package
       _handleUserError(AppStrings.networkError);
       return [];
     }

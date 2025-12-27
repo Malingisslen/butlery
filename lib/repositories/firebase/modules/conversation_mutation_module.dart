@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
+import 'package:butlery/repositories/firebase/modules/conversation_participant_module.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -15,6 +16,7 @@ class ConversationMutationModule {
   final Future<void> Function(Conversation) updateFn;
   final Future<Conversation?> Function(String) readFn;
   final Future<void> Function(Message) sendMessageFn;
+  final ConversationParticipantModule? participantModule;
 
   ConversationMutationModule({
     required this.firestore,
@@ -23,6 +25,7 @@ class ConversationMutationModule {
     required this.updateFn,
     required this.readFn,
     required this.sendMessageFn,
+    this.participantModule,
   });
 
   /// Create deterministic direct conversation (get or create pattern).
@@ -83,6 +86,22 @@ class ConversationMutationModule {
             SetOptions(merge: true),
           );
 
+      // Write to participant subcollections for scalability
+      await participantModule?.addParticipants(
+        conversationId: conversationId,
+        conversationTitle: '', // Direct conversations don't have titles
+        isGroup: false,
+        participantDisplayNames: {
+          user1Id: user1DisplayName,
+          user2Id: user2DisplayName,
+        },
+        participantAvatarUrls: {
+          user1Id: user1AvatarUrl,
+          user2Id: user2AvatarUrl,
+        },
+        ownerId: user1Id,
+      );
+
       AppLogger.success(
           '✅ Direct conversation created with deterministic ID: $conversationId');
       return conversationId;
@@ -110,6 +129,16 @@ class ConversationMutationModule {
       );
 
       final createdConversation = await createFn(conversation);
+
+      // Write to participant subcollections for scalability
+      await participantModule?.addParticipants(
+        conversationId: createdConversation.id,
+        conversationTitle: title,
+        isGroup: true,
+        participantDisplayNames: participantDisplayNames,
+        participantAvatarUrls: participantAvatarUrls,
+        ownerId: creatorId,
+      );
 
       // Send system message about group creation
       final systemMessage = Message.system(
@@ -212,6 +241,15 @@ class ConversationMutationModule {
 
       await updateFn(updatedConversation);
 
+      // Also write to subcollections
+      await participantModule?.addParticipants(
+        conversationId: conversationId,
+        conversationTitle: conversation.title ?? 'Gruppchatt',
+        isGroup: true,
+        participantDisplayNames: participantDisplayNames,
+        participantAvatarUrls: participantAvatarUrls,
+      );
+
       // Send system message about participant addition
       for (final participantId in participantIds) {
         final displayName =
@@ -274,6 +312,12 @@ class ConversationMutationModule {
       );
 
       await updateFn(updatedConversation);
+
+      // Also remove from subcollections
+      await participantModule?.removeParticipant(
+        conversationId: conversationId,
+        participantId: participantId,
+      );
 
       // Send system message about participant removal
       final displayName = conversation.participantDisplayNames[participantId] ??

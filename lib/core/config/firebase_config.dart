@@ -133,7 +133,6 @@ class FirebaseConfig {
 
     // In release mode, return empty string to avoid crashes
     // (Firebase will handle the error appropriately)
-    debugPrint('⚠️ WARNING: Missing environment variable: $key');
     return '';
   }
 
@@ -161,12 +160,6 @@ class FirebaseConfig {
 
   /// Debug method to print current configuration (without sensitive data)
   static void printConfiguration() {
-    debugPrint('=== Firebase Configuration ===');
-    debugPrint('Environment: $environment');
-    debugPrint('Project ID: $projectId');
-    debugPrint('Auth Domain: $authDomain');
-    debugPrint('Storage Bucket: $storageBucket');
-    debugPrint('API Keys loaded: ${isConfigured ? "✅" : "❌"}');
-    debugPrint('=============================');
+    // Configuration logging removed - use debugInfo getter if needed
   }
 }

@@ -302,6 +302,7 @@ mixin ErrorHandlingMixin {
           final opName = operationName ?? 'Network operation';
           AppLogger.error(
               '$opName failed after $maxRetries attempts: $e', stackTrace);
+          // ignore: deprecated_member_use_from_same_package
           handleUserError(AppStrings.networkError);
           return defaultValue;
         }
@@ -331,6 +332,7 @@ mixin ErrorHandlingMixin {
       } else if (e.toString().toLowerCase().contains('auth')) {
         handleUserError(AppStrings.authenticationError);
       } else {
+        // ignore: deprecated_member_use_from_same_package
         handleUserError(AppStrings.genericError);
       }
 
@@ -530,6 +532,7 @@ mixin ErrorHandlingMixin {
       case ErrorType.dnsResolution:
         return 'Anslutningsproblem upptäckts. Försöker återansluta...';
       case ErrorType.networkConnectivity:
+        // ignore: deprecated_member_use_from_same_package
         return AppStrings.networkError;
       case ErrorType.authentication:
         return AppStrings.authenticationError;
@@ -538,6 +541,7 @@ mixin ErrorHandlingMixin {
       case ErrorType.serviceUnavailable:
         return 'Tjänsten är tillfälligt otillgänglig. Försök igen senare.';
       case ErrorType.unknown:
+        // ignore: deprecated_member_use_from_same_package
         return AppStrings.genericError;
     }
   }

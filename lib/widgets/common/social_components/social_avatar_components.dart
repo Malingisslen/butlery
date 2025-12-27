@@ -248,7 +248,8 @@ class SocialAvatarComponents {
     return Row(
       children: [
         ...users.map((user) => Padding(
-              padding: const EdgeInsets.only(right: AppDimensions.spacingSm),
+              padding: const EdgeInsetsDirectional.only(
+                  end: AppDimensions.spacingSm),
               child: avatar(
                 user: user,
                 size: avatarSize,
@@ -320,12 +321,12 @@ class SocialAvatarComponents {
       height: _getSizeValue(size),
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.red,
+        color: AppColors.error,
       ),
       child: Icon(
         Icons.error,
         size: _getSizeValue(size) * 0.6,
-        color: Colors.white,
+        color: AppColors.cardWhite,
       ),
     );
   }

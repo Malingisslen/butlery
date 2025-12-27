@@ -123,7 +123,7 @@ class RequestsTab {
               color: Theme.of(context).colorScheme.primary,
             ),
             const SizedBox(width: AppDimensions.spacingS),
-            const Text(
+            Text(
               'Inkommande förfrågningar',
               style: AppTextStyles.titleMedium,
             ),

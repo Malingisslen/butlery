@@ -28,8 +28,7 @@ class SharedContentActions {
     if (recipeId != null && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              '✅ Recept "${sharedRecipe.recipeSnapshot.title}" importerat!'),
+          content: Text('✅ Recept "${sharedRecipe.recipeTitle}" importerat!'),
           backgroundColor: AppColors.success,
         ),
       );
@@ -99,7 +98,7 @@ class SharedContentActions {
       builder: (context) => AlertDialog(
         title: const Text('Dölj recept'),
         content: Text(
-          'Vill du dölja "${sharedRecipe.recipeSnapshot.title}" från din lista?\n\n'
+          'Vill du dölja "${sharedRecipe.recipeTitle}" från din lista?\n\n'
           'Du kan fortfarande komma åt receptet genom att söka eller be '
           '${sharedRecipe.sharedByDisplayName} att dela det igen.',
         ),
@@ -125,8 +124,8 @@ class SharedContentActions {
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                '✅ "${sharedRecipe.recipeSnapshot.title}" dolt från din lista'),
+            content:
+                Text('✅ "${sharedRecipe.recipeTitle}" dolt från din lista'),
             backgroundColor: AppColors.success,
             action: SnackBarAction(
               label: 'Ångra',

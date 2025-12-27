@@ -215,7 +215,7 @@ class DiscoveryAppBar {
                 child: ListView(
                   controller: scrollController,
                   children: [
-                    const Text(
+                    Text(
                       'Innehållstyp',
                       style: AppTextStyles.titleSmall,
                     ),
@@ -246,7 +246,7 @@ class DiscoveryAppBar {
                       },
                     ),
                     const SizedBox(height: AppDimensions.spacingL),
-                    const Text(
+                    Text(
                       'Kategorier',
                       style: AppTextStyles.titleSmall,
                     ),
@@ -316,7 +316,7 @@ class DiscoveryAppBar {
                     fontWeight: FontWeight.w500,
                   ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             SwitchListTile(
               title: const Text('Visa trender'),
               subtitle: const Text('Visa populärt innehåll från communityn'),
@@ -344,16 +344,16 @@ class DiscoveryAppBar {
               },
               activeThumbColor: AppColors.primary,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             const Divider(),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.spacingSm),
             Text(
               'Aviseringar',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.spacingSm),
             SwitchListTile(
               title: const Text('Push-aviseringar'),
               subtitle: const Text('Få aviseringar om nytt innehåll'),

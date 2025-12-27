@@ -177,7 +177,7 @@ class _ShoppingListSelectionDialogState
 
               // Existing lists
               if (_availableLists.isNotEmpty) ...[
-                const Text(
+                Text(
                   'Eller välj befintlig lista:',
                   style: AppTextStyles.titleMedium,
                 ),
@@ -222,13 +222,13 @@ class _ShoppingListSelectionDialogState
                     borderRadius:
                         BorderRadius.circular(AppDimensions.borderRadiusM),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.info_outline,
                         color: AppColors.textSecondary,
                       ),
-                      SizedBox(width: AppDimensions.spacingM),
+                      const SizedBox(width: AppDimensions.spacingM),
                       Expanded(
                         child: Text(
                           'Du har inga redigerbara inköpslistor. Endast listor du kan redigera visas här. Skapa en ny lista ovan.',

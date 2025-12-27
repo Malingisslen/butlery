@@ -16,6 +16,7 @@ import {
   parseRecipeResponse,
   ExtractedRecipe,
 } from "./mistral-client";
+import { withRateLimit } from "../middleware/rate_limiter";
 
 // =============================================================================
 // Request/Response Types
@@ -62,15 +63,8 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
     cors: true,
     region: "europe-west1",
   },
-  async (request): Promise<OcrRecipeImageResponse> => {
-    // Authenticate
-    if (!request.auth) {
-      throw new HttpsError(
-        "unauthenticated",
-        "Du måste vara inloggad för att använda AI-funktioner."
-      );
-    }
-
+  withRateLimit("ocrRecipeImage", async (request): Promise<OcrRecipeImageResponse> => {
+    // Authentication is handled by withRateLimit middleware
     const { imageBase64, imageUrl, mimeType, context } = request.data;
 
     // Validate input
@@ -93,7 +87,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
       const client = getMistralClient(mistralApiKey.value());
 
       console.log(
-        `[ocrRecipeImage] Processing image for user ${request.auth.uid}`,
+        `[ocrRecipeImage] Processing image for user ${request.auth!.uid}`,
         imageUrl ? `URL: ${imageUrl}` : `Base64: ${imageBase64?.length} chars`
       );
 
@@ -178,7 +172,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
         "Ett fel uppstod vid bildbearbetning. Försök igen."
       );
     }
-  }
+  })
 );
 
 // =============================================================================

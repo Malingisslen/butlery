@@ -73,9 +73,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
 
   /// Analyze content and classify type/platform for routing.
   Future<void> _analyzeContent() async {
-    debugPrint('📥 Analyserar delat innehåll...');
-
-    // Simulera lite processing för bättre UX
+    // Simulate processing for better UX
     await Future.delayed(const Duration(milliseconds: 500));
 
     final result = await _detector.detectContent(widget.content);
@@ -405,7 +403,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
               style: ComponentThemes.primaryButtonStyle,
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            const Text('eller', style: AppTextStyles.bodySmall),
+            Text('eller', style: AppTextStyles.bodySmall),
             const SizedBox(height: AppDimensions.spacingS),
             OutlinedButton.icon(
               onPressed: _handleManualCopy,
@@ -420,7 +418,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
         // Vanlig receptwebbsida - vi kan scrapa denna
         return Column(
           children: [
-            const Text(
+            Text(
               'Receptlänk från webbsida detekterad!',
               style: AppTextStyles.titleSmall,
               textAlign: TextAlign.center,
@@ -478,7 +476,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
         // Vanlig text utan recept
         return Column(
           children: [
-            const Text(
+            Text(
               'Ingen receptinformation hittades i texten.',
               style: AppTextStyles.bodyMedium,
               textAlign: TextAlign.center,

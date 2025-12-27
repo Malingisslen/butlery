@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:butlery/viewmodels/account/data_export_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// GDPR Article 20 - Right to Data Portability UI
@@ -48,15 +49,15 @@ class DataExportView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _buildHeaderSection(context),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: AppDimensions.spacingXl),
                         _buildExportButton(context, viewModel),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: AppDimensions.spacingLg),
                         if (viewModel.isExporting) _buildLoadingState(context),
                         if (viewModel.hasError)
                           _buildErrorState(context, viewModel),
                         if (viewModel.hasExportedData)
                           _buildSuccessState(context, viewModel),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: AppDimensions.spacingXl),
                         _buildInfoSection(context),
                       ],
                     ),
@@ -84,7 +85,7 @@ class DataExportView extends StatelessWidget {
                   size: 32,
                   color: AppColors.primary,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppDimensions.spacingL),
                 Expanded(
                   child: Text(
                     'Ladda ner dina data',
@@ -95,11 +96,11 @@ class DataExportView extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             Text(
               'Enligt GDPR Artikel 20 har du rätt att få en kopia av all din personliga data som lagras i Butlery. Data exporteras i JSON-format som du kan spara eller överföra till en annan tjänst.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[700],
+                    color: AppColors.textMedium,
                     height: 1.5,
                   ),
             ),
@@ -137,18 +138,18 @@ class DataExportView extends StatelessWidget {
         child: Column(
           children: [
             const CircularProgressIndicator(),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             Text(
               'Exporterar dina data...',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.spacingSm),
             Text(
               'Detta kan ta några sekunder',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
+                    color: AppColors.textMedium,
                   ),
             ),
           ],
@@ -169,20 +170,20 @@ class DataExportView extends StatelessWidget {
               size: 48,
               color: AppColors.error,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             Text(
               'Export misslyckades',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.spacingSm),
             Text(
               viewModel.errorMessage ?? 'Ett okänt fel uppstod',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             ElevatedButton.icon(
               onPressed: () => viewModel.retryExport(),
               icon: const Icon(Icons.refresh),
@@ -207,28 +208,28 @@ class DataExportView extends StatelessWidget {
               size: 48,
               color: AppColors.success,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             Text(
               'Data exporterad',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.spacingSm),
             Text(
               'Exporterad ${viewModel.exportTimestampText}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[700],
+                    color: AppColors.textMedium,
                   ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppDimensions.spacingXs),
             Text(
               'Filstorlek: ${viewModel.exportSizeText}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[700],
+                    color: AppColors.textMedium,
                   ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppDimensions.paddingXl),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -239,7 +240,7 @@ class DataExportView extends StatelessWidget {
                     label: const Text('Spara fil'),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppDimensions.spacingL),
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _handleShare(context, viewModel),
@@ -249,13 +250,13 @@ class DataExportView extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppDimensions.spacingL),
             TextButton.icon(
               onPressed: () => _handleClear(context, viewModel),
               icon: const Icon(Icons.delete_outline),
               label: const Text('Rensa export'),
               style: TextButton.styleFrom(
-                foregroundColor: Colors.grey[600],
+                foregroundColor: AppColors.textMedium,
               ),
             ),
           ],
@@ -279,7 +280,7 @@ class DataExportView extends StatelessWidget {
                   color: AppColors.info,
                   size: 20,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   'Vad ingår i exporten?',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -288,7 +289,7 @@ class DataExportView extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppDimensions.spacingL),
             _buildInfoItem(context, 'Profil och inställningar'),
             _buildInfoItem(context, 'Alla dina recept'),
             _buildInfoItem(context, 'Vänner och sociala kontakter'),
@@ -296,11 +297,11 @@ class DataExportView extends StatelessWidget {
             _buildInfoItem(context, 'Inköpslistor och menyer'),
             _buildInfoItem(context, 'Kommentarer och betyg'),
             _buildInfoItem(context, 'Aktivitetshistorik'),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppDimensions.spacingL),
             Text(
               'OBS: Exporten innehåller endast din egen data. Ingen data från andra användare inkluderas.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
+                    color: AppColors.textMedium,
                     fontStyle: FontStyle.italic,
                   ),
             ),
@@ -320,7 +321,7 @@ class DataExportView extends StatelessWidget {
             size: 16,
             color: AppColors.success,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppDimensions.spacingSm),
           Text(text, style: Theme.of(context).textTheme.bodyMedium),
         ],
       ),
@@ -337,7 +338,7 @@ class DataExportView extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('✓ Data exporterad framgångsrikt'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.success,
         ),
       );
     }
@@ -366,11 +367,11 @@ class DataExportView extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('✓ Fil sparad: $fileName'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
             duration: const Duration(seconds: 4),
             action: SnackBarAction(
               label: 'OK',
-              textColor: Colors.white,
+              textColor: AppColors.cardWhite,
               onPressed: () {},
             ),
           ),
@@ -381,7 +382,7 @@ class DataExportView extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('✗ Kunde inte spara fil: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -417,7 +418,7 @@ class DataExportView extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('✗ Kunde inte dela: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }

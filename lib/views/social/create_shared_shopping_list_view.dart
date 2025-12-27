@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -102,8 +103,8 @@ class _CreateSharedShoppingListViewState
   PreferredSizeWidget _buildAppBar(
       BuildContext context, CreateSharedListViewModel viewModel) {
     return AppBar(
-      title:
-          Text('${AppStrings.share} ${AppStrings.shoppingList.toLowerCase()}'),
+      title: Text(
+          '${context.l10n.commonShare} ${AppStrings.shoppingList.toLowerCase()}'),
       leading: IconButton(
         icon: const Icon(Icons.close),
         onPressed: () => Navigator.pop(context),
@@ -188,7 +189,7 @@ class _CreateSharedShoppingListViewState
             ],
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          const Text(
+          Text(
             'Skapa en lista som du och dina vänner kan samarbeta kring i realtid.',
             style: AppTextStyles.titleMedium,
           ),
@@ -202,7 +203,7 @@ class _CreateSharedShoppingListViewState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Lista detaljer',
           style: AppTextStyles.headlineSmall,
         ),
@@ -239,7 +240,7 @@ class _CreateSharedShoppingListViewState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Välj vänner att dela med',
           style: AppTextStyles.headlineSmall,
         ),

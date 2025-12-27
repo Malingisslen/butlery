@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/services/account/export/export_pagination_helper.dart';
 
 /// Handles export of social data: friends, messages, shared content.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -21,52 +22,61 @@ class SocialExportManager {
         'friend_requests_received': [],
         'friend_categories': [],
       };
+      final friendLimit = ExportPaginationHelper.getLimitForType('friends');
+      final requestLimit =
+          ExportPaginationHelper.getLimitForType('friend_requests');
 
-      // Get friends from user's subcollection
-      final friendsSnapshot = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('friends')
-          .get();
+      // Get friends from user's subcollection (paginated)
+      final friendsSnapshot =
+          await ExportPaginationHelper.paginatedCollectionExport(
+        collection:
+            _firestore.collection('users').doc(userId).collection('friends'),
+        maxDocuments: friendLimit,
+      );
 
-      for (final doc in friendsSnapshot.docs) {
+      for (final doc in friendsSnapshot) {
         friendsData['friends'].add({
           'friend_id': doc.id,
           'data': doc.data(),
         });
       }
 
-      // Get friend requests sent
-      final sentRequests = await _firestore
-          .collection('friend_requests')
-          .where('fromUserId', isEqualTo: userId)
-          .get();
+      // Get friend requests sent (paginated)
+      final sentRequests = await ExportPaginationHelper.paginatedQuery(
+        query: _firestore
+            .collection('friend_requests')
+            .where('fromUserId', isEqualTo: userId),
+        maxDocuments: requestLimit,
+      );
 
-      for (final doc in sentRequests.docs) {
+      for (final doc in sentRequests) {
         friendsData['friend_requests_sent'].add({
           'request_id': doc.id,
           'data': doc.data(),
         });
       }
 
-      // Get friend requests received
-      final receivedRequests = await _firestore
-          .collection('friend_requests')
-          .where('toUserId', isEqualTo: userId)
-          .get();
+      // Get friend requests received (paginated)
+      final receivedRequests = await ExportPaginationHelper.paginatedQuery(
+        query: _firestore
+            .collection('friend_requests')
+            .where('toUserId', isEqualTo: userId),
+        maxDocuments: requestLimit,
+      );
 
-      for (final doc in receivedRequests.docs) {
+      for (final doc in receivedRequests) {
         friendsData['friend_requests_received'].add({
           'request_id': doc.id,
           'data': doc.data(),
         });
       }
 
-      // Get friend categories/groups
+      // Get friend categories/groups (limited)
       final categories = await _firestore
           .collection('users')
           .doc(userId)
           .collection('friendCategories')
+          .limit(100)
           .get();
 
       for (final doc in categories.docs) {
@@ -98,14 +108,20 @@ class SocialExportManager {
         'total_conversations': 0,
         'total_messages': 0,
       };
+      final conversationLimit =
+          ExportPaginationHelper.getLimitForType('conversations');
+      final messageLimit =
+          ExportPaginationHelper.getLimitForType('messages_per_conversation');
 
-      // Get conversations where user is participant
-      final conversations = await _firestore
-          .collection('conversations')
-          .where('participantIds', arrayContains: userId)
-          .get();
+      // Get conversations where user is participant (paginated)
+      final conversations = await ExportPaginationHelper.paginatedQuery(
+        query: _firestore
+            .collection('conversations')
+            .where('participantIds', arrayContains: userId),
+        maxDocuments: conversationLimit,
+      );
 
-      for (final conversationDoc in conversations.docs) {
+      for (final conversationDoc in conversations) {
         final messagesList = <Map<String, dynamic>>[];
         final conversationData = {
           'conversation_id': conversationDoc.id,
@@ -113,10 +129,11 @@ class SocialExportManager {
           'messages': messagesList,
         };
 
-        // Get all messages in this conversation
+        // Get messages in this conversation (limited per conversation)
         final messages = await conversationDoc.reference
             .collection('messages')
             .orderBy('timestamp', descending: false)
+            .limit(messageLimit)
             .get();
 
         for (final messageDoc in messages.docs) {
@@ -133,6 +150,9 @@ class SocialExportManager {
         }
 
         conversationData['message_count'] = messagesList.length;
+        if (messages.docs.length >= messageLimit) {
+          conversationData['messages_truncated'] = true;
+        }
         messagesData['conversations'].add(conversationData);
         messagesData['total_messages'] += messagesList.length;
       }
@@ -154,27 +174,33 @@ class SocialExportManager {
         'shared_recipes_received': [],
         'shared_menus_received': [],
       };
+      final recipeLimit = ExportPaginationHelper.getLimitForType('recipes');
+      final menuLimit = ExportPaginationHelper.getLimitForType('menus');
 
-      // Get recipes shared with user
-      final sharedRecipes = await _firestore
-          .collection('shared_recipes')
-          .where('sharedWithUserIds', arrayContains: userId)
-          .get();
+      // Get recipes shared with user (paginated)
+      final sharedRecipes = await ExportPaginationHelper.paginatedQuery(
+        query: _firestore
+            .collection('shared_recipes')
+            .where('sharedWithUserIds', arrayContains: userId),
+        maxDocuments: recipeLimit,
+      );
 
-      for (final doc in sharedRecipes.docs) {
+      for (final doc in sharedRecipes) {
         sharedData['shared_recipes_received'].add({
           'share_id': doc.id,
           'data': doc.data(),
         });
       }
 
-      // Get menus shared with user
-      final sharedMenus = await _firestore
-          .collection('menus')
-          .where('sharedToUserIds', arrayContains: userId)
-          .get();
+      // Get menus shared with user (paginated)
+      final sharedMenus = await ExportPaginationHelper.paginatedQuery(
+        query: _firestore
+            .collection('menus')
+            .where('sharedToUserIds', arrayContains: userId),
+        maxDocuments: menuLimit,
+      );
 
-      for (final doc in sharedMenus.docs) {
+      for (final doc in sharedMenus) {
         sharedData['shared_menus_received'].add({
           'menu_id': doc.id,
           'data': doc.data(),

@@ -204,7 +204,7 @@ class _FranSocialaMedierViewContentState
             ],
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          const Text(
+          Text(
             '• Klistra in hela receptet inklusive ingredienser\n'
             '• Se till att ingredienser kommer före instruktioner\n'
             '• Texten kan komma från Instagram, TikTok, Facebook etc.',

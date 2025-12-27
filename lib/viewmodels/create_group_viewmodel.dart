@@ -318,8 +318,6 @@ class CreateGroupViewModel extends ChangeNotifier
     try {
       await executeAsync(() async {
         // Step 1: Create empty group category with form data
-        debugPrint('🔍 DEBUG: Skapar tom grupp "${_name.trim()}"');
-
         final categoryId = await _friendsService.categories.createCategory(
           name: _name.trim(),
           description: _description.trim(),
@@ -341,47 +339,20 @@ class CreateGroupViewModel extends ChangeNotifier
           throw Exception('Kunde inte hitta den skapade gruppen');
         }
 
-        debugPrint('🔍 DEBUG: Grupp skapad med ID: ${createdGroup.id}');
-
         // Step 3: Send email invitations to selected friends
-        int invitationsSent = 0;
         if (_selectedFriendIds.isNotEmpty) {
-          debugPrint(
-              '🔍 DEBUG: Skickar inbjudningar till ${_selectedFriendIds.length} vänner');
-
-          final invitationResults = <String, bool>{};
           for (final friendId in _selectedFriendIds.toList()) {
             final friend = _friendsService.management.getFriendById(friendId);
             if (friend != null) {
               // Email validation and invitation sending with personalized message
               if (friend.email.isNotEmpty && friend.email.contains('@')) {
-                final success =
-                    await _friendsService.invitations.sendEmailInvitation(
+                await _friendsService.invitations.sendEmailInvitation(
                   email: friend.email,
                   customMessage:
                       'Hej! Jag bjuder in dig till min nya grupp "${createdGroup.name}". Välkommen! 😊',
                 );
-                invitationResults[friendId] = success;
-              } else {
-                debugPrint(
-                    '🔍 DEBUG: Cannot send invitation to ${friend.displayName}: No valid email available');
-                invitationResults[friendId] = false;
               }
-            } else {
-              invitationResults[friendId] = false;
             }
-          }
-
-          invitationsSent =
-              invitationResults.values.where((success) => success).length;
-          debugPrint(
-              '🔍 DEBUG: $invitationsSent av ${_selectedFriendIds.length} inbjudningar skickade');
-
-          // Log invitation results for debugging and user feedback preparation
-          final failedInvitations = _selectedFriendIds.length - invitationsSent;
-          if (failedInvitations > 0) {
-            debugPrint(
-                '🔍 DEBUG: $failedInvitations invitations failed - email service not implemented');
           }
         }
 
@@ -391,7 +362,6 @@ class CreateGroupViewModel extends ChangeNotifier
 
       return true;
     } catch (e) {
-      debugPrint('🔍 DEBUG: Fel vid gruppskapande: $e');
       return false;
     }
   }

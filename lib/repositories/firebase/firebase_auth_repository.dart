@@ -54,7 +54,7 @@ class FirebaseAuthRepository implements AuthRepository {
 
     if (_cachedUser != null) {
       AppLogger.info(
-          'ULTRATHINK protection enabled for user: ${_cachedUser!.email}',
+          'ULTRATHINK protection enabled for user: ${_cachedUser!.uid}',
           'AuthRepository');
     }
   }
@@ -71,7 +71,7 @@ class FirebaseAuthRepository implements AuthRepository {
     // ULTRATHINK: Critical Firebase initialization race condition guard
     if (_ignoreInitialNull && firebaseUser == null && _cachedUser != null) {
       AppLogger.info(
-          'BLOCKING Firebase NULL emission - preserving cached user: ${_cachedUser!.email}',
+          'BLOCKING Firebase NULL emission - preserving cached user: ${_cachedUser!.uid}',
           'AuthRepository');
       _ignoreInitialNull = false; // Only ignore the first NULL
       return _cachedUser;
@@ -116,7 +116,7 @@ class FirebaseAuthRepository implements AuthRepository {
         _cachedUser = credential.user;
         _ignoreInitialNull = false; // Reset protection flag
         AppLogger.success(
-            'Login successful - cached user updated: ${_cachedUser!.email}',
+            'Login successful - cached user updated: ${_cachedUser!.uid}',
             'AuthRepository');
       },
     );
@@ -137,7 +137,7 @@ class FirebaseAuthRepository implements AuthRepository {
         _cachedUser = credential.user;
         _ignoreInitialNull = false; // Reset protection flag
         AppLogger.success(
-            'Login successful - cached user updated: ${_cachedUser!.email}',
+            'Login successful - cached user updated: ${_cachedUser!.uid}',
             'AuthRepository');
 
         return credential;
@@ -161,7 +161,7 @@ class FirebaseAuthRepository implements AuthRepository {
         _cachedUser = credential.user;
         _ignoreInitialNull = false; // Reset protection flag
         AppLogger.success(
-            'Registration successful - cached user updated: ${_cachedUser!.email}',
+            'Registration successful - cached user updated: ${_cachedUser!.uid}',
             'AuthRepository');
 
         return credential;

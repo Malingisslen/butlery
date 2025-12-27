@@ -156,16 +156,17 @@ class _AddUnifiedShoppingItemDialogState
                     child: DropdownButtonFormField<String>(
                       initialValue: _selectedUnit,
                       style: AppTextStyles.bodyLarge,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Enhet',
                         labelStyle: AppTextStyles.labelLarge,
-                        prefixIcon: Icon(
+                        prefixIcon: const Icon(
                           Icons.straighten,
                           color: AppColors.primaryBlue,
                           size: AppDimensions.iconSizeAction,
                         ),
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.all(AppDimensions.paddingM),
+                        border: const OutlineInputBorder(),
+                        contentPadding:
+                            const EdgeInsets.all(AppDimensions.paddingM),
                       ),
                       isDense: true,
                       isExpanded: true,
@@ -198,16 +199,16 @@ class _AddUnifiedShoppingItemDialogState
               DropdownButtonFormField<String>(
                 initialValue: _selectedCategory,
                 style: AppTextStyles.bodyLarge,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Kategori',
                   labelStyle: AppTextStyles.labelLarge,
-                  prefixIcon: Icon(
+                  prefixIcon: const Icon(
                     Icons.category,
                     color: AppColors.primaryBlue,
                     size: AppDimensions.iconSizeAction,
                   ),
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.all(AppDimensions.paddingM),
+                  border: const OutlineInputBorder(),
+                  contentPadding: const EdgeInsets.all(AppDimensions.paddingM),
                 ),
                 isExpanded: true,
                 items: _categories.map((category) {

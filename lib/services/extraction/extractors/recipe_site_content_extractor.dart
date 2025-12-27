@@ -1,6 +1,5 @@
 // lib/services/extraction/extractors/recipe_site_content_extractor.dart
 
-import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 /// Recipe site content extraction with structured data parsing (JSON-LD, microdata).
@@ -16,8 +15,6 @@ class RecipeSiteContentExtractor {
   /// Extract recipe content with structured data parsing and fallback strategies
   Future<String?> extract(InAppWebViewController controller) async {
     if (isDisposed()) return null;
-
-    debugPrint('🍽️ Extracting from recipe site...');
 
     // Strategy 1: JSON-LD structured data
     final jsonLdResult = await _extractJsonLd(controller);
@@ -101,11 +98,10 @@ class RecipeSiteContentExtractor {
       if (result != null &&
           result.toString().isNotEmpty &&
           result.toString() != 'null') {
-        debugPrint('✅ Recipe structured data found!');
         return result.toString();
       }
-    } catch (e) {
-      debugPrint('❌ JSON-LD extraction error: $e');
+    } catch (_) {
+      // Continue to next extraction strategy
     }
 
     return null;
@@ -157,11 +153,10 @@ class RecipeSiteContentExtractor {
       if (result != null &&
           result.toString().isNotEmpty &&
           result.toString() != 'null') {
-        debugPrint('✅ Recipe microdata found!');
         return result.toString();
       }
-    } catch (e) {
-      debugPrint('❌ Microdata extraction error: $e');
+    } catch (_) {
+      // Continue to next extraction strategy
     }
 
     return null;
@@ -206,15 +201,13 @@ class RecipeSiteContentExtractor {
         if (result != null &&
             result.toString().isNotEmpty &&
             result.toString() != 'null') {
-          debugPrint('✅ Recipe content found with selector: $selector');
           return result.toString();
         }
-      } catch (e) {
+      } catch (_) {
         // Continue to next selector
       }
     }
 
-    debugPrint('⚠️ No recipe content found');
     return null;
   }
 }

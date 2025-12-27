@@ -234,7 +234,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
         if (availableFriends.isEmpty) {
           return Column(
             children: [
-              const Text(
+              Text(
                 'Välj medlemmar',
                 style: AppTextStyles.titleMedium,
               ),
@@ -262,7 +262,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Välj medlemmar',
               style: AppTextStyles.titleMedium,
             ),

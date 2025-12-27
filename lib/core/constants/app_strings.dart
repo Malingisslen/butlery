@@ -1,26 +1,107 @@
 /// Centralized string constants system for the Butlery cooking application.
+///
+/// MIGRATION NOTE: This class is being migrated to use Flutter's l10n system.
+/// New code should use `context.l10n.stringKey` instead of `AppStrings.constant`.
+/// The context-aware methods below delegate to l10n for gradual migration.
+
+import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Central repository for all user-facing text in the Butlery application.
+///
+/// ## Migration to l10n
+/// This class now supports two access patterns:
+/// 1. **Legacy (deprecated)**: `AppStrings.save` - static constants
+/// 2. **New (preferred)**: `AppStrings.save(context)` - context-aware methods using l10n
+///
+/// New code should prefer `context.l10n.stringKey` directly.
 class AppStrings {
   /// Private constructor
   AppStrings._();
 
+  // ==========================================================================
+  // CONTEXT-AWARE METHODS (preferred - delegate to l10n)
+  // ==========================================================================
+
+  // Common actions - context-aware
+  static String saveL10n(BuildContext context) => context.l10n.commonSave;
+  static String cancelL10n(BuildContext context) => context.l10n.commonCancel;
+  static String deleteL10n(BuildContext context) => context.l10n.commonDelete;
+  static String editL10n(BuildContext context) => context.l10n.commonEdit;
+  static String addL10n(BuildContext context) => context.l10n.commonAdd;
+  static String createL10n(BuildContext context) => context.l10n.commonCreate;
+  static String updateL10n(BuildContext context) => context.l10n.commonUpdate;
+  static String closeL10n(BuildContext context) => context.l10n.commonClose;
+  static String shareL10n(BuildContext context) => context.l10n.commonShare;
+  static String okL10n(BuildContext context) => context.l10n.commonOk;
+  static String yesL10n(BuildContext context) => context.l10n.commonYes;
+  static String noL10n(BuildContext context) => context.l10n.commonNo;
+  static String retryL10n(BuildContext context) => context.l10n.commonRetry;
+  static String loadingL10n(BuildContext context) => context.l10n.commonLoading;
+  static String sendL10n(BuildContext context) => context.l10n.commonSend;
+
+  // Error messages - context-aware
+  static String genericErrorL10n(BuildContext context) =>
+      context.l10n.errorGeneric;
+  static String networkErrorL10n(BuildContext context) =>
+      context.l10n.errorNetwork;
+  static String serverErrorL10n(BuildContext context) =>
+      context.l10n.errorServer;
+
+  // Validation - context-aware
+  static String nameRequiredL10n(BuildContext context) =>
+      context.l10n.validationNameRequired;
+  static String emailRequiredL10n(BuildContext context) =>
+      context.l10n.validationEmailRequired;
+  static String invalidEmailL10n(BuildContext context) =>
+      context.l10n.validationEmailInvalid;
+
+  // ==========================================================================
+  // LEGACY CONSTANTS (deprecated - migrate to l10n)
+  // ==========================================================================
+
   // Common actions
+  @Deprecated(
+      'Use context.l10n.commonSave or AppStrings.saveL10n(context) instead')
   static const String save = 'Spara';
+  @Deprecated(
+      'Use context.l10n.commonCancel or AppStrings.cancelL10n(context) instead')
   static const String cancel = 'Avbryt';
+  @Deprecated(
+      'Use context.l10n.commonDelete or AppStrings.deleteL10n(context) instead')
   static const String delete = 'Ta bort';
+  @Deprecated(
+      'Use context.l10n.commonEdit or AppStrings.editL10n(context) instead')
   static const String edit = 'Redigera';
+  @Deprecated(
+      'Use context.l10n.commonAdd or AppStrings.addL10n(context) instead')
   static const String add = 'Lägg till';
+  @Deprecated(
+      'Use context.l10n.commonCreate or AppStrings.createL10n(context) instead')
   static const String create = 'Skapa';
+  @Deprecated(
+      'Use context.l10n.commonUpdate or AppStrings.updateL10n(context) instead')
   static const String update = 'Uppdatera';
+  @Deprecated(
+      'Use context.l10n.commonClose or AppStrings.closeL10n(context) instead')
   static const String close = 'Stäng';
+  @Deprecated(
+      'Use context.l10n.commonShare or AppStrings.shareL10n(context) instead')
   static const String share = 'Dela';
   static const String rename = 'Byt namn';
   static const String export = 'Exportera';
+  @Deprecated('Use context.l10n.commonOk or AppStrings.okL10n(context) instead')
   static const String ok = 'OK';
+  @Deprecated(
+      'Use context.l10n.commonYes or AppStrings.yesL10n(context) instead')
   static const String yes = 'Ja';
+  @Deprecated('Use context.l10n.commonNo or AppStrings.noL10n(context) instead')
   static const String no = 'Nej';
+  @Deprecated(
+      'Use context.l10n.commonRetry or AppStrings.retryL10n(context) instead')
   static const String retry = 'Försök igen';
+  @Deprecated(
+      'Use context.l10n.commonLoading or AppStrings.loadingL10n(context) instead')
   static const String loading = 'Laddar...';
   static const String working = 'Arbetar...';
 
@@ -35,9 +116,12 @@ class AppStrings {
   static const String resetPassword = 'Återställ lösenord';
   static const String forgotPassword = 'Glömt lösenord?';
   static const String enterPassword = 'Ange ditt lösenord';
-  static const String passwordMinLength = 'Minst 6 tecken';
+  static const String passwordMinLength =
+      'Minst 8 tecken, stor/liten bokstav och siffra';
   static const String resetPasswordInstructions =
       'Ange din email-adress så skickar vi instruktioner för att återställa ditt lösenord.';
+  @Deprecated(
+      'Use context.l10n.commonSend or AppStrings.sendL10n(context) instead')
   static const String send = 'Skicka';
 
   // App navigation
@@ -63,9 +147,12 @@ class AppStrings {
       'Ogiltigt format för $fieldName';
 
   // Specific validation messages
+  @Deprecated('Use context.l10n.validationNameRequired instead')
   static const String nameRequired = 'Namn krävs';
+  @Deprecated('Use context.l10n.validationEmailRequired instead')
   static const String emailRequired = 'E-post krävs';
   static const String passwordRequired = 'Lösenord krävs';
+  @Deprecated('Use context.l10n.validationEmailInvalid instead')
   static const String invalidEmail = 'Ogiltig e-postadress';
   static const String invalidUrl = 'Ogiltig URL';
   static const String invalidPhoneNumber = 'Ogiltigt telefonnummer';
@@ -77,9 +164,12 @@ class AppStrings {
   static const String emailInvalid = 'Ogiltig e-postadress';
 
   // Error messages
+  @Deprecated('Use context.l10n.errorGeneric instead')
   static const String genericError = 'Ett fel uppstod. Försök igen.';
+  @Deprecated('Use context.l10n.errorNetwork instead')
   static const String networkError =
       'Nätverksfel. Kontrollera din internetanslutning.';
+  @Deprecated('Use context.l10n.errorServer instead')
   static const String serverError = 'Serverfel. Försök igen senare.';
   static const String authenticationError = 'Autentiseringsfel. Logga in igen.';
   static const String permissionDenied =

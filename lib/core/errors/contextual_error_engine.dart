@@ -335,6 +335,7 @@ class ContextualErrorEngine {
 
   /// Get fallback message when error generation fails
   static String _getFallbackMessage(UserActionContext context) {
+    // ignore: deprecated_member_use_from_same_package
     return 'Ett fel uppstod medan ${context.swedishDescription}. ${AppStrings.retry}.';
   }
 

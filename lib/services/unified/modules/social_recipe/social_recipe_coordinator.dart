@@ -474,7 +474,8 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
         return sharedRecipeId;
       }
 
-      final originalRecipe = sharedRecipe.recipeSnapshot;
+      // Use contentSnapshot which handles V1 (full snapshot) or V2 (minimal from metadata)
+      final originalRecipe = sharedRecipe.contentSnapshot;
       final staticCopy = Recipe(
         core: originalRecipe.core.copyWith(
           title:
@@ -537,8 +538,24 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
         return null;
       }
 
-      final importedRecipe =
-          sharedRecipe.createImportRecipe(newOwnerId: currentUserId);
+      // For V1 shares with full snapshot, use createImportRecipe.
+      // For V2 shares without snapshot, use contentSnapshot (minimal recipe from metadata).
+      Recipe importedRecipe;
+      if (sharedRecipe.hasFullSnapshot) {
+        final imported =
+            sharedRecipe.createImportRecipe(newOwnerId: currentUserId);
+        if (imported == null) {
+          AppLogger.error('Failed to create imported recipe from snapshot');
+          return null;
+        }
+        importedRecipe = imported;
+      } else {
+        // V2 shares: Use contentSnapshot (minimal recipe from denormalized fields)
+        final contentRecipe = sharedRecipe.contentSnapshot;
+        final attributionText =
+            'Inspirerat av recept från ${sharedRecipe.sharedByDisplayName}';
+        importedRecipe = contentRecipe.copyWith(sourceUrl: attributionText);
+      }
 
       final finalRecipe = newTitle != null
           ? importedRecipe.copyWith(title: newTitle)

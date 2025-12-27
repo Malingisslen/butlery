@@ -101,7 +101,7 @@ class AuthService extends ChangeNotifier
           'Attempting login for email: ${email.substring(0, 3)}...');
       await _authRepository.signIn(email: email, password: password);
       _currentUser = _authRepository.currentUser;
-      AppLogger.debug('Login result - User: ${_currentUser?.email ?? "null"}');
+      AppLogger.debug('Login result - User: ${_currentUser?.uid ?? "null"}');
 
       setLoading(false);
 
@@ -233,6 +233,228 @@ class AuthService extends ChangeNotifier
     });
   }
 
+  // ============== MFA Methods ==============
+
+  /// Check if the current user has MFA enabled.
+  Future<bool> hasMfaEnabled() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+
+    try {
+      final factors = await user.multiFactor.getEnrolledFactors();
+      return factors.isNotEmpty;
+    } catch (e) {
+      AppLogger.warning('Failed to check MFA status: $e');
+      return false;
+    }
+  }
+
+  /// Get list of enrolled MFA factors.
+  Future<List<MultiFactorInfo>> getEnrolledFactors() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return [];
+
+    try {
+      return await user.multiFactor.getEnrolledFactors();
+    } catch (e) {
+      AppLogger.warning('Failed to get MFA factors: $e');
+      return [];
+    }
+  }
+
+  /// Start MFA enrollment with a phone number.
+  /// Calls [onCodeSent] when SMS code is sent, or [onError] on failure.
+  Future<void> startMfaEnrollment(
+    String phoneNumber, {
+    required void Function(String verificationId) onCodeSent,
+    required void Function(FirebaseAuthException error) onError,
+    void Function()? onAutoVerified,
+  }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      onError(FirebaseAuthException(
+          code: 'user-not-found', message: 'No user signed in'));
+      return;
+    }
+
+    try {
+      final session = await user.multiFactor.getSession();
+
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        multiFactorSession: session,
+        phoneNumber: phoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          // Auto-verification on some Android devices
+          try {
+            await user.multiFactor.enroll(
+              PhoneMultiFactorGenerator.getAssertion(credential),
+            );
+            AppLogger.info('MFA auto-enrolled successfully');
+            onAutoVerified?.call();
+          } catch (e) {
+            AppLogger.error('MFA auto-enrollment failed: $e');
+            if (e is FirebaseAuthException) {
+              onError(e);
+            }
+          }
+        },
+        verificationFailed: (FirebaseAuthException error) {
+          AppLogger.error('MFA verification failed: ${error.code}');
+          onError(error);
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          AppLogger.info('MFA SMS code sent');
+          onCodeSent(verificationId);
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          AppLogger.debug('MFA code auto-retrieval timeout');
+        },
+        timeout: const Duration(seconds: 60),
+      );
+    } catch (e) {
+      AppLogger.error('Failed to start MFA enrollment: $e');
+      if (e is FirebaseAuthException) {
+        onError(e);
+      } else {
+        onError(FirebaseAuthException(code: 'unknown', message: e.toString()));
+      }
+    }
+  }
+
+  /// Complete MFA enrollment with the SMS code.
+  Future<bool> completeMfaEnrollment(
+    String verificationId,
+    String smsCode,
+  ) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+
+    try {
+      final credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: smsCode,
+      );
+
+      await user.multiFactor.enroll(
+        PhoneMultiFactorGenerator.getAssertion(credential),
+      );
+
+      AppLogger.info('MFA enrollment completed successfully');
+      await _analyticsService.logEvent(
+        name: 'mfa_enrolled',
+        parameters: {'method': 'sms'},
+      );
+      return true;
+    } on FirebaseAuthException catch (e) {
+      AppLogger.error('MFA enrollment failed: ${e.code}');
+      _handleAuthError(e);
+      return false;
+    } catch (e) {
+      AppLogger.error('MFA enrollment error: $e');
+      setError('Kunde inte slutföra MFA-registrering');
+      return false;
+    }
+  }
+
+  /// Unenroll a specific MFA factor.
+  Future<bool> unenrollMfa(MultiFactorInfo factor) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+
+    try {
+      await user.multiFactor.unenroll(multiFactorInfo: factor);
+      AppLogger.info('MFA factor unenrolled: ${factor.uid}');
+      await _analyticsService.logEvent(name: 'mfa_unenrolled');
+      return true;
+    } on FirebaseAuthException catch (e) {
+      AppLogger.error('MFA unenroll failed: ${e.code}');
+      _handleAuthError(e);
+      return false;
+    } catch (e) {
+      AppLogger.error('MFA unenroll error: $e');
+      setError('Kunde inte ta bort MFA');
+      return false;
+    }
+  }
+
+  /// Resolve MFA challenge during sign-in.
+  /// Called when [signInWithEmail] throws [FirebaseAuthMultiFactorException].
+  Future<void> startMfaSignIn(
+    MultiFactorResolver resolver, {
+    required void Function(String verificationId) onCodeSent,
+    required void Function(FirebaseAuthException error) onError,
+  }) async {
+    // Get the first phone hint (users typically have one phone factor)
+    final phoneHint =
+        resolver.hints.whereType<PhoneMultiFactorInfo>().firstOrNull;
+
+    if (phoneHint == null) {
+      onError(FirebaseAuthException(
+          code: 'no-phone-factor', message: 'No phone MFA found'));
+      return;
+    }
+
+    try {
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        multiFactorSession: resolver.session,
+        multiFactorInfo: phoneHint,
+        verificationCompleted: (credential) async {
+          // Auto-verify on some Android devices
+          try {
+            await resolver.resolveSignIn(
+              PhoneMultiFactorGenerator.getAssertion(credential),
+            );
+            _currentUser = FirebaseAuth.instance.currentUser;
+            AppLogger.info('MFA sign-in auto-completed');
+          } catch (e) {
+            if (e is FirebaseAuthException) onError(e);
+          }
+        },
+        verificationFailed: onError,
+        codeSent: (verificationId, _) => onCodeSent(verificationId),
+        codeAutoRetrievalTimeout: (_) {},
+        timeout: const Duration(seconds: 60),
+      );
+    } catch (e) {
+      if (e is FirebaseAuthException) {
+        onError(e);
+      } else {
+        onError(FirebaseAuthException(code: 'unknown', message: e.toString()));
+      }
+    }
+  }
+
+  /// Complete MFA sign-in with SMS code.
+  Future<bool> completeMfaSignIn(
+    MultiFactorResolver resolver,
+    String verificationId,
+    String smsCode,
+  ) async {
+    try {
+      final credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: smsCode,
+      );
+
+      await resolver.resolveSignIn(
+        PhoneMultiFactorGenerator.getAssertion(credential),
+      );
+
+      _currentUser = FirebaseAuth.instance.currentUser;
+      AppLogger.info('MFA sign-in completed');
+      await _analyticsService.logLogin(method: 'email_mfa');
+      return true;
+    } on FirebaseAuthException catch (e) {
+      AppLogger.error('MFA sign-in failed: ${e.code}');
+      _handleAuthError(e);
+      return false;
+    } catch (e) {
+      AppLogger.error('MFA sign-in error: $e');
+      setError('MFA-verifiering misslyckades');
+      return false;
+    }
+  }
+
   void _handleAuthError(FirebaseAuthException e) {
     String errorMessage;
     AppLogger.error('Firebase Auth Error Code: ${e.code}');
@@ -263,6 +485,22 @@ class AuthService extends ChangeNotifier
         break;
       case 'network-request-failed':
         errorMessage = 'Nätverksfel. Kontrollera din internetanslutning.';
+        break;
+      // MFA-specific errors
+      case 'invalid-verification-code':
+        errorMessage = 'Ogiltig verifieringskod. Försök igen.';
+        break;
+      case 'session-expired':
+        errorMessage = 'Sessionen har gått ut. Försök igen.';
+        break;
+      case 'quota-exceeded':
+        errorMessage = 'För många SMS-försök. Försök igen senare.';
+        break;
+      case 'invalid-phone-number':
+        errorMessage = 'Ogiltigt telefonnummer. Ange med landskod (+46).';
+        break;
+      case 'missing-phone-number':
+        errorMessage = 'Telefonnummer saknas.';
         break;
       default:
         errorMessage = 'Autentiseringsfel: ${e.message}';

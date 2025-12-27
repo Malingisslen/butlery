@@ -98,7 +98,7 @@ class _CreateGroupConversationViewState
   PreferredSizeWidget _buildAppBar(
       BuildContext context, CreateGroupConversationViewModel viewModel) {
     return AppBar(
-      title: const Text(
+      title: Text(
         'Skapa gruppkonversation',
         style: AppTextStyles.headlineSmall,
       ),
@@ -172,7 +172,7 @@ class _CreateGroupConversationViewState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Gruppnamn',
           style: AppTextStyles.titleMedium,
         ),
@@ -363,7 +363,7 @@ class _CreateGroupConversationViewState
       scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('Gruppkonversation skapad!'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.success,
         ),
       );
 
@@ -379,7 +379,7 @@ class _CreateGroupConversationViewState
       scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Text(viewModel.error!),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     }

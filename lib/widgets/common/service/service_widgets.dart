@@ -56,11 +56,11 @@ class ServiceWidgets {
 
   // Private helper methods
   static Widget _buildDefaultServiceLoading() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
+          const SizedBox(
             width: AppDimensions.iconSizeM,
             height: AppDimensions.iconSizeM,
             child: CircularProgressIndicator(
@@ -68,7 +68,7 @@ class ServiceWidgets {
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
             ),
           ),
-          SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.spacingXl),
           Text(
             'Laddar recept...',
             style: AppTextStyles.titleMedium,

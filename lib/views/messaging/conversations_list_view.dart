@@ -12,10 +12,12 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/auth_service.dart';
@@ -147,17 +149,19 @@ class _ConversationsListViewState extends State<ConversationsListView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return LayoutComponents.simpleLayout(
-      title: 'Meddelanden',
+      title: l10n.messagingTitle,
       actions: [
         IconButton(
           onPressed: _showNewConversationDialog,
           icon: const Icon(Icons.add),
-          tooltip: 'Ny konversation',
+          tooltip: l10n.messagingNewConversation,
         ),
       ],
       body: SafeArea(
-        // ✅ RESPONSIVE: Center and constrain content on large screens
+        // Responsive: Center and constrain content on large screens
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -189,11 +193,13 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   }
 
   Widget _buildSearchBar() {
+    final l10n = context.l10n;
+
     return SearchBarContainer(
       child: SearchInputWidget(
         controller: _searchController,
         focusNode: _searchFocusNode,
-        hintText: 'Sök konversationer...',
+        hintText: l10n.messagingSearchConversations,
         onClear: () {
           _searchController.clear();
         },
@@ -202,10 +208,12 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   }
 
   Widget _buildConversationsList() {
+    final l10n = context.l10n;
+
     if (_isLoading) {
       return LoadingWidgets.loadingOverlay(
         isLoading: true,
-        loadingMessage: 'Laddar konversationer...',
+        loadingMessage: l10n.messagingLoadingConversations,
       );
     }
 
@@ -215,19 +223,18 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           context,
           variant: EmptyStateVariant.noSearchResults,
           icon: Icons.search_off,
-          title: 'Inga konversationer hittades',
-          subtitle: 'Försök med ett annat sökord',
+          title: l10n.messagingNoConversationsFound,
+          subtitle: l10n.messagingTryAnotherSearch,
         );
       } else {
         return EmptyStates.buildEmptyState(
           context,
           variant: EmptyStateVariant.generic,
           icon: Icons.chat_bubble_outline,
-          title: 'Inga konversationer än',
-          subtitle:
-              'Starta din första konversation genom att trycka på meddelande-knappen',
+          title: l10n.messagingNoConversationsYet,
+          subtitle: l10n.messagingStartFirstConversation,
           customAction: StyledButton.primary(
-            text: 'Ny konversation',
+            text: l10n.messagingNewConversation,
             onPressed: _showNewConversationDialog,
           ),
         );
@@ -247,12 +254,15 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         itemBuilder: (context, index) {
           final conversation = _filteredConversations[index];
 
-          return ConversationListItem(
-            key: ValueKey(conversation.id),
-            conversation: conversation,
-            currentUserId: _currentUserId ?? '',
-            onTap: () => _navigateToChat(conversation),
-            onLongPress: () => _showConversationActions(conversation),
+          return AnimatedListItem(
+            index: index,
+            child: ConversationListItem(
+              key: ValueKey(conversation.id),
+              conversation: conversation,
+              currentUserId: _currentUserId ?? '',
+              onTap: () => _navigateToChat(conversation),
+              onLongPress: () => _showConversationActions(conversation),
+            ),
           );
         },
       ),
@@ -260,6 +270,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   }
 
   void _showConversationActions(Conversation conversation) {
+    final l10n = context.l10n;
+
     StyledModalBottomSheet.show(
       context: context,
       child: ModalContentContainer(
@@ -267,7 +279,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           ModalHeaderText(conversation.getDisplayTitle(_currentUserId ?? '')),
           ListTile(
             leading: const Icon(Icons.mark_chat_read),
-            title: const Text('Markera som läst'),
+            title: Text(l10n.messagingMarkAsRead),
             onTap: () {
               Navigator.pop(context);
               _markAsRead(conversation);
@@ -276,7 +288,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           if (conversation.isGroup) ...[
             ListTile(
               leading: const Icon(Icons.info_outline),
-              title: const Text('Grupinformation'),
+              title: Text(l10n.messagingGroupInfo),
               onTap: () {
                 Navigator.pop(context);
                 _navigateToGroupInfo(context, conversation);
@@ -284,7 +296,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             ),
             ListTile(
               leading: const Icon(Icons.exit_to_app),
-              title: const Text('Lämna grupp'),
+              title: Text(l10n.messagingLeaveGroup),
               onTap: () {
                 Navigator.pop(context);
                 _leaveGroup(conversation);
@@ -293,7 +305,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           ] else ...[
             ListTile(
               leading: const Icon(Icons.person),
-              title: const Text('Visa profil'),
+              title: Text(l10n.messagingViewProfile),
               onTap: () {
                 Navigator.pop(context);
                 _navigateToUserProfile(context, conversation);
@@ -302,7 +314,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           ],
           ErrorListTile(
             icon: Icons.delete_outline,
-            title: 'Radera konversation',
+            title: l10n.messagingDeleteConversation,
             onTap: () {
               Navigator.pop(context);
               _deleteConversation(conversation);
@@ -318,20 +330,22 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   }
 
   void _leaveGroup(Conversation conversation) {
+    final l10n = context.l10n;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Lämna grupp'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.messagingLeaveGroup),
         content:
-            Text('Är du säker på att du vill lämna "${conversation.title}"?'),
+            Text(l10n.messagingConfirmLeaveGroup(conversation.title ?? '')),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Avbryt'),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.commonCancel),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
               final messenger = ScaffoldMessenger.of(context);
               try {
                 await _messagingService.removeParticipantFromGroup(
@@ -340,21 +354,22 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                 );
                 if (mounted) {
                   messenger.showSnackBar(
-                    const SnackBar(content: Text('Du har lämnat gruppen')),
+                    SnackBar(content: Text(l10n.messagingLeftGroup)),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   messenger.showSnackBar(
                     SnackBar(
-                      content: Text('Kunde inte lämna gruppen: $e'),
+                      content:
+                          Text(l10n.messagingCouldNotLeaveGroup(e.toString())),
                       backgroundColor: AppColors.error,
                     ),
                   );
                 }
               }
             },
-            child: const ErrorText('Lämna'),
+            child: ErrorText(l10n.messagingLeave),
           ),
         ],
       ),
@@ -362,23 +377,24 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   }
 
   void _deleteConversation(Conversation conversation) {
+    final l10n = context.l10n;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Radera konversation'),
-        content: const Text(
-            'Är du säker på att du vill radera denna konversation? Alla meddelanden kommer att försvinna.'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.messagingDeleteConversation),
+        content: Text(l10n.messagingDeleteConversationConfirm),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Avbryt'),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.commonCancel),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
               await _performConversationDeletion(conversation);
             },
-            child: const ErrorText('Radera'),
+            child: ErrorText(l10n.commonDelete),
           ),
         ],
       ),
@@ -396,6 +412,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
 
   Future<void> _navigateToUserProfile(
       BuildContext context, Conversation conversation) async {
+    final l10n = context.l10n;
+
     // For direct conversations, get the other participant's profile
     try {
       // Get the other participant's ID (not the current user)
@@ -424,7 +442,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Kunde inte visa profil: $e'),
+            content: Text(l10n.messagingCouldNotShowProfile(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -433,7 +451,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   }
 
   Future<void> _performConversationDeletion(Conversation conversation) async {
+    final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
+
     try {
       // Get messaging service from DI for conversation deletion
       final messagingService = ServiceLocator.get<MessagingService>();
@@ -447,7 +467,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('Konversation "${conversation.title}" raderad'),
+            content: Text(
+                l10n.messagingConversationDeleted(conversation.title ?? '')),
             backgroundColor: AppColors.success,
           ),
         );
@@ -456,7 +477,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('Kunde inte radera konversation: $e'),
+            content:
+                Text(l10n.messagingCouldNotDeleteConversation(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );

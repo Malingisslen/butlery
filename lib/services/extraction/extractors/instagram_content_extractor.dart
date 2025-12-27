@@ -1,6 +1,5 @@
 // lib/services/extraction/extractors/instagram_content_extractor.dart
 
-import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -102,8 +101,6 @@ class InstagramContentExtractor {
   Future<String?> extract(InAppWebViewController controller) async {
     if (isDisposed()) return null;
 
-    debugPrint('📸 Extracting from Instagram...');
-
     // Step 1: Click "more" button to expand text
     await _expandContent(controller);
 
@@ -116,7 +113,7 @@ class InstagramContentExtractor {
   /// Click "mer"/"more" button to expand Instagram caption
   Future<void> _expandContent(InAppWebViewController controller) async {
     try {
-      final clickResult = await controller.evaluateJavascript(
+      await controller.evaluateJavascript(
         source: '''
         (function() {
           try {
@@ -151,10 +148,9 @@ class InstagramContentExtractor {
         ''',
       );
 
-      debugPrint('Click result: $clickResult');
       await Future.delayed(AppDimensions.animationDurationSlow);
-    } catch (e) {
-      debugPrint('⚠️ Could not click more button: $e');
+    } catch (_) {
+      // Continue even if clicking more button fails
     }
   }
 
@@ -239,15 +235,10 @@ class InstagramContentExtractor {
           result.toString().isNotEmpty &&
           result.toString() != 'null') {
         final extractedText = result.toString();
-        debugPrint('✅ Instagram text found!');
-        debugPrint('📝 Extracted text (${extractedText.length} characters):');
-        debugPrint(
-            '${extractedText.substring(0, extractedText.length > 200 ? 200 : extractedText.length)}...');
-
         return extractedText;
       }
-    } catch (e) {
-      debugPrint('⚠️ Instagram extraction error: $e');
+    } catch (_) {
+      // Continue with null result on error
     }
 
     return null;
@@ -322,8 +313,8 @@ class InstagramContentExtractor {
       if (result != null && result.toString() != 'null') {
         return result.toString();
       }
-    } catch (e) {
-      debugPrint('Could not extract thumbnail: $e');
+    } catch (_) {
+      // Continue with null result on error
     }
     return null;
   }

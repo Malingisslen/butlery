@@ -20,6 +20,8 @@ import 'package:butlery/core/di/modules/messaging_module.dart';
 import 'package:butlery/core/di/modules/collaboration_module.dart';
 import 'package:butlery/core/di/modules/performance_module.dart';
 import 'package:butlery/core/di/modules/ui_module.dart';
+import 'package:butlery/core/di/modules/search_module.dart';
+import 'package:butlery/core/di/modules/tagging_module.dart';
 
 // Application provider
 import 'package:butlery/core/providers/application_provider.dart';
@@ -35,6 +37,12 @@ import 'package:butlery/core/observers/session_activity_observer.dart';
 // Session timeout
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/widgets/common/dialogs/session_timeout_warning_dialog.dart';
+
+// Theme service
+import 'package:butlery/services/theme_service.dart';
+
+// Material You dynamic color
+import 'package:dynamic_color/dynamic_color.dart';
 
 // Memory pressure handling
 import 'package:butlery/services/performance/intelligent_cache_manager.dart';
@@ -92,7 +100,9 @@ Future<void> main() async {
             .setCrashlyticsCollectionEnabled(!kDebugMode),
       if (!kDebugMode)
         FirebaseAppCheck.instance.activate(
-          providerWeb: ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
+          providerWeb: ReCaptchaV3Provider(
+            dotenv.env['RECAPTCHA_SITE_KEY'] ?? '',
+          ),
           providerAndroid: const AndroidPlayIntegrityProvider(),
           providerApple: const AppleDeviceCheckProvider(),
         ),
@@ -148,6 +158,8 @@ Future<void> _initializeModularSystem() async {
   // Create DI modules in dependency order
   final modules = [
     CoreModule(),
+    SearchModule(), // Search provider (Algolia/Firestore fallback)
+    TaggingModule(), // Automatic recipe tagging system
     ContentModule(),
     SocialModule(),
     MessagingModule(),
@@ -253,6 +265,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   SessionActivityObserver? _sessionActivityObserver;
   DateTime? _sessionStartTime;
   final LocaleProvider _localeProvider = LocaleProvider();
+  ThemeService? _themeService;
 
   @override
   void initState() {
@@ -262,6 +275,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     _trackAppOpened();
     _initializeSessionTimeout();
     _initializeLocale();
+    _initializeTheme();
   }
 
   /// Initialize locale provider
@@ -275,6 +289,32 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
 
   /// Handle locale change
   void _onLocaleChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  /// Initialize theme service
+  Future<void> _initializeTheme() async {
+    try {
+      final bootstrap = ApplicationBootstrap();
+      await bootstrap.initialized;
+
+      if (bootstrap.isInitialized) {
+        _themeService = bootstrap.container.get<ThemeService>();
+        await _themeService?.initialize();
+        _themeService?.addListener(_onThemeChanged);
+        if (mounted) {
+          setState(() {});
+        }
+      }
+    } catch (e) {
+      // Theme initialization failed - use default light theme
+    }
+  }
+
+  /// Handle theme change
+  void _onThemeChanged() {
     if (mounted) {
       setState(() {});
     }
@@ -335,6 +375,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _localeProvider.removeListener(_onLocaleChanged);
+    _themeService?.removeListener(_onThemeChanged);
     _sessionTimeoutService?.dispose();
     super.dispose();
   }
@@ -524,34 +565,42 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       onPanDown: (_) => _sessionTimeoutService?.recordActivity(),
       onScaleStart: (_) => _sessionTimeoutService?.recordActivity(),
       behavior: HitTestBehavior.translucent,
-      child: MaterialApp(
-        navigatorKey: _navigatorKey,
-        navigatorObservers: observers,
-        title: 'Butlery',
-        theme: AppTheme.lightTheme,
-        debugShowCheckedModeBanner: false,
-        // Localization configuration
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: AppLocalizations.supportedLocales,
-        locale: _localeProvider.locale,
-        home: const InitializationWrapper(),
-        onUnknownRoute: AppRouter.handleUnknownRoute,
-        onGenerateRoute: AppRouter.generateRoute,
-        // Universal fix for Android nav bar overlay
-        // Wraps ALL views with SafeArea to prevent content from being hidden
-        builder: (context, child) {
-          if (child == null) return const SizedBox.shrink();
-          return SafeArea(
-            top: false, // Let AppBar handle top
-            bottom: true, // Always protect bottom from system nav bar
-            left: false,
-            right: false,
-            child: child,
+      // Material You dynamic color support (Android 12+)
+      // Falls back to brand colors on older devices and iOS
+      child: DynamicColorBuilder(
+        builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+          return MaterialApp(
+            navigatorKey: _navigatorKey,
+            navigatorObservers: observers,
+            title: 'Butlery',
+            theme: AppTheme.dynamicLightTheme(lightDynamic),
+            darkTheme: AppTheme.dynamicDarkTheme(darkDynamic),
+            themeMode: _themeService?.themeMode ?? ThemeMode.system,
+            debugShowCheckedModeBanner: false,
+            // Localization configuration
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: _localeProvider.locale,
+            home: const InitializationWrapper(),
+            onUnknownRoute: AppRouter.handleUnknownRoute,
+            onGenerateRoute: AppRouter.generateRoute,
+            // Universal fix for Android nav bar overlay
+            // Wraps ALL views with SafeArea to prevent content from being hidden
+            builder: (context, child) {
+              if (child == null) return const SizedBox.shrink();
+              return SafeArea(
+                top: false, // Let AppBar handle top
+                bottom: true, // Always protect bottom from system nav bar
+                left: false,
+                right: false,
+                child: child,
+              );
+            },
           );
         },
       ),

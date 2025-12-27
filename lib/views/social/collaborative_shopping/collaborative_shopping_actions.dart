@@ -264,7 +264,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Dela lista',
             style: AppTextStyles.headlineSmall,
           ),

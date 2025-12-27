@@ -9,6 +9,8 @@ import 'package:butlery/repositories/firebase/base_dismissal_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/user_counters.dart';
+import 'package:butlery/models/shared_content_member.dart';
 
 abstract class BaseSharedContentRepository<T>
     extends BaseFirebaseRepository<T> {
@@ -29,6 +31,70 @@ abstract class BaseSharedContentRepository<T>
   BaseViewRepository get viewRepository;
   BaseEngagementRepository get engagementRepository;
   BaseDismissalRepository get dismissalRepository;
+
+  /// Counter type key for this content (e.g., 'shared_recipes', 'shared_menus')
+  String get counterTypeKey;
+
+  /// Get reference to user counters document
+  DocumentReference<Map<String, dynamic>> _getUserCountersRef(String userId) {
+    return firestore
+        .collection('users')
+        .doc(userId)
+        .collection('counters')
+        .doc('shared_content');
+  }
+
+  /// Increment unread counter for a user (call when sharing content)
+  Future<void> incrementUnreadCounter(String userId) async {
+    try {
+      final counterField = UserCounterIncrements.fieldForType(counterTypeKey);
+      await _getUserCountersRef(userId).set({
+        counterField: FieldValue.increment(1),
+        'totalSharedContent': FieldValue.increment(1),
+        'lastUpdated': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      // Log but don't fail - counter is best-effort optimization
+      AppLogger.warning('Failed to increment counter for $userId: $e');
+    }
+  }
+
+  /// Decrement unread counter for a user (call when viewing content)
+  Future<void> decrementUnreadCounter(String userId) async {
+    try {
+      final counterField = UserCounterIncrements.fieldForType(counterTypeKey);
+      // Use a transaction to ensure we don't go below 0
+      await firestore.runTransaction((transaction) async {
+        final counterDoc = await transaction.get(_getUserCountersRef(userId));
+        if (counterDoc.exists) {
+          final currentCount = counterDoc.data()?[counterField] as int? ?? 0;
+          if (currentCount > 0) {
+            transaction.update(_getUserCountersRef(userId), {
+              counterField: FieldValue.increment(-1),
+              'lastUpdated': FieldValue.serverTimestamp(),
+            });
+          }
+        }
+      });
+    } catch (e) {
+      // Log but don't fail - counter is best-effort optimization
+      AppLogger.warning('Failed to decrement counter for $userId: $e');
+    }
+  }
+
+  /// Get unread count from denormalized counter (fast path)
+  Future<int> getUnreadCountFromCounter(String userId) async {
+    try {
+      final counterDoc = await _getUserCountersRef(userId).get();
+      if (!counterDoc.exists) return 0;
+
+      final counterField = UserCounterIncrements.fieldForType(counterTypeKey);
+      return counterDoc.data()?[counterField] as int? ?? 0;
+    } catch (e) {
+      AppLogger.warning('Failed to get counter for $userId: $e');
+      return 0;
+    }
+  }
 
   Future<String> createSharedContent(T entity) async {
     final uid = requireCurrentUserId();
@@ -69,6 +135,8 @@ abstract class BaseSharedContentRepository<T>
 
   Future<void> markAsViewed(String contentId, String userId) async {
     await _updateUserStatus(contentId, userId, 'viewedByUserIds', 'viewed');
+    // Decrement unread counter when content is viewed
+    await decrementUnreadCounter(userId);
   }
 
   Future<void> markAsDismissed(String contentId, String userId) async {
@@ -136,6 +204,27 @@ abstract class BaseSharedContentRepository<T>
     }
 
     try {
+      // Fast path: use denormalized counter
+      final count = await getUnreadCountFromCounter(userId);
+      AppLogger.info(
+          '📊 Unread shared $contentTypeName count for user $userId: $count');
+      return count;
+    } catch (e) {
+      AppLogger.error('Failed to get unread count for user $userId: $e');
+      return 0;
+    }
+  }
+
+  /// Recalculate and sync counter from actual data (use for repair/migration)
+  Future<int> recalculateUnreadCount(String userId) async {
+    final uid = requireCurrentUserId();
+
+    if (userId != uid) {
+      throw PermissionDeniedException(
+          'Cannot recalculate count for another user');
+    }
+
+    try {
       final sharedContent = await getSharedContentForUserViaSubcollection(
         userId,
         limit: 100,
@@ -147,11 +236,18 @@ abstract class BaseSharedContentRepository<T>
               !isViewedByUser(content, userId))
           .length;
 
+      // Sync counter with actual value
+      final counterField = UserCounterIncrements.fieldForType(counterTypeKey);
+      await _getUserCountersRef(userId).set({
+        counterField: unreadCount,
+        'lastUpdated': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
       AppLogger.info(
-          '📊 Unread shared $contentTypeName count for user $userId: $unreadCount');
+          '📊 Recalculated unread $contentTypeName count for user $userId: $unreadCount');
       return unreadCount;
     } catch (e) {
-      AppLogger.error('Failed to get unread count for user $userId: $e');
+      AppLogger.error('Failed to recalculate count for user $userId: $e');
       return 0;
     }
   }
@@ -244,25 +340,60 @@ abstract class BaseSharedContentRepository<T>
     String contentId,
     String userId, {
     required String addedBy,
+    String? displayName,
+    String? avatarUrl,
     String role = 'viewer',
   }) async {
     try {
+      final member = SharedContentMember(
+        userId: userId,
+        // V1-QP-001: Use provided displayName or fallback for legacy callers
+        displayName: displayName ?? 'Användare',
+        avatarUrl: avatarUrl,
+        addedAt: DateTime.now(),
+        addedBy: addedBy,
+        role: role,
+      );
+
       await getCollectionRef()
           .doc(contentId)
           .collection('members')
           .doc(userId)
-          .set({
-        'userId': userId,
-        'addedAt': DateTime.now(),
-        'addedBy': addedBy,
-        'role': role,
-      });
+          .set(member.toFirestore());
+
+      // Increment unread counter for the new member
+      await incrementUnreadCounter(userId);
 
       AppLogger.success(
           '✅ Added user $userId as member to $contentTypeName $contentId');
     } catch (e) {
       AppLogger.error('Failed to add member to $contentTypeName: $e');
       throw RepositoryException('Failed to add member: $e');
+    }
+  }
+
+  /// Get members with denormalized display info (avoids N+1 user lookups)
+  Future<List<SharedContentMember>> getMembersWithInfo(
+    String contentId, {
+    int? limit,
+  }) async {
+    try {
+      var query = getCollectionRef()
+          .doc(contentId)
+          .collection('members')
+          .orderBy('addedAt', descending: false);
+
+      if (limit != null) {
+        query = query.limit(limit);
+      }
+
+      final snapshot = await query.get();
+      return snapshot.docs
+          .map((doc) => SharedContentMember.fromFirestore(doc.data()))
+          .toList();
+    } catch (e) {
+      AppLogger.error('Failed to get members with info: $e');
+      return [];
     }
   }
 

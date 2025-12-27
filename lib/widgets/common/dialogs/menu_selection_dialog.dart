@@ -111,7 +111,7 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Avbryt', style: AppTextStyles.labelLarge),
+          child: Text('Avbryt', style: AppTextStyles.labelLarge),
         ),
       ],
     );
@@ -120,12 +120,12 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
   Widget _buildContent() {
     // Loading state
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: AppDimensions.spacingM),
+            const CircularProgressIndicator(),
+            const SizedBox(height: AppDimensions.spacingM),
             Text(
               'Laddar menyer...',
               style: AppTextStyles.bodyMedium,

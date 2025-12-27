@@ -3,6 +3,7 @@ import 'package:butlery/services/import/file_import_strategy.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -166,12 +167,12 @@ class _FileImportViewState extends State<FileImportView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Importera recept från CSV eller Excel',
                             style: AppTextStyles.headlineSmall,
                           ),
                           const SizedBox(height: AppDimensions.spacingM),
-                          const Text(
+                          Text(
                             'Din fil bör innehålla kolumner för:',
                             style: AppTextStyles.bodyMedium,
                           ),
@@ -182,7 +183,7 @@ class _FileImportViewState extends State<FileImportView> {
                           _buildRequirement(
                               'Instruktioner (instructions/instruktioner)'),
                           const SizedBox(height: AppDimensions.spacingS),
-                          const Text(
+                          Text(
                             'Valfria kolumner:',
                             style: AppTextStyles.bodyMedium,
                           ),
@@ -286,7 +287,7 @@ class _FileImportViewState extends State<FileImportView> {
           left: AppDimensions.spacingM, bottom: AppDimensions.spacingXs),
       child: Row(
         children: [
-          const Icon(Icons.check, size: 16, color: Colors.green),
+          const Icon(Icons.check, size: 16, color: AppColors.success),
           const SizedBox(width: AppDimensions.spacingS),
           Text(text, style: AppTextStyles.bodySmall),
         ],

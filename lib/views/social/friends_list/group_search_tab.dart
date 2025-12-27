@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
 
@@ -41,7 +42,10 @@ class GroupSearchTab {
           const SizedBox(height: AppDimensions.spacingS),
       itemBuilder: (context, index) {
         final group = filteredGroups[index];
-        return GroupCard.build(context, group);
+        return AnimatedListItem(
+          index: index,
+          child: GroupCard.build(context, group),
+        );
       },
     );
   }

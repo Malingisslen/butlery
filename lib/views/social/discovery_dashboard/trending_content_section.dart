@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
 
 /// Trending Content Section - Shows trending recipes, menus, shopping lists
 class TrendingContentSection {
@@ -19,26 +20,13 @@ class TrendingContentSection {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const Icon(
-              Icons.trending_up,
-              color: AppColors.success,
-              size: AppDimensions.iconSizeM,
-            ),
-            const SizedBox(width: AppDimensions.spacingS),
-            Text(
-              'Populärt just nu',
-              style: AppTextStyles.titleMedium.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const Spacer(),
-            TextButton(
-              onPressed: () => _showAllTrending(context, viewModel),
-              child: const Text('Se allt'),
-            ),
-          ],
+        DiscoverySectionHeader(
+          title: 'Populärt just nu',
+          icon: Icons.trending_up,
+          iconColor: AppColors.success,
+          actionLabel: 'Se allt',
+          onActionPressed: () => _showAllTrending(context, viewModel),
+          count: trendingRecipes.length,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         if (trendingRecipes.isEmpty)
@@ -73,16 +61,16 @@ class TrendingContentSection {
               AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
-      child: const Center(
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.trending_up,
               color: AppColors.outline,
               size: AppDimensions.iconSizeL,
             ),
-            SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.spacingS),
             Text(
               'Laddar populärt innehåll...',
               style: AppTextStyles.bodyMedium,
@@ -184,7 +172,7 @@ class TrendingContentSection {
                           size: AppDimensions.iconSizeXs,
                           color: AppColors.success,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: AppDimensions.spacingXs),
                         Text(
                           '${(recipe.socialData?.memberPermissions?.length ?? 0) + 1}',
                           style: AppTextStyles.bodySmall.copyWith(
@@ -205,10 +193,8 @@ class TrendingContentSection {
                           ),
                           child: Text(
                             'Populär',
-                            style: AppTextStyles.bodySmall.copyWith(
+                            style: AppTextStyles.labelSmall.copyWith(
                               color: AppColors.success,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),

@@ -11,20 +11,31 @@ enum GroupEventType {
 }
 
 /// Event bus for group changes.
+/// Uses lazy initialization to support hot restart and proper lifecycle management.
 class GroupEventBus {
-  static final StreamController<GroupEventType> _controller =
-      StreamController<GroupEventType>.broadcast();
+  static StreamController<GroupEventType>? _controller;
 
-  static Stream<GroupEventType> get events => _controller.stream;
-  static Stream<GroupEventType> get stream => _controller.stream;
+  static StreamController<GroupEventType> get _safeController {
+    _controller ??= StreamController<GroupEventType>.broadcast();
+    return _controller!;
+  }
 
-  static void groupCreated() => _controller.add(GroupEventType.created);
-  static void groupUpdated() => _controller.add(GroupEventType.updated);
-  static void groupDeleted() => _controller.add(GroupEventType.deleted);
-  static void memberAdded() => _controller.add(GroupEventType.memberAdded);
-  static void memberRemoved() => _controller.add(GroupEventType.memberRemoved);
+  static Stream<GroupEventType> get events => _safeController.stream;
+  static Stream<GroupEventType> get stream => _safeController.stream;
 
-  static void add(GroupEventType eventType) => _controller.add(eventType);
+  static void groupCreated() => _safeController.add(GroupEventType.created);
+  static void groupUpdated() => _safeController.add(GroupEventType.updated);
+  static void groupDeleted() => _safeController.add(GroupEventType.deleted);
+  static void memberAdded() => _safeController.add(GroupEventType.memberAdded);
+  static void memberRemoved() =>
+      _safeController.add(GroupEventType.memberRemoved);
 
-  static void dispose() => _controller.close();
+  static void add(GroupEventType eventType) => _safeController.add(eventType);
+
+  /// Dispose the event bus. Safe to call multiple times.
+  /// After disposal, the bus will be recreated on next use.
+  static void dispose() {
+    _controller?.close();
+    _controller = null;
+  }
 }

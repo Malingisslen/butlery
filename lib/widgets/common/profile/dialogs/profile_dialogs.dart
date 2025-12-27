@@ -2,28 +2,31 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Dialog builders for profile actions.
 /// Provides static methods for showing various confirmation and input dialogs.
 class ProfileDialogs {
   /// Show logout confirmation dialog.
   static Future<bool?> showLogoutDialog(BuildContext context) {
+    final l10n = context.l10n;
+
     return showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logga ut'),
-        content: const Text('Är du säker på att du vill logga ut?'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.profileLogout),
+        content: Text(l10n.profileLogoutConfirm),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,
             ),
-            child: const Text('Logga ut'),
+            child: Text(l10n.profileLogout),
           ),
         ],
       ),
@@ -32,31 +35,33 @@ class ProfileDialogs {
 
   /// Show delete account confirmation dialog.
   static Future<bool?> showDeleteAccountDialog(BuildContext context) {
+    final l10n = context.l10n;
+
     return showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Radera konto permanent'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.profileDeleteAccount),
         content: Builder(
-          builder: (context) => Column(
+          builder: (builderContext) => Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'VARNING: Detta kommer att:',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                l10n.profileDeleteWarningTitle,
+                style: Theme.of(builderContext).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
               ),
               const SizedBox(height: 8),
-              const Text('• Ta bort alla dina recept'),
-              const Text('• Ta bort alla dina menyer'),
-              const Text('• Ta bort alla dina shoppinglistor'),
-              const Text('• Ta bort alla vänner och meddelanden'),
-              const Text('• Ta bort all delad innehåll'),
+              Text('• ${l10n.profileDeleteWarningRecipes}'),
+              Text('• ${l10n.profileDeleteWarningMenus}'),
+              Text('• ${l10n.profileDeleteWarningShoppingLists}'),
+              Text('• ${l10n.profileDeleteWarningFriends}'),
+              Text('• ${l10n.profileDeleteWarningSharedContent}'),
               const SizedBox(height: 16),
               Text(
-                'Denna åtgärd kan INTE ångras!',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                l10n.profileDeleteIrreversible,
+                style: Theme.of(builderContext).textTheme.bodyMedium?.copyWith(
                       color: AppColors.error,
                       fontWeight: FontWeight.bold,
                     ),
@@ -66,15 +71,15 @@ class ProfileDialogs {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,
             ),
-            child: const Text('Jag förstår, radera mitt konto'),
+            child: Text(l10n.profileDeleteConfirmButton),
           ),
         ],
       ),
@@ -83,37 +88,39 @@ class ProfileDialogs {
 
   /// Show password re-authentication dialog.
   static Future<String?> showPasswordDialog(BuildContext context) {
+    final l10n = context.l10n;
     final controller = TextEditingController();
+
     return showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Bekräfta med lösenord'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.profileConfirmWithPassword),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Ange ditt lösenord för att bekräfta raderingen:'),
+            Text(l10n.profileEnterPasswordToConfirm),
             const SizedBox(height: 16),
             TextField(
               controller: controller,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Lösenord',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.profilePassword,
+                border: const OutlineInputBorder(),
               ),
             ),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Avbryt'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, controller.text),
+            onPressed: () => Navigator.pop(dialogContext, controller.text),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,
             ),
-            child: const Text('Bekräfta'),
+            child: Text(l10n.profileConfirm),
           ),
         ],
       ),
@@ -122,15 +129,17 @@ class ProfileDialogs {
 
   /// Show error dialog.
   static void showErrorDialog(BuildContext context, String error) {
+    final l10n = context.l10n;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Fel'),
-        content: Text('Kunde inte radera konto: $error'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.profileError),
+        content: Text(l10n.profileCouldNotDeleteAccount(error)),
         actions: [
           FilledButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.commonOk),
           ),
         ],
       ),

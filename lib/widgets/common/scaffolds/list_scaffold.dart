@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 
 /// List scaffold consolidating patterns from 22+ files
@@ -47,7 +48,7 @@ class ListScaffold<T> extends StatelessWidget {
         emptyMessage: emptyMessage ?? AppStrings.noItemsFound,
         emptyIcon: emptyIcon,
         onAction: onAdd,
-        actionText: onAdd != null ? AppStrings.add : null,
+        actionText: onAdd != null ? context.l10n.commonAdd : null,
         showBackButton: showBackButton,
         actions: actions,
       );

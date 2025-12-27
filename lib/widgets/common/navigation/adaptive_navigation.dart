@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 
 /// Navigation item model for adaptive navigation
 class AdaptiveNavigationItem {
@@ -13,13 +14,20 @@ class AdaptiveNavigationItem {
   final String route;
   final int? badgeCount;
 
+  /// Semantic label for screen readers. Defaults to label if not provided.
+  final String? semanticLabel;
+
   const AdaptiveNavigationItem({
     required this.label,
     required this.icon,
     required this.activeIcon,
     required this.route,
     this.badgeCount,
+    this.semanticLabel,
   });
+
+  /// Get the semantic label, falling back to label if not set.
+  String get accessibleLabel => semanticLabel ?? label;
 }
 
 /// Adaptive navigation that switches between BottomNavigationBar, NavigationRail, and Drawer
@@ -140,6 +148,7 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
           icon: _buildBadgedIcon(item.icon, item.badgeCount),
           activeIcon: _buildBadgedIcon(item.activeIcon, item.badgeCount),
           label: item.label,
+          tooltip: item.accessibleLabel,
         );
       }).toList(),
     );
@@ -161,8 +170,8 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
       labelType:
           extended ? NavigationRailLabelType.none : NavigationRailLabelType.all,
       leading: extended
-          ? const Padding(
-              padding: EdgeInsets.only(
+          ? Padding(
+              padding: const EdgeInsets.only(
                 top: AppDimensions.spacingLg,
                 bottom: AppDimensions.spacingMd,
               ),
@@ -233,38 +242,43 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
     this.floatingActionButton,
   });
 
-  static const List<AdaptiveNavigationItem> _navigationItems = [
-    AdaptiveNavigationItem(
-      label: 'Mina recept',
-      icon: Icons.book_outlined,
-      activeIcon: Icons.book,
-      route: '/',
-    ),
-    AdaptiveNavigationItem(
-      label: 'Lägg till',
-      icon: Icons.add_outlined,
-      activeIcon: Icons.add,
-      route: '/laggTill',
-    ),
-    AdaptiveNavigationItem(
-      label: 'Veckomeny',
-      icon: Icons.calendar_today_outlined,
-      activeIcon: Icons.calendar_today,
-      route: '/veckomeny',
-    ),
-    AdaptiveNavigationItem(
-      label: 'Inköpslista',
-      icon: Icons.shopping_cart_outlined,
-      activeIcon: Icons.shopping_cart,
-      route: '/inkopslista',
-    ),
-    AdaptiveNavigationItem(
-      label: 'Upptäck',
-      icon: Icons.explore_outlined,
-      activeIcon: Icons.explore,
-      route: '/discovery',
-    ),
-  ];
+  static List<AdaptiveNavigationItem> get _navigationItems => [
+        AdaptiveNavigationItem(
+          label: 'Mina recept',
+          icon: AdaptiveIcons.bookOutlined,
+          activeIcon: AdaptiveIcons.book,
+          route: '/',
+          semanticLabel: 'Navigera till mina recept',
+        ),
+        AdaptiveNavigationItem(
+          label: 'Lägg till',
+          icon: AdaptiveIcons.addOutlined,
+          activeIcon: AdaptiveIcons.add,
+          route: '/laggTill',
+          semanticLabel: 'Lägg till nytt recept',
+        ),
+        AdaptiveNavigationItem(
+          label: 'Veckomeny',
+          icon: AdaptiveIcons.calendarOutlined,
+          activeIcon: AdaptiveIcons.calendar,
+          route: '/veckomeny',
+          semanticLabel: 'Navigera till veckomeny',
+        ),
+        AdaptiveNavigationItem(
+          label: 'Inköpslista',
+          icon: AdaptiveIcons.cartOutlined,
+          activeIcon: AdaptiveIcons.cart,
+          route: '/inkopslista',
+          semanticLabel: 'Navigera till inköpslista',
+        ),
+        AdaptiveNavigationItem(
+          label: 'Upptäck',
+          icon: AdaptiveIcons.exploreOutlined,
+          activeIcon: AdaptiveIcons.explore,
+          route: '/discovery',
+          semanticLabel: 'Navigera till upptäck',
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -354,22 +368,28 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
             final item = entry.value;
             final isSelected = index == currentIndex;
 
-            return ListTile(
-              leading: _buildBadgedIcon(
-                isSelected ? item.activeIcon : item.icon,
-                item.badgeCount,
-                context,
-              ),
-              title: Text(item.label),
+            return Semantics(
+              label: item.accessibleLabel,
+              button: true,
+              enabled: true,
               selected: isSelected,
-              onTap: () {
-                Navigator.pop(context); // Close drawer
-                if (onNavigationChanged != null) {
-                  onNavigationChanged!(index);
-                } else {
-                  Navigator.pushReplacementNamed(context, item.route);
-                }
-              },
+              child: ListTile(
+                leading: _buildBadgedIcon(
+                  isSelected ? item.activeIcon : item.icon,
+                  item.badgeCount,
+                  context,
+                ),
+                title: Text(item.label),
+                selected: isSelected,
+                onTap: () {
+                  Navigator.pop(context); // Close drawer
+                  if (onNavigationChanged != null) {
+                    onNavigationChanged!(index);
+                  } else {
+                    Navigator.pushReplacementNamed(context, item.route);
+                  }
+                },
+              ),
             );
           }),
         ],

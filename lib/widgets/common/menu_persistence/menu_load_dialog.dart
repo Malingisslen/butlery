@@ -99,7 +99,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
-                const Text(
+                Text(
                   'Sparade menyer',
                   style: AppTextStyles.headlineSmall,
                 ),
@@ -177,7 +177,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           menu.name ?? 'Namnlös meny',
           style: AppTextStyles.titleMedium,
         ),
-        subtitle: const Text(
+        subtitle: Text(
           'Sparad tidigare',
           style: AppTextStyles.bodySmall,
         ),

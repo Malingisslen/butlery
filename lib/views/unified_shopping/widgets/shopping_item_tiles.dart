@@ -27,129 +27,150 @@ class ShoppingItemTiles {
             width: AppDimensions.borderWidthStandard,
           ),
         ),
-        child: Material(
-          color: AppColors.transparent,
-          child: InkWell(
-            onTap: () => onItemTap(item),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-            child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.paddingM),
-              child: Row(
-                children: [
-                  // Checkbox
-                  Container(
-                    width: AppDimensions.iconSizeL,
-                    height: AppDimensions.iconSizeL,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
+        child: Semantics(
+          label: isCompleted
+              ? '${item.displayText}, avbockad, tryck för att bocka av'
+              : '${item.displayText}, tryck för att bocka av',
+          button: true,
+          enabled: true,
+          child: Material(
+            color: AppColors.transparent,
+            child: InkWell(
+              onTap: () => onItemTap(item),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              child: Padding(
+                padding: const EdgeInsets.all(AppDimensions.paddingM),
+                child: Row(
+                  children: [
+                    // Checkbox
+                    Container(
+                      width: AppDimensions.iconSizeL,
+                      height: AppDimensions.iconSizeL,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isCompleted
+                              ? AppColors.primaryBlue
+                              : AppColors.textMedium.withValues(alpha: 0.6),
+                          width: AppDimensions.borderWidthThick,
+                        ),
                         color: isCompleted
                             ? AppColors.primaryBlue
-                            : AppColors.textMedium.withValues(alpha: 0.6),
-                        width: AppDimensions.borderWidthThick,
+                            : AppColors.transparent,
                       ),
-                      color: isCompleted
-                          ? AppColors.primaryBlue
-                          : AppColors.transparent,
+                      child: isCompleted
+                          ? const Icon(
+                              Icons.check,
+                              size: AppDimensions.iconSizeS,
+                              color: AppColors.cardWhite,
+                            )
+                          : null,
                     ),
-                    child: isCompleted
-                        ? const Icon(
-                            Icons.check,
-                            size: AppDimensions.iconSizeS,
-                            color: AppColors.cardWhite,
-                          )
-                        : null,
-                  ),
 
-                  const SizedBox(width: AppDimensions.paddingM),
+                    const SizedBox(width: AppDimensions.paddingM),
 
-                  // Item details
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.displayText,
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: isCompleted
-                                ? AppColors.textMedium
-                                : AppColors.textDark,
-                            decoration: isCompleted
-                                ? TextDecoration.lineThrough
-                                : TextDecoration.none,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (item.note?.isNotEmpty == true) ...[
-                          const SizedBox(height: AppDimensions.spacingXs),
+                    // Item details
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
-                            item.note!,
-                            style: AppTextStyles.bodySmall.copyWith(
+                            item.displayText,
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              fontWeight: FontWeight.w500,
                               color: isCompleted
-                                  ? AppColors.textMedium.withValues(alpha: 0.8)
-                                  : AppColors.textMedium,
+                                  ? AppColors.textMedium
+                                  : AppColors.textDark,
                               decoration: isCompleted
                                   ? TextDecoration.lineThrough
                                   : TextDecoration.none,
                             ),
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
+                          if (item.note?.isNotEmpty == true) ...[
+                            const SizedBox(height: AppDimensions.spacingXs),
+                            Text(
+                              item.note!,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: isCompleted
+                                    ? AppColors.textMedium
+                                        .withValues(alpha: 0.8)
+                                    : AppColors.textMedium,
+                                decoration: isCompleted
+                                    ? TextDecoration.lineThrough
+                                    : TextDecoration.none,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ],
+                      ),
+                    ),
+
+                    // Priority indicator
+                    if (item.priority > 3)
+                      Container(
+                        width: 8,
+                        height: 8,
+                        margin: const EdgeInsetsDirectional.only(start: 8),
+                        decoration: BoxDecoration(
+                          color: _getPriorityColor(item.priority),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+
+                    // Action buttons
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Edit button
+                        Semantics(
+                          label: 'Redigera ${item.name}',
+                          button: true,
+                          enabled: true,
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.edit,
+                              size: AppDimensions.iconSizeS,
+                              color: AppColors.textMedium,
+                            ),
+                            onPressed: () => onEditItem(item),
+                            tooltip: 'Redigera',
+                            padding:
+                                const EdgeInsets.all(AppDimensions.spacingM),
+                            constraints: const BoxConstraints(
+                                minWidth: AppDimensions.minTouchTarget,
+                                minHeight: AppDimensions.minTouchTarget),
+                          ),
+                        ),
+
+                        // Delete button
+                        Semantics(
+                          label: 'Ta bort ${item.name}',
+                          button: true,
+                          enabled: true,
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.delete,
+                              size: AppDimensions.iconSizeS,
+                              color:
+                                  AppColors.textMedium.withValues(alpha: 0.7),
+                            ),
+                            onPressed: () => onDeleteItem(item),
+                            tooltip: 'Ta bort',
+                            padding:
+                                const EdgeInsets.all(AppDimensions.spacingM),
+                            constraints: const BoxConstraints(
+                                minWidth: AppDimensions.minTouchTarget,
+                                minHeight: AppDimensions.minTouchTarget),
+                          ),
+                        ),
                       ],
                     ),
-                  ),
-
-                  // Priority indicator
-                  if (item.priority > 3)
-                    Container(
-                      width: 8,
-                      height: 8,
-                      margin: const EdgeInsets.only(left: 8),
-                      decoration: BoxDecoration(
-                        color: _getPriorityColor(item.priority),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-
-                  // Action buttons
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Edit button
-                      IconButton(
-                        icon: const Icon(
-                          Icons.edit,
-                          size: AppDimensions.iconSizeS,
-                          color: AppColors.textMedium,
-                        ),
-                        onPressed: () => onEditItem(item),
-                        tooltip: 'Redigera',
-                        padding: const EdgeInsets.all(AppDimensions.spacingM),
-                        constraints: const BoxConstraints(
-                            minWidth: AppDimensions.minTouchTarget,
-                            minHeight: AppDimensions.minTouchTarget),
-                      ),
-
-                      // Delete button
-                      IconButton(
-                        icon: Icon(
-                          Icons.delete,
-                          size: AppDimensions.iconSizeS,
-                          color: AppColors.textMedium.withValues(alpha: 0.7),
-                        ),
-                        onPressed: () => onDeleteItem(item),
-                        tooltip: 'Ta bort',
-                        padding: const EdgeInsets.all(AppDimensions.spacingM),
-                        constraints: const BoxConstraints(
-                            minWidth: AppDimensions.minTouchTarget,
-                            minHeight: AppDimensions.minTouchTarget),
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

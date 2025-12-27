@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 
 /// Responsive grid that automatically adjusts column count based on screen width
 /// Usage:
@@ -52,6 +53,9 @@ class ResponsiveGrid extends StatelessWidget {
   /// Scroll physics
   final ScrollPhysics? physics;
 
+  /// Whether to animate items with staggered entrance animation
+  final bool animate;
+
   const ResponsiveGrid({
     super.key,
     required this.children,
@@ -65,6 +69,7 @@ class ResponsiveGrid extends StatelessWidget {
     this.padding,
     this.shrinkWrap = false,
     this.physics,
+    this.animate = false,
   });
 
   int _getColumnCount(BuildContext context) {
@@ -97,7 +102,13 @@ class ResponsiveGrid extends StatelessWidget {
         childAspectRatio: childAspectRatio ?? 1.0,
       ),
       itemCount: children.length,
-      itemBuilder: (context, index) => children[index],
+      itemBuilder: (context, index) {
+        final child = children[index];
+        if (animate) {
+          return AnimatedListItem(index: index, child: child);
+        }
+        return child;
+      },
     );
   }
 }
@@ -375,6 +386,9 @@ class ResponsiveListGrid<T> extends StatelessWidget {
   /// Aspect ratio for grid items (if null, items size based on content)
   final double? gridChildAspectRatio;
 
+  /// Whether to animate items with staggered entrance animation
+  final bool animate;
+
   const ResponsiveListGrid({
     super.key,
     required this.items,
@@ -387,6 +401,7 @@ class ResponsiveListGrid<T> extends StatelessWidget {
     this.shrinkWrap = false,
     this.physics,
     this.gridChildAspectRatio,
+    this.animate = false,
   });
 
   @override
@@ -403,6 +418,7 @@ class ResponsiveListGrid<T> extends StatelessWidget {
         shrinkWrap: shrinkWrap,
         physics: physics,
         childAspectRatio: gridChildAspectRatio,
+        animate: animate,
         children: items.map((item) => itemBuilder(context, item)).toList(),
       );
     } else {
@@ -415,7 +431,13 @@ class ResponsiveListGrid<T> extends StatelessWidget {
         separatorBuilder: (context, index) => SizedBox(
           height: spacing ?? AppDimensions.responsiveGridSpacing(context),
         ),
-        itemBuilder: (context, index) => itemBuilder(context, items[index]),
+        itemBuilder: (context, index) {
+          final child = itemBuilder(context, items[index]);
+          if (animate) {
+            return AnimatedListItem(index: index, child: child);
+          }
+          return child;
+        },
       );
     }
   }

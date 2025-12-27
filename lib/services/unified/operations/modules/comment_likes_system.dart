@@ -118,16 +118,14 @@ class CommentLikesSystem {
     }
   }
 
-  /// Get list of users who liked a comment
+  /// Get list of users who liked a comment (queries likes subcollection)
   static Future<List<String>> getCommentLikers({
     required String commentId,
+    int limit = 100,
   }) async {
     try {
-      final comment = await _commentsRepository.read(commentId);
-      if (comment == null) {
-        return [];
-      }
-      return List<String>.from(comment.likedByUserIds);
+      return await _commentsRepository.getCommentLikers(commentId,
+          limit: limit);
     } catch (e) {
       AppLogger.error('❌ Failed to get comment likers', e);
       return [];
@@ -209,15 +207,13 @@ class CommentLikesSystem {
 
       final totalLikes = comments.fold<int>(
         0,
-        (total, comment) => total + comment.likedByUserIds.length,
+        (total, comment) => total + comment.likeCount,
       );
 
-      final commentsWithLikes =
-          comments.where((c) => c.likedByUserIds.isNotEmpty).length;
+      final commentsWithLikes = comments.where((c) => c.likeCount > 0).length;
       final mostLikedComment = comments.isEmpty
           ? null
-          : comments.reduce((a, b) =>
-              a.likedByUserIds.length > b.likedByUserIds.length ? a : b);
+          : comments.reduce((a, b) => a.likeCount > b.likeCount ? a : b);
 
       return {
         'totalLikes': totalLikes,
@@ -228,7 +224,7 @@ class CommentLikesSystem {
         'likeEngagementRate':
             comments.isEmpty ? 0.0 : commentsWithLikes / comments.length,
         'mostLikedCommentId': mostLikedComment?.id,
-        'mostLikedCommentLikes': mostLikedComment?.likedByUserIds.length ?? 0,
+        'mostLikedCommentLikes': mostLikedComment?.likeCount ?? 0,
       };
     } catch (e) {
       AppLogger.error('❌ Failed to get recipe like statistics', e);
@@ -245,8 +241,7 @@ class CommentLikesSystem {
       final comments = await _commentsRepository.getCommentsForRecipe(recipeId);
 
       // Sort by like count descending
-      comments.sort(
-          (a, b) => b.likedByUserIds.length.compareTo(a.likedByUserIds.length));
+      comments.sort((a, b) => b.likeCount.compareTo(a.likeCount));
 
       return comments.take(limit).toList();
     } catch (e) {

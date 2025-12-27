@@ -2,21 +2,25 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/repositories/firebase/modules/conversation_participant_module.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Conversation query module for read-only operations.
+/// Supports both legacy arrayContains queries and new subcollection-based queries.
 class ConversationQueryModule {
   final FirebaseFirestore firestore;
   final String collectionName;
   final Conversation Function(DocumentSnapshot<Map<String, dynamic>>)
       fromFirestore;
   final void Function(String) startAutoHealer;
+  final ConversationParticipantModule? participantModule;
 
   ConversationQueryModule({
     required this.firestore,
     required this.collectionName,
     required this.fromFirestore,
     required this.startAutoHealer,
+    this.participantModule,
   });
 
   /// Stream all conversations for a user with real-time updates.
@@ -100,24 +104,22 @@ class ConversationQueryModule {
 
   /// Get count of conversations with unread messages.
   ///
-  /// Optimized (#040): Added limit to prevent unbounded fetches.
-  /// Future optimization: Add `unreadByUser` map field to conversation documents
-  /// for server-side filtering:
-  /// ```dart
-  /// final count = await firestore.collection(collectionName)
-  ///     .where('participantIds', arrayContains: userId)
-  ///     .where('unreadByUser.$userId', isEqualTo: true)
-  ///     .count()
-  ///     .get();
-  /// return count.count ?? 0;
-  /// ```
+  /// Uses inverse index (conversationMemberships) when available for O(1) lookup.
+  /// Falls back to legacy arrayContains query otherwise.
   Future<int> getUnreadConversationsCount(String userId) async {
     try {
+      // Try inverse index first (much faster for users with many conversations)
+      final memberships = await participantModule?.getUserMemberships(userId);
+      if (memberships != null && memberships.isNotEmpty) {
+        return memberships.where((m) => m.hasUnread).length;
+      }
+
+      // Fallback to legacy query
       final conversations = await firestore
           .collection(collectionName)
           .where('participantIds', arrayContains: userId)
-          .orderBy('updatedAt', descending: true) // Most recent first
-          .limit(500) // Limit to prevent unbounded fetches (#040)
+          .orderBy('updatedAt', descending: true)
+          .limit(500)
           .get();
 
       return conversations.docs
@@ -128,6 +130,19 @@ class ConversationQueryModule {
       AppLogger.error(
           'Failed to get unread conversations count for $userId', e);
       return 0;
+    }
+  }
+
+  /// Get conversation IDs for a user using inverse index.
+  /// Returns empty list if subcollection participants not enabled.
+  Future<List<String>> getConversationIdsViaInverseIndex(String userId) async {
+    try {
+      final memberships = await participantModule?.getUserMemberships(userId);
+      if (memberships == null) return [];
+      return memberships.map((m) => m.conversationId).toList();
+    } catch (e) {
+      AppLogger.error('Failed to get conversation IDs via inverse index', e);
+      return [];
     }
   }
 }

@@ -33,8 +33,9 @@ class ReactionStatistics {
   /// Map of reaction types to their counts
   final Map<ReactionType, int> reactionCounts;
 
-  /// List of user IDs who have reacted (for ownership checking)
-  final Set<String> reactedUserIds;
+  /// Count of unique users who have reacted (denormalized for performance)
+  /// Individual user reactions are tracked in subcollection: content_reactions/{contentId}/users/{userId}
+  final int userReactionCount;
 
   /// When these statistics were last updated
   final DateTime lastUpdated;
@@ -47,7 +48,7 @@ class ReactionStatistics {
 
   const ReactionStatistics({
     required this.reactionCounts,
-    required this.reactedUserIds,
+    this.userReactionCount = 0,
     required this.lastUpdated,
     required this.contentId,
     required this.contentType,
@@ -60,7 +61,7 @@ class ReactionStatistics {
   }) {
     return ReactionStatistics(
       reactionCounts: {},
-      reactedUserIds: {},
+      userReactionCount: 0,
       lastUpdated: DateTime.now(),
       contentId: contentId,
       contentType: contentType,
@@ -72,11 +73,11 @@ class ReactionStatistics {
     Map<ReactionType, int> counts, {
     required String contentId,
     required String contentType,
-    Set<String>? reactedUserIds,
+    int userReactionCount = 0,
   }) {
     return ReactionStatistics(
       reactionCounts: Map.from(counts),
-      reactedUserIds: reactedUserIds ?? {},
+      userReactionCount: userReactionCount,
       lastUpdated: DateTime.now(),
       contentId: contentId,
       contentType: contentType,
@@ -111,12 +112,9 @@ class ReactionStatistics {
       }
     }
 
-    final reactedUsers =
-        SerializationUtils.safeStringList(data, 'reactedUserIds').toSet();
-
     return ReactionStatistics(
       reactionCounts: counts,
-      reactedUserIds: reactedUsers,
+      userReactionCount: SerializationUtils.safeInt(data, 'userReactionCount'),
       lastUpdated: DateTime.fromMillisecondsSinceEpoch(
         SerializationUtils.safeInt(data, 'lastUpdated',
             defaultValue: DateTime.now().millisecondsSinceEpoch),
@@ -135,7 +133,7 @@ class ReactionStatistics {
 
     return {
       'reactionCounts': countsMap,
-      'reactedUserIds': reactedUserIds.toList(),
+      'userReactionCount': userReactionCount,
       'lastUpdated': lastUpdated.millisecondsSinceEpoch,
       'contentId': contentId,
       'contentType': contentType,
@@ -174,8 +172,9 @@ class ReactionStatistics {
     return entries.take(limit).toList();
   }
 
-  /// Check if user has reacted
-  bool hasUserReacted(String userId) => reactedUserIds.contains(userId);
+  /// Check if any users have reacted (use repository for specific user check)
+  /// For user-specific check, query: content_reactions/{contentId}/users/{userId}
+  bool get hasAnyUserReacted => userReactionCount > 0;
 
   /// Get reaction types that have counts
   List<ReactionType> get activeReactionTypes => reactionCounts.keys.toList();
@@ -197,36 +196,38 @@ class ReactionStatistics {
   /// Create updated copy with new counts
   ReactionStatistics copyWith({
     Map<ReactionType, int>? reactionCounts,
-    Set<String>? reactedUserIds,
+    int? userReactionCount,
     DateTime? lastUpdated,
     String? contentId,
     String? contentType,
   }) {
     return ReactionStatistics(
       reactionCounts: reactionCounts ?? Map.from(this.reactionCounts),
-      reactedUserIds: reactedUserIds ?? Set.from(this.reactedUserIds),
+      userReactionCount: userReactionCount ?? this.userReactionCount,
       lastUpdated: lastUpdated ?? this.lastUpdated,
       contentId: contentId ?? this.contentId,
       contentType: contentType ?? this.contentType,
     );
   }
 
-  /// Add reaction to statistics
-  ReactionStatistics addReaction(ReactionType type, String userId) {
+  /// Update reaction counts (for repository use)
+  /// Note: User tracking is handled by repository via subcollection
+  ReactionStatistics incrementReaction(ReactionType type,
+      {bool isNewUser = false}) {
     final newCounts = Map<ReactionType, int>.from(reactionCounts);
     newCounts[type] = (newCounts[type] ?? 0) + 1;
 
-    final newUsers = Set<String>.from(reactedUserIds)..add(userId);
-
     return copyWith(
       reactionCounts: newCounts,
-      reactedUserIds: newUsers,
+      userReactionCount: isNewUser ? userReactionCount + 1 : userReactionCount,
       lastUpdated: DateTime.now(),
     );
   }
 
-  /// Remove reaction from statistics
-  ReactionStatistics removeReaction(ReactionType type, String userId) {
+  /// Decrement reaction counts (for repository use)
+  /// Note: User tracking is handled by repository via subcollection
+  ReactionStatistics decrementReaction(ReactionType type,
+      {bool wasLastReaction = false}) {
     final newCounts = Map<ReactionType, int>.from(reactionCounts);
     final currentCount = newCounts[type] ?? 0;
 
@@ -236,14 +237,11 @@ class ReactionStatistics {
       newCounts.remove(type);
     }
 
-    // Only remove user if they have no other reactions
-    final newUsers = Set<String>.from(reactedUserIds);
-    // Note: In a real implementation, we'd need to check if user has other reaction types
-    // For now, we'll keep the user in the set for simplicity
-
     return copyWith(
       reactionCounts: newCounts,
-      reactedUserIds: newUsers,
+      userReactionCount: wasLastReaction && userReactionCount > 0
+          ? userReactionCount - 1
+          : userReactionCount,
       lastUpdated: DateTime.now(),
     );
   }

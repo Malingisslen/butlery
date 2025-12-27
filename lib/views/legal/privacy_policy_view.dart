@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/layout_components.dart';
 
@@ -119,11 +120,11 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const CircularProgressIndicator(),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
           Text(
             'Laddar integritetspolicy...',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey,
+                  color: AppColors.textMedium,
                 ),
           ),
         ],
@@ -143,20 +144,20 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
               size: 64,
               color: AppColors.error,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             Text(
               _errorMessage!,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppDimensions.spacingLg),
             ElevatedButton.icon(
               onPressed: _loadPrivacyPolicy,
               icon: const Icon(Icons.refresh),
               label: const Text('Försök igen'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.cardWhite,
               ),
             ),
           ],
@@ -170,7 +171,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       child: Text(
         'Ingen integritetspolicy tillgänglig',
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Colors.grey,
+              color: AppColors.textMedium,
             ),
       ),
     );
@@ -212,7 +213,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       child: Row(
         children: [
           const Icon(Icons.info_outline, color: AppColors.info, size: 20),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppDimensions.spacingL),
           Expanded(
             child: Text(
               'GDPR-kompatibel integritetspolicy. Senast uppdaterad: 2025-10-21',
@@ -230,11 +231,11 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
+      decoration: const BoxDecoration(
+        color: AppColors.backgroundTint,
         border: Border(
           top: BorderSide(
-            color: Colors.grey[300]!,
+            color: AppColors.divider,
             width: 1,
           ),
         ),
@@ -249,14 +250,14 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
                 ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppDimensions.spacingL),
           ElevatedButton.icon(
             onPressed: _handleContactUs,
             icon: const Icon(Icons.email_rounded),
             label: const Text('Kontakta oss'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.cardWhite,
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
           ),
@@ -291,8 +292,8 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.error_outline, color: Colors.white),
-            const SizedBox(width: 8),
+            const Icon(Icons.error_outline, color: AppColors.cardWhite),
+            const SizedBox(width: AppDimensions.spacingSm),
             Expanded(child: Text(message)),
           ],
         ),

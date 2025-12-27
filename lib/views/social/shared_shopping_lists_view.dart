@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// View for displaying shared shopping lists.
@@ -34,14 +35,14 @@ class SharedShoppingListsView extends StatelessWidget {
                   size: 64,
                   color: AppColors.textMedium,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppDimensions.spacingMd),
                 Text(
                   'Delade inköpslistor',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppDimensions.spacingSm),
                 Text(
                   'Kommer snart...',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(

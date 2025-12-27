@@ -17,7 +17,7 @@ class RecipeCommentBuilder {
   String _text = 'This is a test comment';
   DateTime _createdAt = DateTime.now();
   DateTime? _editedAt;
-  List<String> _likedByUserIds = [];
+  int _likesCount = 0;
   String? _parentCommentId;
   int _replyCount = 0;
   bool _isDeleted = false;
@@ -72,9 +72,15 @@ class RecipeCommentBuilder {
     return this;
   }
 
-  /// Add likes from users
+  /// Set like count
+  RecipeCommentBuilder withLikeCount(int count) {
+    _likesCount = count;
+    return this;
+  }
+
+  /// Add likes from users (backwards compatibility - converts to count)
   RecipeCommentBuilder likedBy(List<String> userIds) {
-    _likedByUserIds = userIds;
+    _likesCount = userIds.length;
     return this;
   }
 
@@ -108,7 +114,7 @@ class RecipeCommentBuilder {
   RecipeCommentBuilder asPositiveReview() {
     _text =
         'This recipe turned out amazing! The instructions were clear and easy to follow.';
-    _likedByUserIds = ['user-1', 'user-2', 'user-3'];
+    _likesCount = 3;
     return this;
   }
 
@@ -135,7 +141,7 @@ class RecipeCommentBuilder {
 
   /// Configure as popular comment
   RecipeCommentBuilder asPopular() {
-    _likedByUserIds = List.generate(25, (i) => 'user-$i');
+    _likesCount = 25;
     _replyCount = 15;
     _text =
         'Pro tip: Let the dough rest for an extra 30 minutes for better texture!';
@@ -153,7 +159,7 @@ class RecipeCommentBuilder {
       text: _text,
       createdAt: _createdAt,
       editedAt: _editedAt,
-      likedByUserIds: _likedByUserIds,
+      likesCount: _likesCount,
       parentCommentId: _parentCommentId,
       replyCount: _replyCount,
       isDeleted: _isDeleted,

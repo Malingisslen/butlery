@@ -30,6 +30,8 @@ import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
+import 'package:butlery/services/theme_service.dart';
+import 'package:butlery/services/auth/biometric_service.dart';
 
 // Core providers
 import 'package:butlery/core/providers/locale_provider.dart';
@@ -38,6 +40,19 @@ import 'package:butlery/core/providers/locale_provider.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
+
+// Network security
+import 'package:butlery/core/network/ssl_pinning_service.dart';
+
+// Data encryption
+import 'package:butlery/services/encryption/field_encryption_service.dart';
+
+// Device security
+import 'package:butlery/services/device_integrity_service.dart';
+import 'package:butlery/services/app_lock_service.dart';
+
+// Feature flags
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 
 // Firebase dependencies
 import 'package:firebase_auth/firebase_auth.dart';
@@ -76,6 +91,10 @@ class CoreModule implements DIModule {
       ConsentService,
       // Core providers
       LocaleProvider,
+      ThemeService,
+      BiometricService,
+      // Feature flags
+      FeatureFlagService,
     ];
 
     return services;
@@ -93,6 +112,15 @@ class CoreModule implements DIModule {
 
       // LocaleProvider for app language management
       container.registerSingleton<LocaleProvider>(LocaleProvider());
+
+      // ThemeService for dark/light mode management
+      container.registerSingleton<ThemeService>(ThemeService());
+
+      // BiometricService for Face ID/Touch ID/Fingerprint authentication
+      container.registerSingleton<BiometricService>(BiometricService());
+
+      // Feature flags for gradual rollouts and kill switches
+      container.registerSingleton<FeatureFlagService>(FeatureFlagService());
 
       // Core repositories form the foundation of the data access layer
       container.registerSingleton<AuthRepository>(FirebaseAuthRepository());
@@ -173,6 +201,28 @@ class CoreModule implements DIModule {
         () => ConsentService(
           auth: FirebaseAuth.instance,
           consentRepository: container<FirebaseConsentRepository>(),
+        ),
+      );
+
+      // SSL certificate pinning service for MITM protection
+      container.registerLazySingleton<SslPinningService>(
+        () => SslPinningService(),
+      );
+
+      // Field-level encryption for sensitive Firestore data
+      container.registerLazySingleton<FieldEncryptionService>(
+        () => FieldEncryptionService(),
+      );
+
+      // Device integrity service for root/jailbreak detection
+      container.registerLazySingleton<DeviceIntegrityService>(
+        () => DeviceIntegrityService(),
+      );
+
+      // App lock service for biometric app protection
+      container.registerLazySingleton<AppLockService>(
+        () => AppLockService(
+          biometricService: container<BiometricService>(),
         ),
       );
     } catch (e) {

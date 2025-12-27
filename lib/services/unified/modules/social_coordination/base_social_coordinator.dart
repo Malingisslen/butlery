@@ -140,14 +140,21 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
 
       // Add invitees as members to the subcollection (Issue #014 migration fix)
       // This enables collectionGroup('members') queries to find content for recipients
+      // Fetch user profiles for denormalized member info (V1-QP-001 fix)
       AppLogger.info(
           '🔍 DEBUG: Adding ${inviteeUserIds.length} members to subcollection for $invitationId');
+      final inviteeProfiles = await userService.getUserProfiles(inviteeUserIds);
+      final profileMap = {for (final p in inviteeProfiles) p.uid: p};
+
       for (final inviteeId in inviteeUserIds) {
         AppLogger.info('🔍 DEBUG: Adding member $inviteeId to $invitationId');
+        final profile = profileMap[inviteeId];
         await sharedRepository.addMember(
           invitationId,
           inviteeId,
           addedBy: currentUserId,
+          displayName: profile?.displayName ?? 'Användare',
+          avatarUrl: profile?.avatarUrl,
         );
         AppLogger.info('🔍 DEBUG: Member $inviteeId added successfully');
       }

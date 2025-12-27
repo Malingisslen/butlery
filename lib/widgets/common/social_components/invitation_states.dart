@@ -72,7 +72,8 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(errorIcon, size: AppDimensions.iconSizeXXXl, color: Colors.red),
+          Icon(errorIcon,
+              size: AppDimensions.iconSizeXXXl, color: AppColors.error),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title,
@@ -124,7 +125,7 @@ class InvitationStates {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.lock,
-              size: AppDimensions.iconSizeXXXl, color: Colors.orange),
+              size: AppDimensions.iconSizeXXXl, color: AppColors.warning),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title,
@@ -260,13 +261,15 @@ class InvitationStates {
     IconData icon = Icons.check_circle_outline,
     VoidCallback? onContinue,
     String? continueButtonText = 'Fortsätt',
-    Color? successColor = Colors.green,
+    Color? successColor,
   }) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: AppDimensions.iconSizeXXXl, color: successColor),
+          Icon(icon,
+              size: AppDimensions.iconSizeXXXl,
+              color: successColor ?? AppColors.success),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title,
@@ -300,13 +303,15 @@ class InvitationStates {
     IconData icon = Icons.send,
     VoidCallback? onDone,
     String? doneButtonText = 'Klar',
-    Color? successColor = Colors.green,
+    Color? successColor,
   }) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: AppDimensions.iconSizeXXXl, color: successColor),
+          Icon(icon,
+              size: AppDimensions.iconSizeXXXl,
+              color: successColor ?? AppColors.success),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title,

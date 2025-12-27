@@ -54,25 +54,30 @@ class ShoppingListContent {
     Function(UnifiedShoppingItem) onEditItem,
     Function(UnifiedShoppingItem) onDeleteItem,
   ) {
-    return ListView(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      children: [
-        // Pending items by category
-        ..._buildPendingItemsByCategory(
+    // Pre-compute flat list of widgets for ListView.builder
+    // This improves performance by only building visible items
+    final widgets = <Widget>[
+      // Pending items by category
+      ..._buildPendingItemsByCategory(
+          context, viewModel, onItemTap, onEditItem, onDeleteItem),
+
+      // Completed items section
+      if (viewModel.boughtItems > 0) ...[
+        const SizedBox(height: AppDimensions.spacingLg),
+        _buildCompletedItemsHeader(viewModel),
+        const SizedBox(height: AppDimensions.spacingSm),
+        ..._buildCompletedItems(
             context, viewModel, onItemTap, onEditItem, onDeleteItem),
-
-        // Completed items section
-        if (viewModel.boughtItems > 0) ...[
-          const SizedBox(height: AppDimensions.spacingLg),
-          _buildCompletedItemsHeader(viewModel),
-          const SizedBox(height: AppDimensions.spacingSm),
-          ..._buildCompletedItems(
-              context, viewModel, onItemTap, onEditItem, onDeleteItem),
-        ],
-
-        // Bottom spacing
-        const SizedBox(height: AppDimensions.spacingHuge),
       ],
+
+      // Bottom spacing
+      const SizedBox(height: AppDimensions.spacingHuge),
+    ];
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      itemCount: widgets.length,
+      itemBuilder: (context, index) => widgets[index],
     );
   }
 

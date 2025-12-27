@@ -35,7 +35,6 @@
 /// extractionManager.dispose();
 /// ```
 
-import 'package:flutter/material.dart';
 import 'package:butlery/services/social_media_extractor.dart';
 import 'package:butlery/core/base/base_service.dart';
 
@@ -95,13 +94,8 @@ class ExtractionManager extends BaseService {
   Future<ExtractionResult> extractFromUrl(String url) async {
     final result = await executeServiceOperation<ExtractionResult>(
       () async {
-        debugPrint('🌐 Starting extraction from: $url');
-
         // Step 1: Convert URLs and detect platform
         final webUrl = _platformDetector.convertToWebUrl(url);
-        if (webUrl != url) {
-          debugPrint('📸 Converted Instagram link to: $webUrl');
-        }
 
         // Step 2: Detect platform
         final platform = _platformDetector.detectPlatform(webUrl);

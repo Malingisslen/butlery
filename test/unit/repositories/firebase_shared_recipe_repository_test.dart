@@ -99,6 +99,14 @@ void main() {
       return SharedRecipe(
         id: id ?? testRecipeId,
         originalRecipeId: originalRecipeId ?? testOriginalRecipeId,
+        // V2 denormalized metadata
+        recipeTitle: recipe.title,
+        recipeImageUrl:
+            recipe.imageUrls.isNotEmpty ? recipe.imageUrls.first : null,
+        recipePortions: recipe.portions,
+        recipeTimeMinutes: recipe.timeMinutes,
+        recipeDescription: recipe.description,
+        // V1 backward compatibility
         recipeSnapshot: recipe,
         sharedByUserId: sharedByUserId ?? testUserId,
         sharedByDisplayName: sharedByDisplayName ?? 'Test User',
@@ -344,7 +352,7 @@ void main() {
         // Assert
         expect(result, isNotNull);
         expect(result!.id, testRecipeId);
-        expect(result.recipeSnapshot.title, contains('Test Recipe'));
+        expect(result.recipeTitle, contains('Test Recipe'));
       });
 
       test('should return null for non-existent shared recipe', () async {

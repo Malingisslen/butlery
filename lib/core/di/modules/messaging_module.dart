@@ -32,6 +32,9 @@ import 'package:butlery/services/presence_service.dart';
 // Firestore repository
 import 'package:butlery/repositories/firestore_repository.dart';
 
+// Feature flags for subcollection participants
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+
 // Import dependency modules
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/social_module.dart';
@@ -67,8 +70,13 @@ class MessagingModule implements DIModule {
   Future<void> configure(GetIt container) async {
     try {
       // Messaging repository for direct messages and conversations
+      // Inject FeatureFlagService for subcollection participants feature
       container.registerSingleton<MessagingRepository>(
-        FirebaseMessagingRepository(),
+        FirebaseMessagingRepository(
+          featureFlagService: container.isRegistered<FeatureFlagService>()
+              ? container<FeatureFlagService>()
+              : null,
+        ),
       );
 
       // Notifications repository (if not already registered by Social Module)

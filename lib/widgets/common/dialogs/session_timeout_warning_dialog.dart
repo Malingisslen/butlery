@@ -120,7 +120,7 @@ class _SessionTimeoutWarningDialogState
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Din session kommer att avslutas om:',
             style: AppTextStyles.bodyLarge,
           ),
@@ -177,7 +177,7 @@ class _SessionTimeoutWarningDialogState
           child: Text(
             'Fortsätt session',
             style: AppTextStyles.labelLarge.copyWith(
-              color: Colors.white,
+              color: AppColors.cardWhite,
             ),
           ),
         ),

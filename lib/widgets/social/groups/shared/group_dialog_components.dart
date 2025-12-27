@@ -291,7 +291,7 @@ class DialogFooter extends StatelessWidget {
                   ? FilledButton.styleFrom(
                       backgroundColor: primaryActionColor,
                       foregroundColor:
-                          primaryActionForegroundColor ?? Colors.white,
+                          primaryActionForegroundColor ?? AppColors.cardWhite,
                     )
                   : null,
               icon: isLoading

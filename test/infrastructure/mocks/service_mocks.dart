@@ -160,6 +160,7 @@ class MockRecipeDiscoveryService extends Mock
     int limit = 20,
     Duration? timeWindow,
     List<String>? categoryFilter,
+    Set<String>? excludeIds,
   }) async {
     if (_shouldThrowError) {
       throw Exception('Mock configured to throw error');

@@ -377,8 +377,7 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
 
   String? _getRecipeTitle(String recipeId) => _recipeViewModel.content
       .firstWhere((r) => r.id == recipeId, orElse: () => throw Exception())
-      .recipeSnapshot
-      .title;
+      .recipeTitle;
 
   String? _getMenuTitle(String menuId) => _menuViewModel.content
       .firstWhere((m) => m.id == menuId, orElse: () => throw Exception())

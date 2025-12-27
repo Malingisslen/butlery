@@ -173,8 +173,9 @@ class SocialGroupComponents {
                   '${0} medlemmar') // FriendCategory doesn't have memberIds
               : null,
           leading: const Icon(Icons.group),
-          trailing:
-              isSelected ? const Icon(Icons.check, color: Colors.green) : null,
+          trailing: isSelected
+              ? const Icon(Icons.check, color: AppColors.success)
+              : null,
           selected: isSelected,
           onTap: () {
             if (allowMultiSelect && onMultiSelectChanged != null) {

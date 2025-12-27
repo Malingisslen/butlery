@@ -329,7 +329,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Sociala funktioner',
             style: AppTextStyles.headlineSmall,
           ),

@@ -99,7 +99,7 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
   @override
   ButtonStyle get actionButtonStyle => FilledButton.styleFrom(
         backgroundColor: AppColors.error,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.cardWhite,
       );
 
   @override

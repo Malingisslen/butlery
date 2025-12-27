@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_logic.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
 
@@ -37,6 +38,7 @@ class _PortionScalerState extends State<PortionScaler>
   late Animation<double> _scaleAnimation;
   bool _convertToSwedish = false;
   bool _hasAmericanUnits = false;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
@@ -53,6 +55,12 @@ class _PortionScalerState extends State<PortionScaler>
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = !AnimationUtils.shouldAnimate(context);
   }
 
   @override
@@ -78,9 +86,12 @@ class _PortionScalerState extends State<PortionScaler>
       });
     }
 
-    _animationController.forward().then((_) {
-      _animationController.reverse();
-    });
+    // Skip animation when reduced motion is enabled
+    if (!_reduceMotion) {
+      _animationController.forward().then((_) {
+        _animationController.reverse();
+      });
+    }
 
     HapticFeedback.lightImpact();
     widget.onPortionChanged(_currentPortions, _scaledIngredients);

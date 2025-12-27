@@ -11,6 +11,7 @@ import 'package:butlery/widgets/branding/app_logo.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/mina_recept_view.dart'; // ULTRATHINK: Direct navigation import
 import 'package:butlery/core/utils/logger.dart'; // For AppLogger
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -208,7 +209,9 @@ class _AuthViewState extends State<AuthView> {
           : AppStrings.passwordMinLength,
       obscureText: !viewModel.isPasswordVisible,
       enabled: !viewModel.isLoading,
-      validator: FormValidators.authPassword(isSignUp: !viewModel.isLoginMode),
+      validator: viewModel.isLoginMode
+          ? FormValidators.authPassword()
+          : FormValidators.strongPassword(),
       suffixIcon: Semantics(
         label: viewModel.isPasswordVisible ? 'Dölj lösenord' : 'Visa lösenord',
         button: true,
@@ -231,7 +234,7 @@ class _AuthViewState extends State<AuthView> {
     AuthViewModel viewModel,
   ) {
     return Align(
-      alignment: Alignment.centerRight,
+      alignment: AlignmentDirectional.centerEnd,
       child: ActionButtons.textButton(
         context,
         label: AppStrings.forgotPassword,
@@ -330,7 +333,7 @@ class _AuthViewState extends State<AuthView> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               AppStrings.resetPasswordInstructions,
               style: AppTextStyles.bodyMedium,
             ),
@@ -349,12 +352,12 @@ class _AuthViewState extends State<AuthView> {
         actions: [
           StyledButton.secondary(
             key: const Key('back_to_login_button'),
-            text: AppStrings.cancel,
+            text: context.l10n.commonCancel,
             onPressed: () => Navigator.of(context).pop(false),
           ),
           StyledButton.primary(
             key: const Key('send_reset_button'),
-            text: AppStrings.send,
+            text: context.l10n.commonSend,
             onPressed: () => Navigator.of(context).pop(true),
           ),
         ],

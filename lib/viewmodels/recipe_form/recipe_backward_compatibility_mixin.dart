@@ -106,29 +106,17 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
 
   /// Get ingredient controllers (for backward compatibility)
   List<TextEditingController> get ingredientControllers {
-    debugPrint('🎯 VIEWMODEL_DEBUG: ingredientControllers called');
-    final controllers = state.ingredientsManager.controllers;
-    debugPrint(
-        '🎯 VIEWMODEL_DEBUG: ingredientControllers returning ${controllers.length} controllers');
-    return controllers;
+    return state.ingredientsManager.controllers;
   }
 
   /// Get instruction controllers (for backward compatibility)
   List<TextEditingController> get instructionControllers {
-    debugPrint('🎯 VIEWMODEL_DEBUG: instructionControllers called');
-    final controllers = state.instructionsManager.controllers;
-    debugPrint(
-        '🎯 VIEWMODEL_DEBUG: instructionControllers returning ${controllers.length} controllers');
-    return controllers;
+    return state.instructionsManager.controllers;
   }
 
   /// Get tag controllers (for backward compatibility)
   List<TextEditingController> get tagControllers {
-    debugPrint('🎯 VIEWMODEL_DEBUG: tagControllers called');
-    final controllers = state.tagsManager.controllers;
-    debugPrint(
-        '🎯 VIEWMODEL_DEBUG: tagControllers returning ${controllers.length} controllers');
-    return controllers;
+    return state.tagsManager.controllers;
   }
 
   /// Update ingredient at index with MODUL1 preprocessing

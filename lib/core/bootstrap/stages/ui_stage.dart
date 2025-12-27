@@ -4,7 +4,6 @@
 /// becomes fully interactive.
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:butlery/core/bootstrap/stages/bootstrap_stage.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
 // Feature flags removed - using modular system only
@@ -54,15 +53,8 @@ class UIStage implements BootstrapStage {
       // Start background health monitoring
       // Background monitoring would be started here
       // This would use the ApplicationHealthChecker
-
-      if (kDebugMode) {
-        debugPrint('✅ [UIStage] UI services ready');
-      }
     } catch (e) {
       if (isOptional) {
-        if (kDebugMode) {
-          debugPrint('⚠️ [UIStage] Optional stage failed, continuing: $e');
-        }
         return; // Don't throw for optional stages
       }
 
@@ -80,23 +72,8 @@ class UIStage implements BootstrapStage {
   /// to provide early detection of OCR service issues before users attempt photo imports.
   /// This validation is optional and will not prevent app startup if it fails.
   Future<void> _validateOcrService() async {
-    try {
-      if (kDebugMode) {
-        debugPrint('🔍 [UIStage] Validating OCR service configuration...');
-      }
-
-      // Universal OCR service validation is handled internally by OCRExtractionService
-      if (kDebugMode) {
-        debugPrint(
-            '✅ [UIStage] Universal OCR service configured - multi-provider fallback available');
-      }
-    } catch (e) {
-      // OCR validation failure should not prevent app startup
-      if (kDebugMode) {
-        debugPrint('⚠️ [UIStage] OCR validation failed (non-critical): $e');
-        debugPrint('💡 [UIStage] Photo import functionality may be limited');
-      }
-    }
+    // Universal OCR service validation is handled internally by OCRExtractionService
+    // OCR validation failure should not prevent app startup
   }
 
   @override
@@ -108,10 +85,6 @@ class UIStage implements BootstrapStage {
       // Basic validation - we reached this point successfully
       return true;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ [UIStage] Validation failed: $e');
-      }
-
       // Return true for optional stages to allow app to continue
       return isOptional;
     }

@@ -94,7 +94,7 @@ class OfflineStatusIcon extends StatelessWidget {
         }
 
         return const Padding(
-          padding: EdgeInsets.only(right: AppDimensions.spacingS),
+          padding: EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
           child: Icon(
             Icons.cloud_off,
             color: AppColors.warning,

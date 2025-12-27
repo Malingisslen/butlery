@@ -7,6 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/network/ssl_pinning_service.dart';
 import 'package:butlery/services/ocr/ocr_usage_tracker.dart';
 
 /// OCR processing result with comprehensive metadata and quality metrics
@@ -192,7 +194,17 @@ class OCRExtractionService extends BaseService {
   static const double _minConfidenceThreshold = 0.6;
 
   // Getters with test dependency injection support
-  http.Client get _httpClient => _testHttpClient ?? http.Client();
+  http.Client get _httpClient {
+    if (_testHttpClient != null) return _testHttpClient;
+    // Use SSL pinning for production HTTP calls
+    try {
+      return ServiceLocator.get<SslPinningService>().createPinnedClient();
+    } catch (_) {
+      // Fallback to standard client if SSL service not available
+      return http.Client();
+    }
+  }
+
   String get _ocrApiKey {
     if (_testOcrApiKey != null) return _testOcrApiKey;
     try {
@@ -233,23 +245,7 @@ class OCRExtractionService extends BaseService {
   /// Initialize OCR service
   @override
   Future<void> initialize() async {
-    try {
-      debugPrint(
-        '[OCR] Service initialized - Providers: OCR.space, Google Vision, Tesseract',
-      );
-      if (_ocrApiKey.isEmpty) {
-        debugPrint('[OCR] OCR.space API key not configured');
-      }
-      if (_googleVisionKey.isEmpty) {
-        debugPrint('[OCR] Google Vision API key not configured');
-      }
-      if (_tesseractApiUrl.isEmpty) {
-        debugPrint('[OCR] Tesseract API URL not configured');
-      }
-    } catch (e) {
-      debugPrint('[OCR] Init failed: $e');
-      rethrow;
-    }
+    // OCR service ready - providers: OCR.space, Google Vision, Tesseract
   }
 
   /// Record OCR usage - delegates to usage tracker
@@ -268,11 +264,6 @@ class OCRExtractionService extends BaseService {
       return cachedResult;
     }
     final qualityAssessment = await assessImageQuality(imageBytes);
-    if (!qualityAssessment.isGoodQuality) {
-      debugPrint(
-        '⚠️ [OCR] Poor quality: ${qualityAssessment.issues.join(', ')}',
-      );
-    }
     final preprocessedImage = await _preprocessImage(
       imageBytes,
       qualityAssessment,
@@ -410,10 +401,11 @@ class OCRExtractionService extends BaseService {
 
     final response = await _httpClient
         .post(
-          Uri.parse(
-            'https://vision.googleapis.com/v1/images:annotate?key=$_googleVisionKey',
-          ),
-          headers: {'Content-Type': 'application/json'},
+          Uri.parse('https://vision.googleapis.com/v1/images:annotate'),
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Goog-Api-Key': _googleVisionKey,
+          },
           body: requestBody,
         )
         .timeout(const Duration(seconds: 30));
