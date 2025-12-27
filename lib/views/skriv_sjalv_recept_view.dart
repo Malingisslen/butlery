@@ -166,8 +166,15 @@ class _SkrivSjalvReceptViewContentState
 
       if (mounted) {
         if (savedRecipe != null) {
-          // ✅ MIGRERAD: Använd UtilityComponents.showSuccessSnackbar
-          UtilityComponents.showSuccessSnackbar(context, 'Recept sparat!');
+          // Build success message with optional tag summary
+          String successMessage = 'Recept sparat!';
+          final tagResult = savedRecipe.tagResult;
+          if (tagResult != null && tagResult.tags.isNotEmpty) {
+            final coverage = (tagResult.coverage * 100).toInt();
+            successMessage =
+                'Recept sparat! ${tagResult.tags.length} taggar ($coverage%)';
+          }
+          UtilityComponents.showSuccessSnackbar(context, successMessage);
           // MEDIUM PRIORITY FIX: Better navigation that preserves user context
           // Navigate to recipe detail or back to recipes list instead of clearing entire stack
           Navigator.of(context)
