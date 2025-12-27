@@ -30,12 +30,11 @@ class SocialFactory {
     DateTime? timestamp, // Keep for backward compatibility
     DateTime? createdAt,
     DateTime? editedAt,
-    int likes = 0, // Keep for backward compatibility but convert to list
+    int likes = 0, // Keep for backward compatibility - now used as likesCount
+    int? likesCount,
     bool isEdited = false, // Keep for backward compatibility
     String? replyToCommentId, // Keep for backward compatibility
     String? parentCommentId,
-    List<String>? likedBy, // Keep for backward compatibility
-    List<String>? likedByUserIds,
     int replyCount = 0,
     bool isDeleted = false,
   }) {
@@ -48,9 +47,7 @@ class SocialFactory {
     final actualCreatedAt = createdAt ?? timestamp ?? DateTime.now();
     final actualEditedAt = editedAt ?? (isEdited ? DateTime.now() : null);
     final actualParentCommentId = parentCommentId ?? replyToCommentId;
-    final actualLikedByUserIds = likedByUserIds ??
-        likedBy ??
-        (likes > 0 ? List.generate(likes, (i) => 'user_like_$i') : []);
+    final actualLikesCount = likesCount ?? likes;
 
     return RecipeComment(
       id: id ?? 'comment_${_commentIdCounter++}',
@@ -61,7 +58,7 @@ class SocialFactory {
       text: actualText,
       createdAt: actualCreatedAt,
       editedAt: actualEditedAt,
-      likedByUserIds: actualLikedByUserIds,
+      likesCount: actualLikesCount,
       parentCommentId: actualParentCommentId,
       replyCount: replyCount,
       isDeleted: isDeleted,
@@ -82,6 +79,7 @@ class SocialFactory {
     DateTime? timestamp,
     Map<String, dynamic>? metadata,
     List<String>? visibility,
+    ActivityVisibility? visibilityLevel,
     ActivityEngagement? engagement,
   }) {
     return ActivityFeedItem(
@@ -98,6 +96,7 @@ class SocialFactory {
       parentType: null,
       timestamp: timestamp ?? DateTime.now(),
       visibility: visibility ?? ['public'],
+      visibilityLevel: visibilityLevel ?? ActivityVisibility.public,
       metadata: metadata ?? {},
       engagement: engagement ??
           const ActivityEngagement(likes: 0, comments: 0, shares: 0, views: 0),

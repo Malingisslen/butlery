@@ -1,0 +1,9 @@
+dietary_tag,regel,coverage_krav,status_typ,notes
+vegetarisk,Ingen ingrediens har 'meat' eller 'seafood',100%,FREE/CONTAINS/UNKNOWN,
+vegansk,Ingen ingrediens har 'animal-product',100%,FREE/CONTAINS/UNKNOWN,
+pescetarian,Ingen 'meat' + minst en 'fish' eller 'shellfish',100%,TRUE/FALSE,
+graviditetssäker,INTE high-mercury + INTE contains-alcohol,100%,FREE/CONTAINS/UNKNOWN,"Undvik stor rovfisk (tonfisk, svärdfisk), alkohol. Rå fisk/kött hanteras separat."
+barnvänlig,INTE is-spicy + INTE contains-alcohol,100%,FREE/CONTAINS/UNKNOWN,"Säker för barn: ej starkt, ej alkohol. Flyttad från Fas3 för säker filtrering."
+halalanpassad,INTE pork + INTE contains-alcohol,100%,FREE/CONTAINS/UNKNOWN,Grundläggande halal-filter. Kan ej garantera slaktmetod/certifiering.
+kosheranpassad,INTE pork + INTE shellfish,100%,FREE/CONTAINS/UNKNOWN,Grundläggande kosher-filter. Kött+mjölk-separation och slaktmetod kan ej garanteras.
+nötköttssfri,INTE beef,100%,FREE/CONTAINS/UNKNOWN,För hinduism och de som undviker nötkött av religiösa/miljöskäl.

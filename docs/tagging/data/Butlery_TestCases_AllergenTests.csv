@@ -1,0 +1,39 @@
+Unnamed: 0,allergen,scenario,ingredienser,expected_status,expected_tag
+A01,gluten,Vetemjöl i recept,"vetemjöl, ägg, mjölk",CONTAINS,innehåller-gluten
+A02,gluten,Endast glutenfria ingredienser,"ris, kyckling, broccoli",FREE,glutenfri
+A03,gluten,Okänd ingrediens,"ris, kyckling, XYZ-krydda",UNKNOWN,—
+A04,laktos,Mjölk i recept,"mjölk, smör, ost",CONTAINS,innehåller-laktos
+A05,laktos,Laktosfri grädde,"laktosfri grädde, kyckling, pasta",FREE,laktosfri
+A06,laktos,Laktosfri vs mjölkfri,"laktosfri mjölk, smör",SPECIAL,laktosfri (men inte mjölkfri)
+A07,mjölk,Grädde i recept,"grädde, pasta, bacon",CONTAINS,innehåller-mjölk
+A08,mjölk,Havregrädde istället,"havregrädde, pasta, bacon",FREE,mjölkfri
+A09,ägg,Ägg i pannkakor,"mjöl, ägg, mjölk",CONTAINS,innehåller-ägg
+A10,ägg,Vegansk pannkaka,"mjöl, havremjölk, bakpulver",FREE,äggfri
+A11,fisk,Lax i recept,"lax, citron, dill",CONTAINS,innehåller-fisk
+A12,fisk,Räkor (ej fisk),"räkor, vitlök, pasta",FREE,fiskfri
+A13,kräftdjur,Räkor = kräftdjur,"räkor, vitlök, pasta",CONTAINS,innehåller-kräftdjur
+A14,blötdjur,Räkor (ej blötdjur),"räkor, vitlök, pasta",FREE,blötdjursfri
+A15,blötdjur,Musslor = blötdjur,"musslor, vitlök, vin",CONTAINS,innehåller-blötdjur
+A16,kräftdjur,Musslor (ej kräftdjur),"musslor, vitlök, vin",FREE,kräftdjursfri
+A17,skaldjur,Räkor = skaldjur (via kräftdjur),"räkor, vitlök, pasta",CONTAINS,innehåller-skaldjur
+A18,skaldjur,Musslor = skaldjur (via blötdjur),"musslor, vitlök, vin",CONTAINS,innehåller-skaldjur
+A19,trädnötter,Mandel i recept,"mandel, honung, äpple",CONTAINS,innehåller-trädnötter
+A20,jordnötter,Mandel (ej jordnöt),"mandel, honung, äpple",FREE,jordnötsfri
+A21,jordnötter,Jordnötssmör,"jordnötssmör, banan, honung",CONTAINS,innehåller-jordnötter
+A22,nötter,Mandel = nötter,"mandel, honung, äpple",CONTAINS,innehåller-nötter
+A23,nötter,Jordnöt = nötter,"jordnötssmör, banan",CONTAINS,innehåller-nötter
+A24,nötter,Inga nötter alls,"kyckling, ris, broccoli",FREE,nötfri
+A25,soja,Sojasås i wok,"kyckling, sojasås, nudlar",CONTAINS,innehåller-soja
+A26,soja,Tamari istället (soja-produkt!),"kyckling, tamari, nudlar",CONTAINS,innehåller-soja
+A27,sesam,Sesamolja,"kyckling, sesamolja, ris",CONTAINS,innehåller-sesam
+A28,selleri,Selleri i soppa,"selleri, morot, lök, potatis",CONTAINS,innehåller-selleri
+A29,senap,Dijonsenap,"kyckling, dijonsenap, grädde",CONTAINS,innehåller-senap
+A30,lupin,Lupinmjöl (sällsynt),"lupinmjöl, vatten, salt",CONTAINS,innehåller-lupin
+A31,sulfiter,Vin i matlagning,"kyckling, vitt vin, grädde",CONTAINS,innehåller-sulfiter
+A32,alkohol,Öl i gryta,"nötkött, öl, lök, morötter",CONTAINS,innehåller-alkohol
+A33,alkohol,Inget alkohol,"kyckling, ris, grönsaker",FREE,alkoholfri
+A34,kött,Köttfärs i recept,"nötfärs, lök, tomat, pasta",CONTAINS,innehåller-kött
+A35,fläsk,Bacon i recept,"bacon, ägg, bröd",CONTAINS,innehåller-fläsk
+A36,fläsk,Kyckling (ej fläsk),"kyckling, ris, grönsaker",FREE,fläskfri
+A37,nötkött,Biff i recept,"entrecôte, potatis, sås",CONTAINS,innehåller-nötkött
+A38,nötkött,Lamm (ej nöt),"lammkotlett, rosmarin, vitlök",FREE,nötköttssfri

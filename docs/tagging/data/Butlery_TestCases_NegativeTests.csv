@@ -1,0 +1,9 @@
+test_id,category,scenario,ingredienser,test,expected,notes
+NEG-01,allergen-separation,Räkor är INTE fisk,räkor,fisk-status,FREE,Räkor = kräftdjur
+NEG-02,allergen-separation,Musslor är INTE kräftdjur,musslor,kräftdjur-status,FREE,Musslor = blötdjur
+NEG-03,allergen-separation,Mandel är INTE jordnöt,mandel,jordnöt-status,FREE,Mandel = trädnöt
+NEG-04,dietary,Kyckling är INTE vegetarisk,kyckling,vegetarisk-status,CONTAINS,Kyckling = meat
+NEG-05,dietary,Pasta carbonara är INTE vegansk,"pasta, ägg, pancetta",vegansk-status,CONTAINS,Ägg + kött
+NEG-06,tag,Gryta utan pasta är INTE pastabaserad,"nötkött, potatis, morot",pastabaserad,False,
+NEG-07,tid,15-minutersrätt är INTE över-60-min,totalTime: 15,över-60-min,False,
+NEG-08,dietary,Lax + bacon är INTE pescetarian,"lax, bacon, potatis",pescetarian,False,Innehåller kött

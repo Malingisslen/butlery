@@ -1,0 +1,31 @@
+test_id,cuisine,scenario,ingredienser,expected,notes,titel
+C01,svensk,Köttbullar med lingon,"köttbullar, lingonsylt, potatis, gräddsås",True,Klassisk svensk,
+C02,svensk,Janssons frestelse,"potatis, ansjovis, grädde",True,Titel-match,Janssons frestelse
+C03,svensk,Raggmunk,"potatis, fläsk, lingon",True,Titel-match,Raggmunk med fläsk
+C04,italiensk,Pasta carbonara,"spaghetti, pancetta, parmesan, ägg",True,pasta + parmesan,
+C05,italiensk,Pizza med tomat+basilika,"pizzadeg, tomat, mozzarella, basilika",True,pizza-keyword,Pizza margherita
+C06,italiensk,Risotto,"arborio, svamp, parmesan, vin",True,risotto-keyword,Svamprisotto
+C07,mexikansk,Tacos,"tortilla, köttfärs, jalapeño, lime, koriander",True,taco + jalapeño,Taco Tuesday
+C08,mexikansk,Guacamole,"avokado, lime, koriander, jalapeño, tomat",True,lime + koriander + jalapeño,
+C09,thailändsk,Green curry,"kyckling, kokosmjölk, grön curry, lime, thai basilika",True,kokosmjölk + lime,
+C10,thailändsk,Pad Thai,"risnudlar, räkor, fisksås, lime, jordnötter",True,fisksås,
+C11,indisk,Tikka Masala,"kyckling, tikka masala, kokosmjölk, naan",True,tikka masala,Chicken Tikka Masala
+C12,indisk,Dal,"linser, garam masala, ingefära, tomat",True,garam masala,
+C13,japansk,Teriyaki,"kyckling, sojasås, mirin, ingefära, ris",True,sojasås + mirin,
+C14,japansk,Miso-soppa,"miso, tofu, wakame, dashi",True,miso + dashi,
+C15,koreansk,Bibimbap,"ris, grönsaker, gochujang, sesamolja, ägg",True,gochujang,
+C16,koreansk,Kimchi-gryta,"kimchi, fläsk, tofu, sojasås",True,kimchi,
+C17,grekisk,Grekisk sallad,"gurka, tomat, fetaost, oliver, rödlök",True,feta + oliver + gurka,
+C18,grekisk,Tzatziki,"yoghurt, gurka, vitlök, dill",True,tzatziki-ingredienser,
+C19,mellanöstern,Hummus,"kikärtor, tahini, vitlök, citron",True,tahini,
+C20,mellanöstern,Falafel,"kikärtor, koriander, spiskummin, vitlök",True,spiskummin,
+C21,fransk,Coq au vin,"kyckling, rödvin, grädde, timjan, champinjoner",True,grädde + vin + timjan,
+C22,fransk,Senapsglaserad kyckling,"kyckling, dijonsenap, grädde, estragon",True,dijonsenap,
+C23,asiatisk,Generisk asiatisk wok,"kyckling, sojasås, ingefära, grönsaker",True,sojasås OR ingefära,
+C24,KONFLIKT,Pasta + sojasås (fusion),"pasta, sojasås, kyckling",KONFLIKT,Italiensk vs Asiatisk - välj efter dominans,
+C25,INGEN,Neutral rätt utan markers,"kyckling, ris, broccoli, salt, peppar",False,Inga cuisine-markers,
+C26,amerikansk,BBQ burger,"köttfärs, bacon, cheddar, BBQ-sås",True,BBQ + bacon + cheddar,
+C27,spansk,Paella,"ris, saffran, chorizo, paprika, räkor",True,saffran + chorizo,
+C28,vietnamesisk,Pho,"risnudlar, nötkött, fisksås, lime, örter",True,fisksås + lime,
+C29,kinesisk,Sweet and sour,"fläsk, ananas, sojasås, ingefära, wok",True,sojasås + ingefära,
+C30,medelhavsmat,Bruschetta,"bröd, tomat, olivolja, vitlök, basilika",True,olivolja + tomat + vitlök,

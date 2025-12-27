@@ -27,6 +27,7 @@ void main() {
           targetTitle: 'Köttbullar med potatismos',
           timestamp: timestamp,
           visibility: ['all_friends'],
+          visibilityLevel: ActivityVisibility.friends,
           metadata: {},
           engagement: engagement,
         );
@@ -39,7 +40,7 @@ void main() {
         expect(item.targetType, equals('recipe'));
         expect(item.targetTitle, equals('Köttbullar med potatismos'));
         expect(item.timestamp, equals(timestamp));
-        expect(item.visibility, equals(['all_friends']));
+        expect(item.visibilityLevel, equals(ActivityVisibility.friends));
         expect(item.metadata, isEmpty);
         expect(item.engagement, equals(engagement));
       });
@@ -63,6 +64,7 @@ void main() {
           parentType: 'comment',
           timestamp: timestamp,
           visibility: ['close_friends', 'family'],
+          visibilityLevel: ActivityVisibility.closeFriends,
           metadata: metadata,
           engagement: engagement,
         );
@@ -71,7 +73,7 @@ void main() {
         expect(item.targetImageUrl, equals('https://example.com/recipe.jpg'));
         expect(item.parentId, equals('comment_001'));
         expect(item.parentType, equals('comment'));
-        expect(item.visibility, hasLength(2));
+        expect(item.visibilityLevel, equals(ActivityVisibility.closeFriends));
         expect(item.metadata['rating'], equals(5));
       });
     });
@@ -89,7 +91,8 @@ void main() {
 
         expect(item.id, startsWith('activity_'));
         expect(item.id, contains('_'));
-        expect(item.visibility, equals(['all_friends']));
+        expect(item.visibility, equals(['private']));
+        expect(item.visibilityLevel, equals(ActivityVisibility.private));
         expect(item.metadata, isEmpty);
         expect(item.engagement.totalEngagement, equals(0));
       });
@@ -375,6 +378,7 @@ void main() {
           parentType: 'comment',
           timestamp: timestamp,
           visibility: ['all_friends'],
+          visibilityLevel: ActivityVisibility.friends,
           metadata: {'rating': 5},
           engagement: ActivityEngagement(
             likes: 10,
@@ -495,6 +499,7 @@ void main() {
           targetTitle: 'Different Title',
           timestamp: DateTime.now(),
           visibility: ['public'],
+          visibilityLevel: ActivityVisibility.public,
           metadata: {'different': true},
           engagement: ActivityEngagement.empty(),
         );
@@ -671,6 +676,7 @@ ActivityFeedItem _createTestItem({
   String targetTitle = 'Köttbullar',
   DateTime? timestamp,
   List<String> visibility = const ['all_friends'],
+  ActivityVisibility visibilityLevel = ActivityVisibility.friends,
   Map<String, dynamic> metadata = const {},
   ActivityEngagement? engagement,
 }) {
@@ -684,6 +690,7 @@ ActivityFeedItem _createTestItem({
     targetTitle: targetTitle,
     timestamp: timestamp ?? DateTime(2025, 1, 1, 12, 0),
     visibility: visibility,
+    visibilityLevel: visibilityLevel,
     metadata: metadata,
     engagement: engagement ?? ActivityEngagement.empty(),
   );

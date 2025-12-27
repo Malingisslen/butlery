@@ -1,0 +1,18 @@
+test_id,keyword,titel,effect,expected_tag,expected
+TK-01,chilisås,Kyckling i chilisås,SET,stark,
+TK-02,pepparsås,Biff med pepparsås,SET,stark,
+TK-03,sriracha,Sriracha nudlar,SET,stark,
+TK-04,jalapeño,Jalapeño poppers,SET,stark,
+TK-05,senapssås,Lax med senapssås,BOOST,,Ökar sannolikhet för stark
+TK-06,pepparrot,Pepparrotskräm,BOOST,,Ökar sannolikhet för stark
+TK-07,vegansk,Vegansk lasagne,CONFIRM,,Bekräftar om ingredienser stämmer
+TK-08,glutenfri,Glutenfria pannkakor,CONFIRM,,Bekräftar om ingredienser stämmer
+TK-09,vegetarisk,Vegetarisk gryta,CONFIRM,,Bekräftar om ingredienser stämmer
+TK-10,snabb,Snabb middagslösning,BOOST,snabbfix,
+TK-11,15-minuters,15-minuters pasta,SET,snabbfix,
+TK-12,festlig,Festlig förrätt,BOOST,lyxig,
+TK-13,gourmet,Gourmet-middag,SET,lyxig,
+TK-14,mysig,Mysig pasta,BOOST,comfort-food,
+TK-15,kladdig,Kladdig chokladkaka,SET,comfort-food,
+TK-16,barnens,Barnens favorit,BOOST,barnvänlig,
+TK-17,för barn,Korv Stroganoff för barn,BOOST,barnvänlig,

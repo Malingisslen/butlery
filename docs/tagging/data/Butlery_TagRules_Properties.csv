@@ -1,0 +1,34 @@
+property_id,category,name_sv,name_en,coverage_critical,generates_tag,notes
+animal-product,diet-base,Animalisk produkt,Animal Product,1,vegansk,"Kött, mejeri, ägg, honung, gelatin"
+dairy,diet-base,Mejeri,Dairy,1,mjölkfri,
+egg,diet-base,Ägg,Egg,1,äggfri,
+meat,diet-base,Kött,Meat,1,vegetarisk,
+seafood,diet-base,Fisk & skaldjur,Seafood,1,vegetarisk,
+plant-based,diet-base,Växtbaserad,Plant-based,0,—,Identifiering
+vegan-friendly,diet-base,Vegansk,Vegan-friendly,0,—,Identifiering
+beef,meat-detail,Nötkött,Beef,0,nötkött,
+pork,meat-detail,Fläsk,Pork,1,fläskfri,Halal-relevant
+poultry,meat-detail,Fågel,Poultry,0,"kyckling, anka",
+lamb,meat-detail,Lamm,Lamb,0,lamm,
+game,meat-detail,Vilt,Game,0,vilt,
+fish,meat-detail,Fisk,Fish,1,"fisk, fiskfri",EU-allergen
+shellfish,meat-detail,Skaldjur,Shellfish,1,skaldjur,Se crustacean/mollusc för specifik allergen
+contains-gluten,allergen,Innehåller gluten,Contains Gluten,1,glutenfri,"EU-allergen: Vete, råg, korn, havre"
+contains-lactose,allergen,Innehåller laktos,Contains Lactose,1,laktosfri,
+peanut,allergen,Jordnöt,Peanut,1,jordnötsfri,EU-allergen
+tree-nut,allergen,Trädnöt,Tree Nut,1,"trädnötsfri, nötfri","EU-allergen: Mandel, hasselnöt, valnöt, cashew, etc."
+sesame,allergen,Sesam,Sesame,1,sesamfri,EU-allergen
+soy,allergen,Soja,Soy,1,sojafri,EU-allergen
+crustacean,allergen,Kräftdjur,Crustacean,1,kräftdjursfri,"EU-allergen: Räkor, krabba, hummer, kräftor"
+mollusc,allergen,Blötdjur,Mollusc,1,blötdjursfri,"EU-allergen: Musslor, ostron, bläckfisk"
+celery,allergen,Selleri,Celery,1,sellerifri,EU-allergen
+mustard,allergen,Senap,Mustard,1,senapfri,EU-allergen
+lupin,allergen,Lupin,Lupin,1,lupinfri,EU-allergen
+sulfites,allergen,Sulfiter,Sulfites,1,sulfitfri,"EU-allergen: Vin, torkad frukt"
+contains-alcohol,special-diet,Innehåller alkohol,Contains Alcohol,1,alkoholfri,Halal-relevant
+high-mercury,special-diet,Högt kvicksilver,High Mercury,0,graviditetssäker,"Tonfisk, svärdfisk, haj"
+nightshade,special-diet,Nattskatta,Nightshade,0,AIP-vänlig,"Tomat, paprika, chili, potatis, aubergine"
+needs-cooking,practical,Måste tillagas,Needs Cooking,0,—,"Rått kött, rå fisk"
+processed,practical,Bearbetad produkt,Processed,0,—,Identifiering
+is-spicy,practical,Stark/het,Spicy,0,"stark, mild, barnvänlig","Chili, jalapeño, wasabi, pepparrot, currypasta"
+doesnt-freeze-well,practical,Fryser dåligt,Freezes Poorly,0,frysvänlig,"Sallad, gurka, yoghurt, majonnäs, mjuka ostar"
