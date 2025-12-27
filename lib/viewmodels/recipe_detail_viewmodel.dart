@@ -284,10 +284,16 @@ class RecipeDetailViewModel extends ChangeNotifier
     notifyListeners();
   }
 
+  /// Updates recipe with new data and notifies listeners.
+  /// Used for in-place updates like re-tagging without full service reload.
+  void updateRecipe(Recipe updatedRecipe) {
+    _recipe = updatedRecipe;
+    notifyListeners();
+  }
+
   /// Clears error state with comprehensive state management and UI synchronization.
   /// Provides error state cleanup capability designed for future error handling expansion
   /// and consistency with other ViewModels for comprehensive error management patterns.
-  @override
   @override
   void clearError() {
     // Clear any error state if needed
