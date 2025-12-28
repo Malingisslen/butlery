@@ -32,7 +32,9 @@ class TagPhase2Derived {
     // Phase 1's dietaryStatus map provides tri-state logic which is
     // more accurate than simple tags.
 
-    // Few ingredients
+    // Few ingredients: threshold of 6 or fewer is based on Swedish cooking
+    // conventions where "5-ingredient recipes" (5-ingrediensrecept) are popular.
+    // Using 6 to be slightly more inclusive while maintaining the concept.
     final ingredientCount = recipe.core.ingredients.length;
     if (ingredientCount <= 6) {
       tags.add('få-ingredienser');
@@ -112,12 +114,18 @@ class TagPhase2Derived {
         !phase1.hasTag('grillad') &&
         !phase1.hasTag('friterad');
 
+    // L4: Expanded list of raw dish indicators
     final rawIndicators = [
       'sashimi',
       'tartare',
       'tartar',
       'carpaccio',
-      'ceviche'
+      'ceviche',
+      'gravlax',
+      'gravad',
+      'crudo',
+      'nigiri',
+      'poke',
     ];
     return noCooking && rawIndicators.any((r) => title.contains(r));
   }

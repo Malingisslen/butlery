@@ -194,8 +194,10 @@ class AllergenConfig {
       key: 'kött',
       triggerProperty: 'meat',
       containsTag: 'innehåller-kött',
+      freeTag: 'köttfri',
       uiGroup: 'meat',
-      // No free tag - use vegetarian instead
+      description:
+          'Allt kött (nöt, fläsk, kyckling, etc.). Se även vegetarisk.',
     ),
     AllergenEntry(
       key: 'fläsk',

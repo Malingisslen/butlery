@@ -29,9 +29,13 @@ export { logParseEvent } from "./events/log-parse-event";
 
 // Admin Functions - Site config management
 export { seedSiteConfigs, getSiteConfigStats } from "./admin/seed-site-configs";
+export { bulkMarkForRetagging, getRetagStatus } from "./admin/bulk-retag";
 
 // Notification Functions - FCM push notifications
 export { sendNotification, sendNotificationBatch } from "./notifications/send-notification";
+
+// Ingredient Functions - Cascade updates
+export { onIngredientSoftDeleted } from "./ingredients/on-ingredient-soft-deleted";
 
 admin.initializeApp();
 const db = admin.firestore();

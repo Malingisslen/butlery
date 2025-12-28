@@ -1,3 +1,5 @@
+import 'package:butlery/core/utils/logger.dart';
+
 /// Tri-valued logic for allergen and dietary safety.
 ///
 /// CRITICAL: Never use boolean for allergens - use TriState.
@@ -68,14 +70,24 @@ extension TriStateExtension on TriState {
   }
 
   /// Creates from Firestore string representation.
+  ///
+  /// Logs a warning if an invalid value is encountered before defaulting to UNKNOWN.
+  /// This is important for detecting data corruption in allergen-critical data.
   static TriState fromFirestore(String? value) {
-    switch (value?.toUpperCase()) {
+    final upper = value?.toUpperCase();
+    switch (upper) {
       case 'CONTAINS':
         return TriState.contains;
       case 'FREE':
         return TriState.free;
       case 'UNKNOWN':
+      case null:
+        return TriState.unknown;
       default:
+        // Log unexpected values - could indicate data corruption
+        AppLogger.warning(
+          'Invalid TriState value "$value" encountered, defaulting to UNKNOWN',
+        );
         return TriState.unknown;
     }
   }

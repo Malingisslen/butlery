@@ -1,9 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/tagging/config/allergen_config.dart';
+import 'package:butlery/services/tagging/config/dietary_config.dart';
 import 'package:butlery/services/tagging/tag_generator.dart'
     show kTagGeneratorVersion;
+
+/// L12: Schema version for TagResult data structure.
+/// Increment this when making breaking changes to the serialization format.
+/// Used for migrations when reading older data formats.
+const int kTagResultSchemaVersion = 1;
 
 /// The output of the TagGenerator - stored on recipe documents.
 ///
@@ -74,6 +82,20 @@ class TagResult {
     );
   }
 
+  /// Creates a failed result when tag generation encounters an error.
+  /// The reason parameter provides context for debugging.
+  factory TagResult.failed({String? reason}) {
+    return TagResult(
+      tags: {},
+      allergenStatus: {},
+      dietaryStatus: {},
+      coverage: 0.0,
+      unknownIngredients: reason != null ? [reason] : [],
+      generatedAt: DateTime.now(),
+      generatorVersion: 'failed', // Mark as failed tagging
+    );
+  }
+
   /// Returns true if tagging is pending (saved offline).
   bool get isPending => generatorVersion == 'pending';
 
@@ -81,27 +103,53 @@ class TagResult {
   factory TagResult.fromFirestore(Map<String, dynamic>? data) {
     if (data == null) return TagResult.empty();
 
-    return TagResult(
-      tags: _parseStringSet(data['tags']),
-      allergenStatus: _parseTriStateMap(data['allergenStatus']),
-      dietaryStatus: _parseTriStateMap(data['dietaryStatus']),
-      coverage:
-          SerializationUtils.safeDouble(data, 'coverage', defaultValue: 0.0),
-      unknownIngredients: _parseStringList(data['unknownIngredients']),
-      generatedAt: SerializationUtils.safeRequiredDateTime(
-        data,
+    // L12: Check schema version and migrate if needed
+    final schemaVersion =
+        SerializationUtils.safeInt(data, 'schemaVersion', defaultValue: 0);
+    final migratedData = _migrateSchema(data, schemaVersion);
+
+    // H7: Clamp coverage to valid [0.0, 1.0] range
+    final rawCoverage = SerializationUtils.safeDouble(migratedData, 'coverage',
+        defaultValue: 0.0);
+    final coverage = rawCoverage.clamp(0.0, 1.0);
+
+    // H11: Log warning when DateTime is missing (could indicate data corruption)
+    DateTime generatedAt;
+    final rawGeneratedAt = migratedData['generatedAt'];
+    if (rawGeneratedAt == null) {
+      AppLogger.warning(
+        'TagResult.fromFirestore: generatedAt is null, defaulting to now(). '
+            'This may indicate corrupted data.',
+        'TagResult',
+      );
+      generatedAt = DateTime.now();
+    } else {
+      generatedAt = SerializationUtils.safeRequiredDateTime(
+        migratedData,
         'generatedAt',
         defaultValue: DateTime.now(),
-      ),
-      generatorVersion:
-          SerializationUtils.safeNullableString(data, 'generatorVersion'),
+      );
+    }
+
+    return TagResult(
+      tags: _parseStringSet(migratedData['tags']),
+      // M11: Use validated parsing for allergen/dietary status
+      allergenStatus: _parseAllergenStatus(migratedData['allergenStatus']),
+      dietaryStatus: _parseDietaryStatus(migratedData['dietaryStatus']),
+      coverage: coverage,
+      unknownIngredients: _parseStringList(migratedData['unknownIngredients']),
+      generatedAt: generatedAt,
+      generatorVersion: SerializationUtils.safeNullableString(
+          migratedData, 'generatorVersion'),
     );
   }
 
-  /// Converts to Firestore map.
+  /// Converts to Firestore map (uses Timestamp for dates).
   Map<String, dynamic> toFirestore() {
+    // M15: Sort tags for consistent ordering across all storage
+    final sortedTags = tags.toList()..sort();
     return {
-      'tags': tags.toList(),
+      'tags': sortedTags,
       'allergenStatus':
           allergenStatus.map((k, v) => MapEntry(k, v.toFirestore())),
       'dietaryStatus':
@@ -109,8 +157,119 @@ class TagResult {
       'coverage': coverage,
       'unknownIngredients': unknownIngredients,
       'generatedAt': Timestamp.fromDate(generatedAt),
-      if (generatorVersion != null) 'generatorVersion': generatorVersion,
+      // M14: Always write generatorVersion for consistency (null means unversioned)
+      'generatorVersion': generatorVersion,
+      // L12: Include schema version for future migrations
+      'schemaVersion': kTagResultSchemaVersion,
     };
+  }
+
+  /// Converts to JSON map (uses ISO string for dates).
+  /// Use this for Drift/SQLite storage and JSON serialization.
+  Map<String, dynamic> toJson() {
+    // M15: Sort tags for consistent ordering across all storage
+    final sortedTags = tags.toList()..sort();
+    return {
+      'tags': sortedTags,
+      'allergenStatus':
+          allergenStatus.map((k, v) => MapEntry(k, v.toFirestore())),
+      'dietaryStatus':
+          dietaryStatus.map((k, v) => MapEntry(k, v.toFirestore())),
+      'coverage': coverage,
+      'unknownIngredients': unknownIngredients,
+      'generatedAt': generatedAt.toIso8601String(),
+      // M14: Always write generatorVersion for consistency (null means unversioned)
+      'generatorVersion': generatorVersion,
+      // L12: Include schema version for future migrations
+      'schemaVersion': kTagResultSchemaVersion,
+    };
+  }
+
+  /// Creates from JSON map (expects ISO string for dates).
+  /// Use this for Drift/SQLite storage and JSON deserialization.
+  factory TagResult.fromJson(Map<String, dynamic>? data) {
+    if (data == null) return TagResult.empty();
+
+    // L12: Check schema version and migrate if needed
+    final schemaVersion =
+        SerializationUtils.safeInt(data, 'schemaVersion', defaultValue: 0);
+    final migratedData = _migrateSchema(data, schemaVersion);
+
+    // H11: Log warning when DateTime is missing (could indicate data corruption)
+    DateTime parseDateTime(dynamic value) {
+      if (value == null) {
+        AppLogger.warning(
+          'TagResult.fromJson: generatedAt is null, defaulting to now(). '
+              'This may indicate corrupted data.',
+          'TagResult',
+        );
+        return DateTime.now();
+      }
+      if (value is DateTime) return value;
+      if (value is String) return DateTime.parse(value);
+      if (value is Timestamp) return value.toDate();
+      AppLogger.warning(
+        'TagResult.fromJson: unexpected generatedAt type ${value.runtimeType}, defaulting to now().',
+        'TagResult',
+      );
+      return DateTime.now();
+    }
+
+    // H7: Clamp coverage to valid [0.0, 1.0] range
+    final rawCoverage = SerializationUtils.safeDouble(migratedData, 'coverage',
+        defaultValue: 0.0);
+    final coverage = rawCoverage.clamp(0.0, 1.0);
+
+    return TagResult(
+      tags: _parseStringSet(migratedData['tags']),
+      // M11: Use validated parsing for allergen/dietary status
+      allergenStatus: _parseAllergenStatus(migratedData['allergenStatus']),
+      dietaryStatus: _parseDietaryStatus(migratedData['dietaryStatus']),
+      coverage: coverage,
+      unknownIngredients: _parseStringList(migratedData['unknownIngredients']),
+      generatedAt: parseDateTime(migratedData['generatedAt']),
+      generatorVersion: SerializationUtils.safeNullableString(
+          migratedData, 'generatorVersion'),
+    );
+  }
+
+  // Schema migration helpers
+
+  /// L12: Migrates data from older schema versions to current version.
+  ///
+  /// Currently supports:
+  /// - V0 → V1: Add schemaVersion field (no data transformation needed)
+  ///
+  /// Future migrations can be added here when the schema evolves.
+  static Map<String, dynamic> _migrateSchema(
+    Map<String, dynamic> data,
+    int fromVersion,
+  ) {
+    if (fromVersion >= kTagResultSchemaVersion) {
+      return data; // Already at current version
+    }
+
+    final migrated = Map<String, dynamic>.from(data);
+
+    // V0 → V1: Initial schema version (no data transformation needed)
+    if (fromVersion < 1) {
+      migrated['schemaVersion'] = 1;
+      // No data transformation needed for V1, just version tracking
+      AppLogger.debug(
+        'TagResult: Migrated from schema v$fromVersion to v1',
+        'TagResult',
+      );
+    }
+
+    // Future migrations would be added here:
+    // if (fromVersion < 2) {
+    //   // V1 → V2 migration logic
+    //   migrated['newField'] = migrated['oldField'];
+    //   migrated.remove('oldField');
+    //   migrated['schemaVersion'] = 2;
+    // }
+
+    return migrated;
   }
 
   // Parsing helpers
@@ -118,7 +277,16 @@ class TagResult {
   static Set<String> _parseStringSet(dynamic value) {
     if (value == null) return {};
     if (value is List) {
-      return value.map((e) => e.toString()).toSet();
+      final result = value.map((e) => e.toString()).toSet();
+      // M12: Log warning if duplicates were found
+      if (value.length != result.length) {
+        final duplicateCount = value.length - result.length;
+        AppLogger.warning(
+          'TagResult: Found $duplicateCount duplicate tag(s) in stored data, deduplicated.',
+          'TagResult',
+        );
+      }
+      return result;
     }
     return {};
   }
@@ -131,15 +299,51 @@ class TagResult {
     return [];
   }
 
-  static Map<String, TriState> _parseTriStateMap(dynamic value) {
+  static Map<String, TriState> _parseTriStateMap(
+    dynamic value, {
+    Set<String>? validKeys,
+    String? contextName,
+  }) {
     if (value == null) return {};
     if (value is Map) {
-      return value.map(
-        (k, v) => MapEntry(
-            k.toString(), TriStateExtension.fromFirestore(v?.toString())),
-      );
+      final result = <String, TriState>{};
+      for (final entry in value.entries) {
+        final key = entry.key.toString();
+        final triState =
+            TriStateExtension.fromFirestore(entry.value?.toString());
+
+        // M11: Validate key if validKeys provided
+        if (validKeys != null && !validKeys.contains(key)) {
+          AppLogger.warning(
+            'TagResult: Unknown ${contextName ?? "status"} key "$key", skipping.',
+            'TagResult',
+          );
+          continue;
+        }
+
+        result[key] = triState;
+      }
+      return result;
     }
     return {};
+  }
+
+  /// M11: Parses allergenStatus with validation against AllergenConfig.
+  static Map<String, TriState> _parseAllergenStatus(dynamic value) {
+    return _parseTriStateMap(
+      value,
+      validKeys: AllergenConfig.allKeys.toSet(),
+      contextName: 'allergen',
+    );
+  }
+
+  /// M11: Parses dietaryStatus with validation against DietaryConfig.
+  static Map<String, TriState> _parseDietaryStatus(dynamic value) {
+    return _parseTriStateMap(
+      value,
+      validKeys: DietaryConfig.allKeys.toSet(),
+      contextName: 'dietary',
+    );
   }
 
   // Query helpers
@@ -239,7 +443,8 @@ class TagResult {
           _mapEquals(allergenStatus, other.allergenStatus) &&
           _mapEquals(dietaryStatus, other.dietaryStatus) &&
           coverage == other.coverage &&
-          _listEquals(unknownIngredients, other.unknownIngredients);
+          _listEquals(unknownIngredients, other.unknownIngredients) &&
+          generatorVersion == other.generatorVersion;
 
   static bool _setEquals<T>(Set<T> a, Set<T> b) =>
       a.length == b.length && a.containsAll(b);
@@ -258,6 +463,7 @@ class TagResult {
         dietaryStatus,
         coverage,
         Object.hashAll(unknownIngredients),
+        generatorVersion,
       );
 
   @override

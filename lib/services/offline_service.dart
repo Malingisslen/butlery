@@ -37,6 +37,8 @@ import 'package:butlery/services/offline/offline_initialization.dart';
 import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/services/offline/offline_sync_manager.dart';
 import 'package:butlery/services/offline/sync_result.dart';
+import 'package:butlery/services/tagging/tagging_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 // Export focused components for external usage
 export 'offline/sync_result.dart';
@@ -187,6 +189,8 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       onSyncStateChanged: () {
         refreshSyncState();
       },
+      // H9: Callback for retagging recipes when connectivity restores
+      onTagRecipe: _retagRecipe,
     );
 
     // Initial sync state refresh
@@ -263,6 +267,57 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     );
     await refreshSyncState();
     AppLogger.info('📋 Queued tagging for recipe: $recipeId');
+  }
+
+  /// H9: Retag a recipe when connectivity is restored.
+  /// Called by OfflineSyncManager for pending tag operations.
+  Future<void> _retagRecipe(String recipeId) async {
+    if (_currentUserId == null) {
+      AppLogger.warning('⚠️ No user logged in, cannot retag recipe');
+      return;
+    }
+
+    try {
+      // Get the recipe from local storage
+      final recipe =
+          await _userStorage.getRecipeForUser(recipeId, _currentUserId!);
+      if (recipe == null) {
+        AppLogger.warning('⚠️ Recipe $recipeId not found in offline storage');
+        return;
+      }
+
+      // Get TaggingService via ServiceLocator
+      final taggingService = ServiceLocator.get<TaggingService>();
+
+      // Generate tags
+      final tagResult = await taggingService.generateTags(recipe);
+      if (tagResult == null) {
+        AppLogger.warning(
+            '⚠️ Tagging returned null for recipe: ${recipe.title}');
+        return;
+      }
+
+      // Update recipe with new tags
+      final updatedRecipe = Recipe(
+        core: recipe.core.copyWith(tagResult: tagResult),
+        type: recipe.type,
+        socialData: recipe.socialData,
+        realtimeData: recipe.realtimeData,
+        offlineData: recipe.offlineData,
+      );
+
+      // Save updated recipe back to local storage (will also sync to Firebase)
+      await _userStorage.saveRecipeForUser(updatedRecipe, _currentUserId!,
+          isOnline: isOnline);
+
+      AppLogger.success(
+        '✅ Retagged recipe "${recipe.title}" with ${tagResult.tags.length} tags '
+        '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
+      );
+    } catch (e) {
+      AppLogger.error('❌ Failed to retag recipe $recipeId: $e');
+      rethrow; // Let sync manager handle retry
+    }
   }
 
   /// Get all offline recipes - with user support

@@ -27,6 +27,10 @@ class OfflineSyncManager {
   bool _isSyncing = false;
   final VoidCallback? _onSyncStateChanged;
 
+  /// H9: Callback to retag a recipe when connectivity is restored.
+  /// Injected from OfflineService to avoid circular dependency with TaggingService.
+  final Future<void> Function(String recipeId)? _onTagRecipe;
+
   /// Async lock to prevent concurrent sync operations.
   /// Uses a Completer-based mutex pattern for thread-safe sync.
   Completer<void>? _syncLock;
@@ -36,11 +40,13 @@ class OfflineSyncManager {
     required FirestoreRepository firestoreRepository,
     required AuthRepository authRepository,
     VoidCallback? onSyncStateChanged,
+    Future<void> Function(String recipeId)? onTagRecipe,
   })  : _recipeDao = database.recipeDao,
         _syncQueueDao = database.syncQueueDao,
         _firestoreRepository = firestoreRepository,
         _authRepository = authRepository,
-        _onSyncStateChanged = onSyncStateChanged;
+        _onSyncStateChanged = onSyncStateChanged,
+        _onTagRecipe = onTagRecipe;
 
   // Getters
   bool get isSyncing => _isSyncing;
@@ -102,6 +108,23 @@ class OfflineSyncManager {
       for (final item in pendingItems) {
         Recipe? recipe;
         try {
+          // H9: Handle tag operations separately
+          if (item.operation == SyncOperation.tag.name) {
+            if (_onTagRecipe != null) {
+              AppLogger.info(
+                  '🏷️ Processing pending tagging for: ${item.recipeId}');
+              await _onTagRecipe(item.recipeId);
+              await _syncQueueDao.dequeue(item.id);
+              successCount++;
+              AppLogger.success('✅ Tagging completed for: ${item.recipeId}');
+            } else {
+              AppLogger.warning(
+                  '⚠️ Tag callback not configured, skipping: ${item.recipeId}');
+              await _syncQueueDao.dequeue(item.id);
+            }
+            continue;
+          }
+
           // Get recipe from Drift
           final offlineRecipe =
               await _recipeDao.getRecipe(item.recipeId, userId);

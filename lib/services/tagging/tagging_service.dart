@@ -1,12 +1,14 @@
 import 'dart:async';
 
-import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/base/base_service.dart' hide PermissionService;
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
 
@@ -70,15 +72,25 @@ class TaggingService extends BaseService {
     Recipe recipe,
     List<String> ingredients,
   ) async {
-    return await Future.any([
-      _performTagGeneration(recipe, ingredients),
-      Future.delayed(_tagGenerationTimeout, () {
-        throw TimeoutException(
-          'Tag generation timed out after ${_tagGenerationTimeout.inSeconds} seconds',
-          _tagGenerationTimeout,
-        );
-      }),
-    ]);
+    try {
+      return await Future.any([
+        _performTagGeneration(recipe, ingredients),
+        Future.delayed(_tagGenerationTimeout, () {
+          throw TimeoutException(
+            'Tag generation timed out after ${_tagGenerationTimeout.inSeconds} seconds',
+            _tagGenerationTimeout,
+          );
+        }),
+      ]);
+    } on TimeoutException catch (e) {
+      // M8: Log timeout with recipe context for debugging
+      AppLogger.warning(
+        '⏱️ Tag generation timeout for recipe "${recipe.core.title}" '
+            '(${ingredients.length} ingredients): ${e.message}',
+        'TaggingService',
+      );
+      rethrow;
+    }
   }
 
   /// Performs the actual tag generation.
@@ -86,8 +98,11 @@ class TaggingService extends BaseService {
     Recipe recipe,
     List<String> ingredients,
   ) async {
-    // Lookup ingredients in database
-    final lookupResult = await _lookupService.lookupFromRaw(ingredients);
+    // M2: Lookup ingredients in database with userId for user-defined ingredients
+    final lookupResult = await _lookupService.lookupFromRaw(
+      ingredients,
+      userId: _getCurrentUserId(),
+    );
 
     AppLogger.debug(
       'Ingredient lookup: ${lookupResult.matched.length} matched, '
@@ -122,7 +137,11 @@ class TaggingService extends BaseService {
           return TagResult.empty();
         }
 
-        final lookupResult = await _lookupService.lookupFromRaw(ingredients);
+        // M2: Pass userId for user-defined ingredient lookup
+        final lookupResult = await _lookupService.lookupFromRaw(
+          ingredients,
+          userId: _getCurrentUserId(),
+        );
 
         return _tagGenerator.generatePhase1Only(
           ingredients: lookupResult,
@@ -141,10 +160,22 @@ class TaggingService extends BaseService {
     List<String> ingredients,
   ) async {
     return await executeServiceOperation(
-      () => _lookupService.lookupFromRaw(ingredients),
+      // M2: Pass userId for user-defined ingredient lookup
+      () => _lookupService.lookupFromRaw(ingredients,
+          userId: _getCurrentUserId()),
       operationName: 'Lookup ingredients',
       requiresAuth: false,
     );
+  }
+
+  /// M2: Gets the current user ID from PermissionService for user-defined ingredient lookup.
+  String? _getCurrentUserId() {
+    try {
+      return ServiceLocator.get<PermissionService>().currentUser?.uid;
+    } catch (e) {
+      // ServiceLocator not available or PermissionService not registered
+      return null;
+    }
   }
 
   /// Saves a user-defined ingredient for unknown ingredient handling.
@@ -240,6 +271,9 @@ class TaggingService extends BaseService {
         var retaggedCount = 0;
         const batchSize = 50;
 
+        // M9: Track failures for debugging
+        final failedRecipes = <String>[];
+
         // Process in batches for scalability
         for (var i = 0; i < recipesToRetag.length; i += batchSize) {
           final batchEnd = (i + batchSize).clamp(0, recipesToRetag.length);
@@ -248,24 +282,45 @@ class TaggingService extends BaseService {
           // Process batch in parallel
           final results = await Future.wait(
             batch.map((recipe) async {
-              final tagResult = await generateTags(recipe);
-              if (tagResult != null) {
-                final updatedRecipe = Recipe(
-                  core: recipe.core.copyWith(tagResult: tagResult),
-                  type: recipe.type,
-                  socialData: recipe.socialData,
-                  realtimeData: recipe.realtimeData,
-                  offlineData: recipe.offlineData,
+              try {
+                final tagResult = await generateTags(recipe);
+                if (tagResult != null) {
+                  final updatedRecipe = Recipe(
+                    core: recipe.core.copyWith(tagResult: tagResult),
+                    type: recipe.type,
+                    socialData: recipe.socialData,
+                    realtimeData: recipe.realtimeData,
+                    offlineData: recipe.offlineData,
+                  );
+                  await saveRecipe(updatedRecipe);
+                  return true;
+                }
+                // M9: Track failed recipe
+                failedRecipes.add(recipe.id);
+                return false;
+              } catch (e) {
+                // M9: Log individual recipe failures
+                AppLogger.warning(
+                  'Failed to retag recipe ${recipe.id}: $e',
+                  'TaggingService',
                 );
-                await saveRecipe(updatedRecipe);
-                return true;
+                failedRecipes.add(recipe.id);
+                return false;
               }
-              return false;
             }),
           );
 
           retaggedCount += results.where((success) => success).length;
-          onProgress?.call(batchEnd, total);
+          // H12: Report actual completed count, not batch end position
+          onProgress?.call(retaggedCount, total);
+        }
+
+        // M9: Log summary of failures
+        if (failedRecipes.isNotEmpty) {
+          AppLogger.warning(
+            '⚠️ Retagging completed with ${failedRecipes.length} failures: ${failedRecipes.take(5).join(', ')}${failedRecipes.length > 5 ? '...' : ''}',
+            'TaggingService',
+          );
         }
 
         AppLogger.info('🔄 Retagged $retaggedCount recipes for user $userId');

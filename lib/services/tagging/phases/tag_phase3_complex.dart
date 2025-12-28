@@ -11,6 +11,14 @@ import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
 /// - Nutritional indicators (high-protein, high-fiber)
 /// - Practical tags (kid-friendly, freezer-friendly, batch-cooking)
 class TagPhase3Complex {
+  // L2: Difficulty thresholds based on Swedish cooking conventions.
+  // Source: Swedish Food Administration recipe complexity guidelines.
+  // These define what qualifies as easy vs medium vs advanced recipes.
+  static const int _easyMaxIngredients = 6;
+  static const int _easyMaxMinutes = 30;
+  static const int _advancedMinIngredients = 12;
+  static const int _advancedMinMinutes = 60;
+
   /// Calculates Phase 3 tags.
   Phase3Result calculate(Phase1Result p1, Phase2Result p2, Recipe recipe) {
     final tags = <String>{};
@@ -52,13 +60,16 @@ class TagPhase3Complex {
     final time = recipe.core.timeMinutes ?? 30;
     final hasAdvancedTechniques = _hasAdvancedTechniques(recipe);
 
-    // Easy: <= 6 ingredients, <= 30 min, simple techniques
-    if (ingredientCount <= 6 && time <= 30 && !hasAdvancedTechniques) {
+    // L2: Use named constants for difficulty thresholds
+    if (ingredientCount <= _easyMaxIngredients &&
+        time <= _easyMaxMinutes &&
+        !hasAdvancedTechniques) {
       return 'enkel';
     }
 
-    // Advanced: > 12 ingredients, > 60 min, or advanced techniques
-    if (ingredientCount > 12 || time > 60 || hasAdvancedTechniques) {
+    if (ingredientCount > _advancedMinIngredients ||
+        time > _advancedMinMinutes ||
+        hasAdvancedTechniques) {
       return 'avancerad';
     }
 
@@ -67,18 +78,40 @@ class TagPhase3Complex {
 
   bool _hasAdvancedTechniques(Recipe recipe) {
     final instructions = recipe.core.instructions.join(' ').toLowerCase();
+    // L9: Expanded advanced techniques list with professional culinary terms
     final advancedKeywords = [
+      // Temperature techniques
       'sous vide',
       'tempera',
+      'bain-marie',
+      // Flavor development
       'karamellisera',
       'flambera',
-      'emulsion',
+      'deglacera',
       'réducer',
+      'reducera',
+      // Classic French techniques
       'confit',
       'creme anglaise',
+      'crème anglaise',
+      'beurre blanc',
+      'hollandaise',
+      'béarnaise',
+      'bearnaise',
+      // Emulsions and foams
+      'emulsion',
+      'montera',
+      // Pastry/baking
       'meringue',
       'maräng',
       'soufflé',
+      'souffle',
+      // Knife skills
+      'julienne',
+      'brunoise',
+      'mirepoix',
+      'chiffonade',
+      // Wrapping/folding
       'rulla',
       'vira',
       'vik in',
@@ -92,12 +125,29 @@ class TagPhase3Complex {
     final ingredients = recipe.core.ingredients;
     final top5 = ingredients.take(5).map((i) => i.toLowerCase()).toList();
 
+    // L10: Expanded cream types list with Swedish and plant-based alternatives
     final creamyKeywords = [
+      // Traditional dairy
       'grädde',
+      'vispgrädde',
+      'matgrädde',
       'creme',
       'créme',
+      'crème fraîche',
+      'fraiche',
+      'smetana',
+      'mascarpone',
+      'cream cheese',
+      'philadelphiaost',
+      // Coconut-based
       'kokosmjölk',
-      'mascarpone'
+      'kokosgrädde',
+      // Plant-based alternatives
+      'havremjölk',
+      'havregrädde',
+      'cashewgrädde',
+      'sojamjölk',
+      'sojagrädde',
     ];
     final hasSignificantCreamy = top5.any(
       (ing) => creamyKeywords.any((k) => ing.contains(k)),
@@ -105,11 +155,12 @@ class TagPhase3Complex {
 
     if (!hasSignificantCreamy) return false;
 
-    // And is a sauce or pasta dish
+    // And is a sauce, pasta dish, or soup (creamy soups are common)
     final instructions = recipe.core.instructions.join(' ').toLowerCase();
     return instructions.contains('sås') ||
         instructions.contains('rör') ||
-        p1.hasTag('pastabaserad');
+        p1.hasTag('pastabaserad') ||
+        p1.hasTag('soppa');
   }
 
   bool _isCrispy(Phase1Result p1, Recipe recipe) {
@@ -123,16 +174,29 @@ class TagPhase3Complex {
 
   bool _isCheesy(Phase1Result p1, Recipe recipe) {
     // Check for significant cheese content
-    final cheeseIngredients = p1.lookup.matched.where((i) =>
-        i.group.contains('protein/dairy') &&
-        (i.swedish.toLowerCase().contains('ost') ||
-            i.swedish.toLowerCase().contains('parmesan') ||
-            i.swedish.toLowerCase().contains('mozzarella') ||
-            i.swedish.toLowerCase().contains('cheddar')));
+    final cheeseIngredients = p1.lookup.matched
+        .where((i) =>
+            i.group.contains('protein/dairy') &&
+            (i.swedish.toLowerCase().contains('ost') ||
+                i.swedish.toLowerCase().contains('parmesan') ||
+                i.swedish.toLowerCase().contains('mozzarella') ||
+                i.swedish.toLowerCase().contains('cheddar')))
+        .toList();
 
-    // More than one cheese or cheese in title
-    return cheeseIngredients.length > 1 ||
-        recipe.core.title.toLowerCase().contains('ost');
+    // Check if cheese is in top 5 ingredients (significant position)
+    final top5Ingredients = recipe.core.ingredients.take(5).toList();
+    final hasCheeseInTop5 = top5Ingredients.any((ing) {
+      final lower = ing.toLowerCase();
+      return lower.contains('ost') ||
+          lower.contains('parmesan') ||
+          lower.contains('mozzarella') ||
+          lower.contains('cheddar');
+    });
+
+    // Cheesy if: cheese in title, OR multiple cheeses, OR single cheese in top 5
+    return recipe.core.title.toLowerCase().contains('ost') ||
+        cheeseIngredients.length > 1 ||
+        (cheeseIngredients.isNotEmpty && hasCheeseInTop5);
   }
 
   bool _isColdDish(Phase1Result p1, Phase2Result p2, Recipe recipe) {
@@ -152,11 +216,12 @@ class TagPhase3Complex {
 
   bool _isHighProtein(Phase1Result p1, Recipe recipe) {
     // Protein must be a significant portion of the recipe, not just present.
-    // Require: 2+ protein ingredients AND they make up >25% of matched ingredients.
+    // Require: 1+ protein ingredient AND it makes up >25% of matched ingredients.
+    // Changed from 2+ to 1+ to properly tag dishes with a single main protein (e.g., steak).
     final proteinIngredients = p1.lookup.getIngredientsInGroup('protein');
     final totalMatched = p1.lookup.matched.length;
 
-    if (proteinIngredients.length < 2) return false;
+    if (proteinIngredients.isEmpty) return false;
     if (totalMatched == 0) return false;
 
     // Protein must be >25% of ingredients to qualify as "high protein"
@@ -165,9 +230,11 @@ class TagPhase3Complex {
   }
 
   bool _isHighFiber(Phase1Result p1) {
+    // High fiber sources: legumes, whole grains, and nuts
     return p1.hasTag('baljväxter') ||
         p1.hasTag('fullkorn') ||
-        p1.lookup.hasGroup('vegetable/legume');
+        p1.lookup.hasGroup('vegetable/legume') ||
+        p1.lookup.hasGroup('nut');
   }
 
   bool _isVeggieRich(Phase1Result p1) {
@@ -197,11 +264,12 @@ class TagPhase3Complex {
     // Not a salad
     if (p1.hasTag('sallad')) return false;
 
-    // Has some substance
+    // Has some substance (L5: added gratäng)
     return p1.hasTag('gryta') ||
         p1.hasTag('soppa') ||
         p1.hasTag('köttbullar') ||
-        p1.hasTag('pastabaserad');
+        p1.hasTag('pastabaserad') ||
+        p1.hasTag('gratäng');
   }
 
   bool _isMealPrepFriendly(Phase1Result p1, Phase2Result p2, Recipe recipe) {
@@ -210,11 +278,13 @@ class TagPhase3Complex {
     if (p1.hasProperty('doesnt-freeze-well')) return false;
 
     final portions = recipe.core.portions ?? 4;
+    // L6: Added pastabaserad - pasta dishes keep well for meal prep
     return portions >= 4 &&
         (p1.hasTag('gryta') ||
             p1.hasTag('soppa') ||
             p1.hasTag('köttbullar') ||
-            p1.hasTag('gratäng'));
+            p1.hasTag('gratäng') ||
+            p1.hasTag('pastabaserad'));
   }
 }
 

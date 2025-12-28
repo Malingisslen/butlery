@@ -11,7 +11,7 @@ export 'package:butlery/models/social/activity_engagement.dart';
 export 'package:butlery/models/social/activity_type.dart';
 
 /// Activity visibility level for social feeds.
-/// Replaces List<String> visibility for simpler, more efficient storage.
+/// Replaces `List<String>` visibility for simpler, more efficient storage.
 enum ActivityVisibility {
   /// Visible to everyone (public feed)
   public('public'),
@@ -36,7 +36,7 @@ enum ActivityVisibility {
     );
   }
 
-  /// Migration: Convert from legacy List<String> to enum
+  /// Migration: Convert from legacy `List<String>` to enum
   static ActivityVisibility fromLegacyList(List<String> legacyVisibility) {
     if (legacyVisibility.contains('public')) return ActivityVisibility.public;
     if (legacyVisibility.contains('all_friends')) {
@@ -231,6 +231,7 @@ class ActivityFeedItem {
       'parentId': parentId,
       'parentType': parentType,
       'timestamp': Timestamp.fromDate(timestamp),
+      // ignore: deprecated_member_use_from_same_package
       'visibility': visibility, // Legacy field for backward compatibility
       'visibilityLevel': visibilityLevel.firestoreKey, // New simplified field
       'metadata': metadata,
@@ -253,7 +254,8 @@ class ActivityFeedItem {
       'parentId': parentId,
       'parentType': parentType,
       'timestamp': timestamp.toIso8601String(),
-      'visibility': visibility,
+      // ignore: deprecated_member_use_from_same_package
+      'visibility': visibility, // Legacy field for backward compatibility
       'visibilityLevel': visibilityLevel.firestoreKey,
       'metadata': metadata,
       'engagement': engagement.toJson(),
@@ -348,7 +350,8 @@ class ActivityFeedItem {
       parentId: parentId ?? this.parentId,
       parentType: parentType ?? this.parentType,
       timestamp: timestamp ?? this.timestamp,
-      visibility: visibility ?? this.visibility,
+      // ignore: deprecated_member_use_from_same_package
+      visibility: visibility ?? this.visibility, // Legacy field support
       visibilityLevel: visibilityLevel ?? this.visibilityLevel,
       metadata: metadata ?? this.metadata,
       engagement: engagement ?? this.engagement,

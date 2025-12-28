@@ -61,15 +61,15 @@ class FirebaseIngredientRepository
     }
   }
 
+  /// M7: Pending changes collected during initialization.
+  final List<DocumentChange<Map<String, dynamic>>> _pendingChanges = [];
+
   /// Initializes the repository with automatic cache updates.
   ///
-  /// Sets up a listener for ingredient collection changes to automatically
-  /// invalidate and refresh the cache when ingredients are synced.
+  /// M7: Sets up the listener BEFORE loading cache to avoid race condition.
+  /// Any changes that occur during cache loading are collected and applied after.
   Future<void> initialize() async {
-    // Load initial cache
-    await loadCache();
-
-    // Subscribe to changes for automatic invalidation
+    // M7: Set up listener FIRST to capture any changes during cache load
     _subscription = _collection.snapshots().listen((snapshot) {
       if (snapshot.docChanges.isNotEmpty) {
         // Check if this is actual data change, not just initial load
@@ -78,14 +78,66 @@ class FirebaseIngredientRepository
             change.type == DocumentChangeType.modified ||
             change.type == DocumentChangeType.removed);
 
-        if (hasRealChanges && _cacheLoaded) {
-          AppLogger.info(
-            '🔄 Ingredient collection changed, invalidating cache (${snapshot.docChanges.length} changes)',
-          );
-          _invalidateAndReload(snapshot);
+        if (hasRealChanges) {
+          if (!_cacheLoaded) {
+            // M7: Collect changes during initialization
+            _pendingChanges.addAll(snapshot.docChanges);
+            AppLogger.debug(
+              '📦 Collecting ${snapshot.docChanges.length} changes during init',
+            );
+          } else {
+            // Normal processing after load
+            AppLogger.info(
+              '🔄 Ingredient collection changed, invalidating cache (${snapshot.docChanges.length} changes)',
+            );
+            _invalidateAndReload(snapshot);
+          }
         }
       }
     });
+
+    // Load initial cache
+    await loadCache();
+
+    // M7: Apply any changes that occurred during load
+    if (_pendingChanges.isNotEmpty) {
+      AppLogger.info(
+        '🔄 Applying ${_pendingChanges.length} changes collected during init',
+      );
+      _applyPendingChanges();
+    }
+  }
+
+  /// M7: Applies changes collected during initialization.
+  void _applyPendingChanges() {
+    for (final change in _pendingChanges) {
+      switch (change.type) {
+        case DocumentChangeType.added:
+        case DocumentChangeType.modified:
+          final ingredient = IngredientData.fromFirestore(change.doc);
+          _addToCache(ingredient);
+          break;
+        case DocumentChangeType.removed:
+          final id = change.doc.id;
+          _removeFromCache(id);
+          break;
+      }
+    }
+    _pendingChanges.clear();
+    _notifyCacheInvalidated();
+  }
+
+  /// Removes an ingredient from all cache indexes.
+  void _removeFromCache(String id) {
+    final ingredient = _cache[id];
+    if (ingredient == null) return;
+
+    _cache.remove(id);
+
+    // Remove from Swedish index
+    _swedishNameIndex.removeWhere((_, v) => v == id);
+    _englishNameIndex.removeWhere((_, v) => v == id);
+    _aliasIndex.removeWhere((_, v) => v == id);
   }
 
   /// Invalidates cache and reloads from snapshot.
@@ -248,9 +300,15 @@ class FirebaseIngredientRepository
     return _fuzzyMatch(normalized);
   }
 
-  /// Attempts fuzzy matching for compound ingredient names.
+  /// M1: Attempts fuzzy matching for compound ingredient names using scoring.
+  ///
+  /// Returns the best match based on a scoring algorithm:
+  /// - Exact match: highest priority (return immediately)
+  /// - Prefix match: high priority (0.9 - length penalty)
+  /// - Suffix match: medium-high priority (0.8 - length penalty)
+  /// - Substring match: medium priority (0.5 or 0.4)
   IngredientData? _fuzzyMatch(String normalized) {
-    // Try removing common prefixes/suffixes
+    // Try removing common prefixes/suffixes first
     final variations = _generateVariations(normalized);
 
     for (final variation in variations) {
@@ -262,14 +320,67 @@ class FirebaseIngredientRepository
       }
     }
 
-    // Try partial match (for compound words)
+    // M1: Use scored matching instead of returning first partial match
+    final candidates = <MapEntry<String, double>>[];
+
     for (final entry in _swedishNameIndex.entries) {
-      if (normalized.contains(entry.key) || entry.key.contains(normalized)) {
+      double score = 0;
+      final indexKey = entry.key;
+
+      // Exact match (highest priority) - return immediately
+      if (indexKey == normalized) {
         return _cache[entry.value];
+      }
+
+      // Prefix match (high priority): "kyckling" matches "kycklingbröst"
+      if (indexKey.startsWith(normalized)) {
+        // Score decreases slightly with length difference
+        score = 0.9 - (indexKey.length - normalized.length) * 0.01;
+      }
+      // Reverse prefix: "kycklingbröst" matches "kyckling"
+      else if (normalized.startsWith(indexKey)) {
+        score = 0.8 - (normalized.length - indexKey.length) * 0.01;
+      }
+      // Substring match: input contains ingredient name
+      else if (normalized.contains(indexKey)) {
+        // Longer ingredient names get higher scores when found as substring
+        score = 0.4 + (indexKey.length * 0.01).clamp(0.0, 0.1);
+      }
+      // Reverse substring: ingredient contains input
+      else if (indexKey.contains(normalized)) {
+        score = 0.5;
+      }
+
+      if (score > 0) {
+        candidates.add(MapEntry(entry.value, score));
       }
     }
 
-    return null;
+    // Also check alias index for partial matches
+    for (final entry in _aliasIndex.entries) {
+      double score = 0;
+      final indexKey = entry.key;
+
+      if (indexKey.startsWith(normalized)) {
+        score = 0.85 - (indexKey.length - normalized.length) * 0.01;
+      } else if (normalized.startsWith(indexKey)) {
+        score = 0.75 - (normalized.length - indexKey.length) * 0.01;
+      } else if (normalized.contains(indexKey)) {
+        score = 0.35 + (indexKey.length * 0.01).clamp(0.0, 0.1);
+      } else if (indexKey.contains(normalized)) {
+        score = 0.45;
+      }
+
+      if (score > 0) {
+        candidates.add(MapEntry(entry.value, score));
+      }
+    }
+
+    if (candidates.isEmpty) return null;
+
+    // Sort by score descending and return best match
+    candidates.sort((a, b) => b.value.compareTo(a.value));
+    return _cache[candidates.first.key];
   }
 
   /// Generates variations of a name for fuzzy matching.
