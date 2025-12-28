@@ -455,10 +455,26 @@ class RecipeCore with JsonSerializableMixin {
           ? DateTime.parse(json['lastRatedAt'] as String)
           : null,
       dataChecksum: storedChecksum,
-      tagResult: json['tagResult'] != null
-          ? TagResult.fromFirestore(json['tagResult'] as Map<String, dynamic>)
-          : null,
+      tagResult: _parseTagResult(json['tagResult']),
     );
+  }
+
+  /// Safely parses tagResult from dynamic value.
+  /// Returns null if parsing fails instead of throwing.
+  static TagResult? _parseTagResult(dynamic value) {
+    if (value == null) return null;
+    try {
+      if (value is Map<String, dynamic>) {
+        return TagResult.fromFirestore(value);
+      }
+      // Handle Map<dynamic, dynamic> case from Firestore
+      if (value is Map) {
+        return TagResult.fromFirestore(Map<String, dynamic>.from(value));
+      }
+    } catch (e) {
+      AppLogger.warning('Failed to parse tagResult: $e');
+    }
+    return null;
   }
 
   /// Create from repository data map (removes Firebase dependency)
@@ -527,9 +543,7 @@ class RecipeCore with JsonSerializableMixin {
           : null,
       lastRatedAt: utils.SerializationUtils.safeDateTime(data, 'lastRatedAt'),
       dataChecksum: storedChecksum,
-      tagResult: data['tagResult'] != null
-          ? TagResult.fromFirestore(data['tagResult'] as Map<String, dynamic>)
-          : null,
+      tagResult: _parseTagResult(data['tagResult']),
     );
   }
 

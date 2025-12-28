@@ -74,6 +74,32 @@ interface Diff {
   unchanged: number;
 }
 
+interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+// Valid properties from Butlery_Ingredients_PROPERTIES.csv
+const VALID_PROPERTIES = new Set([
+  // Diet base
+  "animal-product", "dairy", "egg", "meat", "plant-based", "seafood", "vegan-friendly",
+  // Meat detail
+  "beef", "fish", "game", "lamb", "pork", "poultry", "shellfish",
+  // Allergens
+  "contains-gluten", "contains-lactose", "peanut", "sesame", "soy", "tree-nut",
+  "crustacean", "mollusc", "celery", "mustard", "lupin", "sulfites",
+  // Special diet
+  "contains-alcohol", "high-mercury", "nightshade",
+  // Practical
+  "needs-cooking", "processed", "is-spicy", "doesnt-freeze-well",
+]);
+
+// Valid group prefixes from Butlery_Ingredients_GROUPS.csv
+const VALID_GROUP_PREFIXES = [
+  "protein", "vegetable", "fruit", "grain", "fat", "other", "spice",
+];
+
 function parseArgs(args: string[]): Options {
   return {
     dryRun: args.includes("--dry-run"),
@@ -156,6 +182,101 @@ function csvToFirestore(row: IngredientRow): IngredientDoc {
     status: row.status || "validated",
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
+}
+
+/**
+ * Validates a single ingredient row for semantic correctness.
+ * Checks group hierarchy and property validity.
+ */
+function validateIngredient(row: IngredientRow): ValidationResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  // Validate required fields
+  if (!row.id || row.id.trim() === "") {
+    errors.push("Missing required field: id");
+  }
+  if (!row.swedish || row.swedish.trim() === "") {
+    errors.push("Missing required field: swedish");
+  }
+
+  // Validate group hierarchy
+  const group = row.group || "";
+  if (group) {
+    const hasValidPrefix = VALID_GROUP_PREFIXES.some((prefix) =>
+      group === prefix || group.startsWith(prefix + "/")
+    );
+    if (!hasValidPrefix) {
+      errors.push(`Invalid group: "${group}" (must start with: ${VALID_GROUP_PREFIXES.join(", ")})`);
+    }
+  } else {
+    warnings.push("Missing group - ingredient will be uncategorized");
+  }
+
+  // Validate properties
+  const properties = (row.properties || "")
+    .split(",")
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+
+  for (const prop of properties) {
+    if (!VALID_PROPERTIES.has(prop)) {
+      errors.push(`Unknown property: "${prop}"`);
+    }
+  }
+
+  // Validate status
+  const validStatuses = ["validated", "pending", "deleted"];
+  if (row.status && !validStatuses.includes(row.status)) {
+    warnings.push(`Unusual status: "${row.status}" (expected: ${validStatuses.join(", ")})`);
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+  };
+}
+
+/**
+ * Validates all ingredients and returns aggregated results.
+ * Fails fast if any critical errors are found.
+ */
+function validateAllIngredients(
+  rows: IngredientRow[],
+  verbose: boolean
+): { valid: boolean; errorCount: number; warningCount: number } {
+  let errorCount = 0;
+  let warningCount = 0;
+
+  console.log("\n🔍 Validating ingredients...");
+
+  for (const row of rows) {
+    const result = validateIngredient(row);
+
+    if (result.errors.length > 0) {
+      errorCount += result.errors.length;
+      console.log(`\n   ❌ ${row.id || "(no id)"} - ${row.swedish || "(no name)"}:`);
+      result.errors.forEach((e) => console.log(`      • ${e}`));
+    }
+
+    if (result.warnings.length > 0 && verbose) {
+      warningCount += result.warnings.length;
+      console.log(`\n   ⚠️  ${row.id || "(no id)"} - ${row.swedish || "(no name)"}:`);
+      result.warnings.forEach((w) => console.log(`      • ${w}`));
+    }
+  }
+
+  if (errorCount === 0) {
+    console.log(`   ✅ All ${rows.length} ingredients passed validation`);
+    if (warningCount > 0) {
+      console.log(`   ⚠️  ${warningCount} warnings (use --verbose to see)`);
+    }
+  } else {
+    console.log(`\n   ❌ Validation failed: ${errorCount} errors, ${warningCount} warnings`);
+  }
+
+  return { valid: errorCount === 0, errorCount, warningCount };
 }
 
 function listEquals(a: string[], b: string[]): boolean {
@@ -260,6 +381,14 @@ async function main(): Promise<void> {
 
   const csvIngredients = loadCsv(csvPath);
   console.log(`   Loaded ${csvIngredients.length} ingredients from CSV`);
+
+  // Validate all ingredients before any changes
+  const validation = validateAllIngredients(csvIngredients, options.verbose);
+  if (!validation.valid) {
+    console.log("\n❌ Cannot proceed - validation errors must be fixed first.");
+    console.log("   Fix the errors in the CSV file and try again.");
+    process.exit(1);
+  }
 
   // Load current Firestore data
   console.log("\n📥 Loading current Firestore data...");

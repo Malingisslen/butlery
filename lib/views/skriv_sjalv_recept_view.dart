@@ -167,14 +167,24 @@ class _SkrivSjalvReceptViewContentState
       if (mounted) {
         if (savedRecipe != null) {
           // Build success message with optional tag summary
-          String successMessage = 'Recept sparat!';
           final tagResult = savedRecipe.tagResult;
-          if (tagResult != null && tagResult.tags.isNotEmpty) {
+
+          // Check if tagging failed - show warning instead of success
+          if (tagResult != null && tagResult.hasFailed) {
+            UtilityComponents.showWarningSnackbar(
+              context,
+              'Recept sparat, men taggning misslyckades. '
+              'Allergeninformation kan vara ofullständig.',
+            );
+          } else if (tagResult != null && tagResult.tags.isNotEmpty) {
             final coverage = (tagResult.coverage * 100).toInt();
-            successMessage =
-                'Recept sparat! ${tagResult.tags.length} taggar ($coverage%)';
+            UtilityComponents.showSuccessSnackbar(
+              context,
+              'Recept sparat! ${tagResult.tags.length} taggar ($coverage%)',
+            );
+          } else {
+            UtilityComponents.showSuccessSnackbar(context, 'Recept sparat!');
           }
-          UtilityComponents.showSuccessSnackbar(context, successMessage);
           // MEDIUM PRIORITY FIX: Better navigation that preserves user context
           // Navigate to recipe detail or back to recipes list instead of clearing entire stack
           Navigator.of(context)
