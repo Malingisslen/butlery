@@ -1,7 +1,8 @@
 # Butlery Tagging System — Complete Specification
 
-**Version:** 1
-**Date:** December 2025  
+**Version:** 2.0
+**Generator Version:** 1.0.0
+**Date:** December 2025
 **Status:** Single Source of Truth for tagging and menu generation
 
 ---
@@ -35,7 +36,7 @@ For allergen and dietary tags, we use **three states**, not two:
 
 ### Tri-valued Algebra for Combined Allergens
 
-For allergens combining multiple properties (e.g., `nuts` = tree-nut OR peanut, `shellfish` = crustacean OR mollusc), the following calculation rules apply:
+For allergens combining multiple properties (e.g., `nötter` = tree-nut OR peanut, `skaldjur` = crustacean OR mollusc):
 
 #### Priority Order
 
@@ -53,21 +54,9 @@ CONTAINS > UNKNOWN > FREE
 | UNKNOWN | UNKNOWN | UNKNOWN |
 
 **Examples:**
-- Almond (tree-nut: CONTAINS) + unknown ingredient (peanut: UNKNOWN) → nuts: **CONTAINS**
-- No tree nuts (tree-nut: FREE) + unknown ingredient (peanut: UNKNOWN) → nuts: **UNKNOWN**
-- No tree nuts (tree-nut: FREE) + no peanuts (peanut: FREE) → nuts: **FREE**
-
-#### AND-logic (used for dietary status)
-
-| Condition A | Condition B | Result |
-|-------------|-------------|--------|
-| FREE | FREE | FREE |
-| FREE | UNKNOWN | UNKNOWN |
-| FREE | CONTAINS | CONTAINS |
-| UNKNOWN | UNKNOWN | UNKNOWN |
-| CONTAINS | * (anything) | CONTAINS |
-
-**Implementation requirement:** Tri-valued logic must be implemented explicitly — never use boolean-cast that treats UNKNOWN as false.
+- Almond (tree-nut: CONTAINS) + unknown ingredient (peanut: UNKNOWN) → nötter: **CONTAINS**
+- No tree nuts (tree-nut: FREE) + unknown ingredient (peanut: UNKNOWN) → nötter: **UNKNOWN**
+- No tree nuts (tree-nut: FREE) + no peanuts (peanut: FREE) → nötter: **FREE**
 
 ### Coverage Requirements by Tag Type
 
@@ -94,122 +83,539 @@ MODULE1: IngredientNormalizer
 Normalized ingredients: ["chicken", "cream", "pasta"]
     │
     ▼
-IngredientService.lookup()
+IngredientLookupService.lookup()
     │ Fetches properties + group per ingredient
     ▼
 MODULE2: TagGenerator (4 calculation phases)
     │
+    ├── Phase 1: Base tags (time, allergens, dietary, protein, cooking method)
+    ├── Phase 2: Simple derived (dish type, spicy/mild, meal type)
+    ├── Phase 3: Complex derived (difficulty, texture, nutritional, practical)
+    └── Phase 4: Mood/occasion (time-based, holidays, seasons)
+    │
     ▼
-Output: {
-  tags: ["contains-meat", "creamy", "pasta-dish", "italian"],
+Output: TagResult {
+  tags: ["kyckling", "krämig", "pastabaserad", "under-30-min"],
   allergenStatus: {
     gluten: CONTAINS,
-    dairy: CONTAINS,
-    nuts: FREE,
+    mjölk: CONTAINS,
+    nötter: FREE,
     ...
   },
-  coverage: 1.0
+  dietaryStatus: {
+    vegetarisk: CONTAINS,
+    vegansk: CONTAINS,
+    ...
+  },
+  coverage: 1.0,
+  generatorVersion: "1.0.0"
 }
 ```
 
 ---
 
-## Two Types of Knowledge
+## Implementation Files
 
-### Type A: "What does this recipe contain?" (Safety-critical)
-
-- Based on ingredient **properties**
-- Uses tri-valued logic
-- **Errors can make someone sick**
-- Examples: `contains-gluten`, `gluten-free`, `vegan`
-
-### Type B: "What kind of dish is this?" (Identity)
-
-- Based on ingredient **groups** + keywords + derivation
-- Binary logic (tag exists or doesn't)
-- **Errors give weird menu, not health risk**
-- Examples: `chicken`, `italian`, `comfort-food`
-
----
-
-## Properties (Ingredient Characteristics)
-
-Properties describe what an ingredient **contains or is**. They are stored on the ingredient and inherited to the recipe.
-
-### Current Properties in Database (33 total)
-
-#### Diet-base (7)
-| Property | Swedish | Used for Tag |
-|----------|---------|--------------|
-| `animal-product` | Animal product | vegan |
-| `dairy` | Dairy | dairy-free |
-| `egg` | Egg | egg-free |
-| `meat` | Meat | vegetarian |
-| `plant-based` | Plant-based | (identification) |
-| `seafood` | Fish & shellfish | vegetarian |
-| `vegan-friendly` | Vegan | (identification) |
-
-#### Meat-detail (7)
-| Property | Swedish | Used for Tag |
-|----------|---------|--------------|
-| `beef` | Beef | beef |
-| `fish` | Fish | fish, fish-free |
-| `game` | Game | game |
-| `lamb` | Lamb | lamb |
-| `pork` | Pork | pork-free, halal |
-| `poultry` | Poultry | chicken, duck |
-| `shellfish` | Shellfish | shellfish |
-
-#### Allergen (12)
-| Property | Swedish | EU Allergen | Used for Tag |
-|----------|---------|-------------|--------------|
-| `contains-gluten` | Contains gluten | ✓ | gluten-free |
-| `contains-lactose` | Contains lactose | — | lactose-free |
-| `peanut` | Peanut | ✓ | peanut-free |
-| `tree-nut` | Tree nut | ✓ | tree-nut-free, nut-free |
-| `sesame` | Sesame | ✓ | sesame-free |
-| `soy` | Soy | ✓ | soy-free |
-| `crustacean` | Crustacean | ✓ | crustacean-free |
-| `mollusc` | Mollusc | ✓ | mollusc-free |
-| `celery` | Celery | ✓ | celery-free |
-| `mustard` | Mustard | ✓ | mustard-free |
-| `lupin` | Lupin | ✓ | lupin-free |
-| `sulfites` | Sulfites | ✓ | sulfite-free |
-
-#### Special-diet (3)
-| Property | Swedish | Used for |
-|----------|---------|----------|
-| `contains-alcohol` | Alcohol | alcohol-free, halal |
-| `high-mercury` | High mercury | pregnancy-safe |
-| `nightshade` | Nightshade | AIP-friendly |
-
-#### Practical (4)
-| Property | Swedish | Used for |
-|----------|---------|----------|
-| `needs-cooking` | Must be cooked | raw tags |
-| `processed` | Processed product | (identification) |
-| `is-spicy` | Spicy/hot | spicy, mild, kid-friendly |
-| `doesnt-freeze-well` | Freezes poorly | freezer-friendly |
-
-### Properties to Add (Target)
-
-| Property | Description | Priority |
-|----------|-------------|----------|
-| `high-fodmap` | High FODMAP (garlic, onion) | Medium — IBS filtering |
-| `spring-seasonal` | Spring season (asparagus, rhubarb) | Medium — seasonal adaptation |
-| `summer-seasonal` | Summer season (strawberries, new potatoes) | Medium |
-| `autumn-seasonal` | Autumn season (mushrooms, apples) | Medium |
-| `winter-seasonal` | Winter season (cabbage, root vegetables) | Medium |
-| `premium-ingredient` | Luxury (beef tenderloin, lobster) | Low — dinner party |
-| `pantry-staple` | Basic ingredient (salt, oil) | Low — can ignore in coverage |
+| Component | File Path |
+|-----------|-----------|
+| TagGenerator | `lib/services/tagging/tag_generator.dart` |
+| Phase 1 | `lib/services/tagging/phases/tag_phase1_base.dart` |
+| Phase 2 | `lib/services/tagging/phases/tag_phase2_derived.dart` |
+| Phase 3 | `lib/services/tagging/phases/tag_phase3_complex.dart` |
+| Phase 4 | `lib/services/tagging/phases/tag_phase4_mood.dart` |
+| AllergenConfig | `lib/services/tagging/config/allergen_config.dart` |
+| DietaryConfig | `lib/services/tagging/config/dietary_config.dart` |
+| TagResult | `lib/models/tagging/tag_result.dart` |
+| TriState | `lib/models/tagging/tri_state.dart` |
+| IngredientData | `lib/models/tagging/ingredient_data.dart` |
+| IngredientLookupResult | `lib/models/tagging/ingredient_lookup_result.dart` |
 
 ---
 
-## Groups (Ingredient Taxonomy)
+## Phase 1: Base Tags
 
-Groups describe what an ingredient **is** in a hierarchical structure. Used to identify the dish's character.
+### Time Tags
 
-### Group Structure (61 groups, 3 levels)
+Based on `recipe.core.timeMinutes`:
+
+| Tag | Rule |
+|-----|------|
+| `under-15-min` | timeMinutes ≤ 15 |
+| `under-30-min` | timeMinutes ≤ 30 |
+| `under-45-min` | timeMinutes ≤ 45 |
+| `under-60-min` | timeMinutes ≤ 60 |
+| `över-60-min` | timeMinutes > 60 |
+
+### Allergen Status (via AllergenConfig)
+
+#### EU Allergens (14)
+
+| Key | Trigger Property | Contains Tag | Free Tag |
+|-----|------------------|--------------|----------|
+| `gluten` | `contains-gluten` | `innehåller-gluten` | `glutenfri` |
+| `mjölk` | `dairy` | `innehåller-mjölk` | `mjölkfri` |
+| `ägg` | `egg` | `innehåller-ägg` | `äggfri` |
+| `fisk` | `fish` | `innehåller-fisk` | `fiskfri` |
+| `kräftdjur` | `crustacean` | `innehåller-kräftdjur` | `kräftdjursfri` |
+| `blötdjur` | `mollusc` | `innehåller-blötdjur` | `blötdjursfri` |
+| `trädnötter` | `tree-nut` | `innehåller-trädnötter` | `trädnötsfri` |
+| `jordnötter` | `peanut` | `innehåller-jordnötter` | `jordnötsfri` |
+| `soja` | `soy` | `innehåller-soja` | `sojafri` |
+| `sesam` | `sesame` | `innehåller-sesam` | `sesamfri` |
+| `selleri` | `celery` | `innehåller-selleri` | `sellerifri` |
+| `senap` | `mustard` | `innehåller-senap` | `senapsfri` |
+| `lupin` | `lupin` | `innehåller-lupin` | `lupinfri` |
+| `sulfiter` | `sulfites` | `innehåller-sulfiter` | `sulfitfri` |
+
+#### Additional Allergens
+
+| Key | Trigger Property | Contains Tag | Free Tag |
+|-----|------------------|--------------|----------|
+| `laktos` | `contains-lactose` | `innehåller-laktos` | `laktosfri` |
+| `alkohol` | `contains-alcohol` | `innehåller-alkohol` | `alkoholfri` |
+| `kött` | `meat` | `innehåller-kött` | — |
+| `fläsk` | `pork` | `innehåller-fläsk` | `fläskfri` |
+| `nötkött` | `beef` | `innehåller-nötkött` | `nötkötsfri` |
+
+#### Combined Allergens (OR logic)
+
+| Key | Trigger Properties | Contains Tag | Free Tag |
+|-----|-------------------|--------------|----------|
+| `skaldjur` | `crustacean OR mollusc` | `innehåller-skaldjur` | `skaldjursfri` |
+| `nötter` | `tree-nut OR peanut` | `innehåller-nötter` | `nötfri` |
+
+#### UI Grouping (for display)
+
+| Group | Allergens |
+|-------|-----------|
+| `dairy` | mjölk, laktos |
+| `nuts` | trädnötter, jordnötter, nötter |
+| `seafood` | fisk, kräftdjur, blötdjur, skaldjur |
+| `meat` | kött, fläsk, nötkött |
+
+### Dietary Status (via DietaryConfig)
+
+All require 100% coverage (`requiresFullCoverage = true`):
+
+| Key | Excluded Properties | Required Properties |
+|-----|---------------------|---------------------|
+| `vegetarisk` | meat, seafood | — |
+| `vegansk` | animal-product | — |
+| `pescetarian` | meat | fish OR shellfish OR crustacean OR mollusc |
+| `graviditetssäker` | high-mercury, contains-alcohol | — |
+| `barnvänlig` | is-spicy, contains-alcohol | — |
+| `halalanpassad` | pork, contains-alcohol | — |
+| `kosheranpassad` | pork, shellfish, crustacean, mollusc | — |
+| `nötkötsfri` | beef | — |
+
+### Protein Tags
+
+Based on ingredient groups and names:
+
+| Tag | Trigger |
+|-----|---------|
+| `kyckling` | Group `protein/meat/poultry` + name contains "kyckling" |
+| `anka` | Group `protein/meat/poultry` + name contains "anka" |
+| `kalkon` | Group `protein/meat/poultry` + name contains "kalkon" |
+| `nötkött` | Group `protein/meat/beef` |
+| `fläskkött` | Group `protein/meat/pork` |
+| `lamm` | Group `protein/meat/lamb` |
+| `vilt` | Group `protein/meat/game` |
+| `fisk` | Group `protein/seafood/fish` |
+| `lax` | Group `protein/seafood/fish` + name contains "lax" |
+| `torsk` | Group `protein/seafood/fish` + name contains "torsk" |
+| `sill` | Group `protein/seafood/fish` + name contains "sill" |
+| `skaldjur` | Group `protein/seafood/shellfish` |
+| `räkor` | Group `protein/seafood/shellfish` + property `crustacean` + name contains "räk" |
+| `tofu` | Group `protein/plant-based` + name contains "tofu" |
+| `baljväxter` | Group `vegetable/legume` |
+| `ägg` | Group `protein/egg` |
+
+### Carb/Base Tags
+
+| Tag | Trigger |
+|-----|---------|
+| `pastabaserad` | Name: pasta, spagetti, penne, lasagne, tagliatelle + group contains `pasta-bread` |
+| `risbaserad` | Name contains "ris" + group contains `grain` |
+| `potatisbaserad` | Name contains "potatis" + group contains `vegetable/root` |
+| `nudelbaserad` | Name contains: nudl, wontonnudl, risnudl, glasnudl |
+| `brödbaserad` | Group contains `grain/bread` OR name contains "bröd" |
+| `fullkorn` | Group `grain/whole` |
+
+### Cooking Method Tags
+
+Uses word boundary regex matching: `(?:^|[^a-zåäö])$word`
+
+| Tag | Keywords |
+|-----|----------|
+| `ugnsbakad` | "ugn" OR ("°c" OR "grader") AND NOT "mikro"/"micro" |
+| `stekt` | "stek" OR "bryn" |
+| `grillad` | "grill" |
+| `kokt` | "koka"/"kok" OR "sjud" |
+| `ångkokt` | "ångkok" OR "ånga" |
+| `pocherad` | "pochera" OR "pocherad" |
+| `friterad` | "fritera" OR "friterad" OR "fritering" |
+| `airfryer` | exact "airfryer" or "air fryer" |
+| `slow-cooker` | exact "slow cooker" or "crock pot" |
+| `tryckkokare` | "tryckkokare" OR exact "instant pot" |
+| `sous-vide` | exact "sous vide" or "sous-vide" |
+| `wokad` | "wok" |
+| `microugn` | "micro" OR "mikro" |
+| `rökt` | "rök" AND NOT "röra" AND NOT "rörelse" |
+
+### Dish Type Tags
+
+Based on recipe title keywords:
+
+| Tag | Keywords |
+|-----|----------|
+| `soppa` | soppa, buljong |
+| `sallad` | sallad |
+| `gryta` | gryta |
+| `gratäng` | gratäng |
+| `curry` | curry |
+| `smörgås` | smörgås, macka |
+| `hamburgare` | hamburgare, burger |
+| `pizza` | pizza |
+| `taco` | taco, tacos |
+| `bowl` | bowl, poké, poke |
+| `paj` | paj, pie, quiche |
+| `kaka` | kaka, tårta (NOT if title contains "pannkak") |
+| `bröd` | bröd |
+| `köttbullar` | köttbull |
+| `omelett` | omelett |
+| `pannkaka` | pannkak, crêpe, crepe |
+| `våffla` | våffl |
+| `smoothie` | smoothie |
+| `wok` | wok |
+| `dipp` | dipp, dip |
+| `sås` | sås |
+
+---
+
+## Phase 2: Simple Derived Tags
+
+Depends on Phase 1 results.
+
+### Dish Category Tags
+
+| Tag | Rule |
+|-----|------|
+| `pasta-dish` | Phase 1 has `pastabaserad` |
+| `rice-dish` | Phase 1 has `risbaserad` |
+| `noodle-dish` | Phase 1 has `nudelbaserad` |
+| `potato-dish` | Phase 1 has `potatisbaserad` |
+| `bread-dish` | Phase 1 has `brödbaserad` |
+
+### Spicy/Mild Tags
+
+| Tag | Rule |
+|-----|------|
+| `stark` | Any ingredient has property `is-spicy` |
+| `mild` | No ingredients have `is-spicy` AND hasFullCoverage |
+
+### Few Ingredients
+
+| Tag | Rule |
+|-----|------|
+| `få-ingredienser` | ingredient count ≤ 6 |
+
+### Practical Tags
+
+| Tag | Rule |
+|-----|------|
+| `rå` | No cooking methods AND title contains: sashimi, tartare, tartar, carpaccio, ceviche |
+| `one-pot` | Phase 1 has `gryta` AND instructions contain: "en gryta", "samma kastrull", "one pot" |
+| `plåtmat` | Instructions contain "plåt" OR "sheet pan" |
+| `no-bake` | No cooking methods AND instructions contain: "no bake", "utan ugn", "ingen tillagning" |
+| `långkokt` | time > 120 min AND (has `slow-cooker` OR `gryta`) |
+| `över-natten` | Instructions contain: "över natten", "overnight", "i kylen över natten" |
+
+### Meal Type Tags
+
+| Tag | Rule |
+|-----|------|
+| `dessert` | Phase 1 has `kaka` OR title contains "dessert"/"efterrätt" |
+| `frukost` | Phase 1 has `pannkaka`/`våffla` OR title contains "frukost" |
+| `fika` | Phase 1 has `kaka` OR title contains "bulle"/"fika" |
+| `dryck` | Phase 1 has `smoothie` OR title contains "drink" |
+
+---
+
+## Phase 3: Complex Derived Tags
+
+Depends on Phase 1 + Phase 2 results.
+
+### Difficulty Levels
+
+| Tag | Rule |
+|-----|------|
+| `enkel` | ingredients ≤ 6 AND time ≤ 30 min AND NO advanced techniques |
+| `medel` | Default (neither easy nor advanced) |
+| `avancerad` | ingredients > 12 OR time > 60 min OR advanced techniques |
+
+**Advanced technique keywords:** sous vide, tempera, karamellisera, flambera, emulsion, réducer, confit, creme anglaise, meringue, maräng, soufflé, rulla, vira, vik in
+
+### Texture Tags
+
+| Tag | Rule |
+|-----|------|
+| `krämig` | Creamy ingredient in **top 5** (grädde, creme, créme, kokosmjölk, mascarpone) AND (instructions contain "sås"/"rör" OR has `pastabaserad`) |
+| `krispig` | Phase 1 has `friterad` OR instructions contain: krispig, frasig, knaprig |
+| `ostig` | More than 1 cheese ingredient OR title contains "ost" |
+
+### Temperature Tags
+
+| Tag | Rule |
+|-----|------|
+| `kall-rätt` | Phase 2 has `rå` OR Phase 1 has `sallad` OR title contains "kall" |
+| `varm-rätt` | Phase 1 has any of: ugnsbakad, stekt, kokt, grillad, gryta, soppa |
+
+### Nutritional Tags
+
+| Tag | Rule |
+|-----|------|
+| `proteinrik` | ≥ 2 protein ingredients AND protein ratio > 25% of matched |
+| `fiberrik` | Phase 1 has `baljväxter`/`fullkorn` OR has group `vegetable/legume` |
+| `grönsaksrik` | ≥ 3 vegetable ingredients |
+
+### Practical Tags
+
+| Tag | Rule |
+|-----|------|
+| `barnvänlig` | Phase 2 has `mild` AND alkohol is FREE AND has recognizable protein (kyckling, köttbullar, fläskkött, nötkött, fisk, ägg) |
+| `frysbar` | NO property `doesnt-freeze-well` AND NOT `sallad` AND (has gryta OR soppa OR köttbullar OR pastabaserad) |
+| `meal-prep` | NOT `sallad` AND NO `doesnt-freeze-well` AND portions ≥ 4 AND (has gryta OR soppa OR köttbullar OR gratäng) |
+| `storkok` | portions ≥ 6 OR title contains "storkok" |
+
+---
+
+## Phase 4: Mood & Occasion Tags
+
+Depends on Phase 1 + Phase 2 + Phase 3 results.
+
+### Time-Based Occasions
+
+| Tag | Rule |
+|-----|------|
+| `vardagsmiddag` | has `under-45-min` AND (enkel OR medel) |
+| `helgmat` | medel OR avancerad OR time > 60 min |
+| `middagsbjudning` | avancerad OR has luxury ingredients |
+| `snabblagat` | has `under-15-min` AND enkel |
+| `fredagsmys` | has taco OR pizza OR hamburgare OR title contains "nachos" |
+| `söndagsmiddag` | time > 60 min AND (gryta OR ugnsbakad) |
+
+### Mood Tags
+
+| Tag | Rule |
+|-----|------|
+| `comfort-food` | krämig AND (pastabaserad OR potatisbaserad OR risbaserad) |
+| `värmande` | soppa OR gryta |
+| `fräsch` | sallad OR (kall-rätt AND has group `fruit/citrus`) |
+| `lyxig` | Has luxury ingredients |
+
+**Luxury ingredients:** oxfilé, entrecôte, hummer, kräftor, tryffel, kaviar, foie gras, wagyu, kalvfilé
+
+### Swedish Holiday Tags
+
+| Tag | Rule |
+|-----|------|
+| `jul` | Title contains "jul" OR Christmas keywords (julskinka, lutfisk, jansson, julbord) OR ≥ 2 Christmas ingredients (rödbeta, sill, julkorv, prinskorv, kål) |
+| `lucia` | Title contains: lucia, lussebulle, lussekatt |
+| `påsk` | Title contains "påsk" OR has `lamm` OR (has `ägg` AND title contains ägg/egg) |
+| `midsommar` | Title contains "midsommar" OR (has sill AND färskpotatis/nypotatis) OR (jordgubb AND has property `dairy`) |
+| `kräftskiva` | Title contains "kräftskiva"/"kräftkalas" OR ingredient contains "kräft" |
+| `nyår` | Title contains "nyår" OR has luxury seafood (hummer, ostron, kaviar) |
+
+### Season Tags
+
+**Threshold: ≥ 2 seasonal ingredients required**
+
+| Tag | Seasonal Ingredients | Bonus Indicator |
+|-----|---------------------|-----------------|
+| `vår` | sparris, rabarber, rädisor, vårlök | — |
+| `sommar` | jordgubb, hallon, blåbär, sallad, gurka | `grillad` counts as +1 |
+| `höst` | svamp, kantarell, äpple, pumpa, kål | `vilt` counts as +1 |
+| `vinter` | rotfrukt, morot, palsternacka, kålrot | — |
+
+**Note:** No automatic `året-runt` tag — absence of season tags indicates year-round suitability.
+
+---
+
+## TagResult Model
+
+### Core Properties
+
+```dart
+class TagResult {
+  Set<String> tags;                      // All identity/category tags
+  Map<String, TriState> allergenStatus;  // Allergen safety status
+  Map<String, TriState> dietaryStatus;   // Dietary compatibility
+  double coverage;                       // 0.0-1.0 ingredient match %
+  List<String> unknownIngredients;       // Names not in database
+  DateTime generatedAt;                  // Generation timestamp
+  String? generatorVersion;              // Version for retagging
+}
+```
+
+### Special States
+
+| Factory | generatorVersion | Purpose |
+|---------|------------------|---------|
+| `TagResult.empty()` | `'empty'` | Recipes with no ingredients |
+| `TagResult.pending()` | `'pending'` | Recipes saved offline |
+
+### Key Properties
+
+| Property | Logic |
+|----------|-------|
+| `isPending` | `generatorVersion == 'pending'` |
+| `hasFailed` | `generatorVersion == 'failed'` |
+| `needsRetagging` | version is null OR hasFailed OR isPending OR version != kTagGeneratorVersion |
+
+### Firestore Serialization
+
+```json
+{
+  "tags": ["kyckling", "under-30-min", "stekt"],
+  "allergenStatus": {
+    "gluten": "FREE",
+    "mjölk": "CONTAINS",
+    "ägg": "UNKNOWN"
+  },
+  "dietaryStatus": {
+    "vegetarisk": "CONTAINS",
+    "vegansk": "CONTAINS"
+  },
+  "coverage": 1.0,
+  "unknownIngredients": [],
+  "generatedAt": "2025-01-15T12:00:00.000Z",
+  "generatorVersion": "1.0.0"
+}
+```
+
+---
+
+## IngredientData Model
+
+```dart
+class IngredientData {
+  String id;              // Kebab-case identifier
+  String swedish;         // Swedish name
+  String english;         // English name
+  String group;           // Hierarchical: "protein/meat/poultry"
+  Set<String> properties; // Allergens, dietary flags
+  List<String> aliasesSv; // Swedish alternatives
+  List<String> aliasesEn; // English alternatives
+  List<String> searchTerms;
+  String status;          // verified, draft, needs-review, user-defined
+}
+```
+
+### Group Hierarchy Helpers
+
+| Property | Example |
+|----------|---------|
+| `topLevelGroup` | "protein" from "protein/meat/poultry" |
+| `midLevelGroup` | "meat" |
+| `leafGroup` | "poultry" |
+| `groupDepth` | 1-3 |
+
+---
+
+## IngredientLookupResult Model
+
+```dart
+class IngredientLookupResult {
+  List<IngredientData> matched;   // Found ingredients
+  List<String> unmatched;         // Not found names
+  double coverage;                // matched / total
+}
+```
+
+### Key Properties
+
+| Property | Logic |
+|----------|-------|
+| `hasUnknowns` | `unmatched.isNotEmpty` |
+| `hasFullCoverage` | `coverage >= 1.0` |
+| `totalCount` | `matched.length + unmatched.length` |
+
+### Status Calculation
+
+```dart
+TriState getPropertyStatus(String property) {
+  if (coverage < 1.0) return TriState.unknown;
+  if (hasProperty(property)) return TriState.contains;
+  return TriState.free;
+}
+```
+
+---
+
+## Properties Reference (33 Total)
+
+### Diet-base (7)
+
+| Property | Description |
+|----------|-------------|
+| `animal-product` | Any animal-derived ingredient |
+| `dairy` | Dairy products |
+| `egg` | Eggs |
+| `meat` | Meat (not seafood) |
+| `plant-based` | Plant-based |
+| `seafood` | Fish & shellfish |
+| `vegan-friendly` | Suitable for vegans |
+
+### Meat-detail (7)
+
+| Property | Description |
+|----------|-------------|
+| `beef` | Beef |
+| `fish` | Fish |
+| `game` | Game meat |
+| `lamb` | Lamb |
+| `pork` | Pork |
+| `poultry` | Poultry |
+| `shellfish` | Shellfish |
+
+### Allergen (12 + combined)
+
+| Property | EU Allergen |
+|----------|-------------|
+| `contains-gluten` | ✓ |
+| `contains-lactose` | — |
+| `peanut` | ✓ |
+| `tree-nut` | ✓ |
+| `sesame` | ✓ |
+| `soy` | ✓ |
+| `crustacean` | ✓ |
+| `mollusc` | ✓ |
+| `celery` | ✓ |
+| `mustard` | ✓ |
+| `lupin` | ✓ |
+| `sulfites` | ✓ |
+
+### Special-diet (3)
+
+| Property | Used for |
+|----------|----------|
+| `contains-alcohol` | Alcohol-free, halal |
+| `high-mercury` | Pregnancy-safe |
+| `nightshade` | AIP-friendly |
+
+### Practical (4)
+
+| Property | Used for |
+|----------|----------|
+| `needs-cooking` | Raw tags |
+| `processed` | Identification |
+| `is-spicy` | Spicy, mild, kid-friendly |
+| `doesnt-freeze-well` | Freezer-friendly |
+
+---
+
+## Group Taxonomy (61 groups)
 
 ```
 protein/
@@ -281,463 +687,65 @@ other/
 └── prepared-meal
 ```
 
-### Group → Tag Mapping
-
-| Group Pattern | Generates Tag |
-|---------------|---------------|
-| `protein/meat/beef` | `beef` |
-| `protein/meat/pork` | `pork` |
-| `protein/meat/poultry` | `chicken` (if chicken), `duck` (if duck) |
-| `protein/meat/lamb` | `lamb` |
-| `protein/meat/game` | `game` |
-| `protein/seafood/fish` | `fish` + specific (`salmon`, `cod`, `herring`) |
-| `protein/seafood/shellfish` | `shellfish` |
-| `protein/plant-based` | `tofu`, `legumes` |
-| `grain/pasta-bread` | `pasta-based` (if pasta), `bread-based` (if bread) |
-| `grain/*` + rice | `rice-based` |
-| `vegetable/root` + potato | `potato-based` |
-
----
-
-## Tags
-
-### Calculation Phases
-
-Tags are generated in four phases where each phase can depend on previous phases' results:
-
-| Phase | Count | Source | Dependencies |
-|-------|-------|--------|--------------|
-| Phase 1 | ~100 | Properties, groups, metadata | None |
-| Phase 2 | ~20 | Combinations of Phase 1 | Phase 1 |
-| Phase 3 | ~20 | Complex rules | Phase 1 + 2 |
-| Phase 4 | ~25 | Mood/occasion | Phase 1 + 2 + 3 |
-
----
-
-### Phase 1: Base Tags
-
-#### Time (5)
-Based on recipe's `totalTime` metadata.
-
-| Tag | Rule |
-|-----|------|
-| `under-15-min` | totalTime ≤ 15 |
-| `under-30-min` | totalTime ≤ 30 |
-| `under-45-min` | totalTime ≤ 45 |
-| `under-60-min` | totalTime ≤ 60 |
-| `over-60-min` | totalTime > 60 |
-
-#### Allergen Status (14 allergens × 2 states = potentially 28, but stored as status)
-
-For each allergen, a **status** (CONTAINS/FREE/UNKNOWN) is stored, not separate tags.
-
-| Allergen | Property | Contains Tag | Free Tag |
-|----------|----------|--------------|----------|
-| Gluten | `contains-gluten` | `contains-gluten` | `gluten-free` |
-| Lactose | `contains-lactose` | `contains-lactose` | `lactose-free` |
-| Dairy | `dairy` | `contains-dairy` | `dairy-free` |
-| Egg | `egg` | `contains-egg` | `egg-free` |
-| Tree nuts | `tree-nut` | `contains-tree-nuts` | `tree-nut-free` |
-| Peanuts | `peanut` | `contains-peanuts` | `peanut-free` |
-| Nuts (both) | `tree-nut` OR `peanut` | `contains-nuts` | `nut-free` |
-| Fish | `fish` | `contains-fish` | `fish-free` |
-| Crustacean | `crustacean` | `contains-crustacean` | `crustacean-free` |
-| Mollusc | `mollusc` | `contains-mollusc` | `mollusc-free` |
-| Shellfish (all) | `crustacean` OR `mollusc` | `contains-shellfish` | `shellfish-free` |
-| Soy | `soy` | `contains-soy` | `soy-free` |
-| Sesame | `sesame` | `contains-sesame` | `sesame-free` |
-| Celery | `celery` | `contains-celery` | `celery-free` |
-| Mustard | `mustard` | `contains-mustard` | `mustard-free` |
-| Lupin | `lupin` | `contains-lupin` | `lupin-free` |
-| Sulfites | `sulfites` | `contains-sulfites` | `sulfite-free` |
-| Alcohol | `contains-alcohol` | `contains-alcohol` | `alcohol-free` |
-| Meat | `meat` | `contains-meat` | — |
-| Pork | `pork` | `contains-pork` | `pork-free` |
-
-#### Dietary (calculated from properties)
-
-| Tag | Rule (all require 100% coverage) |
-|-----|----------------------------------|
-| `vegetarian` | No ingredient has `meat` or `seafood` |
-| `vegan` | No ingredient has `animal-product` |
-
-**Note:** `pescetarian` exists both as **dietary-status** (in DietaryConfig, for safe filtering) and as **identity tag** (in Phase 2, for categorization). See "Pescetarian: Status vs Tag" below.
-
-#### Pescetarian: Status vs Tag
-
-Pescetarian is handled in two ways with different purposes:
-
-| Context | Purpose | Logic | Coverage Requirement |
-|---------|---------|-------|---------------------|
-| **DietaryConfig** | Filtering ("is this pescetarian-safe?") | No `meat` + at least one `fish` or `shellfish` | 100% |
-| **Tags_Phase2** | Identification ("is this a pescetarian dish?") | `vegetarian` == false AND (`fish` == true OR `shellfish` == true) AND `meat` == false | No |
-
-DietaryConfig gives a **status** (TRUE/FALSE) used for safe filtering.
-Tags_Phase2 gives a **tag** used for categorization and search.
-
-#### Protein (based on groups)
-
-| Tag | Triggered by Group |
-|-----|--------------------|
-| `chicken` | `protein/meat/poultry` + swedish/english contains "kyckling"/"chicken" |
-| `duck` | `protein/meat/poultry` + swedish/english contains "anka"/"duck" |
-| `beef` | `protein/meat/beef` |
-| `pork` | `protein/meat/pork` |
-| `lamb` | `protein/meat/lamb` |
-| `game` | `protein/meat/game` |
-| `fish` | `protein/seafood/fish` |
-| `salmon` | `protein/seafood/fish` + swedish contains "lax" |
-| `cod` | `protein/seafood/fish` + swedish contains "torsk" |
-| `herring` | `protein/seafood/fish` + swedish contains "sill" |
-| `shrimp` | `protein/seafood/shellfish` + `crustacean` + swedish contains "räk" |
-| `shellfish` | `protein/seafood/shellfish` |
-| `tofu` | `protein/plant-based` + swedish contains "tofu" |
-| `legumes` | `vegetable/legume` |
-| `egg` | `protein/egg` (as main protein, not just ingredient) |
-
-#### Base/Carb (based on groups + amount)
-
-| Tag | Rule |
-|-----|------|
-| `pasta-based` | Contains pasta as main ingredient |
-| `rice-based` | Contains rice as main ingredient |
-| `potato-based` | Contains potato as main ingredient |
-| `noodle-based` | Contains noodles as main ingredient |
-| `bread-based` | Contains bread as main ingredient |
-| `whole-grain` | Main carb has group `grain/whole` |
-
-#### Cooking Method (based on keywords in instructions)
-
-| Tag | Keywords |
-|-----|----------|
-| `oven-baked` | "ugn", "oven", "degrees", "°C" (not "micro") |
-| `pan-fried` | "stek", "fry", "sear", "brown" |
-| `grilled` | "grill", "grilla" |
-| `boiled` | "koka", "boil", "simmer" |
-| `steamed` | "ångkok", "steam" |
-| `poached` | "pochera", "poach" |
-| `deep-fried` | "fritera", "deep fry" |
-| `airfryer` | "airfryer", "air fryer" |
-| `slow-cooker` | "slow cooker", "crock pot", "långkok" (appliance) |
-| `pressure-cooker` | "tryckkokare", "instant pot" |
-| `sous-vide` | "sous vide", "sous-vide" |
-| `wok` | "wok", "woka" |
-| `microwave` | "micro", "mikro" |
-| `smoked` | "rök", "smoke" |
-| `raw` | No cooking words + right type (sashimi, tartare, carpaccio) |
-
-#### Dish Type (based on title + keywords)
-
-| Tag | Keywords in title/instructions |
-|-----|-------------------------------|
-| `soup` | "soppa", "soup", "broth" |
-| `salad` | "sallad", "salad" |
-| `stew` | "gryta", "stew" |
-| `gratin` | "gratäng", "gratin" |
-| `curry` | "curry" |
-| `sandwich` | "smörgås", "sandwich", "macka" |
-| `burger` | "hamburgare", "burger" |
-| `pizza` | "pizza" |
-| `taco` | "taco", "tacos" |
-| `bowl` | "bowl", "poké" |
-| `pie` | "paj", "pie", "quiche" |
-| `cake` | "kaka", "cake", "tårta" (not pancake) |
-| `bread` | "bröd", "bread" (as end product) |
-| `meatballs` | "köttbull", "meatball" |
-| `omelet` | "omelett", "omelet" |
-| `pancake` | "pannkak", "crêpe", "pancake" |
-| `waffle` | "våffl", "waffle" |
-| `smoothie` | "smoothie" |
-| `wok` | "wok" (as dish type) |
-| `dip` | "dipp", "dip" |
-| `sauce` | "sås", "sauce" (as end product) |
-
-#### Cuisine (based on ingredient combinations + keywords)
-
-| Tag | Positive Triggers | Negative Triggers |
-|-----|-------------------|-------------------|
-| `swedish` | **Title:** "jansson", "raggmunk", "pyttipanna", "ärtsoppa", "pannbiff", "wallenbergare" **OR Ingredient:** meatballs, falukorv, lingonberry, potato + cream + dill | soy sauce, taco, wok |
-| `italian` | pasta + (tomato OR parmesan OR basil), risotto, pizza | soy sauce, ginger |
-| `mexican` | taco, jalapeño, lime + cilantro, tortilla | soy sauce, pasta |
-| `thai` | coconut milk + lime + chili, fish sauce, Thai basil | parmesan |
-| `indian` | garam masala, curry + coconut milk, naan | soy sauce, pasta |
-| `chinese` | soy sauce + ginger, sesame oil, wok-style | parmesan, pasta |
-| `japanese` | soy sauce + mirin + dashi, wasabi, nori | parmesan |
-| `korean` | gochujang, kimchi, sesame oil + soy sauce | parmesan, pasta |
-| `vietnamese` | fish sauce + lime, rice noodles, fresh herbs | parmesan |
-| `greek` | feta + olives + cucumber, tzatziki | soy sauce |
-| `mediterranean` | olive oil + garlic + tomato, herbs | soy sauce, cream |
-| `middle-eastern` | tahini, pomegranate, cumin | soy sauce |
-| `french` | cream + wine + thyme, Dijon mustard | soy sauce |
-| `spanish` | chorizo, paprika, saffron, olives | soy sauce |
-| `american` | BBQ, bacon, cheddar, ranch | — |
-| `nordic` | dill + gravad, lingonberry, Nordic berries | soy sauce, chili |
-| `asian` | Umbrella: soy sauce OR ginger OR sesame oil | parmesan, cream |
-
-#### Cuisine Prioritization on Overlap
-
-A dish gets max 2 cuisine tags. On conflict, prioritize:
-
-1. **Specific > General** — e.g., `japanese` before `asian`
-2. **Title match > Ingredient match** — if recipe title contains cuisine keyword
-3. **More positive triggers > fewer** — count matching triggers
-
-**Examples:**
-- Recipe with soy sauce + mirin + dashi → `japanese` (specific), not `asian` (general)
-- Recipe with pasta + tomato + garlic + olive oil → `italian` + `mediterranean` (both match, max 2)
-- Recipe with soy sauce + pasta → Conflict! Choose based on title or dominant ingredients
-
----
-
-### Phase 2: Simple Derived (requires Phase 1)
-
-| Tag | Rule |
-|-----|------|
-| `pasta-dish` | `pasta-based` = true |
-| `rice-dish` | `rice-based` = true |
-| `noodle-dish` | `noodle-based` = true |
-| `raw` | No cooking method + (sashimi OR tartare OR carpaccio in title) |
-| `one-pot` | `stew` = true AND all ingredients cooked together |
-| `sheet-pan` | "plåt" in instructions OR "sheet pan" |
-| `no-bake` | No oven, no stove, no cooking |
-| `slow-cooked` | totalTime > 120 AND (`slow-cooker` OR `stew`) |
-| `overnight` | "över natten", "overnight" in instructions |
-| `low-effort` | Active time < 15 min (if available) |
-| `few-ingredients` | Ingredient count ≤ 6 (excl. pantry staples) |
-| `spicy` | Contains `is-spicy` ingredient (chili, jalapeño, cayenne) |
-| `mild` | No `is-spicy` ingredients |
-| `dessert` | `cake` OR `tårta` OR dessert category |
-| `breakfast` | `pancake` OR `waffle` OR breakfast keywords |
-| `fika` | `cake` OR fika keywords (bulle, kaka) |
-| `drink` | `smoothie` OR drink keywords |
-| `pescetarian` | `vegetarian` = false AND (`fish` = true OR `shellfish` = true) AND `meat` = false |
-| `halal-friendly` | `pork-free` = true AND `alcohol-free` = true |
-
-**Note:** Tags `spicy`, `mild` require ingredients to have `is-spicy` property set.
-
----
-
-### Phase 3: Complex Derived (requires Phase 1 + 2)
-
-| Tag | Rule |
-|-----|------|
-| `easy` | ≤6 ingredients AND ≤30 min AND simple techniques |
-| `medium` | 7-12 ingredients OR 30-60 min OR medium techniques |
-| `advanced` | >12 ingredients OR >60 min OR advanced techniques |
-| `creamy` | cream OR crème fraiche OR coconut milk + sauce/pasta |
-| `crispy` | `deep-fried` OR "crispy" in instructions |
-| `cheesy` | Cheese as main ingredient (≥100g or prominent) |
-| `cold-dish` | No heat treatment, served cold |
-| `hot-dish` | Heat treatment, served hot |
-| `veggie-rich` | ≥3 vegetables as main ingredients |
-| `herby` | ≥2 fresh herbs |
-| `high-protein` | Protein ingredient ≥200g per serving |
-| `high-fiber` | Legumes OR whole grain as base |
-| `kid-friendly` | `mild` = true AND recognizable protein AND no bitter vegetables |
-| `meal-prep-friendly` | Keeps well, easy to reheat, not salad |
-| `freezer-friendly` | No ingredients with `doesnt-freeze-well` |
-| `batch-cooking` | Servings ≥6 OR "storkok" in title |
-
-**Note:** Tags `kid-friendly` and `freezer-friendly` require ingredients to have respective property (`is-spicy`, `doesnt-freeze-well`) set.
-
----
-
-### Phase 4: Mood/Occasion (requires Phase 1 + 2 + 3)
-
-| Tag | Rule |
-|-----|------|
-| `weeknight` | `under-45-min` AND `easy/medium` AND common ingredients |
-| `weekend` | `medium/advanced` OR longer cooking time |
-| `dinner-party` | `advanced` OR luxury ingredients OR impressive presentation |
-| `comfort-food` | `creamy` AND (pasta OR potato OR rice) |
-| `warming` | `soup` OR `stew` OR hot + spiced |
-| `refreshing` | `salad` OR cold + citrus/cucumber |
-| `quick-fix` | `under-15-min` AND `easy` |
-| `luxurious` | Premium ingredients (beef tenderloin, lobster, truffle) |
-| `friday-night` | `taco` OR `pizza` OR `burger` OR `nachos` |
-| `christmas` | **Title:** "jul" **OR Ingredient:** (julskinka OR ribs OR jansson OR lutfisk) + (beet salad OR kale OR Christmas mustard) |
-| `lucia` | **Title:** "lucia", "lussebulle", "lussekatt" **OR Ingredient:** saffron + (bun OR bread) |
-| `easter` | **Title:** "påsk" **OR Ingredient:** (lamb OR egg as main) + (egg half OR herring) |
-| `midsummer` | **Title:** "midsommar" **OR Ingredient:** (herring + new potatoes) OR (strawberries + cream) |
-| `crayfish-party` | **Title:** "kräftskiva", "kräftkalas" **OR Ingredient:** crayfish as main ingredient |
-| `new-years` | **Title:** "nyår" **OR** luxury ingredients (lobster, oysters, caviar) + festive context |
-| `sunday-dinner` | Longer cooking + traditional |
-| `spring` | Spring ingredients (asparagus, rhubarb, new vegetables) |
-| `summer` | Summer ingredients (strawberries, grilled, salads) |
-| `autumn` | Autumn ingredients (mushrooms, apples, cabbage, game) |
-| `winter` | Winter ingredients (root vegetables, cabbage, slow-cooked) |
-| `year-round` | No season-dependent main ingredients |
-
 ---
 
 ## Important Separations
 
 ### Crustacean vs Mollusc (separate EU allergens)
 
-These are **separate allergens** per EU legislation and must never be mixed:
-
 | Type | Property | Ingredients |
 |------|----------|-------------|
-| Crustacean | `crustacean` | Shrimp, crab, lobster, crayfish, langoustine |
-| Mollusc | `mollusc` | Mussels, oysters, squid, snails, scallops |
-
-A recipe with mussels should have:
-- `contains-mollusc` = CONTAINS
-- `mollusc-free` = CONTAINS (it contains mollusc)
-- `contains-crustacean` = FREE (if no crustaceans)
-- `crustacean-free` = FREE
+| Crustacean | `crustacean` | Shrimp, crab, lobster, crayfish |
+| Mollusc | `mollusc` | Mussels, oysters, squid, scallops |
 
 ### Tree Nuts vs Peanuts
 
 | Type | Property | Ingredients |
 |------|----------|-------------|
-| Tree nuts | `tree-nut` | Almond, hazelnut, walnut, cashew, pistachio, macadamia |
-| Peanuts | `peanut` | Peanut, peanut butter (NOTE: biologically a legume) |
+| Tree nuts | `tree-nut` | Almond, hazelnut, walnut, cashew |
+| Peanuts | `peanut` | Peanut, peanut butter |
 
-**Nut-free** = both `tree-nut-free` AND `peanut-free`
+**Nötfri** = both `tree-nut-free` AND `peanut-free`
 
 ### Fish vs Shellfish
 
 | Type | Property | Ingredients |
 |------|----------|-------------|
-| Fish | `fish` | Salmon, cod, herring, mackerel, tuna |
-| Shellfish | `shellfish` (or `crustacean`/`mollusc`) | Shrimp, mussels, crab |
-
-**Seafood** = fish OR shellfish, but they are separate allergens.
+| Fish | `fish` | Salmon, cod, herring |
+| Shellfish | `crustacean`/`mollusc` | Shrimp, mussels, crab |
 
 ---
 
-## Database Structure
+## Test Coverage
 
-### Ingredient
+### Unit Tests (231+ tests)
 
-```json
-{
-  "id": "chicken-breast",
-  "swedish": "kycklingbröst",
-  "english": "chicken breast",
-  "group": "protein/meat/poultry",
-  "properties": ["animal-product", "meat", "poultry", "needs-cooking"],
-  "aliases_sv": ["kycklingfilé", "kyckling"],
-  "aliases_en": ["chicken fillet"],
-  "status": "verified"
-}
-```
+| File | Tests | Coverage |
+|------|-------|----------|
+| `tag_generator_test.dart` | 112 | All 4 phases |
+| `tag_result_test.dart` | 41 | Serialization, equality, helpers |
+| `ingredient_lookup_result_test.dart` | 37 | Group queries, TriState |
+| `tri_state_test.dart` | 28 | Combination logic |
+| `allergen_config_test.dart` | 13 | Config parsing |
 
-### Property
+### Integration Tests (51 tests)
 
-```json
-{
-  "id": "contains-gluten",
-  "name_sv": "Innehåller gluten",
-  "name_en": "Contains Gluten",
-  "category": "allergen",
-  "excludes_tags": ["gluten-free"]
-}
-```
-
-### Group
-
-```json
-{
-  "path": "protein/meat/poultry",
-  "name_sv": "Fjäderfä",
-  "name_en": "Poultry",
-  "parent": "protein/meat",
-  "level": 3
-}
-```
-
-### TagResult (output from TagGenerator)
-
-```json
-{
-  "tags": ["chicken", "creamy", "pasta-dish", "italian", "under-30-min"],
-  "allergenStatus": {
-    "gluten": "CONTAINS",
-    "dairy": "CONTAINS",
-    "egg": "FREE",
-    "peanut": "FREE",
-    "tree-nut": "FREE",
-    "fish": "FREE",
-    "crustacean": "FREE",
-    "mollusc": "FREE",
-    "soy": "FREE",
-    "sesame": "FREE",
-    "celery": "FREE",
-    "mustard": "FREE",
-    "lupin": "FREE",
-    "sulfites": "FREE",
-    "alcohol": "FREE",
-    "pork": "FREE"
-  },
-  "dietaryStatus": {
-    "vegetarian": "CONTAINS",
-    "vegan": "CONTAINS",
-    "lactose-free": "CONTAINS",
-    "dairy-free": "CONTAINS"
-  },
-  "coverage": 1.0,
-  "unknownIngredients": []
-}
-```
-
----
-
-## Menu Generation
-
-### Matching Logic Three Layers
-
-**Layer 1: Hard Requirements (must be met)**
-- Allergies: `allergenStatus[X] == FREE`
-- Dietary restrictions: `dietaryStatus[X] == FREE`
-- Explicitly stated requirements
-
-**Layer 2: Soft Preferences (scored)**
-- Seasonal adaptation
-- Variation from history
-- Day adaptation (weekday/weekend)
-
-**Layer 3: Balancing (weekly optimization)**
-- Max 2 of same cuisine per week
-- Max 2 of same protein per week
-- Variation in cooking method
-
-### Constraint Relaxation (fallback when 0 candidates)
-
-| Priority | Release | Communication |
-|----------|---------|---------------|
-| 1 | Variation in cooking method | Silent |
-| 2 | Seasonal preference | Silent |
-| 3 | Variation in cuisine | "Got a bit more [X] this week" |
-| 4 | Variation in protein | "Got a bit more [Y] this week" |
-| 5 | Time constraint (+15 min) | "Couldn't find anything under X min" |
-
-**Never release:** Allergy filters, diet type filters
-
----
-
-## Test Cases
-
-| # | Scenario | Input | Expected Result |
-|---|----------|-------|-----------------|
-| 1 | Almond, no peanuts | Recipe with almond | `tree-nut`: CONTAINS, `peanut`: FREE |
-| 2 | Mussels, no shrimp | Recipe with mussels | `mollusc`: CONTAINS, `crustacean`: FREE |
-| 3 | Salmon + vegetables | Salmon recipe | `vegetarian`: CONTAINS, `pescetarian` ✓ |
-| 4 | 50% unknown ingredients | 5 of 10 known | All allergen status: UNKNOWN |
-| 5 | Pasta + soy sauce | Fusion recipe | Max one of `italian`/`asian` |
-| 6 | Pure vegetarian | No animal products | `vegetarian`: FREE, `meat`: FREE |
-| 7 | Cream in recipe | Cream sauce | `dairy`: CONTAINS, `lactose`: CONTAINS |
-| 8 | Lactose-free cream | Lactose-free cream sauce | `dairy`: CONTAINS, `lactose`: FREE |
+| File | Tests | Coverage |
+|------|-------|----------|
+| `tagging_integration_test.dart` | 9 | Save → tag → store → read |
+| `retagging_workflow_test.dart` | 13 | Version mismatch & retag |
+| `offline_tagging_sync_test.dart` | 11 | Offline queue & sync |
+| `batch_tagging_test.dart` | 7 | 100+ recipes |
+| `tagging_performance_test.dart` | 11 | < 500ms benchmarks |
 
 ---
 
 ## Naming Conventions
 
-- **Tag names:** Swedish, kebab-case, lowercase: `under-15-min`, `innehåller-gluten`
-- **English exceptions:** Where Swedish term is missing: `comfort-food`, `bowl`
+- **Tag names:** Swedish, kebab-case: `under-15-min`, `innehåller-gluten`
 - **Property names:** English, kebab-case: `contains-gluten`, `tree-nut`
 - **Group paths:** English, slash-separated: `protein/meat/poultry`
+- **Allergen keys:** Swedish: `gluten`, `mjölk`, `ägg`
 
 ---
 
@@ -745,3 +753,5 @@ A recipe with mussels should have:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.0 | Dec 2025 | Initial specification |
+| 2.0 | Dec 2025 | Updated to match implementation: Swedish tag names, actual thresholds (season ≥2 ingredients, creamy top 5), UI grouping, pending/failed states, test coverage |
