@@ -12,6 +12,9 @@ import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 import 'package:butlery/core/rate_limiting/rate_limiter.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Personal recipe CRUD operations module handling recipe creation, updates, import/export, and local storage.
 class PersonalRecipeModule {
@@ -478,11 +481,15 @@ class PersonalRecipeModule {
           final recipe = Recipe.fromJson(recipeData);
 
           // Convert to personal recipe
-          final personalRecipe = recipe.copyWith(
+          var personalRecipe = recipe.copyWith(
             createdBy: currentUserId,
             lastEditedByUserId: currentUserId,
             lastEditedByDisplayName: _getCurrentUserDisplayName(),
           );
+
+          // Apply tagging to imported recipes
+          personalRecipe =
+              await _applyTagging(personalRecipe, source: 'import');
 
           await _saveToCache(personalRecipe);
           await _getServiceAdapter().createRecipe(personalRecipe);
@@ -577,12 +584,18 @@ class PersonalRecipeModule {
 
   /// Applies automatic tagging to a recipe if tagging service is available.
   ///
-  /// Returns the recipe with tagResult populated, or the original recipe
-  /// if tagging service is not available or tagging fails.
-  Future<Recipe> _applyTagging(Recipe recipe) async {
+  /// Returns the recipe with tagResult populated. If tagging fails, returns
+  /// the recipe with a "failed" tagResult (coverage: 0, version: 'failed')
+  /// to indicate retagging is needed.
+  ///
+  /// GDPR Article 30: Logs tag modifications for allergen/dietary audit trail.
+  Future<Recipe> _applyTagging(Recipe recipe,
+      {String source = 'auto_tagging'}) async {
     if (_taggingService == null) {
       return recipe;
     }
+
+    final previousTagResult = recipe.core.tagResult;
 
     try {
       final tagResult = await _taggingService.generateTags(recipe);
@@ -593,6 +606,14 @@ class PersonalRecipeModule {
           '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
         );
 
+        // GDPR Article 30: Audit trail for allergen/dietary changes
+        await _logTagModification(
+          recipe: recipe,
+          previousTags: previousTagResult,
+          newTags: tagResult,
+          source: source,
+        );
+
         return Recipe(
           core: recipe.core.copyWith(tagResult: tagResult),
           type: recipe.type,
@@ -601,10 +622,57 @@ class PersonalRecipeModule {
           offlineData: recipe.offlineData,
         );
       }
+
+      // Tagging returned null - log warning
+      AppLogger.warning(
+          '⚠️ Tagging returned null for "${recipe.title}" - marking as needs retagging');
     } catch (e) {
       AppLogger.warning('⚠️ Tagging failed for "${recipe.title}": $e');
     }
 
-    return recipe;
+    // Return recipe with explicit "needs retagging" marker
+    return Recipe(
+      core: recipe.core.copyWith(
+        tagResult: TagResult(
+          tags: {},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 0.0, // Explicit 0 = needs retagging
+          unknownIngredients: [],
+          generatedAt: DateTime.now(),
+          generatorVersion: 'failed',
+        ),
+      ),
+      type: recipe.type,
+      socialData: recipe.socialData,
+      realtimeData: recipe.realtimeData,
+      offlineData: recipe.offlineData,
+    );
+  }
+
+  /// Logs tag modification for GDPR Article 30 compliance.
+  /// Fire-and-forget - audit logging failures don't affect tagging operations.
+  Future<void> _logTagModification({
+    required Recipe recipe,
+    required TagResult? previousTags,
+    required TagResult newTags,
+    required String source,
+  }) async {
+    final userId = _getCurrentUserId();
+    if (userId == null) return;
+
+    try {
+      final auditRepository = ServiceLocator.get<FirebaseAuditRepository>();
+      await auditRepository.logTagModification(
+        userId: userId,
+        recipeId: recipe.id,
+        previousTags: previousTags?.toFirestore(),
+        newTags: newTags.toFirestore(),
+        source: source,
+      );
+    } catch (e) {
+      // Audit logging is non-blocking - don't fail the tagging operation
+      AppLogger.debug('Audit logging skipped (non-blocking): $e');
+    }
   }
 }

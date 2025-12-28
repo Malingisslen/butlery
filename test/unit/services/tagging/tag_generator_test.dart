@@ -1884,14 +1884,16 @@ void main() {
         });
 
         test('adds sommar for summer ingredients or grilled dishes', () {
+          // Summer requires 2+ indicators: grillad counts as 1, plus summer ingredients
           final recipe = RecipeBuilder()
-              .withTitle('Grillad Kyckling')
+              .withTitle('Grillad Kycklingsallad')
               .withTimeMinutes(45)
               .withInstructions(['Grilla kycklingen']).withIngredients(
-                  ['chicken', 'marinade']).build();
+                  ['chicken', 'sallad', 'gurka']).build();
           final lookup = _createLookup([
             _ingredient('chicken', 'protein/meat/poultry', {'meat', 'poultry'}),
-            _ingredient('marinade', 'sauce', {}),
+            _ingredient('sallad', 'vegetable/salad', {}),
+            _ingredient('gurka', 'vegetable/cucumber', {}),
           ]);
 
           final result =
@@ -1902,12 +1904,15 @@ void main() {
         });
 
         test('adds höst for autumn ingredients', () {
+          // Autumn requires 2+ seasonal ingredients (kantarell + svamp)
           final recipe = RecipeBuilder()
-              .withTitle('Kantarellpasta')
+              .withTitle('Kantarellpasta med Svamp')
               .withTimeMinutes(30)
-              .withIngredients(['kantarell', 'pasta', 'cream']).build();
+              .withIngredients(
+                  ['kantarell', 'svamp', 'pasta', 'cream']).build();
           final lookup = _createLookup([
             _ingredient('kantarell', 'vegetable/mushroom', {}),
+            _ingredient('svamp', 'vegetable/mushroom', {}),
             _ingredient('pasta', 'grain/pasta-bread', {'pasta-base'}),
             _ingredient('cream', 'dairy/cream', {'dairy'}),
           ]);

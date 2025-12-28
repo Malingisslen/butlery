@@ -45,7 +45,22 @@ service cloud.firestore {
     function isServerTimestamp(field) {
       return request.resource.data[field] == request.time;
     }
-    
+
+    // Validate tagResult field structure (allergen safety-critical data)
+    // Prevents client-side tampering with allergen status
+    function isValidTagResult(tagResult) {
+      return tagResult == null || (
+        // Only allow known fields
+        tagResult.keys().hasOnly(['tags', 'allergenStatus', 'dietaryStatus',
+                                  'coverage', 'unknownIngredients', 'generatedAt',
+                                  'generatorVersion']) &&
+        // Coverage must be valid percentage
+        (tagResult.get('coverage', 0) >= 0 && tagResult.get('coverage', 0) <= 1) &&
+        // GeneratedAt must be a timestamp if present
+        (tagResult.get('generatedAt', null) == null || tagResult.get('generatedAt', null) is timestamp)
+      );
+    }
+
     // ========================================
     // USER DATA - Private to each user
     // ========================================
@@ -56,7 +71,14 @@ service cloud.firestore {
       
       // User's recipes
       match /recipes/{recipeId} {
-        allow read, write: if isOwner(userId);
+        // Read access for owner
+        allow read: if isOwner(userId);
+
+        // Write access with tagResult validation
+        // Validates allergen safety data at core.tagResult path
+        // CRITICAL: Must validate actual tagResult, not 'tags' field
+        allow write: if isOwner(userId)
+          && isValidTagResult(request.resource.data.get('core', {}).get('tagResult', null));
       }
       
       // Recipe summaries (lightweight documents)

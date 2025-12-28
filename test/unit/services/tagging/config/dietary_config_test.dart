@@ -82,7 +82,9 @@ void main() {
         final kosher = DietaryConfig.getByKey('kosheranpassad')!;
 
         expect(kosher.excludedProperties, contains('pork'));
-        expect(kosher.excludedProperties, contains('shellfish'));
+        // H8: Uses actual ingredient properties crustacean + mollusc (not 'shellfish')
+        expect(kosher.excludedProperties, contains('crustacean'));
+        expect(kosher.excludedProperties, contains('mollusc'));
       });
 
       test('graviditetssäker excludes high-mercury fish and alcohol', () {

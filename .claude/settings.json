@@ -73,6 +73,26 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Review the conversation above. Did the assistant complete the user's request? If yes, respond {\"ok\": true}. If there are clearly unfinished tasks or incomplete work, respond {\"ok\": false, \"reason\": \"brief description of what remains\"}. When in doubt, approve."
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Verify subagent task completion:\n1. Did the subagent fully complete its assigned task?\n2. Is the output quality acceptable?\n3. Were all checklist items addressed?\n\nRespond {\"ok\": true} if complete, or {\"ok\": false, \"reason\": \"what the subagent missed\"} to have it continue."
+          }
+        ]
+      }
     ]
   },
   "customInstructions": {

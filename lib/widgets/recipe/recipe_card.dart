@@ -156,6 +156,11 @@ class RecipeCard extends StatelessWidget {
             maxBadges: 2,
           ),
         ],
+        // Untagged indicator when tagResult is null or failed
+        if (_showUntaggedIndicator) ...[
+          const SizedBox(height: AppDimensions.spacingSm),
+          _buildUntaggedIndicator(context),
+        ],
         // Tags
         if (showTags && (recipe.tags?.isNotEmpty ?? false)) ...[
           const SizedBox(height: AppDimensions.spacingSm),
@@ -370,6 +375,54 @@ class RecipeCard extends StatelessWidget {
         tag,
         style: AppTextStyles.labelSmall.copyWith(
           color: AppColors.textMedium,
+        ),
+      ),
+    );
+  }
+
+  /// Whether to show untagged indicator.
+  /// Shows when tagResult is null or has failed status, and badges are enabled.
+  bool get _showUntaggedIndicator {
+    if (!showAllergenBadges && !showDietaryBadges) return false;
+    final tagResult = recipe.tagResult;
+    return tagResult == null || tagResult.hasFailed;
+  }
+
+  /// Builds untagged indicator for recipes pending analysis.
+  Widget _buildUntaggedIndicator(BuildContext context) {
+    final tagResult = recipe.tagResult;
+    final hasFailed = tagResult?.hasFailed ?? false;
+
+    return Semantics(
+      label: hasFailed
+          ? 'Ingrediensanalys misslyckades'
+          : 'Ingredienser analyseras',
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingSm,
+          vertical: AppDimensions.spacingXs,
+        ),
+        decoration: BoxDecoration(
+          color: (hasFailed ? AppColors.error : AppColors.warning)
+              .withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              hasFailed ? Icons.error_outline : Icons.pending_outlined,
+              size: 14,
+              color: hasFailed ? AppColors.error : AppColors.warning,
+            ),
+            const SizedBox(width: AppDimensions.spacingXs),
+            Text(
+              hasFailed ? 'Analys misslyckades' : 'Analyseras...',
+              style: AppTextStyles.labelSmall.copyWith(
+                color: hasFailed ? AppColors.error : AppColors.warning,
+              ),
+            ),
+          ],
         ),
       ),
     );

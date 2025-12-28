@@ -150,10 +150,18 @@ void main() {
         }
       });
 
-      test('some non-EU allergens may not have free tags', () {
+      test('all meat allergens have free tags for consistency', () {
+        // All meat allergens should have free tags for consistent filtering
         final kott = AllergenConfig.getByKey('kött')!;
-        expect(kott.freeTag, isNull,
-            reason: 'kött uses vegetarian status, not a free tag');
+        final flask = AllergenConfig.getByKey('fläsk')!;
+        final notkott = AllergenConfig.getByKey('nötkött')!;
+
+        expect(kott.freeTag, equals('köttfri'),
+            reason: 'kött should have köttfri tag for consistency');
+        expect(flask.freeTag, equals('fläskfri'),
+            reason: 'fläsk should have fläskfri tag');
+        expect(notkott.freeTag, equals('nötköttssfri'),
+            reason: 'nötkött should have nötköttssfri tag');
       });
     });
   });

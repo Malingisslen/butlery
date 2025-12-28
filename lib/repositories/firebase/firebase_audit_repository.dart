@@ -94,6 +94,68 @@ class FirebaseAuditRepository {
     }
   }
 
+  /// Log a tag result modification for GDPR Article 30 compliance.
+  /// Health-related data (allergens, dietary status) requires audit trail.
+  /// This is a fire-and-forget operation - failures are logged but don't throw.
+  /// **GDPR Article 30:** Records of Processing Activities
+  /// Allergen/dietary data is health-sensitive and requires tracking.
+  /// **Usage:**
+  /// ```dart
+  /// await auditRepository.logTagModification(
+  ///   userId: 'user123',
+  ///   recipeId: 'recipe456',
+  ///   previousTags: oldTagResult?.toFirestore(),
+  ///   newTags: newTagResult.toFirestore(),
+  ///   source: 'auto_tagging',
+  /// );
+  /// ```
+  /// **Parameters:**
+  /// - [userId]: Owner of the recipe
+  /// - [recipeId]: Recipe whose tags were modified
+  /// - [previousTags]: Previous tag result (null if first tagging)
+  /// - [newTags]: New tag result
+  /// - [source]: Source of modification (auto_tagging, manual_retag, import)
+  Future<void> logTagModification({
+    required String userId,
+    required String recipeId,
+    Map<String, dynamic>? previousTags,
+    required Map<String, dynamic> newTags,
+    required String source,
+  }) async {
+    try {
+      final auditLog = AuditLog(
+        id: '',
+        userId: userId,
+        operation: 'tag_modified',
+        resourceType: 'recipe',
+        resourceId: recipeId,
+        granted: true,
+        timestamp: DateTime.now(),
+        metadata: {
+          'source': source,
+          'previousAllergenStatus': previousTags?['allergenStatus'],
+          'newAllergenStatus': newTags['allergenStatus'],
+          'previousDietaryStatus': previousTags?['dietaryStatus'],
+          'newDietaryStatus': newTags['dietaryStatus'],
+          'previousCoverage': previousTags?['coverage'],
+          'newCoverage': newTags['coverage'],
+          'wasFirstTagging': previousTags == null,
+        },
+      );
+
+      await _collection.add(auditLog.toFirestore());
+
+      AppLogger.debug(
+        '📝 Tag modification audit logged for recipe $recipeId (source: $source)',
+      );
+    } catch (e) {
+      // Audit logging failure must NOT break tag operations
+      AppLogger.error(
+        '⚠️ Failed to log tag modification (non-blocking): $e',
+      );
+    }
+  }
+
   /// Retrieve audit logs for a specific user (admin/GDPR request only).
   /// This method is for GDPR data subject access requests and admin monitoring.
   /// Regular users CANNOT call this method - enforced by Firebase Security Rules.
