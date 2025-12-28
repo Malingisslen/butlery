@@ -271,80 +271,89 @@ class TagPhase1Base {
   }
 
   /// Calculates cooking method tags from instructions.
+  ///
+  /// Uses word boundary matching to avoid false positives from substrings.
   Set<String> _calculateCookingMethodTags(List<String> instructions) {
     final tags = <String>{};
     final text = instructions.join(' ').toLowerCase();
 
-    // Oven baked
-    if ((text.contains('ugn') ||
-            text.contains('°c') ||
-            text.contains('grader')) &&
-        !text.contains('micro')) {
+    // Helper for word boundary matching
+    // Matches word at start, end, or surrounded by non-letter characters
+    bool hasWord(String word) {
+      // For Swedish, we match word stems that can have suffixes
+      final pattern = RegExp('(?:^|[^a-zåäö])$word', caseSensitive: false);
+      return pattern.hasMatch(text);
+    }
+
+    // Oven baked - match "ugn" but not "lugn"
+    if ((hasWord('ugn') || text.contains('°c') || hasWord('grader')) &&
+        !hasWord('mikro') &&
+        !hasWord('micro')) {
       tags.add('ugnsbakad');
     }
 
-    // Pan fried
-    if (text.contains('stek') || text.contains('bryn')) {
+    // Pan fried - "stek", "steka", "stekt", "bryn", "bryna"
+    if (hasWord('stek') || hasWord('bryn')) {
       tags.add('stekt');
     }
 
     // Grilled
-    if (text.contains('grill')) {
+    if (hasWord('grill')) {
       tags.add('grillad');
     }
 
-    // Boiled
-    if (text.contains('koka') || text.contains('sjud')) {
+    // Boiled - "koka", "kokar", "kokt", "sjud", "sjuda"
+    if (hasWord('koka') || hasWord('kok') || hasWord('sjud')) {
       tags.add('kokt');
     }
 
     // Steamed
-    if (text.contains('ångkok') || text.contains('ånga')) {
+    if (hasWord('ångkok') || hasWord('ånga')) {
       tags.add('ångkokt');
     }
 
     // Poached
-    if (text.contains('pochera')) {
+    if (hasWord('pochera') || hasWord('pocherad')) {
       tags.add('pocherad');
     }
 
     // Deep fried
-    if (text.contains('fritera')) {
+    if (hasWord('fritera') || hasWord('friterad') || hasWord('fritering')) {
       tags.add('friterad');
     }
 
-    // Air fryer
+    // Air fryer - exact phrases
     if (text.contains('airfryer') || text.contains('air fryer')) {
       tags.add('airfryer');
     }
 
-    // Slow cooker
+    // Slow cooker - exact phrases
     if (text.contains('slow cooker') || text.contains('crock pot')) {
       tags.add('slow-cooker');
     }
 
     // Pressure cooker
-    if (text.contains('tryckkokare') || text.contains('instant pot')) {
+    if (hasWord('tryckkokare') || text.contains('instant pot')) {
       tags.add('tryckkokare');
     }
 
-    // Sous vide
+    // Sous vide - exact phrases
     if (text.contains('sous vide') || text.contains('sous-vide')) {
       tags.add('sous-vide');
     }
 
-    // Wok
-    if (text.contains('wok')) {
+    // Wok - match "wok", "woka", "wokat"
+    if (hasWord('wok')) {
       tags.add('wokad');
     }
 
     // Microwave
-    if (text.contains('micro') || text.contains('mikro')) {
+    if (hasWord('micro') || hasWord('mikro')) {
       tags.add('microugn');
     }
 
-    // Smoked
-    if (text.contains('rök') && !text.contains('röra')) {
+    // Smoked - "rök" but exclude "röra" and "rörelse"
+    if (hasWord('rök') && !hasWord('röra') && !hasWord('rörelse')) {
       tags.add('rökt');
     }
 

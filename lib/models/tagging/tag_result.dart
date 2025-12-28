@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/tagging/tag_generator.dart'
+    show kTagGeneratorVersion;
 
 /// The output of the TagGenerator - stored on recipe documents.
 ///
@@ -41,8 +43,26 @@ class TagResult {
     this.generatorVersion,
   });
 
-  /// Creates an empty result with all unknowns.
+  /// Creates an empty result for recipes with no ingredients.
+  /// Coverage is 0.0 because we have no ingredient data to analyze.
+  /// Empty status maps mean allergens/diets are unknown (safe default).
+  /// Marked with generatorVersion 'empty' to distinguish from failed tagging.
   factory TagResult.empty() {
+    return TagResult(
+      tags: {},
+      allergenStatus: {},
+      dietaryStatus: {},
+      coverage: 0.0, // No ingredients = no data to analyze
+      unknownIngredients: [],
+      generatedAt: DateTime.now(),
+      generatorVersion: 'empty', // Mark as empty recipe, not failed
+    );
+  }
+
+  /// Creates a pending result for recipes saved offline awaiting tagging.
+  /// Used when a recipe is saved while offline - tags will be generated
+  /// when connectivity is restored.
+  factory TagResult.pending() {
     return TagResult(
       tags: {},
       allergenStatus: {},
@@ -50,8 +70,12 @@ class TagResult {
       coverage: 0.0,
       unknownIngredients: [],
       generatedAt: DateTime.now(),
+      generatorVersion: 'pending', // Mark as awaiting tagging
     );
   }
+
+  /// Returns true if tagging is pending (saved offline).
+  bool get isPending => generatorVersion == 'pending';
 
   /// Creates from Firestore map data.
   factory TagResult.fromFirestore(Map<String, dynamic>? data) {
@@ -180,11 +204,31 @@ class TagResult {
 
   bool get isVegetarian => isDietarySafe('vegetarisk');
   bool get isVegan => isDietarySafe('vegansk');
-  bool get isPescetarian => dietaryStatus['pescetarian'] == TriState.contains;
+  bool get isPescetarian => isDietarySafe('pescetarian');
   bool get isHalalFriendly => isDietarySafe('halalanpassad');
   bool get isKosherFriendly => isDietarySafe('kosheranpassad');
   bool get isPregnancySafe => isDietarySafe('graviditetssäker');
   bool get isKidFriendly => isDietarySafe('barnvänlig');
+
+  // Version and retagging
+
+  /// Returns true if tagging explicitly failed (error during generation).
+  /// This is different from needsRetagging which includes version mismatches.
+  bool get hasFailed => generatorVersion == 'failed';
+
+  /// Checks if this result needs retagging due to version mismatch, failure, or pending status.
+  ///
+  /// Returns true if:
+  /// - Generator version is 'failed' (tagging error)
+  /// - Generator version is 'pending' (saved offline, awaiting tagging)
+  /// - Generator version differs from current version
+  /// - Generator version is null (legacy data)
+  bool get needsRetagging {
+    if (generatorVersion == null) return true;
+    if (hasFailed) return true;
+    if (isPending) return true;
+    return generatorVersion != kTagGeneratorVersion;
+  }
 
   @override
   bool operator ==(Object other) =>
@@ -194,7 +238,8 @@ class TagResult {
           _setEquals(tags, other.tags) &&
           _mapEquals(allergenStatus, other.allergenStatus) &&
           _mapEquals(dietaryStatus, other.dietaryStatus) &&
-          coverage == other.coverage;
+          coverage == other.coverage &&
+          _listEquals(unknownIngredients, other.unknownIngredients);
 
   static bool _setEquals<T>(Set<T> a, Set<T> b) =>
       a.length == b.length && a.containsAll(b);
@@ -202,9 +247,18 @@ class TagResult {
   static bool _mapEquals<K, V>(Map<K, V> a, Map<K, V> b) =>
       a.length == b.length && a.entries.every((e) => b[e.key] == e.value);
 
+  static bool _listEquals<T>(List<T> a, List<T> b) =>
+      a.length == b.length &&
+      a.asMap().entries.every((e) => b[e.key] == e.value);
+
   @override
-  int get hashCode =>
-      Object.hash(tags, allergenStatus, dietaryStatus, coverage);
+  int get hashCode => Object.hash(
+        tags,
+        allergenStatus,
+        dietaryStatus,
+        coverage,
+        Object.hashAll(unknownIngredients),
+      );
 
   @override
   String toString() =>

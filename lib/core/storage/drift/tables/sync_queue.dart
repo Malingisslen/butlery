@@ -5,6 +5,9 @@ enum SyncOperation {
   create,
   update,
   delete,
+
+  /// Tag a recipe (generate tags when online)
+  tag,
 }
 
 /// Table for tracking pending sync operations (replaces Hive sync_queue box)

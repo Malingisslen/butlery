@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
+import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/retry_helper.dart';
@@ -277,5 +278,21 @@ class OfflineSyncManager {
     final userId = _authRepository.currentUserId;
     if (userId == null) return [];
     return await _syncQueueDao.getFailedOperations(userId, maxRetries);
+  }
+
+  /// Queue a tagging operation for when connectivity is restored.
+  ///
+  /// Used for recipes saved offline that need tags generated.
+  /// The recipe will be tagged when the device goes back online.
+  Future<void> queueTagging({
+    required String userId,
+    required String recipeId,
+  }) async {
+    await _syncQueueDao.enqueue(
+      userId: userId,
+      recipeId: recipeId,
+      operation: SyncOperation.tag,
+    );
+    AppLogger.debug('📋 Queued tagging operation for recipe: $recipeId');
   }
 }
