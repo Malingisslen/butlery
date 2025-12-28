@@ -5,6 +5,7 @@ import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Handles user-specific storage operations for offline service
@@ -62,6 +63,18 @@ class OfflineUserStorage {
           recipeId: recipe.id,
           operation: SyncOperation.update,
         );
+
+        // H9: Queue for tagging if recipe has failed/pending tagging
+        final tagResult = recipe.core.tagResult;
+        if (tagResult != null && _needsRetagging(tagResult)) {
+          await _syncQueueDao.enqueue(
+            userId: userId,
+            recipeId: recipe.id,
+            operation: SyncOperation.tag,
+          );
+          AppLogger.debug(
+              '📋 Queued offline tagging for recipe: ${recipe.title}');
+        }
       }
 
       AppLogger.info(
@@ -70,6 +83,24 @@ class OfflineUserStorage {
       AppLogger.error('❌ Error saving recipe offline: $e');
       rethrow;
     }
+  }
+
+  /// H9: Check if a recipe needs retagging based on its tagResult.
+  bool _needsRetagging(TagResult tagResult) {
+    // Check for explicit failure markers
+    final version = tagResult.generatorVersion;
+    if (version == 'failed' ||
+        version == 'pending' ||
+        version == 'stale-ingredient') {
+      return true;
+    }
+
+    // Zero coverage also indicates needs retagging
+    if (tagResult.coverage == 0.0) {
+      return true;
+    }
+
+    return false;
   }
 
   /// Get specific offline recipe for user

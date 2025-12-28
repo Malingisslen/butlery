@@ -1,4 +1,6 @@
 // ignore_for_file: subtype_of_sealed_class
+// ignore_for_file: deprecated_member_use_from_same_package
+// Tests deprecated APIs to ensure backward compatibility works correctly
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

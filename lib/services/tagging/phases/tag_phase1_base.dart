@@ -186,12 +186,30 @@ class TagPhase1Base {
       }
     }
 
-    // Plant-based protein
+    // L11: Expanded plant-based protein detection
     final plantProtein = lookup.getIngredientsInGroup('protein/plant-based');
     for (final ingredient in plantProtein) {
       final nameLower = ingredient.swedish.toLowerCase();
       if (nameLower.contains('tofu')) {
         tags.add('tofu');
+      } else if (nameLower.contains('tempeh')) {
+        tags.add('tempeh');
+      } else if (nameLower.contains('seitan')) {
+        tags.add('seitan');
+      } else if (nameLower.contains('quorn')) {
+        tags.add('quorn');
+      } else if (nameLower.contains('sojafärs') ||
+          nameLower.contains('växtfärs') ||
+          nameLower.contains('veggofärs')) {
+        tags.add('växtfärs');
+      } else if (nameLower.contains('bönbiff') ||
+          nameLower.contains('bönburgare')) {
+        tags.add('bönprotein');
+      } else if (nameLower.contains('oumph')) {
+        tags.add('oumph');
+      } else if (nameLower.contains('hälsans kök') ||
+          nameLower.contains('halsans kok')) {
+        tags.add('växtprotein');
       }
     }
 
@@ -212,22 +230,42 @@ class TagPhase1Base {
   Set<String> _calculateCarbTags(IngredientLookupResult lookup, Recipe recipe) {
     final tags = <String>{};
 
-    // Check for pasta
+    // Check for pasta (expanded to include more types)
+    final pastaKeywords = [
+      'pasta',
+      'spagetti',
+      'spaghetti',
+      'penne',
+      'lasagne',
+      'tagliatelle',
+      'fettuccine',
+      'fettucine',
+      'ravioli',
+      'tortellini',
+      'gnocchi',
+      'rigatoni',
+      'fusilli',
+      'farfalle',
+      'linguine',
+      'orzo',
+      'makaroner',
+      'cannelloni',
+    ];
     final hasPasta = lookup.matched.any((i) =>
         i.group.contains('pasta-bread') &&
-        (i.swedish.toLowerCase().contains('pasta') ||
-            i.swedish.toLowerCase().contains('spagetti') ||
-            i.swedish.toLowerCase().contains('penne') ||
-            i.swedish.toLowerCase().contains('lasagne') ||
-            i.swedish.toLowerCase().contains('tagliatelle')));
+        pastaKeywords.any((k) => i.swedish.toLowerCase().contains(k)));
 
     if (hasPasta) {
       tags.add('pastabaserad');
     }
 
-    // Check for rice
+    // Check for rice - use word boundary to avoid false positives
+    // (e.g., "korianderfrisk" shouldn't match "ris")
+    final ricePattern =
+        RegExp(r'(?:^|[^a-zåäö])ris(?:[^a-zåäö]|$)', caseSensitive: false);
     final hasRice = lookup.matched.any((i) =>
-        i.swedish.toLowerCase().contains('ris') && i.group.contains('grain'));
+        ricePattern.hasMatch(i.swedish.toLowerCase()) &&
+        i.group.contains('grain'));
 
     if (hasRice) {
       tags.add('risbaserad');
@@ -278,9 +316,12 @@ class TagPhase1Base {
     final text = instructions.join(' ').toLowerCase();
 
     // Helper for word boundary matching
-    // Matches word at start, end, or surrounded by non-letter characters
+    // Matches word at start boundary (no letter before) but allows suffixes.
+    // This is intentional for Swedish where words commonly have suffixes:
+    // e.g., "grilla" (to grill), "grillad" (grilled), "grillar" (grills)
     bool hasWord(String word) {
       // For Swedish, we match word stems that can have suffixes
+      // Only check word START boundary to prevent false positives like "lugn" matching "ugn"
       final pattern = RegExp('(?:^|[^a-zåäö])$word', caseSensitive: false);
       return pattern.hasMatch(text);
     }

@@ -60,7 +60,8 @@ class DietaryConfig {
       key: 'pescetarian',
       tagSv: 'pescetarian',
       excludedProperties: ['meat'],
-      requiredProperties: ['fish', 'shellfish', 'crustacean', 'mollusc'],
+      // H8: Use actual ingredient properties (not 'shellfish' which doesn't exist)
+      requiredProperties: ['fish', 'crustacean', 'mollusc'],
       description: 'Ingen kött + minst en fisk/skaldjur',
     ),
     DietaryEntry(
@@ -84,7 +85,8 @@ class DietaryConfig {
     DietaryEntry(
       key: 'kosheranpassad',
       tagSv: 'kosheranpassad',
-      excludedProperties: ['pork', 'shellfish', 'crustacean', 'mollusc'],
+      // H8: Use actual ingredient properties (not 'shellfish' which doesn't exist)
+      excludedProperties: ['pork', 'crustacean', 'mollusc'],
       description: 'Ej fläsk, ej skaldjur',
     ),
     DietaryEntry(

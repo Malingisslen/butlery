@@ -93,11 +93,13 @@ class TagPhase4Mood {
   ) {
     final tags = <String>{};
 
-    // Comfort food: creamy AND (pasta OR potato OR rice)
+    // L8: Comfort food: creamy AND (pasta OR potato OR rice OR soup)
+    // Added soppa for creamy soups which are classic comfort food
     if (p3.hasTag('krämig') &&
         (p1.hasTag('pastabaserad') ||
             p1.hasTag('potatisbaserad') ||
-            p1.hasTag('risbaserad'))) {
+            p1.hasTag('risbaserad') ||
+            p1.hasTag('soppa'))) {
       tags.add('comfort-food');
     }
 
@@ -265,7 +267,19 @@ class TagPhase4Mood {
   static const _seasonThreshold = 2;
 
   bool _hasSpringIngredients(Phase1Result p1) {
-    final springIngredients = ['sparris', 'rabarber', 'rädisor', 'vårlök'];
+    // L3: Expanded spring ingredient list
+    final springIngredients = [
+      'sparris',
+      'rabarber',
+      'rädisor',
+      'vårlök',
+      'ärtor',
+      'nässla',
+      'färskpotatis',
+      'nypotatis',
+      'purjolök',
+      'dill',
+    ];
     final matchCount = p1.lookup.matched.where((i) {
       final name = i.swedish.toLowerCase();
       return springIngredients.any((k) => name.contains(k));
@@ -274,12 +288,21 @@ class TagPhase4Mood {
   }
 
   bool _hasSummerIngredients(Phase1Result p1) {
+    // L3: Expanded summer ingredient list
     final summerIngredients = [
       'jordgubb',
       'hallon',
       'blåbär',
+      'lingon',
+      'björnbär',
       'sallad',
       'gurka',
+      'tomat',
+      'zucchini',
+      'squash',
+      'basilika',
+      'majs',
+      'paprika',
     ];
     final matchCount = p1.lookup.matched.where((i) {
       final name = i.swedish.toLowerCase();
@@ -291,7 +314,20 @@ class TagPhase4Mood {
   }
 
   bool _hasAutumnIngredients(Phase1Result p1) {
-    final autumnIngredients = ['svamp', 'kantarell', 'äpple', 'pumpa', 'kål'];
+    // L3: Expanded autumn ingredient list
+    final autumnIngredients = [
+      'svamp',
+      'kantarell',
+      'trattkantarell',
+      'äpple',
+      'päron',
+      'plommon',
+      'pumpa',
+      'kål',
+      'rödkål',
+      'brysselkål',
+      'vitkål',
+    ];
     final matchCount = p1.lookup.matched.where((i) {
       final name = i.swedish.toLowerCase();
       return autumnIngredients.any((k) => name.contains(k));
@@ -302,7 +338,19 @@ class TagPhase4Mood {
   }
 
   bool _hasWinterIngredients(Phase1Result p1) {
-    final winterIngredients = ['rotfrukt', 'morot', 'palsternacka', 'kålrot'];
+    // L3: Expanded winter ingredient list
+    final winterIngredients = [
+      'rotfrukt',
+      'morot',
+      'palsternacka',
+      'kålrot',
+      'grönkål',
+      'selleri',
+      'rödbetor',
+      'rödbeta',
+      'vitkål',
+      'persilja', // Winter herb available year-round
+    ];
     final matchCount = p1.lookup.matched.where((i) {
       final name = i.swedish.toLowerCase();
       return winterIngredients.any((k) => name.contains(k));

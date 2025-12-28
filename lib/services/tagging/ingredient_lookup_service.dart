@@ -119,6 +119,45 @@ class IngredientLookupService extends BaseService {
   List<String> _generateLookupVariations(String name) {
     final variations = <String>[];
 
+    // M6: Add space-removed variation ("kyckling bröst" → "kycklingbröst")
+    final noSpaces = name.replaceAll(' ', '');
+    if (noSpaces != name && noSpaces.length > 2) {
+      variations.add(noSpaces);
+    }
+
+    // M6: Add space-inserted variations for compound words
+    // Common Swedish food compound word suffixes
+    final compoundSuffixes = [
+      'bröst',
+      'filé',
+      'kött',
+      'fläsk',
+      'skinka',
+      'korv',
+      'färs',
+      'mjölk',
+      'grädde',
+      'ost',
+      'smör',
+      'olja',
+      'sås',
+      'soppa',
+      'bröd',
+      'pasta',
+      'ris',
+      'potatis',
+      'lök',
+      'vitlök',
+    ];
+    for (final suffix in compoundSuffixes) {
+      if (name.endsWith(suffix) && name.length > suffix.length + 2) {
+        final base = name.substring(0, name.length - suffix.length);
+        if (base.isNotEmpty) {
+          variations.add('$base $suffix');
+        }
+      }
+    }
+
     // Singular/plural variations
     if (name.endsWith('or')) {
       // Swedish plural: tomator → tomat
