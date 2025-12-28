@@ -1,5 +1,4 @@
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 
 /// Phase 2: Simple derived tags that depend on Phase 1 results.
@@ -28,24 +27,10 @@ class TagPhase2Derived {
       tags.add('mild');
     }
 
-    // Pescetarian (fish/shellfish but no meat)
-    if (phase1.getDietaryStatus('vegetarisk') != TriState.free &&
-        (phase1.hasTag('fisk') || phase1.hasTag('skaldjur')) &&
-        !phase1.hasProperty('meat')) {
-      tags.add('pescetarian');
-    }
-
-    // Halal-friendly
-    if (phase1.getAllergenStatus('fläsk') == TriState.free &&
-        phase1.getAllergenStatus('alkohol') == TriState.free) {
-      tags.add('halalanpassad');
-    }
-
-    // Kosher-friendly
-    if (phase1.getAllergenStatus('fläsk') == TriState.free &&
-        phase1.getAllergenStatus('skaldjur') == TriState.free) {
-      tags.add('kosheranpassad');
-    }
+    // Note: Pescetarian, halalanpassad, kosheranpassad are handled as
+    // dietary STATUS in Phase 1 (via DietaryConfig), not as tags.
+    // Phase 1's dietaryStatus map provides tri-state logic which is
+    // more accurate than simple tags.
 
     // Few ingredients
     final ingredientCount = recipe.core.ingredients.length;

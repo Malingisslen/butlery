@@ -4,12 +4,12 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
 import 'package:butlery/theme/app_colors.dart';
 
-/// Badge displaying allergen status with tri-state coloring.
+/// Badge displaying allergen status with tri-state coloring and shape distinction.
 ///
-/// Colors:
-/// - FREE: Green with checkmark (safe)
-/// - CONTAINS: Red with X (allergen present)
-/// - UNKNOWN: Yellow with warning (uncertain)
+/// Both color AND shape are used for accessibility (color-blind users):
+/// - FREE: Green circle with checkmark (safe)
+/// - CONTAINS: Red triangle with exclamation (allergen present)
+/// - UNKNOWN: Grey circle with question mark (uncertain)
 class AllergenStatusBadge extends StatelessWidget {
   /// The allergen key (e.g., 'gluten', 'mjölk').
   final String allergen;
@@ -39,11 +39,13 @@ class AllergenStatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final (color, icon) = _getStatusStyle();
     final displayLabel = label ?? _getSwedishLabel();
+    final semanticLabel = _getSemanticLabel();
 
     if (compact) {
       return _CompactBadge(
         color: color,
         icon: icon,
+        semanticLabel: semanticLabel,
         label: showLabel ? displayLabel : null,
       );
     }
@@ -51,18 +53,38 @@ class AllergenStatusBadge extends StatelessWidget {
     return _StandardBadge(
       color: color,
       icon: icon,
+      semanticLabel: semanticLabel,
       label: showLabel ? displayLabel : null,
     );
   }
 
+  String _getSemanticLabel() {
+    final entry = AllergenConfig.getByKey(allergen);
+    final allergenName = entry?.key ?? allergen;
+
+    switch (status) {
+      case TriState.free:
+        return 'Fri från $allergenName';
+      case TriState.contains:
+        return 'Innehåller $allergenName';
+      case TriState.unknown:
+        return '$allergenName status okänd';
+    }
+  }
+
   (Color, IconData) _getStatusStyle() {
+    // Shape distinction for color-blind accessibility:
+    // - FREE: Circle (check_circle)
+    // - CONTAINS: Triangle (warning)
+    // - UNKNOWN: Circle with question (help_outline)
     switch (status) {
       case TriState.free:
         return (AppColors.success, Icons.check_circle_outline);
       case TriState.contains:
-        return (AppColors.error, Icons.cancel_outlined);
+        // Triangle shape distinguishes from other states
+        return (AppColors.error, Icons.warning_amber);
       case TriState.unknown:
-        return (AppColors.warning, Icons.help_outline);
+        return (AppColors.textMedium, Icons.help_outline);
     }
   }
 
@@ -94,37 +116,44 @@ class _StandardBadge extends StatelessWidget {
   final Color color;
   final IconData icon;
   final String? label;
+  final String semanticLabel;
 
   const _StandardBadge({
     required this.color,
     required this.icon,
+    required this.semanticLabel,
     this.label,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 18, color: color),
-          if (label != null) ...[
-            const SizedBox(width: 6),
-            Text(
-              label!,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
+    return Semantics(
+      label: semanticLabel,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18, color: color, semanticLabel: null),
+            if (label != null) ...[
+              const SizedBox(width: 6),
+              ExcludeSemantics(
+                child: Text(
+                  label!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -134,36 +163,43 @@ class _CompactBadge extends StatelessWidget {
   final Color color;
   final IconData icon;
   final String? label;
+  final String semanticLabel;
 
   const _CompactBadge({
     required this.color,
     required this.icon,
+    required this.semanticLabel,
     this.label,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: color),
-          if (label != null) ...[
-            const SizedBox(width: 4),
-            Text(
-              label!,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
+    return Semantics(
+      label: semanticLabel,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: color, semanticLabel: null),
+            if (label != null) ...[
+              const SizedBox(width: 4),
+              ExcludeSemantics(
+                child: Text(
+                  label!,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

@@ -187,13 +187,8 @@ class TagPhase4Mood {
       tags.add('vinter');
     }
 
-    // Year-round if no season-specific
-    if (!tags.contains('vår') &&
-        !tags.contains('sommar') &&
-        !tags.contains('höst') &&
-        !tags.contains('vinter')) {
-      tags.add('året-runt');
-    }
+    // Note: No 'året-runt' default tag - absence of season tags already
+    // indicates year-round suitability. Adding it would be meaningless noise.
 
     return tags;
   }

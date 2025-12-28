@@ -30,16 +30,20 @@ class AllergenEntry {
     this.isEuAllergen = false,
   });
 
+  /// Pattern for parsing OR-combined properties.
+  /// Handles flexible whitespace and case insensitivity.
+  static final _orPattern = RegExp(r'\s+OR\s+', caseSensitive: false);
+
   /// Gets the properties that trigger this allergen as a list.
   List<String> get triggerProperties {
-    if (triggerProperty.contains(' OR ')) {
-      return triggerProperty.split(' OR ').map((p) => p.trim()).toList();
+    if (_orPattern.hasMatch(triggerProperty)) {
+      return triggerProperty.split(_orPattern).map((p) => p.trim()).toList();
     }
     return [triggerProperty];
   }
 
   /// Whether this allergen combines multiple properties.
-  bool get isCombined => triggerProperty.contains(' OR ');
+  bool get isCombined => _orPattern.hasMatch(triggerProperty);
 }
 
 /// All configured allergens.

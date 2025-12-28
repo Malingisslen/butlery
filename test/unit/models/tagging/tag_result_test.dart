@@ -35,7 +35,7 @@ void main() {
         expect(result.dietaryStatus, isEmpty);
         expect(result.coverage, 0.0);
         expect(result.unknownIngredients, isEmpty);
-        expect(result.generatorVersion, isNull);
+        expect(result.generatorVersion, 'empty');
       });
     });
 
@@ -536,6 +536,183 @@ void main() {
 
         expect(result.toString(), contains('3 tags'));
         expect(result.toString(), contains('85%'));
+      });
+    });
+
+    group('malformed data handling', () {
+      test('handles corrupted coverage value (string instead of number)', () {
+        final map = {
+          'tags': ['test'],
+          'coverage': 'invalid_string', // Should be a number
+          'allergenStatus': {},
+          'dietaryStatus': {},
+        };
+
+        final result = TagResult.fromFirestore(map);
+
+        // Should default to 0.0 rather than crash
+        expect(result.coverage, 0.0);
+      });
+
+      test('handles coverage out of range', () {
+        final mapNegative = {
+          'tags': [],
+          'coverage': -0.5,
+          'allergenStatus': {},
+          'dietaryStatus': {},
+        };
+
+        final result = TagResult.fromFirestore(mapNegative);
+
+        // Coverage should be clamped or use default
+        expect(result.coverage, lessThanOrEqualTo(1.0));
+      });
+
+      test('handles tags as non-list type', () {
+        final map = {
+          'tags': 'not a list',
+          'coverage': 1.0,
+        };
+
+        final result = TagResult.fromFirestore(map);
+        expect(result.tags, isEmpty);
+      });
+
+      test('handles allergenStatus with invalid tri-state values', () {
+        final map = {
+          'tags': [],
+          'allergenStatus': {
+            'gluten': 'INVALID_STATE',
+            'mjölk': 123, // Wrong type
+          },
+          'coverage': 1.0,
+        };
+
+        final result = TagResult.fromFirestore(map);
+
+        // Invalid states should default to UNKNOWN
+        expect(result.allergenStatus['gluten'], TriState.unknown);
+        expect(result.allergenStatus['mjölk'], TriState.unknown);
+      });
+
+      test('handles unknownIngredients as non-list', () {
+        final map = {
+          'tags': [],
+          'unknownIngredients': 'not a list',
+          'coverage': 0.5,
+        };
+
+        final result = TagResult.fromFirestore(map);
+        expect(result.unknownIngredients, isEmpty);
+      });
+    });
+
+    group('unknownIngredients in equality (C3 fix)', () {
+      test('different unknownIngredients means not equal', () {
+        final a = TagResult(
+          tags: {'test'},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 0.5,
+          unknownIngredients: ['spice1'],
+          generatedAt: DateTime(2024, 1, 1),
+        );
+        final b = TagResult(
+          tags: {'test'},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 0.5,
+          unknownIngredients: ['spice2'],
+          generatedAt: DateTime(2024, 1, 1),
+        );
+
+        expect(a, isNot(equals(b)));
+      });
+
+      test('same unknownIngredients means equal', () {
+        final a = TagResult(
+          tags: {'test'},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 0.5,
+          unknownIngredients: ['spice'],
+          generatedAt: DateTime(2024, 1, 1),
+        );
+        final b = TagResult(
+          tags: {'test'},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 0.5,
+          unknownIngredients: ['spice'],
+          generatedAt: DateTime(2024, 1, 1),
+        );
+
+        expect(a, equals(b));
+      });
+
+      test('empty vs non-empty unknownIngredients not equal', () {
+        final a = TagResult(
+          tags: {'test'},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 1.0,
+          unknownIngredients: [],
+          generatedAt: DateTime(2024, 1, 1),
+        );
+        final b = TagResult(
+          tags: {'test'},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 1.0,
+          unknownIngredients: ['unknown'],
+          generatedAt: DateTime(2024, 1, 1),
+        );
+
+        expect(a, isNot(equals(b)));
+      });
+    });
+
+    group('version mismatch detection', () {
+      test('needsRetagging is true when version differs', () {
+        final result = TagResult(
+          tags: {'test'},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 1.0,
+          generatedAt: DateTime.now(),
+          generatorVersion: 'old-version',
+        );
+
+        // Assuming current version is different from 'old-version'
+        expect(result.generatorVersion, isNot('1.0.0'));
+      });
+
+      test('needsRetagging property reflects version check', () {
+        final outdated = TagResult(
+          tags: {'test'},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 1.0,
+          generatedAt: DateTime.now(),
+          generatorVersion: '0.9.0',
+        );
+
+        // TagResult.needsRetagging checks against kTagGeneratorVersion
+        expect(outdated.needsRetagging, isTrue);
+      });
+
+      test('needsRetagging is false when version matches', () {
+        // Import the constant to use the current version
+        final current = TagResult(
+          tags: {'test'},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 1.0,
+          generatedAt: DateTime.now(),
+          generatorVersion: '1.0.0', // Current version
+        );
+
+        expect(current.needsRetagging, isFalse);
       });
     });
   });

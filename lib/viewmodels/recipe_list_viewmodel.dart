@@ -155,6 +155,31 @@ class RecipeListViewModel extends ChangeNotifier {
       _activeAllergenFilters.isNotEmpty ||
       _activeDietaryFilters.isNotEmpty;
 
+  /// Whether allergen or dietary filters are specifically active.
+  /// These filters require tagResult to be present, so untagged recipes are excluded.
+  bool get hasTagBasedFilters =>
+      _activeAllergenFilters.isNotEmpty || _activeDietaryFilters.isNotEmpty;
+
+  /// Count of recipes that are excluded from filter results due to missing tags.
+  /// Used to inform users that some recipes are still being analyzed.
+  int get untaggedRecipeCount {
+    if (!hasTagBasedFilters) return 0;
+    return _recipeService.recipes
+        .where((r) => r.tagResult == null || r.tagResult!.hasFailed)
+        .length;
+  }
+
+  /// Message to show when untagged recipes are excluded from filter results.
+  /// Returns null if no untagged recipes are being excluded.
+  String? get untaggedExclusionMessage {
+    final count = untaggedRecipeCount;
+    if (count == 0) return null;
+    if (count == 1) {
+      return '1 recept analyseras fortfarande och visas inte med valda filter.';
+    }
+    return '$count recept analyseras fortfarande och visas inte med valda filter.';
+  }
+
   /// Updates search query with intelligent caching and debounced filtering coordination.
   /// [query] New search query for recipe filtering and search functionality
   /// Performs search query update with debouncing (300ms delay) to prevent excessive
@@ -457,10 +482,16 @@ class RecipeListViewModel extends ChangeNotifier {
 
   /// Applies allergen-free filters using recipe tag results.
   /// Returns recipes that are proven free from ALL selected allergens (AND logic).
+  /// SAFETY: Excludes recipes with coverage < 100% because unknown ingredients
+  /// could contain allergens. Only recipes with full coverage can be trusted.
   List<Recipe> _applyAllergenFilters(List<Recipe> recipes) {
     return recipes.where((recipe) {
       final tagResult = recipe.tagResult;
       if (tagResult == null) return false;
+
+      // SAFETY: Don't trust allergen status if coverage < 100%
+      // Unknown ingredients could contain any allergen
+      if (tagResult.coverage < 1.0) return false;
 
       // Recipe must be free from ALL selected allergens (AND logic)
       for (final filterId in _activeAllergenFilters) {
@@ -481,10 +512,16 @@ class RecipeListViewModel extends ChangeNotifier {
 
   /// Applies dietary filters using recipe tag results.
   /// Returns recipes that are safe for ALL selected diets (AND logic).
+  /// SAFETY: Excludes recipes with coverage < 100% because unknown ingredients
+  /// could violate dietary restrictions. Only recipes with full coverage can be trusted.
   List<Recipe> _applyDietaryFilters(List<Recipe> recipes) {
     return recipes.where((recipe) {
       final tagResult = recipe.tagResult;
       if (tagResult == null) return false;
+
+      // SAFETY: Don't trust dietary status if coverage < 100%
+      // Unknown ingredients could violate dietary restrictions
+      if (tagResult.coverage < 1.0) return false;
 
       // Recipe must be safe for ALL selected diets (AND logic)
       for (final filterId in _activeDietaryFilters) {

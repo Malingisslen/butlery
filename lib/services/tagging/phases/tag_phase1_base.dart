@@ -78,13 +78,10 @@ class TagPhase1Base {
     }
 
     // Process combined allergens using OR logic
+    // Note: getCombinedPropertyStatus handles coverage internally
     for (final allergen in AllergenConfig.combinedAllergens) {
-      if (lookup.coverage < 1.0) {
-        status[allergen.key] = TriState.unknown;
-      } else {
-        final props = allergen.triggerProperties;
-        status[allergen.key] = lookup.getCombinedPropertyStatus(props);
-      }
+      final props = allergen.triggerProperties;
+      status[allergen.key] = lookup.getCombinedPropertyStatus(props);
     }
 
     return status;
@@ -104,12 +101,18 @@ class TagPhase1Base {
       final hasExcluded = lookup.hasAnyProperty(dietary.excludedProperties);
 
       if (hasExcluded) {
+        // Has excluded ingredients (e.g., meat for pescetarian)
         status[dietary.key] = TriState.contains;
       } else if (dietary.requiredProperties != null) {
         // Special case: pescetarian requires fish/shellfish
         final hasRequired = lookup.hasAnyProperty(dietary.requiredProperties!);
-        // For pescetarian, we set a special status
-        status[dietary.key] = hasRequired ? TriState.free : TriState.contains;
+        if (hasRequired) {
+          // Has fish/shellfish, no meat = valid pescetarian dish
+          status[dietary.key] = TriState.free;
+        } else {
+          // No fish AND no meat = unknown (could be vegetarian side dish)
+          status[dietary.key] = TriState.unknown;
+        }
       } else {
         status[dietary.key] = TriState.free;
       }
