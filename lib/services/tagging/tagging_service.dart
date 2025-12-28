@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -7,6 +9,9 @@ import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
+
+/// Timeout duration for tag generation operations.
+const Duration _tagGenerationTimeout = Duration(seconds: 30);
 
 /// Main entry point for the automatic tagging system.
 ///
@@ -36,6 +41,8 @@ class TaggingService extends BaseService {
   /// - Dietary status
   /// - Coverage percentage
   /// - List of unknown ingredients
+  ///
+  /// Throws [TimeoutException] if generation takes longer than 30 seconds.
   Future<TagResult?> generateTags(Recipe recipe) async {
     return await executeServiceOperation(
       () async {
@@ -50,31 +57,56 @@ class TaggingService extends BaseService {
           return TagResult.empty();
         }
 
-        // Lookup ingredients in database
-        final lookupResult = await _lookupService.lookupFromRaw(ingredients);
-
-        AppLogger.debug(
-          'Ingredient lookup: ${lookupResult.matched.length} matched, '
-          '${lookupResult.unmatched.length} unmatched, '
-          '${(lookupResult.coverage * 100).toStringAsFixed(0)}% coverage',
-        );
-
-        // Generate tags using the 4-phase generator
-        final tagResult = _tagGenerator.generate(
-          ingredients: lookupResult,
-          recipe: recipe,
-        );
-
-        AppLogger.info(
-          '✅ Generated ${tagResult.tags.length} tags '
-          '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
-        );
-
-        return tagResult;
+        // Wrap in timeout to prevent hanging on complex recipes
+        return await _generateTagsWithTimeout(recipe, ingredients);
       },
       operationName: 'Generate tags',
       requiresAuth: false, // Tagging doesn't require auth
     );
+  }
+
+  /// Internal method with timeout wrapper.
+  Future<TagResult> _generateTagsWithTimeout(
+    Recipe recipe,
+    List<String> ingredients,
+  ) async {
+    return await Future.any([
+      _performTagGeneration(recipe, ingredients),
+      Future.delayed(_tagGenerationTimeout, () {
+        throw TimeoutException(
+          'Tag generation timed out after ${_tagGenerationTimeout.inSeconds} seconds',
+          _tagGenerationTimeout,
+        );
+      }),
+    ]);
+  }
+
+  /// Performs the actual tag generation.
+  Future<TagResult> _performTagGeneration(
+    Recipe recipe,
+    List<String> ingredients,
+  ) async {
+    // Lookup ingredients in database
+    final lookupResult = await _lookupService.lookupFromRaw(ingredients);
+
+    AppLogger.debug(
+      'Ingredient lookup: ${lookupResult.matched.length} matched, '
+      '${lookupResult.unmatched.length} unmatched, '
+      '${(lookupResult.coverage * 100).toStringAsFixed(0)}% coverage',
+    );
+
+    // Generate tags using the 4-phase generator
+    final tagResult = _tagGenerator.generate(
+      ingredients: lookupResult,
+      recipe: recipe,
+    );
+
+    AppLogger.info(
+      '✅ Generated ${tagResult.tags.length} tags '
+      '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
+    );
+
+    return tagResult;
   }
 
   /// Generates a quick preview with only Phase 1 tags.
@@ -184,33 +216,56 @@ class TaggingService extends BaseService {
   /// Re-tags all recipes for a user.
   ///
   /// Use after ingredient database updates.
+  /// Processes in batches of 50 for scalability.
+  ///
+  /// [onProgress] is called with (current, total) counts after each batch.
   Future<int> retagUserRecipes({
     required String userId,
     required Future<List<Recipe>> Function() getRecipes,
     required Future<void> Function(Recipe) saveRecipe,
+    void Function(int current, int total)? onProgress,
   }) async {
     final result = await executeServiceOperation(
       () async {
         final recipes = await getRecipes();
+        final recipesToRetag = recipes.where(needsRetagging).toList();
+        final total = recipesToRetag.length;
+
+        if (total == 0) {
+          AppLogger.info('No recipes need retagging for user $userId');
+          onProgress?.call(0, 0);
+          return 0;
+        }
+
         var retaggedCount = 0;
+        const batchSize = 50;
 
-        for (final recipe in recipes) {
-          if (needsRetagging(recipe)) {
-            final tagResult = await generateTags(recipe);
+        // Process in batches for scalability
+        for (var i = 0; i < recipesToRetag.length; i += batchSize) {
+          final batchEnd = (i + batchSize).clamp(0, recipesToRetag.length);
+          final batch = recipesToRetag.sublist(i, batchEnd);
 
-            if (tagResult != null) {
-              final updatedRecipe = Recipe(
-                core: recipe.core.copyWith(tagResult: tagResult),
-                type: recipe.type,
-                socialData: recipe.socialData,
-                realtimeData: recipe.realtimeData,
-                offlineData: recipe.offlineData,
-              );
+          // Process batch in parallel
+          final results = await Future.wait(
+            batch.map((recipe) async {
+              final tagResult = await generateTags(recipe);
+              if (tagResult != null) {
+                final updatedRecipe = Recipe(
+                  core: recipe.core.copyWith(tagResult: tagResult),
+                  type: recipe.type,
+                  socialData: recipe.socialData,
+                  realtimeData: recipe.realtimeData,
+                  offlineData: recipe.offlineData,
+                );
+                await saveRecipe(updatedRecipe);
+                return true;
+              }
+              return false;
+            }),
+          );
 
-              await saveRecipe(updatedRecipe);
-              retaggedCount++;
-            }
-          }
+          retaggedCount += results.where((success) => success).length;
+          onProgress?.call(batchEnd, total);
         }
 
         AppLogger.info('🔄 Retagged $retaggedCount recipes for user $userId');

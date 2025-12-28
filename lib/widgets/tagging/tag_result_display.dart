@@ -277,9 +277,20 @@ class TagResultDisplay extends StatelessWidget {
       return userDietaryPrefs!.toList();
     }
 
-    // Default: show common dietary statuses if they're FREE
-    const defaultDiets = ['vegetarisk', 'vegansk'];
-    return defaultDiets.where((diet) {
+    // Default: show all dietary statuses that are FREE
+    // Priority order: most common first
+    const priorityOrder = [
+      'vegetarisk',
+      'vegansk',
+      'pescetarian',
+      'barnvänlig',
+      'graviditetssäker',
+      'halalanpassad',
+      'kosheranpassad',
+      'nötkötsfri',
+    ];
+
+    return priorityOrder.where((diet) {
       final status = tagResult.getDietaryStatus(diet);
       return status == TriState.free;
     }).toList();
@@ -330,17 +341,23 @@ class CompactAllergenRow extends StatelessWidget {
   List<String> _getBadgesToShow() {
     final allergensToCheck = userPrefs ?? _defaultAllergens;
 
-    // Prioritize FREE status (good news for the user)
+    // SAFETY: Show CONTAINS first (warnings are most important)
+    final containsAllergens = allergensToCheck.where((a) {
+      return tagResult.getAllergenStatus(a) == TriState.contains;
+    }).toList();
+
+    // Then FREE status (good news for the user)
     final freeAllergens = allergensToCheck.where((a) {
       return tagResult.getAllergenStatus(a) == TriState.free;
     }).toList();
 
-    // Then show UNKNOWN if space allows
+    // Then UNKNOWN if space allows
     final unknownAllergens = allergensToCheck.where((a) {
       return tagResult.getAllergenStatus(a) == TriState.unknown;
     }).toList();
 
-    return [...freeAllergens, ...unknownAllergens];
+    // Priority: warnings first, then positive, then uncertain
+    return [...containsAllergens, ...freeAllergens, ...unknownAllergens];
   }
 
   static const _defaultAllergens = {
@@ -400,8 +417,15 @@ class CompactDietaryRow extends StatelessWidget {
     }).toList();
   }
 
-  static const _defaultDiets = {
+  // Priority order: most common first, all diets checked by default
+  static const _defaultDiets = [
     'vegetarisk',
     'vegansk',
-  };
+    'pescetarian',
+    'barnvänlig',
+    'graviditetssäker',
+    'halalanpassad',
+    'kosheranpassad',
+    'nötkötsfri',
+  ];
 }

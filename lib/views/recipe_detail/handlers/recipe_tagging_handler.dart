@@ -39,14 +39,37 @@ class RecipeTaggingHandler {
 
     if (confirmed != true || !context.mounted) return;
 
-    try {
-      // Show progress
-      showSnackBar('Analyserar ingredienser...');
+    // Show blocking loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          content: Row(
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  'Analyserar ingredienser...',
+                  style: Theme.of(dialogContext).textTheme.bodyMedium,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
 
+    try {
       // Generate new tags
       final tagResult = await taggingService.generateTags(viewModel.recipe);
 
       if (!context.mounted) return;
+
+      // Close loading dialog
+      Navigator.of(context).pop();
 
       if (tagResult == null) {
         showSnackBar(
@@ -81,6 +104,8 @@ class RecipeTaggingHandler {
       );
     } catch (e) {
       if (!context.mounted) return;
+      // Close loading dialog if still open
+      Navigator.of(context).pop();
       showSnackBar(
         'Fel vid taggning: $e',
         backgroundColor: AppColors.error,

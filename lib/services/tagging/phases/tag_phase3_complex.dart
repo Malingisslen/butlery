@@ -144,12 +144,17 @@ class TagPhase3Complex {
   }
 
   bool _isHighProtein(Phase1Result p1, Recipe recipe) {
-    // Has protein group ingredients prominently
+    // Protein must be a significant portion of the recipe, not just present.
+    // Require: 2+ protein ingredients AND they make up >25% of matched ingredients.
     final proteinIngredients = p1.lookup.getIngredientsInGroup('protein');
-    return proteinIngredients.length >= 2 ||
-        p1.hasTag('nötkött') ||
-        p1.hasTag('kyckling') ||
-        p1.hasTag('fisk');
+    final totalMatched = p1.lookup.matched.length;
+
+    if (proteinIngredients.length < 2) return false;
+    if (totalMatched == 0) return false;
+
+    // Protein must be >25% of ingredients to qualify as "high protein"
+    final proteinRatio = proteinIngredients.length / totalMatched;
+    return proteinRatio > 0.25;
   }
 
   bool _isHighFiber(Phase1Result p1) {
