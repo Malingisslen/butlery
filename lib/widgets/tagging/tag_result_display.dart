@@ -30,6 +30,9 @@ class TagResultDisplay extends StatelessWidget {
   /// Callback when unknown ingredients are tapped.
   final VoidCallback? onUnknownIngredientsTap;
 
+  /// Callback to trigger retagging when version is outdated.
+  final VoidCallback? onRetagRequested;
+
   /// Use compact mode for space-constrained layouts.
   final bool compact;
 
@@ -40,6 +43,7 @@ class TagResultDisplay extends StatelessWidget {
     this.userDietaryPrefs,
     this.showCoverage = true,
     this.onUnknownIngredientsTap,
+    this.onRetagRequested,
     this.compact = false,
   });
 
@@ -57,6 +61,12 @@ class TagResultDisplay extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Version mismatch indicator (if outdated)
+          if (tagResult.needsRetagging && !tagResult.hasFailed) ...[
+            _buildRetagIndicator(context),
+            const SizedBox(height: AppDimensions.spacingM),
+          ],
+
           // Allergens section
           _buildAllergenSection(context),
 
@@ -71,6 +81,53 @@ class TagResultDisplay extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingL),
             _buildCoverageSection(context),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRetagIndicator(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.paddingS),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.update,
+            color: AppColors.warning,
+            size: 18,
+          ),
+          const SizedBox(width: AppDimensions.spacingS),
+          Expanded(
+            child: Text(
+              'Taggarna kan uppdateras',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.warning,
+              ),
+            ),
+          ),
+          if (onRetagRequested != null)
+            TextButton(
+              onPressed: onRetagRequested,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingS,
+                ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                'Uppdatera',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.primaryBlue,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
         ],
       ),
     );

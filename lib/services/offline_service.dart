@@ -252,6 +252,19 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     }
   }
 
+  /// Queue a tagging operation for when connectivity is restored.
+  /// Used for recipes saved offline that need tags generated.
+  Future<void> queueTaggingOperation(String recipeId) async {
+    if (!isInitialized || _currentUserId == null) return;
+
+    await _syncManager.queueTagging(
+      userId: _currentUserId!,
+      recipeId: recipeId,
+    );
+    await refreshSyncState();
+    AppLogger.info('📋 Queued tagging for recipe: $recipeId');
+  }
+
   /// Get all offline recipes - with user support
   Future<List<Recipe>> getAllOfflineRecipes() async {
     if (_currentUserId != null) {

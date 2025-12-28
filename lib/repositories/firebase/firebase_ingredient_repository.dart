@@ -11,6 +11,7 @@ import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 ///
 /// Provides read-only access to the global ingredients collection.
 /// Uses in-memory caching for fast lookups (2230 ingredients fit easily).
+/// Automatically invalidates cache when ingredients are synced.
 class FirebaseIngredientRepository
     with ErrorHandlingMixin
     implements IngredientRepository {
@@ -31,12 +32,77 @@ class FirebaseIngredientRepository
   /// Whether the cache has been loaded.
   bool _cacheLoaded = false;
 
-  /// Subscription to Firestore updates.
+  /// Subscription to Firestore updates for cache invalidation.
   StreamSubscription<QuerySnapshot>? _subscription;
+
+  /// Callbacks to notify when cache is invalidated.
+  final List<void Function()> _onCacheInvalidatedListeners = [];
 
   FirebaseIngredientRepository({
     FirebaseFirestore? firestore,
   }) : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  /// Adds a listener to be notified when the ingredient cache is invalidated.
+  ///
+  /// Useful for triggering re-tagging of recipes after ingredient sync.
+  void addCacheInvalidationListener(void Function() listener) {
+    _onCacheInvalidatedListeners.add(listener);
+  }
+
+  /// Removes a cache invalidation listener.
+  void removeCacheInvalidationListener(void Function() listener) {
+    _onCacheInvalidatedListeners.remove(listener);
+  }
+
+  /// Notifies all listeners that the cache was invalidated.
+  void _notifyCacheInvalidated() {
+    for (final listener in _onCacheInvalidatedListeners) {
+      listener();
+    }
+  }
+
+  /// Initializes the repository with automatic cache updates.
+  ///
+  /// Sets up a listener for ingredient collection changes to automatically
+  /// invalidate and refresh the cache when ingredients are synced.
+  Future<void> initialize() async {
+    // Load initial cache
+    await loadCache();
+
+    // Subscribe to changes for automatic invalidation
+    _subscription = _collection.snapshots().listen((snapshot) {
+      if (snapshot.docChanges.isNotEmpty) {
+        // Check if this is actual data change, not just initial load
+        final hasRealChanges = snapshot.docChanges.any((change) =>
+            change.type == DocumentChangeType.added ||
+            change.type == DocumentChangeType.modified ||
+            change.type == DocumentChangeType.removed);
+
+        if (hasRealChanges && _cacheLoaded) {
+          AppLogger.info(
+            '🔄 Ingredient collection changed, invalidating cache (${snapshot.docChanges.length} changes)',
+          );
+          _invalidateAndReload(snapshot);
+        }
+      }
+    });
+  }
+
+  /// Invalidates cache and reloads from snapshot.
+  void _invalidateAndReload(QuerySnapshot snapshot) {
+    _cache.clear();
+    _swedishNameIndex.clear();
+    _englishNameIndex.clear();
+    _aliasIndex.clear();
+
+    for (final doc in snapshot.docs) {
+      final ingredient = IngredientData.fromFirestore(doc);
+      _addToCache(ingredient);
+    }
+
+    AppLogger.info('✅ Cache reloaded with ${_cache.length} ingredients');
+    _notifyCacheInvalidated();
+  }
 
   /// Collection reference.
   CollectionReference<Map<String, dynamic>> get _collection =>

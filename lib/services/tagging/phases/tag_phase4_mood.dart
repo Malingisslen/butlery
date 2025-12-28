@@ -261,12 +261,16 @@ class TagPhase4Mood {
     });
   }
 
+  /// Minimum seasonal ingredients required to tag a season.
+  static const _seasonThreshold = 2;
+
   bool _hasSpringIngredients(Phase1Result p1) {
     final springIngredients = ['sparris', 'rabarber', 'rädisor', 'vårlök'];
-    return p1.lookup.matched.any((i) {
+    final matchCount = p1.lookup.matched.where((i) {
       final name = i.swedish.toLowerCase();
       return springIngredients.any((k) => name.contains(k));
-    });
+    }).length;
+    return matchCount >= _seasonThreshold;
   }
 
   bool _hasSummerIngredients(Phase1Result p1) {
@@ -275,22 +279,26 @@ class TagPhase4Mood {
       'hallon',
       'blåbär',
       'sallad',
-      'gurka'
+      'gurka',
     ];
     final matchCount = p1.lookup.matched.where((i) {
       final name = i.swedish.toLowerCase();
       return summerIngredients.any((k) => name.contains(k));
     }).length;
-    return matchCount >= 2 || p1.hasTag('grillad');
+    // Grillad counts as one seasonal indicator
+    final grillBonus = p1.hasTag('grillad') ? 1 : 0;
+    return matchCount + grillBonus >= _seasonThreshold;
   }
 
   bool _hasAutumnIngredients(Phase1Result p1) {
     final autumnIngredients = ['svamp', 'kantarell', 'äpple', 'pumpa', 'kål'];
-    return p1.lookup.matched.any((i) {
-          final name = i.swedish.toLowerCase();
-          return autumnIngredients.any((k) => name.contains(k));
-        }) ||
-        p1.hasTag('vilt');
+    final matchCount = p1.lookup.matched.where((i) {
+      final name = i.swedish.toLowerCase();
+      return autumnIngredients.any((k) => name.contains(k));
+    }).length;
+    // Vilt (game) counts as one seasonal indicator
+    final gameBonus = p1.hasTag('vilt') ? 1 : 0;
+    return matchCount + gameBonus >= _seasonThreshold;
   }
 
   bool _hasWinterIngredients(Phase1Result p1) {
@@ -299,7 +307,7 @@ class TagPhase4Mood {
       final name = i.swedish.toLowerCase();
       return winterIngredients.any((k) => name.contains(k));
     }).length;
-    return matchCount >= 2;
+    return matchCount >= _seasonThreshold;
   }
 }
 

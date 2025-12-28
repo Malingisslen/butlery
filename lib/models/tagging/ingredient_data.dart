@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -61,22 +63,63 @@ class IngredientData {
   }
 
   /// Creates from map data with optional ID override.
+  ///
+  /// Supports both camelCase (current) and snake_case (legacy) field names.
+  /// Legacy fields are logged for migration tracking.
   factory IngredientData.fromMap(Map<String, dynamic> data, [String? id]) {
+    // Log legacy field usage for migration tracking
+    _checkLegacyFields(data);
+
     return IngredientData(
       id: id ?? SerializationUtils.safeString(data, 'id'),
       swedish: SerializationUtils.safeString(data, 'swedish'),
       english: SerializationUtils.safeString(data, 'english'),
       group: SerializationUtils.safeString(data, 'group'),
-      properties: _parseProperties(data['properties']),
-      aliasesSv: _parseStringList(data['aliases_sv'] ?? data['aliasesSv']),
-      aliasesEn: _parseStringList(data['aliases_en'] ?? data['aliasesEn']),
+      properties: _parseProperties(data['properties'] ?? data['props']),
+      aliasesSv: _parseStringList(data['aliasesSv'] ?? data['aliases_sv']),
+      aliasesEn: _parseStringList(data['aliasesEn'] ?? data['aliases_en']),
       searchTerms:
-          _parseStringList(data['search_terms'] ?? data['searchTerms']),
+          _parseStringList(data['searchTerms'] ?? data['search_terms']),
       status: SerializationUtils.safeString(data, 'status',
           defaultValue: 'verified'),
-      createdAt: SerializationUtils.safeDateTime(data, 'createdAt'),
-      updatedAt: SerializationUtils.safeDateTime(data, 'updatedAt'),
+      createdAt: SerializationUtils.safeDateTime(data, 'createdAt') ??
+          SerializationUtils.safeDateTime(data, 'created_at'),
+      updatedAt: SerializationUtils.safeDateTime(data, 'updatedAt') ??
+          SerializationUtils.safeDateTime(data, 'updated_at'),
     );
+  }
+
+  /// Checks for legacy field names and logs migration opportunities.
+  static void _checkLegacyFields(Map<String, dynamic> data) {
+    final legacyFields = <String>[];
+
+    // Check for snake_case fields that should be migrated to camelCase
+    if (data.containsKey('aliases_sv') && !data.containsKey('aliasesSv')) {
+      legacyFields.add('aliases_sv');
+    }
+    if (data.containsKey('aliases_en') && !data.containsKey('aliasesEn')) {
+      legacyFields.add('aliases_en');
+    }
+    if (data.containsKey('search_terms') && !data.containsKey('searchTerms')) {
+      legacyFields.add('search_terms');
+    }
+    if (data.containsKey('created_at') && !data.containsKey('createdAt')) {
+      legacyFields.add('created_at');
+    }
+    if (data.containsKey('updated_at') && !data.containsKey('updatedAt')) {
+      legacyFields.add('updated_at');
+    }
+    if (data.containsKey('props') && !data.containsKey('properties')) {
+      legacyFields.add('props');
+    }
+
+    if (legacyFields.isNotEmpty) {
+      developer.log(
+        'Legacy ingredient fields found for "${data['swedish'] ?? data['id']}": '
+        '${legacyFields.join(", ")}',
+        name: 'IngredientData',
+      );
+    }
   }
 
   /// Parses properties from various formats (comma-separated string or list).
