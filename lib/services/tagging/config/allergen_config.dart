@@ -22,12 +22,27 @@ class AllergenEntry {
   /// Whether this is an EU-regulated allergen.
   final bool isEuAllergen;
 
+  /// UI grouping for related allergens.
+  ///
+  /// Used to visually group related allergens in the UI:
+  /// - 'dairy': mjölk (dairy protein) and laktos (lactose sugar)
+  /// - 'nuts': trädnötter, jordnötter, nötter (combined)
+  /// - 'seafood': fisk, kräftdjur, blötdjur, skaldjur (combined)
+  /// - 'meat': kött, fläsk, nötkött
+  /// - null: standalone allergens
+  final String? uiGroup;
+
+  /// Short description explaining the allergen for UI tooltips.
+  final String? description;
+
   const AllergenEntry({
     required this.key,
     required this.triggerProperty,
     required this.containsTag,
     this.freeTag,
     this.isEuAllergen = false,
+    this.uiGroup,
+    this.description,
   });
 
   /// Pattern for parsing OR-combined properties.
@@ -66,6 +81,8 @@ class AllergenConfig {
       containsTag: 'innehåller-mjölk',
       freeTag: 'mjölkfri',
       isEuAllergen: true,
+      uiGroup: 'dairy',
+      description: 'Mjölkprotein (kasein, vassle). Skiljer sig från laktos.',
     ),
     AllergenEntry(
       key: 'ägg',
@@ -80,6 +97,7 @@ class AllergenConfig {
       containsTag: 'innehåller-fisk',
       freeTag: 'fiskfri',
       isEuAllergen: true,
+      uiGroup: 'seafood',
     ),
     AllergenEntry(
       key: 'kräftdjur',
@@ -87,6 +105,7 @@ class AllergenConfig {
       containsTag: 'innehåller-kräftdjur',
       freeTag: 'kräftdjursfri',
       isEuAllergen: true,
+      uiGroup: 'seafood',
     ),
     AllergenEntry(
       key: 'blötdjur',
@@ -94,6 +113,7 @@ class AllergenConfig {
       containsTag: 'innehåller-blötdjur',
       freeTag: 'blötdjursfri',
       isEuAllergen: true,
+      uiGroup: 'seafood',
     ),
     AllergenEntry(
       key: 'trädnötter',
@@ -101,6 +121,7 @@ class AllergenConfig {
       containsTag: 'innehåller-trädnötter',
       freeTag: 'trädnötsfri',
       isEuAllergen: true,
+      uiGroup: 'nuts',
     ),
     AllergenEntry(
       key: 'jordnötter',
@@ -108,6 +129,7 @@ class AllergenConfig {
       containsTag: 'innehåller-jordnötter',
       freeTag: 'jordnötsfri',
       isEuAllergen: true,
+      uiGroup: 'nuts',
     ),
     AllergenEntry(
       key: 'soja',
@@ -158,6 +180,9 @@ class AllergenConfig {
       triggerProperty: 'contains-lactose',
       containsTag: 'innehåller-laktos',
       freeTag: 'laktosfri',
+      uiGroup: 'dairy',
+      description:
+          'Mjölksocker. Mjölkfri ≠ laktosfri (laktosfria produkter innehåller mjölkprotein).',
     ),
     AllergenEntry(
       key: 'alkohol',
@@ -169,6 +194,7 @@ class AllergenConfig {
       key: 'kött',
       triggerProperty: 'meat',
       containsTag: 'innehåller-kött',
+      uiGroup: 'meat',
       // No free tag - use vegetarian instead
     ),
     AllergenEntry(
@@ -176,12 +202,14 @@ class AllergenConfig {
       triggerProperty: 'pork',
       containsTag: 'innehåller-fläsk',
       freeTag: 'fläskfri',
+      uiGroup: 'meat',
     ),
     AllergenEntry(
       key: 'nötkött',
       triggerProperty: 'beef',
       containsTag: 'innehåller-nötkött',
       freeTag: 'nötköttssfri',
+      uiGroup: 'meat',
     ),
 
     // Combined allergens
@@ -190,12 +218,14 @@ class AllergenConfig {
       triggerProperty: 'crustacean OR mollusc',
       containsTag: 'innehåller-skaldjur',
       freeTag: 'skaldjursfri',
+      uiGroup: 'seafood',
     ),
     AllergenEntry(
       key: 'nötter',
       triggerProperty: 'tree-nut OR peanut',
       containsTag: 'innehåller-nötter',
       freeTag: 'nötfri',
+      uiGroup: 'nuts',
     ),
   ];
 
@@ -222,4 +252,23 @@ class AllergenConfig {
 
   /// All allergen keys.
   static List<String> get allKeys => all.map((a) => a.key).toList();
+
+  /// Gets allergens by UI group.
+  ///
+  /// Useful for grouping related allergens in the UI.
+  /// Example: 'dairy' returns [mjölk, laktos]
+  static List<AllergenEntry> getByUiGroup(String group) =>
+      all.where((a) => a.uiGroup == group).toList();
+
+  /// Gets all unique UI groups.
+  static List<String> get allUiGroups =>
+      all.map((a) => a.uiGroup).whereType<String>().toSet().toList();
+
+  /// UI group display names in Swedish.
+  static const Map<String, String> uiGroupNames = {
+    'dairy': 'Mjölk & Laktos',
+    'nuts': 'Nötter',
+    'seafood': 'Fisk & Skaldjur',
+    'meat': 'Kött',
+  };
 }

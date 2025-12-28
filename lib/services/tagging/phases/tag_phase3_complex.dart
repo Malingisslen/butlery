@@ -87,22 +87,29 @@ class TagPhase3Complex {
   }
 
   bool _isCreamy(Phase1Result p1, Recipe recipe) {
-    // Has cream or coconut milk as significant ingredient
-    final hasCreamy = p1.lookup.matched.any((i) {
-      final name = i.swedish.toLowerCase();
-      return name.contains('grädde') ||
-          name.contains('creme') ||
-          name.contains('créme') ||
-          name.contains('kokosmjölk') ||
-          name.contains('mascarpone');
-    });
+    // Creamy ingredients must be in top 5 positions to be considered significant.
+    // This avoids tagging recipes with just a tablespoon of cream as "creamy".
+    final ingredients = recipe.core.ingredients;
+    final top5 = ingredients.take(5).map((i) => i.toLowerCase()).toList();
+
+    final creamyKeywords = [
+      'grädde',
+      'creme',
+      'créme',
+      'kokosmjölk',
+      'mascarpone'
+    ];
+    final hasSignificantCreamy = top5.any(
+      (ing) => creamyKeywords.any((k) => ing.contains(k)),
+    );
+
+    if (!hasSignificantCreamy) return false;
 
     // And is a sauce or pasta dish
     final instructions = recipe.core.instructions.join(' ').toLowerCase();
-    return hasCreamy &&
-        (instructions.contains('sås') ||
-            instructions.contains('rör') ||
-            p1.hasTag('pastabaserad'));
+    return instructions.contains('sås') ||
+        instructions.contains('rör') ||
+        p1.hasTag('pastabaserad');
   }
 
   bool _isCrispy(Phase1Result p1, Recipe recipe) {
