@@ -268,6 +268,19 @@ class IngredientData {
     return allNamesNormalized.any((n) => n.contains(normalizedQuery));
   }
 
+  /// CRIT-1: Equality based on [id] only, following the domain model where:
+  /// - Each ingredient has a globally unique ID
+  /// - The ID is the canonical identifier for the ingredient
+  /// - Two IngredientData objects with the same ID represent the same ingredient
+  ///
+  /// This design enables:
+  /// - Efficient Set/Map operations for deduplication
+  /// - Cache-friendly comparisons
+  /// - Consistent behavior in lookups (same ID = same ingredient)
+  ///
+  /// IMPORTANT: This assumes IDs are immutable and globally unique.
+  /// If you need to compare all fields (e.g., for sync/cache invalidation),
+  /// use [contentEquals] instead.
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -275,8 +288,50 @@ class IngredientData {
           runtimeType == other.runtimeType &&
           id == other.id;
 
+  /// CRIT-1: HashCode contract - consistent with ID-only equality.
   @override
   int get hashCode => id.hashCode;
+
+  /// CRIT-1: Compares all fields for content equality.
+  ///
+  /// Use this when you need to detect changes to ingredient data,
+  /// such as in cache invalidation, sync operations, or testing.
+  ///
+  /// Returns true if all fields are equal, false otherwise.
+  bool contentEquals(IngredientData other) {
+    if (id != other.id) return false;
+    if (swedish != other.swedish) return false;
+    if (english != other.english) return false;
+    if (group != other.group) return false;
+    if (status != other.status) return false;
+
+    // Compare collections
+    if (!_setEquals(properties, other.properties)) return false;
+    if (!_listEquals(aliasesSv, other.aliasesSv)) return false;
+    if (!_listEquals(aliasesEn, other.aliasesEn)) return false;
+    if (!_listEquals(searchTerms, other.searchTerms)) return false;
+
+    // DateTime comparison (both null or both equal)
+    if (createdAt != other.createdAt) return false;
+    if (updatedAt != other.updatedAt) return false;
+
+    return true;
+  }
+
+  /// CRIT-1: Helper for Set equality comparison.
+  static bool _setEquals<T>(Set<T> a, Set<T> b) {
+    if (a.length != b.length) return false;
+    return a.containsAll(b);
+  }
+
+  /// CRIT-1: Helper for List equality comparison (order-sensitive).
+  static bool _listEquals<T>(List<T> a, List<T> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 
   @override
   String toString() => 'IngredientData($id: $swedish)';

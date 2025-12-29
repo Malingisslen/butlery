@@ -11,7 +11,8 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
-const db = admin.firestore();
+// Lazy initialization to avoid calling firestore() before initializeApp()
+const getDb = () => admin.firestore();
 
 // MED-10: Timeout for cascade operations to prevent hanging on large cascades
 const CASCADE_TIMEOUT_MS = 30000; // 30 seconds
@@ -96,7 +97,7 @@ export const onIngredientSoftDeleted = functions.firestore
       // Query recipes that might use this ingredient
       // CRIT-5: Use Swedish-normalized name to match Dart-side storage
       // (ingredientsNormalized stores å→a, ä→a, ö→o transformed names)
-      const recipesSnapshot = await db
+      const recipesSnapshot = await getDb()
         .collection("recipes")
         .where(
           "core.ingredientsNormalized",
@@ -121,6 +122,7 @@ export const onIngredientSoftDeleted = functions.firestore
       // This is a hard limit from Firebase, not an arbitrary choice.
       // See: https://firebase.google.com/docs/firestore/manage-data/transactions#batched-writes
       const batchSize = 500;
+      const db = getDb();
       let batch = db.batch();
       let operationCount = 0;
       let totalUpdated = 0;

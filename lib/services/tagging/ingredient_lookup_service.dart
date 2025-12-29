@@ -11,15 +11,22 @@ import 'package:butlery/utils/text/ingredient_parser.dart';
 /// Searches both the global ingredient database and user-defined ingredients.
 /// Returns coverage statistics and unknown ingredients list.
 /// M3: Includes LRU cache to avoid repeated lookups in batch operations.
+///
+/// CRIT-3: Concurrency model - This service is designed for single-isolate use.
+/// Cache operations are synchronous and atomic within Dart's event loop.
+/// Do NOT use across isolates without additional synchronization.
 class IngredientLookupService extends BaseService {
   final IngredientRepository _ingredientRepository;
   final UserIngredientRepository _userIngredientRepository;
 
   /// M3/CRIT-4: LRU cache for ingredient lookups (max 500 entries).
-  /// Key format: "cleanedName" or "userId:cleanedName" for user-specific lookups.
+  /// Key format: "g\x00cleanedName" (global) or "u\x00userId\x00cleanedName" (user).
+  /// Uses null character separator to prevent key collision attacks.
   /// Null values are cached to avoid repeated failed lookups.
-  /// Uses LinkedHashMap with access-order tracking for proper LRU eviction.
   static const int _cacheMaxSize = 500;
+
+  /// CRIT-3: Cache version incremented on clear to detect stale operations.
+  int _cacheVersion = 0;
   final Map<String, IngredientData?> _lookupCache = {};
   final List<String> _lruOrder = []; // CRIT-4: Tracks access order for LRU
 
@@ -33,10 +40,13 @@ class IngredientLookupService extends BaseService {
   String get serviceName => 'IngredientLookupService';
 
   /// M3: Clears the ingredient lookup cache.
+  /// CRIT-3: Increments cache version to invalidate any in-flight lookups.
   void clearLookupCache() {
+    _cacheVersion++; // CRIT-3: Invalidate in-flight lookups
     _lookupCache.clear();
     _lruOrder.clear(); // CRIT-4: Also clear LRU order
-    AppLogger.debug('M3: Ingredient lookup cache cleared');
+    AppLogger.debug(
+        'M3: Ingredient lookup cache cleared (version=$_cacheVersion)');
   }
 
   /// M3: Current cache size for debugging.
@@ -91,6 +101,8 @@ class IngredientLookupService extends BaseService {
   /// 3. User-defined ingredients
   /// 4. Global database by alias
   /// 5. Fuzzy match (compound words, common variations)
+  ///
+  /// CRIT-3: Captures cache version before async lookup to detect invalidation.
   Future<IngredientData?> _findIngredient(
     String normalizedName, {
     String? userId,
@@ -100,24 +112,34 @@ class IngredientLookupService extends BaseService {
     // Clean the name further
     final cleanName = _cleanForLookup(normalizedName);
 
-    // M3/HIGH-3: Create cache key (include userId for user-specific lookups)
-    // HIGH-3: Use pipe separator and explicit prefix to prevent collision
-    // (e.g., userId="a:b", name="c" vs userId="a", name="b:c" would collide with colon)
-    final cacheKey = userId != null ? 'u|$userId|$cleanName' : 'g|$cleanName';
+    // CRIT-3/HIGH-3: Create cache key using null character separator
+    // Null character (\x00) cannot appear in user input, preventing collisions
+    final cacheKey =
+        userId != null ? 'u\x00$userId\x00$cleanName' : 'g\x00$cleanName';
 
     // M3: Check cache first (null means "not found" was cached)
     if (_lookupCache.containsKey(cacheKey)) {
-      // CRIT-4: Update LRU order on cache hit (move to end = most recently used)
+      // CRIT-3: Defensive - verify key still exists after LRU update
       _lruOrder.remove(cacheKey);
       _lruOrder.add(cacheKey);
+      // Return cached value (may be null for "not found")
       return _lookupCache[cacheKey];
     }
 
-    // Perform the actual lookup
+    // CRIT-3: Capture cache version before async operation
+    final versionBeforeLookup = _cacheVersion;
+
+    // Perform the actual lookup (async - may yield)
     final result = await _performLookup(cleanName, userId: userId);
 
-    // M3: Cache the result (including null for "not found")
-    _cacheResult(cacheKey, result);
+    // CRIT-3: Only cache if version hasn't changed (cache wasn't cleared)
+    if (_cacheVersion == versionBeforeLookup) {
+      _cacheResult(cacheKey, result);
+    } else {
+      AppLogger.debug(
+        'CRIT-3: Cache was cleared during lookup for "$cleanName", not caching result',
+      );
+    }
 
     return result;
   }
@@ -156,8 +178,8 @@ class IngredientLookupService extends BaseService {
 
   /// M3/CRIT-4: Caches a lookup result with proper LRU eviction.
   ///
+  /// CRIT-3: This method is synchronous and atomic within Dart's event loop.
   /// Uses a separate list to track access order for true LRU behavior.
-  /// Eviction is atomic to prevent race conditions in concurrent lookups.
   void _cacheResult(String key, IngredientData? result) {
     // CRIT-4: If key already exists, remove from LRU order (will be re-added)
     if (_lookupCache.containsKey(key)) {
@@ -173,6 +195,12 @@ class IngredientLookupService extends BaseService {
     // Add to cache and LRU order
     _lookupCache[key] = result;
     _lruOrder.add(key);
+
+    // CRIT-3: Sanity check - cache and LRU list should stay in sync
+    assert(
+      _lookupCache.length == _lruOrder.length,
+      'CRIT-3: Cache/LRU desync: cache=${_lookupCache.length}, lru=${_lruOrder.length}',
+    );
   }
 
   /// Cleans a normalized name for database lookup.

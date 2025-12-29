@@ -180,21 +180,28 @@ export const sendNotification = functions.https.onCall(
         }
       });
 
-      // Remove invalid tokens from database
+      // H13: Remove invalid tokens using arrayRemove to prevent race conditions
+      // This atomically removes only the invalid tokens without affecting concurrent additions
       if (invalidTokens.length > 0) {
         functions.logger.info(
           `Removing ${invalidTokens.length} invalid tokens for user ${targetUserId}`
         );
 
-        const validTokens = tokens.filter((t) => !invalidTokens.includes(t));
-        await admin
-          .firestore()
-          .collection("user_fcm_tokens")
-          .doc(targetUserId)
-          .update({
-            tokens: validTokens,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          });
+        try {
+          await admin
+            .firestore()
+            .collection("user_fcm_tokens")
+            .doc(targetUserId)
+            .update({
+              tokens: admin.firestore.FieldValue.arrayRemove(...invalidTokens),
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+        } catch (tokenError) {
+          // H13: Don't fail the notification if token cleanup fails
+          functions.logger.warn(
+            `H13: Failed to remove invalid tokens for ${targetUserId}: ${tokenError}`
+          );
+        }
       }
 
       return {
@@ -217,9 +224,44 @@ export const sendNotification = functions.https.onCall(
 );
 
 /**
+ * H14: Validate a single notification request.
+ * Returns null if valid, error message if invalid.
+ */
+function validateNotification(notification: NotificationRequest): string | null {
+  if (!notification) {
+    return "notification object is required";
+  }
+  if (!notification.targetUserId || typeof notification.targetUserId !== "string") {
+    return "targetUserId is required and must be a string";
+  }
+  if (notification.targetUserId.length > 128) {
+    return "targetUserId exceeds maximum length";
+  }
+  if (!notification.silent) {
+    if (!notification.title || typeof notification.title !== "string") {
+      return "title is required for display notifications";
+    }
+    if (!notification.body || typeof notification.body !== "string") {
+      return "body is required for display notifications";
+    }
+    if (notification.title.length > 100) {
+      return "title exceeds maximum length (100 chars)";
+    }
+    if (notification.body.length > 500) {
+      return "body exceeds maximum length (500 chars)";
+    }
+  }
+  if (notification.imageUrl && typeof notification.imageUrl !== "string") {
+    return "imageUrl must be a string";
+  }
+  return null;
+}
+
+/**
  * Sends notifications to multiple users (batch operation).
  *
  * Useful for group notifications or announcements.
+ * H14: Validates each notification before processing.
  */
 export const sendNotificationBatch = functions.https.onCall(
   async (
@@ -248,6 +290,27 @@ export const sendNotificationBatch = functions.https.onCall(
       throw new functions.https.HttpsError(
         "invalid-argument",
         "Maximum 100 notifications per batch"
+      );
+    }
+
+    // H14: Pre-validate all notifications before processing
+    const validationErrors: { index: number; error: string }[] = [];
+    notifications.forEach((notification, index) => {
+      const error = validateNotification(notification);
+      if (error) {
+        validationErrors.push({ index, error });
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      functions.logger.warn(
+        `H14: Batch has ${validationErrors.length} invalid notifications`,
+        { errors: validationErrors.slice(0, 5) } // Log first 5 errors
+      );
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        `${validationErrors.length} notifications failed validation. ` +
+        `First error at index ${validationErrors[0].index}: ${validationErrors[0].error}`
       );
     }
 
