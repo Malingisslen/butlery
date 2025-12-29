@@ -14,7 +14,8 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
-const db = admin.firestore();
+// Lazy initialization to avoid calling firestore() before initializeApp()
+const getDb = () => admin.firestore();
 
 // CRIT-6: Rate limit constants
 const RATE_LIMIT_PER_DAY = 5;
@@ -31,11 +32,12 @@ const INITIAL_RETRY_DELAY_MS = 100;
  */
 async function checkRateLimit(adminUid: string): Promise<boolean> {
   const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const db = getDb();
   const rateLimitRef = db
     .collection(RATE_LIMIT_COLLECTION)
     .doc(`${adminUid}_bulkRetag_${today}`);
 
-  return db.runTransaction(async (transaction) => {
+  return db.runTransaction(async (transaction: admin.firestore.Transaction) => {
     const doc = await transaction.get(rateLimitRef);
     const currentCount = doc.exists ? (doc.data()?.count || 0) : 0;
 
@@ -60,23 +62,71 @@ async function checkRateLimit(adminUid: string): Promise<boolean> {
 
 /**
  * CRIT-6: Log admin action for audit trail.
+ * H11: Wrapped in try-catch to prevent audit failures from crashing main operation.
  */
 async function logAuditEntry(
   adminUid: string,
   action: string,
   details: Record<string, unknown>
 ): Promise<void> {
-  await db.collection(AUDIT_LOG_COLLECTION).add({
-    adminUid,
-    action,
-    details,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
-    ipAddress: null, // Would need to extract from request context if needed
-  });
+  try {
+    await getDb().collection(AUDIT_LOG_COLLECTION).add({
+      adminUid,
+      action,
+      details,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      ipAddress: null, // Would need to extract from request context if needed
+    });
+  } catch (error) {
+    // H11: Log warning but don't crash the main operation
+    functions.logger.warn(
+      `H11: Audit logging failed for action "${action}": ${error}`,
+      { adminUid, action, details }
+    );
+  }
+}
+
+/**
+ * M14: Non-retryable Firestore error codes.
+ * These errors should not be retried as they indicate permanent failures.
+ */
+const NON_RETRYABLE_ERRORS = new Set([
+  "permission-denied",
+  "invalid-argument",
+  "not-found",
+  "already-exists",
+  "failed-precondition",
+  "out-of-range",
+  "unimplemented",
+  "data-loss",
+]);
+
+/**
+ * M14: Check if an error is retryable.
+ * Firestore transient errors (unavailable, resource-exhausted, etc.) are retryable.
+ */
+function isRetryableError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const code = (error as { code?: string }).code;
+    if (code && NON_RETRYABLE_ERRORS.has(code)) {
+      return false;
+    }
+    // Check for gRPC error codes in message
+    const message = error.message.toLowerCase();
+    if (
+      message.includes("permission denied") ||
+      message.includes("invalid argument") ||
+      message.includes("not found")
+    ) {
+      return false;
+    }
+  }
+  return true; // Default to retryable for unknown errors
 }
 
 /**
  * MED-7: Retry an async operation with exponential backoff.
+ * M14: Only retries transient/retryable errors, not permanent failures.
  */
 async function withRetry<T>(
   operation: () => Promise<T>,
@@ -89,6 +139,14 @@ async function withRetry<T>(
       return await operation();
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
+
+      // M14: Don't retry non-retryable errors
+      if (!isRetryableError(error)) {
+        functions.logger.debug(
+          `Non-retryable error, not retrying: ${lastError.message}`
+        );
+        throw lastError;
+      }
 
       if (attempt < maxRetries) {
         // Exponential backoff: 100ms, 200ms, 400ms
@@ -195,7 +253,7 @@ export const bulkMarkForRetagging = functions.https.onCall(
 
     try {
       // Build query for outdated recipes
-      let query: admin.firestore.Query = db.collection("recipes");
+      let query: admin.firestore.Query = getDb().collection("recipes");
 
       // Filter by user if specified
       if (userId) {
@@ -340,6 +398,9 @@ export const bulkMarkForRetagging = functions.https.onCall(
  * HTTP endpoint to check retag status (for monitoring dashboards).
  *
  * Returns count of recipes by generator version.
+ *
+ * H12: Optimized to only fetch the fields needed (generatorVersion) instead
+ * of full documents. Uses pagination to handle large collections.
  */
 export const getRetagStatus = functions.https.onCall(
   async (data: { userId?: string }, context): Promise<{
@@ -357,26 +418,59 @@ export const getRetagStatus = functions.https.onCall(
     const { userId } = data;
 
     try {
-      let query: admin.firestore.Query = db.collection("recipes");
-
-      if (userId) {
-        query = query.where("core.createdBy", "==", userId);
-      }
-
-      // Limit to avoid timeout on large collections
-      const snapshot = await query.limit(5000).get();
-
       const byVersion: { [version: string]: number } = {};
+      let total = 0;
+      let lastDoc: admin.firestore.DocumentSnapshot | null = null;
+      const PAGE_SIZE = 1000;
 
-      snapshot.docs.forEach((doc) => {
-        const data = doc.data();
-        const version = data.core?.tagResult?.generatorVersion || "untagged";
-        byVersion[version] = (byVersion[version] || 0) + 1;
-      });
+      // H12: Paginate through results to handle large collections
+      while (true) {
+        let query: admin.firestore.Query = getDb().collection("recipes");
+
+        if (userId) {
+          query = query.where("core.createdBy", "==", userId);
+        }
+
+        // H12: Only select the field we need (reduces data transfer significantly)
+        query = query.select("core.tagResult.generatorVersion");
+        query = query.limit(PAGE_SIZE);
+
+        if (lastDoc) {
+          query = query.startAfter(lastDoc);
+        }
+
+        const snapshot = await query.get();
+
+        if (snapshot.empty) {
+          break;
+        }
+
+        snapshot.docs.forEach((doc) => {
+          const data = doc.data();
+          const version = data.core?.tagResult?.generatorVersion || "untagged";
+          byVersion[version] = (byVersion[version] || 0) + 1;
+        });
+
+        total += snapshot.size;
+        lastDoc = snapshot.docs[snapshot.docs.length - 1];
+
+        // Safety limit to prevent infinite loops
+        if (total >= 50000) {
+          functions.logger.warn(
+            `H12: Reached safety limit of 50000 recipes, results may be partial`
+          );
+          break;
+        }
+
+        // If we got less than PAGE_SIZE, we've reached the end
+        if (snapshot.size < PAGE_SIZE) {
+          break;
+        }
+      }
 
       return {
         byVersion,
-        total: snapshot.size,
+        total,
       };
     } catch (error) {
       functions.logger.error("Get retag status failed:", error);

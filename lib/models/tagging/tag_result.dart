@@ -56,8 +56,9 @@ class TagResult {
 
   /// Creates a TagResult with the given properties.
   ///
-  /// HIGH-2: Coverage is validated to be in [0.0, 1.0] range via assertion.
-  /// In release builds, out-of-range values will be clamped by serialization.
+  /// CRIT-2: Coverage is validated to be in [0.0, 1.0] range.
+  /// Out-of-range values are logged as warnings and clamped for safety.
+  /// This ensures the issue is visible in production (not just debug builds).
   TagResult({
     required this.tags,
     required this.allergenStatus,
@@ -68,11 +69,21 @@ class TagResult {
     this.generatorVersion,
     this.isPartial = false,
     this.decisions,
-  })  : coverage = coverage.clamp(0.0, 1.0),
-        assert(
-          coverage >= 0.0 && coverage <= 1.0,
-          'Coverage must be between 0.0 and 1.0, got $coverage',
-        );
+  }) : coverage = _validateAndClampCoverage(coverage);
+
+  /// CRIT-2: Validates coverage and logs warning if out of range.
+  /// Always clamps to [0.0, 1.0] for safety, but makes issues visible.
+  static double _validateAndClampCoverage(double value) {
+    if (value < 0.0 || value > 1.0) {
+      AppLogger.warning(
+        'CRIT-2: Coverage out of range: $value (expected 0.0-1.0), clamping. '
+            'This indicates a bug in the tag generator.',
+        'TagResult',
+      );
+      return value.clamp(0.0, 1.0);
+    }
+    return value;
+  }
 
   /// Creates an empty result for recipes with no ingredients.
   /// Coverage is 0.0 because we have no ingredient data to analyze.

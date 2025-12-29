@@ -18,21 +18,42 @@ const getDb = () => admin.firestore();
 
 /**
  * List of admin user IDs allowed to seed configs.
- * In production, consider using custom claims instead.
+ * M16: Must use custom claims for production security.
  */
 const ADMIN_UIDS: string[] = [
-  // Add your admin UIDs here, or use custom claims
+  // Add your admin UIDs here as a fallback, but prefer custom claims
   // "your-admin-uid-here",
 ];
 
 /**
- * Check if user is an admin.
- * Override this with custom claims in production.
+ * M16: Check if user is an admin using custom claims.
+ * Falls back to UID list only if custom claims aren't set up yet.
+ *
+ * SECURITY: In production, set admin=true custom claim on admin users:
+ *   admin.auth().setCustomUserClaims(uid, { admin: true })
  */
-function isAdmin(uid: string): boolean {
-  // For now, allow any authenticated user in development
-  // In production, check ADMIN_UIDS or custom claims
-  return ADMIN_UIDS.length === 0 || ADMIN_UIDS.includes(uid);
+function isAdmin(uid: string, token?: admin.auth.DecodedIdToken): boolean {
+  // M16: Primary check - custom claims (preferred)
+  if (token?.admin === true) {
+    return true;
+  }
+
+  // M16: Secondary check - role claim
+  if (token?.role === "admin") {
+    return true;
+  }
+
+  // M16: Fallback to UID list (only if list is not empty)
+  // SECURITY: Empty list does NOT grant access (was a bug)
+  if (ADMIN_UIDS.length > 0 && ADMIN_UIDS.includes(uid)) {
+    functions.logger.warn(
+      `M16: Admin access via UID list for ${uid}. ` +
+      `Consider migrating to custom claims for production.`
+    );
+    return true;
+  }
+
+  return false;
 }
 
 /**
@@ -207,8 +228,8 @@ export const seedSiteConfigs = functions.https.onCall(
       );
     }
 
-    // Check admin permission
-    if (!isAdmin(context.auth.uid)) {
+    // Check admin permission (M16: pass token for custom claims check)
+    if (!isAdmin(context.auth.uid, context.auth.token as admin.auth.DecodedIdToken)) {
       throw new functions.https.HttpsError(
         "permission-denied",
         "Only admins can seed site configs"

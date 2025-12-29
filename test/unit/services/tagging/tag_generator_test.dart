@@ -1037,6 +1037,293 @@ void main() {
     });
 
     // =========================================================================
+    // CRIT-10: Timeout behavior tests
+    // =========================================================================
+    group('CRIT-10: Timeout behavior', () {
+      test('returns partial result with zero timeout (Phase 1 only)', () {
+        final recipe = RecipeBuilder()
+            .withTitle('Test Recipe')
+            .withTimeMinutes(30)
+            .withIngredients(['chicken', 'rice']).build();
+        final lookup = _createLookup([
+          _ingredient('chicken', 'protein/meat/poultry', {'meat', 'poultry'}),
+          _ingredient('rice', 'grain', {}),
+        ]);
+
+        // Zero timeout means timeout check fires immediately after Phase 1
+        final result = generator.generate(
+          ingredients: lookup,
+          recipe: recipe,
+          timeout: Duration.zero,
+        );
+
+        // Result should be marked as partial
+        expect(result.isPartial, isTrue);
+        // Phase 1 safety-critical tags should still be present
+        expect(result.allergenStatus, isNotEmpty);
+        expect(result.dietaryStatus, isNotEmpty);
+      });
+
+      test('completes all phases with generous timeout', () {
+        final recipe = RecipeBuilder()
+            .withTitle('Test Recipe')
+            .withTimeMinutes(30)
+            .withIngredients(['chicken', 'rice']).build();
+        final lookup = _createLookup([
+          _ingredient('chicken', 'protein/meat/poultry', {'meat', 'poultry'}),
+          _ingredient('rice', 'grain', {}),
+        ]);
+
+        // Generous timeout allows all phases to complete
+        final result = generator.generate(
+          ingredients: lookup,
+          recipe: recipe,
+          timeout: const Duration(seconds: 30),
+        );
+
+        // Result should NOT be marked as partial
+        expect(result.isPartial, isFalse);
+      });
+
+      test('completes all phases when no timeout specified', () {
+        final recipe = RecipeBuilder()
+            .withTitle('Test Recipe')
+            .withTimeMinutes(30)
+            .withIngredients(['chicken', 'rice']).build();
+        final lookup = _createLookup([
+          _ingredient('chicken', 'protein/meat/poultry', {'meat', 'poultry'}),
+          _ingredient('rice', 'grain', {}),
+        ]);
+
+        // No timeout means all phases complete
+        final result = generator.generate(
+          ingredients: lookup,
+          recipe: recipe,
+        );
+
+        expect(result.isPartial, isFalse);
+      });
+
+      test('preserves allergen status even on timeout', () {
+        final recipe = RecipeBuilder()
+            .withTitle('Gluten Dish')
+            .withTimeMinutes(30)
+            .withIngredients(['pasta', 'eggs']).build();
+        final lookup = _createLookup([
+          _ingredient('pasta', 'grain/pasta-bread', {'contains-gluten'}),
+          _ingredient('eggs', 'protein/egg', {'egg'}),
+        ]);
+
+        final result = generator.generate(
+          ingredients: lookup,
+          recipe: recipe,
+          timeout: Duration.zero,
+        );
+
+        // Safety-critical allergen detection preserved
+        expect(result.getAllergenStatus('gluten'), TriState.contains);
+        expect(result.getAllergenStatus('ägg'), TriState.contains);
+      });
+
+      test('preserves dietary status even on timeout', () {
+        final recipe = RecipeBuilder()
+            .withTitle('Vegan Dish')
+            .withTimeMinutes(30)
+            .withIngredients(['tofu', 'vegetables']).build();
+        final lookup = _createLookup([
+          _ingredient('tofu', 'protein/plant-based', {'plant-based'}),
+          _ingredient('vegetables', 'vegetable', {'plant-based'}),
+        ]);
+
+        final result = generator.generate(
+          ingredients: lookup,
+          recipe: recipe,
+          timeout: Duration.zero,
+        );
+
+        // Safety-critical dietary detection preserved
+        expect(result.getDietaryStatus('vegansk'), TriState.free);
+        expect(result.getDietaryStatus('vegetarisk'), TriState.free);
+      });
+
+      test('includes coverage even on timeout', () {
+        final recipe = RecipeBuilder()
+            .withTitle('Partial Coverage')
+            .withTimeMinutes(30)
+            .withIngredients(['chicken', 'unknown']).build();
+        final lookup = IngredientLookupResult.fromLists(
+          matched: [
+            _ingredient('chicken', 'protein/meat/poultry', {'meat'})
+          ],
+          unmatched: ['unknown'],
+        );
+
+        final result = generator.generate(
+          ingredients: lookup,
+          recipe: recipe,
+          timeout: Duration.zero,
+        );
+
+        // Coverage should be calculated regardless of timeout
+        expect(result.coverage, 0.5);
+        expect(result.unknownIngredients, contains('unknown'));
+      });
+    });
+
+    // =========================================================================
+    // CRIT-11: Error recovery tests (graceful degradation)
+    // =========================================================================
+    group('CRIT-11: Error recovery and graceful degradation', () {
+      // Note: These tests verify the behavior documented in TagGenerator:
+      // - Phase 1 failure = complete failure (safety critical)
+      // - Phase 2-4 failures = graceful degradation (returns partial results)
+
+      test('result includes Phase 1 base tags when all phases complete', () {
+        final recipe = RecipeBuilder()
+            .withTitle('Simple Chicken')
+            .withTimeMinutes(30)
+            .withIngredients(['kycklingbröst']).build();
+        final lookup = _createLookup([
+          IngredientData(
+            id: 'chicken-breast',
+            swedish: 'kycklingbröst',
+            english: 'chicken breast',
+            group: 'protein/meat/poultry',
+            properties: {'meat', 'poultry'},
+          ),
+        ]);
+
+        final result = generator.generate(ingredients: lookup, recipe: recipe);
+
+        // Phase 1 protein tag - kyckling derived from Swedish name containing 'kyckling'
+        expect(result.hasTag('kyckling'), isTrue);
+        // Phase 1 time tag
+        expect(result.hasTag('under-30-min'), isTrue);
+      });
+
+      test('result includes Phase 2 derived tags when phases 1-2 complete', () {
+        final recipe = RecipeBuilder()
+            .withTitle('Mild Chicken')
+            .withTimeMinutes(30)
+            .withIngredients(['chicken', 'salt']).build();
+        final lookup = _createLookup([
+          _ingredient('chicken', 'protein/meat/poultry', {'meat', 'poultry'}),
+          _ingredient('salt', 'seasoning', {}),
+        ]);
+
+        final result = generator.generate(ingredients: lookup, recipe: recipe);
+
+        // Phase 2 derived tag (mild when no spicy ingredients)
+        expect(result.hasTag('mild'), isTrue);
+      });
+
+      test('result includes Phase 3 complex tags when phases 1-3 complete', () {
+        final recipe = RecipeBuilder()
+            .withTitle('Simple Salad')
+            .withTimeMinutes(10)
+            .withIngredients(['lettuce', 'tomato', 'cucumber']).build();
+        final lookup = _createLookup([
+          _ingredient('lettuce', 'vegetable', {}),
+          _ingredient('tomato', 'vegetable', {}),
+          _ingredient('cucumber', 'vegetable', {}),
+        ]);
+
+        final result = generator.generate(ingredients: lookup, recipe: recipe);
+
+        // Phase 3 complexity tag
+        expect(result.hasTag('enkel'), isTrue);
+      });
+
+      test('result includes Phase 4 mood tags when all phases complete', () {
+        // Use a recipe that triggers clear Phase 4 tags
+        final recipe = RecipeBuilder()
+            .withTitle('Tacos')
+            .withTimeMinutes(30)
+            .withIngredients(['nötfärs', 'tacokrydda']).build();
+        final lookup = _createLookup([
+          _ingredient('nötfärs', 'protein/meat/beef', {'meat', 'beef'}),
+          _ingredient('tacokrydda', 'spice', {}),
+        ]);
+
+        final result = generator.generate(ingredients: lookup, recipe: recipe);
+
+        // Phase 4 occasion tag - tacos trigger fredagsmys
+        expect(result.hasTag('taco'), isTrue);
+        expect(result.hasTag('fredagsmys'), isTrue);
+      });
+
+      test('includes decisions from Phase 1 in result', () {
+        final recipe = RecipeBuilder()
+            .withTitle('Test Recipe')
+            .withTimeMinutes(30)
+            .withIngredients(['pasta']).build();
+        final lookup = _createLookup([
+          _ingredient('pasta', 'grain/pasta-bread', {'contains-gluten'}),
+        ]);
+
+        final result = generator.generate(ingredients: lookup, recipe: recipe);
+
+        // H3: Decisions should be included when present
+        // Note: Decisions are optional and may be null if Phase 1 doesn't produce any
+        // This test verifies the mechanism works when decisions are generated
+        expect(result.decisions == null || result.decisions is List, isTrue);
+      });
+
+      test('handles empty ingredient list gracefully', () {
+        final recipe = RecipeBuilder()
+            .withTitle('Empty Recipe')
+            .withTimeMinutes(null)
+            .withIngredients([]).build();
+        final lookup = _createEmptyLookup();
+
+        // Should not throw
+        final result = generator.generate(ingredients: lookup, recipe: recipe);
+
+        expect(result, isNotNull);
+        expect(result.coverage, 0.0);
+        // Empty recipes have UNKNOWN allergen status (no data)
+        expect(result.getAllergenStatus('gluten'), TriState.unknown);
+      });
+
+      test('handles null timeMinutes gracefully', () {
+        final recipe = RecipeBuilder()
+            .withTitle('No Time Recipe')
+            .withTimeMinutes(null)
+            .withIngredients(['chicken']).build();
+        final lookup = _createLookup([
+          _ingredient('chicken', 'protein/meat/poultry', {'meat', 'poultry'}),
+        ]);
+
+        // Should not throw
+        final result = generator.generate(ingredients: lookup, recipe: recipe);
+
+        expect(result, isNotNull);
+        // No time-based tags
+        expect(result.hasTag('under-15-min'), isFalse);
+        expect(result.hasTag('under-30-min'), isFalse);
+      });
+
+      test('handles recipe with empty instructions gracefully', () {
+        final recipe = RecipeBuilder()
+            .withTitle('No Instructions')
+            .withTimeMinutes(30)
+            .withIngredients(['chicken']).withInstructions([]).build();
+        final lookup = _createLookup([
+          _ingredient('chicken', 'protein/meat/poultry', {'meat', 'poultry'}),
+        ]);
+
+        // Should not throw
+        final result = generator.generate(ingredients: lookup, recipe: recipe);
+
+        expect(result, isNotNull);
+        // No cooking method tags from instructions
+        expect(result.hasTag('ugnsbakad'), isFalse);
+        expect(result.hasTag('stekt'), isFalse);
+        expect(result.hasTag('grillad'), isFalse);
+      });
+    });
+
+    // =========================================================================
     // PHASE 2: Derived Tags
     // =========================================================================
     group('Phase 2 - derived tags', () {

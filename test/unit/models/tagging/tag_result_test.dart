@@ -580,6 +580,39 @@ void main() {
         expect(result.coverage, lessThanOrEqualTo(1.0));
       });
 
+      // CRIT-2: Coverage validation in constructor (not just fromFirestore)
+      test('CRIT-2: constructor clamps out-of-range coverage values', () {
+        // Coverage > 1.0 should be clamped to 1.0
+        final overResult = TagResult(
+          tags: {},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 1.5,
+          generatedAt: DateTime.now(),
+        );
+        expect(overResult.coverage, 1.0);
+
+        // Coverage < 0.0 should be clamped to 0.0
+        final underResult = TagResult(
+          tags: {},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: -0.5,
+          generatedAt: DateTime.now(),
+        );
+        expect(underResult.coverage, 0.0);
+
+        // Valid coverage should remain unchanged
+        final validResult = TagResult(
+          tags: {},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 0.75,
+          generatedAt: DateTime.now(),
+        );
+        expect(validResult.coverage, 0.75);
+      });
+
       test('handles tags as non-list type', () {
         final map = {
           'tags': 'not a list',

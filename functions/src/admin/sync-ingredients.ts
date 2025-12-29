@@ -163,6 +163,10 @@ function loadCsv(filePath: string): IngredientRow[] {
   return results;
 }
 
+/**
+ * CRIT-6: Converts CSV row to Firestore document with validation.
+ * Throws if required fields are missing or empty, preventing corrupt documents.
+ */
 function csvToFirestore(row: IngredientRow): IngredientDoc {
   const parseList = (str: string, separator: string): string[] =>
     str
@@ -170,16 +174,29 @@ function csvToFirestore(row: IngredientRow): IngredientDoc {
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
 
+  // CRIT-6: Validate required fields BEFORE conversion
+  const id = row.id?.trim();
+  const swedish = row.swedish?.trim();
+  const english = row.english?.trim();
+  const group = row.group?.trim();
+
+  if (!id) {
+    throw new Error(`CRIT-6: Row missing required 'id' field (swedish: ${swedish || "unknown"})`);
+  }
+  if (!swedish) {
+    throw new Error(`CRIT-6: Row ${id} missing required 'swedish' field`);
+  }
+
   return {
-    id: row.id || "",
-    swedish: row.swedish || "",
-    english: row.english || "",
-    group: row.group || "",
+    id,
+    swedish,
+    english: english || swedish, // Fallback to Swedish name if English missing
+    group: group || "other", // Fallback to "other" category
     properties: parseList(row.properties || "", ","),
     aliasesSv: parseList(row.aliases_sv || "", ";"),
     aliasesEn: parseList(row.aliases_en || "", ";"),
     searchTerms: parseList(row.search_terms || "", ";"),
-    status: row.status || "validated",
+    status: row.status?.trim() || "validated",
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
 }

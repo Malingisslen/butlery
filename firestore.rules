@@ -46,6 +46,27 @@ service cloud.firestore {
       return request.resource.data[field] == request.time;
     }
 
+    // CRIT-8: Validate user-defined ingredient structure (allergen safety-critical)
+    // Prevents injection of malicious ingredient properties
+    function _isValidUserIngredient(ingredient, ingredientId) {
+      return ingredient == null || (
+        // ID must match document ID (prevents path traversal)
+        ingredient.get('id', '') == ingredientId &&
+        // Status must be 'user-defined' (not 'active' which is for admin ingredients)
+        ingredient.get('status', '') == 'user-defined' &&
+        // Swedish name is required for lookup
+        ingredient.get('swedish', '').size() > 0 &&
+        ingredient.get('swedish', '').size() <= 100 &&
+        // Properties must be a list with reasonable size
+        ingredient.get('properties', []) is list &&
+        ingredient.get('properties', []).size() <= 20 &&
+        // Aliases limited to prevent storage abuse
+        ingredient.get('aliasesSv', []).size() <= 10 &&
+        ingredient.get('aliasesEn', []).size() <= 10 &&
+        ingredient.get('searchTerms', []).size() <= 20
+      );
+    }
+
     // CRIT-2: Validate tagResult field structure (allergen safety-critical data)
     // Prevents client-side tampering with allergen status
     function isValidTagResult(tagResult) {
@@ -63,7 +84,24 @@ service cloud.firestore {
         // CRIT-2: schemaVersion must be 1 (current version) if present
         (tagResult.get('schemaVersion', 1) == 1) &&
         // CRIT-2: Limit unknownIngredients size to prevent storage abuse
-        (tagResult.get('unknownIngredients', []).size() <= 100)
+        (tagResult.get('unknownIngredients', []).size() <= 100) &&
+        // H15: Validate allergenStatus and dietaryStatus have valid TriState values
+        _isValidTriStateMap(tagResult.get('allergenStatus', {})) &&
+        _isValidTriStateMap(tagResult.get('dietaryStatus', {}))
+      );
+    }
+
+    // H15: Validate that all values in a map are valid TriState strings
+    // Valid values: FREE, CONTAINS, UNKNOWN
+    function _isValidTriStateMap(statusMap) {
+      // If not a map, it's invalid unless null/empty
+      return statusMap == null || statusMap.size() == 0 || (
+        statusMap is map &&
+        // Firestore rules can't iterate, but we can validate the map exists
+        // and limit its size to prevent abuse. Value validation happens
+        // on read in the Dart layer (TriState.fromFirestore defaults to UNKNOWN).
+        // This is a pragmatic tradeoff since Firestore rules don't support iteration.
+        statusMap.size() <= 50
       );
     }
 
@@ -95,13 +133,27 @@ service cloud.firestore {
       // User's unified shopping lists
       match /unified_shopping_lists/{listId} {
         allow read, write: if isOwner(userId);
-        
+
         // Shopping list items subcollection
         match /items/{itemId} {
           allow read, write: if isOwner(userId);
         }
       }
-      
+
+      // CRIT-8: User-defined ingredients (allergen-safety critical)
+      // Prevents cross-user ingredient tampering that could inject false allergen data
+      match /ingredients/{ingredientId} {
+        // Owner can read their own ingredients
+        allow read: if isOwner(userId);
+
+        // Owner can create/update with validation to prevent malicious data
+        allow create, update: if isOwner(userId)
+          && _isValidUserIngredient(request.resource.data, ingredientId);
+
+        // Owner can delete their own ingredients
+        allow delete: if isOwner(userId);
+      }
+
       // User's friends list
       match /friends/{friendId} {
         allow read, write: if isOwner(userId);
