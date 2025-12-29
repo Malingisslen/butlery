@@ -92,6 +92,13 @@ const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 60000,
   },
 
+  // Analytics/Logging Operations (moderate limits)
+  logParseEvent: {
+    maxTokens: 30,
+    refillRate: 10,
+    refillIntervalMs: 60000,
+  },
+
   // Default for unspecified operations
   default: {
     maxTokens: 30,

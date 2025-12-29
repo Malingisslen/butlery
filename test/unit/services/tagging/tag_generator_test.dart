@@ -263,6 +263,36 @@ void main() {
           expect(result.getAllergenStatus('skaldjur'), TriState.contains);
         });
 
+        // L1: Tests that multi-property ingredients are NOT duplicated in triggers
+        test(
+            'skaldjur CONTAINS with deduplicated trigger for multi-property ingredient',
+            () {
+          final recipe = RecipeBuilder()
+              .withTitle('Mixed Shellfish')
+              .withIngredients(['bläckfisk']).build();
+          // Ingredient has BOTH crustacean AND mollusc properties
+          final lookup = _createLookup([
+            _ingredient(
+                'bläckfisk', 'protein/seafood', {'crustacean', 'mollusc'}),
+          ]);
+
+          final result =
+              generator.generate(ingredients: lookup, recipe: recipe);
+
+          // Should still be CONTAINS
+          expect(result.getAllergenStatus('skaldjur'), TriState.contains);
+          // L1 fix ensures the ingredient appears only ONCE in decision triggers
+          // (Previously it would appear twice - once for crustacean, once for mollusc)
+          final decision = result.decisions
+              ?.where((d) => d.key == 'skaldjur' && d.type == 'allergen')
+              .firstOrNull;
+          expect(decision, isNotNull);
+          // Triggers should be deduplicated - only 1 entry for 'bläckfisk'
+          expect(decision!.triggeringIngredients, isNotNull);
+          expect(decision.triggeringIngredients, hasLength(1));
+          expect(decision.triggeringIngredients!.first, equals('bläckfisk'));
+        });
+
         test('skaldjur FREE when only fish (no shellfish)', () {
           final recipe = RecipeBuilder()
               .withTitle('Salmon Dinner')
@@ -655,7 +685,7 @@ void main() {
             swedish: 'kycklingbröst',
             english: 'chicken breast',
             group: 'protein/meat/poultry',
-            properties: {'meat', 'poultry'},
+            properties: const {'meat', 'poultry'},
           ),
         ]);
 
@@ -674,7 +704,7 @@ void main() {
             swedish: 'nötfärs',
             english: 'ground beef',
             group: 'protein/meat/beef',
-            properties: {'meat', 'beef'},
+            properties: const {'meat', 'beef'},
           ),
         ]);
 
@@ -693,7 +723,7 @@ void main() {
             swedish: 'lax',
             english: 'salmon',
             group: 'protein/seafood/fish',
-            properties: {'fish', 'seafood'},
+            properties: const {'fish', 'seafood'},
           ),
         ]);
 
@@ -713,7 +743,7 @@ void main() {
             swedish: 'räkor',
             english: 'shrimp',
             group: 'protein/seafood/shellfish',
-            properties: {'seafood', 'crustacean'},
+            properties: const {'seafood', 'crustacean'},
           ),
         ]);
 
@@ -735,7 +765,7 @@ void main() {
             swedish: 'pasta',
             english: 'pasta',
             group: 'grain/pasta-bread',
-            properties: {'contains-gluten'},
+            properties: const {'contains-gluten'},
           ),
           _ingredient('bacon', 'protein/meat/pork', {'meat', 'pork'}),
         ]);
@@ -755,7 +785,7 @@ void main() {
             swedish: 'ris',
             english: 'rice',
             group: 'grain',
-            properties: {},
+            properties: const {},
           ),
           _ingredient('vegetables', 'vegetable', {}),
         ]);
@@ -775,7 +805,7 @@ void main() {
             swedish: 'potatis',
             english: 'potato',
             group: 'vegetable/root',
-            properties: {},
+            properties: const {},
           ),
           _ingredient('butter', 'protein/dairy', {'dairy'}),
         ]);
@@ -1008,7 +1038,7 @@ void main() {
             swedish: 'kyckling',
             english: 'chicken',
             group: 'protein/meat/poultry',
-            properties: {'meat', 'poultry'},
+            properties: const {'meat', 'poultry'},
           ),
         ]);
 
@@ -1189,7 +1219,7 @@ void main() {
             swedish: 'kycklingbröst',
             english: 'chicken breast',
             group: 'protein/meat/poultry',
-            properties: {'meat', 'poultry'},
+            properties: const {'meat', 'poultry'},
           ),
         ]);
 
@@ -1519,14 +1549,14 @@ void main() {
               swedish: 'räkor',
               english: 'shrimp',
               group: 'protein/seafood/shellfish',
-              properties: {'crustacean', 'shellfish'},
+              properties: const {'crustacean', 'shellfish'},
             ),
             IngredientData(
               id: 'pasta',
               swedish: 'pasta',
               english: 'pasta',
               group: 'grain/pasta-bread',
-              properties: {},
+              properties: const {},
             ),
           ]);
 
@@ -1695,21 +1725,21 @@ void main() {
               swedish: 'pasta',
               english: 'pasta',
               group: 'grain/pasta-bread',
-              properties: {'pasta-base'},
+              properties: const {'pasta-base'},
             ),
             IngredientData(
               id: 'gradde',
               swedish: 'grädde',
               english: 'cream',
               group: 'dairy/cream',
-              properties: {'dairy'},
+              properties: const {'dairy'},
             ),
             IngredientData(
               id: 'parmesan',
               swedish: 'parmesan',
               english: 'parmesan',
               group: 'protein/dairy/cheese',
-              properties: {'dairy'},
+              properties: const {'dairy'},
             ),
           ]);
 
@@ -1992,21 +2022,21 @@ void main() {
               swedish: 'pasta',
               english: 'pasta',
               group: 'grain/pasta-bread',
-              properties: {'pasta-base'},
+              properties: const {'pasta-base'},
             ),
             IngredientData(
               id: 'gradde',
               swedish: 'grädde',
               english: 'cream',
               group: 'dairy/cream',
-              properties: {'dairy'},
+              properties: const {'dairy'},
             ),
             IngredientData(
               id: 'cheese',
               swedish: 'ost',
               english: 'cheese',
               group: 'protein/dairy/cheese',
-              properties: {'dairy'},
+              properties: const {'dairy'},
             ),
           ]);
 
@@ -2254,18 +2284,214 @@ void main() {
         });
       });
     });
+
+    // Sprint 2: Sustainability tags
+    group('sustainability tags', () {
+      group('klimatsmart', () {
+        test('adds klimatsmart when all ingredients have low/medium carbon',
+            () {
+          final recipe = RecipeBuilder()
+              .withTitle('Veggie Stir Fry')
+              .withIngredients(['tofu', 'broccoli', 'carrots']).build();
+          final lookup = _createLookup([
+            _ingredient('tofu', 'protein/plant-based', {'plant-based'},
+                carbonFootprintCategory: 'low'),
+            _ingredient('broccoli', 'vegetable', {'plant-based'},
+                carbonFootprintCategory: 'low'),
+            _ingredient('carrots', 'vegetable', {'plant-based'},
+                carbonFootprintCategory: 'medium'),
+          ]);
+
+          final result =
+              generator.generate(ingredients: lookup, recipe: recipe);
+
+          expect(result.hasTag('klimatsmart'), isTrue);
+        });
+
+        test('adds klimatsmart when 80% have low/medium carbon', () {
+          final recipe = RecipeBuilder()
+              .withTitle('Mixed Dish')
+              .withIngredients(['a', 'b', 'c', 'd', 'e']).build();
+          // 4 low/medium + 1 high = 80% meet criteria
+          final lookup = _createLookup([
+            _ingredient('a', 'vegetable', {}, carbonFootprintCategory: 'low'),
+            _ingredient('b', 'vegetable', {}, carbonFootprintCategory: 'low'),
+            _ingredient('c', 'vegetable', {},
+                carbonFootprintCategory: 'medium'),
+            _ingredient('d', 'vegetable', {}, carbonFootprintCategory: 'low'),
+            _ingredient('e', 'protein/meat', {'meat'},
+                carbonFootprintCategory: 'high'),
+          ]);
+
+          final result =
+              generator.generate(ingredients: lookup, recipe: recipe);
+
+          expect(result.hasTag('klimatsmart'), isTrue);
+        });
+
+        test('no klimatsmart when too many high carbon ingredients', () {
+          final recipe = RecipeBuilder()
+              .withTitle('Beef Steak')
+              .withIngredients(['beef', 'butter', 'vegetables']).build();
+          // 1 low + 2 high = 33% meet criteria (below 80%)
+          final lookup = _createLookup([
+            _ingredient('beef', 'protein/meat', {'meat'},
+                carbonFootprintCategory: 'high'),
+            _ingredient('butter', 'protein/dairy', {'dairy'},
+                carbonFootprintCategory: 'high'),
+            _ingredient('vegetables', 'vegetable', {},
+                carbonFootprintCategory: 'low'),
+          ]);
+
+          final result =
+              generator.generate(ingredients: lookup, recipe: recipe);
+
+          expect(result.hasTag('klimatsmart'), isFalse);
+        });
+
+        test('no klimatsmart when no carbon data available', () {
+          final recipe = RecipeBuilder()
+              .withTitle('Mystery Dish')
+              .withIngredients(['ingredient1', 'ingredient2']).build();
+          final lookup = _createLookup([
+            _ingredient('ingredient1', 'other', {}),
+            _ingredient('ingredient2', 'other', {}),
+          ]);
+
+          final result =
+              generator.generate(ingredients: lookup, recipe: recipe);
+
+          expect(result.hasTag('klimatsmart'), isFalse);
+        });
+
+        test('klimatsmart ignores ingredients without carbon data', () {
+          final recipe = RecipeBuilder()
+              .withTitle('Mixed Data')
+              .withIngredients(['tofu', 'unknown']).build();
+          // Only tofu has carbon data (low), unknown is excluded
+          final lookup = _createLookup([
+            _ingredient('tofu', 'protein/plant-based', {},
+                carbonFootprintCategory: 'low'),
+            _ingredient('unknown', 'other', {}), // No carbon data
+          ]);
+
+          final result =
+              generator.generate(ingredients: lookup, recipe: recipe);
+
+          // 100% of ingredients with data are low carbon
+          expect(result.hasTag('klimatsmart'), isTrue);
+        });
+      });
+
+      group('budgetvänlig', () {
+        test('adds budgetvänlig when all ingredients are budget/medium price',
+            () {
+          final recipe = RecipeBuilder()
+              .withTitle('Budget Pasta')
+              .withIngredients(['pasta', 'tomato sauce', 'onion']).build();
+          final lookup = _createLookup([
+            _ingredient('pasta', 'grain', {}, priceCategory: 'budget'),
+            _ingredient('tomato sauce', 'sauce', {}, priceCategory: 'budget'),
+            _ingredient('onion', 'vegetable', {}, priceCategory: 'budget'),
+          ]);
+
+          final result =
+              generator.generate(ingredients: lookup, recipe: recipe);
+
+          expect(result.hasTag('budgetvänlig'), isTrue);
+        });
+
+        test('adds budgetvänlig when 80% are budget/medium', () {
+          final recipe = RecipeBuilder()
+              .withTitle('Mixed Budget')
+              .withIngredients(['a', 'b', 'c', 'd', 'e']).build();
+          // 4 budget/medium + 1 premium = 80% meet criteria
+          final lookup = _createLookup([
+            _ingredient('a', 'vegetable', {}, priceCategory: 'budget'),
+            _ingredient('b', 'vegetable', {}, priceCategory: 'budget'),
+            _ingredient('c', 'vegetable', {}, priceCategory: 'medium'),
+            _ingredient('d', 'vegetable', {}, priceCategory: 'budget'),
+            _ingredient('e', 'protein/seafood', {}, priceCategory: 'premium'),
+          ]);
+
+          final result =
+              generator.generate(ingredients: lookup, recipe: recipe);
+
+          expect(result.hasTag('budgetvänlig'), isTrue);
+        });
+
+        test('no budgetvänlig when too many premium ingredients', () {
+          final recipe = RecipeBuilder()
+              .withTitle('Luxury Dinner')
+              .withIngredients(['wagyu', 'truffles', 'caviar']).build();
+          final lookup = _createLookup([
+            _ingredient('wagyu', 'protein/meat', {}, priceCategory: 'premium'),
+            _ingredient('truffles', 'other', {}, priceCategory: 'premium'),
+            _ingredient('caviar', 'protein/seafood', {},
+                priceCategory: 'premium'),
+          ]);
+
+          final result =
+              generator.generate(ingredients: lookup, recipe: recipe);
+
+          expect(result.hasTag('budgetvänlig'), isFalse);
+        });
+
+        test('no budgetvänlig when no price data available', () {
+          final recipe = RecipeBuilder()
+              .withTitle('Mystery Dish')
+              .withIngredients(['ingredient1', 'ingredient2']).build();
+          final lookup = _createLookup([
+            _ingredient('ingredient1', 'other', {}),
+            _ingredient('ingredient2', 'other', {}),
+          ]);
+
+          final result =
+              generator.generate(ingredients: lookup, recipe: recipe);
+
+          expect(result.hasTag('budgetvänlig'), isFalse);
+        });
+
+        test('budgetvänlig ignores ingredients without price data', () {
+          final recipe = RecipeBuilder()
+              .withTitle('Mixed Data')
+              .withIngredients(['rice', 'unknown']).build();
+          // Only rice has price data (budget), unknown is excluded
+          final lookup = _createLookup([
+            _ingredient('rice', 'grain', {}, priceCategory: 'budget'),
+            _ingredient('unknown', 'other', {}), // No price data
+          ]);
+
+          final result =
+              generator.generate(ingredients: lookup, recipe: recipe);
+
+          // 100% of ingredients with data are budget
+          expect(result.hasTag('budgetvänlig'), isTrue);
+        });
+      });
+    });
   });
 }
 
 // Helper functions
 
-IngredientData _ingredient(String name, String group, Set<String> properties) {
+IngredientData _ingredient(
+  String name,
+  String group,
+  Set<String> properties, {
+  String? priceCategory,
+  String? carbonFootprintCategory,
+  List<String>? seasonAvailability,
+}) {
   return IngredientData(
     id: name.toLowerCase().replaceAll(' ', '-'),
     swedish: name,
     english: name,
     group: group,
     properties: properties,
+    priceCategory: priceCategory,
+    carbonFootprintCategory: carbonFootprintCategory,
+    seasonAvailability: seasonAvailability ?? const [],
   );
 }
 

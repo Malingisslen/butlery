@@ -20,7 +20,19 @@ class TagPhase2Derived {
     if (phase1.hasTag('potatisbaserad')) tags.add('potato-dish');
     if (phase1.hasTag('brödbaserad')) tags.add('bread-dish');
 
-    // Spicy/mild
+    // M4: Spicy/mild tags with INTENTIONAL asymmetry for safety:
+    //
+    // SPICY ('stark'): Added if ANY matched ingredient is spicy, even at low
+    //   coverage. Rationale: Better to warn users about potential spice than
+    //   miss it. A recipe with 50% coverage and one spicy ingredient SHOULD
+    //   warn users who are sensitive to spicy food.
+    //
+    // MILD ('mild'): Only added at 100% coverage AND no spicy ingredients.
+    //   Rationale: Can only claim "mild" when we've verified ALL ingredients.
+    //   A recipe with 50% coverage should NOT claim to be mild - unknowns
+    //   might be spicy.
+    //
+    // This asymmetry protects users who are sensitive to spicy food.
     if (phase1.hasProperty('is-spicy')) {
       tags.add('stark');
     } else if (phase1.lookup.hasFullCoverage) {

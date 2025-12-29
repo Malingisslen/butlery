@@ -11,7 +11,7 @@ void main() {
           swedish: 'kycklingbröst',
           english: 'chicken breast',
           group: 'protein/meat/poultry',
-          properties: {'meat', 'poultry', 'animal-product'},
+          properties: const {'meat', 'poultry', 'animal-product'},
         );
 
         expect(ingredient.id, 'chicken-breast');
@@ -32,10 +32,10 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables/fruits',
-          properties: {'plant-based', 'vegan-friendly'},
-          aliasesSv: ['tomater', 'krossade tomater'],
-          aliasesEn: ['tomatoes'],
-          searchTerms: ['röd', 'frukt'],
+          properties: const {'plant-based', 'vegan-friendly'},
+          aliasesSv: const ['tomater', 'krossade tomater'],
+          aliasesEn: const ['tomatoes'],
+          searchTerms: const ['röd', 'frukt'],
           status: 'draft',
           createdAt: now,
           updatedAt: now,
@@ -57,14 +57,17 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {'plant-based'},
+          properties: const {'plant-based'},
         );
         final b = IngredientData(
           id: 'tomato',
           swedish: 'tomat (röda)', // Different swedish name
           english: 'red tomato', // Different english name
           group: 'vegetables/fruits', // Different group
-          properties: {'plant-based', 'vegan-friendly'}, // Different properties
+          properties: const {
+            'plant-based',
+            'vegan-friendly'
+          }, // Different properties
         );
 
         // ID-only equality: same ID = equal
@@ -78,14 +81,14 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {'plant-based'},
+          properties: const {'plant-based'},
         );
         final b = IngredientData(
           id: 'sun-dried-tomato', // Different ID
           swedish: 'tomat', // Same swedish name
           english: 'tomato', // Same english name
           group: 'vegetables', // Same group
-          properties: {'plant-based'}, // Same properties
+          properties: const {'plant-based'}, // Same properties
         );
 
         expect(a == b, isFalse);
@@ -98,7 +101,7 @@ void main() {
           swedish: 'test',
           english: 'test',
           group: 'test',
-          properties: {},
+          properties: const {},
         );
 
         expect(identical(ingredient, ingredient), isTrue);
@@ -111,21 +114,21 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {'plant-based'},
+          properties: const {'plant-based'},
         );
         final b = IngredientData(
           id: 'tomato', // Same ID = same ingredient
           swedish: 'röd tomat',
           english: 'red tomato',
           group: 'vegetables/fruits',
-          properties: {'plant-based', 'colored'},
+          properties: const {'plant-based', 'colored'},
         );
         final c = IngredientData(
           id: 'onion', // Different ID
           swedish: 'lök',
           english: 'onion',
           group: 'vegetables',
-          properties: {'plant-based'},
+          properties: const {'plant-based'},
         );
 
         final set = <IngredientData>{a, b, c};
@@ -143,14 +146,14 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
         );
         final b = IngredientData(
           id: 'tomato', // Same ID
           swedish: 'annat namn',
           english: 'different name',
           group: 'other',
-          properties: {'different'},
+          properties: const {'different'},
         );
 
         final map = <IngredientData, String>{};
@@ -171,10 +174,10 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {'plant-based', 'vegan-friendly'},
-          aliasesSv: ['tomater'],
-          aliasesEn: ['tomatoes'],
-          searchTerms: ['red'],
+          properties: const {'plant-based', 'vegan-friendly'},
+          aliasesSv: const ['tomater'],
+          aliasesEn: const ['tomatoes'],
+          searchTerms: const ['red'],
           status: 'verified',
           createdAt: now,
           updatedAt: now,
@@ -184,10 +187,10 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {'plant-based', 'vegan-friendly'},
-          aliasesSv: ['tomater'],
-          aliasesEn: ['tomatoes'],
-          searchTerms: ['red'],
+          properties: const {'plant-based', 'vegan-friendly'},
+          aliasesSv: const ['tomater'],
+          aliasesEn: const ['tomatoes'],
+          searchTerms: const ['red'],
           status: 'verified',
           createdAt: now,
           updatedAt: now,
@@ -202,14 +205,14 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
         );
         final b = IngredientData(
           id: 'tomato-red',
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
         );
 
         expect(a.contentEquals(b), isFalse);
@@ -221,14 +224,14 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
         );
         final b = IngredientData(
           id: 'tomato',
           swedish: 'röd tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
         );
 
         expect(a.contentEquals(b), isFalse);
@@ -240,14 +243,14 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
         );
         final b = IngredientData(
           id: 'tomato',
           swedish: 'tomat',
           english: 'red tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
         );
 
         expect(a.contentEquals(b), isFalse);
@@ -259,14 +262,14 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
         );
         final b = IngredientData(
           id: 'tomato',
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables/fruits',
-          properties: {},
+          properties: const {},
         );
 
         expect(a.contentEquals(b), isFalse);
@@ -278,14 +281,14 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {'plant-based'},
+          properties: const {'plant-based'},
         );
         final b = IngredientData(
           id: 'tomato',
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {'plant-based', 'vegan-friendly'},
+          properties: const {'plant-based', 'vegan-friendly'},
         );
 
         expect(a.contentEquals(b), isFalse);
@@ -297,16 +300,16 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
-          aliasesSv: ['tomater'],
+          properties: const {},
+          aliasesSv: const ['tomater'],
         );
         final b = IngredientData(
           id: 'tomato',
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
-          aliasesSv: ['krossade tomater'],
+          properties: const {},
+          aliasesSv: const ['krossade tomater'],
         );
 
         expect(a.contentEquals(b), isFalse);
@@ -318,16 +321,16 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
-          aliasesEn: ['tomatoes'],
+          properties: const {},
+          aliasesEn: const ['tomatoes'],
         );
         final b = IngredientData(
           id: 'tomato',
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
-          aliasesEn: ['red tomatoes'],
+          properties: const {},
+          aliasesEn: const ['red tomatoes'],
         );
 
         expect(a.contentEquals(b), isFalse);
@@ -339,16 +342,16 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
-          searchTerms: ['red'],
+          properties: const {},
+          searchTerms: const ['red'],
         );
         final b = IngredientData(
           id: 'tomato',
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
-          searchTerms: ['red', 'fruit'],
+          properties: const {},
+          searchTerms: const ['red', 'fruit'],
         );
 
         expect(a.contentEquals(b), isFalse);
@@ -360,7 +363,7 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
           status: 'verified',
         );
         final b = IngredientData(
@@ -368,7 +371,7 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
           status: 'draft',
         );
 
@@ -381,7 +384,7 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
           createdAt: DateTime(2024, 1, 1),
         );
         final b = IngredientData(
@@ -389,7 +392,7 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
           createdAt: DateTime(2024, 1, 2),
         );
 
@@ -402,7 +405,7 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
           updatedAt: DateTime(2024, 1, 1),
         );
         final b = IngredientData(
@@ -410,7 +413,7 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
           updatedAt: DateTime(2024, 1, 2),
         );
 
@@ -423,7 +426,7 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
           createdAt: null,
           updatedAt: null,
         );
@@ -432,7 +435,7 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
           createdAt: null,
           updatedAt: null,
         );
@@ -446,14 +449,14 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {'a', 'b', 'c'},
+          properties: const {'a', 'b', 'c'},
         );
         final b = IngredientData(
           id: 'tomato',
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {
+          properties: const {
             'c',
             'b',
             'a'
@@ -469,16 +472,16 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
-          aliasesSv: ['a', 'b'],
+          properties: const {},
+          aliasesSv: const ['a', 'b'],
         );
         final b = IngredientData(
           id: 'tomato',
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {},
-          aliasesSv: ['b', 'a'], // Same elements, different order
+          properties: const {},
+          aliasesSv: const ['b', 'a'], // Same elements, different order
         );
 
         // List comparison is order-sensitive
@@ -494,10 +497,10 @@ void main() {
           swedish: 'kycklingbröst',
           english: 'chicken breast',
           group: 'protein/meat/poultry',
-          properties: {'meat', 'poultry'},
-          aliasesSv: ['kycklingfilé'],
-          aliasesEn: ['chicken fillet'],
-          searchTerms: ['kyckling'],
+          properties: const {'meat', 'poultry'},
+          aliasesSv: const ['kycklingfilé'],
+          aliasesEn: const ['chicken fillet'],
+          searchTerms: const ['kyckling'],
           status: 'verified',
           createdAt: now,
           updatedAt: now,
@@ -614,10 +617,10 @@ void main() {
           swedish: 'testingrediens',
           english: 'test ingredient',
           group: 'test/group',
-          properties: {'prop1', 'prop2'},
-          aliasesSv: ['alias1'],
-          aliasesEn: ['alias2'],
-          searchTerms: ['search'],
+          properties: const {'prop1', 'prop2'},
+          aliasesSv: const ['alias1'],
+          aliasesEn: const ['alias2'],
+          searchTerms: const ['search'],
           status: 'draft',
           createdAt: DateTime(2024, 1, 1),
           updatedAt: DateTime(2024, 1, 2),
@@ -644,7 +647,7 @@ void main() {
           swedish: 'test',
           english: 'test',
           group: 'protein/meat/poultry',
-          properties: {},
+          properties: const {},
         );
       });
 
@@ -668,7 +671,7 @@ void main() {
           swedish: 'test',
           english: 'test',
           group: 'vegetables',
-          properties: {},
+          properties: const {},
         );
         expect(shallow.groupDepth, 1);
         expect(shallow.midLevelGroup, isNull);
@@ -693,7 +696,7 @@ void main() {
           swedish: 'test',
           english: 'test',
           group: 'test',
-          properties: {'meat', 'poultry', 'animal-product'},
+          properties: const {'meat', 'poultry', 'animal-product'},
         );
       });
 
@@ -720,7 +723,7 @@ void main() {
           swedish: 'morot',
           english: 'carrot',
           group: 'vegetables',
-          properties: {'plant-based'},
+          properties: const {'plant-based'},
         );
         expect(plant.isAnimalProduct, isFalse);
       });
@@ -733,7 +736,7 @@ void main() {
           swedish: 'tofu',
           english: 'tofu',
           group: 'protein/plant',
-          properties: {'vegan-friendly', 'plant-based'},
+          properties: const {'vegan-friendly', 'plant-based'},
         );
         expect(vegan.isVeganFriendly, isTrue);
       });
@@ -748,10 +751,10 @@ void main() {
           swedish: 'kycklingbröst',
           english: 'chicken breast',
           group: 'protein/meat/poultry',
-          properties: {},
-          aliasesSv: ['kycklingfilé', 'kyckling'],
-          aliasesEn: ['chicken fillet'],
-          searchTerms: ['poultry'],
+          properties: const {},
+          aliasesSv: const ['kycklingfilé', 'kyckling'],
+          aliasesEn: const ['chicken fillet'],
+          searchTerms: const ['poultry'],
         );
       });
 
@@ -795,7 +798,7 @@ void main() {
           swedish: 'tomat',
           english: 'tomato',
           group: 'vegetables',
-          properties: {'plant-based'},
+          properties: const {'plant-based'},
           status: 'verified',
         );
 
@@ -818,8 +821,8 @@ void main() {
           swedish: 'test',
           english: 'test',
           group: 'test',
-          properties: {'prop'},
-          aliasesSv: ['alias'],
+          properties: const {'prop'},
+          aliasesSv: const ['alias'],
           status: 'draft',
         );
 
@@ -836,13 +839,363 @@ void main() {
           swedish: 'kycklingbröst',
           english: 'chicken breast',
           group: 'protein',
-          properties: {},
+          properties: const {},
         );
 
         final str = ingredient.toString();
 
         expect(str, contains('chicken-breast'));
         expect(str, contains('kycklingbröst'));
+      });
+    });
+
+    group('Sprint 1: sustainability and metadata fields', () {
+      test('creates with all new optional parameters', () {
+        final ingredient = IngredientData(
+          id: 'tomato',
+          swedish: 'tomat',
+          english: 'tomato',
+          group: 'vegetables',
+          properties: const {'plant-based'},
+          seasonAvailability: const ['sommar', 'höst'],
+          priceCategory: 'budget',
+          carbonFootprintCategory: 'low',
+          notesSv: 'Bra för sallader',
+          notesEn: 'Good for salads',
+          typicalStorage: 'ambient',
+          typicalUnit: 'st',
+          avgPriceSek: 15.50,
+        );
+
+        expect(ingredient.seasonAvailability, ['sommar', 'höst']);
+        expect(ingredient.priceCategory, 'budget');
+        expect(ingredient.carbonFootprintCategory, 'low');
+        expect(ingredient.notesSv, 'Bra för sallader');
+        expect(ingredient.notesEn, 'Good for salads');
+        expect(ingredient.typicalStorage, 'ambient');
+        expect(ingredient.typicalUnit, 'st');
+        expect(ingredient.avgPriceSek, 15.50);
+      });
+
+      test('new fields default to null/empty', () {
+        final ingredient = IngredientData(
+          id: 'test',
+          swedish: 'test',
+          english: 'test',
+          group: 'test',
+          properties: const {},
+        );
+
+        expect(ingredient.seasonAvailability, isEmpty);
+        expect(ingredient.priceCategory, isNull);
+        expect(ingredient.carbonFootprintCategory, isNull);
+        expect(ingredient.notesSv, isNull);
+        expect(ingredient.notesEn, isNull);
+        expect(ingredient.typicalStorage, isNull);
+        expect(ingredient.typicalUnit, isNull);
+        expect(ingredient.avgPriceSek, isNull);
+      });
+
+      group('contentEquals with new fields', () {
+        test('returns false when seasonAvailability differs', () {
+          final a = IngredientData(
+            id: 'tomato',
+            swedish: 'tomat',
+            english: 'tomato',
+            group: 'vegetables',
+            properties: const {},
+            seasonAvailability: const ['sommar'],
+          );
+          final b = IngredientData(
+            id: 'tomato',
+            swedish: 'tomat',
+            english: 'tomato',
+            group: 'vegetables',
+            properties: const {},
+            seasonAvailability: const ['sommar', 'höst'],
+          );
+
+          expect(a.contentEquals(b), isFalse);
+        });
+
+        test('returns false when priceCategory differs', () {
+          final a = IngredientData(
+            id: 'tomato',
+            swedish: 'tomat',
+            english: 'tomato',
+            group: 'vegetables',
+            properties: const {},
+            priceCategory: 'budget',
+          );
+          final b = IngredientData(
+            id: 'tomato',
+            swedish: 'tomat',
+            english: 'tomato',
+            group: 'vegetables',
+            properties: const {},
+            priceCategory: 'premium',
+          );
+
+          expect(a.contentEquals(b), isFalse);
+        });
+
+        test('returns false when carbonFootprintCategory differs', () {
+          final a = IngredientData(
+            id: 'tomato',
+            swedish: 'tomat',
+            english: 'tomato',
+            group: 'vegetables',
+            properties: const {},
+            carbonFootprintCategory: 'low',
+          );
+          final b = IngredientData(
+            id: 'tomato',
+            swedish: 'tomat',
+            english: 'tomato',
+            group: 'vegetables',
+            properties: const {},
+            carbonFootprintCategory: 'high',
+          );
+
+          expect(a.contentEquals(b), isFalse);
+        });
+
+        test('returns false when avgPriceSek differs', () {
+          final a = IngredientData(
+            id: 'tomato',
+            swedish: 'tomat',
+            english: 'tomato',
+            group: 'vegetables',
+            properties: const {},
+            avgPriceSek: 10.0,
+          );
+          final b = IngredientData(
+            id: 'tomato',
+            swedish: 'tomat',
+            english: 'tomato',
+            group: 'vegetables',
+            properties: const {},
+            avgPriceSek: 20.0,
+          );
+
+          expect(a.contentEquals(b), isFalse);
+        });
+
+        test('returns true when all new fields are equal', () {
+          final a = IngredientData(
+            id: 'tomato',
+            swedish: 'tomat',
+            english: 'tomato',
+            group: 'vegetables',
+            properties: const {},
+            seasonAvailability: const ['sommar', 'höst'],
+            priceCategory: 'budget',
+            carbonFootprintCategory: 'low',
+            notesSv: 'Notes',
+            notesEn: 'Notes',
+            typicalStorage: 'ambient',
+            typicalUnit: 'st',
+            avgPriceSek: 15.0,
+          );
+          final b = IngredientData(
+            id: 'tomato',
+            swedish: 'tomat',
+            english: 'tomato',
+            group: 'vegetables',
+            properties: const {},
+            seasonAvailability: const ['sommar', 'höst'],
+            priceCategory: 'budget',
+            carbonFootprintCategory: 'low',
+            notesSv: 'Notes',
+            notesEn: 'Notes',
+            typicalStorage: 'ambient',
+            typicalUnit: 'st',
+            avgPriceSek: 15.0,
+          );
+
+          expect(a.contentEquals(b), isTrue);
+        });
+      });
+
+      group('Firestore serialization with new fields', () {
+        test('toFirestore includes new fields when set', () {
+          final ingredient = IngredientData(
+            id: 'tomato',
+            swedish: 'tomat',
+            english: 'tomato',
+            group: 'vegetables',
+            properties: const {},
+            seasonAvailability: const ['sommar', 'höst'],
+            priceCategory: 'budget',
+            carbonFootprintCategory: 'low',
+            notesSv: 'Notes SV',
+            notesEn: 'Notes EN',
+            typicalStorage: 'ambient',
+            typicalUnit: 'st',
+            avgPriceSek: 15.50,
+          );
+
+          final map = ingredient.toFirestore();
+
+          expect(map['seasonAvailability'], ['sommar', 'höst']);
+          expect(map['priceCategory'], 'budget');
+          expect(map['carbonFootprintCategory'], 'low');
+          expect(map['notesSv'], 'Notes SV');
+          expect(map['notesEn'], 'Notes EN');
+          expect(map['typicalStorage'], 'ambient');
+          expect(map['typicalUnit'], 'st');
+          expect(map['avgPriceSek'], 15.50);
+        });
+
+        test('toFirestore excludes null/empty new fields', () {
+          final ingredient = IngredientData(
+            id: 'tomato',
+            swedish: 'tomat',
+            english: 'tomato',
+            group: 'vegetables',
+            properties: const {},
+          );
+
+          final map = ingredient.toFirestore();
+
+          expect(map.containsKey('seasonAvailability'), isFalse);
+          expect(map.containsKey('priceCategory'), isFalse);
+          expect(map.containsKey('carbonFootprintCategory'), isFalse);
+          expect(map.containsKey('notesSv'), isFalse);
+          expect(map.containsKey('notesEn'), isFalse);
+          expect(map.containsKey('typicalStorage'), isFalse);
+          expect(map.containsKey('typicalUnit'), isFalse);
+          expect(map.containsKey('avgPriceSek'), isFalse);
+        });
+
+        test('fromMap parses new fields', () {
+          final map = {
+            'id': 'tomato',
+            'swedish': 'tomat',
+            'english': 'tomato',
+            'group': 'vegetables',
+            'properties': <String>[],
+            'seasonAvailability': ['sommar', 'höst'],
+            'priceCategory': 'budget',
+            'carbonFootprintCategory': 'low',
+            'notesSv': 'Notes SV',
+            'notesEn': 'Notes EN',
+            'typicalStorage': 'ambient',
+            'typicalUnit': 'st',
+            'avgPriceSek': 15.50,
+          };
+
+          final ingredient = IngredientData.fromMap(map);
+
+          expect(ingredient.seasonAvailability, ['sommar', 'höst']);
+          expect(ingredient.priceCategory, 'budget');
+          expect(ingredient.carbonFootprintCategory, 'low');
+          expect(ingredient.notesSv, 'Notes SV');
+          expect(ingredient.notesEn, 'Notes EN');
+          expect(ingredient.typicalStorage, 'ambient');
+          expect(ingredient.typicalUnit, 'st');
+          expect(ingredient.avgPriceSek, 15.50);
+        });
+
+        test('fromMap handles missing new fields gracefully', () {
+          final map = {
+            'id': 'tomato',
+            'swedish': 'tomat',
+            'english': 'tomato',
+            'group': 'vegetables',
+            'properties': <String>[],
+          };
+
+          final ingredient = IngredientData.fromMap(map);
+
+          expect(ingredient.seasonAvailability, isEmpty);
+          expect(ingredient.priceCategory, isNull);
+          expect(ingredient.carbonFootprintCategory, isNull);
+          expect(ingredient.notesSv, isNull);
+          expect(ingredient.notesEn, isNull);
+          expect(ingredient.typicalStorage, isNull);
+          expect(ingredient.typicalUnit, isNull);
+          expect(ingredient.avgPriceSek, isNull);
+        });
+
+        test('roundtrip preserves new fields', () {
+          final original = IngredientData(
+            id: 'tomato',
+            swedish: 'tomat',
+            english: 'tomato',
+            group: 'vegetables',
+            properties: const {},
+            seasonAvailability: const ['vår', 'sommar'],
+            priceCategory: 'medium',
+            carbonFootprintCategory: 'medium',
+            notesSv: 'Test notes SV',
+            notesEn: 'Test notes EN',
+            typicalStorage: 'refrigerated',
+            typicalUnit: 'g',
+            avgPriceSek: 25.99,
+          );
+
+          final map = original.toFirestore();
+          // Remove Timestamp fields for fromMap
+          map.remove('createdAt');
+          map.remove('updatedAt');
+
+          final restored = IngredientData.fromMap(map);
+
+          expect(restored.seasonAvailability, original.seasonAvailability);
+          expect(restored.priceCategory, original.priceCategory);
+          expect(restored.carbonFootprintCategory,
+              original.carbonFootprintCategory);
+          expect(restored.notesSv, original.notesSv);
+          expect(restored.notesEn, original.notesEn);
+          expect(restored.typicalStorage, original.typicalStorage);
+          expect(restored.typicalUnit, original.typicalUnit);
+          expect(restored.avgPriceSek, original.avgPriceSek);
+        });
+      });
+
+      group('copyWith with new fields', () {
+        test('copies new fields correctly', () {
+          final original = IngredientData(
+            id: 'tomato',
+            swedish: 'tomat',
+            english: 'tomato',
+            group: 'vegetables',
+            properties: const {},
+            seasonAvailability: const ['sommar'],
+            priceCategory: 'budget',
+          );
+
+          final copy = original.copyWith(
+            seasonAvailability: ['sommar', 'höst'],
+            carbonFootprintCategory: 'low',
+          );
+
+          expect(copy.seasonAvailability, ['sommar', 'höst']);
+          expect(copy.priceCategory, 'budget'); // Unchanged
+          expect(copy.carbonFootprintCategory, 'low'); // New
+        });
+
+        test('preserves new fields when not specified', () {
+          final original = IngredientData(
+            id: 'tomato',
+            swedish: 'tomat',
+            english: 'tomato',
+            group: 'vegetables',
+            properties: const {},
+            seasonAvailability: const ['vår'],
+            priceCategory: 'premium',
+            carbonFootprintCategory: 'high',
+            avgPriceSek: 99.99,
+          );
+
+          final copy = original.copyWith(swedish: 'röd tomat');
+
+          expect(copy.seasonAvailability, ['vår']);
+          expect(copy.priceCategory, 'premium');
+          expect(copy.carbonFootprintCategory, 'high');
+          expect(copy.avgPriceSek, 99.99);
+        });
       });
     });
   });

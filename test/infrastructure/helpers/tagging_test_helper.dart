@@ -156,7 +156,7 @@ class TaggingTestHelper {
         swedish: 'Ingrediens $i',
         english: 'Ingredient $i',
         group: 'test/neutral',
-        properties: {},
+        properties: const {},
       ));
     }
 

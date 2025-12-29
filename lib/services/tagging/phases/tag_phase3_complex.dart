@@ -11,6 +11,7 @@ import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
 /// - Texture/flavor profiles (creamy, crispy, cheesy)
 /// - Nutritional indicators (high-protein, high-fiber)
 /// - Practical tags (kid-friendly, freezer-friendly, batch-cooking)
+/// - Sustainability tags (klimatsmart, budgetvänlig) [Sprint 2]
 class TagPhase3Complex {
   // MED-4: Use centralized thresholds from TaggingThresholds instead of
   // duplicating values here. These aliases are kept for local readability.
@@ -52,6 +53,10 @@ class TagPhase3Complex {
     if (portions >= 6 || recipe.core.title.toLowerCase().contains('storkok')) {
       tags.add('storkok');
     }
+
+    // Sprint 2: Sustainability tags
+    if (_isKlimatsmart(p1)) tags.add('klimatsmart');
+    if (_isBudgetvanlig(p1)) tags.add('budgetvänlig');
 
     return Phase3Result(tags: tags, phase1: p1, phase2: p2);
   }
@@ -286,6 +291,49 @@ class TagPhase3Complex {
             p1.hasTag('köttbullar') ||
             p1.hasTag('gratäng') ||
             p1.hasTag('pastabaserad'));
+  }
+
+  // Sprint 2: Sustainability tags
+
+  /// Checks if recipe qualifies for "klimatsmart" tag.
+  ///
+  /// Logic: At least 80% of ingredients with carbon footprint data
+  /// must NOT have 'high' carbon footprint.
+  /// Ingredients without carbon data are excluded from calculation.
+  bool _isKlimatsmart(Phase1Result p1) {
+    final ingredientsWithCarbonData = p1.lookup.matched
+        .where((i) => i.carbonFootprintCategory != null)
+        .toList();
+
+    // Need at least some ingredients with carbon data to make a claim
+    if (ingredientsWithCarbonData.isEmpty) return false;
+
+    final lowOrMediumCarbon = ingredientsWithCarbonData
+        .where((i) => i.carbonFootprintCategory != 'high')
+        .length;
+
+    final ratio = lowOrMediumCarbon / ingredientsWithCarbonData.length;
+    return ratio >= TaggingThresholds.klimatsmartCoverage;
+  }
+
+  /// Checks if recipe qualifies for "budgetvänlig" tag.
+  ///
+  /// Logic: At least 80% of ingredients with price category data
+  /// must NOT be 'premium'.
+  /// Ingredients without price data are excluded from calculation.
+  bool _isBudgetvanlig(Phase1Result p1) {
+    final ingredientsWithPriceData =
+        p1.lookup.matched.where((i) => i.priceCategory != null).toList();
+
+    // Need at least some ingredients with price data to make a claim
+    if (ingredientsWithPriceData.isEmpty) return false;
+
+    final budgetOrMedium = ingredientsWithPriceData
+        .where((i) => i.priceCategory != 'premium')
+        .length;
+
+    final ratio = budgetOrMedium / ingredientsWithPriceData.length;
+    return ratio >= TaggingThresholds.budgetvanligCoverage;
   }
 }
 

@@ -8,6 +8,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { enforceRateLimit } from "../middleware/rate_limiter";
 
 // Note: db is accessed lazily to ensure initializeApp() has been called
 const getDb = () => admin.firestore();
@@ -131,6 +132,9 @@ export const logParseEvent = functions.https.onCall(
     }
 
     const userId = context.auth.uid;
+
+    // Rate limiting: 30 requests per minute, 10 refilled per minute
+    await enforceRateLimit(userId, "logParseEvent");
 
     // Validate required field
     const sanitizedUrl = sanitizeUrl(data.url);

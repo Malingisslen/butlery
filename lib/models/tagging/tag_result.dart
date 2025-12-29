@@ -12,7 +12,11 @@ import 'package:butlery/services/tagging/tag_generator.dart'
 /// L12: Schema version for TagResult data structure.
 /// Increment this when making breaking changes to the serialization format.
 /// Used for migrations when reading older data formats.
-const int kTagResultSchemaVersion = 1;
+///
+/// Version history:
+/// - V1: Initial schema with basic tag result fields
+/// - V2: Added errorReason field for explicit error tracking (MED-2)
+const int kTagResultSchemaVersion = 2;
 
 /// The output of the TagGenerator - stored on recipe documents.
 ///
@@ -54,6 +58,11 @@ class TagResult {
   /// and via JSON serialization for debugging purposes.
   final List<TagDecision>? decisions;
 
+  /// MED-2/V2: Explicit error reason when tagging fails.
+  /// Replaces the misuse of unknownIngredients for error messages.
+  /// Null for successful tagging, contains error description on failure.
+  final String? errorReason;
+
   /// Creates a TagResult with the given properties.
   ///
   /// CRIT-2: Coverage is validated to be in [0.0, 1.0] range.
@@ -69,6 +78,7 @@ class TagResult {
     this.generatorVersion,
     this.isPartial = false,
     this.decisions,
+    this.errorReason,
   }) : coverage = _validateAndClampCoverage(coverage);
 
   /// CRIT-2: Validates coverage and logs warning if out of range.
@@ -119,20 +129,19 @@ class TagResult {
   /// Creates a failed result when tag generation encounters an error.
   /// The reason parameter provides context for debugging.
   ///
-  /// MED-2: Note: The [reason] is stored in [unknownIngredients] intentionally.
-  /// This is a misuse of the field semantically, but it provides a simple way
-  /// to surface the error reason in UI (which already displays unknownIngredients)
-  /// without adding a new field. Consider adding a dedicated `errorReason` field
-  /// if this becomes confusing.
+  /// MED-2/V2: Now uses dedicated [errorReason] field instead of misusing
+  /// [unknownIngredients]. The error is still added to unknownIngredients
+  /// for backward compatibility with older UI that reads that field.
   factory TagResult.failed({String? reason}) {
     return TagResult(
       tags: {},
       allergenStatus: {},
       dietaryStatus: {},
       coverage: 0.0,
-      unknownIngredients: reason != null ? [reason] : [],
+      unknownIngredients: reason != null ? [reason] : [], // Backward compat
       generatedAt: DateTime.now(),
       generatorVersion: 'failed', // Mark as failed tagging
+      errorReason: reason, // V2: Proper error field
     );
   }
 
@@ -183,6 +192,9 @@ class TagResult {
           migratedData, 'generatorVersion'),
       isPartial: SerializationUtils.safeBool(migratedData, 'isPartial',
           defaultValue: false),
+      // V2: Read errorReason field
+      errorReason:
+          SerializationUtils.safeNullableString(migratedData, 'errorReason'),
     );
   }
 
@@ -205,6 +217,8 @@ class TagResult {
       'isPartial': isPartial,
       // L12: Include schema version for future migrations
       'schemaVersion': kTagResultSchemaVersion,
+      // V2: Include errorReason if present
+      if (errorReason != null) 'errorReason': errorReason,
     };
   }
 
@@ -228,6 +242,8 @@ class TagResult {
       'isPartial': isPartial,
       // L12: Include schema version for future migrations
       'schemaVersion': kTagResultSchemaVersion,
+      // V2: Include errorReason if present
+      if (errorReason != null) 'errorReason': errorReason,
       // H3: Include decisions if present (for debugging)
       if (decisions != null && decisions!.isNotEmpty)
         'decisions': decisions!.map((d) => d.toJson()).toList(),
@@ -283,6 +299,9 @@ class TagResult {
           defaultValue: false),
       // H3: Parse decisions if present
       decisions: _parseDecisions(migratedData['decisions']),
+      // V2: Read errorReason field
+      errorReason:
+          SerializationUtils.safeNullableString(migratedData, 'errorReason'),
     );
   }
 
@@ -292,6 +311,7 @@ class TagResult {
   ///
   /// Currently supports:
   /// - V0 → V1: Add schemaVersion field (no data transformation needed)
+  /// - V1 → V2: Add errorReason field (extract from unknownIngredients if failed)
   ///
   /// Future migrations can be added here when the schema evolves.
   static Map<String, dynamic> _migrateSchema(
@@ -314,13 +334,22 @@ class TagResult {
       );
     }
 
-    // Future migrations would be added here:
-    // if (fromVersion < 2) {
-    //   // V1 → V2 migration logic
-    //   migrated['newField'] = migrated['oldField'];
-    //   migrated.remove('oldField');
-    //   migrated['schemaVersion'] = 2;
-    // }
+    // V1 → V2: Extract errorReason from unknownIngredients for failed results
+    if (fromVersion < 2) {
+      final version = migrated['generatorVersion'];
+      if (version == 'failed') {
+        // Extract error reason from unknownIngredients (old misuse of the field)
+        final unknowns = migrated['unknownIngredients'] as List?;
+        if (unknowns != null && unknowns.isNotEmpty) {
+          migrated['errorReason'] = unknowns.first.toString();
+        }
+      }
+      migrated['schemaVersion'] = 2;
+      AppLogger.debug(
+        'TagResult: Migrated from schema v$fromVersion to v2',
+        'TagResult',
+      );
+    }
 
     return migrated;
   }
@@ -566,7 +595,8 @@ class TagResult {
           _listEquals(unknownIngredients, other.unknownIngredients) &&
           generatorVersion == other.generatorVersion &&
           isPartial == other.isPartial &&
-          _decisionsEqual(decisions, other.decisions);
+          _decisionsEqual(decisions, other.decisions) &&
+          errorReason == other.errorReason;
 
   static bool _setEquals<T>(Set<T> a, Set<T> b) =>
       a.length == b.length && a.containsAll(b);
@@ -589,7 +619,7 @@ class TagResult {
     return true;
   }
 
-  /// HIGH-6: hashCode includes decisions (consistent with equality).
+  /// HIGH-6: hashCode includes decisions and errorReason (consistent with equality).
   @override
   int get hashCode => Object.hash(
         tags,
@@ -600,6 +630,7 @@ class TagResult {
         generatorVersion,
         isPartial,
         decisions != null ? Object.hashAll(decisions!) : null,
+        errorReason,
       );
 
   /// LOW-3: Uses coveragePercent for consistent rounding across the codebase.
@@ -618,6 +649,7 @@ class TagResult {
     String? generatorVersion,
     bool? isPartial,
     List<TagDecision>? decisions,
+    String? errorReason,
   }) {
     return TagResult(
       tags: tags ?? this.tags,
@@ -629,6 +661,7 @@ class TagResult {
       generatorVersion: generatorVersion ?? this.generatorVersion,
       isPartial: isPartial ?? this.isPartial,
       decisions: decisions ?? this.decisions,
+      errorReason: errorReason ?? this.errorReason,
     );
   }
 

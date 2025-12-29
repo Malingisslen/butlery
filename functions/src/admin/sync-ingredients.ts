@@ -50,6 +50,15 @@ interface IngredientRow {
   aliases_en: string;
   search_terms: string;
   status: string;
+  // New sustainability and metadata fields (Sprint 1)
+  season_availability: string;
+  price_category: string;
+  carbon_footprint_category: string;
+  notes_sv: string;
+  notes_en: string;
+  typical_storage: string;
+  typical_unit: string;
+  avg_price_sek: string;
   [key: string]: string;
 }
 
@@ -64,6 +73,15 @@ interface IngredientDoc {
   searchTerms: string[];
   status: string;
   updatedAt: admin.firestore.FieldValue;
+  // New sustainability and metadata fields (Sprint 1)
+  seasonAvailability?: string[];
+  priceCategory?: string;
+  carbonFootprintCategory?: string;
+  notesSv?: string;
+  notesEn?: string;
+  typicalStorage?: string;
+  typicalUnit?: string;
+  avgPriceSek?: number;
 }
 
 interface Diff {
@@ -187,7 +205,18 @@ function csvToFirestore(row: IngredientRow): IngredientDoc {
     throw new Error(`CRIT-6: Row ${id} missing required 'swedish' field`);
   }
 
-  return {
+  // Parse new fields (Sprint 1)
+  const seasonAvailability = parseList(row.season_availability || "", ";");
+  const priceCategory = row.price_category?.trim() || undefined;
+  const carbonFootprintCategory = row.carbon_footprint_category?.trim() || undefined;
+  const notesSv = row.notes_sv?.trim() || undefined;
+  const notesEn = row.notes_en?.trim() || undefined;
+  const typicalStorage = row.typical_storage?.trim() || undefined;
+  const typicalUnit = row.typical_unit?.trim() || undefined;
+  const avgPriceSekStr = row.avg_price_sek?.trim();
+  const avgPriceSek = avgPriceSekStr ? parseFloat(avgPriceSekStr) : undefined;
+
+  const doc: IngredientDoc = {
     id,
     swedish,
     english: english || swedish, // Fallback to Swedish name if English missing
@@ -199,6 +228,18 @@ function csvToFirestore(row: IngredientRow): IngredientDoc {
     status: row.status?.trim() || "validated",
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
+
+  // Only add new fields if they have values (sparse storage)
+  if (seasonAvailability.length > 0) doc.seasonAvailability = seasonAvailability;
+  if (priceCategory) doc.priceCategory = priceCategory;
+  if (carbonFootprintCategory) doc.carbonFootprintCategory = carbonFootprintCategory;
+  if (notesSv) doc.notesSv = notesSv;
+  if (notesEn) doc.notesEn = notesEn;
+  if (typicalStorage) doc.typicalStorage = typicalStorage;
+  if (typicalUnit) doc.typicalUnit = typicalUnit;
+  if (avgPriceSek !== undefined && !isNaN(avgPriceSek)) doc.avgPriceSek = avgPriceSek;
+
+  return doc;
 }
 
 /**
@@ -258,6 +299,8 @@ function validateIngredient(row: IngredientRow): ValidationResult {
 /**
  * Validates all ingredients and returns aggregated results.
  * Fails fast if any critical errors are found.
+ *
+ * HIGH-4: Includes duplicate ID detection to prevent silent data overwrites.
  */
 function validateAllIngredients(
   rows: IngredientRow[],
@@ -267,6 +310,37 @@ function validateAllIngredients(
   let warningCount = 0;
 
   console.log("\n🔍 Validating ingredients...");
+
+  // HIGH-4: Detect duplicate IDs before processing
+  const seenIds = new Map<string, number>(); // id -> first occurrence line number
+  const duplicates: { id: string; lines: number[] }[] = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const id = rows[i].id?.trim();
+    if (!id) continue;
+
+    if (seenIds.has(id)) {
+      // Find or create duplicate entry
+      let dupEntry = duplicates.find((d) => d.id === id);
+      if (!dupEntry) {
+        dupEntry = { id, lines: [seenIds.get(id)! + 2] }; // +2 for header row and 0-indexing
+        duplicates.push(dupEntry);
+      }
+      dupEntry.lines.push(i + 2); // +2 for header row and 0-indexing
+    } else {
+      seenIds.set(id, i);
+    }
+  }
+
+  if (duplicates.length > 0) {
+    console.log("\n   ❌ Duplicate IDs detected (HIGH-4: data integrity risk):");
+    for (const dup of duplicates) {
+      console.log(`      • "${dup.id}" appears on CSV lines: ${dup.lines.join(", ")}`);
+      errorCount++;
+    }
+    console.log("\n   ⚠️  Duplicates would cause silent data overwrites. Fix CSV before proceeding.");
+    return { valid: false, errorCount, warningCount };
+  }
 
   for (const row of rows) {
     const result = validateIngredient(row);
@@ -307,13 +381,27 @@ function hasChanges(
   current: admin.firestore.DocumentData,
   newData: IngredientDoc
 ): boolean {
-  const fieldsToCompare = ["swedish", "english", "group", "status"];
-  for (const field of fieldsToCompare) {
+  // Compare string fields
+  const stringFieldsToCompare = [
+    "swedish", "english", "group", "status",
+    // New fields (Sprint 1)
+    "priceCategory", "carbonFootprintCategory", "notesSv", "notesEn",
+    "typicalStorage", "typicalUnit",
+  ];
+  for (const field of stringFieldsToCompare) {
     if (String(current[field] || "") !== String(newData[field as keyof IngredientDoc] || "")) {
       return true;
     }
   }
 
+  // Compare numeric fields
+  const currentAvgPrice = current.avgPriceSek as number | undefined;
+  const newAvgPrice = newData.avgPriceSek;
+  if (currentAvgPrice !== newAvgPrice) {
+    return true;
+  }
+
+  // Compare list fields
   const currentProps = (current.properties as string[]) || [];
   if (!listEquals(currentProps, newData.properties)) {
     return true;
@@ -321,6 +409,13 @@ function hasChanges(
 
   const currentAliases = (current.aliasesSv as string[]) || [];
   if (!listEquals(currentAliases, newData.aliasesSv)) {
+    return true;
+  }
+
+  // Compare seasonAvailability (Sprint 1)
+  const currentSeasons = (current.seasonAvailability as string[]) || [];
+  const newSeasons = newData.seasonAvailability || [];
+  if (!listEquals(currentSeasons, newSeasons)) {
     return true;
   }
 

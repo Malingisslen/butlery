@@ -170,7 +170,10 @@ class TagPhase1Base {
     }
 
     if (result == TriState.contains) {
-      final triggers = <String>[];
+      // L1 fix: Use Set to deduplicate triggers - an ingredient with multiple
+      // triggering properties (e.g., both crustacean AND mollusc) should only
+      // appear once in the triggers list.
+      final triggers = <String>{};
       for (final prop in properties) {
         triggers.addAll(
           lookup.matched
@@ -181,7 +184,7 @@ class TagPhase1Base {
       final propsStr = properties.join(' or ');
       return (
         'Ingredient with property ($propsStr) found',
-        triggers.isNotEmpty ? triggers : null,
+        triggers.isNotEmpty ? triggers.toList() : null,
       );
     }
 
