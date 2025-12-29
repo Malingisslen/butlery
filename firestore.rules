@@ -46,18 +46,24 @@ service cloud.firestore {
       return request.resource.data[field] == request.time;
     }
 
-    // Validate tagResult field structure (allergen safety-critical data)
+    // CRIT-2: Validate tagResult field structure (allergen safety-critical data)
     // Prevents client-side tampering with allergen status
     function isValidTagResult(tagResult) {
       return tagResult == null || (
-        // Only allow known fields
+        // Only allow known fields (including isPartial, schemaVersion added in v1.0)
         tagResult.keys().hasOnly(['tags', 'allergenStatus', 'dietaryStatus',
                                   'coverage', 'unknownIngredients', 'generatedAt',
-                                  'generatorVersion']) &&
-        // Coverage must be valid percentage
+                                  'generatorVersion', 'isPartial', 'schemaVersion']) &&
+        // Coverage must be valid percentage (0.0-1.0)
         (tagResult.get('coverage', 0) >= 0 && tagResult.get('coverage', 0) <= 1) &&
         // GeneratedAt must be a timestamp if present
-        (tagResult.get('generatedAt', null) == null || tagResult.get('generatedAt', null) is timestamp)
+        (tagResult.get('generatedAt', null) == null || tagResult.get('generatedAt', null) is timestamp) &&
+        // CRIT-2: isPartial must be boolean if present
+        (tagResult.get('isPartial', false) is bool) &&
+        // CRIT-2: schemaVersion must be 1 (current version) if present
+        (tagResult.get('schemaVersion', 1) == 1) &&
+        // CRIT-2: Limit unknownIngredients size to prevent storage abuse
+        (tagResult.get('unknownIngredients', []).size() <= 100)
       );
     }
 

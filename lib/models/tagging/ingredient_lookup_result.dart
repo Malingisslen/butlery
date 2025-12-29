@@ -21,22 +21,25 @@ class IngredientLookupResult {
     required this.coverage,
   });
 
-  /// Creates an empty result.
+  /// Creates an empty result for recipes with no ingredients.
+  /// HIGH-1: Coverage is 0.0 because we have no ingredient data to analyze.
+  /// This is consistent with TagResult.empty() semantics.
   factory IngredientLookupResult.empty() {
     return const IngredientLookupResult(
       matched: [],
       unmatched: [],
-      coverage: 1.0, // Empty recipe has full coverage
+      coverage: 0.0, // No ingredients = no data to analyze
     );
   }
 
   /// Creates from lists, auto-calculating coverage.
+  /// HIGH-1: Empty lists result in 0.0 coverage (no data to analyze).
   factory IngredientLookupResult.fromLists({
     required List<IngredientData> matched,
     required List<String> unmatched,
   }) {
     final total = matched.length + unmatched.length;
-    final coverage = total == 0 ? 1.0 : matched.length / total;
+    final coverage = total == 0 ? 0.0 : matched.length / total;
     return IngredientLookupResult(
       matched: matched,
       unmatched: unmatched,

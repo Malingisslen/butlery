@@ -42,6 +42,12 @@ class TagGenerator {
   /// C3: If [timeout] is provided and elapsed time exceeds it after any phase,
   /// returns a partial result with `isPartial: true`. Phase 1 (allergens/dietary)
   /// always completes to ensure safety-critical tags are preserved.
+  ///
+  /// HIGH-7: Phase skip behavior (intentional asymmetry):
+  /// - **Exception in phase**: Skip only that phase, continue to next phases.
+  ///   Rationale: Exceptions may be phase-specific bugs; other phases may succeed.
+  /// - **Timeout**: Skip ALL remaining phases immediately.
+  ///   Rationale: Time is exhausted; return available results without delay.
   TagResult generate({
     required IngredientLookupResult ingredients,
     required Recipe recipe,
@@ -174,11 +180,27 @@ class TagGenerator {
 
   /// Generates only Phase 1 tags (for quick preview).
   /// C3: Always returns isPartial: true since only Phase 1 is included.
+  ///
+  /// HIGH-8: Optional [timeout] parameter for future-proofing. Note that
+  /// Phase 1 is synchronous, so timeout is only checked AFTER calculation.
+  /// For true timeout protection in async contexts, wrap the call in
+  /// `Future.timeout()` at the caller level.
   TagResult generatePhase1Only({
     required IngredientLookupResult ingredients,
     required Recipe recipe,
+    Duration? timeout,
   }) {
+    final stopwatch = timeout != null ? (Stopwatch()..start()) : null;
     final phase1Result = _phase1.calculate(ingredients, recipe);
+
+    // HIGH-8: Check timeout after calculation (can't interrupt sync code)
+    final timedOut = _hasTimedOut(stopwatch, timeout);
+    if (timedOut) {
+      AppLogger.warning(
+        'Phase 1 preview exceeded timeout (${stopwatch?.elapsedMilliseconds}ms)',
+        'TagGenerator',
+      );
+    }
 
     return TagResult(
       tags: phase1Result.tags,

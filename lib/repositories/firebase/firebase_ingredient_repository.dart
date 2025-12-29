@@ -55,9 +55,21 @@ class FirebaseIngredientRepository
   }
 
   /// Notifies all listeners that the cache was invalidated.
+  /// MED-8: Wraps each listener call in try-catch to prevent one failing
+  /// listener from blocking others.
   void _notifyCacheInvalidated() {
     for (final listener in _onCacheInvalidatedListeners) {
-      listener();
+      try {
+        listener();
+      } catch (e, stack) {
+        AppLogger.error(
+          'MED-8: Cache invalidation listener failed',
+          e,
+          'FirebaseIngredientRepository',
+          stack,
+        );
+        // Continue notifying other listeners even if one fails
+      }
     }
   }
 

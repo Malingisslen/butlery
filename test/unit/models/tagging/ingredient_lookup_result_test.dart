@@ -21,12 +21,14 @@ void main() {
         expect(result.coverage, 0.5);
       });
 
-      test('empty() creates result with 100% coverage', () {
+      test('empty() creates result with 0% coverage (no data)', () {
+        // HIGH-1: Empty recipes have 0.0 coverage because there's
+        // no ingredient data to analyze (consistent with TagResult.empty())
         final result = IngredientLookupResult.empty();
 
         expect(result.matched, isEmpty);
         expect(result.unmatched, isEmpty);
-        expect(result.coverage, 1.0);
+        expect(result.coverage, 0.0);
       });
 
       test('fromLists calculates coverage correctly', () {
@@ -55,13 +57,14 @@ void main() {
         expect(result.hasFullCoverage, isTrue);
       });
 
-      test('fromLists returns 100% coverage when empty', () {
+      test('fromLists returns 0% coverage when empty (no data)', () {
+        // HIGH-1: Empty lists = no data to analyze = 0.0 coverage
         final result = IngredientLookupResult.fromLists(
           matched: [],
           unmatched: [],
         );
 
-        expect(result.coverage, 1.0);
+        expect(result.coverage, 0.0);
       });
     });
 

@@ -1,5 +1,6 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/tagging/config/tagging_thresholds.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
 
@@ -11,13 +12,13 @@ import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
 /// - Nutritional indicators (high-protein, high-fiber)
 /// - Practical tags (kid-friendly, freezer-friendly, batch-cooking)
 class TagPhase3Complex {
-  // L2: Difficulty thresholds based on Swedish cooking conventions.
-  // Source: Swedish Food Administration recipe complexity guidelines.
-  // These define what qualifies as easy vs medium vs advanced recipes.
-  static const int _easyMaxIngredients = 6;
-  static const int _easyMaxMinutes = 30;
-  static const int _advancedMinIngredients = 12;
-  static const int _advancedMinMinutes = 60;
+  // MED-4: Use centralized thresholds from TaggingThresholds instead of
+  // duplicating values here. These aliases are kept for local readability.
+  static int get _easyMaxIngredients => TaggingThresholds.easyMaxIngredients;
+  static int get _easyMaxMinutes => TaggingThresholds.easyMaxMinutes;
+  static int get _advancedMinIngredients =>
+      TaggingThresholds.advancedMinIngredients;
+  static int get _advancedMinMinutes => TaggingThresholds.advancedMinMinutes;
 
   /// Calculates Phase 3 tags.
   Phase3Result calculate(Phase1Result p1, Phase2Result p2, Recipe recipe) {
@@ -224,9 +225,9 @@ class TagPhase3Complex {
     if (proteinIngredients.isEmpty) return false;
     if (totalMatched == 0) return false;
 
-    // Protein must be >25% of ingredients to qualify as "high protein"
+    // MED-5: Use centralized threshold instead of hardcoded value
     final proteinRatio = proteinIngredients.length / totalMatched;
-    return proteinRatio > 0.25;
+    return proteinRatio > TaggingThresholds.highProteinRatio;
   }
 
   bool _isHighFiber(Phase1Result p1) {
