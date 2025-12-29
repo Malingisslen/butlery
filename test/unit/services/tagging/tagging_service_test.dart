@@ -351,7 +351,7 @@ IngredientData _createTestIngredientData({
     swedish: swedish,
     english: swedish,
     group: 'test',
-    properties: {},
+    properties: const {},
   );
 }
 

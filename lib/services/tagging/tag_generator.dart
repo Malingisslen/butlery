@@ -6,32 +6,37 @@ import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
 import 'package:butlery/services/tagging/phases/tag_phase3_complex.dart';
 import 'package:butlery/services/tagging/phases/tag_phase4_mood.dart';
+import 'package:butlery/services/tagging/phases/tag_phase5_cuisine.dart';
 
 /// Generator version for tracking changes.
 const String kTagGeneratorVersion = '1.0.0';
 
-/// Orchestrates the 4-phase tag generation process.
+/// Orchestrates the 5-phase tag generation process.
 ///
 /// Each phase depends on results from previous phases:
 /// - Phase 1: Base tags from properties and metadata
 /// - Phase 2: Simple derived tags
 /// - Phase 3: Complex derived tags
 /// - Phase 4: Mood and occasion tags
+/// - Phase 5: Cuisine tags
 class TagGenerator {
   final TagPhase1Base _phase1;
   final TagPhase2Derived _phase2;
   final TagPhase3Complex _phase3;
   final TagPhase4Mood _phase4;
+  final TagPhase5Cuisine _phase5;
 
   TagGenerator({
     TagPhase1Base? phase1,
     TagPhase2Derived? phase2,
     TagPhase3Complex? phase3,
     TagPhase4Mood? phase4,
+    TagPhase5Cuisine? phase5,
   })  : _phase1 = phase1 ?? TagPhase1Base(),
         _phase2 = phase2 ?? TagPhase2Derived(),
         _phase3 = phase3 ?? TagPhase3Complex(),
-        _phase4 = phase4 ?? TagPhase4Mood();
+        _phase4 = phase4 ?? TagPhase4Mood(),
+        _phase5 = phase5 ?? TagPhase5Cuisine();
 
   /// Generates tags for a recipe given its ingredient lookup result.
   ///
@@ -59,6 +64,7 @@ class TagGenerator {
     Phase2Result? phase2Result;
     Phase3Result? phase3Result;
     Phase4Result? phase4Result;
+    Phase5Result? phase5Result;
     bool timedOut = false;
 
     // Phase 1: Base tags (critical - if this fails, return failed result)
@@ -141,6 +147,27 @@ class TagGenerator {
           'TagGenerator',
         );
       }
+
+      // C3: Check timeout after Phase 4
+      if (_hasTimedOut(stopwatch, timeout)) {
+        timedOut = true;
+        AppLogger.debug(
+          'Tag generation timeout after Phase 4 for recipe ${recipe.id}',
+          'TagGenerator',
+        );
+      }
+    }
+
+    // Phase 5: Cuisine tags (needs Phase 4)
+    if (!timedOut && phase4Result != null) {
+      try {
+        phase5Result = _phase5.calculate(phase4Result, recipe);
+      } catch (e) {
+        AppLogger.warning(
+          'Phase 5 tagging failed for recipe ${recipe.id}: $e, continuing with Phases 1-4',
+          'TagGenerator',
+        );
+      }
     }
 
     // Combine results from all completed phases
@@ -149,13 +176,15 @@ class TagGenerator {
       if (phase2Result != null) ...phase2Result.tags,
       if (phase3Result != null) ...phase3Result.tags,
       if (phase4Result != null) ...phase4Result.tags,
+      if (phase5Result != null) ...phase5Result.tags,
     };
 
     // C3: Mark as partial if timeout or if any phase was skipped
     final isPartial = timedOut ||
         phase2Result == null ||
         phase3Result == null ||
-        phase4Result == null;
+        phase4Result == null ||
+        phase5Result == null;
 
     return TagResult(
       tags: allTags,

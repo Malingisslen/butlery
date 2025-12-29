@@ -1,6 +1,7 @@
 import 'dart:developer' as developer;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show immutable;
 
 import 'package:butlery/core/utils/serialization_utils.dart';
 
@@ -8,6 +9,38 @@ import 'package:butlery/core/utils/serialization_utils.dart';
 ///
 /// Used by the tagging system to determine allergens, dietary status,
 /// and identity tags for recipes.
+///
+/// ## CRIT-1: ID Immutability Contract
+///
+/// **CRITICAL**: The [id] field is the canonical identifier and MUST be:
+/// - **Globally unique**: No two ingredients may share the same ID
+/// - **Immutable**: Once assigned, an ID must NEVER change
+/// - **Stable**: The same ingredient always has the same ID across systems
+///
+/// This class uses ID-only equality (see [operator ==]), which means:
+/// - Two [IngredientData] objects with the same [id] are considered equal
+/// - This enables efficient Set/Map operations and caching
+/// - If IDs were mutable, cache corruption and silent data loss would occur
+///
+/// If you need to compare all fields (e.g., for sync or cache invalidation),
+/// use [contentEquals] instead.
+///
+/// ### Why ID-Only Equality?
+///
+/// The tagging system relies on this contract for:
+/// 1. **LRU Cache**: Uses ID as cache key; ID change = cache corruption
+/// 2. **Deduplication**: Sets use ID equality; ID change = duplicates
+/// 3. **Cascade Retagging**: TypeScript uses ID to find affected recipes
+///
+/// ### Breaking This Contract
+///
+/// If an ingredient ID changes:
+/// - All cached lookups for the old ID become stale
+/// - Recipes using the old ID won't get retagged
+/// - Allergen safety data may become incorrect
+///
+/// See: docs/tagging/tagging_system.md
+@immutable
 class IngredientData {
   /// Unique identifier (kebab-case, e.g., 'chicken-breast').
   final String id;
@@ -42,6 +75,33 @@ class IngredientData {
   /// When this ingredient was last updated.
   final DateTime? updatedAt;
 
+  // --- New fields for sustainability and metadata (Sprint 1) ---
+
+  /// Seasons when this ingredient is available (vår, sommar, höst, vinter).
+  /// Empty list means year-round or unknown.
+  final List<String> seasonAvailability;
+
+  /// Price category: budget, medium, or premium.
+  final String? priceCategory;
+
+  /// Carbon footprint category: low, medium, or high.
+  final String? carbonFootprintCategory;
+
+  /// Swedish description/notes about this ingredient.
+  final String? notesSv;
+
+  /// English description/notes about this ingredient.
+  final String? notesEn;
+
+  /// Typical storage method: refrigerated, frozen, or ambient.
+  final String? typicalStorage;
+
+  /// Typical unit of measurement: g, ml, st, bag, etc.
+  final String? typicalUnit;
+
+  /// Average price in SEK.
+  final double? avgPriceSek;
+
   const IngredientData({
     required this.id,
     required this.swedish,
@@ -54,6 +114,15 @@ class IngredientData {
     this.status = 'verified',
     this.createdAt,
     this.updatedAt,
+    // New sustainability and metadata fields
+    this.seasonAvailability = const [],
+    this.priceCategory,
+    this.carbonFootprintCategory,
+    this.notesSv,
+    this.notesEn,
+    this.typicalStorage,
+    this.typicalUnit,
+    this.avgPriceSek,
   });
 
   /// Creates from Firestore document.
@@ -86,6 +155,22 @@ class IngredientData {
           SerializationUtils.safeDateTime(data, 'created_at'),
       updatedAt: SerializationUtils.safeDateTime(data, 'updatedAt') ??
           SerializationUtils.safeDateTime(data, 'updated_at'),
+      // New sustainability and metadata fields
+      seasonAvailability: SerializationUtils.safeStringList(
+        data,
+        'seasonAvailability',
+        defaultValue: const [],
+      ),
+      priceCategory:
+          SerializationUtils.safeNullableString(data, 'priceCategory'),
+      carbonFootprintCategory: SerializationUtils.safeNullableString(
+          data, 'carbonFootprintCategory'),
+      notesSv: SerializationUtils.safeNullableString(data, 'notesSv'),
+      notesEn: SerializationUtils.safeNullableString(data, 'notesEn'),
+      typicalStorage:
+          SerializationUtils.safeNullableString(data, 'typicalStorage'),
+      typicalUnit: SerializationUtils.safeNullableString(data, 'typicalUnit'),
+      avgPriceSek: SerializationUtils.safeNullableDouble(data, 'avgPriceSek'),
     );
   }
 
@@ -174,6 +259,17 @@ class IngredientData {
       'status': status,
       if (createdAt != null) 'createdAt': Timestamp.fromDate(createdAt!),
       if (updatedAt != null) 'updatedAt': Timestamp.fromDate(updatedAt!),
+      // New sustainability and metadata fields
+      if (seasonAvailability.isNotEmpty)
+        'seasonAvailability': seasonAvailability,
+      if (priceCategory != null) 'priceCategory': priceCategory,
+      if (carbonFootprintCategory != null)
+        'carbonFootprintCategory': carbonFootprintCategory,
+      if (notesSv != null) 'notesSv': notesSv,
+      if (notesEn != null) 'notesEn': notesEn,
+      if (typicalStorage != null) 'typicalStorage': typicalStorage,
+      if (typicalUnit != null) 'typicalUnit': typicalUnit,
+      if (avgPriceSek != null) 'avgPriceSek': avgPriceSek,
     };
   }
 
@@ -315,6 +411,18 @@ class IngredientData {
     if (createdAt != other.createdAt) return false;
     if (updatedAt != other.updatedAt) return false;
 
+    // New sustainability and metadata fields
+    if (!_listEquals(seasonAvailability, other.seasonAvailability)) {
+      return false;
+    }
+    if (priceCategory != other.priceCategory) return false;
+    if (carbonFootprintCategory != other.carbonFootprintCategory) return false;
+    if (notesSv != other.notesSv) return false;
+    if (notesEn != other.notesEn) return false;
+    if (typicalStorage != other.typicalStorage) return false;
+    if (typicalUnit != other.typicalUnit) return false;
+    if (avgPriceSek != other.avgPriceSek) return false;
+
     return true;
   }
 
@@ -349,6 +457,15 @@ class IngredientData {
     String? status,
     DateTime? createdAt,
     DateTime? updatedAt,
+    // New sustainability and metadata fields
+    List<String>? seasonAvailability,
+    String? priceCategory,
+    String? carbonFootprintCategory,
+    String? notesSv,
+    String? notesEn,
+    String? typicalStorage,
+    String? typicalUnit,
+    double? avgPriceSek,
   }) {
     return IngredientData(
       id: id ?? this.id,
@@ -362,6 +479,15 @@ class IngredientData {
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      seasonAvailability: seasonAvailability ?? this.seasonAvailability,
+      priceCategory: priceCategory ?? this.priceCategory,
+      carbonFootprintCategory:
+          carbonFootprintCategory ?? this.carbonFootprintCategory,
+      notesSv: notesSv ?? this.notesSv,
+      notesEn: notesEn ?? this.notesEn,
+      typicalStorage: typicalStorage ?? this.typicalStorage,
+      typicalUnit: typicalUnit ?? this.typicalUnit,
+      avgPriceSek: avgPriceSek ?? this.avgPriceSek,
     );
   }
 }

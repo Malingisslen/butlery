@@ -9,13 +9,10 @@ library;
 class TaggingThresholds {
   TaggingThresholds._();
 
-  /// Minimum coverage for reliable dietary claims.
-  /// Below this threshold, dietary status is marked UNKNOWN.
-  static const double reliableDietaryCoverage = 0.8;
-
-  /// Minimum coverage for reliable allergen claims.
-  /// Below this threshold, allergen status is marked UNKNOWN.
-  static const double reliableAllergenCoverage = 0.9;
+  // M3 fix: Removed unused reliableDietaryCoverage and reliableAllergenCoverage.
+  // These suggested 80%/90% thresholds but the actual Phase 1 code correctly
+  // requires 100% coverage for allergen/dietary claims (safety-critical).
+  // Keeping unused constants creates confusion for developers.
 
   /// Timeout for tag generation operations.
   static const Duration generationTimeout = Duration(seconds: 30);
@@ -46,4 +43,14 @@ class TaggingThresholds {
 
   /// Minimum characters for substring matching in fuzzy lookup.
   static const int fuzzyMatchMinChars = 3;
+
+  // Sprint 2: Sustainability tag thresholds
+
+  /// Coverage threshold for "klimatsmart" tag.
+  /// At least 80% of ingredients with carbon data must NOT be 'high' carbon.
+  static const double klimatsmartCoverage = 0.80;
+
+  /// Coverage threshold for "budgetvänlig" tag.
+  /// At least 80% of ingredients with price data must NOT be 'premium'.
+  static const double budgetvanligCoverage = 0.80;
 }

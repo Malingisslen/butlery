@@ -166,27 +166,47 @@ class TagPhase4Mood {
     return tags;
   }
 
+  /// Sprint 3: Hybrid season detection using seasonAvailability field + name inference.
   Set<String> _calculateSeasonTags(Phase1Result p1) {
     final tags = <String>{};
 
-    // Spring: asparagus, rhubarb, new vegetables
-    if (_hasSpringIngredients(p1)) {
-      tags.add('vår');
+    // First, collect season data from seasonAvailability field
+    final seasonCounts = <String, int>{
+      'vår': 0,
+      'sommar': 0,
+      'höst': 0,
+      'vinter': 0,
+    };
+
+    // Count ingredients with seasonAvailability data
+    int ingredientsWithSeasonData = 0;
+    for (final ingredient in p1.lookup.matched) {
+      if (ingredient.seasonAvailability.isNotEmpty) {
+        ingredientsWithSeasonData++;
+        for (final season in ingredient.seasonAvailability) {
+          final normalizedSeason = season.toLowerCase();
+          if (seasonCounts.containsKey(normalizedSeason)) {
+            seasonCounts[normalizedSeason] =
+                seasonCounts[normalizedSeason]! + 1;
+          }
+        }
+      }
     }
 
-    // Summer: strawberries, grilled, fresh salads
-    if (_hasSummerIngredients(p1)) {
-      tags.add('sommar');
-    }
-
-    // Autumn: mushrooms, apples, game
-    if (_hasAutumnIngredients(p1)) {
-      tags.add('höst');
-    }
-
-    // Winter: root vegetables, cabbage, slow-cooked
-    if (_hasWinterIngredients(p1)) {
-      tags.add('vinter');
+    // If we have season data, use it; otherwise fall back to name-based inference
+    if (ingredientsWithSeasonData >= _seasonThreshold) {
+      // Use field-based detection when enough data is available
+      for (final entry in seasonCounts.entries) {
+        if (entry.value >= _seasonThreshold) {
+          tags.add(entry.key);
+        }
+      }
+    } else {
+      // Fallback: Name-based inference (original logic)
+      if (_hasSpringIngredients(p1)) tags.add('vår');
+      if (_hasSummerIngredients(p1)) tags.add('sommar');
+      if (_hasAutumnIngredients(p1)) tags.add('höst');
+      if (_hasWinterIngredients(p1)) tags.add('vinter');
     }
 
     // Note: No 'året-runt' default tag - absence of season tags already

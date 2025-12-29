@@ -14,6 +14,28 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
+/**
+ * Sanitizes user-provided text by stripping HTML tags.
+ *
+ * Prevents potential issues with HTML content in notifications:
+ * - Some devices may render HTML unexpectedly
+ * - Future web notification support would be vulnerable to XSS
+ * - Ensures consistent plain-text display across all platforms
+ */
+function sanitizeText(text: string | undefined): string | undefined {
+  if (!text) return text;
+  // Strip all HTML tags and decode common HTML entities
+  return text
+    .replace(/<[^>]*>/g, "") // Remove HTML tags
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .trim();
+}
+
 interface NotificationRequest {
   targetUserId: string;
   title?: string;
@@ -110,8 +132,8 @@ export const sendNotification = functions.https.onCall(
       // Add notification payload for display notifications
       if (!silent) {
         message.notification = {
-          title: title!,
-          body: body!,
+          title: sanitizeText(title) || title!,
+          body: sanitizeText(body) || body!,
         };
 
         if (imageUrl) {
@@ -398,8 +420,8 @@ async function sendNotificationInternal(
 
     if (!silent) {
       message.notification = {
-        title: title || "",
-        body: body || "",
+        title: sanitizeText(title) || "",
+        body: sanitizeText(body) || "",
       };
       if (imageUrl) {
         message.notification.imageUrl = imageUrl;

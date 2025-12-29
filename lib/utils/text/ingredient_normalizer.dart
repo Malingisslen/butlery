@@ -42,10 +42,12 @@ class NormalizationResult {
 /// 7. Extracts base: "tomatsås" → "tomat"
 /// 8. Validates against known ingredients
 /// # CRITICAL: Special Preservation Rules
-/// **PRESERVED - Diet descriptors:**
+/// **PRESERVED - Diet descriptors (any position):**
 /// - "glutenfri pasta" → "glutenfri pasta" ✅
+/// - "pasta glutenfri" → "glutenfri pasta" ✅ (normalized order)
 /// - "sockerfri läsk" → "sockerfri läsk" ✅
 /// - "laktosfri mjölk" → "laktosfri mjölk" ✅
+/// - "mjölk laktosfri" → "laktosfri mjölk" ✅
 /// **PRESERVED - "med [flavor]" products:**
 /// - "mayo med lime och jalapeño" → "mayo med lime och jalapeño" ✅
 /// - "läsk med hallonsmak" → "läsk med hallonsmak" ✅
@@ -141,16 +143,22 @@ class IngredientNormalizer {
       );
     }
 
-    // Step 3: Check if starts with diet descriptor (preserve it!)
+    // Step 3: Check for diet descriptor ANYWHERE in name (preserve it!)
+    // M1 fix: Support both "glutenfri pasta" and "pasta glutenfri"
     final words = cleaned.split(RegExp(r'\s+'));
-    if (words.isNotEmpty && _dietDescriptors.contains(words.first)) {
-      // Keep diet descriptor, but still process rest of name
-      final dietDescriptor = words.first;
-      final restOfName = words.skip(1).join(' ');
+    final dietDescriptorIndex =
+        words.indexWhere((w) => _dietDescriptors.contains(w));
+    if (dietDescriptorIndex >= 0) {
+      // Found diet descriptor - preserve it and process rest
+      final dietDescriptor = words[dietDescriptorIndex];
+      final otherWords = [...words]..removeAt(dietDescriptorIndex);
+      final restOfName = otherWords.join(' ');
 
       if (restOfName.isNotEmpty) {
         // Process rest of name normally
         final processedRest = _processName(restOfName, removedWords);
+        // Always put diet descriptor first for consistency:
+        // "pasta glutenfri" → "glutenfri pasta"
         final result = '$dietDescriptor $processedRest';
 
         return NormalizationResult(
@@ -187,6 +195,24 @@ class IngredientNormalizer {
     );
   }
 
+  // L2 fix: Color descriptors that might form compound ingredient names
+  static const _colorDescriptors = {
+    'röd',
+    'röda',
+    'rött',
+    'gul',
+    'gula',
+    'gult',
+    'vit',
+    'vita',
+    'vitt',
+    'grön',
+    'gröna',
+    'grönt',
+    'svart',
+    'svarta',
+  };
+
   /// Process name through all normalization steps
   static String _processName(String name, List<String> removedWords) {
     var result = name;
@@ -197,6 +223,33 @@ class IngredientNormalizer {
     // Remove preparation words and descriptors
     result = _removePreparationWords(result, removedWords);
 
+    // L2 fix: Check if removed colors + result might form a known compound.
+    // This handles cases like "lök röd" → should become "rödlök" if it exists.
+    // IMPORTANT: Skip this if "eller" alternatives were processed - colors removed
+    // as alternatives (e.g., "gul eller röd lök") shouldn't form compounds.
+    final hadAlternatives = removedWords.contains('eller');
+    if (!hadAlternatives) {
+      final removedColors =
+          removedWords.where((w) => _colorDescriptors.contains(w)).toList();
+      if (removedColors.isNotEmpty && result.isNotEmpty) {
+        for (final color in removedColors) {
+          // Try color + result as compound (e.g., "röd" + "lök" = "rödlök")
+          final compound = '$color$result';
+          if (KnownIngredients.isCompoundName(compound)) {
+            return compound;
+          }
+          // Also try with base color form (e.g., "röda" → "röd")
+          final baseColor = _getBaseColor(color);
+          if (baseColor != color) {
+            final baseCompound = '$baseColor$result';
+            if (KnownIngredients.isCompoundName(baseCompound)) {
+              return baseCompound;
+            }
+          }
+        }
+      }
+    }
+
     // Normalize plural to singular
     result = SwedishPluralization.normalizeToSingular(result);
 
@@ -204,6 +257,17 @@ class IngredientNormalizer {
     result = _extractBaseIngredient(result);
 
     return result;
+  }
+
+  /// L2: Get base form of color (e.g., "röda" → "röd")
+  static String _getBaseColor(String color) {
+    if (color.endsWith('a') && color.length > 2) {
+      return color.substring(0, color.length - 1);
+    }
+    if (color.endsWith('t') && color.length > 2) {
+      return color.substring(0, color.length - 1);
+    }
+    return color;
   }
 
   /// Handle "eller" alternatives

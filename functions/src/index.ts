@@ -23,6 +23,7 @@ export { ocrRecipeImage } from "./llm/ocr-recipe-image";
 export { cleanupExpiredCache } from "./cleanup/cleanup-cache";
 export { cleanupOldRateLimits } from "./cleanup/cleanup-rate-limits";
 export { cleanupOldAuditLogs, getAuditLogStats } from "./cleanup/cleanup-audit-logs";
+export { cleanupDeletedIngredients, getDeletedIngredientStats } from "./cleanup/cleanup-deleted-ingredients";
 
 // Parse Event Logging - Server-side analytics (P1-4 security)
 export { logParseEvent } from "./events/log-parse-event";
@@ -36,6 +37,9 @@ export { sendNotification, sendNotificationBatch } from "./notifications/send-no
 
 // Ingredient Functions - Cascade updates
 export { onIngredientSoftDeleted } from "./ingredients/on-ingredient-soft-deleted";
+
+// Analytics Functions - Ingredient tracking
+export { trackUnmatchedIngredients, getUnmatchedIngredientStats } from "./analytics/track-unmatched-ingredients";
 
 admin.initializeApp();
 const db = admin.firestore();

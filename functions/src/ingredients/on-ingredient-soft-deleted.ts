@@ -14,8 +14,11 @@ import * as admin from "firebase-admin";
 // Lazy initialization to avoid calling firestore() before initializeApp()
 const getDb = () => admin.firestore();
 
-// MED-10: Timeout for cascade operations to prevent hanging on large cascades
-const CASCADE_TIMEOUT_MS = 30000; // 30 seconds
+// HIGH-6, MED-10: Timeout for cascade operations
+// Increased from 30s to 120s (2 minutes) to handle large cascades
+// Cloud Functions default is 540s (9 minutes), but we use a shorter timeout
+// to fail fast on truly stuck operations while completing most cascades
+const CASCADE_TIMEOUT_MS = 120000; // 2 minutes
 
 /**
  * MED-10: Wraps an async operation with a timeout.

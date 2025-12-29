@@ -1,7 +1,8 @@
 # Butlery Tagging System — Complete Specification
 
-**Version:** 2.0
+**Version:** 2.3
 **Generator Version:** 1.0.0
+**Schema Version:** 2
 **Date:** December 2025
 **Status:** Single Source of Truth for tagging and menu generation
 
@@ -86,12 +87,13 @@ Normalized ingredients: ["chicken", "cream", "pasta"]
 IngredientLookupService.lookup()
     │ Fetches properties + group per ingredient
     ▼
-MODULE2: TagGenerator (4 calculation phases)
+MODULE2: TagGenerator (5 calculation phases)
     │
     ├── Phase 1: Base tags (time, allergens, dietary, protein, cooking method)
     ├── Phase 2: Simple derived (dish type, spicy/mild, meal type)
     ├── Phase 3: Complex derived (difficulty, texture, nutritional, practical)
-    └── Phase 4: Mood/occasion (time-based, holidays, seasons)
+    ├── Phase 4: Mood/occasion (time-based, holidays, seasons)
+    └── Phase 5: Cuisine tags (17 world cuisines)
     │
     ▼
 Output: TagResult {
@@ -123,8 +125,10 @@ Output: TagResult {
 | Phase 2 | `lib/services/tagging/phases/tag_phase2_derived.dart` |
 | Phase 3 | `lib/services/tagging/phases/tag_phase3_complex.dart` |
 | Phase 4 | `lib/services/tagging/phases/tag_phase4_mood.dart` |
+| Phase 5 | `lib/services/tagging/phases/tag_phase5_cuisine.dart` |
 | AllergenConfig | `lib/services/tagging/config/allergen_config.dart` |
 | DietaryConfig | `lib/services/tagging/config/dietary_config.dart` |
+| CuisineConfig | `lib/services/tagging/config/cuisine_config.dart` |
 | TagResult | `lib/models/tagging/tag_result.dart` |
 | TriState | `lib/models/tagging/tri_state.dart` |
 | IngredientData | `lib/models/tagging/ingredient_data.dart` |
@@ -388,6 +392,15 @@ Depends on Phase 1 + Phase 2 results.
 | `meal-prep` | NOT `sallad` AND NO `doesnt-freeze-well` AND portions ≥ 4 AND (has gryta OR soppa OR köttbullar OR gratäng) |
 | `storkok` | portions ≥ 6 OR title contains "storkok" |
 
+### Sustainability Tags
+
+Based on ingredient metadata (requires 80% coverage of ingredients with data):
+
+| Tag | Rule |
+|-----|------|
+| `klimatsmart` | ≥80% of ingredients with carbon data have `carbonFootprintCategory` = 'low' or 'medium' |
+| `budgetvänlig` | ≥80% of ingredients with price data have `priceCategory` = 'budget' or 'medium' |
+
 ---
 
 ## Phase 4: Mood & Occasion Tags
@@ -431,14 +444,54 @@ Depends on Phase 1 + Phase 2 + Phase 3 results.
 
 **Threshold: ≥ 2 seasonal ingredients required**
 
-| Tag | Seasonal Ingredients | Bonus Indicator |
-|-----|---------------------|-----------------|
-| `vår` | sparris, rabarber, rädisor, vårlök | — |
-| `sommar` | jordgubb, hallon, blåbär, sallad, gurka | `grillad` counts as +1 |
-| `höst` | svamp, kantarell, äpple, pumpa, kål | `vilt` counts as +1 |
-| `vinter` | rotfrukt, morot, palsternacka, kålrot | — |
+**Hybrid Detection Approach:**
+1. **Primary (Field-based):** Uses `seasonAvailability` field from IngredientData when ≥2 ingredients have season data
+2. **Fallback (Name-based):** Uses ingredient name matching when insufficient field data available
+
+| Tag | Field Value / Seasonal Ingredients | Bonus Indicator |
+|-----|-----------------------------------|-----------------|
+| `vår` | `seasonAvailability: spring` / sparris, rabarber, rädisor, vårlök | — |
+| `sommar` | `seasonAvailability: summer` / jordgubb, hallon, blåbär, sallad, gurka | `grillad` counts as +1 |
+| `höst` | `seasonAvailability: fall` / svamp, kantarell, äpple, pumpa, kål | `vilt` counts as +1 |
+| `vinter` | `seasonAvailability: winter` / rotfrukt, morot, palsternacka, kålrot | — |
 
 **Note:** No automatic `året-runt` tag — absence of season tags indicates year-round suitability.
+
+---
+
+## Phase 5: Cuisine Tags
+
+Depends on Phase 1-4 results and ingredient analysis.
+
+### Detection Approach
+
+Cuisine tags are assigned when a recipe meets the threshold (typically 2-3 key ingredients) for a specific cuisine. Uses `CuisineConfig` for declarative configuration.
+
+### Supported Cuisines (17)
+
+| Tag | Key Indicators | Threshold |
+|-----|---------------|-----------|
+| `svensk` | lingon, dill, potatis, sill | 2 ingredients |
+| `italiensk` | pasta, basilika, tomat, olivolja, parmesan | 2 ingredients |
+| `asiatisk` | soja, ingefära, sesamolja, risnudlar | 2 ingredients |
+| `japansk` | miso, wasabi, nori, sake | 2 ingredients |
+| `kinesisk` | hoisin, szechuan, five-spice | 2 ingredients |
+| `thailändsk` | kokosmjölk + lime, fiskås, thai-basilika | 2 ingredients |
+| `vietnamesisk` | fiskås, lime, mynta, risnudlar | 2 ingredients |
+| `indisk` | garam masala, curry, koriander, gurkmeja | 2 ingredients |
+| `mexikansk` | jalapeño, koriander, lime, tortilla | 2 ingredients |
+| `mellanöstern` | tahini, sumak, za'atar, granatäpple | 2 ingredients |
+| `grekisk` | fetaost, oregano, tzatziki, oliver | 2 ingredients |
+| `fransk` | dijon, grädde, vin, timjan | 2 ingredients |
+| `spansk` | saffran, chorizo, paprika, sherry | 2 ingredients |
+| `amerikansk` | bbq-sås, cheddar, jalapeño, majsirap | 2 ingredients |
+| `koreansk` | gochujang, kimchi, sesamolja | 2 ingredients |
+| `nordafrikansk` | harissa, ras el hanout, bevarade citroner | 2 ingredients |
+| `karibisk` | jerk, allspice, kokosmjölk, lime | 2 ingredients |
+
+### Configuration
+
+Cuisine detection is defined in `lib/services/tagging/config/cuisine_config.dart` using a declarative pattern similar to `AllergenConfig`.
 
 ---
 
@@ -455,8 +508,12 @@ class TagResult {
   List<String> unknownIngredients;       // Names not in database
   DateTime generatedAt;                  // Generation timestamp
   String? generatorVersion;              // Version for retagging
+  String? errorReason;                   // V2: Explicit error reason for failed results
+  bool isPartial;                        // True if phases were skipped due to timeout
 }
 ```
+
+**Schema Version:** 2 (added `errorReason` field)
 
 ### Special States
 
@@ -499,8 +556,10 @@ class TagResult {
 ## IngredientData Model
 
 ```dart
+@immutable
 class IngredientData {
-  String id;              // Kebab-case identifier
+  // Core fields
+  String id;              // Kebab-case identifier (IMMUTABLE - see contract below)
   String swedish;         // Swedish name
   String english;         // English name
   String group;           // Hierarchical: "protein/meat/poultry"
@@ -509,8 +568,30 @@ class IngredientData {
   List<String> aliasesEn; // English alternatives
   List<String> searchTerms;
   String status;          // verified, draft, needs-review, user-defined
+
+  // Extended fields (Sprint 3-5)
+  String? seasonAvailability;     // spring, summer, fall, winter, year-round
+  String? priceCategory;          // budget, medium, premium
+  String? carbonFootprintCategory; // low, medium, high
+  String? originRegion;           // nordic, mediterranean, asian, etc.
+  String? cuisineAffinity;        // Primary cuisine association
+  bool? isOrganic;                // Organic variant flag
+  String? storageType;            // refrigerated, frozen, pantry
+  int? shelfLifeDays;             // Typical shelf life
 }
 ```
+
+### ID Immutability Contract
+
+**CRITICAL**: The `id` field is the canonical identifier and MUST be:
+- **Globally unique**: No two ingredients may share the same ID
+- **Immutable**: Once assigned, an ID must NEVER change
+- **Stable**: The same ingredient always has the same ID across systems
+
+This class uses ID-only equality, which means changing an ID causes:
+- Cache corruption (LRU cache uses ID as key)
+- Duplicate entries in Sets
+- Failed cascade retagging (TypeScript uses ID to find recipes)
 
 ### Group Hierarchy Helpers
 
@@ -718,15 +799,21 @@ other/
 
 ## Test Coverage
 
-### Unit Tests (231+ tests)
+### Unit Tests (252 tests)
 
 | File | Tests | Coverage |
 |------|-------|----------|
-| `tag_generator_test.dart` | 112 | All 4 phases |
+| `tag_generator_test.dart` | 113 | All 4 phases, L1 trigger dedup |
 | `tag_result_test.dart` | 41 | Serialization, equality, helpers |
 | `ingredient_lookup_result_test.dart` | 37 | Group queries, TriState |
+| `ingredient_lookup_service_test.dart` | 57 | Cache, variations, L3/L4 fixes |
+| `ingredient_normalizer_test.dart` | 20 | Normalization, L2 color handling |
 | `tri_state_test.dart` | 28 | Combination logic |
 | `allergen_config_test.dart` | 13 | Config parsing |
+| `dietary_config_test.dart` | 15 | Dietary config |
+| `tagging_service_test.dart` | 15 | Service orchestration |
+| `timeout_handling_test.dart` | 16 | Phase timeout behavior |
+| `user_ingredient_merge_test.dart` | 10 | M2 user override priority |
 
 ### Integration Tests (51 tests)
 
@@ -749,9 +836,53 @@ other/
 
 ---
 
+## Architecture Constraints
+
+### Single-Isolate Cache
+
+The `IngredientLookupService` LRU cache (500 entries) is designed for single-isolate use only. Cache operations are synchronous and atomic within Dart's event loop. Do NOT use across isolates without additional synchronization.
+
+### Swedish Character Normalization Contract
+
+**CRITICAL**: Dart and TypeScript MUST use identical normalization for cascade retagging to work.
+
+| Character | Normalized |
+|-----------|------------|
+| å | a |
+| ä | a |
+| ö | o |
+
+**Implementations:**
+- Dart: `lib/utils/text/swedish_character_normalizer.dart`
+- TypeScript: `functions/src/ingredients/on-ingredient-soft-deleted.ts`
+
+If these ever diverge, cascade retagging will silently fail.
+
+### Timeout Guarantee
+
+Phase 1 (allergen/dietary status) ALWAYS completes, even with zero timeout. This ensures safety-critical allergen data is never skipped. Phases 2-4 may be skipped if timeout exceeded, setting `isPartial=true`.
+
+---
+
+## Cloud Functions
+
+| Function | Schedule | Purpose |
+|----------|----------|---------|
+| `cleanupDeletedIngredients` | Weekly (Mon 4 AM) | Hard-delete ingredients soft-deleted > 30 days |
+| `cleanupOldAuditLogs` | Weekly (Sun 3 AM) | Delete audit logs older than retention period |
+| `onIngredientSoftDeleted` | On update | Cascade retag recipes using deleted ingredient |
+| `bulkMarkForRetagging` | Callable | Admin function to mark recipes for retagging |
+| `trackUnmatchedIngredients` | On recipe update | Track unknown ingredients for admin analytics |
+| `getUnmatchedIngredientStats` | Callable | Query top unmatched ingredients by frequency |
+
+---
+
 ## Document History
 
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | Dec 2025 | Initial specification |
 | 2.0 | Dec 2025 | Updated to match implementation: Swedish tag names, actual thresholds (season ≥2 ingredients, creamy top 5), UI grouping, pending/failed states, test coverage |
+| 2.1 | Dec 2025 | Updated test coverage table (252 tests): added new test files for lookup service, normalizer, timeout handling; documented L1-L4 bug fix test coverage |
+| 2.2 | Dec 2025 | Schema v2 with errorReason field, architecture constraints (ID immutability, single-isolate cache, normalization contract), Cloud Functions documentation, cascade timeout increased to 120s |
+| 2.3 | Dec 2025 | Sprint 3-5 features: Phase 5 cuisine tags (17 cuisines), sustainability tags (klimatsmart, budgetvänlig), hybrid season detection, extended IngredientData model (8 new fields), unmatched ingredient analytics Cloud Functions |

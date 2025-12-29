@@ -97,8 +97,8 @@ class IngredientLookupService extends BaseService {
   ///
   /// Search order:
   /// 1. M3: Check cache first
-  /// 2. Global database by exact name
-  /// 3. User-defined ingredients
+  /// 2. User-defined ingredients (M2: checked first to allow override)
+  /// 3. Global database by exact name
   /// 4. Global database by alias
   /// 5. Fuzzy match (compound words, common variations)
   ///
@@ -145,19 +145,22 @@ class IngredientLookupService extends BaseService {
   }
 
   /// M3: Performs the actual database lookup without caching.
+  /// M2 fix: User-defined ingredients are checked FIRST to allow overrides.
   Future<IngredientData?> _performLookup(
     String cleanName, {
     String? userId,
   }) async {
-    // 1. Try global database by exact name
+    // 1. Try user-defined ingredients FIRST (allows override of global entries)
+    // M2: This lets users customize properties for their own ingredients
+    if (userId != null) {
+      final userResult =
+          await _userIngredientRepository.findByName(userId, cleanName);
+      if (userResult != null) return userResult;
+    }
+
+    // 2. Try global database by exact name
     var result = await _ingredientRepository.findByName(cleanName);
     if (result != null) return result;
-
-    // 2. Try user-defined ingredients
-    if (userId != null) {
-      result = await _userIngredientRepository.findByName(userId, cleanName);
-      if (result != null) return result;
-    }
 
     // 3. Try global database by alias
     final byAlias = await _ingredientRepository.findByAlias(cleanName);
@@ -264,9 +267,11 @@ class IngredientLookupService extends BaseService {
       variations.add(name.substring(0, name.length - 2));
     }
     if (name.endsWith('ar')) {
-      // Swedish plural: äpplar → äpple
-      variations.add(name.substring(0, name.length - 2));
-      variations.add('${name.substring(0, name.length - 2)}e');
+      // L3 fix: Swedish plural "äpplar" → "äpple" (with 'e') is the correct form.
+      // Check the correct form first, then fallback to without 'e'.
+      variations
+          .add('${name.substring(0, name.length - 2)}e'); // "äpple" - correct
+      variations.add(name.substring(0, name.length - 2)); // "äppl" - fallback
     }
     if (name.endsWith('er')) {
       // Swedish plural: morötter → morot
@@ -333,24 +338,41 @@ class IngredientLookupService extends BaseService {
       }
     }
 
-    // Split compound words (e.g., "vitlöksklyftor" → "vitlök")
+    // Split compound words (e.g., "vitlöksklyftor" → "vitlök", "mangosås" → "mango")
+    // L4 fix: This also handles cases where IngredientNormalizer._extractBaseIngredient
+    // didn't extract the base because it wasn't in KnownIngredients. By trying the
+    // extracted base as a variation here, we can still match unknown compounds.
     if (name.length > 6) {
-      // Try common compound endings
+      // Comprehensive list of compound endings (synced with normalizer + additions)
       final compoundEndings = [
+        // From normalizer's _extractBaseIngredient
+        'sås',
+        'filé',
+        'kött',
+        'bröst',
+        'lår',
+        'pasta',
+        'bitar',
+        'tärningar',
+        'skiva',
+        'skivor',
+        'kotlett',
+        'kotletter',
+        'stek',
+        'färs',
+        'puré',
+        'passata',
+        'buljong',
+        'fond',
+        // Additional common endings
         'klyftor',
         'klyft',
-        'skivor',
-        'skiva',
-        'bitar',
         'bit',
         'stjälk',
         'stjälkar',
         'blad',
-        'kött',
         'mjöl',
         'olja',
-        'sås',
-        'pasta',
         'ris',
       ];
 

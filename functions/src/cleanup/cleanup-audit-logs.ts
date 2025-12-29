@@ -4,11 +4,23 @@
  * Scheduled to run weekly on Sunday at 3 AM UTC to delete old audit logs
  * based on the configured retention period.
  *
- * GDPR Compliance Notes:
- * - Most jurisdictions require 1-7 year audit log retention
- * - Default retention: 90 days (configurable via Remote Config)
- * - This function respects GDPR Article 30 requirements while preventing
- *   unbounded storage growth
+ * GDPR Compliance Notes (Articles 5, 17, 30):
+ * - Article 5(1)(e): Data should not be kept longer than necessary (data minimization)
+ * - Article 17: Right to erasure - audit logs of deleted user data should eventually be cleaned
+ * - Article 30: Records of processing must be maintained (but not forever)
+ *
+ * Retention Recommendations by Data Type:
+ * - Security/access logs: 90 days default (sufficient for incident investigation)
+ * - User data modification logs: Consider 1-2 years for legal compliance
+ * - Financial/transaction logs: May require 7 years depending on jurisdiction
+ *
+ * Current Settings:
+ * - Default: 90 days (configurable via Remote Config 'audit_log_retention_days')
+ * - Minimum: 30 days (safety floor)
+ *
+ * To increase retention for legal compliance, set 'audit_log_retention_days'
+ * in Firebase Remote Config. For Swedish law (Bokföringslagen), financial
+ * records typically require 7 years (2555 days).
  *
  * Security:
  * - Only deletes logs older than the retention period

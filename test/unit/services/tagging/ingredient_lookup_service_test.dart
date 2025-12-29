@@ -211,17 +211,17 @@ void main() {
         clearInteractions(mockIngredientRepo);
         clearInteractions(mockUserIngredientRepo);
 
-        // For user context, set up to find user ingredient (global found first though)
-        // Since global is in cache for global context, user context should do fresh lookup
+        // For user context, set up to find user ingredient
+        // M2 fix: User ingredients are now checked FIRST to allow override
         when(() => mockUserIngredientRepo.findByName('g', 'test'))
             .thenAnswer((_) async => userResult);
 
         // User lookup with userId='g' - has separate cache key
         final user = await service.lookupIngredients(['test'], userId: 'g');
-        // Global is found first in lookup order (global → user)
-        expect(user.matched.first.id, 'test-global');
-        // But the user context cache key is different, so global lookup happens again
-        verify(() => mockIngredientRepo.findByName('test')).called(1);
+        // M2: User is found first in lookup order (user → global)
+        expect(user.matched.first.id, 'test-user');
+        // User context cache key is different, so user lookup happens
+        verify(() => mockUserIngredientRepo.findByName('g', 'test')).called(1);
       });
     });
 
@@ -339,6 +339,71 @@ void main() {
         final result = await service.lookupIngredients(['löken']);
 
         expect(result.matchedCount, 1);
+      });
+
+      // L3: Plural variation ordering - correct form should be checked first
+      test('L3: Swedish plural variation checks correct form first', () async {
+        // "äpplar" should try "äpple" (correct) before "äppla" (incorrect)
+        final apple = _createIngredient('apple', 'äpple');
+
+        // Exact name not found
+        when(() => mockIngredientRepo.findByName('äpplar'))
+            .thenAnswer((_) async => null);
+        when(() => mockIngredientRepo.findByAlias('äpplar'))
+            .thenAnswer((_) async => []);
+
+        // Correct variation ('äpple') is found first due to L3 fix
+        when(() => mockIngredientRepo.findByName('äpple'))
+            .thenAnswer((_) async => apple);
+        // The incorrect variation would return nothing if checked
+        when(() => mockIngredientRepo.findByName('äppla'))
+            .thenAnswer((_) async => null);
+
+        final result = await service.lookupIngredients(['äpplar']);
+
+        expect(result.matchedCount, 1);
+        expect(result.matched.first.id, 'apple');
+        // Verify 'äpple' was checked (the correct form)
+        verify(() => mockIngredientRepo.findByName('äpple')).called(1);
+      });
+
+      // L4: Compound suffix extraction variations
+      test('L4: finds compound base from suffix extraction', () async {
+        // "mangosås" should try "mango" as a variation
+        final mango = _createIngredient('mango', 'mango');
+
+        // Main name not found
+        when(() => mockIngredientRepo.findByName('mangosås'))
+            .thenAnswer((_) async => null);
+        when(() => mockIngredientRepo.findByAlias('mangosås'))
+            .thenAnswer((_) async => []);
+        // But extracted base is found
+        when(() => mockIngredientRepo.findByName('mango'))
+            .thenAnswer((_) async => mango);
+
+        final result = await service.lookupIngredients(['mangosås']);
+
+        expect(result.matchedCount, 1);
+        expect(result.matched.first.id, 'mango');
+        verify(() => mockIngredientRepo.findByName('mango')).called(1);
+      });
+
+      test('L4: compound suffix extraction works for various suffixes',
+          () async {
+        // Test multiple suffix types
+        final chicken = _createIngredient('chicken', 'kyckling');
+
+        when(() => mockIngredientRepo.findByName('kycklingfilé'))
+            .thenAnswer((_) async => null);
+        when(() => mockIngredientRepo.findByAlias('kycklingfilé'))
+            .thenAnswer((_) async => []);
+        when(() => mockIngredientRepo.findByName('kyckling'))
+            .thenAnswer((_) async => chicken);
+
+        final result = await service.lookupIngredients(['kycklingfilé']);
+
+        expect(result.matchedCount, 1);
+        expect(result.matched.first.id, 'chicken');
       });
     });
 
