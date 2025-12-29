@@ -233,7 +233,7 @@ void main() {
     });
 
     group('coverage helpers', () {
-      test('hasFullCoverage returns true when coverage >= 1.0', () {
+      test('hasFullCoverage returns true when coverage is 1.0', () {
         expect(
           TagResult(
             tags: {},
@@ -244,16 +244,27 @@ void main() {
           ).hasFullCoverage,
           isTrue,
         );
-        expect(
-          TagResult(
-            tags: {},
-            allergenStatus: {},
-            dietaryStatus: {},
-            coverage: 1.1,
-            generatedAt: DateTime.now(),
-          ).hasFullCoverage,
-          isTrue,
-        );
+      });
+
+      test('coverage is clamped when parsed from Firestore', () {
+        // HIGH-2: Coverage values outside [0.0, 1.0] are clamped during deserialization
+        final resultOver = TagResult.fromFirestore({
+          'tags': <String>[],
+          'allergenStatus': <String, String>{},
+          'dietaryStatus': <String, String>{},
+          'coverage': 1.5, // Will be clamped to 1.0
+          'generatedAt': DateTime.now(),
+        });
+        expect(resultOver.coverage, 1.0);
+
+        final resultUnder = TagResult.fromFirestore({
+          'tags': <String>[],
+          'allergenStatus': <String, String>{},
+          'dietaryStatus': <String, String>{},
+          'coverage': -0.5, // Will be clamped to 0.0
+          'generatedAt': DateTime.now(),
+        });
+        expect(resultUnder.coverage, 0.0);
       });
 
       test('hasFullCoverage returns false when coverage < 1.0', () {

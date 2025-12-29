@@ -13,6 +13,47 @@ import * as admin from "firebase-admin";
 
 const db = admin.firestore();
 
+// MED-10: Timeout for cascade operations to prevent hanging on large cascades
+const CASCADE_TIMEOUT_MS = 30000; // 30 seconds
+
+/**
+ * MED-10: Wraps an async operation with a timeout.
+ * Throws if the operation doesn't complete within the specified time.
+ */
+async function withTimeout<T>(
+  operation: Promise<T>,
+  timeoutMs: number,
+  operationName: string
+): Promise<T> {
+  let timeoutId: NodeJS.Timeout;
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`${operationName} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([operation, timeoutPromise]);
+  } finally {
+    clearTimeout(timeoutId!);
+  }
+}
+
+/**
+ * CRIT-5: Normalize Swedish text to match Dart-side normalization.
+ *
+ * Must be identical to lib/services/tagging/ingredient_lookup_service.dart:_cleanForLookup()
+ * which converts Swedish diacritics: å→a, ä→a, ö→o
+ */
+function normalizeSwedish(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/å/g, "a")
+    .replace(/ä/g, "a")
+    .replace(/ö/g, "o");
+}
+
 /**
  * Trigger: When an ingredient document is updated
  *
@@ -34,7 +75,10 @@ export const onIngredientSoftDeleted = functions.firestore
     }
 
     const ingredientName = after.swedish as string;
-    const ingredientNameLower = ingredientName?.toLowerCase();
+    // CRIT-5: Use Swedish normalization to match Dart-side ingredient lookup
+    const ingredientNameNormalized = ingredientName
+      ? normalizeSwedish(ingredientName)
+      : undefined;
 
     if (!ingredientName) {
       functions.logger.error(
@@ -47,13 +91,18 @@ export const onIngredientSoftDeleted = functions.firestore
       `Ingredient soft-deleted: "${ingredientName}" (${ingredientId})`
     );
 
-    try {
+    // MED-10: Wrap cascade operation with timeout to prevent hanging on large datasets
+    const cascadeOperation = async (): Promise<void> => {
       // Query recipes that might use this ingredient
-      // Note: Firestore doesn't support case-insensitive array-contains,
-      // so we check normalized ingredients if available
+      // CRIT-5: Use Swedish-normalized name to match Dart-side storage
+      // (ingredientsNormalized stores å→a, ä→a, ö→o transformed names)
       const recipesSnapshot = await db
         .collection("recipes")
-        .where("core.ingredientsNormalized", "array-contains", ingredientNameLower)
+        .where(
+          "core.ingredientsNormalized",
+          "array-contains",
+          ingredientNameNormalized
+        )
         .get();
 
       if (recipesSnapshot.empty) {
@@ -68,7 +117,10 @@ export const onIngredientSoftDeleted = functions.firestore
       );
 
       // Mark all affected recipes for retagging using batched writes
-      const batchSize = 500; // Firestore batch limit
+      // LOW-6: 500 is the Firestore maximum operations per batch commit.
+      // This is a hard limit from Firebase, not an arbitrary choice.
+      // See: https://firebase.google.com/docs/firestore/manage-data/transactions#batched-writes
+      const batchSize = 500;
       let batch = db.batch();
       let operationCount = 0;
       let totalUpdated = 0;
@@ -97,6 +149,14 @@ export const onIngredientSoftDeleted = functions.firestore
 
       functions.logger.info(
         `Marked ${totalUpdated} recipes for retagging due to deleted ingredient "${ingredientName}"`
+      );
+    };
+
+    try {
+      await withTimeout(
+        cascadeOperation(),
+        CASCADE_TIMEOUT_MS,
+        `Cascade soft-delete for "${ingredientName}"`
       );
     } catch (error) {
       functions.logger.error(

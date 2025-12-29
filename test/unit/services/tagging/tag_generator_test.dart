@@ -973,15 +973,16 @@ void main() {
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
 
-        // Empty = 100% coverage (nothing to match = all matched)
-        expect(result.coverage, 1.0);
-        expect(result.hasFullCoverage, isTrue);
+        // HIGH-1: Empty = 0% coverage (no ingredients = no data to analyze)
+        // This is consistent with TagResult.empty() semantics
+        expect(result.coverage, 0.0);
+        expect(result.hasFullCoverage, isFalse);
         expect(result.unknownIngredients, isEmpty);
       });
 
-      test('empty lookup allergens are FREE (no triggers)', () {
-        // With no ingredients and 100% coverage, allergens are FREE
-        // (no ingredients means no allergen triggers)
+      test('empty lookup allergens are UNKNOWN (no data)', () {
+        // HIGH-1: With no ingredients and 0% coverage, allergens are UNKNOWN
+        // (we have no data to confirm or deny allergen presence)
         final recipe = RecipeBuilder()
             .withTitle('Empty Recipe')
             .withIngredients([]).build();
@@ -989,9 +990,9 @@ void main() {
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
 
-        // No ingredients = no allergen triggers = FREE
-        expect(result.isAllergenFree('gluten'), isTrue);
-        expect(result.getAllergenStatus('gluten'), TriState.free);
+        // No ingredients = no data = UNKNOWN allergen status
+        expect(result.isAllergenUnknown('gluten'), isTrue);
+        expect(result.getAllergenStatus('gluten'), TriState.unknown);
       });
     });
 

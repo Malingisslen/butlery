@@ -27,7 +27,7 @@ class PropertyRegistry {
     'celery',
     'mustard',
     'lupin',
-    'sulphites',
+    'sulfites',
 
     // Lactose (separate from dairy protein)
     'contains-lactose',

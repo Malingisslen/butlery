@@ -15,11 +15,13 @@ class IngredientLookupService extends BaseService {
   final IngredientRepository _ingredientRepository;
   final UserIngredientRepository _userIngredientRepository;
 
-  /// M3: LRU cache for ingredient lookups (max 500 entries).
+  /// M3/CRIT-4: LRU cache for ingredient lookups (max 500 entries).
   /// Key format: "cleanedName" or "userId:cleanedName" for user-specific lookups.
   /// Null values are cached to avoid repeated failed lookups.
+  /// Uses LinkedHashMap with access-order tracking for proper LRU eviction.
   static const int _cacheMaxSize = 500;
   final Map<String, IngredientData?> _lookupCache = {};
+  final List<String> _lruOrder = []; // CRIT-4: Tracks access order for LRU
 
   IngredientLookupService({
     required IngredientRepository ingredientRepository,
@@ -33,10 +35,14 @@ class IngredientLookupService extends BaseService {
   /// M3: Clears the ingredient lookup cache.
   void clearLookupCache() {
     _lookupCache.clear();
+    _lruOrder.clear(); // CRIT-4: Also clear LRU order
     AppLogger.debug('M3: Ingredient lookup cache cleared');
   }
 
   /// M3: Current cache size for debugging.
+  /// MED-3: This is a snapshot value; may change during concurrent operations.
+  /// For Dart, this is acceptable since Map.length is atomic and this is
+  /// only used for debugging/monitoring, not cache logic.
   int get cacheSize => _lookupCache.length;
 
   /// Looks up ingredients from a list of normalized names.
@@ -94,11 +100,16 @@ class IngredientLookupService extends BaseService {
     // Clean the name further
     final cleanName = _cleanForLookup(normalizedName);
 
-    // M3: Create cache key (include userId for user-specific lookups)
-    final cacheKey = userId != null ? '$userId:$cleanName' : cleanName;
+    // M3/HIGH-3: Create cache key (include userId for user-specific lookups)
+    // HIGH-3: Use pipe separator and explicit prefix to prevent collision
+    // (e.g., userId="a:b", name="c" vs userId="a", name="b:c" would collide with colon)
+    final cacheKey = userId != null ? 'u|$userId|$cleanName' : 'g|$cleanName';
 
     // M3: Check cache first (null means "not found" was cached)
     if (_lookupCache.containsKey(cacheKey)) {
+      // CRIT-4: Update LRU order on cache hit (move to end = most recently used)
+      _lruOrder.remove(cacheKey);
+      _lruOrder.add(cacheKey);
       return _lookupCache[cacheKey];
     }
 
@@ -143,13 +154,25 @@ class IngredientLookupService extends BaseService {
     return null;
   }
 
-  /// M3: Caches a lookup result with LRU eviction.
+  /// M3/CRIT-4: Caches a lookup result with proper LRU eviction.
+  ///
+  /// Uses a separate list to track access order for true LRU behavior.
+  /// Eviction is atomic to prevent race conditions in concurrent lookups.
   void _cacheResult(String key, IngredientData? result) {
-    // Evict oldest entries if cache is full
-    while (_lookupCache.length >= _cacheMaxSize) {
-      _lookupCache.remove(_lookupCache.keys.first);
+    // CRIT-4: If key already exists, remove from LRU order (will be re-added)
+    if (_lookupCache.containsKey(key)) {
+      _lruOrder.remove(key);
     }
+
+    // CRIT-4: Evict least-recently-used entries atomically
+    while (_lookupCache.length >= _cacheMaxSize && _lruOrder.isNotEmpty) {
+      final lruKey = _lruOrder.removeAt(0); // Oldest = least recently used
+      _lookupCache.remove(lruKey);
+    }
+
+    // Add to cache and LRU order
     _lookupCache[key] = result;
+    _lruOrder.add(key);
   }
 
   /// Cleans a normalized name for database lookup.
@@ -329,8 +352,18 @@ class IngredientLookupService extends BaseService {
     for (final raw in rawIngredients) {
       // M2: Parse raw ingredient to extract name (strips quantity and unit)
       // "2 dl mjölk" → ParsedIngredient(quantity: 2, unit: "dl", name: "mjölk")
-      final parsed = IngredientParser.parseIngredient(raw);
-      final nameToNormalize = parsed.name.isNotEmpty ? parsed.name : raw;
+      // LOW-2: Wrap parsing in try-catch to prevent failures from bad input
+      String nameToNormalize;
+      try {
+        final parsed = IngredientParser.parseIngredient(raw);
+        nameToNormalize = parsed.name.isNotEmpty ? parsed.name : raw;
+      } catch (e) {
+        // Fallback to raw string if parsing fails
+        AppLogger.warning(
+          'LOW-2: Failed to parse ingredient "$raw": $e, using raw string',
+        );
+        nameToNormalize = raw;
+      }
 
       // Now normalize the extracted name
       final result = IngredientNormalizer.normalize(nameToNormalize);

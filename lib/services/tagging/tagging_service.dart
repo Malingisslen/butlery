@@ -68,42 +68,35 @@ class TaggingService extends BaseService {
     );
   }
 
-  /// Internal method with timeout wrapper.
+  /// CRIT-3: Internal method with timeout that preserves partial results.
+  ///
+  /// Uses a two-phase timeout approach:
+  /// 1. Lookup phase: async, can be interrupted by timeout
+  /// 2. Generate phase: sync with internal timeout, returns partial results
   Future<TagResult> _generateTagsWithTimeout(
     Recipe recipe,
     List<String> ingredients,
   ) async {
+    final stopwatch = Stopwatch()..start();
+
+    // Phase 1: Lookup ingredients with timeout
+    IngredientLookupResult lookupResult;
     try {
-      return await Future.any([
-        _performTagGeneration(recipe, ingredients),
-        Future.delayed(_tagGenerationTimeout, () {
-          throw TimeoutException(
-            'Tag generation timed out after ${_tagGenerationTimeout.inSeconds} seconds',
-            _tagGenerationTimeout,
-          );
-        }),
-      ]);
-    } on TimeoutException catch (e) {
-      // M8: Log timeout with recipe context for debugging
+      lookupResult = await _lookupService
+          .lookupFromRaw(
+            ingredients,
+            userId: _getCurrentUserId(),
+          )
+          .timeout(_tagGenerationTimeout);
+    } on TimeoutException {
+      // CRIT-3: If lookup times out, return empty result with error reason
       AppLogger.warning(
-        '⏱️ Tag generation timeout for recipe "${recipe.core.title}" '
-            '(${ingredients.length} ingredients): ${e.message}',
+        '⏱️ Ingredient lookup timeout for recipe "${recipe.core.title}" '
+            '(${ingredients.length} ingredients)',
         'TaggingService',
       );
-      rethrow;
+      return TagResult.failed(reason: 'Lookup timeout');
     }
-  }
-
-  /// Performs the actual tag generation.
-  Future<TagResult> _performTagGeneration(
-    Recipe recipe,
-    List<String> ingredients,
-  ) async {
-    // M2: Lookup ingredients in database with userId for user-defined ingredients
-    final lookupResult = await _lookupService.lookupFromRaw(
-      ingredients,
-      userId: _getCurrentUserId(),
-    );
 
     AppLogger.debug(
       'Ingredient lookup: ${lookupResult.matched.length} matched, '
@@ -111,16 +104,41 @@ class TaggingService extends BaseService {
       '${(lookupResult.coverage * 100).toStringAsFixed(0)}% coverage',
     );
 
-    // Generate tags using the 4-phase generator
+    // CRIT-3: Calculate remaining time for generation phase
+    final elapsed = stopwatch.elapsed;
+    final remainingTime = _tagGenerationTimeout - elapsed;
+
+    if (remainingTime <= Duration.zero) {
+      // Time exhausted, return Phase 1 only for critical allergen safety
+      AppLogger.warning(
+        '⏱️ No time remaining for generation, returning Phase 1 only',
+        'TaggingService',
+      );
+      return _tagGenerator.generatePhase1Only(
+        ingredients: lookupResult,
+        recipe: recipe,
+      );
+    }
+
+    // Generate tags with remaining timeout for graceful degradation
     final tagResult = _tagGenerator.generate(
       ingredients: lookupResult,
       recipe: recipe,
+      timeout: remainingTime,
     );
 
-    AppLogger.info(
-      '✅ Generated ${tagResult.tags.length} tags '
-      '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
-    );
+    if (tagResult.isPartial) {
+      AppLogger.warning(
+        '⏱️ Tag generation partial (timeout after ${elapsed.inMilliseconds}ms) '
+            'for recipe "${recipe.core.title}"',
+        'TaggingService',
+      );
+    } else {
+      AppLogger.info(
+        '✅ Generated ${tagResult.tags.length} tags '
+        '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
+      );
+    }
 
     return tagResult;
   }
@@ -285,7 +303,8 @@ class TaggingService extends BaseService {
             batch.map((recipe) async {
               try {
                 final tagResult = await generateTags(recipe);
-                if (tagResult != null) {
+                // MED-9: Validate tagResult before saving to prevent corrupt data
+                if (tagResult != null && _isValidTagResult(tagResult)) {
                   final updatedRecipe = Recipe(
                     core: recipe.core.copyWith(tagResult: tagResult),
                     type: recipe.type,
@@ -295,6 +314,11 @@ class TaggingService extends BaseService {
                   );
                   await saveRecipe(updatedRecipe);
                   return true;
+                } else if (tagResult != null && !_isValidTagResult(tagResult)) {
+                  AppLogger.warning(
+                    'MED-9: Invalid tagResult for recipe ${recipe.id}, skipping',
+                    'TaggingService',
+                  );
                 }
                 // M9: Track failed recipe
                 failedRecipes.add(recipe.id);
@@ -332,6 +356,28 @@ class TaggingService extends BaseService {
     );
 
     return result ?? 0;
+  }
+
+  /// MED-9: Basic validation of TagResult before saving.
+  /// Checks for obvious issues that would indicate corrupt/invalid data.
+  bool _isValidTagResult(TagResult result) {
+    // Coverage must be in valid range (already clamped by constructor, but check anyway)
+    if (result.coverage < 0.0 || result.coverage > 1.0) {
+      return false;
+    }
+
+    // generatedAt should be reasonable (not in future, not too old)
+    final now = DateTime.now();
+    if (result.generatedAt.isAfter(now.add(const Duration(minutes: 1)))) {
+      return false; // Future date indicates clock issue
+    }
+
+    // generatorVersion should be present for non-empty results
+    if (result.generatorVersion == null && result.tags.isNotEmpty) {
+      return false;
+    }
+
+    return true;
   }
 
   String _generateIngredientId(String name) {

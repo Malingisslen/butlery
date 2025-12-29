@@ -54,17 +54,25 @@ class TagResult {
   /// and via JSON serialization for debugging purposes.
   final List<TagDecision>? decisions;
 
-  const TagResult({
+  /// Creates a TagResult with the given properties.
+  ///
+  /// HIGH-2: Coverage is validated to be in [0.0, 1.0] range via assertion.
+  /// In release builds, out-of-range values will be clamped by serialization.
+  TagResult({
     required this.tags,
     required this.allergenStatus,
     required this.dietaryStatus,
-    required this.coverage,
+    required double coverage,
     this.unknownIngredients = const [],
     required this.generatedAt,
     this.generatorVersion,
     this.isPartial = false,
     this.decisions,
-  });
+  })  : coverage = coverage.clamp(0.0, 1.0),
+        assert(
+          coverage >= 0.0 && coverage <= 1.0,
+          'Coverage must be between 0.0 and 1.0, got $coverage',
+        );
 
   /// Creates an empty result for recipes with no ingredients.
   /// Coverage is 0.0 because we have no ingredient data to analyze.
@@ -99,6 +107,12 @@ class TagResult {
 
   /// Creates a failed result when tag generation encounters an error.
   /// The reason parameter provides context for debugging.
+  ///
+  /// MED-2: Note: The [reason] is stored in [unknownIngredients] intentionally.
+  /// This is a misuse of the field semantically, but it provides a simple way
+  /// to surface the error reason in UI (which already displays unknownIngredients)
+  /// without adding a new field. Consider adding a dedicated `errorReason` field
+  /// if this becomes confusing.
   factory TagResult.failed({String? reason}) {
     return TagResult(
       tags: {},
@@ -327,6 +341,9 @@ class TagResult {
     return [];
   }
 
+  /// HIGH-5: Valid TriState value strings for validation.
+  static const _validTriStateValues = {'FREE', 'CONTAINS', 'UNKNOWN'};
+
   static Map<String, TriState> _parseTriStateMap(
     dynamic value, {
     Set<String>? validKeys,
@@ -337,8 +354,8 @@ class TagResult {
       final result = <String, TriState>{};
       for (final entry in value.entries) {
         final key = entry.key.toString();
-        final triState =
-            TriStateExtension.fromFirestore(entry.value?.toString());
+        // LOW-1: Handle null explicitly to avoid "null" string (using null-aware)
+        final rawValue = entry.value?.toString();
 
         // M11: Validate key if validKeys provided
         if (validKeys != null && !validKeys.contains(key)) {
@@ -349,6 +366,16 @@ class TagResult {
           continue;
         }
 
+        // HIGH-5: Validate value is a valid TriState string
+        if (rawValue != null && !_validTriStateValues.contains(rawValue)) {
+          AppLogger.warning(
+            'TagResult: Invalid ${contextName ?? "status"} value "$rawValue" for key "$key", '
+                'treating as UNKNOWN. Valid values: $_validTriStateValues',
+            'TagResult',
+          );
+        }
+
+        final triState = TriStateExtension.fromFirestore(rawValue);
         result[key] = triState;
       }
       return result;
@@ -375,13 +402,31 @@ class TagResult {
   }
 
   /// H3: Parses decisions list from JSON.
+  /// MED-1: Logs warnings for malformed entries instead of silently skipping.
   static List<TagDecision>? _parseDecisions(dynamic value) {
     if (value == null) return null;
     if (value is List) {
-      return value
-          .whereType<Map<String, dynamic>>()
-          .map((d) => TagDecision.fromJson(d))
-          .toList();
+      final result = <TagDecision>[];
+      for (var i = 0; i < value.length; i++) {
+        final item = value[i];
+        if (item is Map<String, dynamic>) {
+          try {
+            result.add(TagDecision.fromJson(item));
+          } catch (e) {
+            AppLogger.warning(
+              'TagResult: Failed to parse decision at index $i: $e',
+              'TagResult',
+            );
+          }
+        } else {
+          AppLogger.warning(
+            'TagResult: Skipping malformed decision at index $i '
+                '(expected Map, got ${item.runtimeType})',
+            'TagResult',
+          );
+        }
+      }
+      return result.isNotEmpty ? result : null;
     }
     return null;
   }
@@ -495,6 +540,9 @@ class TagResult {
     return generatorVersion != kTagGeneratorVersion;
   }
 
+  /// HIGH-6: Equality includes decisions but NOT generatedAt.
+  /// generatedAt is metadata about when generated, not what was generated.
+  /// decisions are part of the result content and should affect equality.
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -506,7 +554,8 @@ class TagResult {
           coverage == other.coverage &&
           _listEquals(unknownIngredients, other.unknownIngredients) &&
           generatorVersion == other.generatorVersion &&
-          isPartial == other.isPartial;
+          isPartial == other.isPartial &&
+          _decisionsEqual(decisions, other.decisions);
 
   static bool _setEquals<T>(Set<T> a, Set<T> b) =>
       a.length == b.length && a.containsAll(b);
@@ -518,6 +567,18 @@ class TagResult {
       a.length == b.length &&
       a.asMap().entries.every((e) => b[e.key] == e.value);
 
+  /// HIGH-6: Compare decisions lists, treating null as empty.
+  static bool _decisionsEqual(List<TagDecision>? a, List<TagDecision>? b) {
+    final listA = a ?? [];
+    final listB = b ?? [];
+    if (listA.length != listB.length) return false;
+    for (var i = 0; i < listA.length; i++) {
+      if (listA[i] != listB[i]) return false;
+    }
+    return true;
+  }
+
+  /// HIGH-6: hashCode includes decisions (consistent with equality).
   @override
   int get hashCode => Object.hash(
         tags,
@@ -527,11 +588,13 @@ class TagResult {
         Object.hashAll(unknownIngredients),
         generatorVersion,
         isPartial,
+        decisions != null ? Object.hashAll(decisions!) : null,
       );
 
+  /// LOW-3: Uses coveragePercent for consistent rounding across the codebase.
   @override
   String toString() =>
-      'TagResult(${tags.length} tags, coverage: ${(coverage * 100).toStringAsFixed(0)}%)';
+      'TagResult(${tags.length} tags, coverage: $coveragePercent%)';
 
   /// Creates a copy with optional field overrides.
   TagResult copyWith({

@@ -7,12 +7,102 @@
  *
  * The actual retagging happens client-side when recipes are loaded,
  * as it requires the ingredient lookup database.
+ *
+ * CRIT-6: Includes rate limiting and audit logging for security.
  */
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
 const db = admin.firestore();
+
+// CRIT-6: Rate limit constants
+const RATE_LIMIT_PER_DAY = 5;
+const RATE_LIMIT_COLLECTION = "admin_rate_limits";
+const AUDIT_LOG_COLLECTION = "admin_audit_logs";
+
+// MED-7: Retry constants for failed operations
+const MAX_RETRIES = 3;
+const INITIAL_RETRY_DELAY_MS = 100;
+
+/**
+ * CRIT-6: Check and update rate limit for an admin user.
+ * Returns true if within limit, false if exceeded.
+ */
+async function checkRateLimit(adminUid: string): Promise<boolean> {
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const rateLimitRef = db
+    .collection(RATE_LIMIT_COLLECTION)
+    .doc(`${adminUid}_bulkRetag_${today}`);
+
+  return db.runTransaction(async (transaction) => {
+    const doc = await transaction.get(rateLimitRef);
+    const currentCount = doc.exists ? (doc.data()?.count || 0) : 0;
+
+    if (currentCount >= RATE_LIMIT_PER_DAY) {
+      return false; // Rate limit exceeded
+    }
+
+    transaction.set(
+      rateLimitRef,
+      {
+        adminUid,
+        date: today,
+        count: currentCount + 1,
+        lastCall: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    return true; // Within rate limit
+  });
+}
+
+/**
+ * CRIT-6: Log admin action for audit trail.
+ */
+async function logAuditEntry(
+  adminUid: string,
+  action: string,
+  details: Record<string, unknown>
+): Promise<void> {
+  await db.collection(AUDIT_LOG_COLLECTION).add({
+    adminUid,
+    action,
+    details,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    ipAddress: null, // Would need to extract from request context if needed
+  });
+}
+
+/**
+ * MED-7: Retry an async operation with exponential backoff.
+ */
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = MAX_RETRIES
+): Promise<T> {
+  let lastError: Error | undefined;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      if (attempt < maxRetries) {
+        // Exponential backoff: 100ms, 200ms, 400ms
+        const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        functions.logger.debug(
+          `Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms`
+        );
+      }
+    }
+  }
+
+  throw lastError;
+}
 
 interface BulkRetagRequest {
   /** Current/target generator version. Recipes with different versions will be marked. */
@@ -68,7 +158,29 @@ export const bulkMarkForRetagging = functions.https.onCall(
       );
     }
 
+    const adminUid = context.auth.uid;
+
+    // CRIT-6: Check rate limit before proceeding
+    const withinRateLimit = await checkRateLimit(adminUid);
+    if (!withinRateLimit) {
+      functions.logger.warn(
+        `Admin ${adminUid} exceeded bulk retag rate limit`
+      );
+      throw new functions.https.HttpsError(
+        "resource-exhausted",
+        `Rate limit exceeded. Maximum ${RATE_LIMIT_PER_DAY} calls per day.`
+      );
+    }
+
     const { targetVersion, limit = 1000, userId, dryRun = false } = data;
+
+    // CRIT-6: Log audit entry
+    await logAuditEntry(adminUid, "bulk_retag_started", {
+      targetVersion,
+      limit,
+      userId: userId || "all",
+      dryRun,
+    });
 
     if (!targetVersion) {
       throw new functions.https.HttpsError(
@@ -145,16 +257,19 @@ export const bulkMarkForRetagging = functions.https.onCall(
         const batchDocs = recipesToUpdate.slice(i, i + batchSize);
 
         // M4: Use Promise.allSettled to continue on individual failures
+        // MED-7: Wrap updates in retry logic with exponential backoff
         const results = await Promise.allSettled(
           batchDocs.map(async (doc) => {
             try {
-              await doc.ref.update({
-                "core.tagResult.generatorVersion": "outdated",
+              await withRetry(async () => {
+                await doc.ref.update({
+                  "core.tagResult.generatorVersion": "outdated",
+                });
               });
               return { id: doc.id, success: true };
             } catch (error) {
               functions.logger.warn(
-                `Failed to update recipe ${doc.id}: ${error}`
+                `Failed to update recipe ${doc.id} after ${MAX_RETRIES} retries: ${error}`
               );
               return { id: doc.id, success: false, error: String(error) };
             }
@@ -189,6 +304,16 @@ export const bulkMarkForRetagging = functions.https.onCall(
       functions.logger.info(
         `Bulk retag complete: ${totalUpdated} recipes marked, ${totalFailed} failed`
       );
+
+      // CRIT-6: Log completion audit entry
+      await logAuditEntry(adminUid, "bulk_retag_completed", {
+        targetVersion,
+        totalFound,
+        totalUpdated,
+        totalFailed,
+        batchesProcessed,
+        dryRun,
+      });
 
       return {
         success: totalFailed === 0,

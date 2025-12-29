@@ -234,7 +234,21 @@ class TagPhase1Base {
           triggeringIngredients: triggers.isNotEmpty ? triggers : null,
         ));
       } else if (dietary.requiredProperties != null) {
-        // Special case: pescetarian requires fish/shellfish
+        // MED-6: PESCETARIAN LOGIC EXPLANATION
+        //
+        // Pescetarian is special because it requires BOTH:
+        // 1. NO excluded properties (no meat - already checked above)
+        // 2. HAS required properties (fish or shellfish)
+        //
+        // Decision tree for pescetarian:
+        // ┌─ Has meat? ─────────────────────> CONTAINS (not pescetarian)
+        // │   └─ No meat, has fish? ────────> FREE (valid pescetarian dish)
+        // │       └─ No meat, no fish? ─────> UNKNOWN (might be vegetarian side)
+        //
+        // Why UNKNOWN and not FREE for no-meat-no-fish?
+        // A recipe without fish is not "pescetarian-safe" - it just happens
+        // to be compatible. We only claim FREE when the recipe positively
+        // demonstrates pescetarian intent (includes seafood but no meat).
         final hasRequired = lookup.hasAnyProperty(dietary.requiredProperties!);
         if (hasRequired) {
           // Has fish/shellfish, no meat = valid pescetarian dish
