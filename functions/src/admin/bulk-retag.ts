@@ -134,37 +134,67 @@ export const bulkMarkForRetagging = functions.https.onCall(
         };
       }
 
-      // Process updates in batches
+      // M4: Process updates in batches with individual error handling
       const batchSize = 500;
       let totalUpdated = 0;
+      let totalFailed = 0;
       let batchesProcessed = 0;
+      const failedIds: string[] = [];
 
       for (let i = 0; i < recipesToUpdate.length; i += batchSize) {
-        const batch = db.batch();
         const batchDocs = recipesToUpdate.slice(i, i + batchSize);
 
-        for (const doc of batchDocs) {
-          batch.update(doc.ref, {
-            "core.tagResult.generatorVersion": "outdated",
-          });
+        // M4: Use Promise.allSettled to continue on individual failures
+        const results = await Promise.allSettled(
+          batchDocs.map(async (doc) => {
+            try {
+              await doc.ref.update({
+                "core.tagResult.generatorVersion": "outdated",
+              });
+              return { id: doc.id, success: true };
+            } catch (error) {
+              functions.logger.warn(
+                `Failed to update recipe ${doc.id}: ${error}`
+              );
+              return { id: doc.id, success: false, error: String(error) };
+            }
+          })
+        );
+
+        // Count successes and failures
+        for (const result of results) {
+          if (result.status === "fulfilled" && result.value.success) {
+            totalUpdated++;
+          } else {
+            totalFailed++;
+            if (result.status === "fulfilled" && !result.value.success) {
+              failedIds.push(result.value.id);
+            }
+          }
         }
 
-        await batch.commit();
-        totalUpdated += batchDocs.length;
         batchesProcessed++;
-
         functions.logger.info(
           `Processed batch ${batchesProcessed}: ${batchDocs.length} recipes`
         );
       }
 
+      // M4: Log failures summary
+      if (failedIds.length > 0) {
+        functions.logger.warn(
+          `Bulk retag completed with ${totalFailed} failures. Failed IDs (first 10): ${failedIds.slice(0, 10).join(", ")}`
+        );
+      }
+
       functions.logger.info(
-        `Bulk retag complete: ${totalUpdated} recipes marked for retagging`
+        `Bulk retag complete: ${totalUpdated} recipes marked, ${totalFailed} failed`
       );
 
       return {
-        success: true,
-        message: `Successfully marked ${totalUpdated} recipes for retagging`,
+        success: totalFailed === 0,
+        message: totalFailed === 0
+          ? `Successfully marked ${totalUpdated} recipes for retagging`
+          : `Marked ${totalUpdated} recipes, ${totalFailed} failed`,
         stats: {
           totalFound,
           totalUpdated,

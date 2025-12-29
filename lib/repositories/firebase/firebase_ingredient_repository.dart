@@ -300,13 +300,16 @@ class FirebaseIngredientRepository
     return _fuzzyMatch(normalized);
   }
 
-  /// M1: Attempts fuzzy matching for compound ingredient names using scoring.
+  /// M1/H1: Attempts fuzzy matching for compound ingredient names using scoring.
   ///
   /// Returns the best match based on a scoring algorithm:
   /// - Exact match: highest priority (return immediately)
   /// - Prefix match: high priority (0.9 - length penalty)
   /// - Suffix match: medium-high priority (0.8 - length penalty)
-  /// - Substring match: medium priority (0.5 or 0.4)
+  /// - Substring match: medium priority (0.5 or 0.4), requires min 3 chars
+  ///
+  /// H1: Requires minimum 3 characters for substring matching to prevent
+  /// false positives like "ris" matching "rädisor".
   IngredientData? _fuzzyMatch(String normalized) {
     // Try removing common prefixes/suffixes first
     final variations = _generateVariations(normalized);
@@ -342,12 +345,14 @@ class FirebaseIngredientRepository
         score = 0.8 - (normalized.length - indexKey.length) * 0.01;
       }
       // Substring match: input contains ingredient name
-      else if (normalized.contains(indexKey)) {
+      // H1: Require minimum 3 characters to avoid false positives
+      else if (indexKey.length >= 3 && normalized.contains(indexKey)) {
         // Longer ingredient names get higher scores when found as substring
         score = 0.4 + (indexKey.length * 0.01).clamp(0.0, 0.1);
       }
       // Reverse substring: ingredient contains input
-      else if (indexKey.contains(normalized)) {
+      // H1: Require minimum 3 characters to avoid false positives
+      else if (normalized.length >= 3 && indexKey.contains(normalized)) {
         score = 0.5;
       }
 
@@ -365,9 +370,11 @@ class FirebaseIngredientRepository
         score = 0.85 - (indexKey.length - normalized.length) * 0.01;
       } else if (normalized.startsWith(indexKey)) {
         score = 0.75 - (normalized.length - indexKey.length) * 0.01;
-      } else if (normalized.contains(indexKey)) {
+      } else if (indexKey.length >= 3 && normalized.contains(indexKey)) {
+        // H1: Require minimum 3 characters
         score = 0.35 + (indexKey.length * 0.01).clamp(0.0, 0.1);
-      } else if (indexKey.contains(normalized)) {
+      } else if (normalized.length >= 3 && indexKey.contains(normalized)) {
+        // H1: Require minimum 3 characters
         score = 0.45;
       }
 

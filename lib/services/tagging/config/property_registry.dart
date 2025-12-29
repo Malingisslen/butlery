@@ -1,9 +1,11 @@
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/tagging/config/allergen_config.dart';
+import 'package:butlery/services/tagging/config/dietary_config.dart';
 
-/// M3: Registry of valid ingredient properties.
+/// C1: Registry of valid ingredient properties.
 ///
 /// Used to validate that properties in allergen/dietary configs exist
-/// in the ingredient database. Warns on unknown properties.
+/// in the ingredient database. Throws at startup if typos detected.
 class PropertyRegistry {
   PropertyRegistry._();
 
@@ -26,6 +28,9 @@ class PropertyRegistry {
     'mustard',
     'lupin',
     'sulphites',
+
+    // Lactose (separate from dairy protein)
+    'contains-lactose',
 
     // Meat types
     'meat',
@@ -83,5 +88,65 @@ class PropertyRegistry {
     for (final property in properties) {
       validateOrWarn(property, configName);
     }
+  }
+
+  /// C1: Validates all properties in AllergenConfig and DietaryConfig.
+  ///
+  /// Throws [StateError] if any invalid properties are found.
+  /// Call this at app startup (in TaggingService.onInitialize) to fail fast
+  /// on configuration errors like typos in property names.
+  ///
+  /// Example error for typo "daiyr" instead of "dairy":
+  /// ```
+  /// StateError: Property validation failed. Fix these typos:
+  ///   - AllergenConfig: Unknown property "daiyr" for allergen "mjölk"
+  /// ```
+  static void validateAllConfigs() {
+    final errors = <String>[];
+
+    // Validate AllergenConfig - check all trigger properties
+    for (final allergen in AllergenConfig.all) {
+      for (final prop in allergen.triggerProperties) {
+        if (!isValid(prop)) {
+          errors.add(
+            'AllergenConfig: Unknown property "$prop" for allergen "${allergen.key}"',
+          );
+        }
+      }
+    }
+
+    // Validate DietaryConfig - check excluded and required properties
+    for (final dietary in DietaryConfig.all) {
+      for (final prop in dietary.excludedProperties) {
+        if (!isValid(prop)) {
+          errors.add(
+            'DietaryConfig: Unknown excluded property "$prop" for diet "${dietary.key}"',
+          );
+        }
+      }
+
+      if (dietary.requiredProperties != null) {
+        for (final prop in dietary.requiredProperties!) {
+          if (!isValid(prop)) {
+            errors.add(
+              'DietaryConfig: Unknown required property "$prop" for diet "${dietary.key}"',
+            );
+          }
+        }
+      }
+    }
+
+    if (errors.isNotEmpty) {
+      throw StateError(
+        'Property validation failed. Fix these typos in config files:\n'
+        '${errors.map((e) => '  - $e').join('\n')}',
+      );
+    }
+
+    AppLogger.debug(
+      '✓ Property validation passed for ${AllergenConfig.all.length} allergens '
+          'and ${DietaryConfig.all.length} dietary configs',
+      'PropertyRegistry',
+    );
   }
 }
