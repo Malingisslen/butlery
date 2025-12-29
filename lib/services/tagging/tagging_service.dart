@@ -9,6 +9,7 @@ import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/tagging/config/property_registry.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
 
@@ -345,6 +346,9 @@ class TaggingService extends BaseService {
 
   @override
   Future<void> onInitialize() async {
+    // C1: Validate configs at startup - fail fast on typos
+    PropertyRegistry.validateAllConfigs();
+
     await _lookupService.initialize();
     AppLogger.info('TaggingService ready with $kTagGeneratorVersion');
   }

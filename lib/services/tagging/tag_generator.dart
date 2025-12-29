@@ -38,16 +38,25 @@ class TagGenerator {
   /// Uses defensive error handling: if any phase fails, returns partial results
   /// from completed phases rather than failing entirely. This ensures recipes
   /// always get at least basic tagging even if advanced phases have issues.
+  ///
+  /// C3: If [timeout] is provided and elapsed time exceeds it after any phase,
+  /// returns a partial result with `isPartial: true`. Phase 1 (allergens/dietary)
+  /// always completes to ensure safety-critical tags are preserved.
   TagResult generate({
     required IngredientLookupResult ingredients,
     required Recipe recipe,
+    Duration? timeout,
   }) {
+    final stopwatch = timeout != null ? (Stopwatch()..start()) : null;
+
     Phase1Result? phase1Result;
     Phase2Result? phase2Result;
     Phase3Result? phase3Result;
     Phase4Result? phase4Result;
+    bool timedOut = false;
 
     // Phase 1: Base tags (critical - if this fails, return failed result)
+    // Phase 1 ALWAYS completes (allergens/dietary are safety-critical)
     try {
       phase1Result = _phase1.calculate(ingredients, recipe);
     } catch (e, stack) {
@@ -60,18 +69,38 @@ class TagGenerator {
       return TagResult.failed(reason: 'Phase 1 error: $e');
     }
 
-    // Phase 2: Simple derived (can continue without if fails)
-    try {
-      phase2Result = _phase2.calculate(phase1Result, recipe);
-    } catch (e) {
-      AppLogger.warning(
-        'Phase 2 tagging failed for recipe ${recipe.id}: $e, continuing with Phase 1 only',
+    // C3: Check timeout after Phase 1
+    if (_hasTimedOut(stopwatch, timeout)) {
+      timedOut = true;
+      AppLogger.debug(
+        'Tag generation timeout after Phase 1 for recipe ${recipe.id}',
         'TagGenerator',
       );
     }
 
+    // Phase 2: Simple derived (can continue without if fails)
+    if (!timedOut) {
+      try {
+        phase2Result = _phase2.calculate(phase1Result, recipe);
+      } catch (e) {
+        AppLogger.warning(
+          'Phase 2 tagging failed for recipe ${recipe.id}: $e, continuing with Phase 1 only',
+          'TagGenerator',
+        );
+      }
+
+      // C3: Check timeout after Phase 2
+      if (_hasTimedOut(stopwatch, timeout)) {
+        timedOut = true;
+        AppLogger.debug(
+          'Tag generation timeout after Phase 2 for recipe ${recipe.id}',
+          'TagGenerator',
+        );
+      }
+    }
+
     // Phase 3: Complex derived (needs Phase 2)
-    if (phase2Result != null) {
+    if (!timedOut && phase2Result != null) {
       try {
         phase3Result = _phase3.calculate(phase1Result, phase2Result, recipe);
       } catch (e) {
@@ -80,10 +109,19 @@ class TagGenerator {
           'TagGenerator',
         );
       }
+
+      // C3: Check timeout after Phase 3
+      if (_hasTimedOut(stopwatch, timeout)) {
+        timedOut = true;
+        AppLogger.debug(
+          'Tag generation timeout after Phase 3 for recipe ${recipe.id}',
+          'TagGenerator',
+        );
+      }
     }
 
     // Phase 4: Mood/occasion (needs Phases 2 & 3)
-    if (phase2Result != null && phase3Result != null) {
+    if (!timedOut && phase2Result != null && phase3Result != null) {
       try {
         phase4Result = _phase4.calculate(
           phase1Result,
@@ -107,6 +145,12 @@ class TagGenerator {
       if (phase4Result != null) ...phase4Result.tags,
     };
 
+    // C3: Mark as partial if timeout or if any phase was skipped
+    final isPartial = timedOut ||
+        phase2Result == null ||
+        phase3Result == null ||
+        phase4Result == null;
+
     return TagResult(
       tags: allTags,
       allergenStatus: phase1Result.allergenStatus,
@@ -115,10 +159,21 @@ class TagGenerator {
       unknownIngredients: ingredients.unmatched,
       generatedAt: DateTime.now(),
       generatorVersion: kTagGeneratorVersion,
+      isPartial: isPartial,
+      // H3: Include decision logs from Phase 1
+      decisions:
+          phase1Result.decisions.isNotEmpty ? phase1Result.decisions : null,
     );
   }
 
+  /// C3: Checks if the stopwatch has exceeded the timeout.
+  bool _hasTimedOut(Stopwatch? stopwatch, Duration? timeout) {
+    if (stopwatch == null || timeout == null) return false;
+    return stopwatch.elapsed > timeout;
+  }
+
   /// Generates only Phase 1 tags (for quick preview).
+  /// C3: Always returns isPartial: true since only Phase 1 is included.
   TagResult generatePhase1Only({
     required IngredientLookupResult ingredients,
     required Recipe recipe,
@@ -133,6 +188,10 @@ class TagGenerator {
       unknownIngredients: ingredients.unmatched,
       generatedAt: DateTime.now(),
       generatorVersion: '$kTagGeneratorVersion-phase1',
+      isPartial: true, // C3: Phase 1 only is always partial
+      // H3: Include decision logs from Phase 1
+      decisions:
+          phase1Result.decisions.isNotEmpty ? phase1Result.decisions : null,
     );
   }
 }

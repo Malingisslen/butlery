@@ -1,5 +1,6 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
+import 'package:butlery/models/tagging/tag_decision.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
@@ -18,17 +19,20 @@ class TagPhase1Base {
   /// Calculates Phase 1 tags.
   Phase1Result calculate(IngredientLookupResult lookup, Recipe recipe) {
     final tags = <String>{};
-    final allergenStatus = <String, TriState>{};
-    final dietaryStatus = <String, TriState>{};
+    final decisions = <TagDecision>[];
 
     // Time tags from metadata
     tags.addAll(_calculateTimeTags(recipe.core.timeMinutes));
 
-    // Allergen status using tri-valued logic
-    allergenStatus.addAll(_calculateAllergenStatus(lookup));
+    // Allergen status using tri-valued logic (H3: with decision capture)
+    final allergenResult = _calculateAllergenStatus(lookup);
 
-    // Dietary status
-    dietaryStatus.addAll(_calculateDietaryStatus(lookup));
+    // Dietary status (H3: with decision capture)
+    final dietaryResult = _calculateDietaryStatus(lookup);
+
+    // Collect all decisions
+    decisions.addAll(allergenResult.decisions);
+    decisions.addAll(dietaryResult.decisions);
 
     // Protein tags from ingredient groups
     tags.addAll(_calculateProteinTags(lookup));
@@ -44,9 +48,10 @@ class TagPhase1Base {
 
     return Phase1Result(
       tags: tags,
-      allergenStatus: allergenStatus,
-      dietaryStatus: dietaryStatus,
+      allergenStatus: allergenResult.status,
+      dietaryStatus: dietaryResult.status,
       lookup: lookup,
+      decisions: decisions,
     );
   }
 
@@ -68,32 +73,140 @@ class TagPhase1Base {
   /// Calculates allergen status using tri-valued logic.
   ///
   /// CRITICAL: Never use boolean. Always CONTAINS/FREE/UNKNOWN.
-  Map<String, TriState> _calculateAllergenStatus(
-      IngredientLookupResult lookup) {
+  /// H3: Returns both status map and decision logs.
+  _StatusWithDecisions _calculateAllergenStatus(IngredientLookupResult lookup) {
     final status = <String, TriState>{};
+    final decisions = <TagDecision>[];
 
     // Process simple allergens first
     for (final allergen in AllergenConfig.simpleAllergens) {
-      status[allergen.key] = lookup.getPropertyStatus(allergen.triggerProperty);
+      final result = lookup.getPropertyStatus(allergen.triggerProperty);
+      status[allergen.key] = result;
+
+      // H3: Capture decision with explanation
+      final (reason, triggers) = _explainAllergenDecision(
+        lookup: lookup,
+        property: allergen.triggerProperty,
+        result: result,
+      );
+      decisions.add(TagDecision.allergen(
+        key: allergen.key,
+        result: result,
+        reason: reason,
+        triggeringIngredients: triggers,
+      ));
     }
 
     // Process combined allergens using OR logic
-    // Note: getCombinedPropertyStatus handles coverage internally
     for (final allergen in AllergenConfig.combinedAllergens) {
       final props = allergen.triggerProperties;
-      status[allergen.key] = lookup.getCombinedPropertyStatus(props);
+      final result = lookup.getCombinedPropertyStatus(props);
+      status[allergen.key] = result;
+
+      // H3: Capture decision for combined allergens
+      final (reason, triggers) = _explainCombinedAllergenDecision(
+        lookup: lookup,
+        properties: props,
+        result: result,
+        allergenKey: allergen.key,
+      );
+      decisions.add(TagDecision.allergen(
+        key: allergen.key,
+        result: result,
+        reason: reason,
+        triggeringIngredients: triggers,
+      ));
     }
 
-    return status;
+    return _StatusWithDecisions(status: status, decisions: decisions);
+  }
+
+  /// H3: Explains why an allergen decision was made.
+  (String reason, List<String>? triggers) _explainAllergenDecision({
+    required IngredientLookupResult lookup,
+    required String property,
+    required TriState result,
+  }) {
+    final coveragePercent = (lookup.coverage * 100).round();
+
+    if (lookup.coverage < 1.0) {
+      return (
+        'Coverage $coveragePercent% < 100% - cannot confirm',
+        null,
+      );
+    }
+
+    if (result == TriState.contains) {
+      final triggers = lookup.matched
+          .where((i) => i.hasProperty(property))
+          .map((i) => i.swedish)
+          .toList();
+      return (
+        'Ingredient with property "$property" found',
+        triggers.isNotEmpty ? triggers : null,
+      );
+    }
+
+    return (
+      'No ingredients with property "$property" at 100% coverage',
+      null,
+    );
+  }
+
+  /// H3: Explains why a combined allergen decision was made.
+  (String reason, List<String>? triggers) _explainCombinedAllergenDecision({
+    required IngredientLookupResult lookup,
+    required List<String> properties,
+    required TriState result,
+    required String allergenKey,
+  }) {
+    final coveragePercent = (lookup.coverage * 100).round();
+
+    if (lookup.coverage < 1.0) {
+      return (
+        'Coverage $coveragePercent% < 100% - cannot confirm',
+        null,
+      );
+    }
+
+    if (result == TriState.contains) {
+      final triggers = <String>[];
+      for (final prop in properties) {
+        triggers.addAll(
+          lookup.matched
+              .where((i) => i.hasProperty(prop))
+              .map((i) => i.swedish),
+        );
+      }
+      final propsStr = properties.join(' or ');
+      return (
+        'Ingredient with property ($propsStr) found',
+        triggers.isNotEmpty ? triggers : null,
+      );
+    }
+
+    final propsStr = properties.join(' or ');
+    return (
+      'No ingredients with properties ($propsStr) at 100% coverage',
+      null,
+    );
   }
 
   /// Calculates dietary status.
-  Map<String, TriState> _calculateDietaryStatus(IngredientLookupResult lookup) {
+  /// H3: Returns both status map and decision logs.
+  _StatusWithDecisions _calculateDietaryStatus(IngredientLookupResult lookup) {
     final status = <String, TriState>{};
+    final decisions = <TagDecision>[];
+    final coveragePercent = (lookup.coverage * 100).round();
 
     for (final dietary in DietaryConfig.all) {
       if (dietary.requiresFullCoverage && lookup.coverage < 1.0) {
         status[dietary.key] = TriState.unknown;
+        decisions.add(TagDecision.dietary(
+          key: dietary.key,
+          result: TriState.unknown,
+          reason: 'Coverage $coveragePercent% < 100% - cannot confirm',
+        ));
         continue;
       }
 
@@ -103,22 +216,56 @@ class TagPhase1Base {
       if (hasExcluded) {
         // Has excluded ingredients (e.g., meat for pescetarian)
         status[dietary.key] = TriState.contains;
+
+        // H3: Find triggering ingredients
+        final triggers = <String>[];
+        for (final prop in dietary.excludedProperties) {
+          triggers.addAll(
+            lookup.matched
+                .where((i) => i.hasProperty(prop))
+                .map((i) => i.swedish),
+          );
+        }
+        decisions.add(TagDecision.dietary(
+          key: dietary.key,
+          result: TriState.contains,
+          reason:
+              'Has excluded property (${dietary.excludedProperties.join(", ")})',
+          triggeringIngredients: triggers.isNotEmpty ? triggers : null,
+        ));
       } else if (dietary.requiredProperties != null) {
         // Special case: pescetarian requires fish/shellfish
         final hasRequired = lookup.hasAnyProperty(dietary.requiredProperties!);
         if (hasRequired) {
           // Has fish/shellfish, no meat = valid pescetarian dish
           status[dietary.key] = TriState.free;
+          decisions.add(TagDecision.dietary(
+            key: dietary.key,
+            result: TriState.free,
+            reason:
+                'Has required (${dietary.requiredProperties!.join(", ")}), no excluded',
+          ));
         } else {
           // No fish AND no meat = unknown (could be vegetarian side dish)
           status[dietary.key] = TriState.unknown;
+          decisions.add(TagDecision.dietary(
+            key: dietary.key,
+            result: TriState.unknown,
+            reason:
+                'No excluded but missing required (${dietary.requiredProperties!.join(", ")})',
+          ));
         }
       } else {
         status[dietary.key] = TriState.free;
+        decisions.add(TagDecision.dietary(
+          key: dietary.key,
+          result: TriState.free,
+          reason: 'No excluded properties at 100% coverage',
+        ));
       }
     }
 
-    return status;
+    return _StatusWithDecisions(status: status, decisions: decisions);
   }
 
   /// Calculates protein tags from ingredient groups.
@@ -454,11 +601,15 @@ class Phase1Result {
   final Map<String, TriState> dietaryStatus;
   final IngredientLookupResult lookup;
 
+  /// H3: Decision logs explaining why each allergen/dietary status was set.
+  final List<TagDecision> decisions;
+
   const Phase1Result({
     required this.tags,
     required this.allergenStatus,
     required this.dietaryStatus,
     required this.lookup,
+    this.decisions = const [],
   });
 
   /// Checks if a specific property exists in any ingredient.
@@ -474,4 +625,23 @@ class Phase1Result {
   /// Gets dietary status for a specific diet.
   TriState getDietaryStatus(String key) =>
       dietaryStatus[key] ?? TriState.unknown;
+
+  /// H3: Gets the decision that produced a specific allergen status.
+  TagDecision? getAllergenDecision(String key) =>
+      decisions.where((d) => d.type == 'allergen' && d.key == key).firstOrNull;
+
+  /// H3: Gets the decision that produced a specific dietary status.
+  TagDecision? getDietaryDecision(String key) =>
+      decisions.where((d) => d.type == 'dietary' && d.key == key).firstOrNull;
+}
+
+/// H3: Helper class for returning both status and decisions.
+class _StatusWithDecisions {
+  final Map<String, TriState> status;
+  final List<TagDecision> decisions;
+
+  const _StatusWithDecisions({
+    required this.status,
+    required this.decisions,
+  });
 }

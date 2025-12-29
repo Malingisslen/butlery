@@ -4,14 +4,22 @@ import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/utils/text/ingredient_normalizer.dart';
+import 'package:butlery/utils/text/ingredient_parser.dart';
 
 /// Service for looking up ingredients from the database.
 ///
 /// Searches both the global ingredient database and user-defined ingredients.
 /// Returns coverage statistics and unknown ingredients list.
+/// M3: Includes LRU cache to avoid repeated lookups in batch operations.
 class IngredientLookupService extends BaseService {
   final IngredientRepository _ingredientRepository;
   final UserIngredientRepository _userIngredientRepository;
+
+  /// M3: LRU cache for ingredient lookups (max 500 entries).
+  /// Key format: "cleanedName" or "userId:cleanedName" for user-specific lookups.
+  /// Null values are cached to avoid repeated failed lookups.
+  static const int _cacheMaxSize = 500;
+  final Map<String, IngredientData?> _lookupCache = {};
 
   IngredientLookupService({
     required IngredientRepository ingredientRepository,
@@ -21,6 +29,15 @@ class IngredientLookupService extends BaseService {
 
   @override
   String get serviceName => 'IngredientLookupService';
+
+  /// M3: Clears the ingredient lookup cache.
+  void clearLookupCache() {
+    _lookupCache.clear();
+    AppLogger.debug('M3: Ingredient lookup cache cleared');
+  }
+
+  /// M3: Current cache size for debugging.
+  int get cacheSize => _lookupCache.length;
 
   /// Looks up ingredients from a list of normalized names.
   ///
@@ -63,10 +80,11 @@ class IngredientLookupService extends BaseService {
   /// Looks up a single ingredient by normalized name.
   ///
   /// Search order:
-  /// 1. Global database by exact name
-  /// 2. User-defined ingredients
-  /// 3. Global database by alias
-  /// 4. Fuzzy match (compound words, common variations)
+  /// 1. M3: Check cache first
+  /// 2. Global database by exact name
+  /// 3. User-defined ingredients
+  /// 4. Global database by alias
+  /// 5. Fuzzy match (compound words, common variations)
   Future<IngredientData?> _findIngredient(
     String normalizedName, {
     String? userId,
@@ -76,6 +94,28 @@ class IngredientLookupService extends BaseService {
     // Clean the name further
     final cleanName = _cleanForLookup(normalizedName);
 
+    // M3: Create cache key (include userId for user-specific lookups)
+    final cacheKey = userId != null ? '$userId:$cleanName' : cleanName;
+
+    // M3: Check cache first (null means "not found" was cached)
+    if (_lookupCache.containsKey(cacheKey)) {
+      return _lookupCache[cacheKey];
+    }
+
+    // Perform the actual lookup
+    final result = await _performLookup(cleanName, userId: userId);
+
+    // M3: Cache the result (including null for "not found")
+    _cacheResult(cacheKey, result);
+
+    return result;
+  }
+
+  /// M3: Performs the actual database lookup without caching.
+  Future<IngredientData?> _performLookup(
+    String cleanName, {
+    String? userId,
+  }) async {
     // 1. Try global database by exact name
     var result = await _ingredientRepository.findByName(cleanName);
     if (result != null) return result;
@@ -101,6 +141,15 @@ class IngredientLookupService extends BaseService {
     }
 
     return null;
+  }
+
+  /// M3: Caches a lookup result with LRU eviction.
+  void _cacheResult(String key, IngredientData? result) {
+    // Evict oldest entries if cache is full
+    while (_lookupCache.length >= _cacheMaxSize) {
+      _lookupCache.remove(_lookupCache.keys.first);
+    }
+    _lookupCache[key] = result;
   }
 
   /// Cleans a normalized name for database lookup.
@@ -266,16 +315,40 @@ class IngredientLookupService extends BaseService {
 
   /// Looks up ingredients from raw ingredient strings.
   ///
-  /// Normalizes the strings first using IngredientNormalizer.
+  /// M2: Parses raw strings to extract ingredient names, then normalizes.
+  /// Handles strings like "2 dl mjölk" → parses to "mjölk" → normalizes.
+  /// H2: Deduplicates ingredients before lookup to avoid skewed coverage.
   Future<IngredientLookupResult> lookupFromRaw(
     List<String> rawIngredients, {
     String? userId,
   }) async {
-    final normalized = rawIngredients
-        .map((raw) => IngredientNormalizer.normalize(raw))
-        .map((result) => result.normalized)
-        .where((n) => n.isNotEmpty)
-        .toList();
+    // H2: Deduplicate before lookup, preserving order
+    final seen = <String>{};
+    final normalized = <String>[];
+
+    for (final raw in rawIngredients) {
+      // M2: Parse raw ingredient to extract name (strips quantity and unit)
+      // "2 dl mjölk" → ParsedIngredient(quantity: 2, unit: "dl", name: "mjölk")
+      final parsed = IngredientParser.parseIngredient(raw);
+      final nameToNormalize = parsed.name.isNotEmpty ? parsed.name : raw;
+
+      // Now normalize the extracted name
+      final result = IngredientNormalizer.normalize(nameToNormalize);
+      final norm = result.normalized;
+
+      if (norm.isNotEmpty && !seen.contains(norm)) {
+        seen.add(norm);
+        normalized.add(norm);
+      }
+    }
+
+    // H2: Log if duplicates were found
+    if (normalized.length < rawIngredients.length) {
+      final duplicateCount = rawIngredients.length - normalized.length;
+      AppLogger.debug(
+        'H2: Deduplicated $duplicateCount duplicate ingredient(s) before lookup',
+      );
+    }
 
     return lookupIngredients(normalized, userId: userId);
   }

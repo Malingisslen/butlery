@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/models/tagging/tag_decision.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
@@ -29,7 +30,9 @@ class TagResult {
   /// Keys: 'vegetarian', 'vegan', 'pescetarian', etc.
   final Map<String, TriState> dietaryStatus;
 
-  /// Percentage of ingredients found in database (0.0 - 1.0).
+  /// C2: Coverage ratio (0.0-1.0) indicating what fraction of recipe ingredients
+  /// were found in the ingredient database. 1.0 = all matched, 0.5 = half matched.
+  /// Use [coveragePercent] for display and [hasReliableCoverage] for dietary claims.
   final double coverage;
 
   /// Ingredients not found in the database.
@@ -41,6 +44,16 @@ class TagResult {
   /// Version of the tag generator used.
   final String? generatorVersion;
 
+  /// C3: Whether this result is partial due to timeout or interruption.
+  /// Partial results have Phase 1 complete (allergens safe) but may be
+  /// missing Phase 3-4 tags (difficulty, mood, practical).
+  final bool isPartial;
+
+  /// H3: Decision logs explaining why each allergen/dietary status was set.
+  /// NOT stored in Firestore to avoid storage bloat. Available in-memory
+  /// and via JSON serialization for debugging purposes.
+  final List<TagDecision>? decisions;
+
   const TagResult({
     required this.tags,
     required this.allergenStatus,
@@ -49,6 +62,8 @@ class TagResult {
     this.unknownIngredients = const [],
     required this.generatedAt,
     this.generatorVersion,
+    this.isPartial = false,
+    this.decisions,
   });
 
   /// Creates an empty result for recipes with no ingredients.
@@ -141,6 +156,8 @@ class TagResult {
       generatedAt: generatedAt,
       generatorVersion: SerializationUtils.safeNullableString(
           migratedData, 'generatorVersion'),
+      isPartial: SerializationUtils.safeBool(migratedData, 'isPartial',
+          defaultValue: false),
     );
   }
 
@@ -159,6 +176,8 @@ class TagResult {
       'generatedAt': Timestamp.fromDate(generatedAt),
       // M14: Always write generatorVersion for consistency (null means unversioned)
       'generatorVersion': generatorVersion,
+      // C3: Include partial flag
+      'isPartial': isPartial,
       // L12: Include schema version for future migrations
       'schemaVersion': kTagResultSchemaVersion,
     };
@@ -180,8 +199,13 @@ class TagResult {
       'generatedAt': generatedAt.toIso8601String(),
       // M14: Always write generatorVersion for consistency (null means unversioned)
       'generatorVersion': generatorVersion,
+      // C3: Include partial flag
+      'isPartial': isPartial,
       // L12: Include schema version for future migrations
       'schemaVersion': kTagResultSchemaVersion,
+      // H3: Include decisions if present (for debugging)
+      if (decisions != null && decisions!.isNotEmpty)
+        'decisions': decisions!.map((d) => d.toJson()).toList(),
     };
   }
 
@@ -230,6 +254,10 @@ class TagResult {
       generatedAt: parseDateTime(migratedData['generatedAt']),
       generatorVersion: SerializationUtils.safeNullableString(
           migratedData, 'generatorVersion'),
+      isPartial: SerializationUtils.safeBool(migratedData, 'isPartial',
+          defaultValue: false),
+      // H3: Parse decisions if present
+      decisions: _parseDecisions(migratedData['decisions']),
     );
   }
 
@@ -346,6 +374,32 @@ class TagResult {
     );
   }
 
+  /// H3: Parses decisions list from JSON.
+  static List<TagDecision>? _parseDecisions(dynamic value) {
+    if (value == null) return null;
+    if (value is List) {
+      return value
+          .whereType<Map<String, dynamic>>()
+          .map((d) => TagDecision.fromJson(d))
+          .toList();
+    }
+    return null;
+  }
+
+  // H3: Decision query helpers
+
+  /// H3: Gets the decision that explains a specific allergen status.
+  TagDecision? getAllergenDecision(String allergen) => decisions
+      ?.where((d) => d.type == 'allergen' && d.key == allergen)
+      .firstOrNull;
+
+  /// H3: Gets the decision that explains a specific dietary status.
+  TagDecision? getDietaryDecision(String diet) =>
+      decisions?.where((d) => d.type == 'dietary' && d.key == diet).firstOrNull;
+
+  /// H3: Returns true if decisions are available for inspection.
+  bool get hasDecisions => decisions != null && decisions!.isNotEmpty;
+
   // Query helpers
 
   /// Checks if recipe is free from a specific allergen.
@@ -376,6 +430,13 @@ class TagResult {
 
   /// Returns true if all ingredients were found in database.
   bool get hasFullCoverage => coverage >= 1.0;
+
+  /// C2: Coverage as percentage (0-100) for display purposes.
+  int get coveragePercent => (coverage * 100).round();
+
+  /// C2: Whether coverage is sufficient for reliable dietary/allergen claims.
+  /// Below 80% coverage, claims should be treated with caution.
+  bool get hasReliableCoverage => coverage >= 0.8;
 
   /// Returns true if some ingredients are unknown.
   bool get hasUnknowns => unknownIngredients.isNotEmpty;
@@ -444,7 +505,8 @@ class TagResult {
           _mapEquals(dietaryStatus, other.dietaryStatus) &&
           coverage == other.coverage &&
           _listEquals(unknownIngredients, other.unknownIngredients) &&
-          generatorVersion == other.generatorVersion;
+          generatorVersion == other.generatorVersion &&
+          isPartial == other.isPartial;
 
   static bool _setEquals<T>(Set<T> a, Set<T> b) =>
       a.length == b.length && a.containsAll(b);
@@ -464,6 +526,7 @@ class TagResult {
         coverage,
         Object.hashAll(unknownIngredients),
         generatorVersion,
+        isPartial,
       );
 
   @override
@@ -479,6 +542,8 @@ class TagResult {
     List<String>? unknownIngredients,
     DateTime? generatedAt,
     String? generatorVersion,
+    bool? isPartial,
+    List<TagDecision>? decisions,
   }) {
     return TagResult(
       tags: tags ?? this.tags,
@@ -488,6 +553,8 @@ class TagResult {
       unknownIngredients: unknownIngredients ?? this.unknownIngredients,
       generatedAt: generatedAt ?? this.generatedAt,
       generatorVersion: generatorVersion ?? this.generatorVersion,
+      isPartial: isPartial ?? this.isPartial,
+      decisions: decisions ?? this.decisions,
     );
   }
 

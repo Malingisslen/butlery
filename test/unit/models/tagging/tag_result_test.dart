@@ -60,7 +60,8 @@ void main() {
 
         final map = result.toFirestore();
 
-        expect(map['tags'], ['kyckling', 'gryta']);
+        // M15: Tags are sorted alphabetically before storage
+        expect(map['tags'], ['gryta', 'kyckling']);
         expect(map['allergenStatus'], {
           'gluten': 'FREE',
           'mjölk': 'CONTAINS',
@@ -713,6 +714,73 @@ void main() {
         );
 
         expect(current.needsRetagging, isFalse);
+      });
+    });
+
+    group('L1: JSON Roundtrip', () {
+      test('JSON serialization roundtrip preserves all data', () {
+        final original = TagResult(
+          tags: {'kyckling', 'gryta', 'under-30-min'},
+          allergenStatus: {
+            'gluten': TriState.free,
+            'mjölk': TriState.contains,
+            'ägg': TriState.unknown,
+          },
+          dietaryStatus: {
+            'vegetarisk': TriState.contains,
+            'vegansk': TriState.contains,
+            'pescetarian': TriState.free,
+          },
+          coverage: 0.85,
+          unknownIngredients: ['mystisk ingrediens', 'okänd krydda'],
+          generatedAt: DateTime(2024, 12, 28, 12, 30),
+          generatorVersion: 'v1.5.0',
+          isPartial: true,
+        );
+
+        final json = original.toJson();
+        final restored = TagResult.fromJson(json);
+
+        // Verify all fields are preserved
+        expect(restored.tags, equals(original.tags));
+        expect(restored.allergenStatus, equals(original.allergenStatus));
+        expect(restored.dietaryStatus, equals(original.dietaryStatus));
+        expect(restored.coverage, equals(original.coverage));
+        expect(
+            restored.unknownIngredients, equals(original.unknownIngredients));
+        expect(restored.generatorVersion, equals(original.generatorVersion));
+        expect(restored.isPartial, equals(original.isPartial));
+        expect(restored.generatedAt, equals(original.generatedAt));
+      });
+
+      test('JSON roundtrip handles empty result', () {
+        final empty = TagResult.empty();
+        final json = empty.toJson();
+        final restored = TagResult.fromJson(json);
+
+        expect(restored.tags, isEmpty);
+        expect(restored.allergenStatus, isEmpty);
+        expect(restored.dietaryStatus, isEmpty);
+        expect(restored.coverage, equals(0.0));
+        expect(restored.unknownIngredients, isEmpty);
+      });
+
+      test('JSON roundtrip handles partial result', () {
+        final partial = TagResult(
+          tags: {'test-tag'},
+          allergenStatus: {'gluten': TriState.unknown},
+          dietaryStatus: {},
+          coverage: 0.5,
+          generatedAt: DateTime.now(),
+          generatorVersion: 'v1.0.0',
+          isPartial: true,
+        );
+
+        final json = partial.toJson();
+        final restored = TagResult.fromJson(json);
+
+        expect(restored.isPartial, isTrue);
+        expect(restored.tags.contains('test-tag'), isTrue);
       });
     });
   });
