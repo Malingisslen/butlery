@@ -35,7 +35,7 @@ class SearchService extends BaseService {
     if (tags.isEmpty) return recipes;
 
     return recipes.where((recipe) {
-      return tags.every((tag) => (recipe.tags?.contains(tag)).orFalse());
+      return tags.every((tag) => (recipe.personalTags?.contains(tag)).orFalse());
     }).toList();
   }
 
@@ -225,8 +225,8 @@ class SearchService extends BaseService {
       }
 
       // Tagg-förslag
-      if (recipe.tags != null) {
-        for (final tag in recipe.tags!) {
+      if (recipe.personalTags != null) {
+        for (final tag in recipe.personalTags!) {
           if (tag.toLowerCase().contains(lowerPartial)) {
             suggestions.add(tag);
           }
@@ -247,8 +247,8 @@ class SearchService extends BaseService {
           (termFrequency[recipe.mealType]).orZero() + 1;
 
       // Räkna taggar
-      if (recipe.tags != null) {
-        for (final tag in recipe.tags!) {
+      if (recipe.personalTags != null) {
+        for (final tag in recipe.personalTags!) {
           termFrequency[tag] = (termFrequency[tag]).orZero() + 1;
         }
       }
@@ -295,7 +295,7 @@ class SearchService extends BaseService {
     }
 
     // Taggar
-    if ((recipe.tags?.any(
+    if ((recipe.personalTags?.any(
       (tag) => tag.toLowerCase().contains(query),
     )).orFalse()) {
       return true;
