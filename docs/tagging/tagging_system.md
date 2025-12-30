@@ -1,6 +1,6 @@
 # Butlery Tagging System — Complete Specification
 
-**Version:** 2.3
+**Version:** 2.5
 **Generator Version:** 1.0.0
 **Schema Version:** 2
 **Date:** December 2025
@@ -133,6 +133,12 @@ Output: TagResult {
 | TriState | `lib/models/tagging/tri_state.dart` |
 | IngredientData | `lib/models/tagging/ingredient_data.dart` |
 | IngredientLookupResult | `lib/models/tagging/ingredient_lookup_result.dart` |
+| TagOverrides | `lib/models/tagging/tag_overrides.dart` |
+| PersonalTag | `lib/models/tagging/personal_tag.dart` |
+| PersonalTagRule | `lib/models/tagging/personal_tag_rule.dart` |
+| TaggingService | `lib/services/tagging/tagging_service.dart` |
+| TagEditingService | `lib/services/tagging/tag_editing_service.dart` |
+| TagDisplayUtils | `lib/services/tagging/tag_display_utils.dart` |
 
 ---
 
@@ -864,6 +870,119 @@ Phase 1 (allergen/dietary status) ALWAYS completes, even with zero timeout. This
 
 ---
 
+## Personal Tags System
+
+Separate from auto-generated tags, users can create their own **PersonalTags** for custom recipe categorization.
+
+### Overview
+
+| Feature | Description |
+|---------|-------------|
+| **PersonalTag** | User-defined tag with name, color, icon |
+| **PersonalTagRule** | Automatic rule to apply tags based on conditions |
+| **TagOverrides** | User corrections to auto-generated tags |
+| **Batch Apply** | Apply all rules to existing recipes |
+
+### PersonalTag Model
+
+```dart
+class PersonalTag {
+  String id;           // UUID
+  String name;         // "Mamma's Recipes" (1-50 chars, no commas)
+  String? color;       // "#FF5733" (hex)
+  String? icon;        // Emoji or icon name
+  int sortOrder;       // Manual ordering
+  DateTime createdAt;
+  DateTime updatedAt;
+}
+```
+
+**Storage:** `users/{userId}/personalTags/{tagId}`
+
+### PersonalTagRule Model
+
+Rules automatically apply PersonalTags to recipes based on conditions.
+
+```dart
+class PersonalTagRule {
+  String id;
+  String tagId;              // Target PersonalTag
+  String name;               // "Fish recipes"
+  List<RuleCondition> conditions;
+  MatchMode matchMode;       // all (AND) or any (OR)
+  bool isEnabled;
+}
+
+class RuleCondition {
+  ConditionType type;        // ingredient, property, keyword, sourceUrl
+  ConditionOperator operator; // contains, equals, startsWith, notContains, notEquals
+  String value;
+  bool caseSensitive;
+}
+```
+
+**Storage:** `users/{userId}/personalTagRules/{ruleId}`
+
+### Condition Types
+
+| Type | Matches Against | Example |
+|------|-----------------|---------|
+| `ingredient` | Recipe ingredient text | "kyckling" matches "500g kyckling" |
+| `property` | Ingredient database properties | "seafood" matches recipes with fish |
+| `keyword` | Title or description | "soppa" matches soup recipes |
+| `sourceUrl` | Recipe source URL | "recept.se" matches imported recipes |
+
+### TagOverrides Model
+
+Allows users to correct auto-generated allergen/dietary status.
+
+```dart
+class TagOverrides {
+  Map<String, TriState> allergenOverrides;  // {gluten: FREE}
+  Map<String, TriState> dietaryOverrides;   // {vegansk: CONTAINS}
+  Set<String> addedTags;                    // Manually added tags
+  Set<String> removedTags;                  // Hidden auto-generated tags
+  DateTime? lastEditedAt;
+  String? lastEditedBy;
+}
+```
+
+**Safety:** Removing `CONTAINS` status for allergens requires confirmation dialog.
+
+### Implementation Files
+
+| Component | File |
+|-----------|------|
+| PersonalTag model | `lib/models/tagging/personal_tag.dart` |
+| PersonalTagRule model | `lib/models/tagging/personal_tag_rule.dart` |
+| TagOverrides model | `lib/models/tagging/tag_overrides.dart` |
+| PersonalTagService | `lib/services/tagging/personal_tag_service.dart` |
+| PersonalTagViewModel | `lib/viewmodels/personal_tag_viewmodel.dart` |
+| Tag repository | `lib/repositories/firebase/firebase_personal_tag_repository.dart` |
+| Rule repository | `lib/repositories/firebase/firebase_personal_tag_rule_repository.dart` |
+| Manager dialog | `lib/widgets/tagging/personal_tag_manager_dialog.dart` |
+| Rule editor | `lib/widgets/tagging/personal_tag_rule_dialog.dart` |
+| Tag selector | `lib/widgets/tagging/personal_tag_selector.dart` |
+| Tag editor | `lib/widgets/tagging/tag_editor_dialog.dart` |
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| **Color picker** | 12 preset colors + custom hex input |
+| **Property dropdown** | Categorized list from PropertyRegistry |
+| **Tag statistics** | Recipe count per tag |
+| **Batch apply** | Apply enabled rules to all existing recipes |
+| **Auto-apply on save** | Rules evaluated when recipes are saved |
+
+### Test Coverage
+
+| File | Tests |
+|------|-------|
+| `personal_tag_rule_test.dart` | 20 |
+
+---
+
 ## Cloud Functions
 
 | Function | Schedule | Purpose |
@@ -886,3 +1005,5 @@ Phase 1 (allergen/dietary status) ALWAYS completes, even with zero timeout. This
 | 2.1 | Dec 2025 | Updated test coverage table (252 tests): added new test files for lookup service, normalizer, timeout handling; documented L1-L4 bug fix test coverage |
 | 2.2 | Dec 2025 | Schema v2 with errorReason field, architecture constraints (ID immutability, single-isolate cache, normalization contract), Cloud Functions documentation, cascade timeout increased to 120s |
 | 2.3 | Dec 2025 | Sprint 3-5 features: Phase 5 cuisine tags (17 cuisines), sustainability tags (klimatsmart, budgetvänlig), hybrid season detection, extended IngredientData model (8 new fields), unmatched ingredient analytics Cloud Functions |
+| 2.4 | Dec 2025 | Tagging improvements: 5 new cuisines (22 total: etiopisk, marockansk, brasiliansk, peruansk, argentinsk), AIP dietary tag (aip-vänlig), nightshade property, TagOverrides for user manual corrections, ingredient suggestion queue (Cloud Function), Dart/TypeScript normalization parity tests |
+| 2.5 | Dec 2025 | Personal Tags system: PersonalTag model (user-defined tags with color/icon), PersonalTagRule model (rule-based auto-tagging with conditions), TagOverrides integration, batch apply rules to existing recipes, tag statistics, property dropdown in rule editor, 20 unit tests |
