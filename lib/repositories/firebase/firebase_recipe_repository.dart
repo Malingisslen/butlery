@@ -391,6 +391,49 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     );
   }
 
+  /// Counts recipes that have a specific personal tag.
+  ///
+  /// Uses Firestore's arrayContains query on core.personalTags field.
+  /// Returns 0 if user is not authenticated.
+  Future<int> countRecipesWithPersonalTag(String tagName) async {
+    final userId = currentUserId;
+    if (userId == null) return 0;
+
+    try {
+      final snap = await getCollectionForUser(userId)
+          .where('core.personalTags', arrayContains: tagName)
+          .count()
+          .get();
+      return snap.count ?? 0;
+    } catch (e) {
+      AppLogger.warning('Failed to count recipes with tag "$tagName": $e');
+      return 0;
+    }
+  }
+
+  /// Gets all recipes that have a specific personal tag.
+  ///
+  /// Returns up to [limit] recipes ordered by update date.
+  Future<List<Recipe>> getRecipesWithPersonalTag(
+    String tagName, {
+    int limit = 100,
+  }) async {
+    final userId = currentUserId;
+    if (userId == null) return [];
+
+    try {
+      final snap = await getCollectionForUser(userId)
+          .where('core.personalTags', arrayContains: tagName)
+          .orderBy('core.updatedAt', descending: true)
+          .limit(limit)
+          .get();
+      return snap.docs.map(fromFirestore).toList();
+    } catch (e) {
+      AppLogger.warning('Failed to get recipes with tag "$tagName": $e');
+      return [];
+    }
+  }
+
   @override
   Future<void> addRecipes(List<Recipe> recipes) async {
     // Use the base class batch method

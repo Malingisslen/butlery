@@ -5,6 +5,8 @@
 library;
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_overrides.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:uuid/uuid.dart';
 
 /// Builder pattern for creating test Recipe instances
@@ -28,6 +30,8 @@ class RecipeBuilder {
   String? createdBy = 'test_user_123';
   RecipeOfflineData? offlineData;
   RecipeSocialData? socialData;
+  TagResult? tagResult;
+  TagOverrides? tagOverrides;
 
   /// Creates a Swedish dinner recipe preset
   RecipeBuilder asSwedishDinner() {
@@ -303,16 +307,30 @@ class RecipeBuilder {
         portions: portions,
         timeMinutes: timeMinutes,
         rating: rating,
-        tags: tags,
+        personalTags: tags,
         sourceUrl: sourceUrl,
         createdAt: createdAt,
         updatedAt: updatedAt,
         lastCookedAt: lastCookedAt,
         createdBy: createdBy,
+        tagResult: tagResult,
+        tagOverrides: tagOverrides,
       ),
       type: type,
       offlineData: offlineData,
       socialData: socialData,
     );
+  }
+
+  /// Sets the tag result for the recipe
+  RecipeBuilder withTagResult(TagResult result) {
+    tagResult = result;
+    return this;
+  }
+
+  /// Sets the tag overrides for the recipe
+  RecipeBuilder withTagOverrides(TagOverrides overrides) {
+    tagOverrides = overrides;
+    return this;
   }
 }

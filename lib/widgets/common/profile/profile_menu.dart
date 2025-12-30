@@ -12,6 +12,7 @@ import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/widgets/common/profile/profile_actions.dart';
+import 'package:butlery/widgets/tagging/personal_tag_manager_dialog.dart';
 
 /// Profile menu display components
 /// This module provides the main profile menu widget with user information
@@ -373,6 +374,16 @@ class _ProfileMenuState extends State<ProfileMenu> {
             onTap: () {
               Navigator.pop(context);
               Navigator.pushNamed(context, '/settings/allergens');
+            },
+          ),
+          ProfileActions.buildMenuItem(
+            context,
+            title: 'Mina taggar',
+            subtitle: 'Hantera dina personliga taggar',
+            icon: Icons.local_offer_outlined,
+            onTap: () {
+              Navigator.pop(context);
+              PersonalTagManagerDialog.show(context);
             },
           ),
         ],
