@@ -7,7 +7,6 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
-import 'package:butlery/widgets/tagging/personal_tag_color_picker.dart';
 import 'package:butlery/widgets/tagging/personal_tag_edit_dialog.dart';
 import 'package:butlery/widgets/tagging/personal_tag_rule_dialog.dart';
 
@@ -72,14 +71,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
   }
 
   void _onTabChanged() {
-    if (!_tabController.indexIsChanging) {
-      final viewModel = context.read<PersonalTagViewModel>();
-      if (_tabController.index == 1) {
-        viewModel.watchAllRules();
-      } else {
-        viewModel.stopWatchingRules();
-      }
-    }
+    // Rules are now embedded in tags, no separate watching needed
   }
 
   // Tag operations
@@ -92,11 +84,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
     );
 
     if (result != null && mounted) {
-      await viewModel.createTag(
-        name: result.name,
-        color: result.color,
-        icon: result.icon,
-      );
+      await viewModel.createTag(name: result.name);
     }
   }
 
@@ -144,18 +132,18 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
     }
   }
 
-  // Rule operations
-  Future<void> _createRule() async {
+  // Rule operations - rules are now embedded in tags
+  Future<void> _createRule(String tagId) async {
     final viewModel = context.read<PersonalTagViewModel>();
 
     final result = await PersonalTagRuleDialog.show(context);
 
     if (result != null && mounted) {
-      await viewModel.createRule(result);
+      await viewModel.createRule(tagId, result);
     }
   }
 
-  Future<void> _editRule(PersonalTagRule rule) async {
+  Future<void> _editRule(String tagId, PersonalTagRule rule) async {
     final viewModel = context.read<PersonalTagViewModel>();
 
     final result = await PersonalTagRuleDialog.show(
@@ -164,11 +152,11 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
     );
 
     if (result != null && mounted) {
-      await viewModel.updateRule(result);
+      await viewModel.updateRule(tagId, result);
     }
   }
 
-  Future<void> _deleteRule(PersonalTagRule rule) async {
+  Future<void> _deleteRule(String tagId, PersonalTagRule rule) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -193,7 +181,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
     );
 
     if (confirm == true && mounted) {
-      await context.read<PersonalTagViewModel>().deleteRule(rule.id);
+      await context.read<PersonalTagViewModel>().deleteRule(tagId, rule.id);
     }
   }
 
@@ -372,13 +360,11 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: PersonalTagColors.fromHex(tag.color).withValues(alpha: 0.15),
+          color: AppColors.primaryBlue.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
-        child: Center(
-          child: tag.icon != null
-              ? Text(tag.icon!, style: const TextStyle(fontSize: 20))
-              : PersonalTagColorDot(color: tag.color, size: 16),
+        child: const Center(
+          child: Icon(Icons.label, size: 20, color: AppColors.primaryBlue),
         ),
       ),
       title: Row(
@@ -386,8 +372,8 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           Expanded(
             child: Text(
               tag.name,
-              style:
-                  AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+              style: AppTextStyles.bodyMedium
+                  .copyWith(fontWeight: FontWeight.w500),
             ),
           ),
           if (!viewModel.isLoadingStats && usageCount > 0)
@@ -470,11 +456,16 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           return _buildNoTagsForRules();
         }
 
+        // Get all rules from all tags
+        final tagsWithRules =
+            viewModel.tags.where((t) => t.rules.isNotEmpty).toList();
+        final hasRules = tagsWithRules.isNotEmpty;
+
         return Column(
           children: [
             Expanded(
-              child: viewModel.hasRules
-                  ? _buildRuleList(viewModel.rules, viewModel.tags)
+              child: hasRules
+                  ? _buildRuleList(tagsWithRules)
                   : _buildRulesEmptyState(),
             ),
             const Divider(height: 1),
@@ -528,6 +519,8 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
   }
 
   Widget _buildRulesEmptyState() {
+    final viewModel = context.watch<PersonalTagViewModel>();
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -555,41 +548,49 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            FilledButton.icon(
-              onPressed: _createRule,
-              icon: const Icon(Icons.add),
-              label: const Text('Skapa regel'),
-            ),
+            // Show dropdown to select tag, then create rule
+            _buildAddRuleForTagButton(viewModel.tags),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildRuleList(
-    List<PersonalTagRule> rules,
-    List<PersonalTag> tags,
-  ) {
-    // Group rules by tag
-    final rulesByTag = <String, List<PersonalTagRule>>{};
-    for (final rule in rules) {
-      rulesByTag.putIfAbsent(rule.tagId, () => []).add(rule);
-    }
+  Widget _buildAddRuleForTagButton(List<PersonalTag> tags) {
+    return PopupMenuButton<String>(
+      child: FilledButton.icon(
+        onPressed: null, // PopupMenuButton handles the tap
+        icon: const Icon(Icons.add),
+        label: const Text('Skapa regel för tagg'),
+      ),
+      itemBuilder: (context) => tags.map((tag) {
+        return PopupMenuItem<String>(
+          value: tag.id,
+          child: Row(
+            children: [
+              const Icon(Icons.label, size: 12, color: AppColors.primaryBlue),
+              const SizedBox(width: 8),
+              Text(tag.name),
+            ],
+          ),
+        );
+      }).toList(),
+      onSelected: (tagId) => _createRule(tagId),
+    );
+  }
 
+  Widget _buildRuleList(List<PersonalTag> tagsWithRules) {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: AppDimensions.paddingS),
-      itemCount: rulesByTag.length,
+      itemCount: tagsWithRules.length,
       itemBuilder: (context, index) {
-        final tagId = rulesByTag.keys.elementAt(index);
-        final tagRules = rulesByTag[tagId]!;
-        final tag = tags.where((t) => t.id == tagId).firstOrNull;
-
-        return _buildRuleGroup(tag, tagRules);
+        final tag = tagsWithRules[index];
+        return _buildRuleGroup(tag, tag.rules);
       },
     );
   }
 
-  Widget _buildRuleGroup(PersonalTag? tag, List<PersonalTagRule> rules) {
+  Widget _buildRuleGroup(PersonalTag tag, List<PersonalTagRule> rules) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -603,48 +604,46 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           ),
           child: Row(
             children: [
-              if (tag != null) ...[
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: PersonalTagColors.fromHex(tag.color)
-                        .withValues(alpha: 0.15),
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusS),
-                  ),
-                  child: Center(
-                    child: tag.icon != null
-                        ? Text(tag.icon!, style: const TextStyle(fontSize: 14))
-                        : PersonalTagColorDot(color: tag.color, size: 10),
-                  ),
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue.withValues(alpha: 0.15),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
-                const SizedBox(width: AppDimensions.spacingS),
-                Text(
+                child: const Center(
+                  child:
+                      Icon(Icons.label, size: 14, color: AppColors.primaryBlue),
+                ),
+              ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Expanded(
+                child: Text(
                   tag.name,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-              ] else
-                Text(
-                  'Okänd tagg',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textMedium,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
+              ),
+              // Add rule button for this tag
+              IconButton(
+                icon: const Icon(Icons.add, size: 20),
+                color: AppColors.primaryBlue,
+                onPressed: () => _createRule(tag.id),
+                tooltip: 'Lägg till regel',
+              ),
             ],
           ),
         ),
         // Rules for this tag
-        ...rules.map((rule) => _buildRuleTile(rule, tag)),
+        ...rules.map((rule) => _buildRuleTile(tag.id, rule)),
         const Divider(height: AppDimensions.spacingM),
       ],
     );
   }
 
-  Widget _buildRuleTile(PersonalTagRule rule, PersonalTag? tag) {
+  Widget _buildRuleTile(String tagId, PersonalTagRule rule) {
     final viewModel = context.read<PersonalTagViewModel>();
 
     return ListTile(
@@ -673,21 +672,21 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           // Enable/disable toggle
           Switch(
             value: rule.isEnabled,
-            onChanged: (_) => viewModel.toggleRuleEnabled(rule.id),
+            onChanged: (_) => viewModel.toggleRuleEnabled(tagId, rule.id),
             activeTrackColor: AppColors.primaryBlue.withValues(alpha: 0.5),
             activeThumbColor: AppColors.primaryBlue,
           ),
           IconButton(
             icon: const Icon(Icons.edit_outlined, size: 20),
             color: AppColors.primaryBlue,
-            onPressed: () => _editRule(rule),
+            onPressed: () => _editRule(tagId, rule),
             tooltip: 'Redigera',
             constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline, size: 20),
             color: AppColors.error,
-            onPressed: () => _deleteRule(rule),
+            onPressed: () => _deleteRule(tagId, rule),
             tooltip: 'Ta bort',
             constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
           ),
@@ -707,7 +706,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
 
   Widget _buildRulesFooter() {
     final viewModel = context.watch<PersonalTagViewModel>();
-    final hasEnabledRules = viewModel.rules.any((r) => r.isEnabled);
+    final hasEnabledRules = viewModel.enabledRules.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
@@ -730,11 +729,8 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
                     label: const Text('Kör regler'),
                   ),
                 ),
-              FilledButton.icon(
-                onPressed: _createRule,
-                icon: const Icon(Icons.add, size: 20),
-                label: const Text('Ny regel'),
-              ),
+              // Show dropdown to select tag for new rule
+              _buildAddRuleForTagButton(viewModel.tags),
             ],
           ),
         ],
@@ -816,7 +812,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             content: Text(
               result.hasChanges
                   ? '${result.recipesModified} recept uppdaterades med '
-                    '${result.tagsApplied} nya taggar'
+                      '${result.tagsApplied} nya taggar'
                   : 'Inga recept behövde uppdateras',
             ),
             backgroundColor: result.hasChanges ? AppColors.success : null,

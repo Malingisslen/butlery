@@ -36,7 +36,7 @@ class PersonalRecipeViewModel extends ChangeNotifier
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
   }) async {
     // Use ValidationUtils for consistent validation
@@ -55,7 +55,7 @@ class PersonalRecipeViewModel extends ChangeNotifier
               portions: portions,
               timeMinutes: timeMinutes,
               rating: rating,
-              tags: tags,
+              personalTagIds: personalTagIds,
               sourceUrl: sourceUrl,
             );
 
@@ -101,7 +101,7 @@ class PersonalRecipeViewModel extends ChangeNotifier
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
   }) async {
     if (ValidationUtils.isNullOrEmpty(recipeId)) return false;
@@ -123,7 +123,7 @@ class PersonalRecipeViewModel extends ChangeNotifier
       portions: portions,
       timeMinutes: timeMinutes,
       rating: rating,
-      tags: tags,
+      personalTagIds: personalTagIds,
       sourceUrl: sourceUrl,
     );
     if (result) {
@@ -281,7 +281,7 @@ class PersonalRecipeViewModel extends ChangeNotifier
 
   List<Recipe> getPersonalRecipesByTag(String tag) {
     return personalRecipes
-        .where((r) => r.tags?.contains(tag) ?? false)
+        .where((r) => r.personalTagIds?.contains(tag) ?? false)
         .toList();
   }
 
@@ -296,7 +296,7 @@ class PersonalRecipeViewModel extends ChangeNotifier
               ingredient.toLowerCase().contains(lowercaseQuery)) ||
           recipe.instructions.any((instruction) =>
               instruction.toLowerCase().contains(lowercaseQuery)) ||
-          (recipe.tags
+          (recipe.personalTagIds
                   ?.any((tag) => tag.toLowerCase().contains(lowercaseQuery)) ??
               false);
     }).toList();
@@ -314,8 +314,8 @@ class PersonalRecipeViewModel extends ChangeNotifier
   Map<String, int> getPersonalTagCounts() {
     final tagCounts = <String, int>{};
     for (final recipe in personalRecipes) {
-      if (recipe.tags != null) {
-        for (final tag in recipe.tags!) {
+      if (recipe.personalTagIds != null) {
+        for (final tag in recipe.personalTagIds!) {
           tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
         }
       }

@@ -27,7 +27,7 @@ Recipe _createTestRecipe({
       portions: 4,
       timeMinutes: 30,
       rating: 4.5,
-      tags: ['svensk', 'klassisk'],
+      personalTagIds: ['svensk', 'klassisk'],
       sourceUrl: 'https://example.com',
       imageUrls: ['https://example.com/image.jpg'],
       createdAt: DateTime.now(),
@@ -416,7 +416,7 @@ void main() {
         expect(realtimeRecipe.portions, equals(4));
         expect(realtimeRecipe.timeMinutes, equals(30));
         expect(realtimeRecipe.rating, equals(4.5));
-        expect(realtimeRecipe.tags, equals(['svensk', 'klassisk']));
+        expect(realtimeRecipe.personalTagIds, equals(['svensk', 'klassisk']));
         expect(realtimeRecipe.mealType, equals('middag'));
         expect(realtimeRecipe.hasRating, isTrue);
       });
@@ -711,7 +711,7 @@ void main() {
             ingredients: ['Test'],
             instructions: ['Test'],
             mealType: 'middag',
-            tags: null,
+            personalTagIds: null,
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
             createdBy: 'user_123',
@@ -726,7 +726,7 @@ void main() {
           ownerDisplayName: 'Anna',
         );
 
-        expect(realtimeRecipe.tags, isNull);
+        expect(realtimeRecipe.personalTagIds, isNull);
         expect(realtimeRecipe.matchesSearchQuery('tag'), isFalse);
       });
 
@@ -739,7 +739,7 @@ void main() {
             ingredients: ['Räkor', 'Ägg', 'Majonnäs'],
             instructions: ['Koka ägg', 'Blanda räkor'],
             mealType: 'lunch',
-            tags: ['svensk', 'fisk'],
+            personalTagIds: ['svensk', 'fisk'],
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
             createdBy: 'user_123',

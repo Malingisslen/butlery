@@ -382,6 +382,7 @@ class TestableRecipeFormViewModel extends TestableViewModelBase
 
   // ==================== RECIPE STATE ====================
 
+  @override
   Recipe? get recipe => _recipe;
 
   @override

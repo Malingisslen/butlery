@@ -78,8 +78,8 @@ class ShareService extends BaseService {
     }
 
     // Tags istället för tips
-    if (recipe.tags != null && recipe.tags!.isNotEmpty) {
-      buffer.writeln('Tags: ${recipe.tags!.join(", ")}');
+    if (recipe.personalTagIds != null && recipe.personalTagIds!.isNotEmpty) {
+      buffer.writeln('Tags: ${recipe.personalTagIds!.join(", ")}');
       buffer.writeln();
     }
 
@@ -195,9 +195,9 @@ class ShareService extends BaseService {
     }
 
     // Tags
-    if (recipe.tags != null && recipe.tags!.isNotEmpty) {
+    if (recipe.personalTagIds != null && recipe.personalTagIds!.isNotEmpty) {
       buffer.writeln('## Tags');
-      buffer.writeln(recipe.tags!.map((tag) => '`$tag`').join(' '));
+      buffer.writeln(recipe.personalTagIds!.map((tag) => '`$tag`').join(' '));
       buffer.writeln();
     }
 

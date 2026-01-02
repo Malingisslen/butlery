@@ -104,7 +104,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async => 'collab_recipe_1');
 
@@ -130,7 +130,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               sourceUrl: any(named: 'sourceUrl'),
             )).called(1);
       });

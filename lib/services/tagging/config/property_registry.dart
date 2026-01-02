@@ -52,6 +52,9 @@ class PropertyRegistry {
     'is-spicy',
     'plant-based',
 
+    // Special diet properties
+    'nightshade', // Tomato, potato, peppers, eggplant, chili
+
     // Practical
     'doesnt-freeze-well',
     'raw-safe',

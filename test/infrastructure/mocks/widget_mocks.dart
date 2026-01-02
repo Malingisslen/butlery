@@ -172,6 +172,7 @@ class MockRecipeFormViewModel extends MockBaseViewModel
   String? _editMode;
   EditMode? _editModeEnum;
 
+  @override
   Recipe? get recipe => _recipe;
 
   @override
@@ -720,7 +721,7 @@ class WidgetMockFactory {
         portions: 4 + index,
         timeMinutes: 30 + (index * 10),
         rating: 3.5 + (index * 0.5),
-        tags: ['svensk', 'vardagsmat'],
+        personalTagIds: ['svensk', 'vardagsmat'],
         imageUrls: index == 0 ? [] : ['https://example.com/image_$index.jpg'],
       ),
     );

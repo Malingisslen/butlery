@@ -68,7 +68,8 @@ class PersonalTagColorPicker extends StatelessWidget {
           spacing: AppDimensions.spacingS,
           runSpacing: AppDimensions.spacingS,
           children: PersonalTagColors.colors.map((color) {
-            final isSelected = selectedColor?.toUpperCase() == color.toUpperCase();
+            final isSelected =
+                selectedColor?.toUpperCase() == color.toUpperCase();
             return _ColorCircle(
               color: color,
               isSelected: isSelected,

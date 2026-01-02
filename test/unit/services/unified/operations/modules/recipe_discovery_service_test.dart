@@ -70,7 +70,7 @@ void main() {
             instructions: ['cook pasta', 'add sauce'],
             mealType: 'Middag',
             createdBy: 'user_123',
-            tags: ['italian', 'pasta', 'quick'],
+            personalTagIds: ['italian', 'pasta', 'quick'],
             createdAt: DateTime.now().subtract(Duration(days: 2)),
             updatedAt: DateTime.now().subtract(Duration(hours: 1)),
           ),
@@ -94,7 +94,7 @@ void main() {
             instructions: ['mix ingredients'],
             mealType: 'Lunch',
             createdBy: 'user_456',
-            tags: ['healthy', 'salad', 'vegetarian'],
+            personalTagIds: ['healthy', 'salad', 'vegetarian'],
             createdAt: DateTime.now().subtract(Duration(days: 1)),
             updatedAt: DateTime.now().subtract(Duration(minutes: 30)),
           ),
@@ -445,7 +445,9 @@ void main() {
 
         // Assert
         expect(
-            recipes.where((r) => r.tags?.contains('italian') ?? false).length,
+            recipes
+                .where((r) => r.personalTagIds?.contains('italian') ?? false)
+                .length,
             greaterThanOrEqualTo(2));
       });
 

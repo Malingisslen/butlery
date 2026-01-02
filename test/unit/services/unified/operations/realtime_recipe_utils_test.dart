@@ -290,7 +290,7 @@ void main() {
             imageUrls: ['local1.jpg', 'local2.jpg'],
             mealType: 'huvudrätt',
             rating: 4.5,
-            tags: ['local', 'test'],
+            personalTagIds: ['local', 'test'],
           ),
           type: RecipeType.realtime,
         );
@@ -305,7 +305,7 @@ void main() {
             imageUrls: ['remote1.jpg', 'remote2.jpg'],
             mealType: 'huvudrätt',
             rating: 4.0,
-            tags: ['remote', 'production'],
+            personalTagIds: ['remote', 'production'],
           ),
           type: RecipeType.realtime,
         );
@@ -336,7 +336,7 @@ void main() {
         expect(result.rating, equals(4.5));
 
         // Tags are merged
-        expect(result.tags!.toSet(),
+        expect(result.personalTagIds!.toSet(),
             equals({'local', 'test', 'remote', 'production'}));
       });
 
@@ -351,7 +351,7 @@ void main() {
             instructions: [],
             mealType: 'huvudrätt',
             rating: null,
-            tags: null,
+            personalTagIds: null,
           ),
           type: RecipeType.realtime,
         );
@@ -365,7 +365,7 @@ void main() {
             instructions: ['remote instruction'],
             mealType: 'huvudrätt',
             rating: 4.8,
-            tags: ['remote'],
+            personalTagIds: ['remote'],
           ),
           type: RecipeType.realtime,
         );
@@ -381,7 +381,7 @@ void main() {
         // Assert
         expect(result.rating,
             equals(4.8)); // Remote rating used when local is null
-        expect(result.tags,
+        expect(result.personalTagIds,
             equals(['remote'])); // Remote tags used when local is null
       });
     });

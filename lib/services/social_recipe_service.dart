@@ -172,7 +172,7 @@ class SocialRecipeService extends ChangeNotifier
         mealType: recipeToImport.mealType,
         portions: recipeToImport.portions,
         timeMinutes: recipeToImport.timeMinutes,
-        tags: recipeToImport.tags,
+        personalTagIds: recipeToImport.personalTagIds,
         rating: recipeToImport.rating,
       );
 
@@ -211,7 +211,7 @@ class SocialRecipeService extends ChangeNotifier
             mealType: recipe.mealType,
             portions: recipe.portions,
             timeMinutes: recipe.timeMinutes,
-            tags: recipe.tags,
+            personalTagIds: recipe.personalTagIds,
             rating: recipe.rating,
           );
           if (success == null) allImported = false;

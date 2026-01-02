@@ -286,7 +286,7 @@ void main() {
           portions: 6,
           timeMinutes: 45,
           rating: 4.8,
-          tags: ['svensk', 'vegetarisk', 'glutenfri'],
+          personalTagIds: ['svensk', 'vegetarisk', 'glutenfri'],
         );
 
         RealtimeRecipe? capturedRecipe;
@@ -461,7 +461,7 @@ void main() {
           portions: 8,
           timeMinutes: 60,
           rating: 4.5,
-          tags: ['ny', 'uppdaterad'],
+          personalTagIds: ['ny', 'uppdaterad'],
         );
 
         // Assert

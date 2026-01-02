@@ -19,17 +19,25 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_ingredient_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_user_ingredient_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
 
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
+import 'package:butlery/services/tagging/personal_tag_service.dart';
+import 'package:butlery/services/tagging/tag_config_service.dart';
 
 /// Tagging module providing automatic recipe tagging services.
 ///
 /// Registers:
+/// - [TagConfigService] - Firebase-backed tag configuration with caching
 /// - [IngredientRepository] - Global ingredient database access
 /// - [UserIngredientRepository] - User-defined ingredient overrides
 /// - [IngredientLookupService] - Ingredient matching and lookup
 /// - [TaggingService] - Main tagging orchestrator
+/// - [FirebasePersonalTagRepository] - User-defined personal tags
+/// - [FirebasePersonalTagGroupRepository] - Personal tag groups/folders
+/// - [PersonalTagService] - Personal tag management and rule evaluation
 class TaggingModule implements DIModule {
   @override
   String get name => 'Tagging';
@@ -39,10 +47,14 @@ class TaggingModule implements DIModule {
 
   @override
   List<Type> get provides => [
+        TagConfigService,
         IngredientRepository,
         UserIngredientRepository,
         IngredientLookupService,
         TaggingService,
+        FirebasePersonalTagRepository,
+        FirebasePersonalTagGroupRepository,
+        PersonalTagService,
       ];
 
   @override
@@ -51,6 +63,11 @@ class TaggingModule implements DIModule {
   @override
   Future<void> configure(GetIt container) async {
     try {
+      // Tag configuration service with Firebase + SharedPreferences caching
+      container.registerLazySingleton<TagConfigService>(
+        () => TagConfigService(),
+      );
+
       // Global ingredient repository with in-memory caching
       container.registerLazySingleton<IngredientRepository>(
         () => FirebaseIngredientRepository(),
@@ -75,7 +92,31 @@ class TaggingModule implements DIModule {
       container.registerLazySingleton<TaggingService>(
         () => TaggingService(
           lookupService: container<IngredientLookupService>(),
+          tagConfigService: container<TagConfigService>(),
           userIngredientRepository: container<UserIngredientRepository>(),
+        ),
+      );
+
+      // Personal tag repository for user-defined tags
+      container.registerLazySingleton<FirebasePersonalTagRepository>(
+        () => FirebasePersonalTagRepository(
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
+      // Personal tag group repository for organizing tags
+      container.registerLazySingleton<FirebasePersonalTagGroupRepository>(
+        () => FirebasePersonalTagGroupRepository(
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
+      // Personal tag service for tag management and rule evaluation
+      container.registerLazySingleton<PersonalTagService>(
+        () => PersonalTagService(
+          tagRepository: container<FirebasePersonalTagRepository>(),
+          groupRepository: container<FirebasePersonalTagGroupRepository>(),
+          lookupService: container<IngredientLookupService>(),
         ),
       );
     } catch (e) {
@@ -93,9 +134,17 @@ class TaggingModule implements DIModule {
     try {
       final container = GetIt.instance;
 
+      // Initialize TagConfigService first (loads tag configs from Firebase)
+      final tagConfigService = container<TagConfigService>();
+      await tagConfigService.initialize();
+
       // Initialize TaggingService (which initializes IngredientLookupService)
       final taggingService = container<TaggingService>();
       await taggingService.initialize();
+
+      // Initialize PersonalTagService
+      final personalTagService = container<PersonalTagService>();
+      await personalTagService.initialize();
     } catch (e) {
       throw DIModuleException(
         name,
@@ -112,10 +161,16 @@ class TaggingModule implements DIModule {
       final container = GetIt.instance;
 
       final services = <String, dynamic>{
+        'TagConfigService': container<TagConfigService>(),
         'IngredientRepository': container<IngredientRepository>(),
         'UserIngredientRepository': container<UserIngredientRepository>(),
         'IngredientLookupService': container<IngredientLookupService>(),
         'TaggingService': container<TaggingService>(),
+        'FirebasePersonalTagRepository':
+            container<FirebasePersonalTagRepository>(),
+        'FirebasePersonalTagGroupRepository':
+            container<FirebasePersonalTagGroupRepository>(),
+        'PersonalTagService': container<PersonalTagService>(),
       };
 
       for (final entry in services.entries) {

@@ -35,7 +35,23 @@ class SearchService extends BaseService {
     if (tags.isEmpty) return recipes;
 
     return recipes.where((recipe) {
-      return tags.every((tag) => (recipe.personalTags?.contains(tag)).orFalse());
+      return tags
+          .every((tag) => (recipe.personalTagIds?.contains(tag)).orFalse());
+    }).toList();
+  }
+
+  /// Filtrerar bort recept som har någon av de exkluderade taggarna.
+  ///
+  /// Använder OR-logik för exkludering - om receptet har NÅGON av de
+  /// exkluderade taggarna så tas det bort från resultatet.
+  List<Recipe> filterByExcludedTags(
+      List<Recipe> recipes, List<String> excludedTags) {
+    if (excludedTags.isEmpty) return recipes;
+
+    return recipes.where((recipe) {
+      final recipeTags = recipe.personalTagIds ?? [];
+      // Behåll receptet om det INTE har någon av de exkluderade taggarna
+      return !excludedTags.any((tag) => recipeTags.contains(tag));
     }).toList();
   }
 
@@ -80,12 +96,13 @@ class SearchService extends BaseService {
     return filtered;
   }
 
-  /// Advanced multi-criteria search with query, mealType, tags, maxTime, minRating, and portions filters (sequential).
+  /// Advanced multi-criteria search with query, mealType, tags, excludedTags, maxTime, minRating, and portions filters (sequential).
   List<Recipe> advancedSearch(
     List<Recipe> recipes, {
     String? searchQuery,
     String? mealType,
     List<String>? tags,
+    List<String>? excludedTags,
     int? maxTime,
     double? minRating,
     int? minPortions,
@@ -104,6 +121,10 @@ class SearchService extends BaseService {
 
     if (tags != null && tags.isNotEmpty) {
       filtered = filterByTags(filtered, tags);
+    }
+
+    if (excludedTags != null && excludedTags.isNotEmpty) {
+      filtered = filterByExcludedTags(filtered, excludedTags);
     }
 
     if (maxTime != null) {
@@ -225,8 +246,8 @@ class SearchService extends BaseService {
       }
 
       // Tagg-förslag
-      if (recipe.personalTags != null) {
-        for (final tag in recipe.personalTags!) {
+      if (recipe.personalTagIds != null) {
+        for (final tag in recipe.personalTagIds!) {
           if (tag.toLowerCase().contains(lowerPartial)) {
             suggestions.add(tag);
           }
@@ -247,8 +268,8 @@ class SearchService extends BaseService {
           (termFrequency[recipe.mealType]).orZero() + 1;
 
       // Räkna taggar
-      if (recipe.personalTags != null) {
-        for (final tag in recipe.personalTags!) {
+      if (recipe.personalTagIds != null) {
+        for (final tag in recipe.personalTagIds!) {
           termFrequency[tag] = (termFrequency[tag]).orZero() + 1;
         }
       }
@@ -295,7 +316,7 @@ class SearchService extends BaseService {
     }
 
     // Taggar
-    if ((recipe.personalTags?.any(
+    if ((recipe.personalTagIds?.any(
       (tag) => tag.toLowerCase().contains(query),
     )).orFalse()) {
       return true;
@@ -397,6 +418,7 @@ class SearchParameters {
   final String? query;
   final String? mealType;
   final List<String> tags;
+  final List<String> excludedTags;
   final int? maxTime;
   final double? minRating;
   final int? minPortions;
@@ -411,6 +433,7 @@ class SearchParameters {
   /// [query] Optional text search query for full-text recipe matching
   /// [mealType] Optional meal category filter for category-based discovery
   /// [tags] List of tags for AND-logic filtering (defaults to empty list)
+  /// [excludedTags] List of tags to exclude - recipes with ANY of these are filtered out
   /// [maxTime] Optional maximum cooking time filter in minutes
   /// [minRating] Optional minimum rating threshold for quality filtering
   /// [minPortions] Optional minimum serving size filter
@@ -421,6 +444,7 @@ class SearchParameters {
     this.query,
     this.mealType,
     this.tags = const [],
+    this.excludedTags = const [],
     this.maxTime,
     this.minRating,
     this.minPortions,
@@ -433,6 +457,7 @@ class SearchParameters {
     String? query,
     String? mealType,
     List<String>? tags,
+    List<String>? excludedTags,
     int? maxTime,
     double? minRating,
     int? minPortions,
@@ -444,6 +469,7 @@ class SearchParameters {
       query: query ?? this.query,
       mealType: mealType ?? this.mealType,
       tags: tags ?? this.tags,
+      excludedTags: excludedTags ?? this.excludedTags,
       maxTime: maxTime ?? this.maxTime,
       minRating: minRating ?? this.minRating,
       minPortions: minPortions ?? this.minPortions,

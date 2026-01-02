@@ -295,7 +295,7 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   void addTagToRecipe(String tag) {
     if (parsedRecipe == null || tag.trim().isEmpty) return;
 
-    final currentTags = List<String>.from(parsedRecipe!.tags ?? []);
+    final currentTags = List<String>.from(parsedRecipe!.personalTagIds ?? []);
     if (!currentTags.contains(tag.trim())) {
       currentTags.add(tag.trim());
       updateParsedRecipe(tags: currentTags);
@@ -309,7 +309,7 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   void removeTagFromRecipe(String tag) {
     if (parsedRecipe == null) return;
 
-    final currentTags = List<String>.from(parsedRecipe!.tags ?? []);
+    final currentTags = List<String>.from(parsedRecipe!.personalTagIds ?? []);
     currentTags.remove(tag);
     updateParsedRecipe(tags: currentTags);
   }

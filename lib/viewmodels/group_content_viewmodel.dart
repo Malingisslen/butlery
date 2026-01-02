@@ -346,7 +346,7 @@ class GroupContentViewModel extends ChangeNotifier
           portions: content.metadata['portions'] as int?,
           timeMinutes: content.metadata['timeMinutes'] as int?,
           rating: (content.metadata['rating'] as num?)?.toDouble(),
-          tags:
+          personalTagIds:
               List<String>.from((content.metadata['tags'] as List?).orEmpty()),
           sourceUrl: content.metadata['sourceUrl'] as String?,
           createdAt: content.sharedAt,
@@ -424,7 +424,7 @@ class GroupContentViewModel extends ChangeNotifier
                   portions: recipeData['portions'] as int?,
                   timeMinutes: recipeData['timeMinutes'] as int?,
                   rating: (recipeData['rating'] as num?)?.toDouble(),
-                  tags: List<String>.from(
+                  personalTagIds: List<String>.from(
                       (recipeData['tags'] as List?).orEmpty()),
                   sourceUrl: recipeData['sourceUrl'] as String?,
                   createdAt: content.sharedAt,

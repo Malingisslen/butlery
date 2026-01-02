@@ -57,7 +57,7 @@ class PersonalRecipeOperations {
         portions: unifiedRecipe.portions,
         timeMinutes: unifiedRecipe.timeMinutes,
         rating: unifiedRecipe.rating,
-        tags: unifiedRecipe.tags,
+        personalTagIds: unifiedRecipe.personalTagIds,
         sourceUrl: unifiedRecipe.sourceUrl,
       );
 
@@ -128,7 +128,7 @@ class PersonalRecipeOperations {
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
   }) async {
     return await _parent.createRecipe(
@@ -141,7 +141,7 @@ class PersonalRecipeOperations {
       portions: portions,
       timeMinutes: timeMinutes,
       rating: rating,
-      tags: tags,
+      personalTagIds: personalTagIds,
       sourceUrl: sourceUrl,
     );
   }
@@ -165,7 +165,7 @@ class PersonalRecipeOperations {
     double? rating,
     List<String>? ingredients,
     List<String>? instructions,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
   }) async {
     return await _parent.updateRecipeContent(
@@ -178,7 +178,7 @@ class PersonalRecipeOperations {
       rating: rating,
       ingredients: ingredients,
       instructions: instructions,
-      tags: tags,
+      personalTagIds: personalTagIds,
       sourceUrl: sourceUrl,
     );
   }

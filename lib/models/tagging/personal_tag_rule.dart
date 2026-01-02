@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 
 /// How multiple conditions are combined in a rule.
 enum MatchMode {
@@ -42,8 +43,35 @@ enum ConditionType {
   /// Match against recipe title or description.
   keyword,
 
-  /// Match against recipe source URL.
+  /// Match against recipe source URL (contains substring).
   sourceUrl,
+
+  /// Match against auto-generated cuisine tags.
+  cuisine,
+
+  /// Match against dietary status (vegetarian, vegan, etc.).
+  dietary,
+
+  /// Match against cooking time in minutes.
+  time,
+
+  /// Match against user rating (1-5).
+  rating,
+
+  /// Match against recipe age (days since added).
+  recency,
+
+  /// Match against recipe ownership/collaboration status.
+  /// Values: 'mine', 'shared', 'collaborative', 'public'
+  ownership,
+
+  /// Match against whether recipe has an image.
+  /// Boolean condition: true = has image, false = no image.
+  hasImage,
+
+  /// Match against recipe completeness.
+  /// Values: 'missing_image', 'missing_description', 'incomplete'
+  completeness,
 }
 
 /// Extension methods for ConditionType serialization.
@@ -61,6 +89,23 @@ extension ConditionTypeExtension on ConditionType {
       case 'sourceurl':
       case 'source_url':
         return ConditionType.sourceUrl;
+      case 'cuisine':
+        return ConditionType.cuisine;
+      case 'dietary':
+        return ConditionType.dietary;
+      case 'time':
+        return ConditionType.time;
+      case 'rating':
+        return ConditionType.rating;
+      case 'recency':
+        return ConditionType.recency;
+      case 'ownership':
+        return ConditionType.ownership;
+      case 'hasimage':
+      case 'has_image':
+        return ConditionType.hasImage;
+      case 'completeness':
+        return ConditionType.completeness;
       default:
         return ConditionType.keyword; // Safe default
     }
@@ -77,12 +122,51 @@ extension ConditionTypeExtension on ConditionType {
         return 'Nyckelord';
       case ConditionType.sourceUrl:
         return 'Källa';
+      case ConditionType.cuisine:
+        return 'Kök';
+      case ConditionType.dietary:
+        return 'Kost';
+      case ConditionType.time:
+        return 'Tid';
+      case ConditionType.rating:
+        return 'Betyg';
+      case ConditionType.recency:
+        return 'Nyligen';
+      case ConditionType.ownership:
+        return 'Ägarskap';
+      case ConditionType.hasImage:
+        return 'Har bild';
+      case ConditionType.completeness:
+        return 'Fullständighet';
+    }
+  }
+
+  /// Returns true if this condition type uses numeric values.
+  bool get isNumeric {
+    switch (this) {
+      case ConditionType.time:
+      case ConditionType.rating:
+      case ConditionType.recency:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /// Returns true if this condition type uses boolean values.
+  bool get isBoolean {
+    switch (this) {
+      case ConditionType.hasImage:
+        return true;
+      default:
+        return false;
     }
   }
 }
 
 /// Comparison operator for condition evaluation.
 enum ConditionOperator {
+  // Text operators
   /// Value must be contained in text.
   contains,
 
@@ -97,6 +181,29 @@ enum ConditionOperator {
 
   /// Value must NOT equal text exactly.
   notEquals,
+
+  // Property operators
+  /// Ingredient must have property.
+  has,
+
+  /// Ingredient must NOT have property.
+  notHas,
+
+  // Numeric operators
+  /// Numeric value must be less than.
+  lessThan,
+
+  /// Numeric value must be less than or equal.
+  lessThanOrEqual,
+
+  /// Numeric value must be greater than.
+  greaterThan,
+
+  /// Numeric value must be greater than or equal.
+  greaterThanOrEqual,
+
+  /// Recipe must be added within X days.
+  withinDays,
 }
 
 /// Extension methods for ConditionOperator serialization.
@@ -105,6 +212,7 @@ extension ConditionOperatorExtension on ConditionOperator {
 
   static ConditionOperator fromFirestore(String? value) {
     switch (value?.toLowerCase()) {
+      // Text operators
       case 'contains':
         return ConditionOperator.contains;
       case 'equals':
@@ -118,6 +226,28 @@ extension ConditionOperatorExtension on ConditionOperator {
       case 'notequals':
       case 'not_equals':
         return ConditionOperator.notEquals;
+      // Property operators
+      case 'has':
+        return ConditionOperator.has;
+      case 'nothas':
+      case 'not_has':
+        return ConditionOperator.notHas;
+      // Numeric operators
+      case 'lessthan':
+      case 'less_than':
+        return ConditionOperator.lessThan;
+      case 'lessthanorequal':
+      case 'less_than_or_equal':
+        return ConditionOperator.lessThanOrEqual;
+      case 'greaterthan':
+      case 'greater_than':
+        return ConditionOperator.greaterThan;
+      case 'greaterthanorequal':
+      case 'greater_than_or_equal':
+        return ConditionOperator.greaterThanOrEqual;
+      case 'withindays':
+      case 'within_days':
+        return ConditionOperator.withinDays;
       default:
         return ConditionOperator.contains; // Safe default
     }
@@ -136,6 +266,34 @@ extension ConditionOperatorExtension on ConditionOperator {
         return 'innehåller inte';
       case ConditionOperator.notEquals:
         return 'är inte';
+      case ConditionOperator.has:
+        return 'har';
+      case ConditionOperator.notHas:
+        return 'har inte';
+      case ConditionOperator.lessThan:
+        return 'mindre än';
+      case ConditionOperator.lessThanOrEqual:
+        return 'högst';
+      case ConditionOperator.greaterThan:
+        return 'mer än';
+      case ConditionOperator.greaterThanOrEqual:
+        return 'minst';
+      case ConditionOperator.withinDays:
+        return 'inom dagar';
+    }
+  }
+
+  /// Returns true if this operator works with numeric values.
+  bool get isNumeric {
+    switch (this) {
+      case ConditionOperator.lessThan:
+      case ConditionOperator.lessThanOrEqual:
+      case ConditionOperator.greaterThan:
+      case ConditionOperator.greaterThanOrEqual:
+      case ConditionOperator.withinDays:
+        return true;
+      default:
+        return false;
     }
   }
 }
@@ -153,9 +311,10 @@ class RuleCondition {
   final ConditionOperator operator;
 
   /// The value to match.
-  final String value;
+  /// String for text-based conditions, num for numeric conditions.
+  final dynamic value;
 
-  /// Whether matching is case-sensitive.
+  /// Whether matching is case-sensitive (text conditions only).
   final bool caseSensitive;
 
   const RuleCondition({
@@ -167,11 +326,14 @@ class RuleCondition {
 
   /// Creates from Firestore/JSON map.
   factory RuleCondition.fromMap(Map<String, dynamic> data) {
+    final type = ConditionTypeExtension.fromFirestore(data['type']?.toString());
     return RuleCondition(
-      type: ConditionTypeExtension.fromFirestore(data['type']?.toString()),
-      operator:
-          ConditionOperatorExtension.fromFirestore(data['operator']?.toString()),
-      value: SerializationUtils.safeString(data, 'value', defaultValue: ''),
+      type: type,
+      operator: ConditionOperatorExtension.fromFirestore(
+          data['operator']?.toString()),
+      value: type.isNumeric
+          ? SerializationUtils.safeDouble(data, 'value', defaultValue: 0)
+          : SerializationUtils.safeString(data, 'value', defaultValue: ''),
       caseSensitive: SerializationUtils.safeBool(
         data,
         'caseSensitive',
@@ -190,12 +352,27 @@ class RuleCondition {
     };
   }
 
+  /// Returns the value as a string (for text-based conditions).
+  String get stringValue => value?.toString() ?? '';
+
+  /// Returns the value as a number (for numeric conditions).
+  num get numericValue {
+    if (value is num) return value;
+    if (value is String) return num.tryParse(value) ?? 0;
+    return 0;
+  }
+
   /// Evaluates this condition against a recipe.
   ///
   /// [recipe] The recipe to evaluate.
   /// [lookup] Optional ingredient lookup result for property matching.
   ///          Required for ConditionType.property.
-  bool evaluate(Recipe recipe, IngredientLookupResult? lookup) {
+  /// [currentUserId] Optional current user ID for ownership evaluation.
+  bool evaluate(
+    Recipe recipe,
+    IngredientLookupResult? lookup, {
+    String? currentUserId,
+  }) {
     switch (type) {
       case ConditionType.ingredient:
         return _evaluateIngredient(recipe);
@@ -205,16 +382,32 @@ class RuleCondition {
         return _evaluateKeyword(recipe);
       case ConditionType.sourceUrl:
         return _evaluateSourceUrl(recipe);
+      case ConditionType.cuisine:
+        return _evaluateCuisine(recipe);
+      case ConditionType.dietary:
+        return _evaluateDietary(recipe);
+      case ConditionType.time:
+        return _evaluateTime(recipe);
+      case ConditionType.rating:
+        return _evaluateRating(recipe);
+      case ConditionType.recency:
+        return _evaluateRecency(recipe);
+      case ConditionType.ownership:
+        return _evaluateOwnership(recipe, currentUserId);
+      case ConditionType.hasImage:
+        return _evaluateHasImage(recipe);
+      case ConditionType.completeness:
+        return _evaluateCompleteness(recipe);
     }
   }
 
   bool _evaluateIngredient(Recipe recipe) {
     final ingredients = recipe.ingredients;
-    final searchValue = caseSensitive ? value : value.toLowerCase();
+    final searchVal = caseSensitive ? stringValue : stringValue.toLowerCase();
 
     for (final ingredient in ingredients) {
       final text = caseSensitive ? ingredient : ingredient.toLowerCase();
-      if (_matchOperator(text, searchValue)) {
+      if (_matchTextOperator(text, searchVal)) {
         return true;
       }
     }
@@ -226,32 +419,33 @@ class RuleCondition {
 
     // Property matching uses the ingredient database
     // Value should be a property name like 'seafood', 'meat', 'dairy'
-    final propertyName = value.toLowerCase().trim();
+    final propertyName = stringValue.toLowerCase().trim();
 
     switch (operator) {
+      case ConditionOperator.has:
       case ConditionOperator.contains:
       case ConditionOperator.equals:
         // Check if any matched ingredient has this property
         return lookup.matched.any((ing) => ing.hasProperty(propertyName));
+      case ConditionOperator.notHas:
       case ConditionOperator.notContains:
       case ConditionOperator.notEquals:
         // Check if NO matched ingredient has this property
         return !lookup.matched.any((ing) => ing.hasProperty(propertyName));
-      case ConditionOperator.startsWith:
-        // startsWith doesn't make sense for properties, treat as contains
+      default:
+        // Other operators don't apply to properties
         return lookup.matched.any((ing) => ing.hasProperty(propertyName));
     }
   }
 
   bool _evaluateKeyword(Recipe recipe) {
     final title = caseSensitive ? recipe.title : recipe.title.toLowerCase();
-    final description = caseSensitive
-        ? recipe.description
-        : recipe.description.toLowerCase();
-    final searchValue = caseSensitive ? value : value.toLowerCase();
+    final description =
+        caseSensitive ? recipe.description : recipe.description.toLowerCase();
+    final searchVal = caseSensitive ? stringValue : stringValue.toLowerCase();
 
-    return _matchOperator(title, searchValue) ||
-        _matchOperator(description, searchValue);
+    return _matchTextOperator(title, searchVal) ||
+        _matchTextOperator(description, searchVal);
   }
 
   bool _evaluateSourceUrl(Recipe recipe) {
@@ -259,12 +453,162 @@ class RuleCondition {
     if (url.isEmpty) return operator == ConditionOperator.notContains;
 
     final urlLower = caseSensitive ? url : url.toLowerCase();
-    final searchValue = caseSensitive ? value : value.toLowerCase();
+    final searchVal = caseSensitive ? stringValue : stringValue.toLowerCase();
 
-    return _matchOperator(urlLower, searchValue);
+    return _matchTextOperator(urlLower, searchVal);
   }
 
-  bool _matchOperator(String text, String searchValue) {
+  bool _evaluateCuisine(Recipe recipe) {
+    final tagResult = recipe.core.tagResult;
+    if (tagResult == null) return false;
+
+    // Cuisine tags are stored without prefix in tags set
+    final cuisineValue = stringValue.toLowerCase().trim();
+
+    switch (operator) {
+      case ConditionOperator.equals:
+        return tagResult.tags.any((tag) => tag.toLowerCase() == cuisineValue);
+      case ConditionOperator.notEquals:
+        return !tagResult.tags.any((tag) => tag.toLowerCase() == cuisineValue);
+      case ConditionOperator.contains:
+        return tagResult.tags
+            .any((tag) => tag.toLowerCase().contains(cuisineValue));
+      default:
+        return tagResult.tags.any((tag) => tag.toLowerCase() == cuisineValue);
+    }
+  }
+
+  bool _evaluateDietary(Recipe recipe) {
+    final tagResult = recipe.core.tagResult;
+    if (tagResult == null) return false;
+
+    final dietaryKey = stringValue.toLowerCase().trim();
+    final status = tagResult.dietaryStatus[dietaryKey];
+
+    switch (operator) {
+      case ConditionOperator.equals:
+        // Check if dietary status is explicitly FREE
+        return status?.isFree ?? false;
+      case ConditionOperator.notEquals:
+        // Check if dietary status is NOT free (contains or unknown)
+        return !(status?.isFree ?? false);
+      default:
+        return status?.isFree ?? false;
+    }
+  }
+
+  bool _evaluateTime(Recipe recipe) {
+    final timeMinutes = recipe.core.timeMinutes ?? 0;
+    return _matchNumericOperator(
+        timeMinutes.toDouble(), numericValue.toDouble());
+  }
+
+  bool _evaluateRating(Recipe recipe) {
+    // User rating is stored as 'rating' field on RecipeCore
+    final rating = recipe.core.rating ?? 0;
+    return _matchNumericOperator(rating.toDouble(), numericValue.toDouble());
+  }
+
+  bool _evaluateRecency(Recipe recipe) {
+    final createdAt = recipe.core.createdAt;
+    final daysSinceCreated = DateTime.now().difference(createdAt).inDays;
+
+    // For recency, withinDays is the primary operator
+    if (operator == ConditionOperator.withinDays) {
+      return daysSinceCreated <= numericValue;
+    }
+
+    return _matchNumericOperator(
+        daysSinceCreated.toDouble(), numericValue.toDouble());
+  }
+
+  /// Evaluates ownership condition.
+  /// Values: 'mine', 'shared', 'collaborative', 'public'
+  bool _evaluateOwnership(Recipe recipe, String? currentUserId) {
+    final ownershipValue = stringValue.toLowerCase().trim();
+
+    // Get ownership info from recipe and its socialData
+    final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
+    final isCollaborative = recipe.type == RecipeType.collaborative ||
+        recipe.type == RecipeType.realtime;
+    final isPublic = recipe.isPublic;
+
+    String actualOwnership;
+    if (currentUserId != null && ownerId == currentUserId) {
+      actualOwnership = 'mine';
+    } else if (isCollaborative) {
+      actualOwnership = 'collaborative';
+    } else if (isPublic) {
+      actualOwnership = 'public';
+    } else {
+      actualOwnership = 'shared';
+    }
+
+    switch (operator) {
+      case ConditionOperator.equals:
+        return actualOwnership == ownershipValue;
+      case ConditionOperator.notEquals:
+        return actualOwnership != ownershipValue;
+      default:
+        return actualOwnership == ownershipValue;
+    }
+  }
+
+  /// Evaluates hasImage condition.
+  /// Boolean: true = has image, false = no image.
+  bool _evaluateHasImage(Recipe recipe) {
+    final hasImage = recipe.hasImages;
+
+    // For boolean conditions, value should be 'true' or 'false'
+    final expectedHasImage = stringValue.toLowerCase() == 'true';
+
+    switch (operator) {
+      case ConditionOperator.equals:
+        return hasImage == expectedHasImage;
+      case ConditionOperator.notEquals:
+        return hasImage != expectedHasImage;
+      default:
+        return hasImage == expectedHasImage;
+    }
+  }
+
+  /// Evaluates completeness condition.
+  /// Values: 'missing_image', 'missing_description', 'incomplete'
+  bool _evaluateCompleteness(Recipe recipe) {
+    final completenessValue = stringValue.toLowerCase().trim();
+
+    final hasImage = recipe.hasImages;
+    final hasDescription = recipe.description.isNotEmpty;
+
+    bool matches;
+    switch (completenessValue) {
+      case 'missing_image':
+        matches = !hasImage;
+        break;
+      case 'missing_description':
+        matches = !hasDescription;
+        break;
+      case 'incomplete':
+        matches = !hasImage || !hasDescription;
+        break;
+      case 'complete':
+        matches = hasImage && hasDescription;
+        break;
+      default:
+        matches = false;
+    }
+
+    switch (operator) {
+      case ConditionOperator.equals:
+        return matches;
+      case ConditionOperator.notEquals:
+        return !matches;
+      default:
+        return matches;
+    }
+  }
+
+  bool _matchTextOperator(String text, String searchValue) {
     switch (operator) {
       case ConditionOperator.contains:
         return text.contains(searchValue);
@@ -276,6 +620,31 @@ class RuleCondition {
         return !text.contains(searchValue);
       case ConditionOperator.notEquals:
         return text != searchValue;
+      default:
+        // Numeric operators don't apply to text
+        return text.contains(searchValue);
+    }
+  }
+
+  bool _matchNumericOperator(double actual, double expected) {
+    switch (operator) {
+      case ConditionOperator.equals:
+        return actual == expected;
+      case ConditionOperator.notEquals:
+        return actual != expected;
+      case ConditionOperator.lessThan:
+        return actual < expected;
+      case ConditionOperator.lessThanOrEqual:
+        return actual <= expected;
+      case ConditionOperator.greaterThan:
+        return actual > expected;
+      case ConditionOperator.greaterThanOrEqual:
+        return actual >= expected;
+      case ConditionOperator.withinDays:
+        return actual <= expected;
+      default:
+        // Text operators don't apply to numbers
+        return actual == expected;
     }
   }
 
@@ -283,7 +652,7 @@ class RuleCondition {
   RuleCondition copyWith({
     ConditionType? type,
     ConditionOperator? operator,
-    String? value,
+    dynamic value,
     bool? caseSensitive,
   }) {
     return RuleCondition(
@@ -308,21 +677,27 @@ class RuleCondition {
   int get hashCode => Object.hash(type, operator, value, caseSensitive);
 
   @override
-  String toString() =>
-      'RuleCondition(${type.label} ${operator.label} "$value")';
+  String toString() {
+    final displayValue = type.isNumeric ? numericValue : '"$stringValue"';
+    return 'RuleCondition(${type.label} ${operator.label} $displayValue)';
+  }
 }
 
 /// A rule for automatically applying a PersonalTag to recipes.
 ///
-/// Rules are stored in users/{userId}/personalTagRules/{ruleId} and
-/// are evaluated when recipes are saved or edited. If a rule matches,
-/// its associated PersonalTag is automatically added to the recipe.
+/// Rules are embedded within PersonalTag documents:
+/// `users/{userId}/personalTags/{tagId}` with a `rules` array.
+///
+/// When evaluated, if a rule matches, its parent PersonalTag is
+/// automatically added to the recipe with source tracking.
 @immutable
 class PersonalTagRule {
-  /// Unique identifier (Firestore document ID).
+  /// Unique identifier for this rule.
   final String id;
 
   /// The PersonalTag ID this rule applies.
+  /// Note: When embedded in a PersonalTag, this may be empty as
+  /// the parent tag context provides the association.
   final String tagId;
 
   /// Descriptive name for this rule (e.g., "Fish recipes").
@@ -345,7 +720,7 @@ class PersonalTagRule {
 
   const PersonalTagRule({
     required this.id,
-    required this.tagId,
+    this.tagId = '',
     required this.name,
     required this.conditions,
     this.matchMode = MatchMode.all,
@@ -391,7 +766,8 @@ class PersonalTagRule {
       tagId: SerializationUtils.safeString(data, 'tagId', defaultValue: ''),
       name: SerializationUtils.safeString(data, 'name', defaultValue: ''),
       conditions: _parseConditions(data['conditions']),
-      matchMode: MatchModeExtension.fromFirestore(data['matchMode']?.toString()),
+      matchMode:
+          MatchModeExtension.fromFirestore(data['matchMode']?.toString()),
       isEnabled: SerializationUtils.safeBool(
         data,
         'isEnabled',
@@ -430,7 +806,8 @@ class PersonalTagRule {
       tagId: SerializationUtils.safeString(json, 'tagId', defaultValue: ''),
       name: SerializationUtils.safeString(json, 'name', defaultValue: ''),
       conditions: _parseConditions(json['conditions']),
-      matchMode: MatchModeExtension.fromFirestore(json['matchMode']?.toString()),
+      matchMode:
+          MatchModeExtension.fromFirestore(json['matchMode']?.toString()),
       isEnabled: SerializationUtils.safeBool(
         json,
         'isEnabled',
@@ -439,6 +816,49 @@ class PersonalTagRule {
       createdAt: parseDateTime(json['createdAt']),
       updatedAt: parseDateTime(json['updatedAt']),
     );
+  }
+
+  /// Creates from embedded map data (within a PersonalTag document).
+  /// Does not require tagId since the parent tag provides context.
+  factory PersonalTagRule.fromEmbeddedMap(Map<String, dynamic> data) {
+    DateTime parseDateTime(dynamic value) {
+      if (value == null) return DateTime.now();
+      if (value is DateTime) return value;
+      if (value is String) return DateTime.parse(value);
+      if (value is Timestamp) return value.toDate();
+      return DateTime.now();
+    }
+
+    return PersonalTagRule(
+      id: SerializationUtils.safeString(data, 'id',
+          defaultValue: const Uuid().v4()),
+      tagId: '', // Not needed for embedded rules
+      name: SerializationUtils.safeString(data, 'name', defaultValue: ''),
+      conditions: _parseConditions(data['conditions']),
+      matchMode:
+          MatchModeExtension.fromFirestore(data['matchMode']?.toString()),
+      isEnabled: SerializationUtils.safeBool(
+        data,
+        'isEnabled',
+        defaultValue: true,
+      ),
+      createdAt: parseDateTime(data['createdAt']),
+      updatedAt: parseDateTime(data['updatedAt']),
+    );
+  }
+
+  /// Converts to embedded map (for storing within PersonalTag).
+  /// Excludes tagId since parent tag provides context.
+  Map<String, dynamic> toEmbeddedMap() {
+    return {
+      'id': id,
+      'name': name,
+      'conditions': conditions.map((c) => c.toMap()).toList(),
+      'matchMode': matchMode.toFirestore(),
+      'isEnabled': isEnabled,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'updatedAt': Timestamp.fromDate(updatedAt),
+    };
   }
 
   static List<RuleCondition> _parseConditions(dynamic value) {
@@ -484,21 +904,32 @@ class PersonalTagRule {
   ///
   /// [recipe] The recipe to evaluate.
   /// [lookup] Optional ingredient lookup result for property matching.
-  bool evaluate(Recipe recipe, IngredientLookupResult? lookup) {
+  /// [currentUserId] Optional current user ID for ownership evaluation.
+  bool evaluate(
+    Recipe recipe,
+    IngredientLookupResult? lookup, {
+    String? currentUserId,
+  }) {
     if (!isEnabled) return false;
     if (conditions.isEmpty) return false;
 
     switch (matchMode) {
       case MatchMode.all:
-        return conditions.every((c) => c.evaluate(recipe, lookup));
+        return conditions.every(
+            (c) => c.evaluate(recipe, lookup, currentUserId: currentUserId));
       case MatchMode.any:
-        return conditions.any((c) => c.evaluate(recipe, lookup));
+        return conditions.any(
+            (c) => c.evaluate(recipe, lookup, currentUserId: currentUserId));
     }
   }
 
   /// Returns true if this rule requires ingredient lookup data.
   bool get requiresLookup =>
       conditions.any((c) => c.type == ConditionType.property);
+
+  /// Returns true if this rule requires current user ID for ownership evaluation.
+  bool get requiresCurrentUser =>
+      conditions.any((c) => c.type == ConditionType.ownership);
 
   /// Creates a copy with optional field overrides.
   PersonalTagRule copyWith({
@@ -525,8 +956,10 @@ class PersonalTagRule {
 
   /// Validates the rule.
   /// Returns null if valid, error message if invalid.
-  static String? validate(PersonalTagRule rule) {
-    if (rule.tagId.isEmpty) {
+  ///
+  /// [requireTagId] - Set to false for embedded rules where tagId is not needed.
+  static String? validate(PersonalTagRule rule, {bool requireTagId = true}) {
+    if (requireTagId && rule.tagId.isEmpty) {
       return 'Regel måste kopplas till en tagg';
     }
     if (rule.name.trim().isEmpty) {
@@ -536,15 +969,33 @@ class PersonalTagRule {
       return 'Regel måste ha minst ett villkor';
     }
     for (final condition in rule.conditions) {
-      if (condition.value.trim().isEmpty) {
-        return 'Alla villkor måste ha ett värde';
+      // Validate based on condition type
+      if (condition.type.isNumeric) {
+        // Numeric conditions need a valid number
+        if (condition.value == null ||
+            (condition.value is String && condition.value.isEmpty)) {
+          return 'Alla villkor måste ha ett värde';
+        }
+      } else {
+        // Text conditions need a non-empty string
+        if (condition.stringValue.trim().isEmpty) {
+          return 'Alla villkor måste ha ett värde';
+        }
       }
     }
     return null;
   }
 
+  /// Validates this rule for embedded use (within PersonalTag).
+  static String? validateEmbedded(PersonalTagRule rule) {
+    return validate(rule, requireTagId: false);
+  }
+
   /// Returns true if this rule has valid data.
   bool get isValid => validate(this) == null;
+
+  /// Returns true if this rule has valid data for embedded use.
+  bool get isValidEmbedded => validateEmbedded(this) == null;
 
   // ID-based equality
   @override

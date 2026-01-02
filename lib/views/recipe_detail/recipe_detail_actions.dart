@@ -10,6 +10,7 @@ import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.d
 import 'package:butlery/views/recipe_detail/handlers/recipe_social_handler.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_shopping_handler.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_tagging_handler.dart';
+import 'package:butlery/views/recipe_detail/handlers/recipe_personal_tag_handler.dart';
 
 /// Recipe detail actions facade
 /// **SRP Compliance:** This facade coordinates action handlers and manages view state.
@@ -126,6 +127,11 @@ class RecipeDetailActions {
       context,
       showSnackBar: _showSnackBar,
     );
+  }
+
+  /// Quick add/remove personal tags
+  Future<void> showPersonalTagSelector(BuildContext context) async {
+    await RecipePersonalTagHandler.showQuickTagSelector(context);
   }
 
   // UI HELPER METHODS

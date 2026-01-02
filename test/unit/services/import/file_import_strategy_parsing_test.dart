@@ -440,10 +440,10 @@ Recipe,"vegetarian,quick,easy"''';
 
         // Assert
         expect(result.isSuccess, isTrue);
-        expect(result.recipe!.tags, hasLength(3));
-        expect(result.recipe!.tags, contains('vegetarian'));
-        expect(result.recipe!.tags, contains('quick'));
-        expect(result.recipe!.tags, contains('easy'));
+        expect(result.recipe!.personalTagIds, hasLength(3));
+        expect(result.recipe!.personalTagIds, contains('vegetarian'));
+        expect(result.recipe!.personalTagIds, contains('quick'));
+        expect(result.recipe!.personalTagIds, contains('easy'));
       });
     });
 

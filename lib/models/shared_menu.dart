@@ -323,8 +323,8 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
                     recipeMap, 'timeMinutes'),
                 rating: utils.SerializationUtils.safeNullableDouble(
                     recipeMap, 'rating'),
-                tags:
-                    utils.SerializationUtils.safeStringList(recipeMap, 'tags'),
+                personalTagIds: utils.SerializationUtils.safeStringList(
+                    recipeMap, 'personalTagIds'),
                 sourceUrl: utils.SerializationUtils.safeNullableString(
                     recipeMap, 'sourceUrl'),
                 createdAt: utils.SerializationUtils.safeDateTime(

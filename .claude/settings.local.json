@@ -55,7 +55,11 @@
       "Bash(test/unit/services/tagging/ )",
       "Bash(test/unit/utils/text/swedish_character_normalizer_test.dart )",
       "Bash(test/unit/models/tagging/ )",
-      "Bash(test/infrastructure/helpers/tagging_test_helper.dart)"
+      "Bash(test/infrastructure/helpers/tagging_test_helper.dart)",
+      "Skill(interview)",
+      "Bash(GOOGLE_APPLICATION_CREDENTIALS=../service-account.json node:*)",
+      "Bash(cd:*)",
+      "Skill(fixall)"
     ],
     "deny": [],
     "ask": []

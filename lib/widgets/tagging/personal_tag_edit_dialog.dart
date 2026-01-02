@@ -4,7 +4,17 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/tagging/personal_tag_color_picker.dart';
+
+/// Result from tag edit dialog including wizard flow choice.
+class PersonalTagEditResult {
+  final PersonalTag tag;
+  final bool shouldCreateRule;
+
+  const PersonalTagEditResult({
+    required this.tag,
+    this.shouldCreateRule = false,
+  });
+}
 
 /// Dialog for creating or editing a personal tag.
 ///
@@ -23,7 +33,8 @@ class PersonalTagEditDialog extends StatefulWidget {
   static Future<PersonalTag?> show(
     BuildContext context, {
     PersonalTag? existingTag,
-    required Future<bool> Function(String name, {String? excludeId}) checkNameExists,
+    required Future<bool> Function(String name, {String? excludeId})
+        checkNameExists,
   }) {
     return showDialog<PersonalTag>(
       context: context,
@@ -31,6 +42,62 @@ class PersonalTagEditDialog extends StatefulWidget {
         existingTag: existingTag,
         checkNameExists: checkNameExists,
       ),
+    );
+  }
+
+  /// Shows the dialog with wizard flow for new tags.
+  ///
+  /// After creating a new tag, prompts user to add an automation rule.
+  /// Returns [PersonalTagEditResult] with tag and wizard choice.
+  static Future<PersonalTagEditResult?> showWithWizard(
+    BuildContext context, {
+    PersonalTag? existingTag,
+    required Future<bool> Function(String name, {String? excludeId})
+        checkNameExists,
+  }) async {
+    final tag = await show(
+      context,
+      existingTag: existingTag,
+      checkNameExists: checkNameExists,
+    );
+
+    if (tag == null) return null;
+
+    // Only show wizard for NEW tags (not when editing)
+    if (existingTag != null) {
+      return PersonalTagEditResult(tag: tag, shouldCreateRule: false);
+    }
+
+    // Check if context is still valid after first dialog
+    if (!context.mounted) {
+      return PersonalTagEditResult(tag: tag, shouldCreateRule: false);
+    }
+
+    // Show wizard prompt for new tags
+    final shouldCreateRule = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Lägg till regel?'),
+        content: Text(
+          'Vill du skapa en automatiseringsregel för "${tag.name}"?\n\n'
+          'Regler kan automatiskt lägga till denna tagg på recept baserat på ingredienser, källa, tid, med mera.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Senare'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Ja, skapa regel'),
+          ),
+        ],
+      ),
+    );
+
+    return PersonalTagEditResult(
+      tag: tag,
+      shouldCreateRule: shouldCreateRule ?? false,
     );
   }
 
@@ -42,31 +109,17 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
 
-  String? _selectedColor;
-  String? _selectedIcon;
   bool _isChecking = false;
   bool _isSaving = false;
   String? _nameError;
 
   bool get _isEditing => widget.existingTag != null;
 
-  // Available icons (emojis for simplicity)
-  static const List<String> _availableIcons = [
-    '🏷️', '⭐', '❤️', '🔥', '💎', '🎯', '🏠', '👨‍👩‍👧', '👵', '👴',
-    '🍽️', '🥗', '🍕', '🍰', '☕', '🌿', '🥩', '🐟', '🥬', '🌶️',
-    '⚡', '💪', '🎉', '📌', '✨', '🌟', '💡', '🎨', '📚', '🎵',
-  ];
-
   @override
   void initState() {
     super.initState();
     if (widget.existingTag != null) {
       _nameController.text = widget.existingTag!.name;
-      _selectedColor = widget.existingTag!.color;
-      _selectedIcon = widget.existingTag!.icon;
-    } else {
-      // Default color for new tags
-      _selectedColor = PersonalTagColors.colors.first;
     }
   }
 
@@ -116,16 +169,10 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
       if (_isEditing) {
         result = widget.existingTag!.copyWith(
           name: name,
-          color: _selectedColor,
-          icon: _selectedIcon,
           updatedAt: DateTime.now(),
         );
       } else {
-        result = PersonalTag.create(
-          name: name,
-          color: _selectedColor,
-          icon: _selectedIcon,
-        );
+        result = PersonalTag.create(name: name);
       }
 
       if (mounted) {
@@ -161,20 +208,6 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
 
                 // Name field
                 _buildNameField(),
-                const SizedBox(height: AppDimensions.spacingL),
-
-                // Color picker
-                PersonalTagColorPicker(
-                  title: 'Färg',
-                  selectedColor: _selectedColor,
-                  onColorSelected: (color) {
-                    setState(() => _selectedColor = color);
-                  },
-                ),
-                const SizedBox(height: AppDimensions.spacingL),
-
-                // Icon picker
-                _buildIconPicker(),
                 const SizedBox(height: AppDimensions.spacingL),
 
                 // Preview
@@ -254,76 +287,6 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
     );
   }
 
-  Widget _buildIconPicker() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Ikon (valfritt)', style: AppTextStyles.labelMedium),
-        const SizedBox(height: AppDimensions.spacingS),
-        SizedBox(
-          height: 50,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: _availableIcons.length + 1, // +1 for "no icon" option
-            separatorBuilder: (_, __) =>
-                const SizedBox(width: AppDimensions.spacingXs),
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                // No icon option
-                final isSelected = _selectedIcon == null;
-                return _buildIconOption(
-                  child: const Icon(Icons.do_not_disturb_alt, size: 20),
-                  isSelected: isSelected,
-                  onTap: () => setState(() => _selectedIcon = null),
-                  tooltip: 'Ingen ikon',
-                );
-              }
-              final icon = _availableIcons[index - 1];
-              final isSelected = _selectedIcon == icon;
-              return _buildIconOption(
-                child: Text(icon, style: const TextStyle(fontSize: 24)),
-                isSelected: isSelected,
-                onTap: () => setState(() => _selectedIcon = icon),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildIconOption({
-    required Widget child,
-    required bool isSelected,
-    required VoidCallback onTap,
-    String? tooltip,
-  }) {
-    final widget = GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primaryBlue.withValues(alpha: 0.1)
-              : AppColors.backgroundBeige,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          border: Border.all(
-            color: isSelected ? AppColors.primaryBlue : AppColors.divider,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Center(child: child),
-      ),
-    );
-
-    if (tooltip != null) {
-      return Tooltip(message: tooltip, child: widget);
-    }
-    return widget;
-  }
-
   Widget _buildPreview() {
     final name = _nameController.text.trim();
     if (name.isEmpty) return const SizedBox.shrink();
@@ -339,20 +302,20 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
             vertical: AppDimensions.paddingS,
           ),
           decoration: BoxDecoration(
-            color: PersonalTagColors.fromHex(_selectedColor).withValues(alpha: 0.15),
+            color: AppColors.primaryBlue.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             border: Border.all(
-              color: PersonalTagColors.fromHex(_selectedColor).withValues(alpha: 0.3),
+              color: AppColors.primaryBlue.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (_selectedIcon != null) ...[
-                Text(_selectedIcon!, style: const TextStyle(fontSize: 16)),
-                const SizedBox(width: AppDimensions.spacingXs),
-              ],
-              PersonalTagColorDot(color: _selectedColor),
+              const Icon(
+                Icons.label,
+                size: 16,
+                color: AppColors.primaryBlue,
+              ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
                 name,

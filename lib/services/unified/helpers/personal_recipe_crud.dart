@@ -30,7 +30,7 @@ class PersonalRecipeCrud {
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
   }) async {
     final recipeId = await personalModule.createPersonalRecipe(
@@ -43,7 +43,7 @@ class PersonalRecipeCrud {
       portions: portions,
       timeMinutes: timeMinutes,
       rating: rating,
-      tags: tags,
+      personalTagIds: personalTagIds,
       sourceUrl: sourceUrl,
     );
 

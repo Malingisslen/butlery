@@ -6,7 +6,6 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
-import 'package:butlery/widgets/tagging/personal_tag_color_picker.dart';
 import 'package:butlery/widgets/tagging/personal_tag_manager_dialog.dart';
 
 /// Widget for selecting personal tags to apply to a recipe.
@@ -202,34 +201,24 @@ class _PersonalTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tagColor = PersonalTagColors.fromHex(tag.color);
-
     return FilterChip(
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (tag.icon != null) ...[
-            Text(tag.icon!, style: const TextStyle(fontSize: 14)),
-            const SizedBox(width: 4),
-          ],
-          Text(tag.name),
-        ],
-      ),
+      label: Text(tag.name),
       selected: isSelected,
       onSelected: (_) => onTap(),
       backgroundColor: AppColors.backgroundBeige,
-      selectedColor: tagColor.withValues(alpha: 0.2),
-      checkmarkColor: tagColor,
+      selectedColor: AppColors.primaryBlue.withValues(alpha: 0.2),
+      checkmarkColor: AppColors.primaryBlue,
       side: BorderSide(
-        color: isSelected ? tagColor : AppColors.divider,
+        color: isSelected ? AppColors.primaryBlue : AppColors.divider,
       ),
       labelStyle: AppTextStyles.bodySmall.copyWith(
-        color: isSelected ? tagColor : AppColors.textDark,
+        color: isSelected ? AppColors.primaryBlue : AppColors.textDark,
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
       ),
       avatar: isSelected
           ? null
-          : PersonalTagColorDot(color: tag.color, size: 10),
+          : const Icon(Icons.label_outline,
+              size: 14, color: AppColors.primaryBlue),
       showCheckmark: isSelected,
     );
   }
@@ -239,7 +228,7 @@ class _PersonalTagChip extends StatelessWidget {
 ///
 /// Works with tag NAMES (not IDs) to match how recipes store tags.
 class PersonalTagDisplay extends StatelessWidget {
-  /// Tag names to display (from recipe.personalTags).
+  /// Tag names to display (from recipe.personalTagIds).
   final List<String> tagNames;
 
   /// Available PersonalTag objects for color/icon lookup.
@@ -269,8 +258,7 @@ class PersonalTagDisplay extends StatelessWidget {
     final displayTags = maxDisplay != null && tags.length > maxDisplay!
         ? tags.take(maxDisplay!)
         : tags;
-    final remainingCount =
-        maxDisplay != null ? tags.length - maxDisplay! : 0;
+    final remainingCount = maxDisplay != null ? tags.length - maxDisplay! : 0;
 
     return Wrap(
       spacing: AppDimensions.spacingXs,
@@ -304,28 +292,24 @@ class _MiniTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tagColor = PersonalTagColors.fromHex(tag.color);
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: tagColor.withValues(alpha: 0.15),
+        color: AppColors.primaryBlue.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: tagColor.withValues(alpha: 0.3),
+          color: AppColors.primaryBlue.withValues(alpha: 0.3),
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (tag.icon != null) ...[
-            Text(tag.icon!, style: const TextStyle(fontSize: 12)),
-            const SizedBox(width: 2),
-          ],
+          const Icon(Icons.label, size: 12, color: AppColors.primaryBlue),
+          const SizedBox(width: 2),
           Text(
             tag.name,
             style: AppTextStyles.bodySmall.copyWith(
-              color: tagColor,
+              color: AppColors.primaryBlue,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -357,7 +341,8 @@ class _SimpleTagChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.label_outline, size: 12, color: AppColors.primaryBlue),
+          const Icon(Icons.label_outline,
+              size: 12, color: AppColors.primaryBlue),
           const SizedBox(width: 4),
           Text(
             name,
@@ -377,7 +362,7 @@ class _SimpleTagChip extends StatelessWidget {
 /// Use this when you don't have access to the PersonalTag list.
 /// Falls back to simple text chips if tags can't be loaded.
 class AutoPersonalTagDisplay extends StatefulWidget {
-  /// Tag names to display (from recipe.personalTags).
+  /// Tag names to display (from recipe.personalTagIds).
   final List<String> tagNames;
 
   /// Maximum number of tags to display before showing "+N".
@@ -445,10 +430,10 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
   }
 
   Widget _buildSimpleChips() {
-    final displayNames = widget.maxDisplay != null &&
-            widget.tagNames.length > widget.maxDisplay!
-        ? widget.tagNames.take(widget.maxDisplay!).toList()
-        : widget.tagNames;
+    final displayNames =
+        widget.maxDisplay != null && widget.tagNames.length > widget.maxDisplay!
+            ? widget.tagNames.take(widget.maxDisplay!).toList()
+            : widget.tagNames;
     final remainingCount = widget.maxDisplay != null
         ? widget.tagNames.length - widget.maxDisplay!
         : 0;

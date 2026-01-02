@@ -47,7 +47,7 @@ class SocialRecipeCreationService extends BaseService with UserContextMixin {
     String? description,
     int? portions,
     int? cookingTime,
-    List<String>? tags,
+    List<String>? personalTagIds,
   }) async {
     try {
       AppLogger.info('🤝 Creating collaborative recipe: $title');
@@ -80,7 +80,7 @@ class SocialRecipeCreationService extends BaseService with UserContextMixin {
         description: description ?? '',
         portions: portions,
         timeMinutes: cookingTime,
-        tags: tags ?? [],
+        personalTagIds: personalTagIds ?? [],
         memberPermissions: {},
       );
 

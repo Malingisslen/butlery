@@ -128,7 +128,7 @@ class SocialRecipeViewModel extends ChangeNotifier {
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
     String? descriptionCollaborative,
     bool allowGuestViewing = false,

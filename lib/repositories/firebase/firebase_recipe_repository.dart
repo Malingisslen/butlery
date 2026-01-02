@@ -393,7 +393,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
   /// Counts recipes that have a specific personal tag.
   ///
-  /// Uses Firestore's arrayContains query on core.personalTags field.
+  /// Uses Firestore's arrayContains query on core.personalTagIds field.
   /// Returns 0 if user is not authenticated.
   Future<int> countRecipesWithPersonalTag(String tagName) async {
     final userId = currentUserId;
@@ -401,7 +401,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
     try {
       final snap = await getCollectionForUser(userId)
-          .where('core.personalTags', arrayContains: tagName)
+          .where('core.personalTagIds', arrayContains: tagName)
           .count()
           .get();
       return snap.count ?? 0;
@@ -423,7 +423,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
     try {
       final snap = await getCollectionForUser(userId)
-          .where('core.personalTags', arrayContains: tagName)
+          .where('core.personalTagIds', arrayContains: tagName)
           .orderBy('core.updatedAt', descending: true)
           .limit(limit)
           .get();

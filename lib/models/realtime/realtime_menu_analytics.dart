@@ -38,7 +38,7 @@ class RealtimeMenuAnalytics {
         recipe.core.ingredients.any(
             (ingredient) => ingredient.toLowerCase().contains(lowerQuery)) ||
         recipe.core.mealType.toLowerCase().contains(lowerQuery) ||
-        (recipe.core.tags
+        (recipe.core.personalTagIds
                 ?.any((tag) => tag.toLowerCase().contains(lowerQuery)) ??
             false);
   }
@@ -98,7 +98,7 @@ class RealtimeMenuAnalytics {
     // Apply tags filter
     if (tags != null && tags.isNotEmpty) {
       results = results.where((recipe) {
-        final recipeTags = recipe.core.tags ?? [];
+        final recipeTags = recipe.core.personalTagIds ?? [];
         return tags.every((tag) => recipeTags.contains(tag));
       }).toList();
     }
@@ -165,7 +165,7 @@ class RealtimeMenuAnalytics {
 
     for (final entry in data.menuSnapshot.entries) {
       final matchingRecipes = entry.value.where((recipe) {
-        final recipeTags = recipe.core.tags ?? [];
+        final recipeTags = recipe.core.personalTagIds ?? [];
         return requiredTags.every((tag) => recipeTags.contains(tag));
       }).toList();
       if (matchingRecipes.isNotEmpty) {
@@ -232,7 +232,7 @@ class RealtimeMenuAnalytics {
     final allTags = <String>{};
 
     for (final recipe in data.allUniqueRecipes) {
-      final tags = recipe.core.tags ?? [];
+      final tags = recipe.core.personalTagIds ?? [];
       allTags.addAll(tags);
     }
 
@@ -244,7 +244,7 @@ class RealtimeMenuAnalytics {
     final frequency = <String, int>{};
 
     for (final recipe in data.allUniqueRecipes) {
-      final tags = recipe.core.tags ?? [];
+      final tags = recipe.core.personalTagIds ?? [];
       for (final tag in tags) {
         frequency[tag] = (frequency[tag] ?? 0) + 1;
       }

@@ -350,7 +350,7 @@ class RealtimeEditingModule {
         portions: changes['portions'],
         timeMinutes: changes['timeMinutes'],
         rating: changes['rating']?.toDouble(),
-        tags: changes['tags']?.cast<String>(),
+        personalTagIds: changes['personalTagIds']?.cast<String>(),
         sourceUrl: changes['sourceUrl'],
       );
     } catch (e) {

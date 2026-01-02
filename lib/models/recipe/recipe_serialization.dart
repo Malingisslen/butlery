@@ -202,11 +202,12 @@ class RecipeSerialization {
           .toList();
     }
 
-    // Handle tags (can be null)
-    if (sanitized['tags'] != null && sanitized['tags'] is! List) {
-      sanitized['tags'] = <String>[];
-    } else if (sanitized['tags'] is List) {
-      sanitized['tags'] = (sanitized['tags'] as List)
+    // Handle personalTagIds (can be null)
+    if (sanitized['personalTagIds'] != null &&
+        sanitized['personalTagIds'] is! List) {
+      sanitized['personalTagIds'] = <String>[];
+    } else if (sanitized['personalTagIds'] is List) {
+      sanitized['personalTagIds'] = (sanitized['personalTagIds'] as List)
           .map((item) => (item?.toString()).orEmpty())
           .where((item) => item.isNotEmpty)
           .toList();
@@ -226,7 +227,7 @@ class RecipeSerialization {
       'portions': recipe.core.portions,
       'timeMinutes': recipe.core.timeMinutes,
       'rating': recipe.core.rating,
-      'tags': recipe.core.tags,
+      'personalTagIds': recipe.core.personalTagIds,
       'imageUrls': recipe.core.imageUrls,
       'sourceUrl': recipe.core.sourceUrl,
       'exportedAt': DateTime.now().toIso8601String(),
@@ -254,7 +255,9 @@ class RecipeSerialization {
         portions: data['portions'] as int?,
         timeMinutes: data['timeMinutes'] as int?,
         rating: (data['rating'] as num?)?.toDouble(),
-        tags: data['tags'] is List ? List<String>.from(data['tags']) : null,
+        personalTagIds: data['personalTagIds'] is List
+            ? List<String>.from(data['personalTagIds'])
+            : null,
         imageUrls: data['imageUrls'] is List
             ? List<String>.from(data['imageUrls'])
             : [],
@@ -283,8 +286,9 @@ class RecipeSerialization {
       compressed['tm'] = recipe.core.timeMinutes;
     }
     if (recipe.core.rating != null) compressed['r'] = recipe.core.rating;
-    if (recipe.core.tags != null && recipe.core.tags!.isNotEmpty) {
-      compressed['tg'] = recipe.core.tags;
+    if (recipe.core.personalTagIds != null &&
+        recipe.core.personalTagIds!.isNotEmpty) {
+      compressed['pt'] = recipe.core.personalTagIds;
     }
     if (recipe.core.imageUrls.isNotEmpty) {
       compressed['img'] = recipe.core.imageUrls;
@@ -310,8 +314,8 @@ class RecipeSerialization {
         portions: compressed['p'] as int?,
         timeMinutes: compressed['tm'] as int?,
         rating: (compressed['r'] as num?)?.toDouble(),
-        tags: compressed['tg'] is List
-            ? List<String>.from(compressed['tg'])
+        personalTagIds: compressed['pt'] is List
+            ? List<String>.from(compressed['pt'])
             : null,
         imageUrls: compressed['img'] is List
             ? List<String>.from(compressed['img'])

@@ -31,7 +31,7 @@ class ArchivedRecipeBuilder {
         description: 'Krämig pastarätt med grönsaker',
         ingredients: ['400g pasta', '2 dl grädde', '1 zucchini', '1 paprika'],
         instructions: ['Koka pasta', 'Stek grönsaker', 'Blanda med grädde'],
-        tags: ['vegetarisk', 'pasta', 'enkel'],
+        personalTagIds: ['vegetarisk', 'pasta', 'enkel'],
         timeMinutes: 25,
         mealType: 'Middag',
       ),
@@ -46,7 +46,7 @@ class ArchivedRecipeBuilder {
           'Koka potatis',
           'Mosa med mjölk'
         ],
-        tags: ['kött', 'svensk', 'klassisk'],
+        personalTagIds: ['kött', 'svensk', 'klassisk'],
         timeMinutes: 45,
         mealType: 'Middag',
       ),
@@ -56,7 +56,7 @@ class ArchivedRecipeBuilder {
         description: 'Fräsch och snabb sallad',
         ingredients: ['Salladsblad', 'Tomat', 'Gurka', 'Dressing'],
         instructions: ['Skär grönsaker', 'Blanda i skål', 'Tillsätt dressing'],
-        tags: ['vegetarisk', 'sallad', 'snabb'],
+        personalTagIds: ['vegetarisk', 'sallad', 'snabb'],
         timeMinutes: 10,
         mealType: 'Lunch',
       ),
@@ -70,7 +70,7 @@ class ArchivedRecipeBuilder {
           'Blanda dillsås',
           'Servera med potatis'
         ],
-        tags: ['fisk', 'hälsosam', 'nordisk'],
+        personalTagIds: ['fisk', 'hälsosam', 'nordisk'],
         timeMinutes: 35,
         mealType: 'Middag',
       ),
@@ -84,7 +84,7 @@ class ArchivedRecipeBuilder {
           'Stek tunna pannkakor',
           'Servera med sylt'
         ],
-        tags: ['frukost', 'enkel', 'svensk'],
+        personalTagIds: ['frukost', 'enkel', 'svensk'],
         timeMinutes: 20,
         mealType: 'Frukost',
       ),
@@ -153,8 +153,10 @@ void main() {
 
         // AND logic - recipe must have ALL tags
         return recipes.where((recipe) {
-          if (recipe.tags == null || recipe.tags!.isEmpty) return false;
-          return tags.every((tag) => recipe.tags!.contains(tag));
+          if (recipe.personalTagIds == null || recipe.personalTagIds!.isEmpty) {
+            return false;
+          }
+          return tags.every((tag) => recipe.personalTagIds!.contains(tag));
         }).toList();
       });
 
@@ -326,8 +328,8 @@ void main() {
         // Assert
         expect(viewModel.filteredRecipes.length, equals(2)); // pasta and sallad
         expect(
-            viewModel.filteredRecipes
-                .every((r) => r.tags?.contains('vegetarisk') ?? false),
+            viewModel.filteredRecipes.every(
+                (r) => r.personalTagIds?.contains('vegetarisk') ?? false),
             isTrue);
       });
 

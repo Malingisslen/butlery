@@ -93,7 +93,7 @@ class RecipeSharingManager {
               portions: recipeToShare.portions,
               timeMinutes: recipeToShare.timeMinutes,
               rating: recipeToShare.rating,
-              tags: recipeToShare.tags,
+              personalTagIds: recipeToShare.personalTagIds,
               sourceUrl: recipeToShare.sourceUrl,
               descriptionCollaborative: collaborativeDescription,
               allowGuestViewing: allowGuestViewing,
@@ -169,7 +169,7 @@ class RecipeSharingManager {
         portions: collaborativeRecipe.portions,
         timeMinutes: collaborativeRecipe.timeMinutes,
         rating: collaborativeRecipe.rating,
-        tags: collaborativeRecipe.tags,
+        personalTagIds: collaborativeRecipe.personalTagIds,
         sourceUrl: collaborativeRecipe.sourceUrl,
       );
 
@@ -320,7 +320,7 @@ class RecipeSharingManager {
         portions: originalRecipe.portions,
         timeMinutes: originalRecipe.timeMinutes,
         rating: originalRecipe.rating,
-        tags: originalRecipe.tags,
+        personalTagIds: originalRecipe.personalTagIds,
         sourceUrl: originalRecipe.sourceUrl,
       );
     } catch (e) {

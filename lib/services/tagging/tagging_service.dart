@@ -11,6 +11,7 @@ import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/tagging/config/property_registry.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
+import 'package:butlery/services/tagging/tag_config_service.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
 
 /// Timeout duration for tag generation operations.
@@ -30,10 +31,12 @@ class TaggingService extends BaseService {
 
   TaggingService({
     required IngredientLookupService lookupService,
+    TagConfigService? tagConfigService,
     TagGenerator? tagGenerator,
     UserIngredientRepository? userIngredientRepository,
   })  : _lookupService = lookupService,
-        _tagGenerator = tagGenerator ?? TagGenerator(),
+        _tagGenerator = tagGenerator ??
+            TagGenerator(firebaseConfig: tagConfigService?.configOrNull),
         _userIngredientRepository = userIngredientRepository;
 
   /// Generates tags for a recipe.
@@ -77,23 +80,38 @@ class TaggingService extends BaseService {
     Recipe recipe,
     List<String> ingredients,
   ) async {
-    final stopwatch = Stopwatch()..start();
+    final totalStopwatch = Stopwatch()..start();
+    final lookupStopwatch = Stopwatch();
+    int? generateMs;
 
     // Phase 1: Lookup ingredients with timeout
     IngredientLookupResult lookupResult;
     try {
+      lookupStopwatch.start();
       lookupResult = await _lookupService
           .lookupFromRaw(
             ingredients,
             userId: _getCurrentUserId(),
           )
           .timeout(_tagGenerationTimeout);
+      lookupStopwatch.stop();
     } on TimeoutException {
+      lookupStopwatch.stop();
       // CRIT-3: If lookup times out, return empty result with error reason
       AppLogger.warning(
         '⏱️ Ingredient lookup timeout for recipe "${recipe.core.title}" '
             '(${ingredients.length} ingredients)',
         'TaggingService',
+      );
+      _logTaggingMetrics(
+        recipeId: recipe.id,
+        totalMs: totalStopwatch.elapsedMilliseconds,
+        lookupMs: lookupStopwatch.elapsedMilliseconds,
+        generateMs: null,
+        ingredientCount: ingredients.length,
+        tagCount: 0,
+        coveragePercent: 0,
+        status: 'lookup_timeout',
       );
       return TagResult.failed(reason: 'Lookup timeout');
     }
@@ -105,7 +123,7 @@ class TaggingService extends BaseService {
     );
 
     // CRIT-3: Calculate remaining time for generation phase
-    final elapsed = stopwatch.elapsed;
+    final elapsed = totalStopwatch.elapsed;
     final remainingTime = _tagGenerationTimeout - elapsed;
 
     if (remainingTime <= Duration.zero) {
@@ -114,18 +132,36 @@ class TaggingService extends BaseService {
         '⏱️ No time remaining for generation, returning Phase 1 only',
         'TaggingService',
       );
-      return _tagGenerator.generatePhase1Only(
+      final phase1Result = _tagGenerator.generatePhase1Only(
         ingredients: lookupResult,
         recipe: recipe,
       );
+      totalStopwatch.stop();
+      _logTaggingMetrics(
+        recipeId: recipe.id,
+        totalMs: totalStopwatch.elapsedMilliseconds,
+        lookupMs: lookupStopwatch.elapsedMilliseconds,
+        generateMs: 0,
+        ingredientCount: ingredients.length,
+        tagCount: phase1Result.tags.length,
+        coveragePercent: (phase1Result.coverage * 100).round(),
+        status: 'phase1_only',
+      );
+      return phase1Result;
     }
 
     // Generate tags with remaining timeout for graceful degradation
+    final generateStopwatch = Stopwatch()..start();
     final tagResult = _tagGenerator.generate(
       ingredients: lookupResult,
       recipe: recipe,
       timeout: remainingTime,
     );
+    generateStopwatch.stop();
+    generateMs = generateStopwatch.elapsedMilliseconds;
+    totalStopwatch.stop();
+
+    final status = tagResult.isPartial ? 'partial' : 'complete';
 
     if (tagResult.isPartial) {
       AppLogger.warning(
@@ -140,36 +176,55 @@ class TaggingService extends BaseService {
       );
     }
 
+    _logTaggingMetrics(
+      recipeId: recipe.id,
+      totalMs: totalStopwatch.elapsedMilliseconds,
+      lookupMs: lookupStopwatch.elapsedMilliseconds,
+      generateMs: generateMs,
+      ingredientCount: ingredients.length,
+      tagCount: tagResult.tags.length,
+      coveragePercent: (tagResult.coverage * 100).round(),
+      status: status,
+    );
+
     return tagResult;
   }
 
-  /// Generates a quick preview with only Phase 1 tags.
-  ///
-  /// Useful for real-time feedback while editing.
-  Future<TagResult?> generatePreview(Recipe recipe) async {
-    return await executeServiceOperation(
-      () async {
-        final ingredients =
-            recipe.core.ingredientsNormalized ?? recipe.core.ingredients;
-
-        if (ingredients.isEmpty) {
-          return TagResult.empty();
-        }
-
-        // M2: Pass userId for user-defined ingredient lookup
-        final lookupResult = await _lookupService.lookupFromRaw(
-          ingredients,
-          userId: _getCurrentUserId(),
-        );
-
-        return _tagGenerator.generatePhase1Only(
-          ingredients: lookupResult,
-          recipe: recipe,
-        );
-      },
-      operationName: 'Generate preview',
-      requiresAuth: false,
+  /// Logs tagging performance metrics for monitoring.
+  void _logTaggingMetrics({
+    required String recipeId,
+    required int totalMs,
+    required int lookupMs,
+    required int? generateMs,
+    required int ingredientCount,
+    required int tagCount,
+    required int coveragePercent,
+    required String status,
+  }) {
+    AppLogger.info(
+      '📊 Tagging metrics: '
+      'total=${totalMs}ms, '
+      'lookup=${lookupMs}ms, '
+      'generate=${generateMs ?? "N/A"}ms, '
+      'ingredients=$ingredientCount, '
+      'tags=$tagCount, '
+      'coverage=$coveragePercent%, '
+      'status=$status',
     );
+
+    // TODO: Send to Firebase Analytics when ready
+    // FirebaseAnalytics.instance.logEvent(
+    //   name: 'tagging_performance',
+    //   parameters: {
+    //     'total_ms': totalMs,
+    //     'lookup_ms': lookupMs,
+    //     'generate_ms': generateMs ?? 0,
+    //     'ingredient_count': ingredientCount,
+    //     'tag_count': tagCount,
+    //     'coverage_percent': coveragePercent,
+    //     'status': status,
+    //   },
+    // );
   }
 
   /// Looks up ingredients without generating tags.

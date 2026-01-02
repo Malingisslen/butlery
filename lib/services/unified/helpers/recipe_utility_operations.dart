@@ -108,7 +108,7 @@ class RecipeUtilityOperations {
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
   }) async {
     final recipe = getRecipeById(recipeId);
@@ -127,7 +127,7 @@ class RecipeUtilityOperations {
       portions: portions,
       timeMinutes: timeMinutes,
       rating: rating,
-      tags: tags,
+      personalTagIds: personalTagIds,
       sourceUrl: sourceUrl,
       lastEditedByUserId: currentUserId,
       lastEditedByDisplayName: currentUserDisplayName,

@@ -30,7 +30,7 @@ void main() {
       type: RecipeType.personal, // Explicitly set as personal recipe
       ingredients: ['500g köttfärs', '1 dl ströbröd', '1 ägg'],
       instructions: ['Blanda köttfärs', 'Forma bullar', 'Stek i panna'],
-      tags: ['svensk', 'middag', 'kött'],
+      personalTagIds: ['svensk', 'middag', 'kött'],
       mealType: 'Middag',
       imageUrls: ['image1.jpg'],
       portions: 4,
@@ -82,7 +82,7 @@ void main() {
                 mealType: any(named: 'mealType'),
                 portions: any(named: 'portions'),
                 timeMinutes: any(named: 'timeMinutes'),
-                tags: any(named: 'tags'),
+                personalTagIds: any(named: 'personalTags'),
                 imageUrls: any(named: 'imageUrls'),
               ))
           .thenAnswer(
@@ -216,7 +216,7 @@ void main() {
               mealType: '',
               portions: 1,
               timeMinutes: 0,
-              tags: [],
+              personalTagIds: [],
               imageUrls: [],
             )).called(1);
       });
@@ -231,7 +231,7 @@ void main() {
           mealType: 'Middag',
           portions: 4,
           timeMinutes: 45,
-          tags: ['fisk', 'soppa', 'svensk'],
+          personalTagIds: ['fisk', 'soppa', 'svensk'],
           imageUrls: ['laxsoppa.jpg'],
         );
 
@@ -245,7 +245,7 @@ void main() {
               mealType: 'Middag',
               portions: 4,
               timeMinutes: 45,
-              tags: ['fisk', 'soppa', 'svensk'],
+              personalTagIds: ['fisk', 'soppa', 'svensk'],
               imageUrls: ['laxsoppa.jpg'],
             )).called(1);
       });
@@ -266,7 +266,7 @@ void main() {
               mealType: any(named: 'mealType'),
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               imageUrls: any(named: 'imageUrls'),
             ));
       });
@@ -287,7 +287,7 @@ void main() {
               mealType: any(named: 'mealType'),
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               imageUrls: any(named: 'imageUrls'),
             ));
       });
@@ -302,7 +302,7 @@ void main() {
               mealType: any(named: 'mealType'),
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               imageUrls: any(named: 'imageUrls'),
               rating: any(named: 'rating'),
               sourceUrl: any(named: 'sourceUrl'),
@@ -327,7 +327,7 @@ void main() {
               mealType: any(named: 'mealType'),
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               imageUrls: any(named: 'imageUrls'),
             )).thenThrow(Exception('Network error'));
 
@@ -353,7 +353,7 @@ void main() {
           mealType: 'Lunch',
           portions: 6,
           timeMinutes: 60,
-          tags: ['updated'],
+          personalTagIds: ['updated'],
           imageUrls: ['new.jpg'],
           createdBy: testUserId,
         );
@@ -847,7 +847,7 @@ void main() {
         final italianRecipe = RecipeFactory.build(
           id: 'italian1',
           title: 'Pasta Carbonara',
-          tags: ['italiensk', 'pasta', 'middag'],
+          personalTagIds: ['italiensk', 'pasta', 'middag'],
           type: RecipeType.personal,
           createdBy: testUserId,
         );
@@ -979,19 +979,19 @@ void main() {
         // Arrange
         final recipes = [
           RecipeFactory.build(
-              tags: ['svensk', 'kött'],
+              personalTagIds: ['svensk', 'kött'],
               type: RecipeType.personal,
               createdBy: testUserId),
           RecipeFactory.build(
-              tags: ['svensk', 'fisk'],
+              personalTagIds: ['svensk', 'fisk'],
               type: RecipeType.personal,
               createdBy: testUserId),
           RecipeFactory.build(
-              tags: ['italiensk', 'pasta'],
+              personalTagIds: ['italiensk', 'pasta'],
               type: RecipeType.personal,
               createdBy: testUserId),
           RecipeFactory.build(
-              tags: ['svensk', 'soppa'],
+              personalTagIds: ['svensk', 'soppa'],
               type: RecipeType.personal,
               createdBy: testUserId),
         ];
@@ -1036,7 +1036,7 @@ void main() {
               mealType: any(named: 'mealType'),
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               imageUrls: any(named: 'imageUrls'),
             )).thenThrow(Exception('Network error'));
 
@@ -1057,7 +1057,7 @@ void main() {
               mealType: any(named: 'mealType'),
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               imageUrls: any(named: 'imageUrls'),
             )).thenAnswer((_) async {
           await Future.delayed(Duration(milliseconds: 10));
@@ -1082,7 +1082,7 @@ void main() {
               mealType: any(named: 'mealType'),
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               imageUrls: any(named: 'imageUrls'),
             )).called(3);
       });
@@ -1165,7 +1165,7 @@ void main() {
           createdBy: testUserId,
           ingredients: [],
           instructions: [],
-          tags: [],
+          personalTagIds: [],
         );
         when(() => mockRecipeService.personalRecipes)
             .thenReturn([minimalRecipe]);
@@ -1178,7 +1178,7 @@ void main() {
         expect(recipe, isNotNull);
         expect(recipe?.ingredients, isEmpty);
         expect(recipe?.instructions, isEmpty);
-        expect(recipe?.tags, isEmpty);
+        expect(recipe?.personalTagIds, isEmpty);
       });
 
       test('should handle very long input strings', () async {
@@ -1202,7 +1202,7 @@ void main() {
               mealType: any(named: 'mealType'),
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               imageUrls: any(named: 'imageUrls'),
             )).called(1);
       });

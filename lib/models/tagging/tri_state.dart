@@ -93,6 +93,26 @@ extension TriStateExtension on TriState {
   }
 }
 
+/// Extension for parsing TriState from various string formats.
+extension TriStateParsing on TriState {
+  /// Parses from enum name (lowercase) or Firestore format (uppercase).
+  /// Returns null if value is not a valid TriState.
+  static TriState? fromString(String? value) {
+    if (value == null) return null;
+    final lower = value.toLowerCase();
+    switch (lower) {
+      case 'contains':
+        return TriState.contains;
+      case 'free':
+        return TriState.free;
+      case 'unknown':
+        return TriState.unknown;
+      default:
+        return null;
+    }
+  }
+}
+
 /// Helper for combining multiple TriState values.
 class TriStateCalculator {
   /// Combines multiple values using OR logic.

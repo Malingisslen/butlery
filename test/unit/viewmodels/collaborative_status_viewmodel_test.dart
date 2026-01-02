@@ -166,7 +166,7 @@ void main() {
 
     test('should detect collaborative patterns in tags', () {
       final recipe = RecipeFactory.build(
-        tags: ['vegetarisk', 'delad', 'middag'],
+        personalTagIds: ['vegetarisk', 'delad', 'middag'],
       );
 
       expect(
@@ -252,7 +252,7 @@ void main() {
       final menuData = {
         'Monday': [
           RecipeFactory.build(
-            tags: ['importerat', 'lunch'],
+            personalTagIds: ['importerat', 'lunch'],
           ),
         ],
       };

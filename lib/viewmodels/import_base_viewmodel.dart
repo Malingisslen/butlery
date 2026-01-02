@@ -161,7 +161,7 @@ abstract class ImportBaseViewModel extends BaseViewModel
       mealType: mealType,
       portions: portions,
       timeMinutes: timeMinutes,
-      tags: tags,
+      personalTagIds: tags,
       imageUrls: imageUrls,
     );
 

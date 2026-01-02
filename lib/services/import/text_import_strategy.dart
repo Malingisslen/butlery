@@ -368,7 +368,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         portions: portions,
         timeMinutes: timeMinutes,
         rating: rating,
-        tags: _extractTags(text),
+        personalTagIds: _extractTags(text),
         sourceUrl: 'Importerat från text',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),

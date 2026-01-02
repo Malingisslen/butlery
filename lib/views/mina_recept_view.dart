@@ -17,6 +17,8 @@ import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
+import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
+import 'package:butlery/views/personal_tags_view.dart';
 
 // Constants and theming
 import 'package:butlery/core/constants/app_strings.dart';
@@ -68,6 +70,10 @@ class MinaReceptView extends StatelessWidget {
         // Offline functionality and synchronization service
         ChangeNotifierProvider.value(
             value: ServiceLocator.get<offline_service.OfflineService>()),
+        // Personal tags for filtering
+        ChangeNotifierProvider<PersonalTagViewModel>(
+          create: (_) => PersonalTagViewModel()..initialize(),
+        ),
       ],
       child: const _MinaReceptViewContent(),
     );
@@ -216,6 +222,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     // ✅ FIXAT: Nu kan vi använda watch för RecipeListViewModel eftersom den finns i MultiProvider
     final viewModel = context.watch<RecipeListViewModel>();
     final offlineService = context.watch<offline_service.OfflineService>();
+    final personalTagViewModel = context.watch<PersonalTagViewModel>();
 
     return PopScope(
       canPop: false,
@@ -294,6 +301,19 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               onRatingFilterToggle: viewModel.toggleRatingFilter,
               onAllergenFilterToggle: viewModel.toggleAllergenFilter,
               onDietaryFilterToggle: viewModel.toggleDietaryFilter,
+
+              // Personal tag filters
+              personalTagIds: personalTagViewModel.tags,
+              activePersonalTagFilters: viewModel.activePersonalTagFilters,
+              onPersonalTagFilterToggle: viewModel.togglePersonalTagFilter,
+              onManagePersonalTags: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const PersonalTagsView(),
+                  ),
+                );
+              },
 
               // UI state
               showFilters: _showFilters,

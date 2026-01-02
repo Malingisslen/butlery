@@ -307,7 +307,7 @@ class RecipeBuilder {
         portions: portions,
         timeMinutes: timeMinutes,
         rating: rating,
-        personalTags: tags,
+        personalTagIds: tags,
         sourceUrl: sourceUrl,
         createdAt: createdAt,
         updatedAt: updatedAt,

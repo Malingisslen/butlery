@@ -32,7 +32,7 @@ class SerializationHelper {
         'Stek i smör tills genomstekta',
         'Servera med potatismos och lingon',
       ],
-      'tags': ['svensk', 'middag', 'köttbullar'],
+      'personalTagIds': ['svensk', 'middag', 'köttbullar'],
       'rating': 4.5,
       'mealType': 'Middag',
       'sourceUrl': 'https://example.com/recipe',
@@ -204,7 +204,7 @@ class SerializationHelper {
         'Lägg på bröd',
         'Garnera med dill och citron',
       ],
-      'tags': ['fisk', 'smörgås', 'lunch'],
+      'personalTagIds': ['fisk', 'smörgås', 'lunch'],
     };
   }
 

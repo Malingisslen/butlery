@@ -14,7 +14,7 @@ class RecipeFactory {
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
     List<String>? imageUrls,
     bool isPublic = false,
@@ -30,7 +30,7 @@ class RecipeFactory {
         portions: portions,
         timeMinutes: timeMinutes,
         rating: rating,
-        tags: tags,
+        personalTagIds: personalTagIds,
         sourceUrl: sourceUrl,
         imageUrls: imageUrls,
         isPublic: isPublic,
@@ -72,7 +72,7 @@ class RecipeFactory {
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
     List<String>? imageUrls,
     bool allowGuestViewing = true,
@@ -88,7 +88,7 @@ class RecipeFactory {
         portions: portions,
         timeMinutes: timeMinutes,
         rating: rating,
-        tags: tags,
+        personalTagIds: personalTagIds,
         sourceUrl: sourceUrl,
         imageUrls: imageUrls,
         isPublic: true,
@@ -119,7 +119,7 @@ class RecipeFactory {
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
     List<String>? imageUrls,
   }) {
@@ -134,7 +134,7 @@ class RecipeFactory {
         portions: portions,
         timeMinutes: timeMinutes,
         rating: rating,
-        tags: tags,
+        personalTagIds: personalTagIds,
         sourceUrl: sourceUrl,
         imageUrls: imageUrls,
         isPublic: true, // Collaborative recipes are typically public to members
@@ -165,7 +165,7 @@ class RecipeFactory {
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
     List<String>? imageUrls,
   }) {
@@ -180,7 +180,7 @@ class RecipeFactory {
         portions: portions,
         timeMinutes: timeMinutes,
         rating: rating,
-        tags: tags,
+        personalTagIds: personalTagIds,
         sourceUrl: sourceUrl,
         imageUrls: imageUrls,
         isPublic: true,
@@ -312,8 +312,8 @@ class RecipeFactory {
         portions: sourceRecipe.core.portions,
         timeMinutes: sourceRecipe.core.timeMinutes,
         rating: sourceRecipe.core.rating,
-        tags: sourceRecipe.core.tags != null
-            ? [...sourceRecipe.core.tags!]
+        personalTagIds: sourceRecipe.core.personalTagIds != null
+            ? [...sourceRecipe.core.personalTagIds!]
             : null,
         sourceUrl: 'Kopierat från: ${sourceRecipe.core.title}',
         imageUrls: [...sourceRecipe.core.imageUrls],

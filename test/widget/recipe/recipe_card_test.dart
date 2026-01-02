@@ -26,7 +26,7 @@ void main() {
         portions: 4,
         timeMinutes: 45,
         rating: 4.5,
-        tags: ['svensk', 'husmanskost', 'kött'],
+        personalTagIds: ['svensk', 'husmanskost', 'kött'],
       );
 
       recipeWithoutImage = RecipeFactory.build(
@@ -49,7 +49,7 @@ void main() {
         portions: null,
         timeMinutes: null,
         rating: null,
-        tags: [],
+        personalTagIds: [],
       );
     });
 
@@ -525,7 +525,7 @@ void main() {
           title: 'Räksmörgås',
           description: 'Öppet smörgås med räkor och ägg',
           mealType: 'Frukost',
-          tags: ['fisk', 'smörgås', 'ägg'],
+          personalTagIds: ['fisk', 'smörgås', 'ägg'],
         );
 
         await tester.pumpWidget(
@@ -588,7 +588,7 @@ void main() {
 
       testWidgets('should handle empty tags list', (tester) async {
         final noTagsRecipe = RecipeFactory.build(
-          tags: [],
+          personalTagIds: [],
         );
 
         await tester.pumpWidget(

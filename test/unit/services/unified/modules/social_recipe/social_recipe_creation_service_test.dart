@@ -153,7 +153,7 @@ void main() {
           description: description,
           portions: portions,
           cookingTime: cookingTime,
-          tags: tags,
+          personalTagIds: tags,
         );
 
         // Assert
@@ -161,7 +161,7 @@ void main() {
         expect(lastSavedRecipe!.description, equals(description));
         expect(lastSavedRecipe!.portions, equals(portions));
         expect(lastSavedRecipe!.timeMinutes, equals(cookingTime));
-        expect(lastSavedRecipe!.tags, equals(tags));
+        expect(lastSavedRecipe!.personalTagIds, equals(tags));
       });
     });
 

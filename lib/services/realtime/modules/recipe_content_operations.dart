@@ -58,7 +58,7 @@ class RecipeContentOperations {
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     required String editedBy,
     required String editedByDisplayName,
   }) {
@@ -89,7 +89,7 @@ class RecipeContentOperations {
       portions: portions,
       timeMinutes: timeMinutes,
       rating: rating,
-      tags: tags,
+      personalTagIds: personalTagIds,
       editedBy: editedBy,
       editedByDisplayName: editedByDisplayName,
     );
@@ -383,7 +383,7 @@ class RecipeContentOperations {
       'portions': recipe.portions,
       'timeMinutes': recipe.timeMinutes,
       'rating': recipe.rating,
-      'tagCount': recipe.tags?.length ?? 0,
+      'tagCount': recipe.personalTagIds?.length ?? 0,
       'mealType': recipe.mealType,
       'isComplete': isRecipeComplete(recipe),
       'isPublishable': isRecipePublishable(recipe),

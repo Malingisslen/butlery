@@ -49,7 +49,7 @@ void main() {
         portions: 4,
         timeMinutes: 45,
         rating: 4.5,
-        tags: ['svensk', 'köttbullar', 'middag'],
+        personalTagIds: ['svensk', 'köttbullar', 'middag'],
       );
 
       validJson = SerializationHelper.createValidRecipeJson();
@@ -114,7 +114,7 @@ void main() {
           portions: 6,
           timeMinutes: 30,
           rating: 4.0,
-          tags: ['test', 'recipe'],
+          personalTagIds: ['test', 'recipe'],
           sourceUrl: 'https://example.com',
           imageUrls: ['image1.jpg', 'image2.jpg'],
           createdBy: 'user_123',
@@ -127,7 +127,7 @@ void main() {
         expect(core.portions, equals(6));
         expect(core.timeMinutes, equals(30));
         expect(core.rating, equals(4.0));
-        expect(core.tags, equals(['test', 'recipe']));
+        expect(core.personalTagIds, equals(['test', 'recipe']));
         expect(core.sourceUrl, equals('https://example.com'));
         expect(core.imageUrls, hasLength(2));
         expect(core.createdBy, equals('user_123'));
@@ -318,7 +318,7 @@ void main() {
         expect(json['portions'], equals(core.portions));
         expect(json['timeMinutes'], equals(core.timeMinutes));
         expect(json['rating'], equals(core.rating));
-        expect(json['tags'], equals(core.tags));
+        expect(json['personalTagIds'], equals(core.personalTagIds));
         expect(json['createdAt'], isA<String>());
         expect(json['updatedAt'], isA<String>());
       });
@@ -337,7 +337,7 @@ void main() {
         expect(core.portions, equals(validJson['portions']));
         expect(core.timeMinutes, equals(validJson['timeMinutes']));
         expect(core.rating, equals(validJson['rating']));
-        expect(core.tags, equals(validJson['tags']));
+        expect(core.personalTagIds, equals(validJson['personalTagIds']));
       });
 
       test('should round-trip JSON serialization', () {
@@ -773,7 +773,7 @@ void main() {
           portions: null,
           timeMinutes: null,
           rating: null,
-          tags: null,
+          personalTagIds: null,
           sourceUrl: null,
           createdBy: null,
           lastCookedAt: null,
@@ -787,7 +787,7 @@ void main() {
         expect(deserialized.portions, isNull);
         expect(deserialized.timeMinutes, isNull);
         expect(deserialized.rating, isNull);
-        expect(deserialized.tags, isNull);
+        expect(deserialized.personalTagIds, isNull);
         expect(deserialized.sourceUrl, isNull);
         expect(deserialized.createdBy, isNull);
         expect(deserialized.lastCookedAt, isNull);

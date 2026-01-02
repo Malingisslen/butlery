@@ -172,7 +172,7 @@ void main() {
             portions: 4,
             timeMinutes: 30,
             rating: 4.0,
-            tags: [],
+            personalTagIds: [],
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
             createdBy: 'user_999',

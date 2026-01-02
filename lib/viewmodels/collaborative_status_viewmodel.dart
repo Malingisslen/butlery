@@ -277,7 +277,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     }
 
     // Tags analysis
-    final tags = recipe.tags ?? [];
+    final tags = recipe.personalTagIds ?? [];
     if (tags.any((tag) =>
         tag.toLowerCase().contains('delad') ||
         tag.toLowerCase().contains('shared') ||

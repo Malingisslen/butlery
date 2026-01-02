@@ -94,7 +94,7 @@ class _FileImportViewState extends State<FileImportView> {
             mealType: recipe.mealType,
             portions: recipe.portions,
             timeMinutes: recipe.timeMinutes,
-            tags: recipe.tags,
+            personalTagIds: recipe.personalTagIds,
             rating: recipe.rating,
             sourceUrl: recipe.sourceUrl,
             imageUrls: recipe.imageUrls,

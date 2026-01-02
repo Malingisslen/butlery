@@ -72,7 +72,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async => 'new-recipe-id');
 
@@ -92,7 +92,7 @@ void main() {
               portions: testRecipe.portions,
               timeMinutes: testRecipe.timeMinutes,
               rating: testRecipe.rating,
-              tags: testRecipe.tags,
+              personalTagIds: testRecipe.personalTagIds,
               sourceUrl: testRecipe.sourceUrl,
             )).called(1);
       });
@@ -109,7 +109,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async => null);
 
@@ -181,7 +181,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async => 'new-id');
 
@@ -201,7 +201,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               sourceUrl: any(named: 'sourceUrl'),
             )).called(3);
       });
@@ -225,7 +225,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async {
           callCount++;
@@ -259,7 +259,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async => null);
 
@@ -285,7 +285,7 @@ void main() {
               rating: any(named: 'rating'),
               ingredients: any(named: 'ingredients'),
               instructions: any(named: 'instructions'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async => true);
 
@@ -420,7 +420,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenAnswer((_) async => 'new-recipe-id');
 
@@ -439,7 +439,7 @@ void main() {
               portions: testRecipe.portions,
               timeMinutes: testRecipe.timeMinutes,
               rating: testRecipe.rating,
-              tags: testRecipe.tags,
+              personalTagIds: testRecipe.personalTagIds,
               sourceUrl: testRecipe.sourceUrl,
             )).called(1);
       });

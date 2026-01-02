@@ -366,7 +366,7 @@ class LlmEnhancementService extends BaseService {
       timeMinutes: extracted.totalTimeMinutes ?? 0,
       ingredients: extracted.ingredients.map((i) => i.formatted).toList(),
       instructions: extracted.instructions,
-      tags: extracted.tags,
+      personalTagIds: extracted.tags,
       sourceUrl: extracted.source,
     );
   }

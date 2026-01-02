@@ -401,7 +401,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier
       portions: changes['portions'] as int? ?? recipe.portions,
       timeMinutes: changes['timeMinutes'] as int? ?? recipe.timeMinutes,
       rating: changes['rating']?.toDouble() ?? recipe.rating,
-      tags: changes['tags']?.cast<String>() ?? recipe.tags,
+      personalTagIds: changes['tags']?.cast<String>() ?? recipe.personalTagIds,
       imageUrls: changes['imageUrls']?.cast<String>() ?? recipe.imageUrls,
       mealType: changes['mealType'] as String? ?? recipe.mealType,
       sourceUrl: changes['sourceUrl'] as String? ?? recipe.sourceUrl,

@@ -27,7 +27,7 @@ void main() {
         timeMinutes: 45,
         rating: 4.5,
         portions: 4,
-        tags: ['svensk', 'kött', 'traditionell'],
+        personalTagIds: ['svensk', 'kött', 'traditionell'],
         ingredients: ['köttfärs', 'grädde', 'mjölk', 'ägg'],
         instructions: ['Blanda köttfärs', 'Forma bullar', 'Stek i panna'],
       ),
@@ -39,7 +39,7 @@ void main() {
         timeMinutes: 20,
         rating: 4.0,
         portions: 2,
-        tags: ['italiensk', 'pasta', 'snabb'],
+        personalTagIds: ['italiensk', 'pasta', 'snabb'],
         ingredients: ['pasta', 'bacon', 'ägg', 'parmesan'],
         instructions: ['Koka pasta', 'Stek bacon', 'Blanda med ägg'],
       ),
@@ -51,7 +51,7 @@ void main() {
         timeMinutes: 15,
         rating: 4.8,
         portions: 6,
-        tags: ['svensk', 'frukost', 'enkel'],
+        personalTagIds: ['svensk', 'frukost', 'enkel'],
         ingredients: ['mjöl', 'mjölk', 'ägg', 'smör'],
         instructions: ['Vispa smet', 'Stek tunna pannkakor'],
       ),
@@ -63,7 +63,7 @@ void main() {
         timeMinutes: 25,
         rating: 3.5,
         portions: 3,
-        tags: ['hälsosam', 'sallad', 'kyckling'],
+        personalTagIds: ['hälsosam', 'sallad', 'kyckling'],
         ingredients: ['kyckling', 'sallad', 'tomat', 'gurka'],
         instructions: ['Grilla kyckling', 'Hacka grönsaker', 'Blanda'],
       ),
@@ -75,7 +75,7 @@ void main() {
         timeMinutes: 60,
         rating: 4.2,
         portions: 5,
-        tags: ['vegetarisk', 'italiensk', 'ugnsrätt'],
+        personalTagIds: ['vegetarisk', 'italiensk', 'ugnsrätt'],
         ingredients: ['lasagneplattor', 'spenat', 'ricotta', 'tomatsås'],
         instructions: ['Laga sås', 'Varva ingredienser', 'Grädda i ugn'],
       ),
@@ -381,7 +381,7 @@ void main() {
             (i) => RecipeFactory.build(
                   title: 'Recipe $i',
                   ingredients: ['ingredient$i', 'common'],
-                  tags: ['tag$i', 'common'],
+                  personalTagIds: ['tag$i', 'common'],
                 ));
 
         final suggestions = service.getSearchSuggestions(manyRecipes, 'co');
@@ -417,7 +417,7 @@ void main() {
             50,
             (i) => RecipeFactory.build(
                   mealType: 'type$i',
-                  tags: ['tag$i', 'tag${i + 1}'],
+                  personalTagIds: ['tag$i', 'tag${i + 1}'],
                   ingredients: ['ingredient$i'],
                 ));
 

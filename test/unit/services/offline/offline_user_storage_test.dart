@@ -3,9 +3,11 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
+import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/builders/recipe_builder.dart';
 
@@ -39,6 +41,11 @@ class FakeOfflineRecipe extends Fake implements OfflineRecipe {
 }
 
 void main() {
+  setUpAll(() {
+    // Register fallback values for mocktail
+    registerFallbackValue(SyncOperation.update);
+  });
+
   group('OfflineUserStorage (Drift)', () {
     late OfflineUserStorage storage;
     late MockAppDatabase mockDatabase;
@@ -300,6 +307,283 @@ void main() {
         // Assert
         expect(recipes.length, 1);
         expect(recipes[0].title, 'Watched Recipe');
+      });
+    });
+
+    group('H9: Tag Queueing for Offline Recipes', () {
+      test('should queue SyncOperation.tag when recipe has pending tagResult',
+          () async {
+        // Arrange
+        final baseRecipe = RecipeBuilder()
+            .withId('recipe_pending')
+            .withTitle('Pending Tags Recipe')
+            .build();
+
+        // Create recipe with pending tagResult
+        final recipe = Recipe(
+          core: baseRecipe.core.copyWith(tagResult: TagResult.pending()),
+          type: baseRecipe.type,
+        );
+
+        const userId = 'user_123';
+
+        when(() => mockRecipeDao.upsertRecipe(
+              id: any(named: 'id'),
+              userId: any(named: 'userId'),
+              recipeJson: any(named: 'recipeJson'),
+              needsSync: any(named: 'needsSync'),
+            )).thenAnswer((_) async {});
+
+        when(() => mockSyncQueueDao.enqueue(
+              userId: any(named: 'userId'),
+              recipeId: any(named: 'recipeId'),
+              operation: any(named: 'operation'),
+            )).thenAnswer((_) async => 1);
+
+        // Act
+        await storage.saveRecipeForUser(recipe, userId, isOnline: false);
+
+        // Assert - should queue both update AND tag operations
+        verify(() => mockSyncQueueDao.enqueue(
+              userId: userId,
+              recipeId: recipe.id,
+              operation: SyncOperation.update,
+            )).called(1);
+
+        verify(() => mockSyncQueueDao.enqueue(
+              userId: userId,
+              recipeId: recipe.id,
+              operation: SyncOperation.tag,
+            )).called(1);
+      });
+
+      test('should queue SyncOperation.tag when recipe has failed tagResult',
+          () async {
+        // Arrange
+        final baseRecipe = RecipeBuilder()
+            .withId('recipe_failed')
+            .withTitle('Failed Tags Recipe')
+            .build();
+
+        // Create recipe with failed tagResult
+        final recipe = Recipe(
+          core: baseRecipe.core
+              .copyWith(tagResult: TagResult.failed(reason: 'Test failure')),
+          type: baseRecipe.type,
+        );
+
+        const userId = 'user_123';
+
+        when(() => mockRecipeDao.upsertRecipe(
+              id: any(named: 'id'),
+              userId: any(named: 'userId'),
+              recipeJson: any(named: 'recipeJson'),
+              needsSync: any(named: 'needsSync'),
+            )).thenAnswer((_) async {});
+
+        when(() => mockSyncQueueDao.enqueue(
+              userId: any(named: 'userId'),
+              recipeId: any(named: 'recipeId'),
+              operation: any(named: 'operation'),
+            )).thenAnswer((_) async => 1);
+
+        // Act
+        await storage.saveRecipeForUser(recipe, userId, isOnline: false);
+
+        // Assert - should queue tag operation for failed tagResult
+        verify(() => mockSyncQueueDao.enqueue(
+              userId: userId,
+              recipeId: recipe.id,
+              operation: SyncOperation.tag,
+            )).called(1);
+      });
+
+      test('should queue SyncOperation.tag when recipe has zero coverage',
+          () async {
+        // Arrange
+        final baseRecipe = RecipeBuilder()
+            .withId('recipe_zero_coverage')
+            .withTitle('Zero Coverage Recipe')
+            .build();
+
+        // Create recipe with zero coverage tagResult
+        final recipe = Recipe(
+          core: baseRecipe.core.copyWith(
+            tagResult: TagResult(
+              tags: {},
+              allergenStatus: {},
+              dietaryStatus: {},
+              coverage: 0.0,
+              generatedAt: DateTime.now(),
+              generatorVersion: 'v1.0', // Valid version but zero coverage
+            ),
+          ),
+          type: baseRecipe.type,
+        );
+
+        const userId = 'user_123';
+
+        when(() => mockRecipeDao.upsertRecipe(
+              id: any(named: 'id'),
+              userId: any(named: 'userId'),
+              recipeJson: any(named: 'recipeJson'),
+              needsSync: any(named: 'needsSync'),
+            )).thenAnswer((_) async {});
+
+        when(() => mockSyncQueueDao.enqueue(
+              userId: any(named: 'userId'),
+              recipeId: any(named: 'recipeId'),
+              operation: any(named: 'operation'),
+            )).thenAnswer((_) async => 1);
+
+        // Act
+        await storage.saveRecipeForUser(recipe, userId, isOnline: false);
+
+        // Assert - should queue tag operation for zero coverage
+        verify(() => mockSyncQueueDao.enqueue(
+              userId: userId,
+              recipeId: recipe.id,
+              operation: SyncOperation.tag,
+            )).called(1);
+      });
+
+      test('should NOT queue SyncOperation.tag when recipe has valid tagResult',
+          () async {
+        // Arrange
+        final baseRecipe = RecipeBuilder()
+            .withId('recipe_valid')
+            .withTitle('Valid Tags Recipe')
+            .build();
+
+        // Create recipe with valid tagResult (good coverage, valid version)
+        final recipe = Recipe(
+          core: baseRecipe.core.copyWith(
+            tagResult: TagResult(
+              tags: {'middag', 'kyckling'},
+              allergenStatus: {},
+              dietaryStatus: {},
+              coverage: 0.85, // Good coverage
+              generatedAt: DateTime.now(),
+              generatorVersion: 'v1.0', // Valid version
+            ),
+          ),
+          type: baseRecipe.type,
+        );
+
+        const userId = 'user_123';
+
+        when(() => mockRecipeDao.upsertRecipe(
+              id: any(named: 'id'),
+              userId: any(named: 'userId'),
+              recipeJson: any(named: 'recipeJson'),
+              needsSync: any(named: 'needsSync'),
+            )).thenAnswer((_) async {});
+
+        when(() => mockSyncQueueDao.enqueue(
+              userId: any(named: 'userId'),
+              recipeId: any(named: 'recipeId'),
+              operation: any(named: 'operation'),
+            )).thenAnswer((_) async => 1);
+
+        // Act
+        await storage.saveRecipeForUser(recipe, userId, isOnline: false);
+
+        // Assert - should queue update but NOT tag operation
+        verify(() => mockSyncQueueDao.enqueue(
+              userId: userId,
+              recipeId: recipe.id,
+              operation: SyncOperation.update,
+            )).called(1);
+
+        // Verify tag operation was NOT queued
+        verifyNever(() => mockSyncQueueDao.enqueue(
+              userId: userId,
+              recipeId: recipe.id,
+              operation: SyncOperation.tag,
+            ));
+      });
+
+      test('should NOT queue SyncOperation.tag when online', () async {
+        // Arrange
+        final baseRecipe = RecipeBuilder()
+            .withId('recipe_online')
+            .withTitle('Online Recipe')
+            .build();
+
+        // Create recipe with pending tagResult
+        final recipe = Recipe(
+          core: baseRecipe.core.copyWith(tagResult: TagResult.pending()),
+          type: baseRecipe.type,
+        );
+
+        const userId = 'user_123';
+
+        when(() => mockRecipeDao.upsertRecipe(
+              id: any(named: 'id'),
+              userId: any(named: 'userId'),
+              recipeJson: any(named: 'recipeJson'),
+              needsSync: any(named: 'needsSync'),
+            )).thenAnswer((_) async {});
+
+        // Act - save while ONLINE
+        await storage.saveRecipeForUser(recipe, userId, isOnline: true);
+
+        // Assert - no sync queue operations when online
+        verifyNever(() => mockSyncQueueDao.enqueue(
+              userId: any(named: 'userId'),
+              recipeId: any(named: 'recipeId'),
+              operation: any(named: 'operation'),
+            ));
+      });
+
+      test(
+          'should queue SyncOperation.tag when recipe has stale-ingredient version',
+          () async {
+        // Arrange
+        final baseRecipe = RecipeBuilder()
+            .withId('recipe_stale')
+            .withTitle('Stale Ingredient Recipe')
+            .build();
+
+        // Create recipe with stale-ingredient version
+        final recipe = Recipe(
+          core: baseRecipe.core.copyWith(
+            tagResult: TagResult(
+              tags: {'middag'},
+              allergenStatus: {},
+              dietaryStatus: {},
+              coverage: 0.5,
+              generatedAt: DateTime.now(),
+              generatorVersion: 'stale-ingredient', // Needs retagging
+            ),
+          ),
+          type: baseRecipe.type,
+        );
+
+        const userId = 'user_123';
+
+        when(() => mockRecipeDao.upsertRecipe(
+              id: any(named: 'id'),
+              userId: any(named: 'userId'),
+              recipeJson: any(named: 'recipeJson'),
+              needsSync: any(named: 'needsSync'),
+            )).thenAnswer((_) async {});
+
+        when(() => mockSyncQueueDao.enqueue(
+              userId: any(named: 'userId'),
+              recipeId: any(named: 'recipeId'),
+              operation: any(named: 'operation'),
+            )).thenAnswer((_) async => 1);
+
+        // Act
+        await storage.saveRecipeForUser(recipe, userId, isOnline: false);
+
+        // Assert - should queue tag operation for stale-ingredient
+        verify(() => mockSyncQueueDao.enqueue(
+              userId: userId,
+              recipeId: recipe.id,
+              operation: SyncOperation.tag,
+            )).called(1);
       });
     });
   });

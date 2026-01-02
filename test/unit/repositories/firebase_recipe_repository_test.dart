@@ -597,7 +597,7 @@ void main() {
             portions: 4,
             timeMinutes: 30,
             rating: 0,
-            tags: [],
+            personalTagIds: [],
             sourceUrl: null,
             createdBy: 'test-user-123',
             createdAt: DateTime.now(),

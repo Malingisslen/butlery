@@ -40,6 +40,13 @@ class RecipeListViewModel extends ChangeNotifier {
   /// Active dietary filters for diet-based recipe filtering.
   final Set<String> _activeDietaryFilters = {};
 
+  /// Active personal tag filters for user-defined tag-based filtering.
+  /// Uses tag IDs for filtering, matched against recipe.core.personalTagIds.
+  final Set<String> _activePersonalTagFilters = {};
+
+  /// Excluded personal tag filters - recipes with ANY of these are filtered out.
+  final Set<String> _excludedPersonalTagFilters = {};
+
   /// Cached filtered recipe results for performance optimization and responsiveness.
   List<Recipe>? _cachedFilteredRecipes;
 
@@ -66,6 +73,12 @@ class RecipeListViewModel extends ChangeNotifier {
 
   /// Last dietary filters for cache validation.
   Set<String>? _lastDietaryFilters;
+
+  /// Last personal tag filters for cache validation.
+  Set<String>? _lastPersonalTagFilters;
+
+  /// Last excluded personal tag filters for cache validation.
+  Set<String>? _lastExcludedPersonalTagFilters;
 
   /// Initializes recipe list ViewModel with comprehensive service integration and reactive state coordination.
   /// [recipeService] Optional UnifiedRecipeService instance for dependency injection
@@ -145,6 +158,14 @@ class RecipeListViewModel extends ChangeNotifier {
   Set<String> get activeDietaryFilters =>
       Set.unmodifiable(_activeDietaryFilters);
 
+  /// Active personal tag filter IDs for UI state synchronization.
+  Set<String> get activePersonalTagFilters =>
+      Set.unmodifiable(_activePersonalTagFilters);
+
+  /// Excluded personal tag filter IDs for UI state synchronization.
+  Set<String> get excludedPersonalTagFilters =>
+      Set.unmodifiable(_excludedPersonalTagFilters);
+
   /// Filter presence indicator for UI conditional display and filter management.
   /// Indicates whether any filters are currently active for UI conditional rendering
   /// of filter clear buttons and filter state indicators.
@@ -153,7 +174,9 @@ class RecipeListViewModel extends ChangeNotifier {
       _activeMealTypeFilters.isNotEmpty ||
       _activeRatingFilters.isNotEmpty ||
       _activeAllergenFilters.isNotEmpty ||
-      _activeDietaryFilters.isNotEmpty;
+      _activeDietaryFilters.isNotEmpty ||
+      _activePersonalTagFilters.isNotEmpty ||
+      _excludedPersonalTagFilters.isNotEmpty;
 
   /// Whether allergen or dietary filters are specifically active.
   /// These filters require tagResult to be present, so untagged recipes are excluded.
@@ -283,6 +306,30 @@ class RecipeListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Toggles personal tag filter for user-defined tag-based filtering.
+  /// Uses AND logic: recipes must have ALL selected personal tags.
+  void togglePersonalTagFilter(String tagId) {
+    if (_activePersonalTagFilters.contains(tagId)) {
+      _activePersonalTagFilters.remove(tagId);
+    } else {
+      _activePersonalTagFilters.add(tagId);
+    }
+    _invalidateCache();
+    notifyListeners();
+  }
+
+  /// Toggles excluded personal tag filter for exclusion-based filtering.
+  /// Uses OR logic: recipes with ANY excluded tag are filtered out.
+  void toggleExcludedPersonalTagFilter(String tagId) {
+    if (_excludedPersonalTagFilters.contains(tagId)) {
+      _excludedPersonalTagFilters.remove(tagId);
+    } else {
+      _excludedPersonalTagFilters.add(tagId);
+    }
+    _invalidateCache();
+    notifyListeners();
+  }
+
   /// Clears all active filters with comprehensive state reset and performance optimization.
   /// Removes all time, meal type, rating, allergen, and dietary filters with automatic
   /// cache invalidation and UI notification for complete filter state reset.
@@ -292,6 +339,8 @@ class RecipeListViewModel extends ChangeNotifier {
     _activeRatingFilters.clear();
     _activeAllergenFilters.clear();
     _activeDietaryFilters.clear();
+    _activePersonalTagFilters.clear();
+    _excludedPersonalTagFilters.clear();
     _invalidateCache();
     notifyListeners();
   }
@@ -346,7 +395,10 @@ class RecipeListViewModel extends ChangeNotifier {
         _setEquals(_lastMealTypeFilters, _activeMealTypeFilters) &&
         _setEquals(_lastRatingFilters, _activeRatingFilters) &&
         _setEquals(_lastAllergenFilters, _activeAllergenFilters) &&
-        _setEquals(_lastDietaryFilters, _activeDietaryFilters)) {
+        _setEquals(_lastDietaryFilters, _activeDietaryFilters) &&
+        _setEquals(_lastPersonalTagFilters, _activePersonalTagFilters) &&
+        _setEquals(
+            _lastExcludedPersonalTagFilters, _excludedPersonalTagFilters)) {
       return _cachedFilteredRecipes!;
     }
 
@@ -377,6 +429,19 @@ class RecipeListViewModel extends ChangeNotifier {
       filtered = _applyDietaryFilters(filtered);
     }
 
+    // Applicera personliga taggar filter
+    if (_activePersonalTagFilters.isNotEmpty) {
+      filtered = _applyPersonalTagFilters(filtered);
+    }
+
+    // Applicera exkluderade personliga taggar filter
+    if (_excludedPersonalTagFilters.isNotEmpty) {
+      filtered = _searchService.filterByExcludedTags(
+        filtered,
+        _excludedPersonalTagFilters.toList(),
+      );
+    }
+
     // Sök
     if (_searchQuery.isNotEmpty) {
       filtered = _searchService.searchRecipes(filtered, _searchQuery);
@@ -399,6 +464,8 @@ class RecipeListViewModel extends ChangeNotifier {
     _lastRatingFilters = Set.from(_activeRatingFilters);
     _lastAllergenFilters = Set.from(_activeAllergenFilters);
     _lastDietaryFilters = Set.from(_activeDietaryFilters);
+    _lastPersonalTagFilters = Set.from(_activePersonalTagFilters);
+    _lastExcludedPersonalTagFilters = Set.from(_excludedPersonalTagFilters);
 
     // PERFORMANCE FIX: Apply pagination limit to prevent UI performance issues
     return sorted.take(_displayLimit).toList();
@@ -534,6 +601,23 @@ class RecipeListViewModel extends ChangeNotifier {
           if (!tagResult.isDietarySafe(filterOption.value as String)) {
             return false;
           }
+        }
+      }
+      return true;
+    }).toList();
+  }
+
+  /// Applies personal tag filters for user-defined tag-based filtering.
+  /// Uses AND logic: recipe must contain ALL selected personal tag names.
+  List<Recipe> _applyPersonalTagFilters(List<Recipe> recipes) {
+    return recipes.where((recipe) {
+      final recipeTags = recipe.core.personalTagIds ?? [];
+      if (recipeTags.isEmpty) return false;
+
+      // Recipe must have ALL selected tags (AND logic)
+      for (final tagId in _activePersonalTagFilters) {
+        if (!recipeTags.contains(tagId)) {
+          return false;
         }
       }
       return true;

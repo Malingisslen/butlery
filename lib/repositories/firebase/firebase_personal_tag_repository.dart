@@ -5,7 +5,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 
 /// Firebase repository for user-defined personal tags.
 ///
-/// Stores tags in user subcollection: users/{userId}/personalTags/{tagId}
+/// Stores tags in user subcollection: users/{userId}/personalTagIds/{tagId}
 /// Each user can only access their own tags (owner-only permissions).
 class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
     with UserScopedFirebaseRepository<PersonalTag> {
@@ -16,7 +16,7 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
   });
 
   @override
-  String get collectionName => 'personalTags';
+  String get collectionName => 'personalTagIds';
 
   @override
   PersonalTag fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -33,24 +33,30 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
 
   // Owner-only permissions - user can only access their own subcollection
   @override
-  Future<bool> validateCreatePermission(String userId, PersonalTag entity) async => true;
+  Future<bool> validateCreatePermission(
+          String userId, PersonalTag entity) async =>
+      true;
 
   @override
   Future<bool> validateReadPermission(
     String userId,
     String resourceId,
     PersonalTag? entity,
-  ) async => true;
+  ) async =>
+      true;
 
   @override
   Future<bool> validateUpdatePermission(
     String userId,
     String resourceId,
     PersonalTag entity,
-  ) async => true;
+  ) async =>
+      true;
 
   @override
-  Future<bool> validateDeletePermission(String userId, String resourceId) async => true;
+  Future<bool> validateDeletePermission(
+          String userId, String resourceId) async =>
+      true;
 
   /// Gets all tags sorted by sortOrder.
   Future<List<PersonalTag>> getAllSorted() async {
@@ -95,10 +101,26 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
     final all = await readAll();
     if (all.isEmpty) return 0;
 
-    final maxOrder = all
-        .map((tag) => tag.sortOrder)
-        .reduce((a, b) => a > b ? a : b);
+    final maxOrder =
+        all.map((tag) => tag.sortOrder).reduce((a, b) => a > b ? a : b);
     return maxOrder + 1;
+  }
+
+  /// Gets multiple tags by their IDs efficiently.
+  ///
+  /// Returns only tags that exist. Missing IDs are silently ignored.
+  /// Useful for resolving recipe.personalTagIds to full PersonalTag objects.
+  Future<List<PersonalTag>> getByIds(List<String> tagIds) async {
+    if (tagIds.isEmpty) return [];
+
+    requireCurrentUserId();
+    final ref = getCollectionRef();
+
+    final docs = await Future.wait(
+      tagIds.map((id) => ref.doc(id).get()),
+    );
+
+    return docs.where((doc) => doc.exists).map(fromFirestore).toList();
   }
 
   /// Reorders tags by updating their sortOrder values.
@@ -115,5 +137,76 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
     }
 
     await batch.commit();
+  }
+
+  /// Gets tags belonging to a specific group.
+  /// Pass null to get ungrouped tags.
+  Future<List<PersonalTag>> getByGroupId(String? groupId) async {
+    Query<Map<String, dynamic>> query;
+
+    if (groupId == null) {
+      // Tags with no group (groupId is null or missing)
+      query = getCollectionRef().where('groupId', isNull: true);
+    } else {
+      query = getCollectionRef().where('groupId', isEqualTo: groupId);
+    }
+
+    final snapshot = await query.orderBy('sortOrder').get();
+    return snapshot.docs.map(fromFirestore).toList();
+  }
+
+  /// Watches tags belonging to a specific group with real-time updates.
+  /// Pass null to watch ungrouped tags.
+  Stream<List<PersonalTag>> watchByGroupId(String? groupId) {
+    Query<Map<String, dynamic>> query;
+
+    if (groupId == null) {
+      query = getCollectionRef().where('groupId', isNull: true);
+    } else {
+      query = getCollectionRef().where('groupId', isEqualTo: groupId);
+    }
+
+    return query
+        .orderBy('sortOrder')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map(fromFirestore).toList());
+  }
+
+  /// Gets all ungrouped tags (convenience method).
+  Future<List<PersonalTag>> getUngrouped() => getByGroupId(null);
+
+  /// Watches all ungrouped tags (convenience method).
+  Stream<List<PersonalTag>> watchUngrouped() => watchByGroupId(null);
+
+  /// Moves a tag to a different group.
+  /// Pass null to remove from group (make ungrouped).
+  Future<void> moveToGroup(String tagId, String? groupId) async {
+    requireCurrentUserId();
+    await getCollectionRef().doc(tagId).update({
+      'groupId': groupId,
+      'updatedAt': Timestamp.now(),
+    });
+  }
+
+  /// Clears groupId from all tags in a group (used before group deletion).
+  /// Returns the number of tags updated.
+  Future<int> clearGroupFromTags(String groupId) async {
+    requireCurrentUserId();
+    final tagsInGroup = await getByGroupId(groupId);
+
+    if (tagsInGroup.isEmpty) return 0;
+
+    final batch = firestore.batch();
+    final ref = getCollectionRef();
+
+    for (final tag in tagsInGroup) {
+      batch.update(ref.doc(tag.id), {
+        'groupId': FieldValue.delete(),
+        'updatedAt': Timestamp.now(),
+      });
+    }
+
+    await batch.commit();
+    return tagsInGroup.length;
   }
 }

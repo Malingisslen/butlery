@@ -12,6 +12,7 @@ import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 import 'package:butlery/core/rate_limiting/rate_limiter.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
+import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -27,6 +28,7 @@ class PersonalRecipeModule {
   final void Function() _notifyListeners;
   final RecipeServiceAdapter Function() _getServiceAdapter;
   final TaggingService? _taggingService;
+  final PersonalTagService? _personalTagService;
   final RateLimiter _rateLimiter = RateLimiter();
 
   JsonCacheHelper get _cacheHelper => _getCacheHelper();
@@ -41,6 +43,7 @@ class PersonalRecipeModule {
     required void Function() notifyListeners,
     required RecipeServiceAdapter Function() getServiceAdapter,
     TaggingService? taggingService,
+    PersonalTagService? personalTagService,
   })  : _recipeRepository = recipeRepository,
         _userRepository = userRepository,
         _getCacheHelper = getCacheHelper,
@@ -49,7 +52,8 @@ class PersonalRecipeModule {
         _setError = setError,
         _notifyListeners = notifyListeners,
         _getServiceAdapter = getServiceAdapter,
-        _taggingService = taggingService;
+        _taggingService = taggingService,
+        _personalTagService = personalTagService;
 
   Future<String?> createPersonalRecipe({
     required String title,
@@ -61,7 +65,7 @@ class PersonalRecipeModule {
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
   }) async {
     final currentUserId = PermissionHelper.requireAuthWithError(
@@ -91,13 +95,16 @@ class PersonalRecipeModule {
             portions: portions,
             timeMinutes: timeMinutes,
             rating: rating,
-            tags: tags,
+            personalTagIds: personalTagIds,
             sourceUrl: sourceUrl,
             imageUrls: imageUrls,
           );
 
           // Generate tags if tagging service is available
           newRecipe = await _applyTagging(newRecipe);
+
+          // Apply personal tag rules (auto-apply based on user-defined rules)
+          newRecipe = await _applyPersonalTagRules(newRecipe);
 
           // ULTRATHINK FIX: Optimistic update - save to cache immediately and return success
           await _saveToCache(newRecipe);
@@ -157,6 +164,9 @@ class PersonalRecipeModule {
 
           // Regenerate tags if ingredients changed
           editedRecipe = await _applyTagging(editedRecipe);
+
+          // Apply personal tag rules (auto-apply based on user-defined rules)
+          editedRecipe = await _applyPersonalTagRules(editedRecipe);
 
           // ULTRATHINK FIX: Optimistic update - save to cache immediately and return success
           await _saveToCache(editedRecipe);
@@ -673,6 +683,46 @@ class PersonalRecipeModule {
     } catch (e) {
       // Audit logging is non-blocking - don't fail the tagging operation
       AppLogger.debug('Audit logging skipped (non-blocking): $e');
+    }
+  }
+
+  /// Applies personal tag automation rules to a recipe.
+  ///
+  /// Evaluates user-defined rules against the recipe and adds matching
+  /// tag IDs to the recipe's personalTagIds list.
+  /// Non-blocking: failures return the original recipe unchanged.
+  Future<Recipe> _applyPersonalTagRules(Recipe recipe) async {
+    if (_personalTagService == null) return recipe;
+
+    try {
+      // Evaluate all enabled rules against this recipe
+      final matchingTagIds =
+          await _personalTagService.evaluateRulesForRecipe(recipe);
+      if (matchingTagIds.isEmpty) return recipe;
+
+      // Get the actual tag objects to get their names
+      final allTags = await _personalTagService.getAllTags();
+      final ruleTagNames = allTags
+          .where((t) => matchingTagIds.contains(t.id))
+          .map((t) => t.name)
+          .toSet();
+
+      if (ruleTagNames.isEmpty) return recipe;
+
+      // Merge with existing personalTagIds (preserving user-entered tags)
+      final existingTags = recipe.personalTagIds?.toSet() ?? <String>{};
+      final mergedTags = existingTags.union(ruleTagNames).toList();
+
+      AppLogger.debug(
+        '🏷️ Personal tag rules: added ${ruleTagNames.length} tags to "${recipe.title}" '
+        '(${ruleTagNames.join(", ")})',
+      );
+
+      return recipe.copyWith(personalTagIds: mergedTags);
+    } catch (e) {
+      AppLogger.warning(
+          '⚠️ Personal tag rule evaluation failed for "${recipe.title}": $e');
+      return recipe; // Return unchanged on error
     }
   }
 }

@@ -7,6 +7,7 @@ import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/common/input_components.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
+import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -33,6 +34,9 @@ class RecipeDetailContent extends StatelessWidget {
   /// Whether to show ingredient coverage indicator
   final bool showCoverage;
 
+  /// Resolved personal tag names (tag ID → display name)
+  final Map<String, String>? personalTagNames;
+
   const RecipeDetailContent({
     super.key,
     required this.viewModel,
@@ -42,6 +46,7 @@ class RecipeDetailContent extends StatelessWidget {
     this.userAllergenPrefs,
     this.userDietaryPrefs,
     this.showCoverage = true,
+    this.personalTagNames,
   });
 
   @override
@@ -57,9 +62,18 @@ class RecipeDetailContent extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXl),
         ],
 
-        // Tags
-        if (recipe.tags?.isNotEmpty ?? false) ...[
+        // Tags (effective tags: auto-generated + user overrides)
+        if (_hasEffectiveTags) ...[
           _buildTags(context),
+          const SizedBox(height: AppDimensions.spacingXl),
+        ],
+
+        // Personal tags (user-defined categories)
+        if (_hasPersonalTags) ...[
+          _PersonalTagsSection(
+            tagIds: viewModel.recipe.personalTagIds!,
+            tagNames: personalTagNames!,
+          ),
           const SizedBox(height: AppDimensions.spacingXl),
         ],
 
@@ -124,7 +138,38 @@ class RecipeDetailContent extends StatelessWidget {
     );
   }
 
+  /// Whether there are effective tags to display.
+  bool get _hasEffectiveTags {
+    final recipe = viewModel.recipe;
+    final autoTags = recipe.tagResult?.tags ?? <String>{};
+    final userAddedTags = recipe.tagOverrides?.addedTags ?? <String>{};
+    final removedTags = recipe.tagOverrides?.removedTags ?? <String>{};
+    final effectiveTags = autoTags.union(userAddedTags).difference(removedTags);
+    return effectiveTags.isNotEmpty;
+  }
+
+  /// Whether there are personal tags to display.
+  bool get _hasPersonalTags {
+    final tagIds = viewModel.recipe.personalTagIds;
+    if (tagIds == null || tagIds.isEmpty) return false;
+    if (personalTagNames == null || personalTagNames!.isEmpty) return false;
+    return tagIds.any((id) => personalTagNames!.containsKey(id));
+  }
+
+  /// Gets the top 5 effective tags with smart priority.
+  List<String> get _topEffectiveTags {
+    final recipe = viewModel.recipe;
+    final autoTags = recipe.tagResult?.tags ?? <String>{};
+    final userAddedTags = recipe.tagOverrides?.addedTags ?? <String>{};
+    final removedTags = recipe.tagOverrides?.removedTags ?? <String>{};
+    final effectiveTags = autoTags.union(userAddedTags).difference(removedTags);
+    return TagDisplayUtils.getTopTags(effectiveTags, userAddedTags, limit: 5);
+  }
+
   Widget _buildTags(BuildContext context) {
+    final recipe = viewModel.recipe;
+    final userAddedTags = recipe.tagOverrides?.addedTags ?? <String>{};
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -154,29 +199,35 @@ class RecipeDetailContent extends StatelessWidget {
           Wrap(
             spacing: AppDimensions.spacingS,
             runSpacing: AppDimensions.spacingS,
-            children: (viewModel.recipe.tags ?? [])
-                .map((tag) => Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingS,
-                        vertical: AppDimensions.spacingXs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(
-                            AppDimensions.borderRadiusRound),
-                        border: Border.all(
-                          color: AppColors.primaryBlue.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Text(
-                        tag,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.primaryBlue,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ))
-                .toList(),
+            children: _topEffectiveTags.map((tag) {
+              final isUserAdded = userAddedTags.contains(tag);
+              final displayName = TagDisplayUtils.getDisplayName(tag);
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingS,
+                  vertical: AppDimensions.spacingXs,
+                ),
+                decoration: BoxDecoration(
+                  color: isUserAdded
+                      ? AppColors.primaryBlue.withValues(alpha: 0.15)
+                      : AppColors.primaryBlue.withValues(alpha: 0.1),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusRound),
+                  border: Border.all(
+                    color: isUserAdded
+                        ? AppColors.primaryBlue.withValues(alpha: 0.5)
+                        : AppColors.primaryBlue.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Text(
+                  displayName,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.primaryBlue,
+                    fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -355,6 +406,149 @@ class RecipeDetailContent extends StatelessWidget {
             }).toList(),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Collapsible section for personal tags display.
+class _PersonalTagsSection extends StatefulWidget {
+  final List<String> tagIds;
+  final Map<String, String> tagNames;
+
+  const _PersonalTagsSection({
+    required this.tagIds,
+    required this.tagNames,
+  });
+
+  @override
+  State<_PersonalTagsSection> createState() => _PersonalTagsSectionState();
+}
+
+class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
+  bool _isExpanded = false;
+  static const int _collapsedLimit = 3;
+
+  List<String> get _resolvedNames {
+    return widget.tagIds
+        .where((id) => widget.tagNames.containsKey(id))
+        .map((id) => widget.tagNames[id]!)
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final names = _resolvedNames;
+    if (names.isEmpty) return const SizedBox.shrink();
+
+    final hasOverflow = names.length > _collapsedLimit;
+    final displayNames =
+        _isExpanded ? names : names.take(_collapsedLimit).toList();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with expand/collapse
+          Row(
+            children: [
+              const Icon(
+                Icons.label_outline,
+                color: AppColors.primaryBlue,
+                size: AppDimensions.iconSizeAction,
+              ),
+              const SizedBox(width: AppDimensions.spacingM),
+              Expanded(
+                child: Text(
+                  'Personliga taggar',
+                  style: AppTextStyles.titleMedium,
+                ),
+              ),
+              if (hasOverflow)
+                TextButton.icon(
+                  onPressed: () => setState(() => _isExpanded = !_isExpanded),
+                  icon: Icon(
+                    _isExpanded ? Icons.expand_less : Icons.expand_more,
+                    size: 20,
+                  ),
+                  label: Text(
+                      _isExpanded ? 'Dölj' : 'Visa alla (${names.length})'),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingM),
+          // Tags
+          Wrap(
+            spacing: AppDimensions.spacingS,
+            runSpacing: AppDimensions.spacingS,
+            children: [
+              ...displayNames.map(_buildPersonalTag),
+              if (!_isExpanded && hasOverflow)
+                _buildOverflowIndicator(names.length - _collapsedLimit),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPersonalTag(String name) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingS,
+        vertical: AppDimensions.spacingXs,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.primaryBlue.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
+        border: Border.all(
+          color: AppColors.primaryBlue.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Text(
+        name,
+        style: AppTextStyles.bodySmall.copyWith(
+          color: AppColors.primaryBlue,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOverflowIndicator(int count) {
+    return GestureDetector(
+      onTap: () => setState(() => _isExpanded = true),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingS,
+          vertical: AppDimensions.spacingXs,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.primaryBlue.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
+          border: Border.all(
+            color: AppColors.primaryBlue.withValues(alpha: 0.2),
+          ),
+        ),
+        child: Text(
+          '+$count till',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.primaryBlue.withValues(alpha: 0.7),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
     );
   }
