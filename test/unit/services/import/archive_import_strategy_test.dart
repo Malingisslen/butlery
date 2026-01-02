@@ -289,7 +289,7 @@ void main() {
           for (final result in results) {
             expect(result.isSuccess, isTrue);
             if (result.recipe != null) {
-              expect(result.recipe!.tags, contains(testTag));
+              expect(result.recipe!.personalTagIds, contains(testTag));
             }
           }
         }

@@ -20,7 +20,7 @@ void main() {
           portions: 4,
           timeMinutes: 45,
           rating: 4.5,
-          tags: ['Svenskt', 'Traditionellt'],
+          personalTagIds: ['Svenskt', 'Traditionellt'],
           sourceUrl: 'https://example.com',
           imageUrls: ['image1.jpg', 'image2.jpg'],
           isPublic: true,
@@ -35,7 +35,8 @@ void main() {
         expect(recipe.core.portions, equals(4));
         expect(recipe.core.timeMinutes, equals(45));
         expect(recipe.core.rating, equals(4.5));
-        expect(recipe.core.tags, equals(['Svenskt', 'Traditionellt']));
+        expect(
+            recipe.core.personalTagIds, equals(['Svenskt', 'Traditionellt']));
         expect(recipe.core.sourceUrl, equals('https://example.com'));
         expect(recipe.core.imageUrls.length, equals(2));
         expect(recipe.core.isPublic, isTrue);
@@ -104,7 +105,7 @@ void main() {
           portions: 6,
           timeMinutes: 30,
           rating: 4.8,
-          tags: ['Italienskt', 'Pasta'],
+          personalTagIds: ['Italienskt', 'Pasta'],
           sourceUrl: 'https://recipe.com',
           imageUrls: ['pasta.jpg'],
           allowGuestViewing: false,
@@ -253,7 +254,7 @@ void main() {
           mealType: 'Middag',
           createdBy: 'original_owner',
           portions: 4,
-          tags: ['tag1', 'tag2'],
+          personalTagIds: ['tag1', 'tag2'],
         );
       });
 
@@ -388,7 +389,7 @@ void main() {
           ownerDisplayName: 'Anna Andersson',
           portions: 4,
           rating: 4.5,
-          tags: ['Italian'],
+          personalTagIds: ['Italian'],
           imageUrls: ['image.jpg'],
         );
 
@@ -626,7 +627,7 @@ void main() {
           ingredients: ['Räkor', 'Ägg', 'Löjrom', 'Smörgås'],
           instructions: ['Koka ägg', 'Lägg på räkor', 'Toppa med löjrom'],
           mealType: 'Förrätt',
-          tags: ['Sjömat', 'Högtid'],
+          personalTagIds: ['Sjömat', 'Högtid'],
         );
 
         expect(recipe.core.title, equals('Räksmörgås'));
@@ -690,7 +691,7 @@ void main() {
           ingredients: ['A'],
           instructions: ['B'],
           mealType: 'Lunch',
-          tags: null,
+          personalTagIds: null,
         );
 
         final copy = RecipeFactory.createPersonalCopy(
@@ -698,7 +699,7 @@ void main() {
           newOwnerId: 'copier',
         );
 
-        expect(copy.core.tags, isNull);
+        expect(copy.core.personalTagIds, isNull);
       });
 
       test('should create valid timestamps for realtime recipes', () {

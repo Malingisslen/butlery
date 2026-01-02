@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
+import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/core/form/form_fields_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/contextual_error_handler.dart';
@@ -36,6 +37,7 @@ class RecipeFormState extends ChangeNotifier {
   double? _rating;
   List<String> _imageUrls = [];
   String? _sourceUrl;
+  TagOverrides? _tagOverrides;
 
   // CRITICAL FIX: Remove internal arrays to eliminate dual state inconsistency
   // Single source of truth is now FormFieldsManager values only
@@ -141,6 +143,7 @@ class RecipeFormState extends ChangeNotifier {
     _rating = recipe.rating;
     _imageUrls = List<String>.from(recipe.imageUrls);
     _sourceUrl = recipe.sourceUrl;
+    _tagOverrides = recipe.tagOverrides;
 
     // CRITICAL FIX: Update FormFieldsManagers directly as single source of truth
     // CRITICAL FIX: Always add an empty field at the end for auto-add behavior when editing
@@ -148,7 +151,9 @@ class RecipeFormState extends ChangeNotifier {
         recipe.ingredients.isNotEmpty ? [...recipe.ingredients, ''] : [''];
     final instructions =
         recipe.instructions.isNotEmpty ? [...recipe.instructions, ''] : [''];
-    final tags = recipe.tags?.isNotEmpty == true ? [...recipe.tags!, ''] : [''];
+    final tags = recipe.personalTagIds?.isNotEmpty == true
+        ? [...recipe.personalTagIds!, '']
+        : [''];
 
     _ingredientsManager.updateItems(ingredients);
     _instructionsManager.updateItems(instructions);
@@ -186,6 +191,7 @@ class RecipeFormState extends ChangeNotifier {
   List<String> get instructions =>
       List<String>.from(_instructionsManager.values);
   List<String> get tags => List<String>.from(_tagsManager.values);
+  TagOverrides? get tagOverrides => _tagOverrides;
 
   // Controller getters
   FormFieldsManager get ingredientsManager => _ingredientsManager;
@@ -416,6 +422,12 @@ class RecipeFormState extends ChangeNotifier {
     _scheduleAutoSave();
   }
 
+  void setTagOverrides(TagOverrides? overrides) {
+    _tagOverrides = overrides;
+    notifyListeners();
+    _scheduleAutoSave();
+  }
+
   void setImageUrls(List<String> imageUrls, {bool skipAutoSave = false}) {
     _imageUrls = List<String>.from(imageUrls);
     notifyListeners();
@@ -571,6 +583,7 @@ class RecipeFormState extends ChangeNotifier {
       'ingredients': _ingredientsManager.values,
       'instructions': _instructionsManager.values,
       'tags': _tagsManager.values,
+      'tagOverrides': _tagOverrides?.toJson(),
     };
   }
 
@@ -589,6 +602,9 @@ class RecipeFormState extends ChangeNotifier {
       _sourceUrl = draftData['sourceUrl'];
       _imageUrls =
           List<String>.from((draftData['imageUrls'] as List?).orEmpty());
+      _tagOverrides = draftData['tagOverrides'] != null
+          ? TagOverrides.fromJson(draftData['tagOverrides'])
+          : null;
 
       final ingredients = List<String>.from(draftData['ingredients'] ?? ['']);
       final instructions = List<String>.from(draftData['instructions'] ?? ['']);
@@ -642,11 +658,13 @@ class RecipeFormState extends ChangeNotifier {
         rating: _rating,
         ingredients: cleanIngredients,
         instructions: cleanInstructions,
-        tags: cleanTags,
+        personalTagIds: cleanTags,
         imageUrls: imageUrls ?? _imageUrls,
         sourceUrl: _sourceUrl?.trim(),
         createdAt: (_originalRecipe?.createdAt).orNow(),
         updatedAt: DateTime.now(),
+        tagResult: _originalRecipe?.tagResult,
+        tagOverrides: _tagOverrides,
       ),
       type: RecipeType.personal,
     );
@@ -666,6 +684,7 @@ class RecipeFormState extends ChangeNotifier {
     _rating = null;
     _imageUrls = [];
     _sourceUrl = null;
+    _tagOverrides = null;
 
     _ingredientsManager.updateItems(['']);
     _instructionsManager.updateItems(['']);

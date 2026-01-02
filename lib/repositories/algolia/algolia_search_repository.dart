@@ -293,7 +293,7 @@ class AlgoliaSearchRepository implements SearchRepository {
       'portions': recipe.portions,
       'rating': recipe.rating,
       'mealType': recipe.mealType,
-      'tags': recipe.tags ?? [],
+      'tags': recipe.personalTagIds ?? [],
       'ingredients': recipe.ingredients,
       'ownerId': ownerId,
       'ownerDisplayName': '', // Should be set by caller with user data

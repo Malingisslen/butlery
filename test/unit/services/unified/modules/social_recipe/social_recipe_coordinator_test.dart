@@ -206,7 +206,7 @@ void main() {
           description: description,
           portions: portions,
           cookingTime: cookingTime,
-          tags: tags,
+          personalTagIds: tags,
         );
 
         // Assert
@@ -216,7 +216,7 @@ void main() {
         expect(recipe!.description, equals(description));
         expect(recipe.portions, equals(portions));
         expect(recipe.timeMinutes, equals(cookingTime));
-        expect(recipe.tags, equals(tags));
+        expect(recipe.personalTagIds, equals(tags));
       });
     });
 

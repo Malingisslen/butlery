@@ -91,7 +91,7 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
           portions: sourceRecipe.portions,
           timeMinutes: sourceRecipe.timeMinutes,
           rating: sourceRecipe.rating,
-          tags: sourceRecipe.tags,
+          personalTagIds: sourceRecipe.personalTagIds,
           sourceUrl: 'Från Butlerys arkiv',
           imageUrls: sourceRecipe.imageUrls,
           createdAt: DateTime.now(),
@@ -184,8 +184,8 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
   Set<String> getAvailableTags() {
     final tags = <String>{};
     for (final recipe in archive.archivedRecipes) {
-      if (recipe.tags != null) {
-        tags.addAll(recipe.tags!);
+      if (recipe.personalTagIds != null) {
+        tags.addAll(recipe.personalTagIds!);
       }
     }
     return tags;
@@ -237,7 +237,7 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
             recipe.description.toLowerCase().contains(lowerQuery) ||
             recipe.ingredients.any((ingredient) =>
                 ingredient.toLowerCase().contains(lowerQuery)) ||
-            (recipe.tags
+            (recipe.personalTagIds
                     ?.any((tag) => tag.toLowerCase().contains(lowerQuery)) ??
                 false);
       }).toList();
@@ -246,8 +246,8 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
     // Filter by tags
     if (tags != null && tags.isNotEmpty) {
       results = results.where((recipe) {
-        return recipe.tags != null &&
-            tags.every((tag) => recipe.tags!.contains(tag));
+        return recipe.personalTagIds != null &&
+            tags.every((tag) => recipe.personalTagIds!.contains(tag));
       }).toList();
     }
 

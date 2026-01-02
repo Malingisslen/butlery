@@ -6,39 +6,41 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
+import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 
-/// ViewModel for managing personal tags and automation rules.
+/// ViewModel for managing personal tags, groups, and automation rules.
 ///
 /// Provides state management and operations for:
-/// - CRUD operations on PersonalTag
-/// - CRUD operations on PersonalTagRule
+/// - CRUD operations on PersonalTag and PersonalTagGroup
+/// - CRUD operations on embedded PersonalTagRule
 /// - Real-time updates via streams
 class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final PersonalTagService _service;
 
   // State
   List<PersonalTag> _tags = [];
-  List<PersonalTagRule> _rules = [];
+  List<PersonalTagGroup> _groups = [];
   Map<String, int> _tagUsageCounts = {};
+  Map<String, int> _ruleMatchCounts = {};
   bool _isLoading = false;
   bool _isLoadingStats = false;
+  bool _isLoadingRuleStats = false;
   String? _error;
   String? _selectedTagId;
 
   // Stream subscriptions
-  StreamSubscription<List<PersonalTag>>? _tagsSubscription;
-  StreamSubscription<List<PersonalTagRule>>? _rulesSubscription;
+  StreamSubscription<PersonalTagsWithGroups>? _tagsWithGroupsSubscription;
 
   PersonalTagViewModel({PersonalTagService? service})
       : _service = service ?? ServiceLocator.get<PersonalTagService>();
 
   // Getters
   List<PersonalTag> get tags => List.unmodifiable(_tags);
-  List<PersonalTagRule> get rules => List.unmodifiable(_rules);
+  List<PersonalTagGroup> get groups => List.unmodifiable(_groups);
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
@@ -48,12 +50,36 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
       _selectedTagId != null ? getTagById(_selectedTagId!) : null;
 
   bool get hasTags => _tags.isNotEmpty;
-  bool get hasRules => _rules.isNotEmpty;
+  bool get hasGroups => _groups.isNotEmpty;
   Map<String, int> get tagUsageCounts => Map.unmodifiable(_tagUsageCounts);
+  Map<String, int> get ruleMatchCounts => Map.unmodifiable(_ruleMatchCounts);
   bool get isLoadingStats => _isLoadingStats;
+  bool get isLoadingRuleStats => _isLoadingRuleStats;
+
+  /// Gets all enabled rules across all tags.
+  List<PersonalTagRule> get enabledRules {
+    final rules = <PersonalTagRule>[];
+    for (final tag in _tags) {
+      for (final rule in tag.rules) {
+        if (rule.isEnabled) {
+          rules.add(rule);
+        }
+      }
+    }
+    return rules;
+  }
+
+  /// Gets all rules from selected tag.
+  List<PersonalTagRule> get selectedTagRules {
+    final tag = selectedTag;
+    return tag?.rules ?? [];
+  }
 
   /// Gets recipe count for a specific tag name.
   int getUsageCount(String tagName) => _tagUsageCounts[tagName] ?? 0;
+
+  /// Gets the number of recipes that would match a specific rule.
+  int getRuleMatchCount(String ruleId) => _ruleMatchCounts[ruleId] ?? 0;
 
   // Tag lookup helpers
   PersonalTag? getTagById(String id) {
@@ -62,18 +88,29 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   PersonalTag? getTagByName(String name) {
     final normalizedName = name.toLowerCase().trim();
-    return _tags.where((t) => t.name.toLowerCase() == normalizedName).firstOrNull;
+    return _tags
+        .where((t) => t.name.toLowerCase() == normalizedName)
+        .firstOrNull;
+  }
+
+  PersonalTagGroup? getGroupById(String id) {
+    return _groups.where((g) => g.id == id).firstOrNull;
+  }
+
+  List<PersonalTag> getTagsForGroup(String? groupId) {
+    return _tags.where((t) => t.groupId == groupId).toList();
   }
 
   List<PersonalTagRule> getRulesForTag(String tagId) {
-    return _rules.where((r) => r.tagId == tagId).toList();
+    final tag = getTagById(tagId);
+    return tag?.rules ?? [];
   }
 
   // ============================================================
   // INITIALIZATION
   // ============================================================
 
-  /// Loads all tags and starts watching for updates.
+  /// Loads all tags and groups and starts watching for updates.
   Future<void> initialize() async {
     _setLoading(true);
     _clearError();
@@ -81,11 +118,15 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     try {
       // Load initial data
       _tags = await _service.getAllTags();
+      _groups = await _service.getAllGroups();
 
       // Start watching for real-time updates
-      _watchTags();
+      _watchTagsWithGroups();
 
-      AppLogger.info('PersonalTagViewModel initialized with ${_tags.length} tags');
+      AppLogger.info(
+        'PersonalTagViewModel initialized with '
+        '${_tags.length} tags, ${_groups.length} groups',
+      );
     } catch (e, stack) {
       AppLogger.error('Failed to initialize PersonalTagViewModel', stack);
       _setError('Kunde inte ladda taggar');
@@ -94,58 +135,24 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     }
   }
 
-  void _watchTags() {
-    _tagsSubscription?.cancel();
-    _tagsSubscription = _service.watchTags().listen(
-      (tags) {
-        _tags = tags;
+  void _watchTagsWithGroups() {
+    _tagsWithGroupsSubscription?.cancel();
+    _tagsWithGroupsSubscription = _service.watchTagsWithGroups().listen(
+      (data) {
+        _tags = data.tagsByGroup.values.expand((t) => t).toList();
+        _groups = data.groups;
         notifyListeners();
       },
       onError: (e) {
-        AppLogger.error('Tag stream error: $e');
+        AppLogger.error('Tags/groups stream error: $e');
         _setError('Fel vid uppdatering av taggar');
       },
     );
   }
 
-  /// Watches rules for a specific tag.
-  void watchRulesForTag(String tagId) {
-    _rulesSubscription?.cancel();
+  /// Selects a tag for rule management.
+  void selectTag(String? tagId) {
     _selectedTagId = tagId;
-
-    _rulesSubscription = _service.watchRulesForTag(tagId).listen(
-      (rules) {
-        _rules = rules;
-        notifyListeners();
-      },
-      onError: (e) {
-        AppLogger.error('Rule stream error: $e');
-      },
-    );
-  }
-
-  /// Watches all rules for management UI.
-  void watchAllRules() {
-    _rulesSubscription?.cancel();
-    _selectedTagId = null;
-
-    _rulesSubscription = _service.watchAllRules().listen(
-      (rules) {
-        _rules = rules;
-        notifyListeners();
-      },
-      onError: (e) {
-        AppLogger.error('Rule stream error: $e');
-      },
-    );
-  }
-
-  /// Stops watching rules (when leaving rule management view).
-  void stopWatchingRules() {
-    _rulesSubscription?.cancel();
-    _rulesSubscription = null;
-    _rules = [];
-    _selectedTagId = null;
     notifyListeners();
   }
 
@@ -156,19 +163,17 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// Creates a new personal tag.
   Future<bool> createTag({
     required String name,
-    String? color,
-    String? icon,
+    String? groupId,
   }) async {
     _clearError();
 
     final result = await safeExecute(
       () async {
-        final sortOrder = await _service.getNextSortOrder();
+        final sortOrder = await _service.getNextTagSortOrder();
         final tag = PersonalTag.create(
           name: name,
-          color: color,
-          icon: icon,
           sortOrder: sortOrder,
+          groupId: groupId,
         );
 
         final created = await _service.createTag(tag);
@@ -208,7 +213,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return result ?? false;
   }
 
-  /// Deletes a personal tag and all its rules.
+  /// Deletes a personal tag (including all embedded rules).
   Future<bool> deleteTag(String tagId) async {
     _clearError();
 
@@ -247,22 +252,126 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return result ?? false;
   }
 
+  /// Moves a tag to a group.
+  Future<bool> moveTagToGroup(String tagId, String? groupId) async {
+    final result = await safeExecute(
+      () async {
+        await _service.moveTagToGroup(tagId, groupId);
+        return true;
+      },
+      operationName: 'Move tag to group',
+      defaultValue: false,
+    );
+    return result ?? false;
+  }
+
   // ============================================================
-  // RULE CRUD OPERATIONS
+  // GROUP CRUD OPERATIONS
   // ============================================================
 
-  /// Creates a new automation rule.
-  Future<bool> createRule(PersonalTagRule rule) async {
+  /// Creates a new tag group.
+  Future<bool> createGroup({
+    required String name,
+  }) async {
     _clearError();
 
     final result = await safeExecute(
       () async {
-        final created = await _service.createRule(rule);
+        final sortOrder = await _service.getNextGroupSortOrder();
+        final group = PersonalTagGroup.create(
+          name: name,
+          sortOrder: sortOrder,
+        );
+
+        final created = await _service.createGroup(group);
         if (created != null) {
-          AppLogger.success('Created rule: ${rule.name}');
+          AppLogger.success('Created personal tag group: $name');
           return true;
         }
         return false;
+      },
+      operationName: 'Create personal tag group',
+      defaultValue: false,
+    );
+
+    if (result != true) {
+      _setError('Kunde inte skapa gruppen');
+    }
+    return result ?? false;
+  }
+
+  /// Updates an existing group.
+  Future<bool> updateGroup(PersonalTagGroup group) async {
+    _clearError();
+
+    final result = await safeExecute(
+      () async {
+        await _service.updateGroup(group);
+        AppLogger.success('Updated personal tag group: ${group.name}');
+        return true;
+      },
+      operationName: 'Update personal tag group',
+      defaultValue: false,
+    );
+
+    if (result != true) {
+      _setError('Kunde inte uppdatera gruppen');
+    }
+    return result ?? false;
+  }
+
+  /// Deletes a group (tags become ungrouped).
+  Future<bool> deleteGroup(String groupId) async {
+    _clearError();
+
+    final group = getGroupById(groupId);
+    if (group == null) {
+      _setError('Gruppen hittades inte');
+      return false;
+    }
+
+    final result = await safeExecute(
+      () async {
+        await _service.deleteGroup(groupId);
+        AppLogger.warning('Deleted personal tag group: ${group.name}');
+        return true;
+      },
+      operationName: 'Delete personal tag group',
+      defaultValue: false,
+    );
+
+    if (result != true) {
+      _setError('Kunde inte ta bort gruppen');
+    }
+    return result ?? false;
+  }
+
+  /// Reorders groups.
+  Future<bool> reorderGroups(List<String> groupIds) async {
+    final result = await safeExecute(
+      () async {
+        await _service.reorderGroups(groupIds);
+        return true;
+      },
+      operationName: 'Reorder groups',
+      defaultValue: false,
+    );
+    return result ?? false;
+  }
+
+  // ============================================================
+  // RULE CRUD OPERATIONS (EMBEDDED IN TAGS)
+  // ============================================================
+
+  /// Creates a new automation rule for a tag.
+  Future<bool> createRule(String tagId, PersonalTagRule rule) async {
+    _clearError();
+
+    final result = await safeExecute(
+      () async {
+        await _service.addRuleToTag(tagId, rule);
+        AppLogger.success('Created rule: ${rule.name}');
+        return true;
       },
       operationName: 'Create rule',
       defaultValue: false,
@@ -274,13 +383,13 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return result ?? false;
   }
 
-  /// Updates an existing rule.
-  Future<bool> updateRule(PersonalTagRule rule) async {
+  /// Updates an existing rule within a tag.
+  Future<bool> updateRule(String tagId, PersonalTagRule rule) async {
     _clearError();
 
     final result = await safeExecute(
       () async {
-        await _service.updateRule(rule);
+        await _service.updateRuleInTag(tagId, rule);
         AppLogger.success('Updated rule: ${rule.name}');
         return true;
       },
@@ -294,13 +403,13 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return result ?? false;
   }
 
-  /// Deletes a rule.
-  Future<bool> deleteRule(String ruleId) async {
+  /// Deletes a rule from a tag.
+  Future<bool> deleteRule(String tagId, String ruleId) async {
     _clearError();
 
     final result = await safeExecute(
       () async {
-        await _service.deleteRule(ruleId);
+        await _service.removeRuleFromTag(tagId, ruleId);
         AppLogger.warning('Deleted rule: $ruleId');
         return true;
       },
@@ -315,13 +424,14 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Toggles rule enabled state.
-  Future<bool> toggleRuleEnabled(String ruleId) async {
-    final rule = _rules.where((r) => r.id == ruleId).firstOrNull;
+  Future<bool> toggleRuleEnabled(String tagId, String ruleId) async {
+    final tag = getTagById(tagId);
+    final rule = tag?.rules.where((r) => r.id == ruleId).firstOrNull;
     if (rule == null) return false;
 
     final result = await safeExecute(
       () async {
-        await _service.setRuleEnabled(ruleId, enabled: !rule.isEnabled);
+        await _service.setRuleEnabled(tagId, ruleId, enabled: !rule.isEnabled);
         return true;
       },
       operationName: 'Toggle rule enabled',
@@ -359,6 +469,53 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
       AppLogger.error('Failed to load tag statistics', stack);
     } finally {
       _isLoadingStats = false;
+      notifyListeners();
+    }
+  }
+
+  /// Loads rule effectiveness statistics.
+  ///
+  /// Calculates how many recipes each rule would match if applied.
+  Future<void> loadRuleEffectiveness() async {
+    // Collect all rules from all tags
+    final allRules = <PersonalTagRule>[];
+    for (final tag in _tags) {
+      allRules.addAll(tag.rules);
+    }
+
+    if (allRules.isEmpty) return;
+
+    _isLoadingRuleStats = true;
+    notifyListeners();
+
+    try {
+      final recipeRepo = ServiceLocator.get<FirebaseRecipeRepository>();
+      final recipes = await _getAllUserRecipes(recipeRepo);
+
+      if (recipes.isEmpty) {
+        _ruleMatchCounts = {};
+        return;
+      }
+
+      final counts = <String, int>{};
+
+      // For each rule, count how many recipes match
+      for (final rule in allRules) {
+        int matchCount = 0;
+        for (final recipe in recipes) {
+          if (rule.evaluate(recipe, null)) {
+            matchCount++;
+          }
+        }
+        counts[rule.id] = matchCount;
+      }
+
+      _ruleMatchCounts = counts;
+      AppLogger.info('Loaded effectiveness stats for ${allRules.length} rules');
+    } catch (e, stack) {
+      AppLogger.error('Failed to load rule effectiveness', stack);
+    } finally {
+      _isLoadingRuleStats = false;
       notifyListeners();
     }
   }
@@ -418,14 +575,14 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
         if (newTagNames.isEmpty) continue;
 
         // Merge with existing tags
-        final existingTags = recipe.personalTags?.toSet() ?? <String>{};
+        final existingTags = recipe.personalTagIds?.toSet() ?? <String>{};
         final tagsToAdd = newTagNames.difference(existingTags);
 
         if (tagsToAdd.isEmpty) continue;
 
         // Update recipe with new tags
         final updatedTags = [...existingTags, ...tagsToAdd];
-        final updatedRecipe = recipe.copyWith(personalTags: updatedTags);
+        final updatedRecipe = recipe.copyWith(personalTagIds: updatedTags);
 
         await recipeRepo.update(updatedRecipe);
         recipesModified++;
@@ -460,9 +617,10 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     if (userId == null) return [];
 
     // Get recipes ordered by update date, limited for performance
-    final snap = await recipeRepo.getCollectionForUser(userId)
+    final snap = await recipeRepo
+        .getCollectionForUser(userId)
         .orderBy('core.updatedAt', descending: true)
-        .limit(500)  // Process max 500 recipes per batch
+        .limit(500) // Process max 500 recipes per batch
         .get();
 
     return snap.docs.map((doc) => Recipe.fromFirestore(doc)).toList();
@@ -508,8 +666,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   @override
   void dispose() {
-    _tagsSubscription?.cancel();
-    _rulesSubscription?.cancel();
+    _tagsWithGroupsSubscription?.cancel();
     super.dispose();
   }
 }

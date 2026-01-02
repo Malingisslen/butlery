@@ -11,7 +11,7 @@ class RecipeOperations {
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     required String editedBy,
     required String editedByDisplayName,
   }) {
@@ -22,7 +22,7 @@ class RecipeOperations {
       portions: portions,
       timeMinutes: timeMinutes,
       rating: rating,
-      tags: tags,
+      personalTagIds: personalTagIds,
       lastEditedByUserId: editedBy,
       lastEditedByDisplayName: editedByDisplayName,
     );
@@ -288,7 +288,7 @@ class RecipeOperations {
       'ingredientCount': recipe.ingredients.length,
       'instructionCount': recipe.instructions.length,
       'imageCount': recipe.imageUrls.length,
-      'tagCount': recipe.tags?.length ?? 0,
+      'tagCount': recipe.personalTagIds?.length ?? 0,
       'estimatedMinutes': recipe.timeMinutes ?? 0,
       'portions': recipe.portions ?? 0,
     };

@@ -1,5 +1,6 @@
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/firebase_tag_config.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
@@ -26,13 +27,19 @@ class TagGenerator {
   final TagPhase4Mood _phase4;
   final TagPhase5Cuisine _phase5;
 
+  /// Creates a TagGenerator with optional Firebase-backed configuration.
+  ///
+  /// If [firebaseConfig] is provided, it will be used for allergen, dietary,
+  /// and cuisine configurations. Otherwise, phases fall back to hardcoded
+  /// static configs.
   TagGenerator({
+    FirebaseTagConfig? firebaseConfig,
     TagPhase1Base? phase1,
     TagPhase2Derived? phase2,
     TagPhase3Complex? phase3,
     TagPhase4Mood? phase4,
     TagPhase5Cuisine? phase5,
-  })  : _phase1 = phase1 ?? TagPhase1Base(),
+  })  : _phase1 = phase1 ?? TagPhase1Base(firebaseConfig: firebaseConfig),
         _phase2 = phase2 ?? TagPhase2Derived(),
         _phase3 = phase3 ?? TagPhase3Complex(),
         _phase4 = phase4 ?? TagPhase4Mood(),

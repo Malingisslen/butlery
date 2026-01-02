@@ -176,7 +176,8 @@ class RecipeDetailViewModel extends ChangeNotifier
   /// Tags presence indicator for conditional tag display and UI coordination.
   /// Indicates whether recipe has associated tags for UI conditional rendering
   /// of tag display components and tag-related functionality.
-  bool get hasTags => _recipe.tags != null && _recipe.tags!.isNotEmpty;
+  bool get hasTags =>
+      _recipe.personalTagIds != null && _recipe.personalTagIds!.isNotEmpty;
 
   /// Deletes recipe with comprehensive analytics tracking and progress management.
   /// Returns true if deletion succeeds, false if operation fails.

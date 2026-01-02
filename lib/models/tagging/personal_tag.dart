@@ -3,12 +3,17 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/models/tagging/personal_tag_rule.dart';
 
 /// A user-defined personal tag for custom recipe categorization.
 ///
 /// PersonalTags are stored in users/{userId}/personalTags/{tagId} and
 /// are completely private to each user. They provide custom categorization
 /// separate from the auto-generated tagging system (TagResult).
+///
+/// Display uses fixed colors (no custom colors):
+/// - Auto-generated tags: Gray
+/// - Personal tags: App accent color
 ///
 /// Example uses:
 /// - "Mamma's Recipes" for family recipes
@@ -23,14 +28,6 @@ class PersonalTag {
   /// Must be 1-50 characters, no commas.
   final String name;
 
-  /// Optional hex color for UI display (e.g., "#FF5733").
-  /// Null means use default color.
-  final String? color;
-
-  /// Optional icon name for UI display (Material icon name).
-  /// Null means use default icon.
-  final String? icon;
-
   /// When this tag was created.
   final DateTime createdAt;
 
@@ -40,61 +37,41 @@ class PersonalTag {
   /// Sort order for manual ordering in UI (lower = first).
   final int sortOrder;
 
+  /// Optional reference to a PersonalTagGroup for organizing tags.
+  /// Null means the tag is ungrouped.
+  final String? groupId;
+
+  /// Embedded automation rules for this tag.
+  /// Rules are evaluated when recipes are saved to auto-apply this tag.
+  final List<PersonalTagRule> rules;
+
   const PersonalTag({
     required this.id,
     required this.name,
-    this.color,
-    this.icon,
     required this.createdAt,
     required this.updatedAt,
     this.sortOrder = 0,
+    this.groupId,
+    this.rules = const [],
   });
 
   /// Creates a new PersonalTag with generated ID and timestamps.
   factory PersonalTag.create({
     required String name,
-    String? color,
-    String? icon,
     int sortOrder = 0,
+    String? groupId,
+    List<PersonalTagRule>? rules,
   }) {
     final now = DateTime.now();
     return PersonalTag(
       id: const Uuid().v4(),
       name: name.trim(),
-      color: _validateColor(color),
-      icon: icon,
       createdAt: now,
       updatedAt: now,
       sortOrder: sortOrder,
+      groupId: groupId,
+      rules: rules ?? const [],
     );
-  }
-
-  /// Validates and normalizes hex color format.
-  /// Returns null if invalid, otherwise returns uppercase hex.
-  static String? _validateColor(String? color) {
-    if (color == null || color.isEmpty) return null;
-
-    // Normalize to uppercase with # prefix
-    var normalized = color.toUpperCase().trim();
-    if (!normalized.startsWith('#')) {
-      normalized = '#$normalized';
-    }
-
-    // Validate format: #RGB or #RRGGBB
-    final hexPattern = RegExp(r'^#([0-9A-F]{3}|[0-9A-F]{6})$');
-    if (!hexPattern.hasMatch(normalized)) {
-      return null; // Invalid format
-    }
-
-    // Expand #RGB to #RRGGBB
-    if (normalized.length == 4) {
-      final r = normalized[1];
-      final g = normalized[2];
-      final b = normalized[3];
-      normalized = '#$r$r$g$g$b$b';
-    }
-
-    return normalized;
   }
 
   /// Creates from Firestore document snapshot.
@@ -111,8 +88,6 @@ class PersonalTag {
     return PersonalTag(
       id: id,
       name: SerializationUtils.safeString(data, 'name', defaultValue: ''),
-      color: SerializationUtils.safeNullableString(data, 'color'),
-      icon: SerializationUtils.safeNullableString(data, 'icon'),
       createdAt: SerializationUtils.safeRequiredDateTime(
         data,
         'createdAt',
@@ -124,7 +99,19 @@ class PersonalTag {
         defaultValue: DateTime.now(),
       ),
       sortOrder: SerializationUtils.safeInt(data, 'sortOrder', defaultValue: 0),
+      groupId: SerializationUtils.safeNullableString(data, 'groupId'),
+      rules: _parseRules(data['rules']),
     );
+  }
+
+  /// Parses embedded rules from Firestore/map data.
+  static List<PersonalTagRule> _parseRules(dynamic value) {
+    if (value == null) return [];
+    if (value is! List) return [];
+    return value
+        .whereType<Map<String, dynamic>>()
+        .map((data) => PersonalTagRule.fromEmbeddedMap(data))
+        .toList();
   }
 
   /// Creates from JSON map (expects ISO string for dates).
@@ -145,11 +132,11 @@ class PersonalTag {
     return PersonalTag(
       id: id,
       name: SerializationUtils.safeString(json, 'name', defaultValue: ''),
-      color: SerializationUtils.safeNullableString(json, 'color'),
-      icon: SerializationUtils.safeNullableString(json, 'icon'),
       createdAt: parseDateTime(json['createdAt']),
       updatedAt: parseDateTime(json['updatedAt']),
       sortOrder: SerializationUtils.safeInt(json, 'sortOrder', defaultValue: 0),
+      groupId: SerializationUtils.safeNullableString(json, 'groupId'),
+      rules: _parseRules(json['rules']),
     );
   }
 
@@ -158,11 +145,12 @@ class PersonalTag {
   Map<String, dynamic> toFirestore() {
     return {
       'name': name,
-      if (color != null) 'color': color,
-      if (icon != null) 'icon': icon,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
       'sortOrder': sortOrder,
+      if (groupId != null) 'groupId': groupId,
+      if (rules.isNotEmpty)
+        'rules': rules.map((r) => r.toEmbeddedMap()).toList(),
     };
   }
 
@@ -172,11 +160,12 @@ class PersonalTag {
     return {
       'id': id,
       'name': name,
-      if (color != null) 'color': color,
-      if (icon != null) 'icon': icon,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'sortOrder': sortOrder,
+      if (groupId != null) 'groupId': groupId,
+      if (rules.isNotEmpty)
+        'rules': rules.map((r) => r.toEmbeddedMap()).toList(),
     };
   }
 
@@ -185,22 +174,21 @@ class PersonalTag {
   PersonalTag copyWith({
     String? id,
     String? name,
-    String? color,
-    String? icon,
     DateTime? createdAt,
     DateTime? updatedAt,
     int? sortOrder,
-    bool clearColor = false,
-    bool clearIcon = false,
+    String? groupId,
+    List<PersonalTagRule>? rules,
+    bool clearGroupId = false,
   }) {
     return PersonalTag(
       id: id ?? this.id,
       name: name ?? this.name,
-      color: clearColor ? null : (color ?? this.color),
-      icon: clearIcon ? null : (icon ?? this.icon),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
       sortOrder: sortOrder ?? this.sortOrder,
+      groupId: clearGroupId ? null : (groupId ?? this.groupId),
+      rules: rules ?? this.rules,
     );
   }
 

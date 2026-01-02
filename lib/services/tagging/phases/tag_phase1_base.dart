@@ -1,9 +1,12 @@
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/firebase_tag_config.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tag_decision.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
-import 'package:butlery/services/tagging/config/allergen_config.dart';
-import 'package:butlery/services/tagging/config/dietary_config.dart';
+import 'package:butlery/services/tagging/config/allergen_config.dart'
+    as static_allergen;
+import 'package:butlery/services/tagging/config/dietary_config.dart'
+    as static_dietary;
 
 /// Phase 1: Base tags calculated directly from ingredient properties and recipe metadata.
 ///
@@ -16,6 +19,16 @@ import 'package:butlery/services/tagging/config/dietary_config.dart';
 /// - Cooking method tags (ugnsbakad, stekt, etc.)
 /// - Dish type tags (soppa, sallad, gryta, etc.)
 class TagPhase1Base {
+  /// Firebase-backed config (optional, falls back to static config).
+  final FirebaseTagConfig? _firebaseConfig;
+
+  /// Creates a Phase 1 calculator.
+  ///
+  /// If [firebaseConfig] is provided, uses Firebase-backed allergen and dietary
+  /// configs. Otherwise falls back to hardcoded static configs.
+  TagPhase1Base({FirebaseTagConfig? firebaseConfig})
+      : _firebaseConfig = firebaseConfig;
+
   /// Calculates Phase 1 tags.
   Phase1Result calculate(IngredientLookupResult lookup, Recipe recipe) {
     final tags = <String>{};
@@ -78,44 +91,91 @@ class TagPhase1Base {
     final status = <String, TriState>{};
     final decisions = <TagDecision>[];
 
-    // Process simple allergens first
-    for (final allergen in AllergenConfig.simpleAllergens) {
-      final result = lookup.getPropertyStatus(allergen.triggerProperty);
-      status[allergen.key] = result;
+    // Get allergen entries from Firebase config or fall back to static config
+    final simpleAllergens = _firebaseConfig?.allergens.simpleAllergens;
+    final combinedAllergens = _firebaseConfig?.allergens.combinedAllergens;
 
-      // H3: Capture decision with explanation
-      final (reason, triggers) = _explainAllergenDecision(
-        lookup: lookup,
-        property: allergen.triggerProperty,
-        result: result,
-      );
-      decisions.add(TagDecision.allergen(
-        key: allergen.key,
-        result: result,
-        reason: reason,
-        triggeringIngredients: triggers,
-      ));
+    // Process simple allergens first
+    if (simpleAllergens != null) {
+      // Use Firebase config
+      for (final allergen in simpleAllergens) {
+        final prop = allergen.triggerProperties.first;
+        final result = lookup.getPropertyStatus(prop);
+        status[allergen.key] = result;
+
+        final (reason, triggers) = _explainAllergenDecision(
+          lookup: lookup,
+          property: prop,
+          result: result,
+        );
+        decisions.add(TagDecision.allergen(
+          key: allergen.key,
+          result: result,
+          reason: reason,
+          triggeringIngredients: triggers,
+        ));
+      }
+    } else {
+      // Fall back to static config
+      for (final allergen in static_allergen.AllergenConfig.simpleAllergens) {
+        final result = lookup.getPropertyStatus(allergen.triggerProperty);
+        status[allergen.key] = result;
+
+        final (reason, triggers) = _explainAllergenDecision(
+          lookup: lookup,
+          property: allergen.triggerProperty,
+          result: result,
+        );
+        decisions.add(TagDecision.allergen(
+          key: allergen.key,
+          result: result,
+          reason: reason,
+          triggeringIngredients: triggers,
+        ));
+      }
     }
 
     // Process combined allergens using OR logic
-    for (final allergen in AllergenConfig.combinedAllergens) {
-      final props = allergen.triggerProperties;
-      final result = lookup.getCombinedPropertyStatus(props);
-      status[allergen.key] = result;
+    if (combinedAllergens != null) {
+      // Use Firebase config
+      for (final allergen in combinedAllergens) {
+        final props = allergen.triggerProperties;
+        final result = lookup.getCombinedPropertyStatus(props);
+        status[allergen.key] = result;
 
-      // H3: Capture decision for combined allergens
-      final (reason, triggers) = _explainCombinedAllergenDecision(
-        lookup: lookup,
-        properties: props,
-        result: result,
-        allergenKey: allergen.key,
-      );
-      decisions.add(TagDecision.allergen(
-        key: allergen.key,
-        result: result,
-        reason: reason,
-        triggeringIngredients: triggers,
-      ));
+        final (reason, triggers) = _explainCombinedAllergenDecision(
+          lookup: lookup,
+          properties: props,
+          result: result,
+          allergenKey: allergen.key,
+        );
+        decisions.add(TagDecision.allergen(
+          key: allergen.key,
+          result: result,
+          reason: reason,
+          triggeringIngredients: triggers,
+        ));
+      }
+    } else {
+      // Fall back to static config
+      for (final allergen in static_allergen.AllergenConfig.combinedAllergens) {
+        final props = allergen.triggerProperties;
+        final result = lookup.getCombinedPropertyStatus(props);
+        status[allergen.key] = result;
+
+        final (reason, triggers) = _explainCombinedAllergenDecision(
+          lookup: lookup,
+          properties: props,
+          result: result,
+          allergenKey: allergen.key,
+        );
+        decisions.add(TagDecision.allergen(
+          key: allergen.key,
+          result: result,
+          reason: reason,
+          triggeringIngredients: triggers,
+        ));
+      }
     }
 
     return _StatusWithDecisions(status: status, decisions: decisions);
@@ -202,87 +262,131 @@ class TagPhase1Base {
     final decisions = <TagDecision>[];
     final coveragePercent = (lookup.coverage * 100).round();
 
-    for (final dietary in DietaryConfig.all) {
-      if (dietary.requiresFullCoverage && lookup.coverage < 1.0) {
-        status[dietary.key] = TriState.unknown;
-        decisions.add(TagDecision.dietary(
+    // Get dietary entries from Firebase config or fall back to static config
+    final dietaryEntries = _firebaseConfig?.dietary.enabledEntries;
+
+    if (dietaryEntries != null) {
+      // Use Firebase config
+      for (final dietary in dietaryEntries) {
+        _processDietaryEntry(
+          lookup: lookup,
           key: dietary.key,
-          result: TriState.unknown,
-          reason: 'Coverage $coveragePercent% < 100% - cannot confirm',
-        ));
-        continue;
+          excludedProperties: dietary.excludedProperties,
+          requiredProperties: dietary.requiredProperties.isEmpty
+              ? null
+              : dietary.requiredProperties,
+          requiresFullCoverage: dietary.requiresFullCoverage,
+          status: status,
+          decisions: decisions,
+          coveragePercent: coveragePercent,
+        );
       }
-
-      // Check excluded properties
-      final hasExcluded = lookup.hasAnyProperty(dietary.excludedProperties);
-
-      if (hasExcluded) {
-        // Has excluded ingredients (e.g., meat for pescetarian)
-        status[dietary.key] = TriState.contains;
-
-        // H3: Find triggering ingredients
-        final triggers = <String>[];
-        for (final prop in dietary.excludedProperties) {
-          triggers.addAll(
-            lookup.matched
-                .where((i) => i.hasProperty(prop))
-                .map((i) => i.swedish),
-          );
-        }
-        decisions.add(TagDecision.dietary(
+    } else {
+      // Fall back to static config
+      for (final dietary in static_dietary.DietaryConfig.all) {
+        _processDietaryEntry(
+          lookup: lookup,
           key: dietary.key,
-          result: TriState.contains,
-          reason:
-              'Has excluded property (${dietary.excludedProperties.join(", ")})',
-          triggeringIngredients: triggers.isNotEmpty ? triggers : null,
-        ));
-      } else if (dietary.requiredProperties != null) {
-        // MED-6: PESCETARIAN LOGIC EXPLANATION
-        //
-        // Pescetarian is special because it requires BOTH:
-        // 1. NO excluded properties (no meat - already checked above)
-        // 2. HAS required properties (fish or shellfish)
-        //
-        // Decision tree for pescetarian:
-        // ┌─ Has meat? ─────────────────────> CONTAINS (not pescetarian)
-        // │   └─ No meat, has fish? ────────> FREE (valid pescetarian dish)
-        // │       └─ No meat, no fish? ─────> UNKNOWN (might be vegetarian side)
-        //
-        // Why UNKNOWN and not FREE for no-meat-no-fish?
-        // A recipe without fish is not "pescetarian-safe" - it just happens
-        // to be compatible. We only claim FREE when the recipe positively
-        // demonstrates pescetarian intent (includes seafood but no meat).
-        final hasRequired = lookup.hasAnyProperty(dietary.requiredProperties!);
-        if (hasRequired) {
-          // Has fish/shellfish, no meat = valid pescetarian dish
-          status[dietary.key] = TriState.free;
-          decisions.add(TagDecision.dietary(
-            key: dietary.key,
-            result: TriState.free,
-            reason:
-                'Has required (${dietary.requiredProperties!.join(", ")}), no excluded',
-          ));
-        } else {
-          // No fish AND no meat = unknown (could be vegetarian side dish)
-          status[dietary.key] = TriState.unknown;
-          decisions.add(TagDecision.dietary(
-            key: dietary.key,
-            result: TriState.unknown,
-            reason:
-                'No excluded but missing required (${dietary.requiredProperties!.join(", ")})',
-          ));
-        }
-      } else {
-        status[dietary.key] = TriState.free;
-        decisions.add(TagDecision.dietary(
-          key: dietary.key,
-          result: TriState.free,
-          reason: 'No excluded properties at 100% coverage',
-        ));
+          excludedProperties: dietary.excludedProperties,
+          requiredProperties: dietary.requiredProperties,
+          requiresFullCoverage: dietary.requiresFullCoverage,
+          status: status,
+          decisions: decisions,
+          coveragePercent: coveragePercent,
+        );
       }
     }
 
     return _StatusWithDecisions(status: status, decisions: decisions);
+  }
+
+  /// Processes a single dietary entry and updates status/decisions.
+  void _processDietaryEntry({
+    required IngredientLookupResult lookup,
+    required String key,
+    required List<String> excludedProperties,
+    required List<String>? requiredProperties,
+    required bool requiresFullCoverage,
+    required Map<String, TriState> status,
+    required List<TagDecision> decisions,
+    required int coveragePercent,
+  }) {
+    if (requiresFullCoverage && lookup.coverage < 1.0) {
+      status[key] = TriState.unknown;
+      decisions.add(TagDecision.dietary(
+        key: key,
+        result: TriState.unknown,
+        reason: 'Coverage $coveragePercent% < 100% - cannot confirm',
+      ));
+      return;
+    }
+
+    // Check excluded properties
+    final hasExcluded = lookup.hasAnyProperty(excludedProperties);
+
+    if (hasExcluded) {
+      // Has excluded ingredients (e.g., meat for pescetarian)
+      status[key] = TriState.contains;
+
+      // H3: Find triggering ingredients
+      final triggers = <String>[];
+      for (final prop in excludedProperties) {
+        triggers.addAll(
+          lookup.matched
+              .where((i) => i.hasProperty(prop))
+              .map((i) => i.swedish),
+        );
+      }
+      decisions.add(TagDecision.dietary(
+        key: key,
+        result: TriState.contains,
+        reason: 'Has excluded property (${excludedProperties.join(", ")})',
+        triggeringIngredients: triggers.isNotEmpty ? triggers : null,
+      ));
+    } else if (requiredProperties != null) {
+      // MED-6: PESCETARIAN LOGIC EXPLANATION
+      //
+      // Pescetarian is special because it requires BOTH:
+      // 1. NO excluded properties (no meat - already checked above)
+      // 2. HAS required properties (fish or shellfish)
+      //
+      // Decision tree for pescetarian:
+      // ┌─ Has meat? ─────────────────────> CONTAINS (not pescetarian)
+      // │   └─ No meat, has fish? ────────> FREE (valid pescetarian dish)
+      // │       └─ No meat, no fish? ─────> UNKNOWN (might be vegetarian side)
+      //
+      // Why UNKNOWN and not FREE for no-meat-no-fish?
+      // A recipe without fish is not "pescetarian-safe" - it just happens
+      // to be compatible. We only claim FREE when the recipe positively
+      // demonstrates pescetarian intent (includes seafood but no meat).
+      final hasRequired = lookup.hasAnyProperty(requiredProperties);
+      if (hasRequired) {
+        // Has fish/shellfish, no meat = valid pescetarian dish
+        status[key] = TriState.free;
+        decisions.add(TagDecision.dietary(
+          key: key,
+          result: TriState.free,
+          reason:
+              'Has required (${requiredProperties.join(", ")}), no excluded',
+        ));
+      } else {
+        // No fish AND no meat = unknown (could be vegetarian side dish)
+        status[key] = TriState.unknown;
+        decisions.add(TagDecision.dietary(
+          key: key,
+          result: TriState.unknown,
+          reason:
+              'No excluded but missing required (${requiredProperties.join(", ")})',
+        ));
+      }
+    } else {
+      status[key] = TriState.free;
+      decisions.add(TagDecision.dietary(
+        key: key,
+        result: TriState.free,
+        reason: 'No excluded properties at 100% coverage',
+      ));
+    }
   }
 
   /// Calculates protein tags from ingredient groups.

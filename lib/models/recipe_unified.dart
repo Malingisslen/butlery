@@ -12,6 +12,7 @@ import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 
 // Focused modules
@@ -109,10 +110,14 @@ class RecipeCore with JsonSerializableMixin {
   /// Instructions should be clear and actionable for the home cook.
   List<String> instructions;
 
-  /// Optional tags for categorization and search.
-  /// Tags help users discover recipes through filtering and search.
-  /// Common tags include dietary restrictions, cuisines, and cooking methods.
-  List<String>? tags;
+  /// User-created personal tags for custom categorization.
+  /// Stores IDs of PersonalTag documents from the user's collection.
+  /// Separate from auto-generated tagResult which handles allergens/dietary.
+  /// Applied via PersonalTagRuleEngine on save or manual selection.
+  ///
+  /// Note: This field stores tag IDs (not names) for referential integrity.
+  /// Tag names are denormalized on read for display.
+  List<String>? personalTagIds;
 
   /// User rating for this recipe (0.0 to 5.0).
   /// Represents the average user rating or personal rating depending
@@ -184,6 +189,12 @@ class RecipeCore with JsonSerializableMixin {
   /// Null for recipes created before tagging system was added.
   TagResult? tagResult;
 
+  /// User-applied overrides to auto-generated tag results.
+  /// Allows users to correct allergen/dietary status when they know better.
+  /// Overrides persist across retagging operations to preserve user intent.
+  /// Null for recipes that have never been manually edited.
+  TagOverrides? tagOverrides;
+
   /// Compute SHA256 checksum from critical recipe fields.
   /// Critical fields: id, title, ingredients, instructions.
   /// These fields define the recipe's core content and any corruption
@@ -232,7 +243,7 @@ class RecipeCore with JsonSerializableMixin {
     this.timeMinutes,
     required this.ingredients,
     required this.instructions,
-    this.tags,
+    this.personalTagIds,
     this.rating,
     required this.mealType,
     this.sourceUrl,
@@ -249,6 +260,7 @@ class RecipeCore with JsonSerializableMixin {
     this.lastRatedAt,
     this.dataChecksum,
     this.tagResult,
+    this.tagOverrides,
   })  : id = id ?? const Uuid().v4(),
         imageUrls = imageUrls ?? [],
         createdAt = createdAt ?? DateTime.now(),
@@ -264,7 +276,7 @@ class RecipeCore with JsonSerializableMixin {
     int? timeMinutes,
     List<String>? ingredients,
     List<String>? instructions,
-    List<String>? tags,
+    List<String>? personalTagIds,
     double? rating,
     String? mealType,
     String? sourceUrl,
@@ -280,6 +292,7 @@ class RecipeCore with JsonSerializableMixin {
     DateTime? lastRatedAt,
     String? dataChecksum,
     TagResult? tagResult,
+    TagOverrides? tagOverrides,
   }) {
     final newTitle = title ?? this.title;
     final newIngredients = ingredients ?? this.ingredients;
@@ -305,7 +318,7 @@ class RecipeCore with JsonSerializableMixin {
       timeMinutes: timeMinutes ?? this.timeMinutes,
       ingredients: newIngredients,
       instructions: newInstructions,
-      tags: tags ?? this.tags,
+      personalTagIds: personalTagIds ?? this.personalTagIds,
       rating: rating ?? this.rating,
       mealType: mealType ?? this.mealType,
       sourceUrl: sourceUrl ?? this.sourceUrl,
@@ -323,6 +336,7 @@ class RecipeCore with JsonSerializableMixin {
       lastRatedAt: lastRatedAt ?? this.lastRatedAt,
       dataChecksum: newChecksum,
       tagResult: tagResult ?? this.tagResult,
+      tagOverrides: tagOverrides ?? this.tagOverrides,
     );
   }
 
@@ -350,7 +364,7 @@ class RecipeCore with JsonSerializableMixin {
         'timeMinutes': timeMinutes,
         'ingredients': ingredients,
         'instructions': instructions,
-        'tags': tags,
+        'personalTagIds': personalTagIds,
         'rating': rating,
         'mealType': mealType,
         'sourceUrl': sourceUrl,
@@ -366,7 +380,8 @@ class RecipeCore with JsonSerializableMixin {
         'ratingDistribution': ratingDistribution,
         'lastRatedAt': lastRatedAt?.toIso8601String(),
         'dataChecksum': dataChecksum,
-        'tagResult': tagResult?.toFirestore(),
+        'tagResult': tagResult?.toJson(),
+        'tagOverrides': tagOverrides?.toJson(),
       };
 
   Map<String, dynamic> toFirestore() => {
@@ -377,7 +392,7 @@ class RecipeCore with JsonSerializableMixin {
         'timeMinutes': timeMinutes,
         'ingredients': ingredients,
         'instructions': instructions,
-        'tags': tags,
+        'personalTagIds': personalTagIds,
         'rating': rating,
         'mealType': mealType,
         'sourceUrl': sourceUrl,
@@ -396,6 +411,7 @@ class RecipeCore with JsonSerializableMixin {
             lastRatedAt != null ? Timestamp.fromDate(lastRatedAt!) : null,
         'dataChecksum': dataChecksum,
         'tagResult': tagResult?.toFirestore(),
+        'tagOverrides': tagOverrides?.toJson(),
       };
 
   factory RecipeCore.fromJson(Map<String, dynamic> json) {
@@ -431,7 +447,9 @@ class RecipeCore with JsonSerializableMixin {
       timeMinutes: json['timeMinutes'] as int?,
       ingredients: ingredients,
       instructions: instructions,
-      tags: json['tags'] != null ? List<String>.from(json['tags']) : null,
+      personalTagIds: json['personalTagIds'] != null
+          ? List<String>.from(json['personalTagIds'])
+          : null,
       rating: (json['rating'] as num?)?.toDouble(),
       mealType: json['mealType'] as String,
       sourceUrl: json['sourceUrl'] as String?,
@@ -456,6 +474,7 @@ class RecipeCore with JsonSerializableMixin {
           : null,
       dataChecksum: storedChecksum,
       tagResult: _parseTagResult(json['tagResult']),
+      tagOverrides: _parseTagOverrides(json['tagOverrides']),
     );
   }
 
@@ -473,6 +492,24 @@ class RecipeCore with JsonSerializableMixin {
       }
     } catch (e) {
       AppLogger.warning('Failed to parse tagResult: $e');
+    }
+    return null;
+  }
+
+  /// Safely parses tagOverrides from dynamic value.
+  /// Returns null if parsing fails instead of throwing.
+  static TagOverrides? _parseTagOverrides(dynamic value) {
+    if (value == null) return null;
+    try {
+      if (value is Map<String, dynamic>) {
+        return TagOverrides.fromJson(value);
+      }
+      // Handle Map<dynamic, dynamic> case from Firestore
+      if (value is Map) {
+        return TagOverrides.fromJson(Map<String, dynamic>.from(value));
+      }
+    } catch (e) {
+      AppLogger.warning('Failed to parse tagOverrides: $e');
     }
     return null;
   }
@@ -512,9 +549,11 @@ class RecipeCore with JsonSerializableMixin {
           utils.SerializationUtils.safeNullableInt(data, 'timeMinutes'),
       ingredients: ingredients,
       instructions: instructions,
-      tags: utils.SerializationUtils.safeStringList(data, 'tags').isNotEmpty
-          ? utils.SerializationUtils.safeStringList(data, 'tags')
-          : null,
+      personalTagIds:
+          utils.SerializationUtils.safeStringList(data, 'personalTagIds')
+                  .isNotEmpty
+              ? utils.SerializationUtils.safeStringList(data, 'personalTagIds')
+              : null,
       rating: utils.SerializationUtils.safeNullableDouble(data, 'rating'),
       mealType: utils.SerializationUtils.safeString(data, 'mealType',
           defaultValue: 'Middag'),
@@ -544,6 +583,7 @@ class RecipeCore with JsonSerializableMixin {
       lastRatedAt: utils.SerializationUtils.safeDateTime(data, 'lastRatedAt'),
       dataChecksum: storedChecksum,
       tagResult: _parseTagResult(data['tagResult']),
+      tagOverrides: _parseTagOverrides(data['tagOverrides']),
     );
   }
 
@@ -733,7 +773,7 @@ class Recipe {
   int? get timeMinutes => core.timeMinutes;
   List<String> get ingredients => core.ingredients;
   List<String> get instructions => core.instructions;
-  List<String>? get tags => core.tags;
+  List<String>? get personalTagIds => core.personalTagIds;
   double? get rating => core.rating;
   String get mealType => core.mealType;
   String? get sourceUrl => core.sourceUrl;
@@ -750,6 +790,7 @@ class Recipe {
   String get cookTimeText => core.cookTimeText;
   String? get lastCookedText => core.lastCookedText;
   TagResult? get tagResult => core.tagResult;
+  TagOverrides? get tagOverrides => core.tagOverrides;
 
   /// Check if recipe was cooked recently (within last 7 days)
   bool get wasCookedRecently {
@@ -873,7 +914,7 @@ class Recipe {
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
     List<String>? imageUrls,
     bool isPublic = false,
@@ -888,7 +929,7 @@ class Recipe {
       portions: portions,
       timeMinutes: timeMinutes,
       rating: rating,
-      tags: tags,
+      personalTagIds: personalTagIds,
       sourceUrl: sourceUrl,
       imageUrls: imageUrls,
       isPublic: isPublic,
@@ -911,7 +952,7 @@ class Recipe {
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
     List<String>? imageUrls,
   }) {
@@ -930,7 +971,7 @@ class Recipe {
       portions: portions,
       timeMinutes: timeMinutes,
       rating: rating,
-      tags: tags,
+      personalTagIds: personalTagIds,
       sourceUrl: sourceUrl,
       imageUrls: imageUrls,
     );
@@ -953,7 +994,7 @@ class Recipe {
     int? timeMinutes,
     List<String>? ingredients,
     List<String>? instructions,
-    List<String>? tags,
+    List<String>? personalTagIds,
     double? rating,
     String? mealType,
     String? sourceUrl,
@@ -968,6 +1009,7 @@ class Recipe {
     RecipeSocialData? socialData,
     RecipeRealtimeData? realtimeData,
     RecipeOfflineData? offlineData,
+    TagOverrides? tagOverrides,
   }) {
     return Recipe(
       core: core.copyWith(
@@ -977,7 +1019,7 @@ class Recipe {
         timeMinutes: timeMinutes,
         ingredients: ingredients,
         instructions: instructions,
-        tags: tags,
+        personalTagIds: personalTagIds,
         rating: rating,
         mealType: mealType,
         sourceUrl: sourceUrl,
@@ -986,6 +1028,7 @@ class Recipe {
         isPublic: isPublic,
         lastCookedAt: lastCookedAt,
         ingredientsNormalized: ingredientsNormalized,
+        tagOverrides: tagOverrides,
         updatedAt: DateTime.now(),
       ),
       type: type ?? this.type,

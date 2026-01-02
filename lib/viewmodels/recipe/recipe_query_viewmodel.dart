@@ -69,7 +69,9 @@ class RecipeQueryViewModel extends ChangeNotifier
 
   List<Recipe> getRecipesByTag(String tag) {
     if (ValidationUtils.isNullOrEmpty(tag)) return [];
-    return allRecipes.where((r) => (r.tags?.contains(tag)).orFalse()).toList();
+    return allRecipes
+        .where((r) => (r.personalTagIds?.contains(tag)).orFalse())
+        .toList();
   }
 
   List<Recipe> getRecipesByType(RecipeType type) {
@@ -87,7 +89,7 @@ class RecipeQueryViewModel extends ChangeNotifier
               ingredient.toLowerCase().contains(lowercaseQuery)) ||
           recipe.instructions.any((instruction) =>
               instruction.toLowerCase().contains(lowercaseQuery)) ||
-          (recipe.tags
+          (recipe.personalTagIds
                   ?.any((tag) => tag.toLowerCase().contains(lowercaseQuery)))
               .orFalse();
     }).toList();
@@ -145,7 +147,7 @@ class RecipeQueryViewModel extends ChangeNotifier
     // Apply tag filter
     if (_selectedTag != null) {
       recipes = recipes
-          .where((r) => (r.tags?.contains(_selectedTag)).orFalse())
+          .where((r) => (r.personalTagIds?.contains(_selectedTag)).orFalse())
           .toList();
     }
 
@@ -317,8 +319,8 @@ class RecipeQueryViewModel extends ChangeNotifier
     final Map<String, List<Recipe>> grouped = {};
 
     for (final recipe in filteredRecipes) {
-      if (recipe.tags != null) {
-        for (final tag in recipe.tags!) {
+      if (recipe.personalTagIds != null) {
+        for (final tag in recipe.personalTagIds!) {
           grouped.putIfAbsent(tag, () => []).add(recipe);
         }
       }
@@ -357,8 +359,8 @@ class RecipeQueryViewModel extends ChangeNotifier
   List<String> get usedTags {
     final allTags = <String>{};
     for (final recipe in allRecipes) {
-      if (recipe.tags != null) {
-        allTags.addAll(recipe.tags!);
+      if (recipe.personalTagIds != null) {
+        allTags.addAll(recipe.personalTagIds!);
       }
     }
     final tagsList = allTags.toList();
@@ -406,8 +408,8 @@ class RecipeQueryViewModel extends ChangeNotifier
     final tagCounts = <String, int>{};
 
     for (final recipe in allRecipes) {
-      if (recipe.tags != null) {
-        for (final tag in recipe.tags!) {
+      if (recipe.personalTagIds != null) {
+        for (final tag in recipe.personalTagIds!) {
           tagCounts[tag] = (tagCounts[tag]).orZero() + 1;
         }
       }

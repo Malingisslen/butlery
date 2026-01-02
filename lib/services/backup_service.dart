@@ -197,7 +197,7 @@ class BackupService extends BaseService {
               portions: recipe.portions,
               timeMinutes: recipe.timeMinutes,
               rating: recipe.rating,
-              tags: recipe.tags,
+              personalTagIds: recipe.personalTagIds,
               sourceUrl:
                   'Importerat från backup ${_formatDate(DateTime.now())}',
               createdAt: DateTime.now(),
@@ -217,7 +217,7 @@ class BackupService extends BaseService {
             portions: newRecipe.portions,
             timeMinutes: newRecipe.timeMinutes,
             rating: newRecipe.rating,
-            tags: newRecipe.tags,
+            personalTagIds: newRecipe.personalTagIds,
             sourceUrl: newRecipe.sourceUrl,
           );
           successCount++;

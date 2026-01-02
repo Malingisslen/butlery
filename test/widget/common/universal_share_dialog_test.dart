@@ -50,7 +50,7 @@ void main() {
           'Forma köttbullar',
           'Stek i pannan'
         ],
-        tags: ['svenska', 'klassiker'],
+        personalTagIds: ['svenska', 'klassiker'],
       );
 
       testMenu = {
@@ -240,7 +240,7 @@ void main() {
           'Forma köttbullar',
           'Stek i pannan'
         ],
-        tags: ['svenska', 'klassiker'],
+        personalTagIds: ['svenska', 'klassiker'],
       );
 
       testMenu = {

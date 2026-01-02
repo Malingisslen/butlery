@@ -11,11 +11,11 @@ import 'package:uuid/uuid.dart';
 class PersonalTagBuilder {
   String id = const Uuid().v4();
   String name = 'Test Tag';
-  String? color = '#4CAF50';
-  String? icon;
   DateTime createdAt = DateTime.now();
   DateTime updatedAt = DateTime.now();
   int sortOrder = 0;
+  String? groupId;
+  List<PersonalTagRule> rules = [];
 
   /// Sets a specific ID.
   PersonalTagBuilder withId(String value) {
@@ -29,45 +29,45 @@ class PersonalTagBuilder {
     return this;
   }
 
-  /// Sets the tag color (hex format).
-  PersonalTagBuilder withColor(String? value) {
-    color = value;
-    return this;
-  }
-
-  /// Sets the tag icon (emoji or icon name).
-  PersonalTagBuilder withIcon(String? value) {
-    icon = value;
-    return this;
-  }
-
   /// Sets the sort order.
   PersonalTagBuilder withSortOrder(int value) {
     sortOrder = value;
     return this;
   }
 
+  /// Sets the group ID.
+  PersonalTagBuilder withGroupId(String? value) {
+    groupId = value;
+    return this;
+  }
+
+  /// Sets the embedded rules.
+  PersonalTagBuilder withRules(List<PersonalTagRule> value) {
+    rules = value;
+    return this;
+  }
+
+  /// Adds a single rule to the tag.
+  PersonalTagBuilder withRule(PersonalTagRule rule) {
+    rules.add(rule);
+    return this;
+  }
+
   /// Creates a "Swedish" tag preset.
   PersonalTagBuilder asSwedish() {
     name = 'Svenska';
-    color = '#1976D2';
-    icon = '\u{1F1F8}\u{1F1EA}'; // Swedish flag
     return this;
   }
 
   /// Creates a "Favorite" tag preset.
   PersonalTagBuilder asFavorite() {
     name = 'Favorit';
-    color = '#E91E63';
-    icon = '\u{2764}\u{FE0F}'; // Heart
     return this;
   }
 
   /// Creates a "Quick" tag preset.
   PersonalTagBuilder asQuick() {
     name = 'Snabb';
-    color = '#FF9800';
-    icon = '\u{26A1}'; // Lightning
     return this;
   }
 
@@ -76,11 +76,11 @@ class PersonalTagBuilder {
     return PersonalTag(
       id: id,
       name: name,
-      color: color,
-      icon: icon,
       createdAt: createdAt,
       updatedAt: updatedAt,
       sortOrder: sortOrder,
+      groupId: groupId,
+      rules: rules,
     );
   }
 }
@@ -153,6 +153,84 @@ class PersonalTagRuleBuilder {
   }) {
     conditions.add(RuleCondition(
       type: ConditionType.keyword,
+      operator: operator,
+      value: value,
+    ));
+    return this;
+  }
+
+  /// Adds a sourceUrl condition.
+  PersonalTagRuleBuilder withSourceUrlCondition(
+    String value, {
+    ConditionOperator operator = ConditionOperator.contains,
+  }) {
+    conditions.add(RuleCondition(
+      type: ConditionType.sourceUrl,
+      operator: operator,
+      value: value,
+    ));
+    return this;
+  }
+
+  /// Adds a cuisine condition.
+  PersonalTagRuleBuilder withCuisineCondition(
+    String value, {
+    ConditionOperator operator = ConditionOperator.equals,
+  }) {
+    conditions.add(RuleCondition(
+      type: ConditionType.cuisine,
+      operator: operator,
+      value: value,
+    ));
+    return this;
+  }
+
+  /// Adds a dietary condition.
+  PersonalTagRuleBuilder withDietaryCondition(
+    String value, {
+    ConditionOperator operator = ConditionOperator.equals,
+  }) {
+    conditions.add(RuleCondition(
+      type: ConditionType.dietary,
+      operator: operator,
+      value: value,
+    ));
+    return this;
+  }
+
+  /// Adds a time condition.
+  PersonalTagRuleBuilder withTimeCondition(
+    num value, {
+    ConditionOperator operator = ConditionOperator.lessThan,
+  }) {
+    conditions.add(RuleCondition(
+      type: ConditionType.time,
+      operator: operator,
+      value: value,
+    ));
+    return this;
+  }
+
+  /// Adds a rating condition.
+  PersonalTagRuleBuilder withRatingCondition(
+    num value, {
+    ConditionOperator operator = ConditionOperator.greaterThanOrEqual,
+  }) {
+    conditions.add(RuleCondition(
+      type: ConditionType.rating,
+      operator: operator,
+      value: value,
+    ));
+    return this;
+  }
+
+  /// Adds a recency condition.
+  PersonalTagRuleBuilder withRecencyCondition(
+    num value, {
+    ConditionOperator operator = ConditionOperator.withinDays,
+  }) {
+    conditions.add(RuleCondition(
+      type: ConditionType.recency,
       operator: operator,
       value: value,
     ));

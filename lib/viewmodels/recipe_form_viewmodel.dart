@@ -14,6 +14,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/live_editor.dart';
+import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -140,6 +141,15 @@ class RecipeFormViewModel extends ChangeNotifier
   }
 
   Recipe? get originalRecipe => _state.originalRecipe;
+
+  /// Gets current recipe with form values for tag editing.
+  /// Returns original recipe with current tagOverrides applied, or null if creating new.
+  Recipe? get recipe {
+    final original = originalRecipe;
+    if (original == null) return null;
+    return original.copyWith(tagOverrides: _state.tagOverrides);
+  }
+
   bool get isSaving => _state.isSaving;
   bool get isForking => _state.isForking;
   String? get error => _state.error;
@@ -162,7 +172,7 @@ class RecipeFormViewModel extends ChangeNotifier
         sourceUrl != original.sourceUrl ||
         !_listEquals(ingredients, original.ingredients) ||
         !_listEquals(instructions, original.instructions) ||
-        !_listEquals(tags, original.tags) ||
+        !_listEquals(tags, original.personalTagIds) ||
         !_listEquals(_imageManager.validImageUrls, original.imageUrls);
   }
 
@@ -375,6 +385,11 @@ class RecipeFormViewModel extends ChangeNotifier
 
   void setSourceUrl(String? sourceUrl) {
     _state.setSourceUrl(sourceUrl);
+    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
+  }
+
+  void setTagOverrides(TagOverrides overrides) {
+    _state.setTagOverrides(overrides);
     _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 

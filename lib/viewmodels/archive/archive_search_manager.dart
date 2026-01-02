@@ -38,8 +38,8 @@ class ArchiveSearchManager extends ChangeNotifier {
   Set<String> get availableTags {
     final tags = <String>{};
     for (final recipe in archivedRecipes) {
-      if (recipe.tags != null) {
-        tags.addAll(recipe.tags!);
+      if (recipe.personalTagIds != null) {
+        tags.addAll(recipe.personalTagIds!);
       }
     }
     return tags;

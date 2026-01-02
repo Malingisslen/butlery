@@ -95,6 +95,23 @@ class DietaryConfig {
       excludedProperties: ['beef'],
       description: 'Ej nötkött',
     ),
+    DietaryEntry(
+      key: 'aip-vänlig',
+      tagSv: 'aip-vänlig',
+      excludedProperties: [
+        'nightshade',
+        'contains-gluten',
+        'dairy',
+        'egg',
+        'soy',
+        'peanut',
+        'tree-nut',
+        'contains-alcohol',
+      ],
+      requiresFullCoverage: true,
+      description:
+          'Autoimmun protokoll - inga nattskuggväxter eller vanliga allergener',
+    ),
   ];
 
   /// Gets a dietary entry by key.

@@ -370,7 +370,7 @@ class FileImportStrategy extends ImportStrategy {
         mealType: data['mealtype'] ?? data['måltidstyp'] ?? 'Middag',
         portions: _parseServings(data),
         timeMinutes: _parseCookingTime(data),
-        tags: _parseTags(data),
+        personalTagIds: _parseTags(data),
         rating: _parseRating(data),
         sourceUrl: data['source'] ?? data['källa'] ?? 'file_import',
         imageUrls: _parseImageUrls(data),

@@ -40,6 +40,7 @@ import 'package:butlery/services/unified/helpers/recipe_auth_state_handler.dart'
 import 'package:butlery/services/unified/helpers/personal_recipe_crud.dart';
 import 'package:butlery/services/unified/helpers/recipe_utility_operations.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
+import 'package:butlery/services/tagging/personal_tag_service.dart';
 
 /// Unified recipe service coordinating personal, social, and real-time recipe operations.
 ///
@@ -160,6 +161,16 @@ class UnifiedRecipeService extends ChangeNotifier
     }
   }
 
+  /// Try to get PersonalTagService from service locator.
+  /// Returns null if not registered (personal tags are optional).
+  PersonalTagService? _tryGetPersonalTagService() {
+    try {
+      return ServiceLocator.get<PersonalTagService>();
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Create service adapter with all dependencies
   /// Made lazy to avoid circular dependency issues during initialization
   RecipeServiceAdapter? _serviceAdapter;
@@ -202,6 +213,7 @@ class UnifiedRecipeService extends ChangeNotifier
       notifyListeners: notifyListeners,
       getServiceAdapter: () => _getServiceAdapter(),
       taggingService: _tryGetTaggingService(),
+      personalTagService: _tryGetPersonalTagService(),
     );
 
     _socialModule = SocialRecipeModule(
@@ -470,7 +482,7 @@ class UnifiedRecipeService extends ChangeNotifier
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
   }) async =>
       _personalCrud.createPersonalRecipe(
@@ -483,7 +495,7 @@ class UnifiedRecipeService extends ChangeNotifier
         portions: portions,
         timeMinutes: timeMinutes,
         rating: rating,
-        tags: tags,
+        personalTagIds: personalTagIds,
         sourceUrl: sourceUrl,
       );
 
@@ -508,7 +520,7 @@ class UnifiedRecipeService extends ChangeNotifier
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
     String? descriptionCollaborative,
     bool allowGuestViewing = false,
@@ -523,7 +535,7 @@ class UnifiedRecipeService extends ChangeNotifier
       description: description,
       portions: portions,
       cookingTime: timeMinutes,
-      tags: tags,
+      personalTagIds: personalTagIds,
     );
 
     // Note: Recipe is already added to _recipes in _saveRecipeForSocialModule
@@ -586,7 +598,7 @@ class UnifiedRecipeService extends ChangeNotifier
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
   }) async =>
       _utilityOps.updateRecipeContent(
@@ -603,7 +615,7 @@ class UnifiedRecipeService extends ChangeNotifier
         portions: portions,
         timeMinutes: timeMinutes,
         rating: rating,
-        tags: tags,
+        personalTagIds: personalTagIds,
         sourceUrl: sourceUrl,
       );
 
@@ -650,7 +662,7 @@ class UnifiedRecipeService extends ChangeNotifier
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
   }) async {
     return await createPersonalRecipe(
@@ -663,7 +675,7 @@ class UnifiedRecipeService extends ChangeNotifier
       portions: portions,
       timeMinutes: timeMinutes,
       rating: rating,
-      tags: tags,
+      personalTagIds: personalTagIds,
       sourceUrl: sourceUrl,
     );
   }

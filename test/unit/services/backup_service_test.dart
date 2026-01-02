@@ -345,7 +345,7 @@ void main() {
             portions: importRecipe.portions,
             timeMinutes: importRecipe.timeMinutes,
             rating: importRecipe.rating,
-            tags: importRecipe.tags,
+            personalTagIds: importRecipe.personalTagIds,
             sourceUrl: 'Importerat från backup',
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
@@ -429,7 +429,7 @@ void main() {
           portions: 6,
           timeMinutes: 45,
           rating: 4.8,
-          tags: ['italian', 'pasta', 'vegetarian'],
+          personalTagIds: ['italian', 'pasta', 'vegetarian'],
         );
 
         final recipeJson = originalRecipe.toJson();
@@ -440,7 +440,8 @@ void main() {
         expect(importedRecipe.portions, equals(originalRecipe.portions));
         expect(importedRecipe.timeMinutes, equals(originalRecipe.timeMinutes));
         expect(importedRecipe.rating, equals(originalRecipe.rating));
-        expect(importedRecipe.tags, equals(originalRecipe.tags));
+        expect(importedRecipe.personalTagIds,
+            equals(originalRecipe.personalTagIds));
       });
     });
 

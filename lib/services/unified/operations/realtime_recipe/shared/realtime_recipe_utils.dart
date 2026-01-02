@@ -96,7 +96,10 @@ class RealtimeRecipeUtils {
       instructions: remote.instructions,
       imageUrls: <String>{...local.imageUrls, ...remote.imageUrls}.toList(),
       rating: local.rating ?? remote.rating,
-      tags: <String>{...(local.tags ?? []), ...(remote.tags ?? [])}.toList(),
+      personalTagIds: <String>{
+        ...(local.personalTagIds ?? []),
+        ...(remote.personalTagIds ?? [])
+      }.toList(),
       lastEditedByUserId: currentUserId,
       lastEditedByDisplayName: currentUserDisplayName,
     );

@@ -75,8 +75,8 @@ class RecipeSerialization {
         timeMinutes: coreData['timeMinutes'] as int?,
         ingredients: List<String>.from(coreData['ingredients'] ?? []),
         instructions: List<String>.from(coreData['instructions'] ?? []),
-        tags: coreData['tags'] != null
-            ? List<String>.from(coreData['tags'])
+        personalTagIds: coreData['personalTagIds'] != null
+            ? List<String>.from(coreData['personalTagIds'])
             : null,
         rating: (coreData['rating'] as num?)?.toDouble(),
         imageUrls: List<String>.from(coreData['imageUrls'] ?? []),
@@ -173,8 +173,9 @@ class RecipeSerialization {
     sanitized['ingredients'] = _sanitizeStringList(data['ingredients']);
     sanitized['instructions'] = _sanitizeStringList(data['instructions']);
     sanitized['imageUrls'] = _sanitizeStringList(data['imageUrls']);
-    sanitized['tags'] =
-        data['tags'] != null ? _sanitizeStringList(data['tags']) : null;
+    sanitized['personalTagIds'] = data['personalTagIds'] != null
+        ? _sanitizeStringList(data['personalTagIds'])
+        : null;
 
     // Numeric fields
     sanitized['portions'] = _sanitizeInt(data['portions']);

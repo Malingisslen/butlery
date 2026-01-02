@@ -32,7 +32,7 @@ void main() {
       type: RecipeType.personal,
       ingredients: ['500g köttfärs', '1 dl ströbröd', '1 ägg'],
       instructions: ['Blanda köttfärs', 'Forma bullar', 'Stek i panna'],
-      tags: ['svensk', 'middag', 'kött'],
+      personalTagIds: ['svensk', 'middag', 'kött'],
       mealType: 'Middag',
       imageUrls: ['image1.jpg'],
       portions: 4,
@@ -106,7 +106,7 @@ void main() {
             portions: any(named: 'portions'),
             timeMinutes: any(named: 'timeMinutes'),
             rating: any(named: 'rating'),
-            tags: any(named: 'tags'),
+            personalTagIds: any(named: 'personalTags'),
             sourceUrl: any(named: 'sourceUrl'),
           )).thenAnswer((_) async => testRecipeId);
 
@@ -197,7 +197,7 @@ void main() {
               portions: null, // These are optional parameters
               timeMinutes: null,
               rating: null,
-              tags: null,
+              personalTagIds: null,
               sourceUrl: null,
             )).called(1);
       });
@@ -214,7 +214,7 @@ void main() {
           portions: 6,
           timeMinutes: 45,
           rating: 4.5,
-          tags: ['svensk', 'kött'],
+          personalTagIds: ['svensk', 'kött'],
           sourceUrl: 'https://example.com',
         );
 
@@ -234,7 +234,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenThrow(Exception('Creation failed'));
 
@@ -549,7 +549,7 @@ void main() {
               portions: any(named: 'portions'),
               timeMinutes: any(named: 'timeMinutes'),
               rating: any(named: 'rating'),
-              tags: any(named: 'tags'),
+              personalTagIds: any(named: 'personalTags'),
               sourceUrl: any(named: 'sourceUrl'),
             )).thenThrow(Exception('Legacy failed'));
 
@@ -713,7 +713,7 @@ void main() {
         final result = await viewModel.createPersonalRecipe(
           name: 'Köttbullar med lingonsylt och gräddsås',
           description: 'Äkta svenska köttbullar från mormors recept',
-          tags: ['svensk', 'kött', 'traditionell'],
+          personalTagIds: ['svensk', 'kött', 'traditionell'],
         );
 
         // Assert
@@ -837,7 +837,7 @@ void main() {
         final result = await viewModel.createPersonalRecipe(
           name: '🍝 Pasta & Kött <script>alert("xss")</script>',
           description: 'Recipe with "quotes" and \'apostrophes\'',
-          tags: ['emoji-🔥', 'special-#tag'],
+          personalTagIds: ['emoji-🔥', 'special-#tag'],
         );
 
         // Assert

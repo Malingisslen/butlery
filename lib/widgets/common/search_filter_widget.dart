@@ -1,6 +1,7 @@
 // lib/widgets/common/search_filter_widget.dart - FACADE PATTERN
 
 import 'package:flutter/material.dart';
+import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 // Focused Components
@@ -43,6 +44,12 @@ class SearchFilterWidget extends StatefulWidget {
   final Function(String)? onAllergenFilterToggle;
   final Function(String)? onDietaryFilterToggle;
 
+  // Personal tag filter properties (OPTIONAL)
+  final List<PersonalTag>? personalTagIds;
+  final Set<String>? activePersonalTagFilters;
+  final Function(String)? onPersonalTagFilterToggle;
+  final VoidCallback? onManagePersonalTags;
+
   // UI state (OPTIONAL - null means no filter toggle)
   final bool? showFilters;
   final VoidCallback? onToggleFilters;
@@ -75,6 +82,12 @@ class SearchFilterWidget extends StatefulWidget {
     this.onRatingFilterToggle,
     this.onAllergenFilterToggle,
     this.onDietaryFilterToggle,
+
+    // Personal tag filters (optional)
+    this.personalTagIds,
+    this.activePersonalTagFilters,
+    this.onPersonalTagFilterToggle,
+    this.onManagePersonalTags,
 
     // UI state (optional)
     this.showFilters,
@@ -280,6 +293,11 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
       onDietaryFilterToggle: widget.onDietaryFilterToggle,
       hasActiveFilters: widget.hasActiveFilters ?? false,
       onClearAllFilters: widget.onClearAllFilters,
+      // Personal tag filters
+      personalTagIds: widget.personalTagIds,
+      activePersonalTagFilters: widget.activePersonalTagFilters,
+      onPersonalTagFilterToggle: widget.onPersonalTagFilterToggle,
+      onManagePersonalTags: widget.onManagePersonalTags,
     );
   }
 
@@ -299,6 +317,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
         (widget.activeMealTypeFilters?.length ?? 0) +
         (widget.activeRatingFilters?.length ?? 0) +
         (widget.activeAllergenFilters?.length ?? 0) +
-        (widget.activeDietaryFilters?.length ?? 0);
+        (widget.activeDietaryFilters?.length ?? 0) +
+        (widget.activePersonalTagFilters?.length ?? 0);
   }
 }

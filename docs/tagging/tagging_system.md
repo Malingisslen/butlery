@@ -1,9 +1,9 @@
 # Butlery Tagging System — Complete Specification
 
-**Version:** 2.5
+**Version:** 3.0
 **Generator Version:** 1.0.0
 **Schema Version:** 2
-**Date:** December 2025
+**Date:** January 2026
 **Status:** Single Source of Truth for tagging and menu generation
 
 ---
@@ -878,8 +878,8 @@ Separate from auto-generated tags, users can create their own **PersonalTags** f
 
 | Feature | Description |
 |---------|-------------|
-| **PersonalTag** | User-defined tag with name, color, icon |
-| **PersonalTagRule** | Automatic rule to apply tags based on conditions |
+| **PersonalTag** | User-defined tag with name and embedded rules |
+| **PersonalTagRule** | Automatic rule to apply tags based on conditions (embedded in PersonalTag) |
 | **TagOverrides** | User corrections to auto-generated tags |
 | **Batch Apply** | Apply all rules to existing recipes |
 
@@ -887,26 +887,26 @@ Separate from auto-generated tags, users can create their own **PersonalTags** f
 
 ```dart
 class PersonalTag {
-  String id;           // UUID
-  String name;         // "Mamma's Recipes" (1-50 chars, no commas)
-  String? color;       // "#FF5733" (hex)
-  String? icon;        // Emoji or icon name
-  int sortOrder;       // Manual ordering
+  String id;                         // UUID
+  String name;                       // "Mamma's Recipes" (1-50 chars, no commas)
+  int sortOrder;                     // Manual ordering
+  String? groupId;                   // Reference to PersonalTagGroup (optional)
+  List<PersonalTagRule> rules;       // Embedded automation rules
   DateTime createdAt;
   DateTime updatedAt;
 }
 ```
 
-**Storage:** `users/{userId}/personalTags/{tagId}`
+**Storage:** `users/{userId}/personalTags/{tagId}` (rules embedded, not stored separately)
 
 ### PersonalTagRule Model
 
 Rules automatically apply PersonalTags to recipes based on conditions.
+Rules are embedded within PersonalTag documents (not stored separately).
 
 ```dart
 class PersonalTagRule {
   String id;
-  String tagId;              // Target PersonalTag
   String name;               // "Fish recipes"
   List<RuleCondition> conditions;
   MatchMode matchMode;       // all (AND) or any (OR)
@@ -914,14 +914,16 @@ class PersonalTagRule {
 }
 
 class RuleCondition {
-  ConditionType type;        // ingredient, property, keyword, sourceUrl
-  ConditionOperator operator; // contains, equals, startsWith, notContains, notEquals
-  String value;
+  ConditionType type;        // ingredient, property, keyword, sourceUrl, cuisine, dietary, time, rating, recency
+  ConditionOperator operator; // Text: contains, equals, startsWith, notContains, notEquals
+                              // Numeric: lessThan, lessThanOrEqual, greaterThan, greaterThanOrEqual, withinDays
+  dynamic value;             // String for text types, num for numeric types
   bool caseSensitive;
 }
 ```
 
-**Storage:** `users/{userId}/personalTagRules/{ruleId}`
+**Storage:** Rules are embedded directly in PersonalTag documents as a `rules` array.
+This simplifies the data model and ensures atomic updates.
 
 ### Condition Types
 
@@ -931,6 +933,49 @@ class RuleCondition {
 | `property` | Ingredient database properties | "seafood" matches recipes with fish |
 | `keyword` | Title or description | "soppa" matches soup recipes |
 | `sourceUrl` | Recipe source URL | "recept.se" matches imported recipes |
+| `cuisine` | Auto-generated cuisine tags | "italian" matches Italian recipes |
+| `dietary` | Dietary status (TriState.free) | "vegetarian" matches vegetarian recipes |
+| `time` | Cooking time in minutes | `< 30` matches quick recipes |
+| `rating` | User rating (1-5) | `>= 4` matches highly rated recipes |
+| `recency` | Days since recipe added | `<= 7` matches recently added recipes |
+
+### PersonalTagGroup Model
+
+Groups organize personal tags into folders with optional exclusive selection mode.
+
+```dart
+class PersonalTagGroup {
+  String id;
+  String name;           // 1-50 chars
+  int sortOrder;
+  bool isExclusive;      // true = radio mode (one tag), false = checkbox mode
+  DateTime createdAt;
+  DateTime updatedAt;
+}
+```
+
+**Storage:** `users/{userId}/personalTagGroups/{groupId}`
+
+**Exclusive Mode:**
+- `isExclusive: true` → Only one tag from this group can be applied to a recipe (radio buttons)
+- `isExclusive: false` → Multiple tags from this group can be applied (checkboxes)
+
+### RecipePersonalTag Reference
+
+Tracks how personal tags are applied to recipes.
+
+```dart
+class RecipePersonalTag {
+  String tagId;
+  String name;           // Denormalized for display
+  List<String> sources;  // ['manual'] or ['rule-abc', 'rule-xyz']
+}
+```
+
+Source tracking:
+- `'manual'` = User explicitly added tag
+- `'rule-{ruleId}'` = Applied by automation rule
+- Multiple sources possible (both manual and rule-applied)
 
 ### TagOverrides Model
 
@@ -954,12 +999,11 @@ class TagOverrides {
 | Component | File |
 |-----------|------|
 | PersonalTag model | `lib/models/tagging/personal_tag.dart` |
-| PersonalTagRule model | `lib/models/tagging/personal_tag_rule.dart` |
+| PersonalTagRule model | `lib/models/tagging/personal_tag_rule.dart` (embedded in PersonalTag) |
 | TagOverrides model | `lib/models/tagging/tag_overrides.dart` |
 | PersonalTagService | `lib/services/tagging/personal_tag_service.dart` |
 | PersonalTagViewModel | `lib/viewmodels/personal_tag_viewmodel.dart` |
 | Tag repository | `lib/repositories/firebase/firebase_personal_tag_repository.dart` |
-| Rule repository | `lib/repositories/firebase/firebase_personal_tag_rule_repository.dart` |
 | Manager dialog | `lib/widgets/tagging/personal_tag_manager_dialog.dart` |
 | Rule editor | `lib/widgets/tagging/personal_tag_rule_dialog.dart` |
 | Tag selector | `lib/widgets/tagging/personal_tag_selector.dart` |
@@ -969,7 +1013,7 @@ class TagOverrides {
 
 | Feature | Description |
 |---------|-------------|
-| **Color picker** | 12 preset colors + custom hex input |
+| **Exclusive groups** | Groups can enforce single-selection (radio mode) |
 | **Property dropdown** | Categorized list from PropertyRegistry |
 | **Tag statistics** | Recipe count per tag |
 | **Batch apply** | Apply enabled rules to all existing recipes |
@@ -1007,3 +1051,4 @@ class TagOverrides {
 | 2.3 | Dec 2025 | Sprint 3-5 features: Phase 5 cuisine tags (17 cuisines), sustainability tags (klimatsmart, budgetvänlig), hybrid season detection, extended IngredientData model (8 new fields), unmatched ingredient analytics Cloud Functions |
 | 2.4 | Dec 2025 | Tagging improvements: 5 new cuisines (22 total: etiopisk, marockansk, brasiliansk, peruansk, argentinsk), AIP dietary tag (aip-vänlig), nightshade property, TagOverrides for user manual corrections, ingredient suggestion queue (Cloud Function), Dart/TypeScript normalization parity tests |
 | 2.5 | Dec 2025 | Personal Tags system: PersonalTag model (user-defined tags with color/icon), PersonalTagRule model (rule-based auto-tagging with conditions), TagOverrides integration, batch apply rules to existing recipes, tag statistics, property dropdown in rule editor, 20 unit tests |
+| 3.0 | Jan 2026 | Personal Tags v3.0: Removed color/icon from PersonalTag, removed color from PersonalTagGroup, added isExclusive to PersonalTagGroup for radio/checkbox mode, embedded rules in PersonalTag (removed separate rule repository), renamed RecipeCore.personalTags → personalTagIds |

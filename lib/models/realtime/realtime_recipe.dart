@@ -65,7 +65,7 @@ class RealtimeRecipe extends RealtimeResource {
       int? portions,
       int? timeMinutes,
       double? rating,
-      List<String>? tags,
+      List<String>? personalTagIds,
       required String editedBy,
       required String editedByDisplayName}) {
     final updatedRecipe = RecipeOperations.updateBasicInfo(recipe,
@@ -75,7 +75,7 @@ class RealtimeRecipe extends RealtimeResource {
         portions: portions,
         timeMinutes: timeMinutes,
         rating: rating,
-        tags: tags,
+        personalTagIds: personalTagIds,
         editedBy: editedBy,
         editedByDisplayName: editedByDisplayName);
     return copyWith(
@@ -218,7 +218,7 @@ class RealtimeRecipe extends RealtimeResource {
   int? get portions => recipe.portions;
   int? get timeMinutes => recipe.timeMinutes;
   double? get rating => recipe.rating;
-  List<String>? get tags => recipe.tags;
+  List<String>? get personalTagIds => recipe.personalTagIds;
   String get mealType => recipe.mealType;
   bool get hasRating => recipe.rating != null;
   bool get isValidRecipe => RecipeOperations.isValidRecipe(recipe);
@@ -447,7 +447,7 @@ class RealtimeRecipe extends RealtimeResource {
         portions: recipe.portions,
         timeMinutes: recipe.timeMinutes,
         rating: recipe.rating,
-        tags: recipe.tags,
+        personalTagIds: recipe.personalTagIds,
         sourceUrl: 'Delat från $ownerDisplayName',
         imageUrls: recipe.imageUrls,
         createdAt: DateTime.now(),
@@ -496,8 +496,8 @@ class RealtimeRecipe extends RealtimeResource {
       if (instruction.toLowerCase().contains(lowerQuery)) return true;
     }
 
-    if (tags != null) {
-      for (final tag in tags!) {
+    if (personalTagIds != null) {
+      for (final tag in personalTagIds!) {
         if (tag.toLowerCase().contains(lowerQuery)) return true;
       }
     }

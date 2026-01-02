@@ -126,7 +126,7 @@ void main() {
           description: 'Familjens favorit',
           portions: 6,
           cookingTime: 45,
-          tags: ['svensk', 'vegetarisk'],
+          personalTagIds: ['svensk', 'vegetarisk'],
         );
 
         // Assert - The recipe should be created and saved

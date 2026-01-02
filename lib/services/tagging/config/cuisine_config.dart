@@ -1,6 +1,6 @@
 /// Configuration for cuisine detection in the tagging system.
 ///
-/// Defines 17 world cuisines with their title keywords and ingredient patterns.
+/// Defines 22 world cuisines with their title keywords and ingredient patterns.
 /// This is a hardcoded approach for reliability and testability - no CSV parsing.
 library;
 
@@ -111,6 +111,17 @@ class CuisineConfig {
 
     // Middle Eastern
     mellanoostern,
+
+    // African
+    etiopisk,
+
+    // North African
+    marockansk,
+
+    // South American
+    brasiliansk,
+    peruansk,
+    argentinsk,
   ];
 
   // ===== INDIVIDUAL CUISINE DEFINITIONS =====
@@ -538,6 +549,127 @@ class CuisineConfig {
       'bulgur',
       'kikärtor',
       'pitabröd',
+    },
+    minIngredientMatches: 2,
+  );
+
+  // ===== AFRICAN CUISINES =====
+
+  static const etiopisk = CuisineEntry(
+    key: 'etiopisk',
+    tag: 'etiopisk',
+    titleKeywords: {
+      'etiopisk',
+      'ethiopian',
+      'injera',
+      'doro wat',
+      'kitfo',
+    },
+    ingredientKeywords: {
+      'berbere',
+      'injera',
+      'niter kibbeh',
+      'teff',
+      'mitmita',
+      'korarima',
+    },
+    minIngredientMatches: 2,
+  );
+
+  // ===== NORTH AFRICAN CUISINES =====
+
+  static const marockansk = CuisineEntry(
+    key: 'marockansk',
+    tag: 'marockansk',
+    titleKeywords: {
+      'marockansk',
+      'moroccan',
+      'tagine',
+      'couscous',
+      'pastilla',
+      'harira',
+    },
+    ingredientKeywords: {
+      'ras el hanout',
+      'couscous',
+      'bevarad citron',
+      'harissa',
+      'arganölja',
+      'koriander',
+      'spiskummin',
+      'kanel',
+      'dadlar',
+    },
+    minIngredientMatches: 2,
+  );
+
+  // ===== SOUTH AMERICAN CUISINES =====
+
+  static const brasiliansk = CuisineEntry(
+    key: 'brasiliansk',
+    tag: 'brasiliansk',
+    titleKeywords: {
+      'brasiliansk',
+      'brazilian',
+      'feijoada',
+      'picanha',
+      'coxinha',
+      'pão de queijo',
+      'açaí',
+    },
+    ingredientKeywords: {
+      'farofa',
+      'svarta bönor',
+      'palmhjärta',
+      'cassava',
+      'maniok',
+      'guarana',
+      'dendéolja',
+    },
+    minIngredientMatches: 2,
+  );
+
+  static const peruansk = CuisineEntry(
+    key: 'peruansk',
+    tag: 'peruansk',
+    titleKeywords: {
+      'peruansk',
+      'peruvian',
+      'ceviche',
+      'lomo saltado',
+      'aji de gallina',
+      'causa',
+    },
+    ingredientKeywords: {
+      'ají amarillo',
+      'quinoa',
+      'huacatay',
+      'rocoto',
+      'limo chili',
+      'purple majskorn',
+    },
+    minIngredientMatches: 2,
+  );
+
+  static const argentinsk = CuisineEntry(
+    key: 'argentinsk',
+    tag: 'argentinsk',
+    titleKeywords: {
+      'argentinsk',
+      'argentinian',
+      'asado',
+      'empanada',
+      'choripan',
+      'milanesa',
+    },
+    ingredientKeywords: {
+      'chimichurri',
+      'dulce de leche',
+      'provolone',
+      'chorizo argentino',
+      'oregano',
+      'persilja',
+      'vitlök',
     },
     minIngredientMatches: 2,
   );

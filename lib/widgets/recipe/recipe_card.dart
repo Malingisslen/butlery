@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
+import 'package:butlery/services/tagging/tag_display_utils.dart';
 
 /// Recipe card widget for displaying recipe information with comprehensive functionality.
 /// This widget provides a complete recipe card implementation with support for:
@@ -33,6 +34,9 @@ class RecipeCard extends StatelessWidget {
   final EdgeInsets? margin;
   final EdgeInsets? padding;
   final RecipeCardStyle style;
+  final bool showPersonalTags;
+  final Map<String, String>? personalTagNames;
+  final int maxPersonalTags;
 
   const RecipeCard({
     super.key,
@@ -51,6 +55,9 @@ class RecipeCard extends StatelessWidget {
     this.margin,
     this.padding,
     this.style = RecipeCardStyle.detailed,
+    this.showPersonalTags = true,
+    this.personalTagNames,
+    this.maxPersonalTags = 3,
   });
 
   @override
@@ -156,13 +163,18 @@ class RecipeCard extends StatelessWidget {
             maxBadges: 2,
           ),
         ],
+        // Personal tags (user-defined categories)
+        if (showPersonalTags && _hasPersonalTags) ...[
+          const SizedBox(height: AppDimensions.spacingSm),
+          _buildPersonalTagsRow(context),
+        ],
         // Untagged indicator when tagResult is null or failed
         if (_showUntaggedIndicator) ...[
           const SizedBox(height: AppDimensions.spacingSm),
           _buildUntaggedIndicator(context),
         ],
-        // Tags
-        if (showTags && (recipe.tags?.isNotEmpty ?? false)) ...[
+        // Tags (effective tags: auto-generated + user overrides)
+        if (showTags && _hasEffectiveTags) ...[
           const SizedBox(height: AppDimensions.spacingSm),
           _buildTagsRow(context),
         ],
@@ -350,31 +362,39 @@ class RecipeCard extends StatelessWidget {
   }
 
   Widget _buildTagsRow(BuildContext context) {
+    final userAddedTags = recipe.tagOverrides?.addedTags ?? <String>{};
     return Wrap(
       spacing: AppDimensions.spacingXs,
       runSpacing: AppDimensions.spacingXs,
-      children:
-          (recipe.tags ?? []).take(3).map((tag) => _buildTag(tag)).toList(),
+      children: _topEffectiveTags
+          .map(
+              (tag) => _buildTag(tag, isUserAdded: userAddedTags.contains(tag)))
+          .toList(),
     );
   }
 
-  Widget _buildTag(String tag) {
+  Widget _buildTag(String tag, {bool isUserAdded = false}) {
+    final displayName = TagDisplayUtils.getDisplayName(tag);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingXs,
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: AppColors.backgroundBeige,
+        color: isUserAdded
+            ? AppColors.primaryBlue.withValues(alpha: 0.1)
+            : AppColors.backgroundBeige,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
         border: Border.all(
-          color: AppColors.divider.withValues(alpha: 0.3),
+          color: isUserAdded
+              ? AppColors.primaryBlue.withValues(alpha: 0.3)
+              : AppColors.divider.withValues(alpha: 0.3),
         ),
       ),
       child: Text(
-        tag,
+        displayName,
         style: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.textMedium,
+          color: isUserAdded ? AppColors.primaryBlue : AppColors.textMedium,
         ),
       ),
     );
@@ -386,6 +406,105 @@ class RecipeCard extends StatelessWidget {
     if (!showAllergenBadges && !showDietaryBadges) return false;
     final tagResult = recipe.tagResult;
     return tagResult == null || tagResult.hasFailed;
+  }
+
+  /// Whether there are effective tags to display.
+  /// Checks auto-generated tags and user overrides.
+  bool get _hasEffectiveTags {
+    final autoTags = recipe.tagResult?.tags ?? <String>{};
+    final userAddedTags = recipe.tagOverrides?.addedTags ?? <String>{};
+    final removedTags = recipe.tagOverrides?.removedTags ?? <String>{};
+    final effectiveTags = autoTags.union(userAddedTags).difference(removedTags);
+    return effectiveTags.isNotEmpty;
+  }
+
+  /// Gets the top 5 effective tags with smart priority.
+  List<String> get _topEffectiveTags {
+    final autoTags = recipe.tagResult?.tags ?? <String>{};
+    final userAddedTags = recipe.tagOverrides?.addedTags ?? <String>{};
+    final removedTags = recipe.tagOverrides?.removedTags ?? <String>{};
+    final effectiveTags = autoTags.union(userAddedTags).difference(removedTags);
+    return TagDisplayUtils.getTopTags(effectiveTags, userAddedTags, limit: 5);
+  }
+
+  /// Whether there are personal tags to display.
+  bool get _hasPersonalTags {
+    final tagIds = recipe.personalTagIds;
+    if (tagIds == null || tagIds.isEmpty) return false;
+    if (personalTagNames == null || personalTagNames!.isEmpty) return false;
+    return tagIds.any((id) => personalTagNames!.containsKey(id));
+  }
+
+  /// Gets resolved personal tag names for display.
+  List<String> get _resolvedPersonalTagNames {
+    final tagIds = recipe.personalTagIds ?? [];
+    if (personalTagNames == null) return [];
+    return tagIds
+        .where((id) => personalTagNames!.containsKey(id))
+        .map((id) => personalTagNames![id]!)
+        .toList();
+  }
+
+  Widget _buildPersonalTagsRow(BuildContext context) {
+    final names = _resolvedPersonalTagNames;
+    final displayCount =
+        names.length > maxPersonalTags ? maxPersonalTags : names.length;
+    final overflow = names.length - displayCount;
+
+    return Wrap(
+      spacing: AppDimensions.spacingXs,
+      runSpacing: AppDimensions.spacingXs,
+      children: [
+        ...names.take(displayCount).map(_buildPersonalTag),
+        if (overflow > 0) _buildOverflowChip(overflow),
+      ],
+    );
+  }
+
+  Widget _buildPersonalTag(String name) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingSm,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.primaryBlue.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        border: Border.all(
+          color: AppColors.primaryBlue.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Text(
+        name,
+        style: AppTextStyles.labelSmall.copyWith(
+          color: AppColors.primaryBlue,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOverflowChip(int count) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingSm,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.primaryBlue.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        border: Border.all(
+          color: AppColors.primaryBlue.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Text(
+        '+$count',
+        style: AppTextStyles.labelSmall.copyWith(
+          color: AppColors.primaryBlue.withValues(alpha: 0.7),
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
   }
 
   /// Builds untagged indicator for recipes pending analysis.

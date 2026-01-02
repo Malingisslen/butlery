@@ -61,7 +61,7 @@ class CollaborationManagementModule {
         portions: recipe.portions,
         timeMinutes: recipe.timeMinutes,
         rating: recipe.rating,
-        tags: recipe.tags,
+        personalTagIds: recipe.personalTagIds,
         sourceUrl: recipe.sourceUrl,
       );
 
@@ -112,7 +112,7 @@ class CollaborationManagementModule {
         portions: recipe.portions,
         timeMinutes: recipe.timeMinutes,
         rating: recipe.rating,
-        tags: recipe.tags,
+        personalTagIds: recipe.personalTagIds,
         sourceUrl: recipe.sourceUrl,
       );
 

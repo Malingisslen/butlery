@@ -115,7 +115,7 @@ class RealtimeRecipeService extends ChangeNotifier
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
   }) async {
     await _performRecipeOperation(
       resourceId: resourceId,
@@ -129,7 +129,7 @@ class RealtimeRecipeService extends ChangeNotifier
         portions: portions,
         timeMinutes: timeMinutes,
         rating: rating,
-        tags: tags,
+        personalTagIds: personalTagIds,
         editedBy: _permissionService.currentUserId!,
         editedByDisplayName: _currentUserDisplayName,
       ),

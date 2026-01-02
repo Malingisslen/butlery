@@ -106,7 +106,7 @@ class SocialEngagementMetrics {
     if (recipe.core.description.isNotEmpty) score += 0.5;
 
     // Tags or categories
-    if (recipe.core.tags?.isNotEmpty == true) score += 0.5;
+    if (recipe.core.personalTagIds?.isNotEmpty == true) score += 0.5;
 
     // Max possible score is 6.0
     return (score / 6.0).clamp(0.0, 1.0);

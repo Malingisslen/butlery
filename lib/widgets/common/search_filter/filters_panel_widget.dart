@@ -1,11 +1,13 @@
 // lib/widgets/common/search_filter/filters_panel_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/widgets/common/search_filter/filter_chips_widget.dart';
+import 'package:butlery/widgets/common/search_filter/personal_tag_filter_chips.dart';
 
 /// Animated filters panel with all filter groups
 class FiltersPanelWidget extends StatelessWidget {
@@ -23,6 +25,18 @@ class FiltersPanelWidget extends StatelessWidget {
   final bool hasActiveFilters;
   final VoidCallback? onClearAllFilters;
 
+  /// Personal tags available for filtering.
+  final List<PersonalTag>? personalTagIds;
+
+  /// Currently selected personal tag IDs.
+  final Set<String>? activePersonalTagFilters;
+
+  /// Callback when a personal tag is toggled.
+  final Function(String)? onPersonalTagFilterToggle;
+
+  /// Callback to navigate to personal tag management.
+  final VoidCallback? onManagePersonalTags;
+
   const FiltersPanelWidget({
     super.key,
     required this.showFilters,
@@ -38,6 +52,10 @@ class FiltersPanelWidget extends StatelessWidget {
     this.onDietaryFilterToggle,
     required this.hasActiveFilters,
     this.onClearAllFilters,
+    this.personalTagIds,
+    this.activePersonalTagFilters,
+    this.onPersonalTagFilterToggle,
+    this.onManagePersonalTags,
   });
 
   @override
@@ -100,6 +118,15 @@ class FiltersPanelWidget extends StatelessWidget {
                       options: RecipeFilters.dietaryFilters,
                       activeFilters: activeDietaryFilters,
                       onToggle: onDietaryFilterToggle!,
+                    ),
+
+                  // Personal tags filters
+                  if (onPersonalTagFilterToggle != null)
+                    PersonalTagFilterChipsWidget(
+                      tags: personalTagIds ?? [],
+                      selectedTagIds: activePersonalTagFilters ?? {},
+                      onToggle: onPersonalTagFilterToggle!,
+                      onManageTags: onManagePersonalTags,
                     ),
 
                   // Clear all filters button

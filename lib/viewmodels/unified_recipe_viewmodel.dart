@@ -107,7 +107,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
   }) async {
     return await _personalViewModel.createPersonalRecipe(
@@ -120,7 +120,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
       portions: portions,
       timeMinutes: timeMinutes,
       rating: rating,
-      tags: tags,
+      personalTagIds: personalTagIds,
       sourceUrl: sourceUrl,
     );
   }
@@ -138,7 +138,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
     int? portions,
     int? timeMinutes,
     double? rating,
-    List<String>? tags,
+    List<String>? personalTagIds,
     String? sourceUrl,
   }) async {
     return await _socialViewModel.createCollaborativeRecipe(
@@ -153,7 +153,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
       portions: portions,
       timeMinutes: timeMinutes,
       rating: rating,
-      tags: tags,
+      personalTagIds: personalTagIds,
       sourceUrl: sourceUrl,
     );
   }

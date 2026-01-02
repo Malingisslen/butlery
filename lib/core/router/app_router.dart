@@ -31,6 +31,7 @@ import 'package:butlery/views/unified_shopping_view.dart';
 
 // Settings views
 import 'package:butlery/views/settings/allergen_preferences_view.dart';
+import 'package:butlery/views/personal_tags_view.dart';
 
 // Models (needed for route arguments)
 import 'package:butlery/models/recipe_unified.dart';
@@ -229,8 +230,12 @@ class AppRouter {
           return _buildRoute(const UnifiedShoppingView(), settings,
               Routes.getAnimationType(routeName));
 
-        case '/settings/allergens':
+        case Routes.settingsAllergens:
           return _buildRoute(const AllergenPreferencesView(), settings,
+              RouteAnimationType.slideFromRight);
+
+        case Routes.settingsPersonalTags:
+          return _buildRoute(const PersonalTagsView(), settings,
               RouteAnimationType.slideFromRight);
 
         default:

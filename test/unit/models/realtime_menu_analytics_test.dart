@@ -26,7 +26,7 @@ void main() {
         timeMinutes: 10,
         portions: 2,
         rating: 4.2,
-        tags: ['snabb', 'fisk', 'lunch'],
+        personalTagIds: ['snabb', 'fisk', 'lunch'],
         ingredients: ['räkor', 'bröd', 'majonnäs'],
       );
 
@@ -38,7 +38,7 @@ void main() {
         timeMinutes: 45,
         portions: 4,
         rating: 4.8,
-        tags: ['svenskt', 'kött', 'middag'],
+        personalTagIds: ['svenskt', 'kött', 'middag'],
         ingredients: ['köttfärs', 'potatis', 'grädde', 'lingon'],
       );
 
@@ -50,7 +50,7 @@ void main() {
         timeMinutes: 120,
         portions: 6,
         rating: 4.5,
-        tags: ['långkok', 'kött', 'middag', 'traditionell'],
+        personalTagIds: ['långkok', 'kött', 'middag', 'traditionell'],
         ingredients: ['nötkött', 'morötter', 'lök', 'lagerblad'],
       );
 
@@ -62,7 +62,7 @@ void main() {
         timeMinutes: 20,
         portions: 2,
         rating: 4.9,
-        tags: ['fisk', 'sallad', 'hälsosamt'],
+        personalTagIds: ['fisk', 'sallad', 'hälsosamt'],
         ingredients: ['lax', 'sallad', 'tomat', 'gurka'],
       );
 
@@ -74,7 +74,7 @@ void main() {
         timeMinutes: 25,
         portions: 3,
         rating: 2.5,
-        tags: ['soppa', 'enkel'],
+        personalTagIds: ['soppa', 'enkel'],
         ingredients: ['buljong', 'pasta', 'grönsaker'],
       );
 
@@ -397,7 +397,7 @@ void main() {
           timeMinutes: null,
           rating: null,
           portions: null,
-          tags: null,
+          personalTagIds: null,
         );
 
         final menuWithNulls = RealtimeMenuData(
@@ -429,7 +429,7 @@ void main() {
           title: 'Räksmörgås',
           description: 'Äkta svensk räksmörgås med löjrom',
           ingredients: ['räkor', 'smörgås', 'ägg', 'löjrom'],
-          tags: ['sjömat', 'smörgås'],
+          personalTagIds: ['sjömat', 'smörgås'],
         );
 
         final swedishMenu = RealtimeMenuData(

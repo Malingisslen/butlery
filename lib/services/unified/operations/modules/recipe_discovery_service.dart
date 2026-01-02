@@ -68,7 +68,8 @@ class RecipeDiscoveryService extends BaseService {
         collaborativeRecipes = collaborativeRecipes.where((recipe) {
           return recipe.title.toLowerCase().contains(query) ||
               recipe.description.toLowerCase().contains(query) ||
-              (recipe.tags?.any((tag) => tag.toLowerCase().contains(query)) ??
+              (recipe.personalTagIds
+                      ?.any((tag) => tag.toLowerCase().contains(query)) ??
                   false);
         }).toList();
       }
@@ -138,7 +139,8 @@ class RecipeDiscoveryService extends BaseService {
         sharedRecipes = sharedRecipes.where((recipe) {
           return recipe.title.toLowerCase().contains(query) ||
               recipe.description.toLowerCase().contains(query) ||
-              (recipe.tags?.any((tag) => tag.toLowerCase().contains(query)) ??
+              (recipe.personalTagIds
+                      ?.any((tag) => tag.toLowerCase().contains(query)) ??
                   false) ||
               (recipe.socialData?.ownerDisplayName
                       ?.toLowerCase()
@@ -212,7 +214,8 @@ class RecipeDiscoveryService extends BaseService {
         sharedRecipes = sharedRecipes.where((recipe) {
           return recipe.title.toLowerCase().contains(query) ||
               recipe.description.toLowerCase().contains(query) ||
-              (recipe.tags?.any((tag) => tag.toLowerCase().contains(query)) ??
+              (recipe.personalTagIds
+                      ?.any((tag) => tag.toLowerCase().contains(query)) ??
                   false);
         }).toList();
       }
@@ -292,7 +295,8 @@ class RecipeDiscoveryService extends BaseService {
         userRecipes = userRecipes.where((recipe) {
           return recipe.title.toLowerCase().contains(query) ||
               recipe.description.toLowerCase().contains(query) ||
-              (recipe.tags?.any((tag) => tag.toLowerCase().contains(query)) ??
+              (recipe.personalTagIds
+                      ?.any((tag) => tag.toLowerCase().contains(query)) ??
                   false);
         }).toList();
       }
@@ -564,7 +568,7 @@ class RecipeDiscoveryService extends BaseService {
       final searchResults = searchableRecipes.where((recipe) {
         return recipe.title.toLowerCase().contains(searchQuery) ||
             recipe.description.toLowerCase().contains(searchQuery) ||
-            (recipe.tags
+            (recipe.personalTagIds
                     ?.any((tag) => tag.toLowerCase().contains(searchQuery)) ??
                 false) ||
             recipe.ingredients.any((ingredient) =>
@@ -589,11 +593,13 @@ class RecipeDiscoveryService extends BaseService {
         if (b.description.toLowerCase().contains(searchQuery)) bScore += 50;
 
         // Tag/ingredient matches get lower score
-        if (a.tags?.any((tag) => tag.toLowerCase().contains(searchQuery)) ??
+        if (a.personalTagIds
+                ?.any((tag) => tag.toLowerCase().contains(searchQuery)) ??
             false) {
           aScore += 25;
         }
-        if (b.tags?.any((tag) => tag.toLowerCase().contains(searchQuery)) ??
+        if (b.personalTagIds
+                ?.any((tag) => tag.toLowerCase().contains(searchQuery)) ??
             false) {
           bScore += 25;
         }

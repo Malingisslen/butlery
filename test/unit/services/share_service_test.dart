@@ -56,7 +56,7 @@ void main() {
         portions: 4,
         timeMinutes: 45,
         rating: 4.5,
-        tags: ['svensk', 'middag', 'köttbullar'],
+        personalTagIds: ['svensk', 'middag', 'köttbullar'],
         sourceUrl: 'https://example.com/recipe',
         mealType: 'Middag',
       );
@@ -176,7 +176,7 @@ void main() {
           portions: null, // Explicitly null
           timeMinutes: null, // Explicitly null
           rating: 0,
-          tags: [],
+          personalTagIds: [],
           sourceUrl: null,
           createdBy: 'test_user',
           createdAt: DateTime.now(),
@@ -587,7 +587,7 @@ void main() {
             'Skala räkorna från Öresund',
             'Lägg på löjrom överst',
           ],
-          tags: ['åländsk', 'räkor', 'smörgås', 'östersjö'],
+          personalTagIds: ['åländsk', 'räkor', 'smörgås', 'östersjö'],
         );
 
         // Act
@@ -612,7 +612,7 @@ void main() {
         final midsummerRecipe = RecipeFactory.build(
           title: 'Midsommarbuffé',
           mealType: 'Middag',
-          tags: ['midsommar', 'svensk', 'traditionell'],
+          personalTagIds: ['midsommar', 'svensk', 'traditionell'],
         );
 
         // Act
@@ -635,7 +635,7 @@ void main() {
         final socialRecipe = RecipeFactory.build(
           title: 'Vegansk köttbullegryta',
           description: 'Modern twist på klassisk svensk rätt',
-          tags: ['vegansk', 'hållbar', 'svensk'],
+          personalTagIds: ['vegansk', 'hållbar', 'svensk'],
         );
 
         // Act - Compact format is optimized for social media
@@ -849,7 +849,7 @@ void main() {
           portions: 0, // Using 0 to simulate no portions
           timeMinutes: 0, // Using 0 to simulate no time
           rating: 0, // Using 0 to simulate no rating
-          tags: [],
+          personalTagIds: [],
           sourceUrl: '',
           isPublic: false,
           lastCookedAt: null,

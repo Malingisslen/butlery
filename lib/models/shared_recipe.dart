@@ -331,7 +331,8 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
                 recipeData, 'timeMinutes'),
             rating: utils.SerializationUtils.safeNullableDouble(
                 recipeData, 'rating'),
-            tags: utils.SerializationUtils.safeStringList(recipeData, 'tags'),
+            personalTagIds: utils.SerializationUtils.safeStringList(
+                recipeData, 'personalTagIds'),
             sourceUrl: utils.SerializationUtils.safeNullableString(
                 recipeData, 'sourceUrl'),
             createdAt: utils.SerializationUtils.safeDateTime(

@@ -66,6 +66,10 @@ class Routes {
   static const String messages = '/messages';
   static const String chat = '/chat';
 
+  // Settings routes
+  static const String settingsAllergens = '/settings/allergens';
+  static const String settingsPersonalTags = '/settings/personal-tags';
+
   // Route aliases
   static const Map<String, String> aliases = {
     '/home': home, // Explicit hem-alias
@@ -99,6 +103,8 @@ class Routes {
     sharedShoppingLists,
     messages,
     chat,
+    settingsAllergens,
+    settingsPersonalTags,
   };
 
   /// Routes using slide-from-bottom animation
@@ -128,6 +134,8 @@ class Routes {
     sharedShoppingLists,
     messages,
     chat,
+    settingsAllergens,
+    settingsPersonalTags,
   };
 
   /// Routes using fade animation
@@ -206,6 +214,10 @@ class Routes {
     // Messaging
     messages,
     chat,
+
+    // Settings
+    settingsAllergens,
+    settingsPersonalTags,
   };
 
   /// All routes including aliases

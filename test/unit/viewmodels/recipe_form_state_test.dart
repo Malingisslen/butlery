@@ -131,7 +131,7 @@ void main() {
           sourceUrl: testSourceUrl,
           ingredients: testIngredients,
           instructions: testInstructions,
-          tags: testTags,
+          personalTagIds: testTags,
         );
 
         // Act
@@ -169,7 +169,7 @@ void main() {
           title: testTitle,
           ingredients: [],
           instructions: [],
-          tags: [],
+          personalTagIds: [],
         );
 
         // Act
@@ -187,7 +187,7 @@ void main() {
         // Arrange
         final recipe = RecipeFactory.build(
           title: testTitle,
-          tags: null, // Explicitly null
+          personalTagIds: null, // Explicitly null
         );
 
         // Act
@@ -223,7 +223,7 @@ void main() {
         final recipe = RecipeFactory.build(
           ingredients: testIngredients,
           instructions: testInstructions,
-          tags: testTags,
+          personalTagIds: testTags,
         );
 
         // Act
@@ -794,7 +794,7 @@ void main() {
         expect(recipe.sourceUrl, equals(testSourceUrl));
         expect(recipe.ingredients, equals(testIngredients));
         expect(recipe.instructions, equals(testInstructions));
-        expect(recipe.tags, equals(testTags));
+        expect(recipe.personalTagIds, equals(testTags));
       });
 
       test('should create recipe with custom ID', () {
@@ -876,9 +876,9 @@ void main() {
         final recipe = formState.createRecipe();
 
         // Assert
-        expect(recipe.tags, equals(['Valid tag', 'Another tag']));
-        expect(recipe.tags, isNot(contains('')));
-        expect(recipe.tags, isNot(contains('   ')));
+        expect(recipe.personalTagIds, equals(['Valid tag', 'Another tag']));
+        expect(recipe.personalTagIds, isNot(contains('')));
+        expect(recipe.personalTagIds, isNot(contains('   ')));
       });
 
       test('should trim title and description in created recipe', () {
@@ -1115,7 +1115,7 @@ void main() {
         final recipe = RecipeFactory.build(
           ingredients: testIngredients,
           instructions: testInstructions,
-          tags: testTags,
+          personalTagIds: testTags,
         );
 
         // Act

@@ -146,7 +146,7 @@ class RecipeSearchHit {
         portions: portions,
         timeMinutes: timeMinutes,
         rating: rating,
-        tags: tags,
+        personalTagIds: tags,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),

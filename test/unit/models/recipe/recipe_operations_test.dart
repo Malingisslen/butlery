@@ -19,7 +19,7 @@ void main() {
         mealType: 'Middag',
         portions: 4,
         timeMinutes: 30,
-        tags: ['Test', 'Recipe'],
+        personalTagIds: ['Test', 'Recipe'],
       );
     });
 
@@ -253,7 +253,7 @@ void main() {
           portions: 6,
           timeMinutes: 45,
           rating: 4.5,
-          tags: ['Updated', 'Tags'],
+          personalTagIds: ['Updated', 'Tags'],
           sourceUrl: 'https://source.com',
           isPublic: true,
           userId: 'user_123',
@@ -266,7 +266,7 @@ void main() {
         expect(updated.core.portions, equals(6));
         expect(updated.core.timeMinutes, equals(45));
         expect(updated.core.rating, equals(4.5));
-        expect(updated.core.tags, equals(['Updated', 'Tags']));
+        expect(updated.core.personalTagIds, equals(['Updated', 'Tags']));
         expect(updated.core.sourceUrl, equals('https://source.com'));
         expect(updated.core.isPublic, isTrue);
       });

@@ -44,6 +44,7 @@ import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
 import 'package:butlery/widgets/recipe/recipe_form/dynamic_list_builder.dart';
+import 'package:butlery/widgets/tagging/tag_editor_dialog.dart';
 
 /// Comprehensive recipe editing view with all components inlined.
 class EditRecipeView extends StatelessWidget {
@@ -398,7 +399,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
-      // Tags dynamic list
+      // Tags dynamic list (user-provided simple tags)
       DynamicListBuilder(
         label: 'Tagg',
         controllers: viewModel.tagControllers,
@@ -406,6 +407,10 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         onAdd: viewModel.addTag,
         onRemove: viewModel.removeTag,
       ),
+      const SizedBox(height: AppDimensions.spacingM),
+
+      // Auto-generated tags management
+      _buildManageTagsButton(context, viewModel),
       const SizedBox(height: AppDimensions.spacingXl),
 
       // Rating field
@@ -440,6 +445,42 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         validator: FormValidators.recipeSourceUrl(),
       ),
     ];
+  }
+
+  Widget _buildManageTagsButton(
+      BuildContext context, RecipeFormViewModel viewModel) {
+    final hasAutoTags = viewModel.recipe?.tagResult?.tags.isNotEmpty ?? false;
+
+    return OutlinedButton.icon(
+      onPressed: () => _openTagEditor(context, viewModel),
+      icon: const Icon(Icons.local_offer_outlined),
+      label: Text(
+        hasAutoTags ? 'Hantera alla taggar' : 'Lägg till taggar',
+        style: AppTextStyles.bodyMedium,
+      ),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingL,
+          vertical: AppDimensions.paddingM,
+        ),
+        side: const BorderSide(color: AppColors.primaryBlue),
+        foregroundColor: AppColors.primaryBlue,
+      ),
+    );
+  }
+
+  Future<void> _openTagEditor(
+      BuildContext context, RecipeFormViewModel viewModel) async {
+    final recipe = viewModel.recipe;
+    if (recipe == null) return;
+
+    final result = await TagEditorDialog.show(context, recipe);
+    if (result != null) {
+      viewModel.setTagOverrides(result);
+      if (context.mounted) {
+        UtilityComponents.showSuccessSnackbar(context, 'Taggar uppdaterade');
+      }
+    }
   }
 
   Future<void> _saveRecipe(BuildContext context) async {

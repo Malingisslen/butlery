@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/models/tagging/personal_tag.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/tagging/config/property_registry.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+
+/// Result from rule dialog including apply to existing choice.
+class PersonalTagRuleResult {
+  final PersonalTagRule rule;
+  final bool applyToExisting;
+
+  const PersonalTagRuleResult({
+    required this.rule,
+    this.applyToExisting = false,
+  });
+}
 
 /// Dialog for creating or editing a personal tag rule.
 ///
@@ -21,11 +33,19 @@ class PersonalTagRuleDialog extends StatefulWidget {
   /// Pre-selected tag ID (for creating rule from tag context).
   final String? preselectedTagId;
 
+  /// Recipes for preview count (optional).
+  final List<Recipe>? recipesForPreview;
+
+  /// Whether to show apply to existing option.
+  final bool showApplyToExisting;
+
   const PersonalTagRuleDialog({
     super.key,
     this.existingRule,
     required this.availableTags,
     this.preselectedTagId,
+    this.recipesForPreview,
+    this.showApplyToExisting = false,
   });
 
   /// Shows the dialog with automatic ViewModel setup.
@@ -52,6 +72,36 @@ class PersonalTagRuleDialog extends StatefulWidget {
     );
   }
 
+  /// Shows the dialog with apply-to-existing option.
+  ///
+  /// Returns [PersonalTagRuleResult] with the rule and whether to apply
+  /// to existing recipes.
+  static Future<PersonalTagRuleResult?> showWithApplyOption(
+    BuildContext context, {
+    PersonalTagRule? existingRule,
+    String? preselectedTagId,
+    required List<Recipe> recipesForPreview,
+  }) async {
+    // Load tags first
+    final viewModel = PersonalTagViewModel();
+    await viewModel.initialize();
+    final tags = viewModel.tags;
+    viewModel.dispose();
+
+    if (!context.mounted) return null;
+
+    return showDialog<PersonalTagRuleResult>(
+      context: context,
+      builder: (context) => PersonalTagRuleDialog(
+        existingRule: existingRule,
+        availableTags: tags,
+        preselectedTagId: preselectedTagId,
+        recipesForPreview: recipesForPreview,
+        showApplyToExisting: true,
+      ),
+    );
+  }
+
   @override
   State<PersonalTagRuleDialog> createState() => _PersonalTagRuleDialogState();
 }
@@ -66,6 +116,9 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
   bool _isEnabled = true;
   bool _isSaving = false;
   String? _error;
+  bool _applyToExisting = false;
+  int? _affectedRecipeCount;
+  bool _isCalculatingCount = false;
 
   bool get _isEditing => widget.existingRule != null;
 
@@ -116,7 +169,8 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
     }
   }
 
-  void _updateCondition(int index, {
+  void _updateCondition(
+    int index, {
     ConditionType? type,
     ConditionOperator? operator,
     String? value,
@@ -128,6 +182,39 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
         value: value,
       );
     });
+  }
+
+  Future<void> _calculateAffectedCount() async {
+    if (widget.recipesForPreview == null) return;
+
+    setState(() => _isCalculatingCount = true);
+
+    try {
+      // Build a temporary rule to test against recipes
+      final testRule = PersonalTagRule.create(
+        tagId: _selectedTagId ?? '',
+        name: 'test',
+        conditions: _conditions,
+        matchMode: _matchMode,
+        isEnabled: true,
+      );
+
+      // Count matching recipes (no lookup data for preview)
+      int count = 0;
+      for (final recipe in widget.recipesForPreview!) {
+        if (testRule.evaluate(recipe, null)) {
+          count++;
+        }
+      }
+
+      if (mounted) {
+        setState(() => _affectedRecipeCount = count);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isCalculatingCount = false);
+      }
+    }
   }
 
   Future<void> _save() async {
@@ -166,7 +253,14 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
     });
 
     if (mounted) {
-      Navigator.of(context).pop(rule);
+      if (widget.showApplyToExisting) {
+        Navigator.of(context).pop(PersonalTagRuleResult(
+          rule: rule,
+          applyToExisting: _applyToExisting,
+        ));
+      } else {
+        Navigator.of(context).pop(rule);
+      }
     }
   }
 
@@ -199,6 +293,10 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
                         _buildConditionsSection(),
                         const SizedBox(height: AppDimensions.spacingM),
                         _buildEnabledSwitch(),
+                        if (widget.showApplyToExisting) ...[
+                          const SizedBox(height: AppDimensions.spacingM),
+                          _buildApplyToExistingSection(),
+                        ],
                         if (_error != null) ...[
                           const SizedBox(height: AppDimensions.spacingM),
                           _buildError(),
@@ -264,27 +362,18 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           value: tag.id,
           child: Row(
             children: [
-              if (tag.icon != null) ...[
-                Text(tag.icon!, style: const TextStyle(fontSize: 16)),
-                const SizedBox(width: 8),
-              ],
-              Container(
-                width: 16,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: _colorFromHex(tag.color),
-                  shape: BoxShape.circle,
-                ),
-              ),
+              const Icon(Icons.label, size: 16, color: AppColors.primaryBlue),
               const SizedBox(width: 8),
               Text(tag.name),
             ],
           ),
         );
       }).toList(),
-      onChanged: _isSaving ? null : (value) {
-        setState(() => _selectedTagId = value);
-      },
+      onChanged: _isSaving
+          ? null
+          : (value) {
+              setState(() => _selectedTagId = value);
+            },
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Välj en tagg';
@@ -319,9 +408,11 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             ),
           ],
           selected: {_matchMode},
-          onSelectionChanged: _isSaving ? null : (selection) {
-            setState(() => _matchMode = selection.first);
-          },
+          onSelectionChanged: _isSaving
+              ? null
+              : (selection) {
+                  setState(() => _matchMode = selection.first);
+                },
         ),
       ],
     );
@@ -369,15 +460,39 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
   Widget _buildEnabledSwitch() {
     return SwitchListTile(
       value: _isEnabled,
-      onChanged: _isSaving ? null : (value) {
-        setState(() => _isEnabled = value);
-      },
+      onChanged: _isSaving
+          ? null
+          : (value) {
+              setState(() => _isEnabled = value);
+            },
       title: const Text('Regel aktiverad'),
       subtitle: Text(
         _isEnabled ? 'Regeln tillämpas på recept' : 'Regeln är pausad',
         style: AppTextStyles.bodySmall,
       ),
       contentPadding: EdgeInsets.zero,
+    );
+  }
+
+  Widget _buildApplyToExistingSection() {
+    return CheckboxListTile(
+      value: _applyToExisting,
+      onChanged: _isSaving
+          ? null
+          : (value) async {
+              setState(() => _applyToExisting = value ?? false);
+              if (_applyToExisting && _affectedRecipeCount == null) {
+                await _calculateAffectedCount();
+              }
+            },
+      title: const Text('Applicera på befintliga recept'),
+      subtitle: _isCalculatingCount
+          ? const Text('Beräknar...')
+          : _affectedRecipeCount != null
+              ? Text('$_affectedRecipeCount recept matchar')
+              : const Text('Tagga matchande recept omedelbart'),
+      contentPadding: EdgeInsets.zero,
+      controlAffinity: ListTileControlAffinity.leading,
     );
   }
 
@@ -425,18 +540,6 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
         ),
       ],
     );
-  }
-
-  Color _colorFromHex(String? hex) {
-    if (hex == null || hex.isEmpty) return AppColors.primaryBlue;
-    try {
-      final buffer = StringBuffer();
-      if (hex.length == 7) buffer.write('FF');
-      buffer.write(hex.replaceFirst('#', ''));
-      return Color(int.parse(buffer.toString(), radix: 16));
-    } catch (e) {
-      return AppColors.primaryBlue;
-    }
   }
 }
 
@@ -489,12 +592,15 @@ class _ConditionRow extends StatelessWidget {
                   items: ConditionType.values.map((type) {
                     return DropdownMenuItem(
                       value: type,
-                      child: Text(type.label, style: const TextStyle(fontSize: 14)),
+                      child: Text(type.label,
+                          style: const TextStyle(fontSize: 14)),
                     );
                   }).toList(),
-                  onChanged: enabled ? (value) {
-                    if (value != null) onTypeChanged(value);
-                  } : null,
+                  onChanged: enabled
+                      ? (value) {
+                          if (value != null) onTypeChanged(value);
+                        }
+                      : null,
                 ),
               ),
               const SizedBox(width: 8),
@@ -514,12 +620,15 @@ class _ConditionRow extends StatelessWidget {
                   items: ConditionOperator.values.map((op) {
                     return DropdownMenuItem(
                       value: op,
-                      child: Text(op.label, style: const TextStyle(fontSize: 14)),
+                      child:
+                          Text(op.label, style: const TextStyle(fontSize: 14)),
                     );
                   }).toList(),
-                  onChanged: enabled ? (value) {
-                    if (value != null) onOperatorChanged(value);
-                  } : null,
+                  onChanged: enabled
+                      ? (value) {
+                          if (value != null) onOperatorChanged(value);
+                        }
+                      : null,
                 ),
               ),
               const SizedBox(width: 8),
@@ -570,18 +679,54 @@ class _ConditionRow extends StatelessWidget {
         return 'T.ex. "snabb", "vegetarisk"';
       case ConditionType.sourceUrl:
         return 'T.ex. "bbc.com", "reddit.com"';
+      case ConditionType.cuisine:
+        return 'T.ex. "italian", "asian"';
+      case ConditionType.dietary:
+        return 'T.ex. "vegetarian", "vegan"';
+      case ConditionType.time:
+        return 'Tillagningstid i minuter';
+      case ConditionType.rating:
+        return 'Betyg (1-5)';
+      case ConditionType.recency:
+        return 'Antal dagar sedan receptet lades till';
+      case ConditionType.ownership:
+        return 'T.ex. "personal", "shared", "collaborative"';
+      case ConditionType.hasImage:
+        return 'true eller false';
+      case ConditionType.completeness:
+        return 'T.ex. "description", "ingredients"';
     }
   }
 
   Widget _buildPropertyDropdown() {
     // Organize properties by category for better UX
     final categories = <String, List<String>>{
-      'Allergener': ['dairy', 'egg', 'fish', 'crustacean', 'mollusc', 'peanut',
-                    'tree-nut', 'wheat', 'contains-gluten', 'soy', 'sesame',
-                    'celery', 'mustard', 'lupin', 'sulfites'],
+      'Allergener': [
+        'dairy',
+        'egg',
+        'fish',
+        'crustacean',
+        'mollusc',
+        'peanut',
+        'tree-nut',
+        'wheat',
+        'contains-gluten',
+        'soy',
+        'sesame',
+        'celery',
+        'mustard',
+        'lupin',
+        'sulfites'
+      ],
       'Laktos': ['contains-lactose'],
       'Kött': ['meat', 'pork', 'beef', 'poultry', 'lamb', 'game'],
-      'Fisk & skaldjur': ['seafood', 'fish', 'crustacean', 'mollusc', 'high-mercury'],
+      'Fisk & skaldjur': [
+        'seafood',
+        'fish',
+        'crustacean',
+        'mollusc',
+        'high-mercury'
+      ],
       'Animaliskt': ['animal-product'],
       'Kost': ['contains-alcohol', 'is-spicy', 'plant-based', 'nightshade'],
       'Övrigt': ['doesnt-freeze-well', 'raw-safe'],
@@ -619,7 +764,7 @@ class _ConditionRow extends StatelessWidget {
 
     return DropdownButtonFormField<String>(
       initialValue: condition.value.isNotEmpty &&
-             PropertyRegistry.isValid(condition.value)
+              PropertyRegistry.isValid(condition.value)
           ? condition.value
           : null,
       decoration: const InputDecoration(
@@ -633,11 +778,13 @@ class _ConditionRow extends StatelessWidget {
       ),
       isExpanded: true,
       items: items,
-      onChanged: enabled ? (value) {
-        if (value != null && !value.startsWith('__header_')) {
-          onValueChanged(value);
-        }
-      } : null,
+      onChanged: enabled
+          ? (value) {
+              if (value != null && !value.startsWith('__header_')) {
+                onValueChanged(value);
+              }
+            }
+          : null,
     );
   }
 }

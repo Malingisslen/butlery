@@ -10,7 +10,8 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "sync-ingredients": "npx ts-node src/admin/sync-ingredients.ts",
-    "sync-ingredients:dry-run": "npx ts-node src/admin/sync-ingredients.ts --dry-run --verbose"
+    "sync-ingredients:dry-run": "npx ts-node src/admin/sync-ingredients.ts --dry-run --verbose",
+    "test:parity": "npx ts-node src/__tests__/normalization-parity.test.ts"
   },
   "engines": {
     "node": "20"

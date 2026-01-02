@@ -21,7 +21,7 @@ void main() {
       title: 'Pannkakor',
       description: 'Klassiska svenska pannkakor',
       mealType: 'Frukost',
-      tags: ['Vegetarisk', 'Snabb', 'Barnvänlig'],
+      personalTagIds: ['Vegetarisk', 'Snabb', 'Barnvänlig'],
       type: RecipeType.personal,
       rating: 4.5,
       lastCookedAt: DateTime.now().subtract(const Duration(days: 2)),
@@ -34,7 +34,7 @@ void main() {
       title: 'Köttbullar',
       description: 'Mormors köttbullar med brunsås',
       mealType: 'Middag',
-      tags: ['Traditionell', 'Kött'],
+      personalTagIds: ['Traditionell', 'Kött'],
       type: RecipeType.personal,
       rating: 5.0,
       lastCookedAt: DateTime.now().subtract(const Duration(days: 5)),
@@ -50,7 +50,7 @@ void main() {
       title: 'Tacos',
       description: 'Fredagstacos med allt gott',
       mealType: 'Middag',
-      tags: ['Mexikansk', 'Familj'],
+      personalTagIds: ['Mexikansk', 'Familj'],
       type: RecipeType.collaborative,
       rating: 4.0,
       createdAt:
@@ -74,7 +74,7 @@ void main() {
       title: 'Sallad',
       description: 'Fräsch grönsallad',
       mealType: 'Lunch',
-      tags: ['Vegetarisk', 'Hälsosam', 'Snabb'],
+      personalTagIds: ['Vegetarisk', 'Hälsosam', 'Snabb'],
       type: RecipeType.collaborative,
       rating: 3.5,
       createdAt:
@@ -98,7 +98,7 @@ void main() {
       title: 'Pasta Carbonara',
       description: 'Krämig italiensk pasta',
       mealType: 'Middag',
-      tags: ['Italiensk', 'Pasta'],
+      personalTagIds: ['Italiensk', 'Pasta'],
       type: RecipeType.personal,
       rating: 4.8,
       lastCookedAt: DateTime.now().subtract(const Duration(days: 1)),
@@ -202,7 +202,9 @@ void main() {
       test('should get recipes by tag', () {
         final vegetarisk = viewModel.getRecipesByTag('Vegetarisk');
         expect(vegetarisk.length, equals(2));
-        expect(vegetarisk.every((r) => r.tags?.contains('Vegetarisk') ?? false),
+        expect(
+            vegetarisk.every(
+                (r) => r.personalTagIds?.contains('Vegetarisk') ?? false),
             isTrue);
       });
 
@@ -292,7 +294,9 @@ void main() {
         viewModel.setTagFilter('Vegetarisk');
         final filtered = viewModel.filteredRecipes;
         expect(filtered.length, equals(2));
-        expect(filtered.every((r) => r.tags?.contains('Vegetarisk') ?? false),
+        expect(
+            filtered.every(
+                (r) => r.personalTagIds?.contains('Vegetarisk') ?? false),
             isTrue);
       });
 
@@ -563,7 +567,7 @@ void main() {
       test('should handle recipes without tags', () {
         final recipeNoTags = RecipeFactory.build(
           title: 'No Tags',
-          tags: [], // Use empty list instead of null to avoid default tags
+          personalTagIds: [], // Use empty list instead of null to avoid default tags
         );
         mockRecipeService.setRecipeState(recipes: [recipeNoTags]);
 

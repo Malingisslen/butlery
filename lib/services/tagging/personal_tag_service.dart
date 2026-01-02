@@ -1,33 +1,40 @@
+import 'dart:async';
+
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
+import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_personal_tag_rule_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
+import 'package:rxdart/rxdart.dart';
 
-/// Service for managing user-defined personal tags and automation rules.
+/// Service for managing user-defined personal tags, groups, and automation rules.
 ///
 /// Provides:
-/// - CRUD operations for PersonalTag and PersonalTagRule
+/// - CRUD operations for PersonalTag, PersonalTagGroup, and embedded rules
 /// - Rule evaluation engine for automatic tag application
 /// - Real-time streams for UI updates
+///
+/// Rules are now embedded within PersonalTag documents rather than stored
+/// in a separate collection.
 class PersonalTagService extends BaseService {
   final FirebasePersonalTagRepository _tagRepository;
-  final FirebasePersonalTagRuleRepository _ruleRepository;
+  final FirebasePersonalTagGroupRepository _groupRepository;
   final IngredientLookupService _lookupService;
 
   static const String _tagsCacheKey = 'personal_tags';
-  static const String _rulesCacheKey = 'personal_rules';
+  static const String _groupsCacheKey = 'personal_groups';
 
   PersonalTagService({
     required FirebasePersonalTagRepository tagRepository,
-    required FirebasePersonalTagRuleRepository ruleRepository,
+    required FirebasePersonalTagGroupRepository groupRepository,
     required IngredientLookupService lookupService,
   })  : _tagRepository = tagRepository,
-        _ruleRepository = ruleRepository,
+        _groupRepository = groupRepository,
         _lookupService = lookupService;
 
   @override
@@ -48,6 +55,14 @@ class PersonalTagService extends BaseService {
 
         if (await _tagRepository.nameExists(tag.name)) {
           throw ArgumentError('En tagg med namnet "${tag.name}" finns redan');
+        }
+
+        // Validate groupId exists if specified
+        if (tag.groupId != null) {
+          final group = await _groupRepository.read(tag.groupId!);
+          if (group == null) {
+            throw ArgumentError('Gruppen finns inte');
+          }
         }
 
         await _tagRepository.create(tag);
@@ -92,6 +107,14 @@ class PersonalTagService extends BaseService {
           throw ArgumentError('En tagg med namnet "${tag.name}" finns redan');
         }
 
+        // Validate groupId exists if specified
+        if (tag.groupId != null) {
+          final group = await _groupRepository.read(tag.groupId!);
+          if (group == null) {
+            throw ArgumentError('Gruppen finns inte');
+          }
+        }
+
         final updated = tag.copyWith(updatedAt: DateTime.now());
         await _tagRepository.update(updated);
         clearCache(_tagsCacheKey);
@@ -102,16 +125,14 @@ class PersonalTagService extends BaseService {
     );
   }
 
-  /// Deletes a personal tag and all associated rules.
+  /// Deletes a personal tag.
+  /// Embedded rules are automatically deleted with the tag document.
   Future<void> deleteTag(String tagId) async {
     await executeServiceOperation(
       () async {
-        // Cascade delete: remove all rules for this tag first
-        await _ruleRepository.deleteRulesForTag(tagId);
         await _tagRepository.delete(tagId);
         clearCache(_tagsCacheKey);
-        clearCache(_rulesCacheKey);
-        AppLogger.info('Deleted personal tag and associated rules: $tagId');
+        AppLogger.info('Deleted personal tag: $tagId');
       },
       operationName: 'Delete personal tag',
       requiresAuth: true,
@@ -133,11 +154,11 @@ class PersonalTagService extends BaseService {
         false;
   }
 
-  /// Gets the next available sort order value.
-  Future<int> getNextSortOrder() async {
+  /// Gets the next available sort order value for tags.
+  Future<int> getNextTagSortOrder() async {
     return await executeServiceOperation(
           () => _tagRepository.getNextSortOrder(),
-          operationName: 'Get next sort order',
+          operationName: 'Get next tag sort order',
           requiresAuth: true,
         ) ??
         0;
@@ -156,102 +177,271 @@ class PersonalTagService extends BaseService {
     );
   }
 
-  // ============================================================
-  // RULE CRUD OPERATIONS
-  // ============================================================
-
-  /// Creates a new personal tag rule.
-  Future<PersonalTagRule?> createRule(PersonalTagRule rule) async {
-    return await executeServiceOperation(
+  /// Moves a tag to a different group.
+  Future<void> moveTagToGroup(String tagId, String? groupId) async {
+    await executeServiceOperation(
       () async {
-        final validation = PersonalTagRule.validate(rule);
-        if (validation != null) {
-          throw ArgumentError(validation);
+        // Validate groupId exists if specified
+        if (groupId != null) {
+          final group = await _groupRepository.read(groupId);
+          if (group == null) {
+            throw ArgumentError('Gruppen finns inte');
+          }
         }
 
-        // Verify tag exists
-        final tag = await _tagRepository.read(rule.tagId);
-        if (tag == null) {
-          throw ArgumentError('Taggen för regeln finns inte');
-        }
-
-        await _ruleRepository.create(rule);
-        clearCache(_rulesCacheKey);
-        AppLogger.info('Created personal tag rule: ${rule.name}');
-        return rule;
+        await _tagRepository.moveToGroup(tagId, groupId);
+        clearCache(_tagsCacheKey);
+        AppLogger.info('Moved tag $tagId to group ${groupId ?? "ungrouped"}');
       },
-      operationName: 'Create personal tag rule',
+      operationName: 'Move tag to group',
       requiresAuth: true,
     );
   }
 
-  /// Gets a personal tag rule by ID.
-  Future<PersonalTagRule?> getRule(String ruleId) async {
-    return await executeServiceOperation<PersonalTagRule?>(
-      () async => await _ruleRepository.read(ruleId),
-      operationName: 'Get personal tag rule',
-      requiresAuth: true,
-    );
-  }
-
-  /// Gets all rules for a specific tag.
-  Future<List<PersonalTagRule>> getRulesForTag(String tagId) async {
+  /// Gets tags by group ID (or ungrouped if null).
+  Future<List<PersonalTag>> getTagsByGroup(String? groupId) async {
     return await executeServiceOperation(
-          () => _ruleRepository.getRulesForTag(tagId),
-          operationName: 'Get rules for tag',
+          () => _tagRepository.getByGroupId(groupId),
+          operationName: 'Get tags by group',
           requiresAuth: true,
         ) ??
         [];
   }
 
-  /// Gets all enabled rules.
-  Future<List<PersonalTagRule>> getEnabledRules() async {
+  /// Watches tags by group ID (or ungrouped if null).
+  Stream<List<PersonalTag>> watchTagsByGroup(String? groupId) {
+    return _tagRepository.watchByGroupId(groupId);
+  }
+
+  // ============================================================
+  // GROUP CRUD OPERATIONS
+  // ============================================================
+
+  /// Creates a new personal tag group.
+  Future<PersonalTagGroup?> createGroup(PersonalTagGroup group) async {
+    return await executeServiceOperation(
+      () async {
+        final nameValidation = PersonalTagGroup.validateName(group.name);
+        if (nameValidation != null) {
+          throw ArgumentError(nameValidation);
+        }
+
+        if (await _groupRepository.nameExists(group.name)) {
+          throw ArgumentError(
+            'En grupp med namnet "${group.name}" finns redan',
+          );
+        }
+
+        await _groupRepository.create(group);
+        clearCache(_groupsCacheKey);
+        AppLogger.info('Created personal tag group: ${group.name}');
+        return group;
+      },
+      operationName: 'Create personal tag group',
+      requiresAuth: true,
+    );
+  }
+
+  /// Gets a personal tag group by ID.
+  Future<PersonalTagGroup?> getGroup(String groupId) async {
+    return await executeServiceOperation<PersonalTagGroup?>(
+      () async => await _groupRepository.read(groupId),
+      operationName: 'Get personal tag group',
+      requiresAuth: true,
+    );
+  }
+
+  /// Gets all personal tag groups sorted by sortOrder.
+  Future<List<PersonalTagGroup>> getAllGroups() async {
     return await getCachedOrExecute(
-          _rulesCacheKey,
-          () => _ruleRepository.getEnabledRules(),
+          _groupsCacheKey,
+          () => _groupRepository.getAllSorted(),
           cacheDuration: const Duration(minutes: 5),
         ) ??
         [];
   }
 
-  /// Updates a personal tag rule.
-  Future<void> updateRule(PersonalTagRule rule) async {
+  /// Updates a personal tag group.
+  Future<void> updateGroup(PersonalTagGroup group) async {
     await executeServiceOperation(
       () async {
-        final validation = PersonalTagRule.validate(rule);
+        final nameValidation = PersonalTagGroup.validateName(group.name);
+        if (nameValidation != null) {
+          throw ArgumentError(nameValidation);
+        }
+
+        if (await _groupRepository.nameExists(group.name,
+            excludeId: group.id)) {
+          throw ArgumentError(
+            'En grupp med namnet "${group.name}" finns redan',
+          );
+        }
+
+        final updated = group.copyWith(updatedAt: DateTime.now());
+        await _groupRepository.update(updated);
+        clearCache(_groupsCacheKey);
+        AppLogger.info('Updated personal tag group: ${group.name}');
+      },
+      operationName: 'Update personal tag group',
+      requiresAuth: true,
+    );
+  }
+
+  /// Deletes a personal tag group.
+  /// Tags in this group will have their groupId cleared (become ungrouped).
+  Future<void> deleteGroup(String groupId) async {
+    await executeServiceOperation(
+      () async {
+        // Clear groupId from all tags in this group
+        final clearedCount = await _tagRepository.clearGroupFromTags(groupId);
+        if (clearedCount > 0) {
+          AppLogger.info('Cleared group from $clearedCount tags');
+        }
+
+        await _groupRepository.delete(groupId);
+        clearCache(_groupsCacheKey);
+        clearCache(_tagsCacheKey); // Tags were modified
+        AppLogger.info('Deleted personal tag group: $groupId');
+      },
+      operationName: 'Delete personal tag group',
+      requiresAuth: true,
+    );
+  }
+
+  /// Watches all personal tag groups with real-time updates.
+  Stream<List<PersonalTagGroup>> watchGroups() {
+    return _groupRepository.watchAllSorted();
+  }
+
+  /// Gets the next available sort order value for groups.
+  Future<int> getNextGroupSortOrder() async {
+    return await executeServiceOperation(
+          () => _groupRepository.getNextSortOrder(),
+          operationName: 'Get next group sort order',
+          requiresAuth: true,
+        ) ??
+        0;
+  }
+
+  /// Reorders groups by updating their sortOrder values.
+  Future<void> reorderGroups(List<String> groupIds) async {
+    await executeServiceOperation(
+      () async {
+        await _groupRepository.reorder(groupIds);
+        clearCache(_groupsCacheKey);
+        AppLogger.info('Reordered ${groupIds.length} personal tag groups');
+      },
+      operationName: 'Reorder personal tag groups',
+      requiresAuth: true,
+    );
+  }
+
+  // ============================================================
+  // EMBEDDED RULE OPERATIONS
+  // ============================================================
+
+  /// Adds a rule to a tag.
+  Future<void> addRuleToTag(String tagId, PersonalTagRule rule) async {
+    await executeServiceOperation(
+      () async {
+        final validation = PersonalTagRule.validate(rule, requireTagId: false);
         if (validation != null) {
           throw ArgumentError(validation);
         }
 
-        final updated = rule.copyWith(updatedAt: DateTime.now());
-        await _ruleRepository.update(updated);
-        clearCache(_rulesCacheKey);
-        AppLogger.info('Updated personal tag rule: ${rule.name}');
+        final tag = await _tagRepository.read(tagId);
+        if (tag == null) {
+          throw ArgumentError('Taggen finns inte');
+        }
+
+        final updatedRules = [...tag.rules, rule];
+        final updatedTag = tag.copyWith(rules: updatedRules);
+        await _tagRepository.update(updatedTag);
+        clearCache(_tagsCacheKey);
+        AppLogger.info('Added rule "${rule.name}" to tag "${tag.name}"');
       },
-      operationName: 'Update personal tag rule',
+      operationName: 'Add rule to tag',
       requiresAuth: true,
     );
   }
 
-  /// Deletes a personal tag rule.
-  Future<void> deleteRule(String ruleId) async {
+  /// Updates a rule within a tag.
+  Future<void> updateRuleInTag(String tagId, PersonalTagRule rule) async {
     await executeServiceOperation(
       () async {
-        await _ruleRepository.delete(ruleId);
-        clearCache(_rulesCacheKey);
-        AppLogger.info('Deleted personal tag rule: $ruleId');
+        final validation = PersonalTagRule.validate(rule, requireTagId: false);
+        if (validation != null) {
+          throw ArgumentError(validation);
+        }
+
+        final tag = await _tagRepository.read(tagId);
+        if (tag == null) {
+          throw ArgumentError('Taggen finns inte');
+        }
+
+        final ruleIndex = tag.rules.indexWhere((r) => r.id == rule.id);
+        if (ruleIndex == -1) {
+          throw ArgumentError('Regeln finns inte');
+        }
+
+        final updatedRules = [...tag.rules];
+        updatedRules[ruleIndex] = rule.copyWith(updatedAt: DateTime.now());
+        final updatedTag = tag.copyWith(rules: updatedRules);
+        await _tagRepository.update(updatedTag);
+        clearCache(_tagsCacheKey);
+        AppLogger.info('Updated rule "${rule.name}" in tag "${tag.name}"');
       },
-      operationName: 'Delete personal tag rule',
+      operationName: 'Update rule in tag',
       requiresAuth: true,
     );
   }
 
-  /// Enables or disables a rule.
-  Future<void> setRuleEnabled(String ruleId, {required bool enabled}) async {
+  /// Removes a rule from a tag.
+  Future<void> removeRuleFromTag(String tagId, String ruleId) async {
     await executeServiceOperation(
       () async {
-        await _ruleRepository.setEnabled(ruleId, enabled: enabled);
-        clearCache(_rulesCacheKey);
+        final tag = await _tagRepository.read(tagId);
+        if (tag == null) {
+          throw ArgumentError('Taggen finns inte');
+        }
+
+        final updatedRules = tag.rules.where((r) => r.id != ruleId).toList();
+        final updatedTag = tag.copyWith(rules: updatedRules);
+        await _tagRepository.update(updatedTag);
+        clearCache(_tagsCacheKey);
+        AppLogger.info('Removed rule $ruleId from tag "${tag.name}"');
+      },
+      operationName: 'Remove rule from tag',
+      requiresAuth: true,
+    );
+  }
+
+  /// Enables or disables a rule within a tag.
+  Future<void> setRuleEnabled(
+    String tagId,
+    String ruleId, {
+    required bool enabled,
+  }) async {
+    await executeServiceOperation(
+      () async {
+        final tag = await _tagRepository.read(tagId);
+        if (tag == null) {
+          throw ArgumentError('Taggen finns inte');
+        }
+
+        final ruleIndex = tag.rules.indexWhere((r) => r.id == ruleId);
+        if (ruleIndex == -1) {
+          throw ArgumentError('Regeln finns inte');
+        }
+
+        final updatedRules = [...tag.rules];
+        updatedRules[ruleIndex] = updatedRules[ruleIndex].copyWith(
+          isEnabled: enabled,
+          updatedAt: DateTime.now(),
+        );
+        final updatedTag = tag.copyWith(rules: updatedRules);
+        await _tagRepository.update(updatedTag);
+        clearCache(_tagsCacheKey);
         AppLogger.info('Set rule $ruleId enabled: $enabled');
       },
       operationName: 'Set rule enabled',
@@ -259,19 +449,36 @@ class PersonalTagService extends BaseService {
     );
   }
 
+  /// Gets all enabled rules from all tags.
+  Future<List<TagRulePair>> getEnabledRules() async {
+    final tags = await getAllTags();
+    final rules = <TagRulePair>[];
+
+    for (final tag in tags) {
+      for (final rule in tag.rules) {
+        if (rule.isEnabled) {
+          rules.add(TagRulePair(tag, rule));
+        }
+      }
+    }
+
+    return rules;
+  }
+
   /// Watches all enabled rules with real-time updates.
-  Stream<List<PersonalTagRule>> watchEnabledRules() {
-    return _ruleRepository.watchEnabledRules();
-  }
-
-  /// Watches all rules (enabled and disabled) for management UI.
-  Stream<List<PersonalTagRule>> watchAllRules() {
-    return _ruleRepository.watchAllRules();
-  }
-
-  /// Watches rules for a specific tag.
-  Stream<List<PersonalTagRule>> watchRulesForTag(String tagId) {
-    return _ruleRepository.watchRulesForTag(tagId);
+  /// Returns pairs of (tag, rule) for context.
+  Stream<List<TagRulePair>> watchEnabledRules() {
+    return watchTags().map((tags) {
+      final rules = <TagRulePair>[];
+      for (final tag in tags) {
+        for (final rule in tag.rules) {
+          if (rule.isEnabled) {
+            rules.add(TagRulePair(tag, rule));
+          }
+        }
+      }
+      return rules;
+    });
   }
 
   // ============================================================
@@ -285,10 +492,10 @@ class PersonalTagService extends BaseService {
   Future<Set<String>> evaluateRulesForRecipe(Recipe recipe) async {
     final result = await executeServiceOperation(
       () async {
-        final rules = await getEnabledRules();
-        if (rules.isEmpty) return <String>{};
+        final tagRulePairs = await getEnabledRules();
+        if (tagRulePairs.isEmpty) return <String>{};
 
-        return _evaluateRules(recipe, rules);
+        return _evaluateRules(recipe, tagRulePairs);
       },
       operationName: 'Evaluate rules for recipe',
       requiresAuth: true,
@@ -304,13 +511,15 @@ class PersonalTagService extends BaseService {
   ) async {
     final result = await executeServiceOperation(
       () async {
-        final rules = await getEnabledRules();
-        if (rules.isEmpty || recipes.isEmpty) return <String, Set<String>>{};
+        final tagRulePairs = await getEnabledRules();
+        if (tagRulePairs.isEmpty || recipes.isEmpty) {
+          return <String, Set<String>>{};
+        }
 
         final results = <String, Set<String>>{};
 
         for (final recipe in recipes) {
-          final matchingTags = await _evaluateRules(recipe, rules);
+          final matchingTags = await _evaluateRules(recipe, tagRulePairs);
           if (matchingTags.isNotEmpty) {
             results[recipe.id] = matchingTags;
           }
@@ -327,21 +536,21 @@ class PersonalTagService extends BaseService {
   /// Internal method to evaluate rules against a recipe.
   Future<Set<String>> _evaluateRules(
     Recipe recipe,
-    List<PersonalTagRule> rules,
+    List<TagRulePair> tagRulePairs,
   ) async {
     final matchingTagIds = <String>{};
 
     // Check if any rule requires ingredient lookup
-    final requiresLookup = rules.any((r) => r.requiresLookup);
+    final requiresLookup = tagRulePairs.any((p) => p.rule.requiresLookup);
 
     IngredientLookupResult? lookup;
     if (requiresLookup) {
       lookup = await _lookupService.lookupFromRaw(recipe.ingredients);
     }
 
-    for (final rule in rules) {
-      if (rule.evaluate(recipe, lookup)) {
-        matchingTagIds.add(rule.tagId);
+    for (final pair in tagRulePairs) {
+      if (pair.rule.evaluate(recipe, lookup)) {
+        matchingTagIds.add(pair.tag.id);
       }
     }
 
@@ -360,6 +569,109 @@ class PersonalTagService extends BaseService {
   }
 
   // ============================================================
+  // COMBINED STREAMS FOR UI
+  // ============================================================
+
+  /// Watches tags and groups together for hierarchical UI display.
+  /// Returns groups with their tags, plus ungrouped tags.
+  Stream<PersonalTagsWithGroups> watchTagsWithGroups() {
+    return Rx.combineLatest2(
+      watchTags(),
+      watchGroups(),
+      (List<PersonalTag> tags, List<PersonalTagGroup> groups) {
+        final tagsByGroup = <String?, List<PersonalTag>>{};
+
+        // Initialize with null key for ungrouped
+        tagsByGroup[null] = [];
+
+        // Initialize groups
+        for (final group in groups) {
+          tagsByGroup[group.id] = [];
+        }
+
+        // Assign tags to groups
+        for (final tag in tags) {
+          final key = tag.groupId;
+          if (tagsByGroup.containsKey(key)) {
+            tagsByGroup[key]!.add(tag);
+          } else {
+            // Group was deleted but tag still references it
+            tagsByGroup[null]!.add(tag);
+          }
+        }
+
+        return PersonalTagsWithGroups(
+          groups: groups,
+          tagsByGroup: tagsByGroup,
+          ungroupedTags: tagsByGroup[null] ?? [],
+        );
+      },
+    );
+  }
+
+  // ============================================================
+  // ANALYTICS
+  // ============================================================
+
+  /// Gets usage count for each tag based on the provided recipes.
+  ///
+  /// Returns a map of tag ID to the number of recipes that have that tag.
+  /// Tags with zero usage are not included in the result.
+  Map<String, int> getTagUsageCounts(List<Recipe> recipes) {
+    final counts = <String, int>{};
+
+    for (final recipe in recipes) {
+      final tagIds = recipe.personalTagIds ?? [];
+      for (final tagId in tagIds) {
+        counts[tagId] = (counts[tagId] ?? 0) + 1;
+      }
+    }
+
+    return counts;
+  }
+
+  /// Gets tags sorted by usage count (most used first).
+  ///
+  /// If [limit] is provided, returns only the top N tags.
+  Future<List<PersonalTag>> getTagsByUsage(
+    List<Recipe> recipes, {
+    int? limit,
+  }) async {
+    final counts = getTagUsageCounts(recipes);
+    if (counts.isEmpty) return [];
+
+    final tags = await getAllTags();
+
+    // Sort tags by usage count (descending)
+    final sortedTags = tags.toList()
+      ..sort((a, b) {
+        final countA = counts[a.id] ?? 0;
+        final countB = counts[b.id] ?? 0;
+        return countB.compareTo(countA);
+      });
+
+    if (limit != null && limit < sortedTags.length) {
+      return sortedTags.take(limit).toList();
+    }
+
+    return sortedTags;
+  }
+
+  /// Gets multiple tags by their IDs.
+  ///
+  /// Useful for resolving recipe.personalTagIds to full PersonalTag objects.
+  Future<List<PersonalTag>> getTagsByIds(List<String> tagIds) async {
+    if (tagIds.isEmpty) return [];
+
+    return await executeServiceOperation(
+          () => _tagRepository.getByIds(tagIds),
+          operationName: 'Get tags by IDs',
+          requiresAuth: true,
+        ) ??
+        [];
+  }
+
+  // ============================================================
   // LIFECYCLE
   // ============================================================
 
@@ -372,4 +684,35 @@ class PersonalTagService extends BaseService {
   Future<void> onDispose() async {
     clearAllCache();
   }
+}
+
+/// Helper for pairing a tag with one of its rules.
+/// Used when evaluating rules across all tags.
+class TagRulePair {
+  final PersonalTag tag;
+  final PersonalTagRule rule;
+
+  TagRulePair(this.tag, this.rule);
+}
+
+/// Result of watching tags with groups for hierarchical display.
+class PersonalTagsWithGroups {
+  final List<PersonalTagGroup> groups;
+  final Map<String?, List<PersonalTag>> tagsByGroup;
+  final List<PersonalTag> ungroupedTags;
+
+  PersonalTagsWithGroups({
+    required this.groups,
+    required this.tagsByGroup,
+    required this.ungroupedTags,
+  });
+
+  /// Gets tags for a specific group (or ungrouped if null).
+  List<PersonalTag> getTagsForGroup(String? groupId) {
+    return tagsByGroup[groupId] ?? [];
+  }
+
+  /// Gets total tag count.
+  int get totalTagCount =>
+      tagsByGroup.values.fold(0, (sum, tags) => sum + tags.length);
 }

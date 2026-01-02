@@ -151,50 +151,6 @@ void main() {
       });
     });
 
-    group('H20: generatePreview', () {
-      test('calls generatePhase1Only for preview', () async {
-        final recipe = RecipeBuilder()
-            .withTitle('Preview Recipe')
-            .withIngredients(['tomat']).build();
-        final lookupResult = _createTestLookupResult();
-        final phase1Result = _createTestTagResult(tags: {'phase1-tag'});
-
-        when(() => mockLookupService.lookupFromRaw(any(),
-                userId: any(named: 'userId')))
-            .thenAnswer((_) async => lookupResult);
-        when(() => mockTagGenerator.generatePhase1Only(
-              ingredients: any(named: 'ingredients'),
-              recipe: any(named: 'recipe'),
-            )).thenReturn(phase1Result);
-
-        final result = await service.generatePreview(recipe);
-
-        expect(result, isNotNull);
-        expect(result!.tags, contains('phase1-tag'));
-        verify(() => mockTagGenerator.generatePhase1Only(
-              ingredients: any(named: 'ingredients'),
-              recipe: any(named: 'recipe'),
-            )).called(1);
-        // Full generate should NOT be called for preview
-        verifyNever(() => mockTagGenerator.generate(
-              ingredients: any(named: 'ingredients'),
-              recipe: any(named: 'recipe'),
-              timeout: any(named: 'timeout'),
-            ));
-      });
-
-      test('returns empty result for empty ingredients', () async {
-        final recipe = RecipeBuilder()
-            .withTitle('Empty Preview')
-            .withIngredients([]).build();
-
-        final result = await service.generatePreview(recipe);
-
-        expect(result, isNotNull);
-        expect(result!.tags, isEmpty);
-      });
-    });
-
     group('H20: lookupIngredients', () {
       test('delegates to lookupService', () async {
         final lookupResult = _createTestLookupResult();
