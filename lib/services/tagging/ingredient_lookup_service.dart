@@ -190,9 +190,13 @@ class IngredientLookupService extends BaseService {
     }
 
     // CRIT-4: Evict least-recently-used entries atomically
+    // CRIT-6: Check if key exists in cache before removing to handle edge cases
+    // where _lruOrder and _lookupCache could become desynchronized
     while (_lookupCache.length >= _cacheMaxSize && _lruOrder.isNotEmpty) {
       final lruKey = _lruOrder.removeAt(0); // Oldest = least recently used
-      _lookupCache.remove(lruKey);
+      if (_lookupCache.containsKey(lruKey)) {
+        _lookupCache.remove(lruKey);
+      }
     }
 
     // Add to cache and LRU order

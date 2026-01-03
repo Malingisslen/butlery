@@ -580,28 +580,37 @@ void main() {
         expect(result.coverage, lessThanOrEqualTo(1.0));
       });
 
-      // CRIT-2: Coverage validation in constructor (not just fromFirestore)
-      test('CRIT-2: constructor clamps out-of-range coverage values', () {
-        // Coverage > 1.0 should be clamped to 1.0
-        final overResult = TagResult(
-          tags: {},
-          allergenStatus: {},
-          dietaryStatus: {},
-          coverage: 1.5,
-          generatedAt: DateTime.now(),
+      // CRIT-2: Coverage validation now asserts in debug mode (throws AssertionError)
+      // In release mode it would clamp, but tests run in debug mode.
+      test('CRIT-2: constructor throws assertion for coverage > 1.0 in debug',
+          () {
+        expect(
+          () => TagResult(
+            tags: {},
+            allergenStatus: {},
+            dietaryStatus: {},
+            coverage: 1.5,
+            generatedAt: DateTime.now(),
+          ),
+          throwsA(isA<AssertionError>()),
         );
-        expect(overResult.coverage, 1.0);
+      });
 
-        // Coverage < 0.0 should be clamped to 0.0
-        final underResult = TagResult(
-          tags: {},
-          allergenStatus: {},
-          dietaryStatus: {},
-          coverage: -0.5,
-          generatedAt: DateTime.now(),
+      test('CRIT-2: constructor throws assertion for coverage < 0.0 in debug',
+          () {
+        expect(
+          () => TagResult(
+            tags: {},
+            allergenStatus: {},
+            dietaryStatus: {},
+            coverage: -0.5,
+            generatedAt: DateTime.now(),
+          ),
+          throwsA(isA<AssertionError>()),
         );
-        expect(underResult.coverage, 0.0);
+      });
 
+      test('CRIT-2: valid coverage values are preserved', () {
         // Valid coverage should remain unchanged
         final validResult = TagResult(
           tags: {},
@@ -611,6 +620,25 @@ void main() {
           generatedAt: DateTime.now(),
         );
         expect(validResult.coverage, 0.75);
+
+        // Edge cases at bounds
+        final zeroResult = TagResult(
+          tags: {},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 0.0,
+          generatedAt: DateTime.now(),
+        );
+        expect(zeroResult.coverage, 0.0);
+
+        final oneResult = TagResult(
+          tags: {},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 1.0,
+          generatedAt: DateTime.now(),
+        );
+        expect(oneResult.coverage, 1.0);
       });
 
       test('handles tags as non-list type', () {

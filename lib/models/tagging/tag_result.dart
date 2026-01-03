@@ -81,13 +81,27 @@ class TagResult {
     this.errorReason,
   }) : coverage = _validateAndClampCoverage(coverage);
 
-  /// CRIT-2: Validates coverage and logs warning if out of range.
-  /// Always clamps to [0.0, 1.0] for safety, but makes issues visible.
+  /// CRIT-2: Validates coverage and fails fast on invalid values.
+  ///
+  /// In debug: Assertion failure to catch generator bugs during development.
+  /// In release: Logs error and clamps to [0.0, 1.0] for safety.
+  ///
+  /// Invalid coverage values indicate bugs in the tag generator that need
+  /// immediate attention - they can lead to incorrect allergen/dietary claims.
   static double _validateAndClampCoverage(double value) {
     if (value < 0.0 || value > 1.0) {
-      AppLogger.warning(
+      // CRIT-2: Fail fast in debug mode to catch generator bugs immediately
+      assert(
+        false,
+        'CRIT-2: Coverage out of range: $value (expected 0.0-1.0). '
+        'This indicates a bug in the tag generator that must be fixed.',
+      );
+
+      // In release: log error (not warning) and clamp for safety
+      AppLogger.error(
         'CRIT-2: Coverage out of range: $value (expected 0.0-1.0), clamping. '
-            'This indicates a bug in the tag generator.',
+            'This indicates a bug in the tag generator. '
+            'Stack trace: ${StackTrace.current}',
         'TagResult',
       );
       return value.clamp(0.0, 1.0);

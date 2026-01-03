@@ -135,4 +135,13 @@ class FirebasePersonalTagGroupRepository
   Future<void> delete(String id) async {
     await super.delete(id);
   }
+
+  /// #7: Adds delete operation to an external batch without committing.
+  ///
+  /// Use this for atomic group deletion with cascade.
+  void addDeleteToBatch(WriteBatch batch, String groupId) {
+    requireCurrentUserId();
+    final ref = getCollectionRef();
+    batch.delete(ref.doc(groupId));
+  }
 }
