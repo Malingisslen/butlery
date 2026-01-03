@@ -446,7 +446,8 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   /// Loads usage statistics for all tags.
   ///
-  /// Queries the recipe repository to count how many recipes use each tag.
+  /// #8: Optimized to use single query + local aggregation.
+  /// Previously O(n) sequential queries, now O(1) query + O(recipes × tags) aggregation.
   Future<void> loadTagStatistics() async {
     if (_tags.isEmpty) return;
 
@@ -455,16 +456,35 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
     try {
       final recipeRepo = ServiceLocator.get<FirebaseRecipeRepository>();
-      final counts = <String, int>{};
 
-      // Query count for each tag name
+      // #8: Single query to fetch all recipes
+      final recipes = await _getAllUserRecipes(recipeRepo);
+
+      // Build tag lookup map (ID -> name) for efficient mapping
+      final tagIdToName = <String, String>{};
       for (final tag in _tags) {
-        final count = await recipeRepo.countRecipesWithPersonalTag(tag.name);
-        counts[tag.name] = count;
+        tagIdToName[tag.id] = tag.name;
       }
 
-      _tagUsageCounts = counts;
-      AppLogger.info('Loaded usage stats for ${_tags.length} tags');
+      // #8: Local aggregation - O(recipes × avgTagsPerRecipe)
+      final idCounts = <String, int>{};
+      for (final recipe in recipes) {
+        final tagIds = recipe.personalTagIds ?? [];
+        for (final tagId in tagIds) {
+          idCounts[tagId] = (idCounts[tagId] ?? 0) + 1;
+        }
+      }
+
+      // Map tag IDs to names for display
+      final nameCounts = <String, int>{};
+      for (final tag in _tags) {
+        nameCounts[tag.name] = idCounts[tag.id] ?? 0;
+      }
+
+      _tagUsageCounts = nameCounts;
+      AppLogger.info(
+        '#8: Loaded usage stats for ${_tags.length} tags from ${recipes.length} recipes',
+      );
     } catch (e, stack) {
       AppLogger.error('Failed to load tag statistics', stack);
     } finally {

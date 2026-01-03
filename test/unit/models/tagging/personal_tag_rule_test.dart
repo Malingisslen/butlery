@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
@@ -978,6 +979,269 @@ void main() {
         expect(ConditionOperator.lessThan.label, 'mindre än');
         expect(ConditionOperator.greaterThanOrEqual.label, 'minst');
         expect(ConditionOperator.withinDays.label, 'inom dagar');
+      });
+    });
+
+    // #10: Tests for previously untested condition types
+    group('ownership condition', () {
+      test('matches "mine" when currentUserId matches recipe owner', () {
+        final condition = RuleCondition(
+          type: ConditionType.ownership,
+          value: 'mine',
+          operator: ConditionOperator.equals,
+        );
+
+        final recipe = RecipeBuilder().withCreatedBy('user-123').build();
+
+        // Should match when currentUserId equals createdBy
+        expect(
+          condition.evaluate(recipe, null, currentUserId: 'user-123'),
+          isTrue,
+        );
+      });
+
+      test('does not match "mine" when currentUserId differs', () {
+        final condition = RuleCondition(
+          type: ConditionType.ownership,
+          value: 'mine',
+          operator: ConditionOperator.equals,
+        );
+
+        final recipe = RecipeBuilder().withCreatedBy('user-123').build();
+
+        // Should not match when currentUserId differs
+        expect(
+          condition.evaluate(recipe, null, currentUserId: 'other-user'),
+          isFalse,
+        );
+      });
+
+      test('matches "collaborative" for collaborative recipes', () {
+        final condition = RuleCondition(
+          type: ConditionType.ownership,
+          value: 'collaborative',
+          operator: ConditionOperator.equals,
+        );
+
+        final recipe =
+            RecipeBuilder().withType(RecipeType.collaborative).build();
+
+        expect(
+          condition.evaluate(recipe, null, currentUserId: 'other-user'),
+          isTrue,
+        );
+      });
+
+      test('matches "shared" for non-owned, non-collaborative recipes', () {
+        final condition = RuleCondition(
+          type: ConditionType.ownership,
+          value: 'shared',
+          operator: ConditionOperator.equals,
+        );
+
+        final recipe = RecipeBuilder()
+            .withCreatedBy('owner-123')
+            .withType(RecipeType.personal)
+            .build();
+
+        // Personal recipe not owned by current user = shared
+        expect(
+          condition.evaluate(recipe, null, currentUserId: 'viewer-456'),
+          isTrue,
+        );
+      });
+
+      test('notEquals operator works correctly', () {
+        final condition = RuleCondition(
+          type: ConditionType.ownership,
+          value: 'mine',
+          operator: ConditionOperator.notEquals,
+        );
+
+        final recipe = RecipeBuilder().withCreatedBy('owner-123').build();
+
+        // Should match when ownership is NOT mine
+        expect(
+          condition.evaluate(recipe, null, currentUserId: 'other-user'),
+          isTrue,
+        );
+      });
+    });
+
+    group('hasImage condition', () {
+      test('matches true when recipe has images', () {
+        final condition = RuleCondition(
+          type: ConditionType.hasImage,
+          value: 'true',
+          operator: ConditionOperator.equals,
+        );
+
+        final recipe = RecipeBuilder()
+            .withImageUrls(['https://example.com/image.jpg']).build();
+
+        expect(condition.evaluate(recipe, null), isTrue);
+      });
+
+      test('matches false when recipe has no images', () {
+        final condition = RuleCondition(
+          type: ConditionType.hasImage,
+          value: 'false',
+          operator: ConditionOperator.equals,
+        );
+
+        final recipe = RecipeBuilder().withImageUrls([]).build();
+
+        expect(condition.evaluate(recipe, null), isTrue);
+      });
+
+      test('does not match true when recipe has no images', () {
+        final condition = RuleCondition(
+          type: ConditionType.hasImage,
+          value: 'true',
+          operator: ConditionOperator.equals,
+        );
+
+        final recipe = RecipeBuilder().withImageUrls([]).build();
+
+        expect(condition.evaluate(recipe, null), isFalse);
+      });
+
+      test('notEquals operator works correctly', () {
+        final condition = RuleCondition(
+          type: ConditionType.hasImage,
+          value: 'true',
+          operator: ConditionOperator.notEquals,
+        );
+
+        final recipe = RecipeBuilder().withImageUrls([]).build();
+
+        // hasImage is false, so notEquals 'true' should be true
+        expect(condition.evaluate(recipe, null), isTrue);
+      });
+
+      test('isBoolean returns true for hasImage', () {
+        expect(ConditionType.hasImage.isBoolean, isTrue);
+        expect(ConditionType.ingredient.isBoolean, isFalse);
+        expect(ConditionType.time.isBoolean, isFalse);
+      });
+    });
+
+    group('completeness condition', () {
+      test('matches "missing_image" when recipe has no images', () {
+        final condition = RuleCondition(
+          type: ConditionType.completeness,
+          value: 'missing_image',
+          operator: ConditionOperator.equals,
+        );
+
+        final recipe = RecipeBuilder()
+            .withImageUrls([])
+            .withDescription('Has description')
+            .build();
+
+        expect(condition.evaluate(recipe, null), isTrue);
+      });
+
+      test('matches "missing_description" when recipe has no description', () {
+        final condition = RuleCondition(
+          type: ConditionType.completeness,
+          value: 'missing_description',
+          operator: ConditionOperator.equals,
+        );
+
+        final recipe = RecipeBuilder()
+            .withImageUrls(['https://example.com/image.jpg'])
+            .withDescription('')
+            .build();
+
+        expect(condition.evaluate(recipe, null), isTrue);
+      });
+
+      test('matches "incomplete" when missing image OR description', () {
+        final condition = RuleCondition(
+          type: ConditionType.completeness,
+          value: 'incomplete',
+          operator: ConditionOperator.equals,
+        );
+
+        // Missing image
+        final missingImage = RecipeBuilder()
+            .withImageUrls([])
+            .withDescription('Has description')
+            .build();
+
+        // Missing description
+        final missingDesc = RecipeBuilder()
+            .withImageUrls(['https://example.com/image.jpg'])
+            .withDescription('')
+            .build();
+
+        // Missing both
+        final missingBoth =
+            RecipeBuilder().withImageUrls([]).withDescription('').build();
+
+        expect(condition.evaluate(missingImage, null), isTrue);
+        expect(condition.evaluate(missingDesc, null), isTrue);
+        expect(condition.evaluate(missingBoth, null), isTrue);
+      });
+
+      test('matches "complete" when recipe has image AND description', () {
+        final condition = RuleCondition(
+          type: ConditionType.completeness,
+          value: 'complete',
+          operator: ConditionOperator.equals,
+        );
+
+        final completeRecipe = RecipeBuilder()
+            .withImageUrls(['https://example.com/image.jpg'])
+            .withDescription('A complete recipe description')
+            .build();
+
+        expect(condition.evaluate(completeRecipe, null), isTrue);
+      });
+
+      test('does not match "complete" when missing image', () {
+        final condition = RuleCondition(
+          type: ConditionType.completeness,
+          value: 'complete',
+          operator: ConditionOperator.equals,
+        );
+
+        final incompleteRecipe = RecipeBuilder()
+            .withImageUrls([])
+            .withDescription('Has description')
+            .build();
+
+        expect(condition.evaluate(incompleteRecipe, null), isFalse);
+      });
+
+      test('does not match "complete" when missing description', () {
+        final condition = RuleCondition(
+          type: ConditionType.completeness,
+          value: 'complete',
+          operator: ConditionOperator.equals,
+        );
+
+        final incompleteRecipe = RecipeBuilder()
+            .withImageUrls(['https://example.com/image.jpg'])
+            .withDescription('')
+            .build();
+
+        expect(condition.evaluate(incompleteRecipe, null), isFalse);
+      });
+
+      test('notEquals operator works correctly', () {
+        final condition = RuleCondition(
+          type: ConditionType.completeness,
+          value: 'complete',
+          operator: ConditionOperator.notEquals,
+        );
+
+        final incompleteRecipe =
+            RecipeBuilder().withImageUrls([]).withDescription('').build();
+
+        // Should match because recipe is NOT complete
+        expect(condition.evaluate(incompleteRecipe, null), isTrue);
       });
     });
   });

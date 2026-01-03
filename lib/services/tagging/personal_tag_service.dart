@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
@@ -9,6 +10,7 @@ import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -289,16 +291,30 @@ class PersonalTagService extends BaseService {
 
   /// Deletes a personal tag group.
   /// Tags in this group will have their groupId cleared (become ungrouped).
+  ///
+  /// #7: Uses atomic batch operation to ensure data consistency.
+  /// Both tag updates and group deletion happen in a single transaction.
   Future<void> deleteGroup(String groupId) async {
     await executeServiceOperation(
       () async {
-        // Clear groupId from all tags in this group
-        final clearedCount = await _tagRepository.clearGroupFromTags(groupId);
+        // #7: Create single batch for atomic operation
+        final batch = _tagRepository.newWriteBatch();
+
+        // Add tag updates to batch (clears groupId from all tags in group)
+        final clearedCount =
+            await _tagRepository.addClearGroupToBatch(batch, groupId);
+
+        // Add group deletion to same batch
+        _groupRepository.addDeleteToBatch(batch, groupId);
+
+        // Commit atomically - either all succeed or all fail
+        await batch.commit();
+
         if (clearedCount > 0) {
-          AppLogger.info('Cleared group from $clearedCount tags');
+          AppLogger.info(
+              '#7: Atomically cleared group from $clearedCount tags');
         }
 
-        await _groupRepository.delete(groupId);
         clearCache(_groupsCacheKey);
         clearCache(_tagsCacheKey); // Tags were modified
         AppLogger.info('Deleted personal tag group: $groupId');
@@ -488,14 +504,21 @@ class PersonalTagService extends BaseService {
   /// Evaluates all enabled rules against a recipe.
   ///
   /// Returns the set of tag IDs that should be applied to the recipe
-  /// based on matching rules.
+  /// based on matching rules. Respects exclusive group constraints -
+  /// only one tag from each exclusive group will be included.
   Future<Set<String>> evaluateRulesForRecipe(Recipe recipe) async {
     final result = await executeServiceOperation(
       () async {
         final tagRulePairs = await getEnabledRules();
         if (tagRulePairs.isEmpty) return <String>{};
 
-        return _evaluateRules(recipe, tagRulePairs);
+        // CRIT-5: Pass userId to enable user-defined ingredient matching
+        final userId = _getCurrentUserId();
+        final matchingTags =
+            await _evaluateRules(recipe, tagRulePairs, userId: userId);
+
+        // #6: Enforce exclusive group constraints
+        return _enforceExclusiveGroups(matchingTags);
       },
       operationName: 'Evaluate rules for recipe',
       requiresAuth: true,
@@ -506,6 +529,7 @@ class PersonalTagService extends BaseService {
   /// Evaluates rules against multiple recipes.
   ///
   /// Returns a map of recipe ID to matching tag IDs.
+  /// Respects exclusive group constraints for each recipe.
   Future<Map<String, Set<String>>> evaluateRulesForRecipes(
     List<Recipe> recipes,
   ) async {
@@ -516,12 +540,22 @@ class PersonalTagService extends BaseService {
           return <String, Set<String>>{};
         }
 
+        // CRIT-5: Pass userId to enable user-defined ingredient matching
+        final userId = _getCurrentUserId();
         final results = <String, Set<String>>{};
 
         for (final recipe in recipes) {
-          final matchingTags = await _evaluateRules(recipe, tagRulePairs);
+          final matchingTags = await _evaluateRules(
+            recipe,
+            tagRulePairs,
+            userId: userId,
+          );
           if (matchingTags.isNotEmpty) {
-            results[recipe.id] = matchingTags;
+            // #6: Enforce exclusive group constraints per recipe
+            final filtered = await _enforceExclusiveGroups(matchingTags);
+            if (filtered.isNotEmpty) {
+              results[recipe.id] = filtered;
+            }
           }
         }
 
@@ -534,10 +568,15 @@ class PersonalTagService extends BaseService {
   }
 
   /// Internal method to evaluate rules against a recipe.
+  ///
+  /// CRIT-5: Accepts userId to enable user-defined ingredient matching.
+  /// Without userId, rules with property conditions won't match user-created
+  /// ingredients that have custom properties.
   Future<Set<String>> _evaluateRules(
     Recipe recipe,
-    List<TagRulePair> tagRulePairs,
-  ) async {
+    List<TagRulePair> tagRulePairs, {
+    String? userId,
+  }) async {
     final matchingTagIds = <String>{};
 
     // Check if any rule requires ingredient lookup
@@ -545,7 +584,11 @@ class PersonalTagService extends BaseService {
 
     IngredientLookupResult? lookup;
     if (requiresLookup) {
-      lookup = await _lookupService.lookupFromRaw(recipe.ingredients);
+      // CRIT-5: Pass userId to find user-defined ingredients with custom properties
+      lookup = await _lookupService.lookupFromRaw(
+        recipe.ingredients,
+        userId: userId,
+      );
     }
 
     for (final pair in tagRulePairs) {
@@ -683,6 +726,84 @@ class PersonalTagService extends BaseService {
   @override
   Future<void> onDispose() async {
     clearAllCache();
+  }
+
+  // ============================================================
+  // PRIVATE HELPERS
+  // ============================================================
+
+  /// CRIT-5: Gets current user ID for ingredient lookup context.
+  /// Used to find user-defined ingredients with custom properties during rule evaluation.
+  String? _getCurrentUserId() {
+    try {
+      final authRepository = ServiceLocator.get<auth.AuthRepository>();
+      return authRepository.currentUserId;
+    } catch (e) {
+      AppLogger.error('Failed to get current user ID: $e');
+      return null;
+    }
+  }
+
+  /// #6: Filters matching tags to respect exclusive group constraints.
+  ///
+  /// When multiple tags from an exclusive group would be applied, only the
+  /// first one (by sort order) is kept. Uses cached data from getAllTags()
+  /// and getAllGroups() to avoid redundant Firestore queries.
+  ///
+  /// Non-exclusive groups and ungrouped tags are always included.
+  Future<Set<String>> _enforceExclusiveGroups(
+      Set<String> matchingTagIds) async {
+    if (matchingTagIds.isEmpty) return matchingTagIds;
+
+    // Get cached data (these use getCachedOrExecute with 5 min cache)
+    final tags = await getAllTags();
+    final groups = await getAllGroups();
+
+    if (tags.isEmpty) return matchingTagIds;
+
+    // Find exclusive group IDs
+    final exclusiveGroupIds =
+        groups.where((g) => g.isExclusive).map((g) => g.id).toSet();
+
+    if (exclusiveGroupIds.isEmpty) return matchingTagIds;
+
+    // Build tag lookup map
+    final tagById = {for (final tag in tags) tag.id: tag};
+
+    final result = <String>{};
+    final seenExclusiveGroups = <String>{};
+    int skippedCount = 0;
+
+    for (final tagId in matchingTagIds) {
+      final tag = tagById[tagId];
+      if (tag == null) {
+        // Tag not found in cache - include it to be safe
+        result.add(tagId);
+        continue;
+      }
+
+      if (tag.groupId != null && exclusiveGroupIds.contains(tag.groupId)) {
+        // Tag is in an exclusive group
+        if (!seenExclusiveGroups.contains(tag.groupId)) {
+          result.add(tagId);
+          seenExclusiveGroups.add(tag.groupId!);
+        } else {
+          // Skip - already have a tag from this exclusive group
+          skippedCount++;
+        }
+      } else {
+        // Non-exclusive or ungrouped - always include
+        result.add(tagId);
+      }
+    }
+
+    if (skippedCount > 0) {
+      AppLogger.debug(
+        '#6: Exclusive group enforcement skipped $skippedCount tag(s)',
+      );
+    }
+
+    return result;
   }
 }
 

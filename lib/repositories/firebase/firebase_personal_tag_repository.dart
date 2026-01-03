@@ -209,4 +209,28 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
     await batch.commit();
     return tagsInGroup.length;
   }
+
+  /// #7: Adds clear-group operations to an external batch without committing.
+  ///
+  /// Use this for atomic group deletion with cascade.
+  /// Returns the number of tags that will be updated.
+  Future<int> addClearGroupToBatch(WriteBatch batch, String groupId) async {
+    requireCurrentUserId();
+    final tagsInGroup = await getByGroupId(groupId);
+
+    if (tagsInGroup.isEmpty) return 0;
+
+    final ref = getCollectionRef();
+    for (final tag in tagsInGroup) {
+      batch.update(ref.doc(tag.id), {
+        'groupId': FieldValue.delete(),
+        'updatedAt': Timestamp.now(),
+      });
+    }
+
+    return tagsInGroup.length;
+  }
+
+  /// #7: Creates a new WriteBatch for atomic cross-repository operations.
+  WriteBatch newWriteBatch() => firestore.batch();
 }
