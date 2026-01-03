@@ -49,6 +49,20 @@ enum RecipeType {
   realtime
 }
 
+/// Status of recipe data integrity verification.
+/// Used to track checksum validation results without persisting to Firestore.
+/// Option A: Track silently for analytics, no user-facing UI.
+enum DataIntegrityStatus {
+  /// Integrity not verified (legacy recipe without checksum).
+  unverified,
+
+  /// Checksum matches computed value.
+  valid,
+
+  /// Checksum mismatch detected - possible data corruption.
+  invalid,
+}
+
 /// Core recipe data model containing common recipe information.
 /// This class represents the fundamental recipe data that is shared across
 /// all recipe types in the unified recipe system. It includes all the basic
@@ -111,12 +125,12 @@ class RecipeCore with JsonSerializableMixin {
   List<String> instructions;
 
   /// User-created personal tags for custom categorization.
-  /// Stores IDs of PersonalTag documents from the user's collection.
+  /// Stores tag NAMES (e.g., 'pasta', 'middag', 'italienskt') for filtering.
   /// Separate from auto-generated tagResult which handles allergens/dietary.
   /// Applied via PersonalTagRuleEngine on save or manual selection.
   ///
-  /// Note: This field stores tag IDs (not names) for referential integrity.
-  /// Tag names are denormalized on read for display.
+  /// Note: Despite the name, this field stores tag NAMES (not IDs).
+  /// The naming is historical; all code consistently uses names for matching.
   List<String>? personalTagIds;
 
   /// User rating for this recipe (0.0 to 5.0).
@@ -195,6 +209,11 @@ class RecipeCore with JsonSerializableMixin {
   /// Null for recipes that have never been manually edited.
   TagOverrides? tagOverrides;
 
+  /// In-memory status of data integrity verification.
+  /// Set during deserialization based on checksum validation.
+  /// Not persisted to Firestore - tracked silently for analytics.
+  DataIntegrityStatus dataIntegrityStatus;
+
   /// Compute SHA256 checksum from critical recipe fields.
   /// Critical fields: id, title, ingredients, instructions.
   /// These fields define the recipe's core content and any corruption
@@ -261,6 +280,7 @@ class RecipeCore with JsonSerializableMixin {
     this.dataChecksum,
     this.tagResult,
     this.tagOverrides,
+    this.dataIntegrityStatus = DataIntegrityStatus.unverified,
   })  : id = id ?? const Uuid().v4(),
         imageUrls = imageUrls ?? [],
         createdAt = createdAt ?? DateTime.now(),
@@ -293,6 +313,7 @@ class RecipeCore with JsonSerializableMixin {
     String? dataChecksum,
     TagResult? tagResult,
     TagOverrides? tagOverrides,
+    DataIntegrityStatus? dataIntegrityStatus,
   }) {
     final newTitle = title ?? this.title;
     final newIngredients = ingredients ?? this.ingredients;
@@ -309,6 +330,11 @@ class RecipeCore with JsonSerializableMixin {
             instructions: newInstructions,
           )
         : (dataChecksum ?? this.dataChecksum);
+
+    // Set status to valid when checksum is recomputed
+    final newIntegrityStatus = needsChecksumUpdate
+        ? DataIntegrityStatus.valid
+        : (dataIntegrityStatus ?? this.dataIntegrityStatus);
 
     return RecipeCore(
       id: id,
@@ -337,6 +363,7 @@ class RecipeCore with JsonSerializableMixin {
       dataChecksum: newChecksum,
       tagResult: tagResult ?? this.tagResult,
       tagOverrides: tagOverrides ?? this.tagOverrides,
+      dataIntegrityStatus: newIntegrityStatus,
     );
   }
 
@@ -423,15 +450,21 @@ class RecipeCore with JsonSerializableMixin {
         List<String>.from((json['instructions'] as List?).orEmpty());
     final storedChecksum = json['dataChecksum'] as String?;
 
-    // Verify data integrity if checksum exists
-    if (storedChecksum != null) {
+    // Compute data integrity status
+    DataIntegrityStatus integrityStatus;
+    if (storedChecksum == null) {
+      integrityStatus = DataIntegrityStatus.unverified;
+    } else {
       final computedChecksum = computeChecksum(
         id: id,
         title: title,
         ingredients: ingredients,
         instructions: instructions,
       );
-      if (computedChecksum != storedChecksum) {
+      if (computedChecksum == storedChecksum) {
+        integrityStatus = DataIntegrityStatus.valid;
+      } else {
+        integrityStatus = DataIntegrityStatus.invalid;
         AppLogger.warning(
           '⚠️ Data integrity check failed for recipe $id: '
           'stored checksum does not match computed checksum',
@@ -475,6 +508,7 @@ class RecipeCore with JsonSerializableMixin {
       dataChecksum: storedChecksum,
       tagResult: _parseTagResult(json['tagResult']),
       tagOverrides: _parseTagOverrides(json['tagOverrides']),
+      dataIntegrityStatus: integrityStatus,
     );
   }
 
@@ -524,15 +558,21 @@ class RecipeCore with JsonSerializableMixin {
     final storedChecksum =
         utils.SerializationUtils.safeNullableString(data, 'dataChecksum');
 
-    // Verify data integrity if checksum exists
-    if (storedChecksum != null) {
+    // Compute data integrity status
+    DataIntegrityStatus integrityStatus;
+    if (storedChecksum == null) {
+      integrityStatus = DataIntegrityStatus.unverified;
+    } else {
       final computedChecksum = computeChecksum(
         id: id,
         title: title,
         ingredients: ingredients,
         instructions: instructions,
       );
-      if (computedChecksum != storedChecksum) {
+      if (computedChecksum == storedChecksum) {
+        integrityStatus = DataIntegrityStatus.valid;
+      } else {
+        integrityStatus = DataIntegrityStatus.invalid;
         AppLogger.warning(
           '⚠️ Data integrity check failed for recipe $id: '
           'stored checksum does not match computed checksum',
@@ -584,6 +624,7 @@ class RecipeCore with JsonSerializableMixin {
       dataChecksum: storedChecksum,
       tagResult: _parseTagResult(data['tagResult']),
       tagOverrides: _parseTagOverrides(data['tagOverrides']),
+      dataIntegrityStatus: integrityStatus,
     );
   }
 

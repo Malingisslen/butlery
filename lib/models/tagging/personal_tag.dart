@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
+import 'package:butlery/services/tagging/config/reserved_tags.dart';
 
 /// A user-defined personal tag for custom recipe categorization.
 ///
@@ -204,6 +205,9 @@ class PersonalTag {
     }
     if (trimmed.contains(',')) {
       return 'Taggnamn får inte innehålla kommatecken';
+    }
+    if (ReservedTags.isReserved(trimmed)) {
+      return 'Detta namn är reserverat för systemtaggar';
     }
     return null;
   }

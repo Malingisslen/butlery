@@ -13,6 +13,7 @@ import 'package:butlery/services/tagging/config/property_registry.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
+import 'package:butlery/services/tagging/tagging_events_tracker.dart';
 
 /// Timeout duration for tag generation operations.
 const Duration _tagGenerationTimeout = Duration(seconds: 30);
@@ -25,6 +26,7 @@ class TaggingService extends BaseService {
   final IngredientLookupService _lookupService;
   final TagGenerator _tagGenerator;
   final UserIngredientRepository? _userIngredientRepository;
+  final TaggingEventsTracker? _eventsTracker;
 
   @override
   String get serviceName => 'TaggingService';
@@ -34,10 +36,12 @@ class TaggingService extends BaseService {
     TagConfigService? tagConfigService,
     TagGenerator? tagGenerator,
     UserIngredientRepository? userIngredientRepository,
+    TaggingEventsTracker? eventsTracker,
   })  : _lookupService = lookupService,
         _tagGenerator = tagGenerator ??
             TagGenerator(firebaseConfig: tagConfigService?.configOrNull),
-        _userIngredientRepository = userIngredientRepository;
+        _userIngredientRepository = userIngredientRepository,
+        _eventsTracker = eventsTracker;
 
   /// Generates tags for a recipe.
   ///
@@ -212,19 +216,16 @@ class TaggingService extends BaseService {
       'status=$status',
     );
 
-    // TODO: Send to Firebase Analytics when ready
-    // FirebaseAnalytics.instance.logEvent(
-    //   name: 'tagging_performance',
-    //   parameters: {
-    //     'total_ms': totalMs,
-    //     'lookup_ms': lookupMs,
-    //     'generate_ms': generateMs ?? 0,
-    //     'ingredient_count': ingredientCount,
-    //     'tag_count': tagCount,
-    //     'coverage_percent': coveragePercent,
-    //     'status': status,
-    //   },
-    // );
+    // Log to analytics if tracker is available
+    _eventsTracker?.logTaggingPerformance(
+      totalMs: totalMs,
+      lookupMs: lookupMs,
+      generateMs: generateMs,
+      ingredientCount: ingredientCount,
+      tagCount: tagCount,
+      coveragePercent: coveragePercent.toDouble(),
+      status: status,
+    );
   }
 
   /// Looks up ingredients without generating tags.

@@ -1,7 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
+import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -361,6 +366,9 @@ class _SimpleTagChip extends StatelessWidget {
 ///
 /// Use this when you don't have access to the PersonalTag list.
 /// Falls back to simple text chips if tags can't be loaded.
+///
+/// **Performance Note**: Uses a shared cache to avoid redundant Firebase queries
+/// when multiple instances are displayed (e.g., in recipe card lists).
 class AutoPersonalTagDisplay extends StatefulWidget {
   /// Tag names to display (from recipe.personalTagIds).
   final List<String> tagNames;
@@ -379,36 +387,71 @@ class AutoPersonalTagDisplay extends StatefulWidget {
 }
 
 class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
-  List<PersonalTag>? _availableTags;
+  /// Shared stream subscription for all AutoPersonalTagDisplay instances.
+  /// Avoids redundant Firebase queries while providing real-time updates.
+  static StreamSubscription<List<PersonalTag>>? _sharedSubscription;
+  static List<PersonalTag> _sharedTags = [];
+  static int _subscriberCount = 0;
+
   bool _loaded = false;
-  PersonalTagViewModel? _viewModel;
 
   @override
   void initState() {
     super.initState();
-    _loadTags();
+    _subscribe();
   }
 
   @override
   void dispose() {
-    _viewModel?.dispose();
+    _unsubscribe();
     super.dispose();
   }
 
-  Future<void> _loadTags() async {
-    try {
-      _viewModel = PersonalTagViewModel();
-      await _viewModel!.initialize();
-      if (mounted) {
-        setState(() {
-          _availableTags = _viewModel!.tags;
-          _loaded = true;
-        });
+  void _subscribe() {
+    _subscriberCount++;
+
+    // If we already have data, mark as loaded immediately
+    if (_sharedTags.isNotEmpty) {
+      _loaded = true;
+    }
+
+    // Start shared subscription if this is the first subscriber
+    if (_sharedSubscription == null) {
+      try {
+        final service = ServiceLocator.get<PersonalTagService>();
+        _sharedSubscription = service.watchTags().listen(
+          (tags) {
+            _sharedTags = tags;
+            // Notify all mounted instances
+            if (mounted) {
+              setState(() => _loaded = true);
+            }
+          },
+          onError: (error) {
+            AppLogger.debug('AutoPersonalTagDisplay: Stream error: $error');
+            if (mounted) {
+              setState(() => _loaded = true);
+            }
+          },
+        );
+      } catch (e) {
+        AppLogger.debug('AutoPersonalTagDisplay: Failed to subscribe: $e');
+        if (mounted) {
+          setState(() => _loaded = true);
+        }
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _loaded = true);
-      }
+    }
+  }
+
+  void _unsubscribe() {
+    _subscriberCount--;
+
+    // Cancel shared subscription when last subscriber disposes
+    if (_subscriberCount <= 0) {
+      _sharedSubscription?.cancel();
+      _sharedSubscription = null;
+      _sharedTags = [];
+      _subscriberCount = 0;
     }
   }
 
@@ -417,14 +460,14 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
     if (widget.tagNames.isEmpty) return const SizedBox.shrink();
 
     // Show simple chips while loading or if load failed
-    if (!_loaded || _availableTags == null) {
+    if (!_loaded || _sharedTags.isEmpty) {
       return _buildSimpleChips();
     }
 
-    // Use full PersonalTagDisplay with loaded tags
+    // Use full PersonalTagDisplay with streamed tags
     return PersonalTagDisplay(
       tagNames: widget.tagNames,
-      availableTags: _availableTags!,
+      availableTags: _sharedTags,
       maxDisplay: widget.maxDisplay,
     );
   }

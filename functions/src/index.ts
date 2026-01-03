@@ -37,6 +37,7 @@ export { sendNotification, sendNotificationBatch } from "./notifications/send-no
 
 // Ingredient Functions - Cascade updates
 export { onIngredientSoftDeleted } from "./ingredients/on-ingredient-soft-deleted";
+export { onIngredientPropertiesChanged } from "./ingredients/on-ingredient-properties-changed";
 
 // Ingredient Suggestion Functions - User-submitted suggestions
 export { onSuggestionCreated, onSuggestionStatusChanged } from "./ingredients/on-suggestion-created";
