@@ -1,6 +1,7 @@
 // lib/services/unified/modules/personal_recipe_module.dart
 
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
@@ -46,8 +47,16 @@ class PersonalRecipeModule {
   final PersonalTagService? _personalTagService;
   final RateLimiter _rateLimiter = RateLimiter();
 
+  /// CRIT-7: Callback for notifying UI when tagging fails.
+  /// Passes the recipe title so the UI can display a user-friendly message.
+  final void Function(String recipeTitle)? _onTaggingFailed;
+
   /// HIGH-10: Tracks sync status for each recipe by ID.
   final Map<String, RecipeSyncStatus> _syncStatus = {};
+
+  /// HIGH-11: Tracks when each recipe was last successfully synced to Firebase.
+  /// Used to verify cache and Firebase are in sync.
+  final Map<String, DateTime> _lastSyncedAt = {};
 
   JsonCacheHelper get _cacheHelper => _getCacheHelper();
 
@@ -55,6 +64,19 @@ class PersonalRecipeModule {
   /// Returns [RecipeSyncStatus.synced] if no status is tracked (assumed synced from Firebase).
   RecipeSyncStatus getSyncStatus(String recipeId) =>
       _syncStatus[recipeId] ?? RecipeSyncStatus.synced;
+
+  /// HIGH-11: Gets the timestamp of the last successful sync for a recipe.
+  /// Returns null if the recipe has never been synced in this session.
+  DateTime? getLastSyncedAt(String recipeId) => _lastSyncedAt[recipeId];
+
+  /// HIGH-11: Checks if a recipe's sync is considered fresh (within threshold).
+  /// Useful for detecting stale cache vs Firebase discrepancies.
+  bool isSyncFresh(String recipeId,
+      {Duration threshold = const Duration(minutes: 5)}) {
+    final lastSync = _lastSyncedAt[recipeId];
+    if (lastSync == null) return false;
+    return DateTime.now().difference(lastSync) <= threshold;
+  }
 
   PersonalRecipeModule({
     required RecipeRepository recipeRepository,
@@ -67,6 +89,7 @@ class PersonalRecipeModule {
     required RecipeServiceAdapter Function() getServiceAdapter,
     TaggingService? taggingService,
     PersonalTagService? personalTagService,
+    void Function(String recipeTitle)? onTaggingFailed,
   })  : _recipeRepository = recipeRepository,
         _userRepository = userRepository,
         _getCacheHelper = getCacheHelper,
@@ -76,7 +99,8 @@ class PersonalRecipeModule {
         _notifyListeners = notifyListeners,
         _getServiceAdapter = getServiceAdapter,
         _taggingService = taggingService,
-        _personalTagService = personalTagService;
+        _personalTagService = personalTagService,
+        _onTaggingFailed = onTaggingFailed;
 
   Future<String?> createPersonalRecipe({
     required String title,
@@ -142,11 +166,23 @@ class PersonalRecipeModule {
             // Continue anyway - don't fail recipe creation for counter issues
           }
 
-          // Start background database sync without waiting
-          _startBackgroundRecipeSync(newRecipe, 'create');
-
-          AppLogger.success(
-              '✅ Personal recipe "$title" created (syncing in background)');
+          // BUG-003 FIX: On web, cache is a no-op (Drift stubbed), so we MUST
+          // await Firebase sync to ensure recipes persist.
+          if (kIsWeb) {
+            final syncSuccess =
+                await _syncRecipeToFirebaseAwaited(newRecipe, 'create');
+            if (!syncSuccess) {
+              _setError(
+                  'Kunde inte spara receptet. Kontrollera din internetanslutning.');
+              return null;
+            }
+            AppLogger.success('✅ Personal recipe "$title" created and synced');
+          } else {
+            // On mobile, use background sync (cache is real, UX is faster)
+            _startBackgroundRecipeSync(newRecipe, 'create');
+            AppLogger.success(
+                '✅ Personal recipe "$title" created (syncing in background)');
+          }
           return newRecipe.id;
         },
       );
@@ -194,11 +230,23 @@ class PersonalRecipeModule {
           // ULTRATHINK FIX: Optimistic update - save to cache immediately and return success
           await _saveToCache(editedRecipe);
 
-          // Start background database sync without waiting
-          _startBackgroundRecipeSync(editedRecipe, 'update');
-
-          AppLogger.success(
-              '✅ Personal recipe "${editedRecipe.title}" updated (syncing in background)');
+          // BUG-003 FIX: On web, await Firebase sync directly
+          if (kIsWeb) {
+            final syncSuccess =
+                await _syncRecipeToFirebaseAwaited(editedRecipe, 'update');
+            if (!syncSuccess) {
+              _setError(
+                  'Kunde inte uppdatera receptet. Kontrollera din internetanslutning.');
+              return false;
+            }
+            AppLogger.success(
+                '✅ Personal recipe "${editedRecipe.title}" updated and synced');
+          } else {
+            // On mobile, use background sync (cache is real, UX is faster)
+            _startBackgroundRecipeSync(editedRecipe, 'update');
+            AppLogger.success(
+                '✅ Personal recipe "${editedRecipe.title}" updated (syncing in background)');
+          }
           return true;
         },
       );
@@ -578,8 +626,60 @@ class PersonalRecipeModule {
   /// Max retry attempts for background sync to prevent infinite loops.
   static const _maxBackgroundRetries = 5;
 
+  /// CRIT-4: Timeout for individual Firebase sync operations.
+  /// Prevents indefinite hangs on slow/unavailable Firebase.
+  static const _syncTimeout = Duration(seconds: 30);
+
   /// Tracks retry attempts per recipe to enforce limits.
   final Map<String, int> _backgroundRetryCount = {};
+
+  /// BUG-003 FIX: Synchronous Firebase sync for web platform.
+  /// On web, the local cache (Drift) is stubbed, so we MUST await Firebase
+  /// to ensure recipes actually persist. Returns true if sync succeeded.
+  Future<bool> _syncRecipeToFirebaseAwaited(
+      Recipe recipe, String operation) async {
+    try {
+      AppLogger.info(
+          '🔄 [Web] Awaiting $operation for recipe: ${recipe.title}');
+      _syncStatus[recipe.id] = RecipeSyncStatus.syncing;
+
+      bool success = false;
+      if (operation == 'create') {
+        final createdId = await _getServiceAdapter()
+            .createRecipe(recipe)
+            .timeout(_syncTimeout, onTimeout: () {
+          AppLogger.warning(
+              '⚠️ CRIT-4: Sync timeout for create: ${recipe.title}');
+          return null;
+        });
+        success = createdId != null;
+      } else if (operation == 'update') {
+        success = await _getServiceAdapter()
+            .updateRecipe(recipe)
+            .timeout(_syncTimeout, onTimeout: () {
+          AppLogger.warning(
+              '⚠️ CRIT-4: Sync timeout for update: ${recipe.title}');
+          return false;
+        });
+      }
+
+      if (success) {
+        AppLogger.success('✅ [Web] $operation completed for: ${recipe.title}');
+        _syncStatus[recipe.id] = RecipeSyncStatus.synced;
+        // HIGH-11: Record sync timestamp for verification
+        _lastSyncedAt[recipe.id] = DateTime.now();
+        return true;
+      } else {
+        AppLogger.error('❌ [Web] $operation failed for: ${recipe.title}');
+        _syncStatus[recipe.id] = RecipeSyncStatus.failed;
+        return false;
+      }
+    } catch (e) {
+      AppLogger.error('❌ [Web] $operation error for ${recipe.title}: $e');
+      _syncStatus[recipe.id] = RecipeSyncStatus.failed;
+      return false;
+    }
+  }
 
   void _startBackgroundRecipeSync(Recipe recipe, String operation,
       {int retryAttempt = 0}) {
@@ -593,11 +693,24 @@ class PersonalRecipeModule {
             '🔄 Starting background $operation for recipe: ${recipe.title}');
 
         bool success = false;
+        // CRIT-4: Add timeout to prevent indefinite hangs
         if (operation == 'create') {
-          final createdId = await _getServiceAdapter().createRecipe(recipe);
+          final createdId = await _getServiceAdapter()
+              .createRecipe(recipe)
+              .timeout(_syncTimeout, onTimeout: () {
+            AppLogger.warning(
+                '⚠️ CRIT-4: Sync timeout for create: ${recipe.title}');
+            return null;
+          });
           success = createdId != null;
         } else if (operation == 'update') {
-          success = await _getServiceAdapter().updateRecipe(recipe);
+          success = await _getServiceAdapter()
+              .updateRecipe(recipe)
+              .timeout(_syncTimeout, onTimeout: () {
+            AppLogger.warning(
+                '⚠️ CRIT-4: Sync timeout for update: ${recipe.title}');
+            return false;
+          });
         }
 
         if (success) {
@@ -605,6 +718,8 @@ class PersonalRecipeModule {
               '✅ Background $operation completed for: ${recipe.title}');
           // HIGH-10: Mark as synced and clear retry counter on success
           _syncStatus[recipe.id] = RecipeSyncStatus.synced;
+          // HIGH-11: Record sync timestamp for verification
+          _lastSyncedAt[recipe.id] = DateTime.now();
           _backgroundRetryCount.remove(recipe.id);
         } else {
           AppLogger.error(
@@ -693,11 +808,15 @@ class PersonalRecipeModule {
         );
       }
 
-      // Tagging returned null - log warning
+      // Tagging returned null - log warning and notify UI
       AppLogger.warning(
           '⚠️ Tagging returned null for "${recipe.title}" - marking as needs retagging');
+      // CRIT-7: Notify UI that tagging failed
+      _onTaggingFailed?.call(recipe.title);
     } catch (e) {
       AppLogger.warning('⚠️ Tagging failed for "${recipe.title}": $e');
+      // CRIT-7: Notify UI that tagging failed
+      _onTaggingFailed?.call(recipe.title);
     }
 
     // Return recipe with explicit "needs retagging" marker
@@ -779,10 +898,20 @@ class PersonalRecipeModule {
       );
 
       return recipe.copyWith(personalTagIds: mergedTags);
-    } catch (e) {
-      AppLogger.warning(
-          '⚠️ Personal tag rule evaluation failed for "${recipe.title}": $e');
-      return recipe; // Return unchanged on error
+    } catch (e, stackTrace) {
+      // HIGH-8: Log as error and notify UI about personal tag failure
+      AppLogger.error(
+        '❌ Personal tag rule evaluation failed for "${recipe.title}": $e',
+        e,
+        'PersonalRecipeModule',
+        stackTrace,
+      );
+
+      // HIGH-8: Notify UI via the same stream used for tagging failures
+      // This allows users to know their personal tags may be incomplete
+      _onTaggingFailed?.call(recipe.title);
+
+      return recipe; // Return unchanged on error but user is notified
     }
   }
 }

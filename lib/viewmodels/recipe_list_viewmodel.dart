@@ -556,6 +556,10 @@ class RecipeListViewModel extends ChangeNotifier {
       final tagResult = recipe.tagResult;
       if (tagResult == null) return false;
 
+      // CRIT-9: Don't trust allergen status if tagging needs to be redone
+      // This includes failed tags, pending tags, and coverage anomalies
+      if (tagResult.needsRetagging) return false;
+
       // SAFETY: Don't trust allergen status if coverage < 100%
       // Unknown ingredients could contain any allergen
       if (tagResult.coverage < 1.0) return false;
@@ -585,6 +589,10 @@ class RecipeListViewModel extends ChangeNotifier {
     return recipes.where((recipe) {
       final tagResult = recipe.tagResult;
       if (tagResult == null) return false;
+
+      // CRIT-9: Don't trust dietary status if tagging needs to be redone
+      // This includes failed tags, pending tags, and coverage anomalies
+      if (tagResult.needsRetagging) return false;
 
       // SAFETY: Don't trust dietary status if coverage < 100%
       // Unknown ingredients could violate dietary restrictions

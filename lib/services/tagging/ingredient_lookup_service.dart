@@ -7,6 +7,7 @@ import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/services/tagging/tagging_events_tracker.dart';
 import 'package:butlery/utils/text/ingredient_normalizer.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
+import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 
 /// Service for looking up ingredients from the database.
 ///
@@ -199,6 +200,16 @@ class IngredientLookupService extends BaseService {
     // Clean the name further
     final cleanName = _cleanForLookup(normalizedName);
 
+    // CRIT-13: Empty name after cleaning means no valid ingredient
+    // This prevents cache key collisions for whitespace-only inputs
+    if (cleanName.isEmpty) {
+      AppLogger.debug(
+        'CRIT-13: Ingredient name empty after cleaning: "$normalizedName"',
+        'IngredientLookupService',
+      );
+      return null;
+    }
+
     // CRIT-3/HIGH-3: Create cache key using null character separator
     // Null character (\x00) cannot appear in user input, preventing collisions
     final cacheKey =
@@ -223,8 +234,10 @@ class IngredientLookupService extends BaseService {
     if (_cacheVersion == versionBeforeLookup) {
       _cacheResult(cacheKey, result);
     } else {
-      AppLogger.debug(
-        'CRIT-3: Cache was cleared during lookup for "$cleanName", not caching result',
+      // MED-3: Log at INFO level for production visibility
+      AppLogger.info(
+        'Cache invalidated during lookup for "$cleanName" - result not cached (normal under high load)',
+        'IngredientLookupService',
       );
     }
 
@@ -296,14 +309,23 @@ class IngredientLookupService extends BaseService {
       'CRIT-3: Cache/LRU desync: cache=${_lookupCache.length}, lru=${_lruOrder.length}',
     );
 
-    // CRIT-3: Production validation - also check in release builds
+    // CRIT-3: Production validation - also check in release builds and auto-recover
     if (_lookupCache.length != _lruOrder.length) {
       AppLogger.error(
-        'CRIT-3: Cache/LRU desync in production: '
-            'cache=${_lookupCache.length}, lru=${_lruOrder.length}',
+        'CRIT-3: Cache/LRU desync detected: '
+            'cache=${_lookupCache.length}, lru=${_lruOrder.length}. '
+            'Auto-recovering by clearing cache.',
         'IngredientLookupService',
       );
       _reportCacheDesync();
+      // CRIT-3: Auto-recover by clearing both to restore consistency
+      _lookupCache.clear();
+      _lruOrder.clear();
+      _cacheVersion++; // Invalidate any in-flight lookups
+      AppLogger.info(
+        'CRIT-3: Cache cleared and version incremented to $_cacheVersion',
+        'IngredientLookupService',
+      );
     }
   }
 
@@ -321,9 +343,13 @@ class IngredientLookupService extends BaseService {
   }
 
   /// Cleans a normalized name for database lookup.
+  ///
+  /// CRIT-14: Uses SwedishCharacterNormalizer for consistent handling of
+  /// å→a, ä→a, ö→o. This ensures "köttfärs" matches "kottfars" in the database
+  /// regardless of whether the input contains Swedish diacritics.
   String _cleanForLookup(String name) {
-    return name
-        .toLowerCase()
+    // CRIT-14: Apply Swedish character normalization (includes toLowerCase)
+    return SwedishCharacterNormalizer.normalize(name)
         .trim()
         // Remove common Swedish articles
         .replaceAll(RegExp(r'^(en|ett|den|det|de)\s+'), '')
@@ -344,8 +370,13 @@ class IngredientLookupService extends BaseService {
 
     // M6: Add space-inserted variations for compound words
     // HIGH-11: Use centralized compound suffixes list
+    // MED-6: Guard requires at least 3 chars before suffix (2 base + 1 for meaningful word)
+    // Example: "ost" (3 chars) with suffix "ost" (3 chars) → 3 > 3+2 = false (no variation)
+    // Example: "smörgåsost" (10 chars) with suffix "ost" (3 chars) → 10 > 3+2 = true (creates "smörgås ost")
+    const minBaseLength = 2; // Minimum meaningful base word length
     for (final suffix in _compoundSuffixes) {
-      if (name.endsWith(suffix) && name.length > suffix.length + 2) {
+      if (name.endsWith(suffix) &&
+          name.length > suffix.length + minBaseLength) {
         final base = name.substring(0, name.length - suffix.length);
         if (base.isNotEmpty) {
           variations.add('$base $suffix');

@@ -177,11 +177,17 @@ class IngredientParser {
       final part = parts[i].trim();
       final parsed = parseIngredient(part);
 
-      // Inherit quantity/unit from first if this part has defaults
-      if (parsed.quantity == 1.0 && parsed.unit.isEmpty) {
+      // CRIT-11: Inherit quantity OR unit from first if this part has defaults
+      // "2 dl mjölk och grädde" -> inherit both quantity and unit for "grädde"
+      // "2 dl mjölk och 3 grädde" -> inherit just unit, keep quantity 3
+      // "2 ägg och smör" -> inherit quantity for "smör"
+      final inheritQuantity = parsed.quantity == 1.0;
+      final inheritUnit = parsed.unit.isEmpty && first.unit.isNotEmpty;
+
+      if (inheritQuantity || inheritUnit) {
         results.add(ParsedIngredient(
-          quantity: first.quantity,
-          unit: first.unit,
+          quantity: inheritQuantity ? first.quantity : parsed.quantity,
+          unit: inheritUnit ? first.unit : parsed.unit,
           name: parsed.name,
         ));
       } else {

@@ -266,21 +266,40 @@ class TagGenerator {
       }
     }
 
-    // CRIT-9: Handle season tag mutual exclusivity (recipe can have one season)
+    // CRIT-16: Handle season tag mutual exclusivity (recipe can have one season)
+    // Uses deterministic priority: current season > Swedish seasons order
     const seasonTags = ['sommar', 'vinter', 'höst', 'vår'];
     final presentSeasons = seasonTags.where(resolved.contains).toList();
     if (presentSeasons.length > 1) {
-      // Keep only the first detected season, remove others
-      for (var i = 1; i < presentSeasons.length; i++) {
-        resolved.remove(presentSeasons[i]);
-        AppLogger.debug(
-          'Season conflict resolved: removed "${presentSeasons[i]}" (keeping "${presentSeasons[0]}")',
-          'TagGenerator',
-        );
+      // Pick the best season: prefer current season if present
+      final currentSeason = _getCurrentSeason();
+      final selectedSeason = presentSeasons.contains(currentSeason)
+          ? currentSeason
+          : presentSeasons.first; // Fallback to first in priority order
+
+      // Remove all other seasons
+      for (final season in presentSeasons) {
+        if (season != selectedSeason) {
+          resolved.remove(season);
+          AppLogger.debug(
+            'CRIT-16: Season conflict resolved: removed "$season" (keeping "$selectedSeason")',
+            'TagGenerator',
+          );
+        }
       }
     }
 
     return resolved;
+  }
+
+  /// CRIT-16: Returns the current season in Swedish based on date.
+  /// Used to prefer current-season tags when multiple seasons are detected.
+  static String _getCurrentSeason() {
+    final month = DateTime.now().month;
+    if (month >= 6 && month <= 8) return 'sommar'; // Jun-Aug
+    if (month >= 9 && month <= 11) return 'höst'; // Sep-Nov
+    if (month >= 12 || month <= 2) return 'vinter'; // Dec-Feb
+    return 'vår'; // Mar-May
   }
 
   /// Generates only Phase 1 tags (for quick preview).

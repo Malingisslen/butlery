@@ -291,8 +291,18 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
         return;
       }
 
-      // Get TaggingService via ServiceLocator
-      final taggingService = ServiceLocator.get<TaggingService>();
+      // CRIT-8: Get TaggingService with defensive error handling
+      // Service might not be available during early startup or on web platform
+      TaggingService? taggingService;
+      try {
+        taggingService = ServiceLocator.get<TaggingService>();
+      } catch (e) {
+        AppLogger.warning(
+          '⚠️ CRIT-8: TaggingService not available, cannot retag recipe. '
+          'Will retry on next sync: $e',
+        );
+        rethrow; // Propagate to trigger retry
+      }
 
       // Generate tags
       final tagResult = await taggingService.generateTags(recipe);

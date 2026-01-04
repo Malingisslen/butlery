@@ -114,6 +114,14 @@ class UnifiedRecipeService extends ChangeNotifier
   // Auth state subscription (stored to prevent garbage collection)
   StreamSubscription<User?>? _authSubscription;
 
+  /// CRIT-7: Stream controller for tagging failure notifications.
+  /// UI can listen to this stream to show snackbars when tagging fails.
+  final _taggingFailureController = StreamController<String>.broadcast();
+
+  /// CRIT-7: Stream of recipe titles for which tagging has failed.
+  /// Listen to this stream to show user-facing notifications.
+  Stream<String> get taggingFailures => _taggingFailureController.stream;
+
   UnifiedRecipeService({
     FirebaseAuthRepository? authRepository,
     RecipeRepository? recipeRepository,
@@ -214,6 +222,10 @@ class UnifiedRecipeService extends ChangeNotifier
       getServiceAdapter: () => _getServiceAdapter(),
       taggingService: _tryGetTaggingService(),
       personalTagService: _tryGetPersonalTagService(),
+      // CRIT-7: Wire up tagging failure notifications to stream
+      onTaggingFailed: (recipeTitle) {
+        _taggingFailureController.add(recipeTitle);
+      },
     );
 
     _socialModule = SocialRecipeModule(
@@ -734,6 +746,9 @@ class UnifiedRecipeService extends ChangeNotifier
   void dispose() {
     // Cancel auth state subscription
     _authSubscription?.cancel();
+
+    // CRIT-7: Close tagging failure stream
+    _taggingFailureController.close();
 
     if (_areModulesInitialized()) {
       _cacheModule.dispose();

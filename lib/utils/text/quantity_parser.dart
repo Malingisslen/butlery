@@ -1,3 +1,5 @@
+import 'package:butlery/core/utils/logger.dart';
+
 /// Utility for parsing quantities including Swedish fractions and ASCII fractions.
 class QuantityParser {
   QuantityParser._();
@@ -90,6 +92,17 @@ class QuantityParser {
 
     // Standard parsing with comma → period for Swedish decimal format
     final normalized = trimmed.replaceAll(',', '.');
-    return double.tryParse(normalized) ?? 1.0;
+    final parsed = double.tryParse(normalized);
+
+    // CRIT-6: Log warning when falling back to 1.0 to help identify parsing issues
+    if (parsed == null) {
+      AppLogger.warning(
+        'CRIT-6: Could not parse quantity "$qtyString", defaulting to 1.0',
+        'QuantityParser',
+      );
+      return 1.0;
+    }
+
+    return parsed;
   }
 }

@@ -31,8 +31,16 @@ class TaggingService extends BaseService {
   final UserIngredientRepository? _userIngredientRepository;
   final TaggingEventsTracker? _eventsTracker;
 
+  /// MED-5: Tracks if config validation failed during initialization.
+  /// When true, tagging results may be unreliable.
+  bool _configValidationFailed = false;
+
   @override
   String get serviceName => 'TaggingService';
+
+  /// MED-5: Returns true if the service is in degraded mode due to config validation failure.
+  /// UI can use this to show warnings about potentially unreliable allergen/dietary info.
+  bool get isInDegradedMode => _configValidationFailed;
 
   TaggingService({
     required IngredientLookupService lookupService,
@@ -139,6 +147,25 @@ class TaggingService extends BaseService {
       '${lookupResult.unmatched.length} unmatched, '
       '${(lookupResult.coverage * 100).toStringAsFixed(0)}% coverage',
     );
+
+    // HIGH-12: Check if ALL ingredients are unknown (distinct from empty recipe)
+    if (lookupResult.matched.isEmpty && lookupResult.unmatched.isNotEmpty) {
+      AppLogger.warning(
+        '⚠️ All ${lookupResult.unmatched.length} ingredients unknown for "${recipe.core.title}"',
+        'TaggingService',
+      );
+      _logTaggingMetrics(
+        recipeId: recipe.id,
+        totalMs: totalStopwatch.elapsedMilliseconds,
+        lookupMs: lookupStopwatch.elapsedMilliseconds,
+        generateMs: 0,
+        ingredientCount: ingredients.length,
+        tagCount: 0,
+        coveragePercent: 0,
+        status: 'all_unknown',
+      );
+      return TagResult.allUnknown(lookupResult.unmatched);
+    }
 
     // CRIT-3: Calculate remaining time for generation phase
     final elapsed = totalStopwatch.elapsed;
@@ -533,6 +560,8 @@ class TaggingService extends BaseService {
             'Some allergen/dietary detection may not work correctly.',
         'TaggingService',
       );
+      // MED-5: Track degraded state for UI to query
+      _configValidationFailed = true;
       // Track in analytics for monitoring
       _eventsTracker?.logConfigValidationError(e.toString());
     }

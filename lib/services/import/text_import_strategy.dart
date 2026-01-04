@@ -1,6 +1,7 @@
 /// Text Import Strategy - Parses structured/unstructured text into recipes (social media, manual input).
 
 import 'package:uuid/uuid.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
@@ -347,6 +348,21 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         .where((i) => !RecipeSectionDetector.isGarbage(i) && i.length > 10)
         .toList();
 
+    // CRIT-12: Log warning when no ingredients/instructions found instead of
+    // inserting placeholder strings that confuse the tagging system
+    if (cleanedIngredients.isEmpty) {
+      AppLogger.warning(
+        'CRIT-12: No ingredients extracted from text import for "$recipeName"',
+        'TextImportStrategy',
+      );
+    }
+    if (cleanedInstructions.isEmpty) {
+      AppLogger.warning(
+        'CRIT-12: No instructions extracted from text import for "$recipeName"',
+        'TextImportStrategy',
+      );
+    }
+
     final portions = _extractPortions(text);
     final timeMinutes = _extractTime(text);
     final rating = extractRating(text);
@@ -357,12 +373,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         id: _uuid.v4(),
         title: recipeName,
         description: description,
-        ingredients: cleanedIngredients.isNotEmpty
-            ? cleanedIngredients
-            : ['Ingen ingrediensinformation'],
-        instructions: cleanedInstructions.isNotEmpty
-            ? cleanedInstructions
-            : ['Ingen instruktionsinformation'],
+        // CRIT-12: Use empty list instead of fake placeholder
+        // Tagging system will handle empty ingredients correctly via TagResult.empty()
+        ingredients: cleanedIngredients,
+        instructions: cleanedInstructions,
         imageUrls: [],
         mealType: mealType,
         portions: portions,

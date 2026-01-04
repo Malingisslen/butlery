@@ -53,7 +53,6 @@ class KnownIngredients {
     'kalkon',
     'höna',
     'fågel',
-    'kötfärs',
     'nötkött',
     'nötfärs',
     'fläskfärs',
