@@ -8,6 +8,33 @@
 
 ---
 
+## Quick Reference: Two Tag Systems
+
+Butlery uses **two separate tag systems** that serve different purposes:
+
+| System | Field | Purpose | Storage | User Control |
+|--------|-------|---------|---------|--------------|
+| **Auto-generated** | `recipe.tagResult` | Allergens, dietary, proteins, cuisines | `TagResult` object | Override via `TagOverrides` |
+| **Personal Tags** | `recipe.personalTagIds` | User-defined categories | List of tag names* | Full control |
+
+*Note: Despite the field name `personalTagIds`, it stores tag **names** (not IDs). This is historical naming.
+
+### When to Use Which
+
+- **Auto-generated tags**: For safety-critical filtering (allergens, vegetarian, etc.)
+- **Personal tags**: For user organization (favorites, "kid-friendly", custom categories)
+
+### Key Files
+
+| Auto-Generated | Personal Tags |
+|----------------|---------------|
+| `TagGenerator` (5-phase) | `PersonalTagService` |
+| `TaggingService` | `PersonalTagViewModel` |
+| `TagResult` model | `PersonalTag` model |
+| `lib/services/tagging/` | `lib/widgets/tagging/` |
+
+---
+
 ## Purpose
 
 Automatic tagging system that analyzes recipes and generates tags based on ingredient properties. Enables:

@@ -6,6 +6,11 @@ library;
 import 'package:butlery/core/bootstrap/stages/bootstrap_stage.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
+import 'package:butlery/core/di/modules/tagging_module.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/tagging/tagging_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 
 /// Content stage for recipe and menu service initialization.
 /// This stage ensures that all content-related services are properly
@@ -16,7 +21,11 @@ import 'package:butlery/core/di/modules/content_module.dart';
 /// - Search and discovery services
 /// - Storage and file management
 /// - Offline content synchronization
+/// - Automatic retagging of failed recipes
 class ContentStage implements BootstrapStage {
+  /// Retagging scheduler instance - kept alive for periodic checks.
+  RetaggingScheduler? _retaggingScheduler;
+
   @override
   String get name => 'Content';
 
@@ -38,6 +47,9 @@ class ContentStage implements BootstrapStage {
       // Content module initialization is handled by the DI container
       // UnifiedRecipeService.initialize() is called during ContentModule.initialize()
       // No duplicate initialization needed here - the early return guard would prevent it anyway
+
+      // CRIT-5 FIX: Initialize RetaggingScheduler for automatic retry of failed tagging
+      await _initializeRetaggingScheduler();
     } catch (e) {
       throw BootstrapException(
         name,
@@ -45,6 +57,42 @@ class ContentStage implements BootstrapStage {
         'Content services initialization failed',
         e,
       );
+    }
+  }
+
+  /// Initializes the RetaggingScheduler to automatically retry failed recipe tagging.
+  ///
+  /// The scheduler runs 30 seconds after startup and then every 24 hours,
+  /// processing up to 100 recipes per session in batches of 10.
+  Future<void> _initializeRetaggingScheduler() async {
+    try {
+      final taggingService = ServiceLocator.get<TaggingService>();
+      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+
+      _retaggingScheduler = RetaggingScheduler(
+        taggingService: taggingService,
+        getRecipes: () async {
+          // Get all user's personal recipes for retagging check
+          // Use the synchronous getter which returns cached recipes
+          return recipeService.personalRecipes;
+        },
+        saveRecipe: (recipe) async {
+          // Update the recipe with new tags
+          await recipeService.personal.updateRecipe(recipe);
+        },
+      );
+
+      // Schedule initial retagging check (runs after 30 second delay)
+      // Fire-and-forget - don't await to avoid blocking startup
+      _retaggingScheduler!.scheduleRetaggingCheck();
+
+      // Start periodic checks every 24 hours
+      _retaggingScheduler!.startPeriodicChecks(intervalHours: 24);
+
+      AppLogger.info('📅 RetaggingScheduler initialized and scheduled');
+    } catch (e) {
+      // Log but don't fail startup - retagging is not critical
+      AppLogger.warning('⚠️ Failed to initialize RetaggingScheduler: $e');
     }
   }
 
