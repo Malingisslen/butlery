@@ -31,6 +31,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
   bool _isLoadingRuleStats = false;
   String? _error;
   String? _selectedTagId;
+  bool _isDisposed = false;
 
   // Stream subscriptions
   StreamSubscription<PersonalTagsWithGroups>? _tagsWithGroupsSubscription;
@@ -163,7 +164,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
       (data) {
         _tags = data.tagsByGroup.values.expand((t) => t).toList();
         _groups = data.groups;
-        notifyListeners();
+        _safeNotifyListeners();
       },
       onError: (e) {
         AppLogger.error('Tags/groups stream error: $e');
@@ -175,7 +176,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// Selects a tag for rule management.
   void selectTag(String? tagId) {
     _selectedTagId = tagId;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   // ============================================================
@@ -474,7 +475,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     if (_tags.isEmpty) return;
 
     _isLoadingStats = true;
-    notifyListeners();
+    _safeNotifyListeners();
 
     try {
       final recipeRepo = ServiceLocator.get<FirebaseRecipeRepository>();
@@ -511,7 +512,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
       AppLogger.error('Failed to load tag statistics', stack);
     } finally {
       _isLoadingStats = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -528,7 +529,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     if (allRules.isEmpty) return;
 
     _isLoadingRuleStats = true;
-    notifyListeners();
+    _safeNotifyListeners();
 
     try {
       final recipeRepo = ServiceLocator.get<FirebaseRecipeRepository>();
@@ -558,7 +559,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
       AppLogger.error('Failed to load rule effectiveness', stack);
     } finally {
       _isLoadingRuleStats = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -688,18 +689,18 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   void _setLoading(bool value) {
     _isLoading = value;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void _setError(String message) {
     _error = message;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void _clearError() {
     if (_error != null) {
       _error = null;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -708,8 +709,16 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   @override
   void dispose() {
+    _isDisposed = true;
     _tagsWithGroupsSubscription?.cancel();
     super.dispose();
+  }
+
+  /// Safely calls notifyListeners only if not disposed.
+  void _safeNotifyListeners() {
+    if (!_isDisposed) {
+      notifyListeners();
+    }
   }
 }
 

@@ -1,3 +1,4 @@
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/firebase_tag_config.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
@@ -135,6 +136,15 @@ class TagPhase1Base {
     if (simpleAllergens != null) {
       // Use Firebase config
       for (final allergen in simpleAllergens) {
+        // CRIT-1: Guard against empty triggerProperties to prevent crash
+        if (allergen.triggerProperties.isEmpty) {
+          AppLogger.error(
+            'CRIT-1: Allergen "${allergen.key}" has empty triggerProperties - '
+                'check Firebase config. Skipping this allergen.',
+            'TagPhase1Base',
+          );
+          continue;
+        }
         final prop = allergen.triggerProperties.first;
         final result = lookup.getPropertyStatus(prop);
         status[allergen.key] = result;
@@ -152,6 +162,12 @@ class TagPhase1Base {
         ));
       }
     } else {
+      // HIGH-2: Log warning when falling back to static config
+      AppLogger.warning(
+        'Firebase allergen config unavailable - using static fallback. '
+            'Admin config changes will not be applied.',
+        'TagPhase1Base',
+      );
       // Fall back to static config
       for (final allergen in static_allergen.AllergenConfig.simpleAllergens) {
         final result = lookup.getPropertyStatus(allergen.triggerProperty);
@@ -176,6 +192,15 @@ class TagPhase1Base {
       // Use Firebase config
       for (final allergen in combinedAllergens) {
         final props = allergen.triggerProperties;
+        // CRIT-1: Guard against empty triggerProperties for combined allergens
+        if (props.isEmpty) {
+          AppLogger.error(
+            'CRIT-1: Combined allergen "${allergen.key}" has empty triggerProperties - '
+                'check Firebase config. Skipping this allergen.',
+            'TagPhase1Base',
+          );
+          continue;
+        }
         final result = lookup.getCombinedPropertyStatus(props);
         status[allergen.key] = result;
 
@@ -318,6 +343,12 @@ class TagPhase1Base {
         );
       }
     } else {
+      // HIGH-2: Log warning when falling back to static dietary config
+      AppLogger.warning(
+        'Firebase dietary config unavailable - using static fallback. '
+            'Admin config changes will not be applied.',
+        'TagPhase1Base',
+      );
       // Fall back to static config
       for (final dietary in static_dietary.DietaryConfig.all) {
         _processDietaryEntry(
@@ -380,21 +411,18 @@ class TagPhase1Base {
         triggeringIngredients: triggers.isNotEmpty ? triggers : null,
       ));
     } else if (requiredProperties != null) {
-      // MED-6: PESCETARIAN LOGIC EXPLANATION
+      // MED-6 / HIGH-4: PESCETARIAN LOGIC
       //
-      // Pescetarian is special because it requires BOTH:
-      // 1. NO excluded properties (no meat - already checked above)
-      // 2. HAS required properties (fish or shellfish)
+      // Pescetarian means: can eat fish and seafood, but NO meat.
       //
       // Decision tree for pescetarian:
-      // ┌─ Has meat? ─────────────────────> CONTAINS (not pescetarian)
-      // │   └─ No meat, has fish? ────────> FREE (valid pescetarian dish)
-      // │       └─ No meat, no fish? ─────> UNKNOWN (might be vegetarian side)
+      // ┌─ Has meat? ────────────────────> CONTAINS (not pescetarian-safe)
+      // │   └─ No meat, has fish? ───────> FREE (pescetarian dish with seafood)
+      // │       └─ No meat, no fish? ────> FREE (vegetarian = pescetarian-compatible)
       //
-      // Why UNKNOWN and not FREE for no-meat-no-fish?
-      // A recipe without fish is not "pescetarian-safe" - it just happens
-      // to be compatible. We only claim FREE when the recipe positively
-      // demonstrates pescetarian intent (includes seafood but no meat).
+      // HIGH-4 FIX: Vegetarian dishes ARE pescetarian-safe.
+      // A pescetarian can eat any dish without meat - whether or not it contains fish.
+      // The key constraint is absence of meat, not presence of fish.
       final hasRequired = lookup.hasAnyProperty(requiredProperties);
       if (hasRequired) {
         // Has fish/shellfish, no meat = valid pescetarian dish
@@ -406,13 +434,13 @@ class TagPhase1Base {
               'Has required (${requiredProperties.join(", ")}), no excluded',
         ));
       } else {
-        // No fish AND no meat = unknown (could be vegetarian side dish)
-        status[key] = TriState.unknown;
+        // HIGH-4: No fish AND no meat = FREE (vegetarian dishes are pescetarian-compatible)
+        status[key] = TriState.free;
         decisions.add(TagDecision.dietary(
           key: key,
-          result: TriState.unknown,
+          result: TriState.free,
           reason:
-              'No excluded but missing required (${requiredProperties.join(", ")})',
+              'No excluded properties (vegetarian dishes are pescetarian-compatible)',
         ));
       }
     } else {

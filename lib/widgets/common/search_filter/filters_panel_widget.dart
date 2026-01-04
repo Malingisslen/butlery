@@ -60,6 +60,10 @@ class FiltersPanelWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Calculate max height based on screen size (leave room for header, search, nav)
+    final screenHeight = MediaQuery.of(context).size.height;
+    final maxFilterHeight = screenHeight * 0.5; // Max 50% of screen height
+
     return AnimatedSize(
       duration: AppDimensions.animationDurationMedium,
       curve: Curves.easeInOut,
@@ -75,83 +79,89 @@ class FiltersPanelWidget extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Time filters
-                  FilterChipsWidget(
-                    title: 'Tillagningstid',
-                    options: RecipeFilters.timeFilters,
-                    activeFilters: activeTimeFilters,
-                    onToggle: onTimeFilterToggle,
-                  ),
-
-                  // Meal type filters
-                  FilterChipsWidget(
-                    title: 'Måltidstyp',
-                    options: RecipeFilters.mealTypeFilters,
-                    activeFilters: activeMealTypeFilters,
-                    onToggle: onMealTypeFilterToggle,
-                  ),
-
-                  // Rating filters
-                  FilterChipsWidget(
-                    title: 'Betyg',
-                    options: RecipeFilters.ratingFilters,
-                    activeFilters: activeRatingFilters,
-                    onToggle: onRatingFilterToggle,
-                  ),
-
-                  // Allergen-free filters
-                  if (onAllergenFilterToggle != null)
-                    FilterChipsWidget(
-                      title: 'Allergenfri',
-                      options: RecipeFilters.allergenFreeFilters,
-                      activeFilters: activeAllergenFilters,
-                      onToggle: onAllergenFilterToggle!,
-                    ),
-
-                  // Dietary filters
-                  if (onDietaryFilterToggle != null)
-                    FilterChipsWidget(
-                      title: 'Specialkost',
-                      options: RecipeFilters.dietaryFilters,
-                      activeFilters: activeDietaryFilters,
-                      onToggle: onDietaryFilterToggle!,
-                    ),
-
-                  // Personal tags filters
-                  if (onPersonalTagFilterToggle != null)
-                    PersonalTagFilterChipsWidget(
-                      tags: personalTagIds ?? [],
-                      selectedTagIds: activePersonalTagFilters ?? {},
-                      onToggle: onPersonalTagFilterToggle!,
-                      onManageTags: onManagePersonalTags,
-                    ),
-
-                  // Clear all filters button
-                  if (hasActiveFilters && onClearAllFilters != null) ...[
-                    const SizedBox(height: AppDimensions.spacingM),
-                    Center(
-                      child: TextButton.icon(
-                        onPressed: onClearAllFilters,
-                        icon: const Icon(
-                          Icons.clear_all,
-                          size: AppDimensions.iconSizeAction,
-                        ),
-                        label: Text(
-                          'Rensa alla filter',
-                          style: AppTextStyles.labelLarge,
-                        ),
-                        style: TextButton.styleFrom(
-                          foregroundColor: Theme.of(context).colorScheme.error,
-                        ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: maxFilterHeight),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Time filters
+                      FilterChipsWidget(
+                        title: 'Tillagningstid',
+                        options: RecipeFilters.timeFilters,
+                        activeFilters: activeTimeFilters,
+                        onToggle: onTimeFilterToggle,
                       ),
-                    ),
-                  ],
 
-                  const SizedBox(height: AppDimensions.spacingM),
-                ],
+                      // Meal type filters
+                      FilterChipsWidget(
+                        title: 'Måltidstyp',
+                        options: RecipeFilters.mealTypeFilters,
+                        activeFilters: activeMealTypeFilters,
+                        onToggle: onMealTypeFilterToggle,
+                      ),
+
+                      // Rating filters
+                      FilterChipsWidget(
+                        title: 'Betyg',
+                        options: RecipeFilters.ratingFilters,
+                        activeFilters: activeRatingFilters,
+                        onToggle: onRatingFilterToggle,
+                      ),
+
+                      // Allergen-free filters
+                      if (onAllergenFilterToggle != null)
+                        FilterChipsWidget(
+                          title: 'Allergenfri',
+                          options: RecipeFilters.allergenFreeFilters,
+                          activeFilters: activeAllergenFilters,
+                          onToggle: onAllergenFilterToggle!,
+                        ),
+
+                      // Dietary filters
+                      if (onDietaryFilterToggle != null)
+                        FilterChipsWidget(
+                          title: 'Specialkost',
+                          options: RecipeFilters.dietaryFilters,
+                          activeFilters: activeDietaryFilters,
+                          onToggle: onDietaryFilterToggle!,
+                        ),
+
+                      // Personal tags filters
+                      if (onPersonalTagFilterToggle != null)
+                        PersonalTagFilterChipsWidget(
+                          tags: personalTagIds ?? [],
+                          selectedTagIds: activePersonalTagFilters ?? {},
+                          onToggle: onPersonalTagFilterToggle!,
+                          onManageTags: onManagePersonalTags,
+                        ),
+
+                      // Clear all filters button
+                      if (hasActiveFilters && onClearAllFilters != null) ...[
+                        const SizedBox(height: AppDimensions.spacingM),
+                        Center(
+                          child: TextButton.icon(
+                            onPressed: onClearAllFilters,
+                            icon: const Icon(
+                              Icons.clear_all,
+                              size: AppDimensions.iconSizeAction,
+                            ),
+                            label: Text(
+                              'Rensa alla filter',
+                              style: AppTextStyles.labelLarge,
+                            ),
+                            style: TextButton.styleFrom(
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: AppDimensions.spacingM),
+                    ],
+                  ),
+                ),
               ),
             )
           : const SizedBox.shrink(),

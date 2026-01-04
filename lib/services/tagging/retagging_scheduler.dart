@@ -24,7 +24,8 @@ class RetaggingScheduler {
   final Future<void> Function(Recipe) _saveRecipe;
 
   /// Delay before running retagging after app startup (in seconds).
-  static const _startupDelaySeconds = 30;
+  /// CRIT-15: Reduced from 30s to 5s to ensure failed recipes get retagged quickly.
+  static const _startupDelaySeconds = 5;
 
   /// Number of recipes to process in each batch.
   static const _batchSize = 10;

@@ -169,11 +169,14 @@ class IngredientNormalizer {
           original: original,
         );
       } else {
-        // Just diet descriptor alone
+        // MED-8: Just diet descriptor alone (e.g., "glutenfri" without ingredient)
+        // Mark as NOT a known ingredient, but preserve the descriptor
+        // Callers can check: if category == 'diet_descriptor' && !isKnown → diet descriptor only
         return NormalizationResult(
           normalized: dietDescriptor,
-          isKnown: false,
-          category: null,
+          isKnown: false, // Not a real ingredient - just a descriptor
+          category:
+              'diet_descriptor', // MED-8: Category to clarify this is a standalone descriptor
           original: original,
         );
       }

@@ -1,3 +1,4 @@
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
@@ -30,6 +31,14 @@ class TagPhase5Cuisine {
   /// Only requires Phase 1 results (ingredient lookup).
   Phase5ResultPartial calculateFromPhase1(Phase1Result p1, Recipe recipe) {
     final tags = <String>{};
+
+    // MED-4: Validate cuisine config is loaded
+    if (CuisineConfig.cuisines.isEmpty) {
+      AppLogger.warning(
+        'CuisineConfig.cuisines is empty - cuisine detection disabled',
+        'TagPhase5Cuisine',
+      );
+    }
 
     for (final cuisine in CuisineConfig.cuisines) {
       if (cuisine.matches(recipe, p1.lookup)) {

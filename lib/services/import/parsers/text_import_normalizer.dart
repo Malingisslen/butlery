@@ -4,11 +4,14 @@
 /// Provides text normalization, decimal protection, sentence splitting,
 /// and social media cleanup for recipe text parsing.
 class TextImportNormalizer {
-  // Temporary marker for protected decimals (Unicode BLACK CIRCLE)
-  static const _decimalMarker = '⬤';
+  // HIGH-10: Use Private Use Area characters for markers to avoid collision
+  // with any possible user input (PUA characters are guaranteed not in normal text)
+  static const _decimalMarker = '\uE000'; // PUA char for decimal protection
+  static const _abbreviationMarker =
+      '\uE001'; // PUA char for abbreviation protection
 
   /// Protect decimal numbers from being corrupted by sentence splitting.
-  /// Example: "0.75 dl" → "0⬤75 dl" (protected)
+  /// Example: "0.75 dl" → "0[PUA]75 dl" (protected)
   static String protectDecimals(String text) {
     return text.replaceAllMapped(
       RegExp(r'(\d)\.(\d)'),
@@ -17,7 +20,7 @@ class TextImportNormalizer {
   }
 
   /// Restore protected decimals back to normal.
-  /// Example: "0⬤75 dl" → "0.75 dl"
+  /// Example: "0[PUA]75 dl" → "0.75 dl"
   static String restoreDecimals(String text) {
     return text.replaceAll(_decimalMarker, '.');
   }
@@ -28,11 +31,12 @@ class TextImportNormalizer {
     // Step 1: Protect decimals FIRST
     String result = protectDecimals(text);
 
-    // Step 2: Also protect common abbreviations
-    result = result.replaceAll('ca.', 'ca⬛');
-    result = result.replaceAll('ev.', 'ev⬛');
-    result = result.replaceAll('st.', 'st⬛');
-    result = result.replaceAll('t.ex.', 't⬛ex⬛');
+    // Step 2: Also protect common abbreviations (HIGH-10: use PUA marker)
+    result = result.replaceAll('ca.', 'ca$_abbreviationMarker');
+    result = result.replaceAll('ev.', 'ev$_abbreviationMarker');
+    result = result.replaceAll('st.', 'st$_abbreviationMarker');
+    result = result.replaceAll(
+        't.ex.', 't${_abbreviationMarker}ex$_abbreviationMarker');
 
     // Step 3: Split at period + space + capital letter (new sentence)
     result = result.replaceAllMapped(
@@ -51,11 +55,12 @@ class TextImportNormalizer {
       (m) => '.\n${m.group(1)}',
     );
 
-    // Step 5: Restore protected abbreviations
-    result = result.replaceAll('ca⬛', 'ca.');
-    result = result.replaceAll('ev⬛', 'ev.');
-    result = result.replaceAll('st⬛', 'st.');
-    result = result.replaceAll('t⬛ex⬛', 't.ex.');
+    // Step 5: Restore protected abbreviations (HIGH-10: use PUA marker)
+    result = result.replaceAll('ca$_abbreviationMarker', 'ca.');
+    result = result.replaceAll('ev$_abbreviationMarker', 'ev.');
+    result = result.replaceAll('st$_abbreviationMarker', 'st.');
+    result = result.replaceAll(
+        't${_abbreviationMarker}ex$_abbreviationMarker', 't.ex.');
 
     // Step 6: Restore decimals
     result = restoreDecimals(result);
@@ -73,9 +78,10 @@ class TextImportNormalizer {
     // Pattern 1: Split before measurements when preceded by word characters
     // Match: letters followed directly by digit + measurement unit
     // Example: "oystersås2 msk" → "oystersås\n2 msk"
+    // HIGH-10: Use PUA character for decimal marker in regex
     result = result.replaceAllMapped(
       RegExp(
-        '([a-zåäöA-ZÅÄÖ]{2,})(\\d+(?:[⬤,]\\d+)?\\s*(?:dl|cl|ml|msk|tsk|krm|g|kg|hg|st|burk|pkt|påse|bit|skiva|klyfta|klyft)\\b)',
+        '([a-zåäöA-ZÅÄÖ]{2,})(\\d+(?:[$_decimalMarker,]\\d+)?\\s*(?:dl|cl|ml|msk|tsk|krm|g|kg|hg|st|burk|pkt|påse|bit|skiva|klyfta|klyft)\\b)',
         caseSensitive: false,
       ),
       (m) => '${m.group(1)}\n${m.group(2)}',

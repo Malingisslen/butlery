@@ -34,6 +34,8 @@ abstract class RecipeSiteParser {
       recipe = enhanceRecipe(recipe, html);
 
       // Validate quality
+      // MED-7: meetsMinimumQuality requires 80% completeness (see RecipeQualityScorer)
+      // Ensures recipes have title, ingredients, and instructions at minimum
       final quality = scoreRecipe(recipe);
       if (quality.meetsMinimumQuality) {
         return recipe;

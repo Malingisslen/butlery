@@ -20,6 +20,10 @@ import 'package:butlery/services/tagging/tagging_events_tracker.dart';
 /// - V2: Added errorReason field for explicit error tracking (MED-2)
 const int kTagResultSchemaVersion = 2;
 
+/// MED-2: Maximum length for errorReason field to prevent Firestore issues.
+/// Longer reasons are truncated with ellipsis.
+const int kMaxErrorReasonLength = 500;
+
 /// The output of the TagGenerator - stored on recipe documents.
 ///
 /// Contains all computed tags, allergen status, dietary status,
@@ -55,6 +59,11 @@ class TagResult {
   /// missing Phase 3-4 tags (difficulty, mood, practical).
   final bool isPartial;
 
+  /// CRIT-2: Tracks if coverage value was out of range and had to be clamped.
+  /// When true, this result should not be trusted for allergen/dietary claims
+  /// and needsRetagging will return true.
+  final bool hasCoverageAnomaly;
+
   /// H3: Decision logs explaining why each allergen/dietary status was set.
   /// NOT stored in Firestore to avoid storage bloat. Available in-memory
   /// and via JSON serialization for debugging purposes.
@@ -68,8 +77,8 @@ class TagResult {
   /// Creates a TagResult with the given properties.
   ///
   /// CRIT-2: Coverage is validated to be in [0.0, 1.0] range.
-  /// Out-of-range values are logged as warnings and clamped for safety.
-  /// This ensures the issue is visible in production (not just debug builds).
+  /// Out-of-range values are logged, reported to analytics, clamped for safety,
+  /// and hasCoverageAnomaly is set to true to trigger retagging.
   TagResult({
     required this.tags,
     required this.allergenStatus,
@@ -81,12 +90,21 @@ class TagResult {
     this.isPartial = false,
     this.decisions,
     this.errorReason,
-  }) : coverage = _validateAndClampCoverage(coverage);
+    bool? hasCoverageAnomaly,
+  })  : coverage = _validateAndClampCoverage(coverage),
+        hasCoverageAnomaly =
+            hasCoverageAnomaly ?? _checkCoverageAnomaly(coverage);
+
+  /// CRIT-2: Checks if coverage value is out of range (used to set hasCoverageAnomaly).
+  static bool _checkCoverageAnomaly(double value) {
+    return value < 0.0 || value > 1.0;
+  }
 
   /// CRIT-2/CRIT-3: Validates coverage and fails fast on invalid values.
   ///
   /// In debug: Assertion failure to catch generator bugs during development.
   /// In release: Logs error, reports to analytics, and clamps to [0.0, 1.0] for safety.
+  /// The hasCoverageAnomaly field is set separately to mark the result as needing retagging.
   ///
   /// Invalid coverage values indicate bugs in the tag generator that need
   /// immediate attention - they can lead to incorrect allergen/dietary claims.
@@ -103,6 +121,7 @@ class TagResult {
       AppLogger.error(
         'CRIT-2: Coverage out of range: $value (expected 0.0-1.0), clamping. '
             'This indicates a bug in the tag generator. '
+            'Result will be marked for retagging via hasCoverageAnomaly. '
             'Stack trace: ${StackTrace.current}',
         'TagResult',
       );
@@ -139,6 +158,42 @@ class TagResult {
       unknownIngredients: [],
       generatedAt: DateTime.now(),
       generatorVersion: 'empty', // Mark as empty recipe, not failed
+      hasCoverageAnomaly: false, // CRIT-2: Explicit normal state
+    );
+  }
+
+  /// HIGH-12: Creates a TagResult for recipes where ALL ingredients are unknown.
+  ///
+  /// This is distinct from [empty()] which is for recipes with no ingredients.
+  /// UI can check [generatorVersion] to distinguish:
+  /// - 'empty' → Recipe has no ingredients (prompt to add)
+  /// - 'all_unknown' → Recipe has ingredients but none are recognized
+  ///
+  /// Example:
+  /// ```dart
+  /// if (tagResult.generatorVersion == 'all_unknown') {
+  ///   showDialog("Help identify: ${tagResult.unknownIngredients}");
+  /// }
+  /// ```
+  factory TagResult.allUnknown(List<String> unknownIngredients) {
+    // MED-2: Build error message and truncate if needed
+    final errorMsg = unknownIngredients.isEmpty
+        ? null
+        : 'All ${unknownIngredients.length} ingredients are unknown';
+    final truncatedError =
+        errorMsg != null && errorMsg.length > kMaxErrorReasonLength
+            ? '${errorMsg.substring(0, kMaxErrorReasonLength - 3)}...'
+            : errorMsg;
+    return TagResult(
+      tags: {},
+      allergenStatus: {},
+      dietaryStatus: {},
+      coverage: 0.0, // No known ingredients = 0% coverage
+      unknownIngredients: unknownIngredients,
+      generatedAt: DateTime.now(),
+      generatorVersion: 'all_unknown', // Distinguishes from 'empty'
+      hasCoverageAnomaly: false,
+      errorReason: truncatedError,
     );
   }
 
@@ -154,6 +209,7 @@ class TagResult {
       unknownIngredients: [],
       generatedAt: DateTime.now(),
       generatorVersion: 'pending', // Mark as awaiting tagging
+      hasCoverageAnomaly: false, // CRIT-2: Explicit normal state
     );
   }
 
@@ -163,16 +219,24 @@ class TagResult {
   /// MED-2/V2: Now uses dedicated [errorReason] field instead of misusing
   /// [unknownIngredients]. The error is still added to unknownIngredients
   /// for backward compatibility with older UI that reads that field.
+  /// Reason is truncated to [kMaxErrorReasonLength] chars to prevent Firestore issues.
   factory TagResult.failed({String? reason}) {
+    // MED-2: Truncate reason to prevent Firestore write failures
+    final truncatedReason =
+        reason != null && reason.length > kMaxErrorReasonLength
+            ? '${reason.substring(0, kMaxErrorReasonLength - 3)}...'
+            : reason;
     return TagResult(
       tags: {},
       allergenStatus: {},
       dietaryStatus: {},
       coverage: 0.0,
-      unknownIngredients: reason != null ? [reason] : [], // Backward compat
+      unknownIngredients:
+          truncatedReason != null ? [truncatedReason] : [], // Backward compat
       generatedAt: DateTime.now(),
       generatorVersion: 'failed', // Mark as failed tagging
-      errorReason: reason, // V2: Proper error field
+      errorReason: truncatedReason, // V2: Proper error field (truncated)
+      hasCoverageAnomaly: false, // CRIT-2: Explicit normal state
     );
   }
 
@@ -188,10 +252,17 @@ class TagResult {
         SerializationUtils.safeInt(data, 'schemaVersion', defaultValue: 0);
     final migratedData = _migrateSchema(data, schemaVersion);
 
-    // H7: Clamp coverage to valid [0.0, 1.0] range
+    // H7/CRIT-2: Clamp coverage to valid [0.0, 1.0] range and track anomaly
     final rawCoverage = SerializationUtils.safeDouble(migratedData, 'coverage',
         defaultValue: 0.0);
+    final hasCoverageAnomaly = rawCoverage < 0.0 || rawCoverage > 1.0;
     final coverage = rawCoverage.clamp(0.0, 1.0);
+    if (hasCoverageAnomaly) {
+      AppLogger.warning(
+        'CRIT-2: Coverage anomaly detected in Firestore data: $rawCoverage',
+        'TagResult',
+      );
+    }
 
     // H11: Log warning when DateTime is missing (could indicate data corruption)
     DateTime generatedAt;
@@ -226,6 +297,8 @@ class TagResult {
       // V2: Read errorReason field
       errorReason:
           SerializationUtils.safeNullableString(migratedData, 'errorReason'),
+      // CRIT-2: Track coverage anomaly from stored data
+      hasCoverageAnomaly: hasCoverageAnomaly,
     );
   }
 
@@ -325,10 +398,17 @@ class TagResult {
       return DateTime.now();
     }
 
-    // H7: Clamp coverage to valid [0.0, 1.0] range
+    // H7/CRIT-2: Clamp coverage to valid [0.0, 1.0] range and track anomaly
     final rawCoverage = SerializationUtils.safeDouble(migratedData, 'coverage',
         defaultValue: 0.0);
+    final hasCoverageAnomaly = rawCoverage < 0.0 || rawCoverage > 1.0;
     final coverage = rawCoverage.clamp(0.0, 1.0);
+    if (hasCoverageAnomaly) {
+      AppLogger.warning(
+        'CRIT-2: Coverage anomaly detected in JSON data: $rawCoverage',
+        'TagResult',
+      );
+    }
 
     return TagResult(
       tags: _parseStringSet(migratedData['tags']),
@@ -347,6 +427,8 @@ class TagResult {
       // V2: Read errorReason field
       errorReason:
           SerializationUtils.safeNullableString(migratedData, 'errorReason'),
+      // CRIT-2: Track coverage anomaly from stored data
+      hasCoverageAnomaly: hasCoverageAnomaly,
     );
   }
 
@@ -519,11 +601,13 @@ class TagResult {
   // H3: Decision query helpers
 
   /// H3: Gets the decision that explains a specific allergen status.
+  /// MED-1: Returns null if no decision exists for the allergen or if decisions list is null.
   TagDecision? getAllergenDecision(String allergen) => decisions
       ?.where((d) => d.type == 'allergen' && d.key == allergen)
       .firstOrNull;
 
   /// H3: Gets the decision that explains a specific dietary status.
+  /// MED-1: Returns null if no decision exists for the dietary key or if decisions list is null.
   TagDecision? getDietaryDecision(String diet) =>
       decisions?.where((d) => d.type == 'dietary' && d.key == diet).firstOrNull;
 
@@ -611,17 +695,21 @@ class TagResult {
   /// This is different from needsRetagging which includes version mismatches.
   bool get hasFailed => generatorVersion == 'failed';
 
-  /// Checks if this result needs retagging due to version mismatch, failure, or pending status.
+  /// Checks if this result needs retagging due to version mismatch, failure, pending status,
+  /// or coverage anomaly.
   ///
   /// Returns true if:
   /// - Generator version is 'failed' (tagging error)
   /// - Generator version is 'pending' (saved offline, awaiting tagging)
   /// - Generator version differs from current version
   /// - Generator version is null (legacy data)
+  /// - Coverage value was out of range (CRIT-2)
   bool get needsRetagging {
     if (generatorVersion == null) return true;
     if (hasFailed) return true;
     if (isPending) return true;
+    if (hasCoverageAnomaly)
+      return true; // CRIT-2: Coverage anomaly triggers retagging
     return generatorVersion != kTagGeneratorVersion;
   }
 
@@ -640,6 +728,7 @@ class TagResult {
           _listEquals(unknownIngredients, other.unknownIngredients) &&
           generatorVersion == other.generatorVersion &&
           isPartial == other.isPartial &&
+          hasCoverageAnomaly == other.hasCoverageAnomaly && // CRIT-2
           _decisionsEqual(decisions, other.decisions) &&
           errorReason == other.errorReason;
 
@@ -664,7 +753,7 @@ class TagResult {
     return true;
   }
 
-  /// HIGH-6: hashCode includes decisions and errorReason (consistent with equality).
+  /// HIGH-6: hashCode includes decisions, errorReason, and hasCoverageAnomaly (consistent with equality).
   @override
   int get hashCode => Object.hash(
         tags,
@@ -674,6 +763,7 @@ class TagResult {
         Object.hashAll(unknownIngredients),
         generatorVersion,
         isPartial,
+        hasCoverageAnomaly, // CRIT-2
         decisions != null ? Object.hashAll(decisions!) : null,
         errorReason,
       );
@@ -695,6 +785,7 @@ class TagResult {
     bool? isPartial,
     List<TagDecision>? decisions,
     String? errorReason,
+    bool? hasCoverageAnomaly,
   }) {
     return TagResult(
       tags: tags ?? this.tags,
@@ -707,6 +798,7 @@ class TagResult {
       isPartial: isPartial ?? this.isPartial,
       decisions: decisions ?? this.decisions,
       errorReason: errorReason ?? this.errorReason,
+      hasCoverageAnomaly: hasCoverageAnomaly ?? this.hasCoverageAnomaly,
     );
   }
 

@@ -156,10 +156,25 @@ class FileImportStrategy extends ImportStrategy {
     }
   }
 
+  /// CRIT-10: Decodes bytes to string with charset fallback.
+  /// Tries UTF-8 first, falls back to Latin-1 (ISO-8859-1) for Swedish files.
+  String _decodeWithFallback(Uint8List bytes) {
+    try {
+      return utf8.decode(bytes);
+    } on FormatException catch (e) {
+      AppLogger.warning(
+        'CRIT-10: UTF-8 decode failed, trying Latin-1 (ISO-8859-1): $e',
+        'FileImportStrategy',
+      );
+      // Fall back to Latin-1, which can decode any byte sequence
+      return latin1.decode(bytes);
+    }
+  }
+
   Future<Recipe?> _importFromCsv(Uint8List bytes) async {
     try {
-      // Decode bytes to string
-      var csvString = utf8.decode(bytes);
+      // CRIT-10: Decode bytes with charset fallback for Swedish files
+      var csvString = _decodeWithFallback(bytes);
 
       // Remove BOM if present
       if (csvString.startsWith('\uFEFF')) {
@@ -201,8 +216,8 @@ class FileImportStrategy extends ImportStrategy {
 
   Future<List<Recipe>> _importMultipleFromCsv(Uint8List bytes) async {
     try {
-      // Decode bytes to string
-      var csvString = utf8.decode(bytes);
+      // CRIT-10: Decode bytes with charset fallback for Swedish files
+      var csvString = _decodeWithFallback(bytes);
 
       // Remove BOM if present
       if (csvString.startsWith('\uFEFF')) {
