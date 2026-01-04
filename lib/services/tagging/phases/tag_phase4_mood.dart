@@ -11,6 +11,16 @@ import 'package:butlery/services/tagging/phases/tag_phase3_complex.dart';
 /// - Swedish holidays (christmas, midsummer, easter)
 /// - Seasons (spring, summer, autumn, winter)
 class TagPhase4Mood {
+  /// MED-7: Configurable minimum seasonal ingredients required for season tag.
+  /// Default is 2 (e.g., 2 summer ingredients = 'sommar' tag).
+  final int seasonThreshold;
+
+  /// Creates Phase 4 mood/occasion tag calculator.
+  ///
+  /// [seasonThreshold]: Minimum seasonal ingredients to trigger season tag.
+  ///   Default: 2. Lower values are more permissive, higher values stricter.
+  TagPhase4Mood({this.seasonThreshold = 2});
+
   /// Calculates Phase 4 tags.
   Phase4Result calculate(
     Phase1Result p1,
@@ -127,8 +137,12 @@ class TagPhase4Mood {
     final title = recipe.core.title.toLowerCase();
 
     // Christmas (Jul)
+    // Exclude false positives like "julienne" (French cooking technique)
     final christmasKeywords = ['julskinka', 'lutfisk', 'jansson', 'julbord'];
-    if (title.contains('jul') ||
+    final julFalsePositives = ['julienne'];
+    final hasTrueJul = title.contains('jul') &&
+        !julFalsePositives.any((fp) => title.contains(fp));
+    if (hasTrueJul ||
         christmasKeywords.any((k) => title.contains(k)) ||
         _hasChristmasIngredients(p1)) {
       tags.add('jul');
@@ -194,10 +208,10 @@ class TagPhase4Mood {
     }
 
     // If we have season data, use it; otherwise fall back to name-based inference
-    if (ingredientsWithSeasonData >= _seasonThreshold) {
+    if (ingredientsWithSeasonData >= seasonThreshold) {
       // Use field-based detection when enough data is available
       for (final entry in seasonCounts.entries) {
-        if (entry.value >= _seasonThreshold) {
+        if (entry.value >= seasonThreshold) {
           tags.add(entry.key);
         }
       }
@@ -283,9 +297,6 @@ class TagPhase4Mood {
     });
   }
 
-  /// Minimum seasonal ingredients required to tag a season.
-  static const _seasonThreshold = 2;
-
   bool _hasSpringIngredients(Phase1Result p1) {
     // L3: Expanded spring ingredient list
     final springIngredients = [
@@ -304,7 +315,7 @@ class TagPhase4Mood {
       final name = i.swedish.toLowerCase();
       return springIngredients.any((k) => name.contains(k));
     }).length;
-    return matchCount >= _seasonThreshold;
+    return matchCount >= seasonThreshold;
   }
 
   bool _hasSummerIngredients(Phase1Result p1) {
@@ -330,7 +341,7 @@ class TagPhase4Mood {
     }).length;
     // Grillad counts as one seasonal indicator
     final grillBonus = p1.hasTag('grillad') ? 1 : 0;
-    return matchCount + grillBonus >= _seasonThreshold;
+    return matchCount + grillBonus >= seasonThreshold;
   }
 
   bool _hasAutumnIngredients(Phase1Result p1) {
@@ -354,7 +365,7 @@ class TagPhase4Mood {
     }).length;
     // Vilt (game) counts as one seasonal indicator
     final gameBonus = p1.hasTag('vilt') ? 1 : 0;
-    return matchCount + gameBonus >= _seasonThreshold;
+    return matchCount + gameBonus >= seasonThreshold;
   }
 
   bool _hasWinterIngredients(Phase1Result p1) {
@@ -375,7 +386,7 @@ class TagPhase4Mood {
       final name = i.swedish.toLowerCase();
       return winterIngredients.any((k) => name.contains(k));
     }).length;
-    return matchCount >= _seasonThreshold;
+    return matchCount >= seasonThreshold;
   }
 }
 

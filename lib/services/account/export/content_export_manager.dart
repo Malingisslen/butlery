@@ -165,4 +165,73 @@ class ContentExportManager {
       return {'error': e.toString()};
     }
   }
+
+  /// Export all personal tags with embedded rules (GDPR Article 20)
+  Future<Map<String, dynamic>> exportPersonalTags(String userId) async {
+    try {
+      final tags = <Map<String, dynamic>>[];
+      final tagLimit = ExportPaginationHelper.getLimitForType('personal_tags');
+
+      final tagsSnapshot =
+          await ExportPaginationHelper.paginatedCollectionExport(
+        collection: _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('personalTagIds'),
+        maxDocuments: tagLimit,
+      );
+
+      for (final doc in tagsSnapshot) {
+        tags.add({
+          'tag_id': doc.id,
+          'data': doc.data(),
+        });
+      }
+
+      return {
+        'total_count': tags.length,
+        'personal_tags': tags,
+        if (tags.length >= tagLimit) 'truncated': true,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to export personal tags', e);
+      return {'error': e.toString()};
+    }
+  }
+
+  /// Export all personal tag groups (GDPR Article 20)
+  Future<Map<String, dynamic>> exportPersonalTagGroups(String userId) async {
+    try {
+      final groups = <Map<String, dynamic>>[];
+      final groupLimit =
+          ExportPaginationHelper.getLimitForType('personal_tag_groups');
+
+      final groupsSnapshot =
+          await ExportPaginationHelper.paginatedCollectionExport(
+        collection: _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('personalTagGroups'),
+        maxDocuments: groupLimit,
+      );
+
+      for (final doc in groupsSnapshot) {
+        groups.add({
+          'group_id': doc.id,
+          'data': doc.data(),
+        });
+      }
+
+      return {
+        'total_count': groups.length,
+        'personal_tag_groups': groups,
+        if (groups.length >= groupLimit) 'truncated': true,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to export personal tag groups', e);
+      return {'error': e.toString()};
+    }
+  }
 }

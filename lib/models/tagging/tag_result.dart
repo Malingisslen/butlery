@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/tagging/tag_decision.dart';
@@ -8,6 +9,7 @@ import 'package:butlery/services/tagging/config/allergen_config.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
 import 'package:butlery/services/tagging/tag_generator.dart'
     show kTagGeneratorVersion;
+import 'package:butlery/services/tagging/tagging_events_tracker.dart';
 
 /// L12: Schema version for TagResult data structure.
 /// Increment this when making breaking changes to the serialization format.
@@ -81,10 +83,10 @@ class TagResult {
     this.errorReason,
   }) : coverage = _validateAndClampCoverage(coverage);
 
-  /// CRIT-2: Validates coverage and fails fast on invalid values.
+  /// CRIT-2/CRIT-3: Validates coverage and fails fast on invalid values.
   ///
   /// In debug: Assertion failure to catch generator bugs during development.
-  /// In release: Logs error and clamps to [0.0, 1.0] for safety.
+  /// In release: Logs error, reports to analytics, and clamps to [0.0, 1.0] for safety.
   ///
   /// Invalid coverage values indicate bugs in the tag generator that need
   /// immediate attention - they can lead to incorrect allergen/dietary claims.
@@ -104,9 +106,24 @@ class TagResult {
             'Stack trace: ${StackTrace.current}',
         'TagResult',
       );
+
+      // CRIT-3: Report to analytics for monitoring in production
+      _reportCoverageAnomaly(value);
+
       return value.clamp(0.0, 1.0);
     }
     return value;
+  }
+
+  /// CRIT-3: Reports coverage anomaly to analytics.
+  /// Fire-and-forget - analytics failures don't affect coverage validation.
+  static void _reportCoverageAnomaly(double invalidValue) {
+    try {
+      final tracker = ServiceLocator.get<TaggingEventsTracker>();
+      tracker.logCoverageAnomaly(invalidValue);
+    } catch (_) {
+      // Analytics not available - that's fine, we already logged the error
+    }
   }
 
   /// Creates an empty result for recipes with no ingredients.
@@ -213,10 +230,14 @@ class TagResult {
   }
 
   /// Converts to Firestore map (uses Timestamp for dates).
-  Map<String, dynamic> toFirestore() {
+  ///
+  /// MED-1: [includeDecisions] optionally includes decision logs in Firestore.
+  /// Defaults to false to avoid storage bloat. Set to true for debugging or
+  /// auditing failed recipes. Decisions add ~200-500 bytes per recipe.
+  Map<String, dynamic> toFirestore({bool includeDecisions = false}) {
     // M15: Sort tags for consistent ordering across all storage
     final sortedTags = tags.toList()..sort();
-    return {
+    final result = <String, dynamic>{
       'tags': sortedTags,
       'allergenStatus':
           allergenStatus.map((k, v) => MapEntry(k, v.toFirestore())),
@@ -231,9 +252,19 @@ class TagResult {
       'isPartial': isPartial,
       // L12: Include schema version for future migrations
       'schemaVersion': kTagResultSchemaVersion,
-      // V2: Include errorReason if present
-      if (errorReason != null) 'errorReason': errorReason,
     };
+
+    // V2: Include errorReason if present
+    if (errorReason != null) {
+      result['errorReason'] = errorReason;
+    }
+
+    // MED-1: Optionally include decisions for debugging/auditing
+    if (includeDecisions && decisions != null && decisions!.isNotEmpty) {
+      result['decisions'] = decisions!.map((d) => d.toJson()).toList();
+    }
+
+    return result;
   }
 
   /// Converts to JSON map (uses ISO string for dates).

@@ -17,8 +17,10 @@ class TaggingThresholds {
   /// Timeout for tag generation operations.
   static const Duration generationTimeout = Duration(seconds: 30);
 
-  /// Minimum protein ratio (of matched ingredients) for "proteinrik" tag.
-  static const double highProteinRatio = 0.25;
+  /// HIGH-9: Minimum protein ratio (of matched ingredients) for "proteinrik" tag.
+  /// Raised from 0.25 to 0.40 to require ~2 in 5 ingredients to be protein
+  /// sources, reducing tag inflation for single-protein dishes.
+  static const double highProteinRatio = 0.40;
 
   /// Minimum vegetable count for "grönsaksrik" tag.
   static const int veggieRichCount = 3;

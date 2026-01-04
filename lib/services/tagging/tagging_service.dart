@@ -7,8 +7,11 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/tagging/config/allergen_config.dart';
+import 'package:butlery/services/tagging/config/dietary_config.dart';
 import 'package:butlery/services/tagging/config/property_registry.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
@@ -101,7 +104,7 @@ class TaggingService extends BaseService {
       lookupStopwatch.stop();
     } on TimeoutException {
       lookupStopwatch.stop();
-      // CRIT-3: If lookup times out, return empty result with error reason
+      // CRIT-4: If lookup times out, return safe defaults for allergens instead of complete failure
       AppLogger.warning(
         '⏱️ Ingredient lookup timeout for recipe "${recipe.core.title}" '
             '(${ingredients.length} ingredients)',
@@ -113,11 +116,22 @@ class TaggingService extends BaseService {
         lookupMs: lookupStopwatch.elapsedMilliseconds,
         generateMs: null,
         ingredientCount: ingredients.length,
-        tagCount: 0,
+        tagCount: 1, // timeout-warning tag
         coveragePercent: 0,
         status: 'lookup_timeout',
       );
-      return TagResult.failed(reason: 'Lookup timeout');
+      // CRIT-4: Return partial result with safe defaults rather than complete failure
+      return TagResult(
+        tags: {'timeout-warning'}, // Visible indicator
+        allergenStatus: _getAllergensSafeDefaults(), // All UNKNOWN
+        dietaryStatus: _getDietarySafeDefaults(), // All UNKNOWN
+        coverage: 0.0,
+        unknownIngredients: ingredients, // Mark all as unknown
+        generatedAt: DateTime.now(),
+        generatorVersion: 'lookup_timeout',
+        isPartial: true,
+        errorReason: 'Ingredient lookup timed out after 30 seconds',
+      );
     }
 
     AppLogger.debug(
@@ -241,6 +255,51 @@ class TaggingService extends BaseService {
       operationName: 'Lookup ingredients',
       requiresAuth: false,
     );
+  }
+
+  /// HIGH-1: Quick Phase 1 preview tags for import preview UI.
+  ///
+  /// Generates only Phase 1 tags (allergens, dietary, proteins) with a shorter
+  /// timeout (5s) for responsive UI during recipe parsing. Returns null if
+  /// lookup times out or fails.
+  ///
+  /// Use this for showing immediate allergen/dietary status in the import
+  /// preview before the full tagging is done at save time.
+  Future<TagResult?> generatePhase1Preview(Recipe recipe) async {
+    try {
+      final ingredients =
+          recipe.core.ingredientsNormalized ?? recipe.core.ingredients;
+
+      if (ingredients.isEmpty) {
+        return null;
+      }
+
+      // Shorter timeout for preview (5 seconds)
+      const previewTimeout = Duration(seconds: 5);
+
+      final lookupResult = await _lookupService
+          .lookupFromRaw(ingredients, userId: _getCurrentUserId())
+          .timeout(previewTimeout);
+
+      // Generate Phase 1 only (allergens, dietary, proteins)
+      final phase1Result = _tagGenerator.generatePhase1Only(
+        ingredients: lookupResult,
+        recipe: recipe,
+      );
+
+      AppLogger.debug(
+        'Phase 1 preview: ${phase1Result.tags.length} tags, '
+        '${(phase1Result.coverage * 100).toStringAsFixed(0)}% coverage',
+      );
+
+      return phase1Result;
+    } on TimeoutException {
+      AppLogger.debug('Phase 1 preview timed out, skipping preview');
+      return null;
+    } catch (e) {
+      AppLogger.debug('Phase 1 preview failed: $e');
+      return null;
+    }
   }
 
   /// M2: Gets the current user ID from PermissionService for user-defined ingredient lookup.
@@ -446,10 +505,37 @@ class TaggingService extends BaseService {
         .replaceAll(RegExp(r'^-|-$'), '');
   }
 
+  /// CRIT-4: Returns all allergens set to UNKNOWN for safe fallback.
+  Map<String, TriState> _getAllergensSafeDefaults() {
+    return {
+      for (final key in AllergenConfig.allKeys) key: TriState.unknown,
+    };
+  }
+
+  /// CRIT-4: Returns all dietary statuses set to UNKNOWN for safe fallback.
+  Map<String, TriState> _getDietarySafeDefaults() {
+    return {
+      for (final key in DietaryConfig.allKeys) key: TriState.unknown,
+    };
+  }
+
   @override
   Future<void> onInitialize() async {
-    // C1: Validate configs at startup - fail fast on typos
-    PropertyRegistry.validateAllConfigs();
+    // MED-3: Validate configs at startup with proper error surfacing
+    // Catches errors instead of crashing the app - logs and continues with
+    // potentially degraded functionality.
+    try {
+      PropertyRegistry.validateAllConfigs();
+    } catch (e) {
+      // Log critical error but don't crash - allow app to continue
+      AppLogger.error(
+        'CRITICAL: Tagging config validation failed: $e. '
+            'Some allergen/dietary detection may not work correctly.',
+        'TaggingService',
+      );
+      // Track in analytics for monitoring
+      _eventsTracker?.logConfigValidationError(e.toString());
+    }
 
     await _lookupService.initialize();
     AppLogger.info('TaggingService ready with $kTagGeneratorVersion');

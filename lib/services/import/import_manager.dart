@@ -17,6 +17,7 @@ import 'package:butlery/services/import/cache/cache_entry.dart';
 import 'package:butlery/services/import/cache/url_normalizer.dart';
 import 'package:butlery/services/import/import_manager_result.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -81,6 +82,10 @@ class ImportManager {
     try {
       return ServiceLocator.get<TaggingService>();
     } catch (e) {
+      AppLogger.warning(
+        '⚠️ TaggingService unavailable during import: $e. '
+        'Recipes will be saved without allergen/dietary tagging.',
+      );
       return null;
     }
   }
@@ -285,6 +290,10 @@ class ImportManager {
   ///   showBatchErrors(batchResult.errors);
   /// }
   /// ```
+  /// HIGH-3: Concurrency limit for parallel batch processing.
+  /// Processing 5 recipes at a time balances speed and resource usage.
+  static const _batchConcurrencyLimit = 5;
+
   Future<BatchImportResult> batchImport(
     List<String> inputs, {
     ImportStrategy? preferredStrategy,
@@ -294,20 +303,33 @@ class ImportManager {
     final recipes = <Recipe>[];
     final errors = <String>[];
 
-    for (final input in inputs) {
-      final result = await autoImport(
-        input,
-        preferredStrategy: preferredStrategy,
-        options: options,
+    // HIGH-3: Process in parallel batches instead of sequentially
+    for (var i = 0; i < inputs.length; i += _batchConcurrencyLimit) {
+      final batchEnd = (i + _batchConcurrencyLimit).clamp(0, inputs.length);
+      final batch = inputs.sublist(i, batchEnd);
+
+      // Process this batch in parallel
+      final batchResults = await Future.wait(
+        batch.map((input) => autoImport(
+              input,
+              preferredStrategy: preferredStrategy,
+              options: options,
+            )),
       );
 
-      results.add(result);
+      for (final result in batchResults) {
+        results.add(result);
 
-      if (result.isSuccess && result.recipe != null) {
-        recipes.add(result.recipe!);
-      } else {
-        errors.add(result.errorMessage ?? 'Unknown error');
+        if (result.isSuccess && result.recipe != null) {
+          recipes.add(result.recipe!);
+        } else {
+          errors.add(result.errorMessage ?? 'Unknown error');
+        }
       }
+
+      AppLogger.debug(
+        'Batch import progress: ${results.length}/${inputs.length} processed',
+      );
     }
 
     return BatchImportResult(
@@ -394,7 +416,18 @@ class ImportManager {
             '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
           );
         } else {
+          // CRIT-1: Mark recipe as needing retagging instead of saving without marker
           AppLogger.warning('⚠️ Tagging returned null for: ${recipe.title}');
+          recipeToSave = Recipe(
+            core: recipe.core.copyWith(
+              tagResult:
+                  TagResult.failed(reason: 'Tagging service returned null'),
+            ),
+            type: recipe.type,
+            socialData: recipe.socialData,
+            realtimeData: recipe.realtimeData,
+            offlineData: recipe.offlineData,
+          );
         }
       }
 
@@ -445,9 +478,25 @@ class ImportManager {
         );
       }
 
+      // HIGH-1: Generate preview tags for immediate allergen/dietary display
+      var recipeWithPreview = importResult.recipe!;
+      if (_taggingService != null && recipeWithPreview.tagResult == null) {
+        final previewTags =
+            await _taggingService!.generatePhase1Preview(recipeWithPreview);
+        if (previewTags != null) {
+          recipeWithPreview = Recipe(
+            core: recipeWithPreview.core.copyWith(tagResult: previewTags),
+            type: recipeWithPreview.type,
+            socialData: recipeWithPreview.socialData,
+            realtimeData: recipeWithPreview.realtimeData,
+            offlineData: recipeWithPreview.offlineData,
+          );
+        }
+      }
+
       // Return parsed recipe WITHOUT saving to storage
       return ImportManagerResult.success(
-        importResult.recipe!,
+        recipeWithPreview,
         strategy: strategy.strategyName,
         warnings: importResult.warnings,
         metadata: importResult.metadata,
@@ -499,10 +548,20 @@ class ImportManager {
       }
 
       // Create recipe from cached data
-      final recipe = _recipeFromCacheEntry(cacheEntry);
+      var recipe = _recipeFromCacheEntry(cacheEntry);
       if (recipe == null) {
         AppLogger.warning('ImportManager: Invalid recipe data in cache');
         return null;
+      }
+
+      // HIGH-2: Check if cached recipe needs retagging
+      final needsRetagging = _cachedRecipeNeedsRetagging(recipe, cacheEntry);
+      if (needsRetagging) {
+        AppLogger.info(
+          'ImportManager: Cache hit but needs retagging '
+          '(age: ${cacheEntry.ageInDays} days)',
+        );
+        recipe = await _retagCachedRecipe(recipe);
       }
 
       // Note: Recipe is NOT saved here - user will save after reviewing in editor
@@ -521,6 +580,7 @@ class ImportManager {
           'originalPipeline': cacheEntry.extractionMeta.pipeline,
           'originalTier': cacheEntry.extractionMeta.tier,
           'originalMethod': cacheEntry.extractionMeta.method,
+          'retagged': needsRetagging,
         },
       );
     } catch (e) {
@@ -609,5 +669,59 @@ class ImportManager {
     if (lower.contains('archive')) return 'archive';
 
     return 'website'; // Default for URL imports
+  }
+
+  /// HIGH-2: Checks if a cached recipe needs retagging.
+  ///
+  /// Returns true if:
+  /// - Cache entry is older than 30 days
+  /// - Recipe has no tags
+  /// - Recipe's tagResult indicates it needs retagging
+  bool _cachedRecipeNeedsRetagging(Recipe recipe, CacheEntry cacheEntry) {
+    // Age-based retagging (> 30 days)
+    if (cacheEntry.ageInDays > 30) {
+      return true;
+    }
+
+    // No tags at all
+    final tagResult = recipe.tagResult;
+    if (tagResult == null) {
+      return true;
+    }
+
+    // Check if tagResult indicates it needs retagging
+    return tagResult.needsRetagging;
+  }
+
+  /// HIGH-2: Retags a cached recipe.
+  ///
+  /// Returns the recipe with updated tags, or the original recipe if
+  /// tagging fails.
+  Future<Recipe> _retagCachedRecipe(Recipe recipe) async {
+    final taggingService = _taggingService;
+    if (taggingService == null) {
+      return recipe; // Can't retag without service
+    }
+
+    try {
+      final tagResult = await taggingService.generateTags(recipe);
+      if (tagResult != null) {
+        AppLogger.success(
+          '✅ Retagged cached recipe with ${tagResult.tags.length} tags '
+          '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
+        );
+        return Recipe(
+          core: recipe.core.copyWith(tagResult: tagResult),
+          type: recipe.type,
+          socialData: recipe.socialData,
+          realtimeData: recipe.realtimeData,
+          offlineData: recipe.offlineData,
+        );
+      }
+    } catch (e) {
+      AppLogger.warning('Failed to retag cached recipe: $e');
+    }
+
+    return recipe; // Return original on failure
   }
 }

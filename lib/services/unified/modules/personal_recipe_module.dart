@@ -17,6 +17,21 @@ import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
+/// HIGH-10: Recipe sync status for tracking background Firebase sync state.
+enum RecipeSyncStatus {
+  /// Recipe saved locally, background sync pending.
+  pending,
+
+  /// Recipe successfully synced to Firebase.
+  synced,
+
+  /// Sync failed after max retries - recipe is local only.
+  failed,
+
+  /// Recipe is being actively synced.
+  syncing,
+}
+
 /// Personal recipe CRUD operations module handling recipe creation, updates, import/export, and local storage.
 class PersonalRecipeModule {
   final RecipeRepository _recipeRepository;
@@ -31,7 +46,15 @@ class PersonalRecipeModule {
   final PersonalTagService? _personalTagService;
   final RateLimiter _rateLimiter = RateLimiter();
 
+  /// HIGH-10: Tracks sync status for each recipe by ID.
+  final Map<String, RecipeSyncStatus> _syncStatus = {};
+
   JsonCacheHelper get _cacheHelper => _getCacheHelper();
+
+  /// HIGH-10: Gets the current sync status for a recipe.
+  /// Returns [RecipeSyncStatus.synced] if no status is tracked (assumed synced from Firebase).
+  RecipeSyncStatus getSyncStatus(String recipeId) =>
+      _syncStatus[recipeId] ?? RecipeSyncStatus.synced;
 
   PersonalRecipeModule({
     required RecipeRepository recipeRepository,
@@ -552,7 +575,17 @@ class PersonalRecipeModule {
     // This would be handled by the parent service
   }
 
-  void _startBackgroundRecipeSync(Recipe recipe, String operation) {
+  /// Max retry attempts for background sync to prevent infinite loops.
+  static const _maxBackgroundRetries = 5;
+
+  /// Tracks retry attempts per recipe to enforce limits.
+  final Map<String, int> _backgroundRetryCount = {};
+
+  void _startBackgroundRecipeSync(Recipe recipe, String operation,
+      {int retryAttempt = 0}) {
+    // HIGH-10: Mark as syncing when starting
+    _syncStatus[recipe.id] = RecipeSyncStatus.syncing;
+
     // Use Future.microtask to ensure this runs asynchronously without blocking
     Future.microtask(() async {
       try {
@@ -570,25 +603,52 @@ class PersonalRecipeModule {
         if (success) {
           AppLogger.success(
               '✅ Background $operation completed for: ${recipe.title}');
+          // HIGH-10: Mark as synced and clear retry counter on success
+          _syncStatus[recipe.id] = RecipeSyncStatus.synced;
+          _backgroundRetryCount.remove(recipe.id);
         } else {
           AppLogger.error(
               '❌ Background $operation failed for: ${recipe.title}');
+          // HIGH-10: Mark as pending for retry
+          _syncStatus[recipe.id] = RecipeSyncStatus.pending;
           // Recipe is still in cache for retry later
-          _scheduleRetrySync(recipe, operation);
+          _scheduleRetrySync(recipe, operation, retryAttempt);
         }
       } catch (e) {
         AppLogger.error(
             '❌ Background $operation error for ${recipe.title}: $e');
-        _scheduleRetrySync(recipe, operation);
+        // HIGH-10: Mark as pending for retry
+        _syncStatus[recipe.id] = RecipeSyncStatus.pending;
+        _scheduleRetrySync(recipe, operation, retryAttempt);
       }
     });
   }
 
-  void _scheduleRetrySync(Recipe recipe, String operation) {
-    // Retry after 5 seconds with exponential backoff
-    Future.delayed(const Duration(seconds: 5), () {
-      AppLogger.info('🔄 Retrying background $operation for: ${recipe.title}');
-      _startBackgroundRecipeSync(recipe, operation);
+  void _scheduleRetrySync(Recipe recipe, String operation, int currentAttempt) {
+    final nextAttempt = currentAttempt + 1;
+
+    // Enforce maximum retry limit
+    if (nextAttempt > _maxBackgroundRetries) {
+      AppLogger.error(
+        '❌ Max retry attempts ($_maxBackgroundRetries) reached for '
+        '$operation: ${recipe.title}. Recipe remains in cache for manual sync.',
+      );
+      // HIGH-10: Mark as failed when max retries exceeded
+      _syncStatus[recipe.id] = RecipeSyncStatus.failed;
+      return;
+    }
+
+    // Exponential backoff: 5s, 10s, 20s, 40s, 80s
+    final delaySeconds = 5 * (1 << currentAttempt);
+    final delay = Duration(seconds: delaySeconds.clamp(5, 120));
+
+    AppLogger.info(
+      '🔄 Scheduling retry $nextAttempt/$_maxBackgroundRetries '
+      'for $operation: ${recipe.title} in ${delay.inSeconds}s',
+    );
+
+    Future.delayed(delay, () {
+      _startBackgroundRecipeSync(recipe, operation, retryAttempt: nextAttempt);
     });
   }
 

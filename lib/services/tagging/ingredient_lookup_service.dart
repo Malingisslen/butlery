@@ -1,8 +1,10 @@
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
+import 'package:butlery/services/tagging/tagging_events_tracker.dart';
 import 'package:butlery/utils/text/ingredient_normalizer.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 
@@ -24,6 +26,91 @@ class IngredientLookupService extends BaseService {
   /// Uses null character separator to prevent key collision attacks.
   /// Null values are cached to avoid repeated failed lookups.
   static const int _cacheMaxSize = 500;
+
+  /// HIGH-11: Swedish compound word suffixes for space-insertion matching.
+  /// TODO: Move to Firebase config (tagging_config/compound_suffixes) for
+  /// dynamic updates without app release.
+  static const List<String> _compoundSuffixes = [
+    'bröst',
+    'filé',
+    'kött',
+    'fläsk',
+    'skinka',
+    'korv',
+    'färs',
+    'mjölk',
+    'grädde',
+    'ost',
+    'smör',
+    'olja',
+    'sås',
+    'soppa',
+    'bröd',
+    'pasta',
+    'ris',
+    'potatis',
+    'lök',
+    'vitlök',
+  ];
+
+  /// HIGH-11: Swedish compound word endings for base extraction.
+  /// Comprehensive list synced with IngredientNormalizer patterns.
+  /// TODO: Move to Firebase config for dynamic updates.
+  static const List<String> _compoundEndings = [
+    // Primary meat/protein suffixes
+    'sås',
+    'filé',
+    'kött',
+    'fläsk',
+    'skinka',
+    'korv',
+    'bröst',
+    'lår',
+    'ben',
+    'bog',
+    'rygg',
+    'färs',
+    'lever',
+    'njure',
+    'kotlett',
+    'kotletter',
+    'stek',
+    // Dairy and fats
+    'mjölk',
+    'grädde',
+    'smör',
+    'ost',
+    'olja',
+    'fett',
+    // Prepared foods and sauces
+    'soppa',
+    'bullar',
+    'bröd',
+    'kakor',
+    'pasta',
+    'puré',
+    'passata',
+    'buljong',
+    'fond',
+    // Vegetables
+    'lök',
+    'kål',
+    'rot',
+    'blad',
+    'stjälk',
+    'stjälkar',
+    // Preparation/cuts
+    'klyftor',
+    'klyft',
+    'skivor',
+    'skiva',
+    'bitar',
+    'bit',
+    'tärningar',
+    // Other common
+    'ris',
+    'mjöl',
+  ];
 
   /// CRIT-3: Cache version incremented on clear to detect stale operations.
   int _cacheVersion = 0;
@@ -208,6 +295,29 @@ class IngredientLookupService extends BaseService {
       _lookupCache.length == _lruOrder.length,
       'CRIT-3: Cache/LRU desync: cache=${_lookupCache.length}, lru=${_lruOrder.length}',
     );
+
+    // CRIT-3: Production validation - also check in release builds
+    if (_lookupCache.length != _lruOrder.length) {
+      AppLogger.error(
+        'CRIT-3: Cache/LRU desync in production: '
+            'cache=${_lookupCache.length}, lru=${_lruOrder.length}',
+        'IngredientLookupService',
+      );
+      _reportCacheDesync();
+    }
+  }
+
+  /// CRIT-3: Reports cache desync to analytics.
+  void _reportCacheDesync() {
+    try {
+      final tracker = ServiceLocator.get<TaggingEventsTracker>();
+      tracker.logCacheDesync(
+        cacheLength: _lookupCache.length,
+        lruLength: _lruOrder.length,
+      );
+    } catch (_) {
+      // Analytics not available
+    }
   }
 
   /// Cleans a normalized name for database lookup.
@@ -233,30 +343,8 @@ class IngredientLookupService extends BaseService {
     }
 
     // M6: Add space-inserted variations for compound words
-    // Common Swedish food compound word suffixes
-    final compoundSuffixes = [
-      'bröst',
-      'filé',
-      'kött',
-      'fläsk',
-      'skinka',
-      'korv',
-      'färs',
-      'mjölk',
-      'grädde',
-      'ost',
-      'smör',
-      'olja',
-      'sås',
-      'soppa',
-      'bröd',
-      'pasta',
-      'ris',
-      'potatis',
-      'lök',
-      'vitlök',
-    ];
-    for (final suffix in compoundSuffixes) {
+    // HIGH-11: Use centralized compound suffixes list
+    for (final suffix in _compoundSuffixes) {
       if (name.endsWith(suffix) && name.length > suffix.length + 2) {
         final base = name.substring(0, name.length - suffix.length);
         if (base.isNotEmpty) {
@@ -346,41 +434,9 @@ class IngredientLookupService extends BaseService {
     // L4 fix: This also handles cases where IngredientNormalizer._extractBaseIngredient
     // didn't extract the base because it wasn't in KnownIngredients. By trying the
     // extracted base as a variation here, we can still match unknown compounds.
+    // HIGH-11: Use centralized compound endings list
     if (name.length > 6) {
-      // Comprehensive list of compound endings (synced with normalizer + additions)
-      final compoundEndings = [
-        // From normalizer's _extractBaseIngredient
-        'sås',
-        'filé',
-        'kött',
-        'bröst',
-        'lår',
-        'pasta',
-        'bitar',
-        'tärningar',
-        'skiva',
-        'skivor',
-        'kotlett',
-        'kotletter',
-        'stek',
-        'färs',
-        'puré',
-        'passata',
-        'buljong',
-        'fond',
-        // Additional common endings
-        'klyftor',
-        'klyft',
-        'bit',
-        'stjälk',
-        'stjälkar',
-        'blad',
-        'mjöl',
-        'olja',
-        'ris',
-      ];
-
-      for (final ending in compoundEndings) {
+      for (final ending in _compoundEndings) {
         if (name.endsWith(ending) && name.length > ending.length + 2) {
           variations.add(name.substring(0, name.length - ending.length));
         }

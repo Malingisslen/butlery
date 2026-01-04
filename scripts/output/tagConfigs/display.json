@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "version": 1,
+  "updatedAt": "2026-01-02T13:56:49.919431Z",
+  "updatedBy": "migration-script",
+  "categoryOrder": [
+    "allergens",
+    "dietary",
+    "proteins",
+    "cuisines",
+    "time",
+    "cooking-method"
+  ],
+  "uiGroupNames": {
+    "sv": {
+      "dairy": "Mjölk & Laktos",
+      "nuts": "Nötter",
+      "seafood": "Fisk & Skaldjur",
+      "meat": "Kött"
+    },
+    "en": {
+      "dairy": "Dairy & Lactose",
+      "nuts": "Nuts",
+      "seafood": "Fish & Shellfish",
+      "meat": "Meat"
+    }
+  }
+}

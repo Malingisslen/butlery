@@ -2,7 +2,8 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 
-import 'package:butlery/core/storage/drift/daos/cache_dao.dart';
+// Use conditional import for platform-specific cache DAO
+import 'package:butlery/core/cache/cache_dao_interface.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/core/utils/logger.dart';

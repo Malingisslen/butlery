@@ -9,6 +9,9 @@ import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 /// - Dietary combinations (pescetarian, halal-friendly)
 /// - Practical tags (few-ingredients)
 class TagPhase2Derived {
+  /// HIGH-8: Minimum coverage required for spicy tag to be meaningful.
+  static const _minCoverageForSpicy = 0.5;
+
   /// Calculates Phase 2 tags.
   Phase2Result calculate(Phase1Result phase1, Recipe recipe) {
     final tags = <String>{};
@@ -20,20 +23,21 @@ class TagPhase2Derived {
     if (phase1.hasTag('potatisbaserad')) tags.add('potato-dish');
     if (phase1.hasTag('brödbaserad')) tags.add('bread-dish');
 
-    // M4: Spicy/mild tags with INTENTIONAL asymmetry for safety:
+    // HIGH-8: Spicy/mild tags with coverage thresholds:
     //
-    // SPICY ('stark'): Added if ANY matched ingredient is spicy, even at low
-    //   coverage. Rationale: Better to warn users about potential spice than
-    //   miss it. A recipe with 50% coverage and one spicy ingredient SHOULD
-    //   warn users who are sensitive to spicy food.
+    // SPICY ('stark'): Added if ANY matched ingredient is spicy AND coverage
+    //   is at least 50%. Rationale: Need enough information to make a meaningful
+    //   claim. At very low coverage (e.g., 20%), one spicy ingredient out of
+    //   few identified doesn't reliably indicate the dish is spicy overall.
     //
     // MILD ('mild'): Only added at 100% coverage AND no spicy ingredients.
     //   Rationale: Can only claim "mild" when we've verified ALL ingredients.
-    //   A recipe with 50% coverage should NOT claim to be mild - unknowns
+    //   A recipe with partial coverage should NOT claim to be mild - unknowns
     //   might be spicy.
     //
-    // This asymmetry protects users who are sensitive to spicy food.
-    if (phase1.hasProperty('is-spicy')) {
+    // At low coverage (<50%): No spicy/mild tag added - insufficient information.
+    if (phase1.hasProperty('is-spicy') &&
+        phase1.lookup.coverage >= _minCoverageForSpicy) {
       tags.add('stark');
     } else if (phase1.lookup.hasFullCoverage) {
       tags.add('mild');

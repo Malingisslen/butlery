@@ -428,6 +428,26 @@ class RecipeFormState extends ChangeNotifier {
     _scheduleAutoSave();
   }
 
+  /// Sets the personal tag names directly (from PersonalTagSelector).
+  /// Replaces all current tags with the provided list.
+  ///
+  /// HIGH-6: Filters empty strings from input before storing.
+  void setPersonalTagNames(List<String> tagNames) {
+    // HIGH-6: Always filter empty strings before storing
+    final cleanedTags = tagNames.where((t) => t.trim().isNotEmpty).toList();
+
+    // Add an empty field at the end for the DynamicListBuilder UI
+    final tagsWithEmpty =
+        cleanedTags.isNotEmpty ? [...cleanedTags, ''] : <String>[''];
+    _tagsManager.updateItems(tagsWithEmpty);
+    notifyListeners();
+    _scheduleAutoSave();
+  }
+
+  /// HIGH-6: Returns cleaned tag names for persistence/sync (without empty UI field).
+  List<String> get personalTagNamesForSync =>
+      _tagsManager.values.where((t) => t.trim().isNotEmpty).toList();
+
   void setImageUrls(List<String> imageUrls, {bool skipAutoSave = false}) {
     _imageUrls = List<String>.from(imageUrls);
     notifyListeners();

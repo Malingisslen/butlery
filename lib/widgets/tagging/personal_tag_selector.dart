@@ -47,14 +47,40 @@ class PersonalTagSelector extends StatefulWidget {
 class _PersonalTagSelectorState extends State<PersonalTagSelector> {
   late PersonalTagViewModel _viewModel;
   bool _initialized = false;
+  String? _error; // HIGH-7: Track error state
 
   @override
   void initState() {
     super.initState();
     _viewModel = PersonalTagViewModel();
-    _viewModel.initialize().then((_) {
-      if (mounted) setState(() => _initialized = true);
+    _loadTags();
+  }
+
+  Future<void> _loadTags() async {
+    try {
+      await _viewModel.initialize();
+      if (mounted) {
+        setState(() {
+          _initialized = true;
+          _error = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _initialized = true;
+          _error = 'Kunde inte ladda taggar';
+        });
+      }
+    }
+  }
+
+  Future<void> _retryLoad() async {
+    setState(() {
+      _initialized = false;
+      _error = null;
     });
+    await _loadTags();
   }
 
   @override
@@ -133,6 +159,11 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
                 );
               }
 
+              // HIGH-7: Show error state if loading failed
+              if (_error != null) {
+                return _buildErrorState(_error!);
+              }
+
               if (!viewModel.hasTags) {
                 return _buildEmptyState();
               }
@@ -177,6 +208,40 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
     );
   }
 
+  /// HIGH-7: Error state with retry button.
+  Widget _buildErrorState(String message) {
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      decoration: BoxDecoration(
+        color: AppColors.error.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.error_outline,
+            color: AppColors.error,
+            size: 20,
+          ),
+          const SizedBox(width: AppDimensions.spacingM),
+          Expanded(
+            child: Text(
+              message,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.error,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: _retryLoad,
+            child: const Text('Försök igen'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTagChips(List<PersonalTag> tags) {
     return Wrap(
       spacing: AppDimensions.spacingS,
@@ -206,25 +271,33 @@ class _PersonalTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FilterChip(
-      label: Text(tag.name),
+    // MED-12: Accessibility label for screen readers
+    return Semantics(
+      label: isSelected
+          ? '${tag.name}, vald. Dubbeltryck för att ta bort.'
+          : '${tag.name}. Dubbeltryck för att välja.',
       selected: isSelected,
-      onSelected: (_) => onTap(),
-      backgroundColor: AppColors.backgroundBeige,
-      selectedColor: AppColors.primaryBlue.withValues(alpha: 0.2),
-      checkmarkColor: AppColors.primaryBlue,
-      side: BorderSide(
-        color: isSelected ? AppColors.primaryBlue : AppColors.divider,
+      button: true,
+      child: FilterChip(
+        label: Text(tag.name),
+        selected: isSelected,
+        onSelected: (_) => onTap(),
+        backgroundColor: AppColors.backgroundBeige,
+        selectedColor: AppColors.primaryBlue.withValues(alpha: 0.2),
+        checkmarkColor: AppColors.primaryBlue,
+        side: BorderSide(
+          color: isSelected ? AppColors.primaryBlue : AppColors.divider,
+        ),
+        labelStyle: AppTextStyles.bodySmall.copyWith(
+          color: isSelected ? AppColors.primaryBlue : AppColors.textDark,
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+        ),
+        avatar: isSelected
+            ? null
+            : const Icon(Icons.label_outline,
+                size: 14, color: AppColors.primaryBlue),
+        showCheckmark: isSelected,
       ),
-      labelStyle: AppTextStyles.bodySmall.copyWith(
-        color: isSelected ? AppColors.primaryBlue : AppColors.textDark,
-        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-      ),
-      avatar: isSelected
-          ? null
-          : const Icon(Icons.label_outline,
-              size: 14, color: AppColors.primaryBlue),
-      showCheckmark: isSelected,
     );
   }
 }
@@ -297,28 +370,32 @@ class _MiniTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.label, size: 12, color: AppColors.primaryBlue),
-          const SizedBox(width: 2),
-          Text(
-            tag.name,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.primaryBlue,
-              fontWeight: FontWeight.w500,
-            ),
+    // MED-12: Accessibility label for screen readers
+    return Semantics(
+      label: 'Tagg: ${tag.name}',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppColors.primaryBlue.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.primaryBlue.withValues(alpha: 0.3),
           ),
-        ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.label, size: 12, color: AppColors.primaryBlue),
+            const SizedBox(width: 2),
+            Text(
+              tag.name,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.primaryBlue,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -334,29 +411,33 @@ class _SimpleTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.label_outline,
-              size: 12, color: AppColors.primaryBlue),
-          const SizedBox(width: 4),
-          Text(
-            name,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.primaryBlue,
-              fontWeight: FontWeight.w500,
-            ),
+    // MED-12: Accessibility label for screen readers
+    return Semantics(
+      label: 'Tagg: $name',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppColors.primaryBlue.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.primaryBlue.withValues(alpha: 0.3),
           ),
-        ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.label_outline,
+                size: 12, color: AppColors.primaryBlue),
+            const SizedBox(width: 4),
+            Text(
+              name,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.primaryBlue,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -393,6 +474,10 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
   static List<PersonalTag> _sharedTags = [];
   static int _subscriberCount = 0;
 
+  /// MED-10: Static callback list for all instances.
+  /// Each instance registers its own callback to properly check its mounted state.
+  static final List<VoidCallback> _listeners = [];
+
   bool _loaded = false;
 
   @override
@@ -410,6 +495,9 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
   void _subscribe() {
     _subscriberCount++;
 
+    // MED-10: Add this instance's callback to the list
+    _listeners.add(_onTagsUpdated);
+
     // If we already have data, mark as loaded immediately
     if (_sharedTags.isNotEmpty) {
       _loaded = true;
@@ -422,28 +510,36 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
         _sharedSubscription = service.watchTags().listen(
           (tags) {
             _sharedTags = tags;
-            // Notify all mounted instances
-            if (mounted) {
-              setState(() => _loaded = true);
+            // MED-10: Notify ALL registered listeners, not just the first instance
+            for (final listener in _listeners.toList()) {
+              listener();
             }
           },
           onError: (error) {
             AppLogger.debug('AutoPersonalTagDisplay: Stream error: $error');
-            if (mounted) {
-              setState(() => _loaded = true);
+            // MED-10: Notify ALL registered listeners on error
+            for (final listener in _listeners.toList()) {
+              listener();
             }
           },
         );
       } catch (e) {
         AppLogger.debug('AutoPersonalTagDisplay: Failed to subscribe: $e');
-        if (mounted) {
-          setState(() => _loaded = true);
-        }
+        _onTagsUpdated(); // Notify just this instance on setup failure
       }
     }
   }
 
+  /// MED-10: Instance-specific callback that checks this instance's mounted state.
+  void _onTagsUpdated() {
+    if (mounted) {
+      setState(() => _loaded = true);
+    }
+  }
+
   void _unsubscribe() {
+    // MED-10: Remove this instance's callback from the list
+    _listeners.remove(_onTagsUpdated);
     _subscriberCount--;
 
     // Cancel shared subscription when last subscriber disposes
@@ -452,6 +548,7 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
       _sharedSubscription = null;
       _sharedTags = [];
       _subscriberCount = 0;
+      _listeners.clear(); // MED-10: Clear listeners list
     }
   }
 

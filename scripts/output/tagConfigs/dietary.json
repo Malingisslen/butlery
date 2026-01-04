@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 1,
+  "version": 1,
+  "updatedAt": "2026-01-02T13:56:49.910385Z",
+  "updatedBy": "migration-script",
+  "displayOrder": [
+    "vegetarisk",
+    "vegansk",
+    "pescetarian",
+    "graviditetssäker",
+    "barnvänlig",
+    "halalanpassad",
+    "kosheranpassad",
+    "nötkötsfri",
+    "aip-vänlig"
+  ],
+  "entries": [
+    {
+      "key": "vegetarisk",
+      "tags": {
+        "sv": "vegetarisk",
+        "en": "vegetarian"
+      },
+      "excludedProperties": [
+        "meat",
+        "seafood"
+      ],
+      "requiresFullCoverage": true,
+      "description": {
+        "sv": "Ingen ingrediens har kött eller fisk/skaldjur"
+      },
+      "enabled": true,
+      "priority": 1
+    },
+    {
+      "key": "vegansk",
+      "tags": {
+        "sv": "vegansk",
+        "en": "vegan"
+      },
+      "excludedProperties": [
+        "animal-product"
+      ],
+      "requiresFullCoverage": true,
+      "description": {
+        "sv": "Ingen ingrediens har animaliska produkter"
+      },
+      "enabled": true,
+      "priority": 2
+    },
+    {
+      "key": "pescetarian",
+      "tags": {
+        "sv": "pescetarian",
+        "en": "pescetarian"
+      },
+      "excludedProperties": [
+        "meat"
+      ],
+      "requiredProperties": [
+        "fish",
+        "crustacean",
+        "mollusc"
+      ],
+      "requiresFullCoverage": true,
+      "description": {
+        "sv": "Ingen kött + minst en fisk/skaldjur"
+      },
+      "enabled": true,
+      "priority": 3
+    },
+    {
+      "key": "graviditetssäker",
+      "tags": {
+        "sv": "graviditetssäker",
+        "en": "pregnancy-safe"
+      },
+      "excludedProperties": [
+        "high-mercury",
+        "contains-alcohol"
+      ],
+      "requiresFullCoverage": true,
+      "description": {
+        "sv": "Undvik stor rovfisk och alkohol"
+      },
+      "enabled": true,
+      "priority": 4
+    },
+    {
+      "key": "barnvänlig",
+      "tags": {
+        "sv": "barnvänlig",
+        "en": "kid-friendly"
+      },
+      "excludedProperties": [
+        "is-spicy",
+        "contains-alcohol"
+      ],
+      "requiresFullCoverage": true,
+      "description": {
+        "sv": "Ej starkt, ej alkohol"
+      },
+      "enabled": true,
+      "priority": 5
+    },
+    {
+      "key": "halalanpassad",
+      "tags": {
+        "sv": "halalanpassad",
+        "en": "halal-friendly"
+      },
+      "excludedProperties": [
+        "pork",
+        "contains-alcohol"
+      ],
+      "requiresFullCoverage": true,
+      "description": {
+        "sv": "Ej fläsk, ej alkohol"
+      },
+      "enabled": true,
+      "priority": 6
+    },
+    {
+      "key": "kosheranpassad",
+      "tags": {
+        "sv": "kosheranpassad",
+        "en": "kosher-friendly"
+      },
+      "excludedProperties": [
+        "pork",
+        "crustacean",
+        "mollusc"
+      ],
+      "requiresFullCoverage": true,
+      "description": {
+        "sv": "Ej fläsk, ej skaldjur"
+      },
+      "enabled": true,
+      "priority": 7
+    },
+    {
+      "key": "nötkötsfri",
+      "tags": {
+        "sv": "nötkötsfri",
+        "en": "beef-free"
+      },
+      "excludedProperties": [
+        "beef"
+      ],
+      "requiresFullCoverage": true,
+      "description": {
+        "sv": "Ej nötkött"
+      },
+      "enabled": true,
+      "priority": 8
+    },
+    {
+      "key": "aip-vänlig",
+      "tags": {
+        "sv": "aip-vänlig",
+        "en": "aip-friendly"
+      },
+      "excludedProperties": [
+        "nightshade",
+        "contains-gluten",
+        "dairy",
+        "egg",
+        "soy",
+        "peanut",
+        "tree-nut",
+        "contains-alcohol"
+      ],
+      "requiresFullCoverage": true,
+      "description": {
+        "sv": "Autoimmun protokoll - inga nattskuggväxter eller vanliga allergener"
+      },
+      "enabled": true,
+      "priority": 9
+    }
+  ]
+}

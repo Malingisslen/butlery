@@ -78,4 +78,58 @@ class ContentDeletionOperations {
       return false;
     }
   }
+
+  /// Delete personal tags (GDPR Article 17 - Right to Erasure)
+  Future<bool> deletePersonalTags(String userId) async {
+    try {
+      final tagsSnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('personalTagIds')
+          .get();
+
+      await _deleteInBatches(tagsSnapshot.docs);
+      app_logger.AppLogger.info(
+          '[$_logTag] Deleted ${tagsSnapshot.docs.length} personal tags');
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete personal tags', e);
+      return false;
+    }
+  }
+
+  /// Delete personal tag groups (GDPR Article 17 - Right to Erasure)
+  Future<bool> deletePersonalTagGroups(String userId) async {
+    try {
+      final groupsSnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('personalTagGroups')
+          .get();
+
+      await _deleteInBatches(groupsSnapshot.docs);
+      app_logger.AppLogger.info(
+          '[$_logTag] Deleted ${groupsSnapshot.docs.length} personal tag groups');
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete personal tag groups', e);
+      return false;
+    }
+  }
+
+  /// Helper to delete documents in batches of 500 (Firestore limit)
+  Future<void> _deleteInBatches(
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) async {
+    const batchLimit = 500;
+    for (var i = 0; i < docs.length; i += batchLimit) {
+      final batch = _firestore.batch();
+      final chunk = docs.skip(i).take(batchLimit);
+      for (final doc in chunk) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+    }
+  }
 }

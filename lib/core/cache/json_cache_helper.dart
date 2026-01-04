@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:butlery/core/storage/drift/daos/cache_dao.dart';
+// Use conditional import for platform-specific cache DAO
+import 'package:butlery/core/cache/cache_dao_interface.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// JSON cache helper that uses Drift database for storage

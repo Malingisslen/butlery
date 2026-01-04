@@ -45,6 +45,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
 import 'package:butlery/widgets/recipe/recipe_form/dynamic_list_builder.dart';
 import 'package:butlery/widgets/tagging/tag_editor_dialog.dart';
+import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
 
 /// Comprehensive recipe editing view with all components inlined.
 class EditRecipeView extends StatelessWidget {
@@ -399,17 +400,17 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
-      // Tags dynamic list (user-provided simple tags)
-      DynamicListBuilder(
-        label: 'Tagg',
-        controllers: viewModel.tagControllers,
-        onUpdate: viewModel.updateTag,
-        onAdd: viewModel.addTag,
-        onRemove: viewModel.removeTag,
+      // Personal tags selector (select from predefined tags)
+      // Users can create new tags via the "Hantera" button
+      PersonalTagSelector(
+        selectedTagNames: viewModel.tags.where((t) => t.isNotEmpty).toList(),
+        onChanged: viewModel.setPersonalTagNames,
+        title: 'Personliga taggar',
+        showManageButton: true,
       ),
       const SizedBox(height: AppDimensions.spacingM),
 
-      // Auto-generated tags management
+      // Auto-generated tags management (allergens, dietary, etc.)
       _buildManageTagsButton(context, viewModel),
       const SizedBox(height: AppDimensions.spacingXl),
 

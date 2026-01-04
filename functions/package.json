@@ -11,6 +11,7 @@
     "logs": "firebase functions:log",
     "sync-ingredients": "npx ts-node src/admin/sync-ingredients.ts",
     "sync-ingredients:dry-run": "npx ts-node src/admin/sync-ingredients.ts --dry-run --verbose",
+    "seed-tag-configs": "npx ts-node src/admin/seed-tag-configs.ts",
     "test:parity": "npx ts-node src/__tests__/normalization-parity.test.ts"
   },
   "engines": {
