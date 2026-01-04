@@ -113,4 +113,47 @@ class TaggingEventsTracker {
       },
     );
   }
+
+  /// CRIT-3: Log coverage anomaly when value is outside [0.0, 1.0] range.
+  ///
+  /// This indicates a bug in the tag generator that must be investigated.
+  Future<void> logCoverageAnomaly(double invalidValue) async {
+    await _analytics.logEvent(
+      name: 'tagging_coverage_anomaly',
+      parameters: {
+        'invalid_value': invalidValue,
+        'clamped_to': invalidValue.clamp(0.0, 1.0),
+        'severity': 'critical',
+      },
+    );
+  }
+
+  /// Log LRU cache desync when cache and LRU order list have different lengths.
+  Future<void> logCacheDesync({
+    required int cacheLength,
+    required int lruLength,
+  }) async {
+    await _analytics.logEvent(
+      name: 'tagging_cache_desync',
+      parameters: {
+        'cache_length': cacheLength,
+        'lru_length': lruLength,
+        'difference': (cacheLength - lruLength).abs(),
+        'severity': 'critical',
+      },
+    );
+  }
+
+  /// MED-3: Log config validation error at startup.
+  ///
+  /// This indicates typos in allergen/dietary config properties that need fixing.
+  Future<void> logConfigValidationError(String error) async {
+    await _analytics.logEvent(
+      name: 'tagging_config_validation_error',
+      parameters: {
+        'error': error.length > 100 ? error.substring(0, 100) : error,
+        'severity': 'critical',
+      },
+    );
+  }
 }

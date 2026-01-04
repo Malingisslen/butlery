@@ -27,6 +27,11 @@ import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
 
+// Re-export RetaggingScheduler for app-level integration
+// Note: RetaggingScheduler requires callback functions for recipes,
+// so it must be instantiated at the app level, not in DI
+export 'package:butlery/services/tagging/retagging_scheduler.dart';
+
 /// Tagging module providing automatic recipe tagging services.
 ///
 /// Registers:

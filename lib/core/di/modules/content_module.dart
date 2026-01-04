@@ -375,17 +375,17 @@ class ContentModule implements DIModule {
     try {
       final container = GetIt.instance;
 
-      // Initialize UnifiedRecipeService
+      // Initialize OfflineService FIRST - other services depend on its database
+      final offlineService = container<OfflineService>();
+      await offlineService.initialize();
+
+      // Initialize UnifiedRecipeService (depends on OfflineService.database)
       final unifiedRecipeService = container<UnifiedRecipeService>();
       await unifiedRecipeService.initialize();
 
       // Initialize UnifiedMenuService
       final unifiedMenuService = container<UnifiedMenuService>();
       await unifiedMenuService.initialize();
-
-      // Initialize OfflineService (Hive dependency)
-      final offlineService = container<OfflineService>();
-      await offlineService.initialize();
 
       // Initialize RecipeParserService (local cache + site config seeding)
       final recipeParserService = container<RecipeParserService>();

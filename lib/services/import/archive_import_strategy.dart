@@ -80,6 +80,9 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
       }
 
       // Create new recipe with archive attribution
+      // MED-14: Intentionally NOT copying tagResult from source recipe.
+      // Tags will be regenerated when ImportManager saves the recipe,
+      // ensuring fresh tags based on current tagging rules.
       final importedRecipe = Recipe(
         core: RecipeCore(
           id: _uuid.v4(), // Generate new ID for imported recipe

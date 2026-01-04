@@ -144,6 +144,8 @@ class ExportPaginationHelper {
     'recipes': 2000,
     'menus': 1000,
     'shopping_lists': 500,
+    'personal_tags': 500,
+    'personal_tag_groups': 100,
     'friends': 1000,
     'friend_requests': 500,
     'conversations': 500,

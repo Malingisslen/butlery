@@ -110,7 +110,13 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // INITIALIZATION
   // ============================================================
 
+  /// Retry configuration for initialization failures.
+  static const _maxRetryAttempts = 3;
+  static const _initialRetryDelay = Duration(seconds: 1);
+  int _retryAttempts = 0;
+
   /// Loads all tags and groups and starts watching for updates.
+  /// Automatically retries with exponential backoff on failure.
   Future<void> initialize() async {
     _setLoading(true);
     _clearError();
@@ -119,6 +125,9 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
       // Load initial data
       _tags = await _service.getAllTags();
       _groups = await _service.getAllGroups();
+
+      // Reset retry counter on success
+      _retryAttempts = 0;
 
       // Start watching for real-time updates
       _watchTagsWithGroups();
@@ -129,6 +138,19 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
       );
     } catch (e, stack) {
       AppLogger.error('Failed to initialize PersonalTagViewModel', stack);
+
+      // Retry with exponential backoff
+      if (_retryAttempts < _maxRetryAttempts) {
+        _retryAttempts++;
+        final delay = _initialRetryDelay * (1 << (_retryAttempts - 1));
+        AppLogger.info(
+          'Retrying PersonalTagViewModel init in ${delay.inSeconds}s '
+          '(attempt $_retryAttempts/$_maxRetryAttempts)',
+        );
+        await Future.delayed(delay);
+        return initialize();
+      }
+
       _setError('Kunde inte ladda taggar');
     } finally {
       _setLoading(false);

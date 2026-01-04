@@ -1,0 +1,471 @@
+{
+  "schemaVersion": 1,
+  "version": 1,
+  "updatedAt": "2026-01-02T13:56:49.886053Z",
+  "updatedBy": "migration-script",
+  "displayOrder": [
+    "gluten",
+    "mjölk",
+    "ägg",
+    "fisk",
+    "kräftdjur",
+    "blötdjur",
+    "trädnötter",
+    "jordnötter",
+    "soja",
+    "sesam",
+    "selleri",
+    "senap",
+    "lupin",
+    "sulfiter",
+    "laktos",
+    "alkohol",
+    "kött",
+    "fläsk",
+    "nötkött",
+    "skaldjur",
+    "nötter"
+  ],
+  "entries": [
+    {
+      "key": "gluten",
+      "triggerProperties": [
+        "contains-gluten"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-gluten",
+          "free": "glutenfri"
+        },
+        "en": {
+          "contains": "contains-gluten",
+          "free": "gluten-free"
+        }
+      },
+      "isEuAllergen": true,
+      "description": {},
+      "enabled": true,
+      "priority": 1
+    },
+    {
+      "key": "mjölk",
+      "triggerProperties": [
+        "dairy"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-mjölk",
+          "free": "mjölkfri"
+        },
+        "en": {
+          "contains": "contains-milk",
+          "free": "dairy-free"
+        }
+      },
+      "isEuAllergen": true,
+      "uiGroup": "dairy",
+      "description": {
+        "sv": "Mjölkprotein (kasein, vassle). Skiljer sig från laktos."
+      },
+      "enabled": true,
+      "priority": 2
+    },
+    {
+      "key": "ägg",
+      "triggerProperties": [
+        "egg"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-ägg",
+          "free": "äggfri"
+        },
+        "en": {
+          "contains": "contains-egg",
+          "free": "egg-free"
+        }
+      },
+      "isEuAllergen": true,
+      "description": {},
+      "enabled": true,
+      "priority": 3
+    },
+    {
+      "key": "fisk",
+      "triggerProperties": [
+        "fish"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-fisk",
+          "free": "fiskfri"
+        },
+        "en": {
+          "contains": "contains-fish",
+          "free": "fish-free"
+        }
+      },
+      "isEuAllergen": true,
+      "uiGroup": "seafood",
+      "description": {},
+      "enabled": true,
+      "priority": 4
+    },
+    {
+      "key": "kräftdjur",
+      "triggerProperties": [
+        "crustacean"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-kräftdjur",
+          "free": "kräftdjursfri"
+        },
+        "en": {
+          "contains": "contains-crustaceans",
+          "free": "crustacean-free"
+        }
+      },
+      "isEuAllergen": true,
+      "uiGroup": "seafood",
+      "description": {},
+      "enabled": true,
+      "priority": 5
+    },
+    {
+      "key": "blötdjur",
+      "triggerProperties": [
+        "mollusc"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-blötdjur",
+          "free": "blötdjursfri"
+        },
+        "en": {
+          "contains": "contains-molluscs",
+          "free": "mollusc-free"
+        }
+      },
+      "isEuAllergen": true,
+      "uiGroup": "seafood",
+      "description": {},
+      "enabled": true,
+      "priority": 6
+    },
+    {
+      "key": "trädnötter",
+      "triggerProperties": [
+        "tree-nut"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-trädnötter",
+          "free": "trädnötsfri"
+        },
+        "en": {
+          "contains": "contains-tree-nuts",
+          "free": "tree-nut-free"
+        }
+      },
+      "isEuAllergen": true,
+      "uiGroup": "nuts",
+      "description": {},
+      "enabled": true,
+      "priority": 7
+    },
+    {
+      "key": "jordnötter",
+      "triggerProperties": [
+        "peanut"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-jordnötter",
+          "free": "jordnötsfri"
+        },
+        "en": {
+          "contains": "contains-peanuts",
+          "free": "peanut-free"
+        }
+      },
+      "isEuAllergen": true,
+      "uiGroup": "nuts",
+      "description": {},
+      "enabled": true,
+      "priority": 8
+    },
+    {
+      "key": "soja",
+      "triggerProperties": [
+        "soy"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-soja",
+          "free": "sojafri"
+        },
+        "en": {
+          "contains": "contains-soy",
+          "free": "soy-free"
+        }
+      },
+      "isEuAllergen": true,
+      "description": {},
+      "enabled": true,
+      "priority": 9
+    },
+    {
+      "key": "sesam",
+      "triggerProperties": [
+        "sesame"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-sesam",
+          "free": "sesamfri"
+        },
+        "en": {
+          "contains": "contains-sesame",
+          "free": "sesame-free"
+        }
+      },
+      "isEuAllergen": true,
+      "description": {},
+      "enabled": true,
+      "priority": 10
+    },
+    {
+      "key": "selleri",
+      "triggerProperties": [
+        "celery"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-selleri",
+          "free": "sellerifri"
+        },
+        "en": {
+          "contains": "contains-celery",
+          "free": "celery-free"
+        }
+      },
+      "isEuAllergen": true,
+      "description": {},
+      "enabled": true,
+      "priority": 11
+    },
+    {
+      "key": "senap",
+      "triggerProperties": [
+        "mustard"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-senap",
+          "free": "senapfri"
+        },
+        "en": {
+          "contains": "contains-mustard",
+          "free": "mustard-free"
+        }
+      },
+      "isEuAllergen": true,
+      "description": {},
+      "enabled": true,
+      "priority": 12
+    },
+    {
+      "key": "lupin",
+      "triggerProperties": [
+        "lupin"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-lupin",
+          "free": "lupinfri"
+        },
+        "en": {
+          "contains": "contains-lupin",
+          "free": "lupin-free"
+        }
+      },
+      "isEuAllergen": true,
+      "description": {},
+      "enabled": true,
+      "priority": 13
+    },
+    {
+      "key": "sulfiter",
+      "triggerProperties": [
+        "sulfites"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-sulfiter",
+          "free": "sulfitfri"
+        },
+        "en": {
+          "contains": "contains-sulfites",
+          "free": "sulfite-free"
+        }
+      },
+      "isEuAllergen": true,
+      "description": {},
+      "enabled": true,
+      "priority": 14
+    },
+    {
+      "key": "laktos",
+      "triggerProperties": [
+        "contains-lactose"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-laktos",
+          "free": "laktosfri"
+        },
+        "en": {
+          "contains": "contains-lactose",
+          "free": "lactose-free"
+        }
+      },
+      "isEuAllergen": false,
+      "uiGroup": "dairy",
+      "description": {
+        "sv": "Mjölksocker. Mjölkfri ≠ laktosfri (laktosfria produkter innehåller mjölkprotein)."
+      },
+      "enabled": true,
+      "priority": 15
+    },
+    {
+      "key": "alkohol",
+      "triggerProperties": [
+        "contains-alcohol"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-alkohol",
+          "free": "alkoholfri"
+        },
+        "en": {
+          "contains": "contains-alcohol",
+          "free": "alcohol-free"
+        }
+      },
+      "isEuAllergen": false,
+      "description": {},
+      "enabled": true,
+      "priority": 16
+    },
+    {
+      "key": "kött",
+      "triggerProperties": [
+        "meat"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-kött",
+          "free": "köttfri"
+        },
+        "en": {
+          "contains": "contains-meat",
+          "free": "meat-free"
+        }
+      },
+      "isEuAllergen": false,
+      "uiGroup": "meat",
+      "description": {
+        "sv": "Allt kött (nöt, fläsk, kyckling, etc.). Se även vegetarisk."
+      },
+      "enabled": true,
+      "priority": 17
+    },
+    {
+      "key": "fläsk",
+      "triggerProperties": [
+        "pork"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-fläsk",
+          "free": "fläskfri"
+        },
+        "en": {
+          "contains": "contains-pork",
+          "free": "pork-free"
+        }
+      },
+      "isEuAllergen": false,
+      "uiGroup": "meat",
+      "description": {},
+      "enabled": true,
+      "priority": 18
+    },
+    {
+      "key": "nötkött",
+      "triggerProperties": [
+        "beef"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-nötkött",
+          "free": "nötköttssfri"
+        },
+        "en": {
+          "contains": "contains-beef",
+          "free": "beef-free"
+        }
+      },
+      "isEuAllergen": false,
+      "uiGroup": "meat",
+      "description": {},
+      "enabled": true,
+      "priority": 19
+    },
+    {
+      "key": "skaldjur",
+      "triggerProperties": [
+        "crustacean",
+        "mollusc"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-skaldjur",
+          "free": "skaldjursfri"
+        },
+        "en": {
+          "contains": "contains-shellfish",
+          "free": "shellfish-free"
+        }
+      },
+      "isEuAllergen": false,
+      "uiGroup": "seafood",
+      "description": {},
+      "enabled": true,
+      "priority": 20
+    },
+    {
+      "key": "nötter",
+      "triggerProperties": [
+        "tree-nut",
+        "peanut"
+      ],
+      "tags": {
+        "sv": {
+          "contains": "innehåller-nötter",
+          "free": "nötfri"
+        },
+        "en": {
+          "contains": "contains-nuts",
+          "free": "nut-free"
+        }
+      },
+      "isEuAllergen": false,
+      "uiGroup": "nuts",
+      "description": {},
+      "enabled": true,
+      "priority": 21
+    }
+  ]
+}

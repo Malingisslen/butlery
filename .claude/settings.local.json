@@ -59,7 +59,20 @@
       "Skill(interview)",
       "Bash(GOOGLE_APPLICATION_CREDENTIALS=../service-account.json node:*)",
       "Bash(cd:*)",
-      "Skill(fixall)"
+      "Skill(fixall)",
+      "Bash(GOOGLE_APPLICATION_CREDENTIALS=service-account.json npm run sync-ingredients:dry-run:*)",
+      "Bash(flutter build:*)",
+      "Bash(tasklist:*)",
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(taskkill:*)",
+      "Bash(lib/core/bootstrap/stages/content_stage.dart )",
+      "Bash(lib/services/tagging/tag_generator.dart )",
+      "Bash(lib/services/tagging/phases/tag_phase5_cuisine.dart )",
+      "Bash(lib/services/tagging/retagging_scheduler.dart )",
+      "Bash(lib/viewmodels/recipe_form_viewmodel.dart )",
+      "Bash(test/integration/tagging/ )",
+      "Bash(test/unit/services/tagging/conflict_resolution_test.dart )"
     ],
     "deny": [],
     "ask": []
