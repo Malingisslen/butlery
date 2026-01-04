@@ -38,6 +38,9 @@ import 'package:butlery/viewmodels/recipe_form/recipe_backward_compatibility_mix
 // Import for feedback loop
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 
+// Import for tagging validation preview
+import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
+
 /// Coordinator for recipe form operations with delegation to specialized managers.
 class RecipeFormViewModel extends ChangeNotifier
     with
@@ -48,6 +51,11 @@ class RecipeFormViewModel extends ChangeNotifier
 
   bool _disposed = false;
   bool get disposed => _disposed;
+
+  // Tagging validation state
+  List<String> _unknownIngredients = [];
+  bool _isCheckingIngredients = false;
+  double? _ingredientCoverage;
 
   late final RecipeFormState _state;
   late final RecipeCollaborativeManager _collaborativeManager;
@@ -238,6 +246,12 @@ class RecipeFormViewModel extends ChangeNotifier
     return summary['failed'] as int;
   }
 
+  // Tagging validation getters
+  List<String> get unknownIngredients => List.unmodifiable(_unknownIngredients);
+  bool get hasUnknownIngredients => _unknownIngredients.isNotEmpty;
+  bool get isCheckingIngredients => _isCheckingIngredients;
+  double? get ingredientCoverage => _ingredientCoverage;
+
   double getImageUploadProgress(String pathOrUrl) =>
       _imageManager.getUploadProgress(pathOrUrl);
 
@@ -393,6 +407,12 @@ class RecipeFormViewModel extends ChangeNotifier
     _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
+  /// Sets personal tag names from PersonalTagSelector.
+  void setPersonalTagNames(List<String> tagNames) {
+    _state.setPersonalTagNames(tagNames);
+    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
+  }
+
   void setPortionsFromDouble(double? portions) {
     setPortions(portions?.toInt());
   }
@@ -485,6 +505,57 @@ class RecipeFormViewModel extends ChangeNotifier
 
   bool canEditField(String fieldName) {
     return _permissionManager.canEditField(fieldName);
+  }
+
+  /// Checks if ingredients are recognized by the tagging system.
+  ///
+  /// This provides a preview of which ingredients will be used for
+  /// automatic tagging, helping users understand potential tagging gaps.
+  ///
+  /// Returns the list of unrecognized ingredients.
+  Future<List<String>> checkIngredientRecognition() async {
+    if (_disposed) return [];
+
+    _isCheckingIngredients = true;
+    notifyListeners();
+
+    try {
+      final lookupService = ServiceLocator.get<IngredientLookupService>();
+      final ingredientList =
+          _state.ingredients.where((i) => i.trim().isNotEmpty).toList();
+
+      if (ingredientList.isEmpty) {
+        _unknownIngredients = [];
+        _ingredientCoverage = null;
+        return [];
+      }
+
+      final result = await lookupService.lookupIngredients(ingredientList);
+
+      _unknownIngredients = result.unmatched;
+      _ingredientCoverage = result.coverage;
+
+      return _unknownIngredients;
+    } catch (e) {
+      AppLogger.warning(
+        'Failed to check ingredient recognition: $e',
+        'RecipeFormViewModel',
+      );
+      return [];
+    } finally {
+      _isCheckingIngredients = false;
+      if (!_disposed) {
+        notifyListeners();
+      }
+    }
+  }
+
+  /// Clears the ingredient recognition check results.
+  void clearIngredientCheck() {
+    _unknownIngredients = [];
+    _ingredientCoverage = null;
+    _isCheckingIngredients = false;
+    notifyListeners();
   }
 
   @override

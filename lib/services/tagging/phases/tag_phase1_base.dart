@@ -18,7 +18,43 @@ import 'package:butlery/services/tagging/config/dietary_config.dart'
 /// - Base/carb tags (pastabaserad, risbaserad, etc.)
 /// - Cooking method tags (ugnsbakad, stekt, etc.)
 /// - Dish type tags (soppa, sallad, gryta, etc.)
+///
+/// ## String Matching Design Decision (H2 - Swedish Character Handling)
+///
+/// This class uses two patterns for string matching:
+///
+/// 1. **Word-boundary regex** for short Swedish words (2-4 chars) that could appear
+///    as substrings in other words. Example: "ris" in "korianderfrisk".
+///    Pattern: `RegExp(r'(?:^|[^a-zåäö])word(?:[^a-zåäö]|$)')`
+///
+/// 2. **Simple `.contains()`** for:
+///    - Longer unique words (5+ chars) like "potatis", "nudl", "pannkaka"
+///    - Words within already-filtered groups (e.g., fish names within fish group)
+///    - Multi-word phrases like "gräddfil", "hälsans kök"
+///
+/// The Swedish letters å, ä, ö are included in word boundaries to properly
+/// handle Swedish ingredient names and recipe text.
 class TagPhase1Base {
+  /// Creates a word-boundary regex pattern for Swedish text.
+  ///
+  /// Use this for short words (2-4 chars) that could be substrings of other words.
+  /// Example: `_swedishWordPattern('ris')` matches "ris", "jasminris", but not "frisk".
+  static RegExp _swedishWordPattern(String word) {
+    // Word boundaries include Swedish chars å, ä, ö
+    return RegExp(
+      '(?:^|[^a-zåäö])${RegExp.escape(word)}(?:[^a-zåäö]|\$)',
+      caseSensitive: false,
+    );
+  }
+
+  /// Checks if text contains a Swedish word (with word boundaries).
+  ///
+  /// Use for short words to avoid false positives.
+  /// For longer unique words, use simple `.contains()`.
+  static bool _containsSwedishWord(String text, String word) {
+    return _swedishWordPattern(word).hasMatch(text);
+  }
+
   /// Firebase-backed config (optional, falls back to static config).
   final FirebaseTagConfig? _firebaseConfig;
 
@@ -529,10 +565,9 @@ class TagPhase1Base {
 
     // Check for rice - use word boundary to avoid false positives
     // (e.g., "korianderfrisk" shouldn't match "ris")
-    final ricePattern =
-        RegExp(r'(?:^|[^a-zåäö])ris(?:[^a-zåäö]|$)', caseSensitive: false);
+    // H2: Using _containsSwedishWord for consistent Swedish word matching
     final hasRice = lookup.matched.any((i) =>
-        ricePattern.hasMatch(i.swedish.toLowerCase()) &&
+        _containsSwedishWord(i.swedish.toLowerCase(), 'ris') &&
         i.group.contains('grain'));
 
     if (hasRice) {
@@ -579,9 +614,16 @@ class TagPhase1Base {
   /// Calculates cooking method tags from instructions.
   ///
   /// Uses word boundary matching to avoid false positives from substrings.
+  /// MED-6: Normalizes dashes/underscores for consistent matching
+  /// (e.g., "tryck-kokare" matches "tryckkokare").
   Set<String> _calculateCookingMethodTags(List<String> instructions) {
     final tags = <String>{};
-    final text = instructions.join(' ').toLowerCase();
+    // MED-6: Normalize dashes/underscores for consistent matching
+    final text = instructions
+        .join(' ')
+        .toLowerCase()
+        .replaceAll('-', '')
+        .replaceAll('_', '');
 
     // Helper for word boundary matching
     // Matches word at start boundary (no letter before) but allows suffixes.

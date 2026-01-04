@@ -165,13 +165,31 @@ class TagGenerator {
       }
     }
 
-    // Phase 5: Cuisine tags (needs Phase 4)
+    // Phase 5: Cuisine tags
+    // CRIT-7: Phase 5 can run with Phase 1 fallback if Phases 2-4 failed
+    Phase5ResultPartial? phase5PartialResult;
     if (!timedOut && phase4Result != null) {
+      // Full chain available - use normal calculation
       try {
         phase5Result = _phase5.calculate(phase4Result, recipe);
       } catch (e) {
         AppLogger.warning(
           'Phase 5 tagging failed for recipe ${recipe.id}: $e, continuing with Phases 1-4',
+          'TagGenerator',
+        );
+      }
+    } else if (!timedOut && phase4Result == null) {
+      // CRIT-7 FIX: Phases 2-4 failed but we can still get cuisine tags
+      // Phase 5 only needs Phase 1's ingredient lookup
+      try {
+        phase5PartialResult = _phase5.calculateFromPhase1(phase1Result, recipe);
+        AppLogger.debug(
+          'Phase 5 using Phase 1 fallback for recipe ${recipe.id}',
+          'TagGenerator',
+        );
+      } catch (e) {
+        AppLogger.warning(
+          'Phase 5 fallback tagging failed for recipe ${recipe.id}: $e',
           'TagGenerator',
         );
       }
@@ -184,17 +202,23 @@ class TagGenerator {
       if (phase3Result != null) ...phase3Result.tags,
       if (phase4Result != null) ...phase4Result.tags,
       if (phase5Result != null) ...phase5Result.tags,
+      if (phase5PartialResult != null) ...phase5PartialResult.tags,
     };
 
+    // MED-5: Resolve conflicting tags (e.g., stark vs mild)
+    final resolvedTags = _resolveTagConflicts(allTags);
+
     // C3: Mark as partial if timeout or if any phase was skipped
+    // CRIT-7: Phase 5 partial result counts as having cuisine tags
+    final hasPhase5Tags = phase5Result != null || phase5PartialResult != null;
     final isPartial = timedOut ||
         phase2Result == null ||
         phase3Result == null ||
         phase4Result == null ||
-        phase5Result == null;
+        !hasPhase5Tags;
 
     return TagResult(
-      tags: allTags,
+      tags: resolvedTags,
       allergenStatus: phase1Result.allergenStatus,
       dietaryStatus: phase1Result.dietaryStatus,
       coverage: ingredients.coverage,
@@ -212,6 +236,51 @@ class TagGenerator {
   bool _hasTimedOut(Stopwatch? stopwatch, Duration? timeout) {
     if (stopwatch == null || timeout == null) return false;
     return stopwatch.elapsed > timeout;
+  }
+
+  /// MED-5: Resolves conflicting tags by keeping the more specific/safer one.
+  ///
+  /// Conflicts are resolved with a safety-first approach:
+  /// - 'stark' wins over 'mild' (safer to warn about spiciness)
+  /// - 'avancerad' wins over 'enkel' (safer to warn about difficulty)
+  /// - 'varm-rätt' wins over 'kall-rätt' (mutually exclusive, warm is more common)
+  /// - Season tags: only keep the first detected (recipes can't be multi-season)
+  Set<String> _resolveTagConflicts(Set<String> tags) {
+    final resolved = Set<String>.from(tags);
+
+    // Define conflicting pairs: key wins over value
+    const conflicts = {
+      'stark': 'mild', // If both, keep 'stark' (safety: warn about spicy)
+      'avancerad':
+          'enkel', // If both, keep 'avancerad' (safety: warn difficulty)
+      'varm-rätt': 'kall-rätt', // CRIT-9: Mutually exclusive temperature tags
+    };
+
+    for (final entry in conflicts.entries) {
+      if (resolved.contains(entry.key) && resolved.contains(entry.value)) {
+        resolved.remove(entry.value);
+        AppLogger.debug(
+          'Tag conflict resolved: removed "${entry.value}" in favor of "${entry.key}"',
+          'TagGenerator',
+        );
+      }
+    }
+
+    // CRIT-9: Handle season tag mutual exclusivity (recipe can have one season)
+    const seasonTags = ['sommar', 'vinter', 'höst', 'vår'];
+    final presentSeasons = seasonTags.where(resolved.contains).toList();
+    if (presentSeasons.length > 1) {
+      // Keep only the first detected season, remove others
+      for (var i = 1; i < presentSeasons.length; i++) {
+        resolved.remove(presentSeasons[i]);
+        AppLogger.debug(
+          'Season conflict resolved: removed "${presentSeasons[i]}" (keeping "${presentSeasons[0]}")',
+          'TagGenerator',
+        );
+      }
+    }
+
+    return resolved;
   }
 
   /// Generates only Phase 1 tags (for quick preview).
