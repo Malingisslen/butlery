@@ -107,7 +107,7 @@ class AppStrings {
 
   // Shopping list actions
   static const String renameList = 'Byt namn på lista';
-  static const String createList = 'Skapa ny handlista';
+  static const String createList = 'Skapa ny inköpslista';
   static const String newName = 'Nytt namn';
   static const String listName = 'Namn på lista';
   static const String addToList = 'Lägg till i';

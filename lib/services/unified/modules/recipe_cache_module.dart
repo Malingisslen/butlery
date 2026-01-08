@@ -59,6 +59,12 @@ class RecipeCacheModule {
   final void Function(String) _setError;
   final void Function() _notifyListeners;
 
+  /// BUG-003: Callback for direct recipe updates (used on web where cache is stubbed)
+  final void Function(Recipe recipe)? _onRecipeUpdated;
+
+  /// BUG-003: Callback for direct recipe removals (used on web where cache is stubbed)
+  final void Function(String recipeId)? _onRecipeRemoved;
+
   /// Sync subscriptions (delegated to FirebaseSyncManager)
   final Map<String, StreamSubscription> _syncSubscriptions = {};
 
@@ -79,11 +85,15 @@ class RecipeCacheModule {
     required String? Function() getCurrentUserId,
     required void Function(String) setError,
     required void Function() notifyListeners,
+    void Function(Recipe recipe)? onRecipeUpdated,
+    void Function(String recipeId)? onRecipeRemoved,
   })  : _firestore = firestore,
         _cacheHelper = cacheHelper,
         _getCurrentUserId = getCurrentUserId,
         _setError = setError,
-        _notifyListeners = notifyListeners {
+        _notifyListeners = notifyListeners,
+        _onRecipeUpdated = onRecipeUpdated,
+        _onRecipeRemoved = onRecipeRemoved {
     // Set current user for cache helper
     _cacheHelper.setCurrentUser(_getCurrentUserId());
 
@@ -189,6 +199,9 @@ class RecipeCacheModule {
       // Save to cache using CacheOperations
       await saveRecipeToCache(recipe);
 
+      // BUG-003: Call direct update callback (for web where cache is stubbed)
+      _onRecipeUpdated?.call(recipe);
+
       // Notify listeners of change
       _notifyListeners();
 
@@ -203,6 +216,9 @@ class RecipeCacheModule {
     try {
       // Remove from cache using CacheOperations
       removeRecipeFromCache(recipeId);
+
+      // BUG-003: Call direct removal callback (for web where cache is stubbed)
+      _onRecipeRemoved?.call(recipeId);
 
       // Notify listeners of change
       _notifyListeners();

@@ -324,57 +324,74 @@ class _AuthViewState extends State<AuthView> {
     BuildContext context,
     AuthViewModel viewModel,
   ) async {
-    final emailController = TextEditingController();
+    // BUG-004 FIX: Use StatefulBuilder with local String state instead of
+    // TextEditingController. This avoids the "controller used after disposed"
+    // error on web caused by widget tree rebuilds during ViewModel changes.
+    String emailValue = '';
 
-    final result = await showDialog<bool>(
+    final email = await showDialog<String?>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(AppStrings.resetPassword),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              AppStrings.resetPasswordInstructions,
-              style: AppTextStyles.bodyMedium,
-            ),
-            const SizedBox(height: AppDimensions.spacingXl),
-            TextField(
-              key: const Key('reset_email_field'),
-              controller: emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                hintText: 'din.email@exempel.se',
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text(AppStrings.resetPassword),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                AppStrings.resetPasswordInstructions,
+                style: AppTextStyles.bodyMedium,
               ),
+              const SizedBox(height: AppDimensions.spacingXl),
+              TextField(
+                key: const Key('reset_email_field'),
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  hintText: 'din.email@exempel.se',
+                ),
+                onChanged: (value) {
+                  emailValue = value;
+                },
+              ),
+            ],
+          ),
+          actions: [
+            StyledButton.secondary(
+              key: const Key('back_to_login_button'),
+              text: context.l10n.commonCancel,
+              onPressed: () => Navigator.of(dialogContext).pop(null),
+            ),
+            StyledButton.primary(
+              key: const Key('send_reset_button'),
+              text: context.l10n.commonSend,
+              onPressed: () {
+                final trimmed = emailValue.trim();
+                Navigator.of(dialogContext)
+                    .pop(trimmed.isNotEmpty ? trimmed : null);
+              },
             ),
           ],
         ),
-        actions: [
-          StyledButton.secondary(
-            key: const Key('back_to_login_button'),
-            text: context.l10n.commonCancel,
-            onPressed: () => Navigator.of(context).pop(false),
-          ),
-          StyledButton.primary(
-            key: const Key('send_reset_button'),
-            text: context.l10n.commonSend,
-            onPressed: () => Navigator.of(context).pop(true),
-          ),
-        ],
       ),
     );
 
-    if (result == true && mounted) {
-      // Spara alla context-beroende referenser FÖRE async operation
-      // ignore: use_build_context_synchronously
-      final messenger = ScaffoldMessenger.of(context);
-      // ignore: use_build_context_synchronously
-      final theme = Theme.of(context);
-      final primaryColor = theme.colorScheme.primary.withValues(alpha: 0.8);
-      // ignore: use_build_context_synchronously
-      final errorColor = theme.colorScheme.error;
+    // Only proceed if user entered an email (not cancelled)
+    if (email == null || !mounted) return;
 
-      final success = await viewModel.sendPasswordReset(emailController.text);
+    // Capture context-dependent references before async gap
+    // ignore: use_build_context_synchronously
+    final messenger = ScaffoldMessenger.of(context);
+    // ignore: use_build_context_synchronously
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary.withValues(alpha: 0.8);
+    final errorColor = theme.colorScheme.error;
+
+    // Use addPostFrameCallback to ensure dialog is fully unmounted
+    // before calling ViewModel (which triggers notifyListeners)
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+
+      final success = await viewModel.sendPasswordReset(email);
 
       if (!mounted) return;
 
@@ -388,8 +405,6 @@ class _AuthViewState extends State<AuthView> {
           backgroundColor: success ? primaryColor : errorColor,
         ),
       );
-    }
-
-    emailController.dispose();
+    });
   }
 }

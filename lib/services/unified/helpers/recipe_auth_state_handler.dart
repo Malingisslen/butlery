@@ -1,5 +1,6 @@
 // lib/services/unified/helpers/recipe_auth_state_handler.dart
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
@@ -10,6 +11,7 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 class RecipeAuthStateHandler {
   final RecipeCacheModule cacheModule;
   final FirebaseAuthRepository authRepository;
+  final Future<List<Recipe>> Function(String userId)? fetchRecipesFromFirebase;
   final List<Recipe> recipes;
   final void Function(String) setError;
   final void Function(bool) setLoading;
@@ -18,6 +20,7 @@ class RecipeAuthStateHandler {
   RecipeAuthStateHandler({
     required this.cacheModule,
     required this.authRepository,
+    this.fetchRecipesFromFirebase,
     required this.recipes,
     required this.setError,
     required this.setLoading,
@@ -78,17 +81,27 @@ class RecipeAuthStateHandler {
         );
         await cacheModule.startFirebaseSync();
 
-        // Additional safety delay to ensure all async cache writes complete
-        // startFirebaseSync already waits 300ms, but we add extra buffer for large datasets
-        await Future.delayed(const Duration(milliseconds: 300));
+        // BUG-003 FIX: On web, cache is stubbed so we load directly from Firebase
+        if (kIsWeb && fetchRecipesFromFirebase != null) {
+          final firebaseRecipes = await fetchRecipesFromFirebase!(userId);
+          recipes.clear();
+          recipes.addAll(firebaseRecipes);
+          AppLogger.info(
+            '🔍 [UnifiedRecipeService] 📦 [Web] Loaded ${firebaseRecipes.length} recipes directly from Firebase',
+          );
+        } else {
+          // Additional safety delay to ensure all async cache writes complete
+          // startFirebaseSync already waits 300ms, but we add extra buffer for large datasets
+          await Future.delayed(const Duration(milliseconds: 300));
 
-        // Reload from cache after initial fetch has populated it
-        recipes.clear();
-        final fetchedRecipes = await cacheModule.initializeCache();
-        recipes.addAll(fetchedRecipes);
-        AppLogger.info(
-          '🔍 [UnifiedRecipeService] 📦 Reloaded ${fetchedRecipes.length} recipes from cache after sync',
-        );
+          // Reload from cache after initial fetch has populated it
+          recipes.clear();
+          final fetchedRecipes = await cacheModule.initializeCache();
+          recipes.addAll(fetchedRecipes);
+          AppLogger.info(
+            '🔍 [UnifiedRecipeService] 📦 Reloaded ${fetchedRecipes.length} recipes from cache after sync',
+          );
+        }
       }
 
       setLoading(false);

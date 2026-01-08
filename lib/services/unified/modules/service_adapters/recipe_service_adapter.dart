@@ -32,11 +32,14 @@ class RecipeServiceAdapter {
   /// Create a new recipe using repository pattern
   Future<String?> createRecipe(Recipe recipe) async {
     try {
+      AppLogger.info(
+          '🔄 [RecipeServiceAdapter] Creating recipe: ${recipe.title}, id: ${recipe.id}');
       final createdRecipe = await _recipeRepository.create(recipe);
       AppLogger.success('✅ Recipe created via repository: ${createdRecipe.id}');
       return createdRecipe.id;
-    } catch (e) {
-      AppLogger.error('❌ Failed to create recipe via repository', e);
+    } catch (e, stackTrace) {
+      AppLogger.error('❌ Failed to create recipe via repository: $e');
+      AppLogger.error('Stack trace: $stackTrace');
       return null;
     }
   }
