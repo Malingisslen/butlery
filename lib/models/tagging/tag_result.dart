@@ -708,8 +708,9 @@ class TagResult {
     if (generatorVersion == null) return true;
     if (hasFailed) return true;
     if (isPending) return true;
-    if (hasCoverageAnomaly)
+    if (hasCoverageAnomaly) {
       return true; // CRIT-2: Coverage anomaly triggers retagging
+    }
     return generatorVersion != kTagGeneratorVersion;
   }
 

@@ -1,5 +1,6 @@
 // lib/services/unified/helpers/personal_recipe_crud.dart
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
@@ -48,8 +49,17 @@ class PersonalRecipeCrud {
     );
 
     if (recipeId != null) {
-      // Add to local list
-      final recipe = await cacheModule.loadRecipeFromCache(recipeId);
+      // BUG-003 FIX: On web, cache is stubbed so we use direct recipe access
+      // instead of loading from cache (which would return null).
+      Recipe? recipe;
+      if (kIsWeb) {
+        // Get the recipe directly from the module (stored during create)
+        recipe = personalModule.popLastCreatedRecipe();
+      } else {
+        // On mobile, load from cache as before
+        recipe = await cacheModule.loadRecipeFromCache(recipeId);
+      }
+
       if (recipe != null) {
         recipes.add(recipe);
         notifyListeners();

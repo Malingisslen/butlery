@@ -215,7 +215,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingCreateList.
   ///
   /// In sv, this message translates to:
-  /// **'Skapa ny handlista'**
+  /// **'Skapa ny inköpslista'**
   String get shoppingCreateList;
 
   /// No description provided for @shoppingNewName.

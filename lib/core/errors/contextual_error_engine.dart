@@ -22,11 +22,11 @@ enum UserActionContext {
   recipeImageDelete('tar bort bild'),
 
   // Shopping contexts
-  shoppingListCreate('skapar handlista'),
+  shoppingListCreate('skapar inköpslista'),
   shoppingItemAdd('lägger till vara'),
-  shoppingListSync('synkroniserar handlista'),
-  shoppingListShare('delar handlista'),
-  shoppingListDelete('tar bort handlista'),
+  shoppingListSync('synkroniserar inköpslista'),
+  shoppingListShare('delar inköpslista'),
+  shoppingListDelete('tar bort inköpslista'),
 
   // Social contexts
   friendInvite('skickar väninvitation'),
@@ -214,8 +214,8 @@ class ContextualErrorEngine {
   static String _getNotFoundErrorMessage(String action, ErrorContext context) {
     if (action.contains('recept')) {
       return 'Receptet kunde inte hittas medan $action. Det kan ha blivit raderat eller flyttat av ägaren.';
-    } else if (action.contains('handlista')) {
-      return 'Handlistan kunde inte hittas medan $action. Den kan ha blivit raderad eller du har inte längre åtkomst.';
+    } else if (action.contains('inköpslista')) {
+      return 'Inköpslistan kunde inte hittas medan $action. Den kan ha blivit raderad eller du har inte längre åtkomst.';
     } else if (action.contains('bild')) {
       return 'Bilden kunde inte hittas medan $action. Den kan ha blivit raderad eller flyttad.';
     }

@@ -66,7 +66,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingRenameList => 'Byt namn på lista';
 
   @override
-  String get shoppingCreateList => 'Skapa ny handlista';
+  String get shoppingCreateList => 'Skapa ny inköpslista';
 
   @override
   String get shoppingNewName => 'Nytt namn';

@@ -379,14 +379,14 @@ class ShoppingListEmptyState extends StatelessWidget {
           ),
           const SizedBox(height: AppDimensions.spacingXl),
           Text(
-            'Inga handlistor än',
+            'Inga inköpslistor än',
             style: AppTextStyles.titleLarge.copyWith(
               color: AppColors.textLight,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            'Skapa din första handlista för att komma igång',
+            'Skapa din första inköpslista för att komma igång',
             style: AppTextStyles.titleMedium,
             textAlign: TextAlign.center,
           ),

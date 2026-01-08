@@ -34,7 +34,7 @@ class ShoppingItemTiles {
           button: true,
           enabled: true,
           child: Material(
-            color: AppColors.transparent,
+            type: MaterialType.transparency,
             child: InkWell(
               onTap: () => onItemTap(item),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),

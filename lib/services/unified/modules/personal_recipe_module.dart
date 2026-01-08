@@ -58,7 +58,20 @@ class PersonalRecipeModule {
   /// Used to verify cache and Firebase are in sync.
   final Map<String, DateTime> _lastSyncedAt = {};
 
+  /// BUG-003: Stores the last created recipe for direct retrieval.
+  /// On web, cache is stubbed so we need direct access to the created recipe.
+  Recipe? _lastCreatedRecipe;
+
   JsonCacheHelper get _cacheHelper => _getCacheHelper();
+
+  /// BUG-003: Gets and clears the last created recipe.
+  /// Used by PersonalRecipeCrud to add the recipe to the local list on web
+  /// where cache is stubbed and cannot be used.
+  Recipe? popLastCreatedRecipe() {
+    final recipe = _lastCreatedRecipe;
+    _lastCreatedRecipe = null;
+    return recipe;
+  }
 
   /// HIGH-10: Gets the current sync status for a recipe.
   /// Returns [RecipeSyncStatus.synced] if no status is tracked (assumed synced from Firebase).
@@ -183,6 +196,8 @@ class PersonalRecipeModule {
             AppLogger.success(
                 '✅ Personal recipe "$title" created (syncing in background)');
           }
+          // BUG-003: Store the created recipe for direct retrieval on web
+          _lastCreatedRecipe = newRecipe;
           return newRecipe.id;
         },
       );

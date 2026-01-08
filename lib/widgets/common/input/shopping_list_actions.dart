@@ -188,7 +188,7 @@ class ShoppingListActions {
     final confirmed = await CommonDialogActions.showDeleteConfirmation(
       context: context,
       itemName: list.name,
-      itemType: 'handlista',
+      itemType: 'inköpslista',
       warningMessage:
           'Denna åtgärd kan inte ångras och alla ${list.totalItems} artiklar försvinner.',
       icon: Icons.list,
@@ -226,7 +226,7 @@ class ShoppingListActions {
             StyledInput(
               controller: controller,
               label: AppStrings.listName,
-              hint: 'T.ex. "Veckans handlista"',
+              hint: 'T.ex. "Veckans inköpslista"',
               autofocus: true,
             ),
           ],

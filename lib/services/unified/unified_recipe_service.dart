@@ -254,6 +254,9 @@ class UnifiedRecipeService extends ChangeNotifier
       getCurrentUserId: () => currentUserId,
       setError: _setError,
       notifyListeners: notifyListeners,
+      // BUG-003: On web, cache is stubbed so we update _recipes directly
+      onRecipeUpdated: kIsWeb ? _handleDirectRecipeUpdate : null,
+      onRecipeRemoved: kIsWeb ? _handleDirectRecipeRemoval : null,
     );
 
     _contentOps = RecipeContentOperations(
@@ -266,6 +269,8 @@ class UnifiedRecipeService extends ChangeNotifier
     _authHandler = RecipeAuthStateHandler(
       cacheModule: _cacheModule,
       authRepository: _authRepository,
+      fetchRecipesFromFirebase: (userId) =>
+          _getRecipeRepository().fetchUserRecipes(userId),
       recipes: _recipes,
       setError: _setError,
       setLoading: (loading) => _isLoading = loading,
@@ -392,6 +397,23 @@ class UnifiedRecipeService extends ChangeNotifier
     }
   }
 
+  /// BUG-003: Handle direct recipe updates on web (bypasses stubbed cache)
+  void _handleDirectRecipeUpdate(Recipe recipe) {
+    final existingIndex = _recipes.indexWhere((r) => r.id == recipe.id);
+    if (existingIndex >= 0) {
+      _recipes[existingIndex] = recipe;
+    } else {
+      _recipes.add(recipe);
+    }
+    AppLogger.debug('📝 [Web] Direct recipe update: ${recipe.title}');
+  }
+
+  /// BUG-003: Handle direct recipe removals on web (bypasses stubbed cache)
+  void _handleDirectRecipeRemoval(String recipeId) {
+    _recipes.removeWhere((r) => r.id == recipeId);
+    AppLogger.debug('🗑️ [Web] Direct recipe removal: $recipeId');
+  }
+
   /// Public getter for firestore instance (for legacy interfaces)
   @override
   FirebaseFirestore get firestore => _firestore;
@@ -460,13 +482,27 @@ class UnifiedRecipeService extends ChangeNotifier
       if (_authRepository.currentUser != null) {
         await _cacheModule.startFirebaseSync();
 
-        // Reload from cache after initial fetch has populated it
-        _recipes.clear();
-        final fetchedRecipes = await _cacheModule.initializeCache();
-        _recipes.addAll(fetchedRecipes);
-        AppLogger.info(
-          '📦 Reloaded ${fetchedRecipes.length} recipes from cache after initial fetch',
-        );
+        // BUG-003 FIX: On web, cache is stubbed so we load directly from Firebase
+        if (kIsWeb) {
+          final userId = _authRepository.currentUserId;
+          if (userId != null) {
+            final firebaseRecipes =
+                await _getRecipeRepository().fetchUserRecipes(userId);
+            _recipes.clear();
+            _recipes.addAll(firebaseRecipes);
+            AppLogger.info(
+              '📦 [Web] Loaded ${firebaseRecipes.length} recipes directly from Firebase',
+            );
+          }
+        } else {
+          // On mobile, reload from cache after initial fetch has populated it
+          _recipes.clear();
+          final fetchedRecipes = await _cacheModule.initializeCache();
+          _recipes.addAll(fetchedRecipes);
+          AppLogger.info(
+            '📦 Reloaded ${fetchedRecipes.length} recipes from cache after initial fetch',
+          );
+        }
       }
 
       _isInitialized = true;

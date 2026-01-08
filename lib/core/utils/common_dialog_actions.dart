@@ -279,36 +279,59 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
   }
 }
 
-/// Private action confirmation dialog
-class _ActionConfirmationDialog extends BaseDialog<bool> {
+/// Private action confirmation dialog - uses simple AlertDialog to avoid BaseDialog state issues
+class _ActionConfirmationDialog extends StatelessWidget {
+  final String title;
   final String message;
+  final String primaryActionText;
+  final String secondaryActionText;
   final IconData? icon;
   final Color? confirmColor;
+  final bool isDangerous;
 
   const _ActionConfirmationDialog({
-    required super.title,
+    required this.title,
     required this.message,
-    required super.primaryActionText,
-    required super.secondaryActionText,
+    required this.primaryActionText,
+    required this.secondaryActionText,
     this.icon,
     this.confirmColor,
-    required super.isDangerous,
-  }) : super(
-          titleIcon: icon,
-          primaryActionColor: confirmColor,
-        );
+    this.isDangerous = false,
+  });
 
   @override
-  Widget buildContent(BuildContext context) {
-    return Text(
-      message,
-      style: AppTextStyles.bodyMedium,
+  Widget build(BuildContext context) {
+    final buttonColor =
+        isDangerous ? AppColors.error : (confirmColor ?? AppColors.primaryBlue);
+
+    return AlertDialog(
+      icon: icon != null
+          ? Icon(
+              icon,
+              color: isDangerous ? AppColors.error : buttonColor,
+              size: 48,
+            )
+          : null,
+      title: Text(title),
+      content: Text(
+        message,
+        style: AppTextStyles.bodyMedium,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(secondaryActionText),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          style: FilledButton.styleFrom(
+            backgroundColor: buttonColor,
+            foregroundColor: Colors.white,
+          ),
+          child: Text(primaryActionText),
+        ),
+      ],
     );
-  }
-
-  @override
-  Future<bool> performAction(BuildContext context) async {
-    return true; // Simply return true for confirmation
   }
 }
 
