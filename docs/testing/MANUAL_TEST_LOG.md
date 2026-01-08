@@ -12,7 +12,7 @@
 |-------|-------|-----------|--------|--------|------------|
 | 1. Authentication | 16 | 10 | 9 | 0 | 1 |
 | 2. Navigation & Home | 27 | 13 | 13 | 0 | 0 |
-| 3. Recipe Detail & Editing | 33 | 7 | 7 | 0 | 0 |
+| 3. Recipe Detail & Editing | 33 | 8 | 8 | 0 | 0 |
 | 4. Recipe Import | 32 | 0 | 0 | 0 | 0 |
 | 5. Weekly Menu | 14 | 2 | 2 | 0 | 2 |
 | 6. Shopping Lists | 29 | 2 | 1 | 0 | 1 |
@@ -25,7 +25,7 @@
 | 13. Responsive Design | 9 | 0 | 0 | 0 | 0 |
 | 14. Accessibility | 7 | 0 | 0 | 0 | 0 |
 | 15. Error Handling | 13 | 0 | 0 | 0 | 0 |
-| **TOTAL** | **342** | **34** | **32** | **0** | **4** |
+| **TOTAL** | **342** | **35** | **33** | **0** | **4** |
 
 ---
 
@@ -150,7 +150,7 @@
 | DETAIL-02 | Image gallery | Pending | - | - |
 | DETAIL-03 | Tap image fullscreen | Pending | - | - |
 | DETAIL-04 | Scale portions | Pass | Pass | +/- buttons work, shows "Skalat från X till Y portioner" |
-| DETAIL-05 | Ingredient scaling math | Pending | - | - |
+| DETAIL-05 | Ingredient scaling math | Pass | Pass | 6→7 portions: 4dl→4.67dl, 2→2.33, 1→1.17 (correct 7/6 factor) |
 | DETAIL-06 | Unit conversion toggle | Pending | - | - |
 | DETAIL-07 | View comments | Pending | - | - |
 | DETAIL-08 | Add comment | Pending | - | - |
@@ -238,6 +238,19 @@ See full test case details in:
   - LIST-02 (Check off item): BLOCKED - Checkboxes not responding (BUG-007)
   - LIST-08 (Add item): BLOCKED - Add button not responding (BUG-007)
 - **Final Progress:** 34/342 tests (32 passed, 1 N/A), 4 bugs found (4 open)
+
+**2026-01-08 Session (Bug Fixes & Verification):**
+- Fixed all 4 open bugs (BUG-005, BUG-006, BUG-007) + earlier BUG-003, BUG-004
+- **BUG-007 (High):** Material(color: transparent) → Material(type: MaterialType.transparency)
+- **BUG-006 (Medium):** BaseDialog → StatelessWidget with AlertDialog
+- **BUG-005 (Low):** Replaced "handlista" with "inköpslista" in 6 files
+- Committed all fixes: `d1527410 fix: Resolve 5 bugs found during manual testing`
+- **Verification testing:**
+  - BUG-005: VERIFIED - UI shows "Inköpslistor" and "inköpslista" correctly
+  - BUG-007: VERIFIED - Button click triggered dialog (before extension disconnect)
+  - DETAIL-05 (Ingredient scaling): PASS - 6→7 portions scales correctly (7/6 factor)
+- **Updated Progress:** 35/342 tests (33 passed, 1 N/A), **0 open bugs**
+- Note: Browser extension became unstable during testing session
 
 ---
 
