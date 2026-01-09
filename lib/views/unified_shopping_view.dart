@@ -113,6 +113,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                         _onItemTap,
                         _onEditItem,
                         _onDeleteItem,
+                        _showCreateListDialog,
+                        _showAddItemDialog,
                       ),
                     ),
                   ],

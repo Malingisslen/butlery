@@ -17,6 +17,8 @@ class ShoppingListContent {
     Function(UnifiedShoppingItem) onItemTap,
     Function(UnifiedShoppingItem) onEditItem,
     Function(UnifiedShoppingItem) onDeleteItem,
+    VoidCallback onCreateList,
+    VoidCallback onAddItem,
   ) {
     if (viewModel.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -32,14 +34,14 @@ class ShoppingListContent {
     if (viewModel.activeList == null) {
       return StateWidget.noShoppingList(
         actionLabel: 'Skapa lista',
-        onAction: () {},
+        onAction: onCreateList,
       );
     }
 
     if (!viewModel.hasItems) {
       return StateWidget.noShoppingList(
         actionLabel: 'Lägg till vara',
-        onAction: () {},
+        onAction: onAddItem,
       );
     }
 
