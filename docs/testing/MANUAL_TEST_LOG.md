@@ -15,7 +15,7 @@
 | 3. Recipe Detail & Editing | 33 | 8 | 8 | 0 | 0 |
 | 4. Recipe Import | 32 | 0 | 0 | 0 | 0 |
 | 5. Weekly Menu | 14 | 2 | 2 | 0 | 2 |
-| 6. Shopping Lists | 29 | 2 | 1 | 0 | 1 |
+| 6. Shopping Lists | 29 | 5 | 5 | 0 | 0 |
 | 7. Social Features | 40 | 0 | 0 | 0 | 0 |
 | 8. Messaging | 23 | 0 | 0 | 0 | 0 |
 | 9. Personal Tags | 21 | 0 | 0 | 0 | 0 |
@@ -25,7 +25,7 @@
 | 13. Responsive Design | 9 | 0 | 0 | 0 | 0 |
 | 14. Accessibility | 7 | 0 | 0 | 0 | 0 |
 | 15. Error Handling | 13 | 0 | 0 | 0 | 0 |
-| **TOTAL** | **342** | **35** | **33** | **0** | **4** |
+| **TOTAL** | **342** | **38** | **36** | **0** | **4** |
 
 ---
 
@@ -73,7 +73,7 @@
 - **Root Cause**: Material(color: transparent) doesn't handle hit testing properly on web
 - **Fix**: Changed to Material(type: MaterialType.transparency) for proper web hit testing
 - **File**: lib/views/unified_shopping/widgets/shopping_item_tiles.dart
-- **Verified**: 2026-01-08 - flutter analyze passes, button click triggers dialog on web
+- **Verified**: 2026-01-08 - flutter analyze passes, button click triggers dialog on web, dialog buttons work correctly
 
 ### Open Bugs
 | Bug ID | Title | Phase | Test ID | Severity | Status |
@@ -250,7 +250,11 @@ See full test case details in:
   - BUG-007: VERIFIED - Button click triggered dialog (before extension disconnect)
   - DETAIL-05 (Ingredient scaling): PASS - 6→7 portions scales correctly (7/6 factor)
 - **Updated Progress:** 35/342 tests (33 passed, 1 N/A), **0 open bugs**
-- Note: Browser extension became unstable during testing session
+- **Shopping List verification (after browser reconnect):**
+  - LIST-03 (Create new list): PASS - "Testlista" created via + icon
+  - LIST-08 (Add item): PASS - "Mjolk" added successfully, dialog closed properly
+  - LIST-02 (Check off item): PASS - Checkbox responds, item moves to "Inhandlat" section
+- **Final Progress:** 38/342 tests (36 passed, 1 N/A), **0 open bugs, all fixes verified**
 
 ---
 
