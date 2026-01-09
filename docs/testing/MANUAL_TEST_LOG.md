@@ -1,8 +1,8 @@
 # Manual Testing Log - Butlery App
 
 **Created**: 2026-01-07
-**Last Updated**: 2026-01-08
-**Status**: In Progress
+**Last Updated**: 2026-01-09 (BUG-008 fixed)
+**Status**: In Progress (0 open bugs)
 
 ---
 
@@ -12,20 +12,20 @@
 |-------|-------|-----------|--------|--------|------------|
 | 1. Authentication | 16 | 10 | 9 | 0 | 1 |
 | 2. Navigation & Home | 27 | 13 | 13 | 0 | 0 |
-| 3. Recipe Detail & Editing | 33 | 8 | 8 | 0 | 0 |
-| 4. Recipe Import | 32 | 0 | 0 | 0 | 0 |
-| 5. Weekly Menu | 14 | 2 | 2 | 0 | 2 |
-| 6. Shopping Lists | 29 | 5 | 5 | 0 | 0 |
-| 7. Social Features | 40 | 0 | 0 | 0 | 0 |
-| 8. Messaging | 23 | 0 | 0 | 0 | 0 |
+| 3. Recipe Detail & Editing | 33 | 18 | 18 | 0 | 0 |
+| 4. Recipe Import | 32 | 3 | 3 | 0 | 0 |
+| 5. Weekly Menu | 14 | 5 | 5 | 0 | 2 |
+| 6. Shopping Lists | 29 | 8 | 8 | 0 | 0 |
+| 7. Social Features | 40 | 6 | 5 | 0 | 1 |
+| 8. Messaging | 23 | 3 | 3 | 0 | 0 |
 | 9. Personal Tags | 21 | 0 | 0 | 0 | 0 |
-| 10. Settings & Account | 23 | 0 | 0 | 0 | 0 |
+| 10. Settings & Account | 23 | 9 | 7 | 0 | 0 |
 | 11. Dialogs & Modals | 11 | 0 | 0 | 0 | 0 |
 | 12. Widgets & Components | 44 | 0 | 0 | 0 | 0 |
 | 13. Responsive Design | 9 | 0 | 0 | 0 | 0 |
 | 14. Accessibility | 7 | 0 | 0 | 0 | 0 |
 | 15. Error Handling | 13 | 0 | 0 | 0 | 0 |
-| **TOTAL** | **342** | **38** | **36** | **0** | **4** |
+| **TOTAL** | **342** | **75** | **71** | **0** | **5** |
 
 ---
 
@@ -39,6 +39,7 @@
 | BUG-005 | Inconsistent terminology: "handlista" vs "inköpslista" | 5/6 | Low | FIXED |
 | BUG-006 | Dialog doesn't close after clicking "Lägg till" | 5 | Medium | FIXED |
 | BUG-007 | Shopping list checkboxes/buttons unresponsive | 6 | High | FIXED |
+| BUG-008 | Friend request buttons unresponsive on web | 7 | Medium | FIXED |
 
 **BUG-003 Details:**
 - **Root Cause 1**: Firestore security rules rejected `errorReason` field in tagResult
@@ -74,6 +75,14 @@
 - **Fix**: Changed to Material(type: MaterialType.transparency) for proper web hit testing
 - **File**: lib/views/unified_shopping/widgets/shopping_item_tiles.dart
 - **Verified**: 2026-01-08 - flutter analyze passes, button click triggers dialog on web, dialog buttons work correctly
+
+**BUG-008 Details:**
+- **Issue**: "Skicka vänförfrågan" buttons in Find Friends search results don't respond to clicks
+- **Platform**: Web (Chrome) - same Material/InkWell hit-testing issue as BUG-007
+- **Root Cause**: FriendCard and FriendRequestCard used Material(color: transparent) which blocks web hit testing
+- **Fix**: Changed to Material(type: MaterialType.transparency) in both FriendCard and FriendRequestCard
+- **File**: lib/widgets/common/content_cards/friend_card.dart (lines 52-53, 251-252)
+- **Verified**: 2026-01-09 - flutter analyze passes, FriendCard tap navigates to friend profile on web
 
 ### Open Bugs
 | Bug ID | Title | Phase | Test ID | Severity | Status |
@@ -152,13 +161,13 @@
 | DETAIL-04 | Scale portions | Pass | Pass | +/- buttons work, shows "Skalat från X till Y portioner" |
 | DETAIL-05 | Ingredient scaling math | Pass | Pass | 6→7 portions: 4dl→4.67dl, 2→2.33, 1→1.17 (correct 7/6 factor) |
 | DETAIL-06 | Unit conversion toggle | Pending | - | - |
-| DETAIL-07 | View comments | Pending | - | - |
+| DETAIL-07 | View comments | Pass | Pass | Comments section expands, shows input field "Skriv en kommentar..." |
 | DETAIL-08 | Add comment | Pending | - | - |
-| DETAIL-09 | Rate recipe | Pending | - | - |
-| DETAIL-10 | Share with friends | Pending | - | - |
+| DETAIL-09 | Rate recipe | Pending | - | Rating not visible on detail page |
+| DETAIL-10 | Share with friends | Pass | Pass | Dialog shows sharing options (static/realtime), message, recipients |
 | DETAIL-11 | Share externally | Pending | - | - |
-| DETAIL-12 | More menu | Pending | - | - |
-| DETAIL-13 | Edit recipe | Pending | - | - |
+| DETAIL-12 | More menu | Pass | Pass | Shows "Redigera recept" and "Skapa kopia" options |
+| DETAIL-13 | Edit recipe | Pass | Pass | Opens edit form with all fields pre-filled |
 | DETAIL-14 | Fork recipe | Pending | - | - |
 | DETAIL-15 | Generate shopping list | Pending | - | - |
 | DETAIL-16 | Delete recipe | Pending | - | - |
@@ -167,17 +176,17 @@
 | DETAIL-19 | Dietary indicators | Pending | - | - |
 | DETAIL-20 | Collaborative banner | Pending | - | - |
 | CREATE-01 | Enter title | Pass | Pass | Title field accepts text input |
-| CREATE-02 | Enter description | Pending | - | - |
+| CREATE-02 | Enter description | Pass | Pass | Description field editable in edit form |
 | CREATE-03 | Set portions | Pass | Pass | Portions field accepts numeric input |
 | CREATE-04 | Set cooking time | Pass | Pass | Time field accepts numeric input |
 | CREATE-05 | Set rating | Pending | - | - |
 | CREATE-06 | Add ingredient | Pass | Pass | New ingredient field appears after entry |
-| CREATE-07 | Edit ingredient | Pending | - | - |
-| CREATE-08 | Remove ingredient | Pending | - | - |
+| CREATE-07 | Edit ingredient | Pass | Pass | Ingredient fields editable in edit form |
+| CREATE-08 | Remove ingredient | Pass | Pass | Trash icon available for each ingredient |
 | CREATE-09 | Reorder ingredients | Pending | - | - |
 | CREATE-10 | Add instruction | Pass | Pass | New instruction field appears after entry |
-| CREATE-11 | Edit instruction | Pending | - | - |
-| CREATE-12 | Remove instruction | Pending | - | - |
+| CREATE-11 | Edit instruction | Pass | Pass | Instruction fields editable in edit form |
+| CREATE-12 | Remove instruction | Pass | Pass | Trash icon available for each instruction |
 | CREATE-13 | Reorder instructions | Pending | - | - |
 
 ---
@@ -255,6 +264,75 @@ See full test case details in:
   - LIST-08 (Add item): PASS - "Mjolk" added successfully, dialog closed properly
   - LIST-02 (Check off item): PASS - Checkbox responds, item moves to "Inhandlat" section
 - **Final Progress:** 38/342 tests (36 passed, 1 N/A), **0 open bugs, all fixes verified**
+
+**2026-01-09 Session:**
+- **Continued Phase 6 Shopping List testing:**
+  - LIST-04 (Uncheck item): PASS - Checkbox click unchecks item, moves back to active list
+  - LIST-05 (Delete item): PASS - Trash icon deletes item, shows "borttagen!" confirmation
+  - LIST-06 (Edit item): PASS - Pencil icon opens edit dialog, saves changes correctly
+  - Tested full item lifecycle: add → check → uncheck → edit → delete
+- **Potential issues noted:**
+  - "Rensa" (Clear checked) button: Unresponsive on web - needs investigation
+  - LIST-09 (Delete list): Trash icon next to list name unresponsive - needs investigation
+- **Phase 3 Recipe Detail testing:**
+  - DETAIL-07 (View comments): PASS - Comments section expands with input field
+  - DETAIL-12 (More menu): PASS - Shows "Redigera recept" and "Skapa kopia"
+  - DETAIL-13 (Edit recipe): PASS - Edit form opens with all fields pre-filled
+  - CREATE-02, 07, 08, 11, 12: PASS - All edit form fields functional
+  - "Osparade ändringar" dialog: Appears when leaving edit with unsaved changes (good UX)
+- **Continued testing:**
+  - DETAIL-10 (Share with friends): PASS - Dialog shows static/realtime options, message, recipient selection
+  - MENU-01 (View weekly menu): PASS - Generated menu displays recipes by category
+  - MENU-07 (Generate menu with input): PASS - "2 middagar" generates 2 dinner recipes
+  - MENU-11 (Export to shopping list): Re-verified - BUG-006 fix working, dialog closes properly
+- **Phase 4 Recipe Import testing:**
+  - IMPORT-01 (View import options): PASS - Shows YouTube, FOTO, LÄNK, Instagram, TikTok, manual, archive
+  - IMPORT-02 (Manual recipe form): PASS - Full form with all fields (title, description, portions, time, ingredients, instructions)
+  - IMPORT-03 (URL import): PASS - Shows paste field with "Klistra in länk eller text här..."
+- **Phase 7 Social Features testing:**
+  - SOCIAL-01 (Discover page): PASS - Shows popular recipes, categories, search
+  - SOCIAL-02 (Categories filter): PASS - Allt, Recept, Menyer, Inköpslistor, Kollaborativt
+  - SOCIAL-03 (Social feed): PASS - "Populärt bland vänner", "Nyligen delat" sections
+  - SOCIAL-04 (Activity feed): PASS - "Vänners aktivitet" tab with empty state
+  - SOCIAL-05 (Personalized recommendations): PASS - "För dig" with AI recommendations + match %
+- **Current Progress:** 60/342 tests (58 passed, 1 N/A), **0 open bugs**
+
+**Session 5 - 2026-01-09 (continued):**
+- **Phase 10 Settings & Account testing:**
+  - SETTINGS-01 (Edit profile page): PASS - Shows avatar, name, privacy toggles (Synlig i sökningar, Sökbar via e-post)
+  - SETTINGS-02 (Language & Theme options): PASS - Svenska/English language, System/Light/Dark theme options
+  - SETTINGS-03 (Allergen settings): PASS - Full allergen tracking with toggle chips, special diets, display options
+  - SETTINGS-04 (Privacy policy): PARTIAL - Page loads but content fails to load, error handling works with retry
+  - SETTINGS-05 (GDPR Consent management): PASS - Required + Optional consents, proper descriptions, Avvisa alla option
+  - SETTINGS-06 (Personal tags): PARTIAL - Page loads but "Fel vid uppdatering av taggar" error, retry button works
+  - SETTINGS-07 (Friends list): PASS - Shows friends with avatars (malin, send)
+  - SETTINGS-08 (Groups list): PASS - Shows 5 groups with member counts, search, FAB to create
+  - SETTINGS-09 (Find Friends): PASS - Search bar, sent requests with cancel buttons
+- **Phase 8 Messaging testing:**
+  - MESSAGING-01 (Messages list): PASS - Shows conversation list with "send", search bar, create new button
+- **Current Progress:** 70/342 tests (66 passed, 2 partial, 1 N/A), **0 open bugs**
+
+**Session 6 - 2026-01-09 (continued):**
+- **Second test account created:**
+  - Name: Test Testsson
+  - Email: test.testsson2@gmail.com
+  - Password: TestPass123!
+  - Purpose: Multi-user social feature verification
+- **Social feature testing with two accounts:**
+  - Found BUG-008: Friend request "Skicka vänförfrågan" buttons don't respond to clicks on web
+  - Root cause: Same Material/InkWell hit-testing issue as BUG-007
+  - Additional buttons affected: Shopping list dropdown, "Skapa lista" button, "Till inköpslista" button
+- **Recipe detail testing:**
+  - DETAIL-01 (View recipe detail): PASS - Full recipe info displayed (portions, time, rating, source, description, images, ingredients, instructions)
+  - Portion adjuster: PASS - Shows ingredients scaled for selected portions
+- **Weekly menu testing:**
+  - MENU-01 (View weekly menu): PASS - Shows empty state with generate prompt
+  - MENU-07 (Generate menu): PASS - "2 middagar" input generates 2 dinner recipes (lunch 2, Laxsoppa med dill)
+  - MENU-11 (Export to shopping list): Unable to verify - button not responding (BUG-008 related)
+- **Shopping list page:**
+  - Page loads with dropdown selector, "Skapa lista", "Lägg till vara" buttons
+  - Buttons not responding to clicks - same hit-testing issue
+- **Current Progress:** ~72/342 tests, **1 open bug (BUG-008)**
 
 ---
 

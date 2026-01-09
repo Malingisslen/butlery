@@ -50,7 +50,7 @@ class FriendCard extends StatelessWidget {
       child: Container(
         margin: margin ?? _getDefaultMargin(),
         child: Material(
-          color: AppColors.transparent,
+          type: MaterialType.transparency,
           child: InkWell(
             onTap: onTap,
             onLongPress: onLongPress,
@@ -249,7 +249,7 @@ class FriendRequestCard extends StatelessWidget {
     return Container(
       margin: margin ?? const EdgeInsets.only(bottom: AppDimensions.spacingS),
       child: Material(
-        color: AppColors.transparent,
+        type: MaterialType.transparency,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
