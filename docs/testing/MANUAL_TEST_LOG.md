@@ -1,7 +1,7 @@
 # Manual Testing Log - Butlery App
 
 **Created**: 2026-01-07
-**Last Updated**: 2026-01-09 (BUG-008 fixed)
+**Last Updated**: 2026-01-09 (BUG-009 fixed)
 **Status**: In Progress (0 open bugs)
 
 ---
@@ -18,14 +18,14 @@
 | 6. Shopping Lists | 29 | 8 | 8 | 0 | 0 |
 | 7. Social Features | 40 | 6 | 5 | 0 | 1 |
 | 8. Messaging | 23 | 3 | 3 | 0 | 0 |
-| 9. Personal Tags | 21 | 0 | 0 | 0 | 0 |
+| 9. Personal Tags | 21 | 8 | 8 | 0 | 0 |
 | 10. Settings & Account | 23 | 9 | 7 | 0 | 0 |
 | 11. Dialogs & Modals | 11 | 0 | 0 | 0 | 0 |
 | 12. Widgets & Components | 44 | 0 | 0 | 0 | 0 |
 | 13. Responsive Design | 9 | 0 | 0 | 0 | 0 |
 | 14. Accessibility | 7 | 0 | 0 | 0 | 0 |
 | 15. Error Handling | 13 | 0 | 0 | 0 | 0 |
-| **TOTAL** | **342** | **75** | **71** | **0** | **5** |
+| **TOTAL** | **342** | **83** | **79** | **0** | **6** |
 
 ---
 
@@ -40,6 +40,7 @@
 | BUG-006 | Dialog doesn't close after clicking "Lägg till" | 5 | Medium | FIXED |
 | BUG-007 | Shopping list checkboxes/buttons unresponsive | 6 | High | FIXED |
 | BUG-008 | Friend request buttons unresponsive on web | 7 | Medium | FIXED |
+| BUG-009 | "Skapa lista" button empty callback | 6 | Low | FIXED |
 
 **BUG-003 Details:**
 - **Root Cause 1**: Firestore security rules rejected `errorReason` field in tagResult
@@ -88,6 +89,13 @@
 | Bug ID | Title | Phase | Test ID | Severity | Status |
 |--------|-------|-------|---------|----------|--------|
 | - | No open bugs | - | - | - | - |
+
+**BUG-009 Details:**
+- **Issue**: "Skapa lista" button in shopping list empty state does nothing when clicked
+- **Location**: lib/views/unified_shopping/widgets/shopping_list_content.dart:35
+- **Root Cause**: `onAction: () {}` - callback was empty, not connected to dialog
+- **Fix**: Added `onCreateList` and `onAddItem` callback parameters to `ShoppingListContent.build()` and connected them to `_showCreateListDialog` and `_showAddItemDialog` in `unified_shopping_view.dart`
+- **Verified**: 2026-01-09 - "Skapa lista" button now opens create list dialog
 
 ---
 
@@ -333,6 +341,55 @@ See full test case details in:
   - Page loads with dropdown selector, "Skapa lista", "Lägg till vara" buttons
   - Buttons not responding to clicks - same hit-testing issue
 - **Current Progress:** ~72/342 tests, **1 open bug (BUG-008)**
+
+**Session 7 - 2026-01-09 (BUG-008 fix verification & continued testing):**
+- **BUG-008 Fixed and Verified:**
+  - Applied Material(type: MaterialType.transparency) fix to friend_card.dart
+  - FriendCard tap now works - successfully navigated to friend profile
+  - Committed: `7f7a62ad fix(web): Resolve friend card hit-testing issue (BUG-008)`
+- **Weekly menu testing (re-verified after fix):**
+  - MENU-07 (Generate menu): PASS - "2 middagar" generates 2 recipes
+  - Till inköpslista button: PASS - Opens shopping list selection dialog
+  - Create new list from dialog: PASS - "Testlista" created via "+ Ny lista"
+  - Note: "Lägg till" button in dialog unresponsive - potential separate issue
+- **Phase 8 Messaging testing (continued):**
+  - MESSAGING-02 (New conversation): PASS - FAB opens dialog, friend selection works
+  - MESSAGING-03 (Send message): PASS - Message typed, sent, shows "✓ Skickat"
+  - Full messaging flow verified: list → create conversation → open → type → send
+- **Discovery page (Upptäck):**
+  - Categories visible: Allt, Recept, Menyer, Inköpslistor, Kollaborativt
+  - Populärt just nu section with recipes
+- **Profile panel access:**
+  - Avatar click opens profile panel
+  - Sociala funktioner menu items all accessible
+- **Potential issues (need investigation):**
+  - Shopping list main page: dropdown and buttons unresponsive
+  - Shopping list dialog: "Lägg till" button unresponsive
+  - These may be different components not covered by BUG-008 fix
+- **Current Progress:** ~80/342 tests (78 passed, 2 partial), **0 open bugs**
+
+**Session 8 - 2026-01-09 (Phase 9 Personal Tags testing):**
+- **Phase 9 Personal Tags testing:**
+  - TAG-01 (Recipe filter panel): PASS - Opens from filter icon, shows all categories
+  - TAG-02 (Tillagningstid filters): PASS - < 30 min, 30-60 min, > 60 min options work
+  - TAG-03 (Måltidstyp filters): PASS - Frukost, Lunch, Middag, Mellanmål, Efterrätt work
+  - TAG-04 (Betyg filters): PASS - 4+⭐, 5⭐ filtering works
+  - TAG-05 (Allergenfri section): PARTIAL - Section visible but truncated in filter panel
+  - TAG-06 (Single tag selection): PASS - Selecting "Middag" filters 20→12 results
+  - TAG-07 (Multiple tag selection): PASS - "< 30 min" + "Middag" = 1 result, shows "2 filter aktiva"
+  - TAG-08 (Filter indicator): PASS - Red dot appears on filter icon when filters active
+  - TAG-09 (Tag display on cards): PASS - "Middag" chip visible on recipe cards
+  - TAG-10 (AI tagging status): PASS - "Analyseras..." shown for recipes being processed
+- **Discovery page filter testing:**
+  - Content type filter dialog: PASS - Opens from 3-dot menu, shows Recept/Menyer/Inköpslistor toggles
+  - Filter content categories: Visible but dialog doesn't scroll to show full Kategorier section
+- **Shopping list button investigation:**
+  - Header "+" button: PASS - Opens "Skapa ny lista" dialog
+  - "Lägg till vara" button: PASS - Opens add item dialog
+  - "Skapa lista" button: FAIL - Does not respond (BUG-009: empty callback)
+  - "Välj lista" dropdown: Does not respond when no lists exist
+  - Root cause found: `onAction: () {}` in shopping_list_content.dart:35
+- **Current Progress:** ~88/342 tests (83 passed, 2 partial), **1 open bug (BUG-009)**
 
 ---
 
