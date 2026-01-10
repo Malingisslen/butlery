@@ -1,8 +1,8 @@
 # Manual Testing Log - Butlery App
 
 **Created**: 2026-01-07
-**Last Updated**: 2026-01-09 (BUG-009 fixed)
-**Status**: In Progress (0 open bugs)
+**Last Updated**: 2026-01-10 (E2E testing session started)
+**Status**: In Progress (0 open bugs - BUG-010 fixed)
 
 ---
 
@@ -16,7 +16,7 @@
 | 4. Recipe Import | 32 | 5 | 5 | 0 | 0 |
 | 5. Weekly Menu | 14 | 5 | 5 | 0 | 2 |
 | 6. Shopping Lists | 29 | 11 | 11 | 0 | 0 |
-| 7. Social Features | 40 | 6 | 5 | 0 | 1 |
+| 7. Social Features | 40 | 19 | 18 | 0 | 1 |
 | 8. Messaging | 23 | 3 | 3 | 0 | 0 |
 | 9. Personal Tags | 21 | 8 | 8 | 0 | 0 |
 | 10. Settings & Account | 23 | 14 | 12 | 0 | 0 |
@@ -25,7 +25,8 @@
 | 13. Responsive Design | 9 | 1 | 1 | 0 | 0 |
 | 14. Accessibility | 7 | 4 | 4 | 0 | 0 |
 | 15. Error Handling | 13 | 4 | 4 | 0 | 0 |
-| **TOTAL** | **342** | **115** | **111** | **0** | **6** |
+| 16. Social E2E Tests | 35 | 1 | 1 | 0 | 0 |
+| **TOTAL** | **377** | **129** | **125** | **0** | **6** |
 
 ---
 
@@ -89,6 +90,21 @@
 | Bug ID | Title | Phase | Test ID | Severity | Status |
 |--------|-------|-------|---------|----------|--------|
 | - | No open bugs | - | - | - | - |
+
+### Recently Fixed
+| BUG-010 | Friend search field not accepting text input on web | 16 | FRIEND-E2E-01 | High | FIXED |
+
+**BUG-010 Details:**
+- **Issue**: Friend search field in "Hitta Vänner" tab does not accept text input on web (Chrome)
+- **Platform**: Web (Chrome) - Flutter web text input issue
+- **Location**: lib/widgets/common/search_filter/search_input_widget.dart
+- **Root Cause**: SearchInputWidget was StatelessWidget with TextField without explicit border configuration
+- **Fix**:
+  1. Converted to StatefulWidget for proper controller listener management
+  2. Changed TextField to TextFormField for better web compatibility
+  3. Added explicit InputDecoration border configuration (border, enabledBorder, focusedBorder)
+  4. Added filled: true with fillColor for consistent styling
+- **Verified**: 2026-01-10 - Tests pass, pending E2E verification
 
 **BUG-009 Details:**
 - **Issue**: "Skapa lista" button in shopping list empty state does nothing when clicked
@@ -464,7 +480,138 @@ See full test case details in:
 - **LIST-10 (List dropdown):** PASS - Dropdown shows created lists
 - **LIST-11 (Success feedback):** PASS - Green snackbar shows "Lista 'Test Phase 15' skapad!"
 - **Minor observation:** List dropdown selection may reset when scrolling - potential state management issue (LOW severity)
-- **Final Progress:** 115/342 tests (111 passed, 2 partial), **0 open bugs**
+- **Progress:** 115/342 tests (111 passed, 2 partial), **0 open bugs**
+
+**Session 10 - 2026-01-09 (Social Features deep testing):**
+- **Phase 7 Social Features continued:**
+  - SOCIAL-06 (Groups tab): PASS - Shows "Mina grupper (5)" with group cards, member counts, FAB for new group
+  - SOCIAL-07 (Group detail view): PASS - Shows:
+    - Group header with name, avatar, description
+    - Gruppinformation: Created date, updated date, member count
+    - Statistics: X Medlemmar, X Dagar aktiv
+    - Medlemmar & Inbjudningar section with member list
+    - Member badges: "Ägare" (Owner), "Skapare" (Creator)
+  - SOCIAL-08 (Group overflow menu): PASS - Shows "Lämna grupp" option
+  - SOCIAL-09 (Hitta Vänner tab): PASS - Shows:
+    - Search field "Sök efter nya vänner..."
+    - Empty state instructions for finding friends
+    - "Skickade förfrågningar" section with pending requests
+    - Cancel button for each sent request ("Avbryt")
+  - SOCIAL-10 (Vänner tab): PASS - Shows friends list with avatars (malin, send)
+  - SOCIAL-11 (Friend profile view): PASS - Shows:
+    - Large avatar with friend name
+    - Statistik: X Vänner, X Recept
+    - "Skicka meddelande" button
+    - "Dela recept" button
+    - "Ta bort vän" button (red, destructive action)
+- **Final Progress:** 121/342 tests (117 passed, 2 partial), **0 open bugs**
+
+**Session 10 continued - Social Sharing Deep Testing:**
+- **Investigation:** Initial testing showed app bar icons unresponsive - determined to be browser tab disconnected from Flutter debug session (not a bug)
+- **SOCIAL-12 (Share dialog opens):** PASS - People icon in recipe detail app bar opens "Dela recept med vänner" dialog
+- **SOCIAL-13 (Share type selection):** PASS - Can choose between "Statisk kopia" and "Realtidsdelning"
+- **SOCIAL-14 (Share message):** PASS - Optional message field "Skriv ett meddelande..." available
+- **SOCIAL-15 (Share to friends):** PASS - "Vänner" tab shows friends list with checkboxes, search field
+- **SOCIAL-16 (Share to groups):** PASS - "Grupper" tab shows groups list:
+  - "a test" (2 medlemmar)
+  - "arne" (1 medlemmar)
+  - "Test group" (1 medlemmar)
+  - "testing groups" (1 medlemmar)
+- **SOCIAL-17 (Recipient selection):** PASS - Checkboxes work, shows "X vän valda" count
+- **SOCIAL-18 (Share confirmation):** PASS - "Dela recept" button visible with "Avbryt" cancel option
+- **Complete sharing flow verified:** Dialog → Type → Message → Recipients → Confirm
+- **Updated Progress:** 128/377 tests (124 passed, 2 partial), **0 open bugs**
+
+---
+
+## Phase 16: Social E2E Tests (35 tests)
+
+**Testing Methodology:** E2E social tests require multi-user verification:
+1. User A performs action
+2. Log out of User A
+3. Log in as User B (test.testsson2@gmail.com / TestPass123!)
+4. Verify User B sees the expected result
+5. Document result
+
+**Note:** Phase 7 tests (SOCIAL-01 through SOCIAL-18) verify UI functionality only. Phase 16 tests verify actual data flows between users.
+
+**Prerequisite:** User A (malin.gisslen1@gmail.com) password required for testing. User B credentials: test.testsson2@gmail.com / TestPass123!
+
+**E2E Session 2026-01-10:**
+- **BUG-010 FIXED:** Search input widget converted from StatelessWidget to StatefulWidget with TextFormField and explicit borders
+- User A logged in as malin.gisslen1@gmail.com
+- User A searched "test.testsson2" in Hitta Vänner, found User B
+- User A clicked "Skicka vänförfrågan" button - request sent
+- User A logged out via profile menu → "Logga ut"
+- User B logged in as test.testsson2@gmail.com
+- User B navigated to Vänner & Grupper → notification badge "1" on Hitta Vänner
+- User B clicked Hitta Vänner → "Inkommande förfrågningar (1)" shows Friend Request with Acceptera/Avvisa
+- **FRIEND-E2E-01: PASS** - Friend request flows correctly between users
+
+### 16.1 Friends System E2E (5 tests)
+
+| Test ID | Action (User A) | Verification (User B) | Status | Result | Notes |
+|---------|-----------------|----------------------|--------|--------|-------|
+| FRIEND-E2E-01 | Send friend request to User B | User B sees request in "Inkommande förfrågningar" | Completed | PASS | BUG-010 fixed. User A searched for "test.testsson2", sent request. User B sees "Friend Request" with "Acceptera"/"Avvisa" buttons. |
+| FRIEND-E2E-02 | (as B) Accept friend request | User A sees User B in friends list | Pending | - | - |
+| FRIEND-E2E-03 | (as B) Reject friend request | User A request disappears, not friends | Pending | - | - |
+| FRIEND-E2E-04 | Remove User B as friend | User B no longer sees User A as friend | Pending | - | - |
+| FRIEND-E2E-05 | Block user | Blocked user cannot send requests/messages | Pending | - | - |
+
+### 16.2 Groups System E2E (9 tests)
+
+| Test ID | Action (User A) | Verification (User B) | Status | Result | Notes |
+|---------|-----------------|----------------------|--------|--------|-------|
+| GROUP-E2E-01 | Create group "E2E Test Group" | Group exists (admin only initially) | Pending | - | - |
+| GROUP-E2E-02 | Invite User B to group | User B sees group invite notification | Pending | - | - |
+| GROUP-E2E-03 | (as B) Accept group invite | User A sees User B as member | Pending | - | - |
+| GROUP-E2E-04 | (as B) Decline group invite | User B not in group, invite removed | Pending | - | - |
+| GROUP-E2E-05 | Rename group | User B sees new group name | Pending | - | - |
+| GROUP-E2E-06 | Change group description | User B sees new description | Pending | - | - |
+| GROUP-E2E-07 | (as B) Leave group | User A sees member count decrease | Pending | - | - |
+| GROUP-E2E-08 | Remove User B from group (as admin) | User B no longer sees group | Pending | - | - |
+| GROUP-E2E-09 | Delete group | User B no longer sees group | Pending | - | - |
+
+### 16.3 Recipe Sharing E2E (6 tests)
+
+| Test ID | Action (User A) | Verification (User B) | Status | Result | Notes |
+|---------|-----------------|----------------------|--------|--------|-------|
+| SHARE-E2E-01 | Share recipe to User B (friend) | User B sees recipe in "Delat med mig" | Pending | - | - |
+| SHARE-E2E-02 | Share recipe to group | All group members see recipe | Pending | - | - |
+| SHARE-E2E-03 | Share as "Statisk kopia" | User B has independent copy | Pending | - | - |
+| SHARE-E2E-04 | Share as "Realtidsdelning" | User B sees User A's edits live | Pending | - | - |
+| SHARE-E2E-05 | Unshare/remove sharing | User B no longer sees recipe | Pending | - | - |
+| SHARE-E2E-06 | Share with message | User B sees share message | Pending | - | - |
+
+### 16.4 Messaging E2E (5 tests)
+
+| Test ID | Action (User A) | Verification (User B) | Status | Result | Notes |
+|---------|-----------------|----------------------|--------|--------|-------|
+| MSG-E2E-01 | Send message to User B | User B sees message in conversation | Pending | - | - |
+| MSG-E2E-02 | (as B) Reply to message | User A sees reply | Pending | - | - |
+| MSG-E2E-03 | Send message with link | User B sees link correctly | Pending | - | - |
+| MSG-E2E-04 | Start new conversation | User B has new conversation in list | Pending | - | - |
+| MSG-E2E-05 | Delete conversation (one side) | Only deleter loses access | Pending | - | - |
+
+### 16.5 Comments & Ratings E2E (5 tests)
+
+| Test ID | Action (User A) | Verification (User B) | Status | Result | Notes |
+|---------|-----------------|----------------------|--------|--------|-------|
+| COMMENT-E2E-01 | Comment on shared recipe | User B sees comment | Pending | - | - |
+| COMMENT-E2E-02 | (as B) Reply to comment | User A sees reply | Pending | - | - |
+| COMMENT-E2E-03 | Delete own comment | Comment removed for all users | Pending | - | - |
+| RATING-E2E-01 | Rate shared recipe | Rating affects recipe score | Pending | - | - |
+| RATING-E2E-02 | Change rating | Updated rating reflected | Pending | - | - |
+
+### 16.6 Activity Feed & Notifications E2E (5 tests)
+
+| Test ID | Action (User A) | Verification (User B) | Status | Result | Notes |
+|---------|-----------------|----------------------|--------|--------|-------|
+| FEED-E2E-01 | Share new recipe | User B sees in "Vänners aktivitet" | Pending | - | - |
+| FEED-E2E-02 | Cook a recipe (Lagat idag) | User B sees activity | Pending | - | - |
+| NOTIF-E2E-01 | Send friend request | User B gets notification | Pending | - | - |
+| NOTIF-E2E-02 | Share recipe | User B gets notification | Pending | - | - |
+| NOTIF-E2E-03 | Send message | User B gets notification | Pending | - | - |
 
 ---
 
@@ -472,7 +619,17 @@ See full test case details in:
 
 1. Start Flutter web: `flutter run -d chrome`
 2. Open this log file
-3. Execute tests in order (Phase 1 → 15)
+3. Execute tests in order (Phase 1 → 16)
+
+### Phase 16 E2E Testing Workflow:
+1. Log in as User A (malin.gisslen1@gmail.com)
+2. Perform the test action
+3. Log out (avatar → "Logga ut")
+4. Log in as User B (test.testsson2@gmail.com / TestPass123!)
+5. Verify the expected result
+6. Document result in this log
+
+### General Testing:
 4. Update Status column: Pending → Pass/Fail
 5. Document any bugs found in Bug Tracker section
 6. Fix bugs, re-test, update status

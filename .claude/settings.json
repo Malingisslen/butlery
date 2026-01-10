@@ -52,6 +52,16 @@
     "ask": []
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Analyze the user's message for agent triggers. Check if message contains:\n\n1. Bug indicators: bug, BUG-, error, crash, 'not working', broken, failing, issue, problem, exception\n   → If found, add reminder: 'Note: debugger agent should be used for this'\n\n2. Firebase/repository indicators: repository, firestore, firebase, auth, permission, user data\n   → If found, add reminder: 'Note: firebase-backend-security agent should be used'\n\nRespond {\"ok\": true, \"message\": \"<reminder if applicable>\"}"
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "*",
@@ -79,7 +89,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Review the conversation above. Did the assistant complete the user's request? If yes, respond {\"ok\": true}. If there are clearly unfinished tasks or incomplete work, respond {\"ok\": false, \"reason\": \"brief description of what remains\"}. When in doubt, approve."
+            "prompt": "Review the conversation for agent enforcement compliance:\n\n## Tier 1 Agent Checks (BLOCKING)\n\n1. **debugger agent**: Was there ANY mention of: bug, BUG-, error, exception, 'not working', test failure, unexpected behavior, crash, or issue being investigated/fixed?\n   - If YES: Was a debugger agent spawned (Task tool with subagent_type='debugger')?\n   - If bug/error mentioned AND assistant tried to fix it but no debugger agent used → BLOCK\n\n2. **firebase-backend-security agent**: Were ANY files modified in lib/repositories/ or any file containing Firebase/Firestore/authentication?\n   - If YES: Was firebase-backend-security agent spawned?\n   - If Firebase/repository files modified but no security agent used → BLOCK\n\n## Completion Check\n3. Did the assistant complete the user's request?\n\n## Response Format\n- If Tier 1 violation: {\"ok\": false, \"reason\": \"AGENT ENFORCEMENT: [debugger|firebase-backend-security] agent was required but not used. Spawn the agent now.\"}\n- If incomplete work: {\"ok\": false, \"reason\": \"brief description of what remains\"}\n- If all checks pass: {\"ok\": true}"
           }
         ]
       }
