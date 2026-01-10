@@ -1,8 +1,8 @@
 # Manual Testing Log - Butlery App
 
 **Created**: 2026-01-07
-**Last Updated**: 2026-01-10 (E2E testing session started)
-**Status**: In Progress (0 open bugs - BUG-010 fixed)
+**Last Updated**: 2026-01-10 (BUG-011 verified fixed)
+**Status**: In Progress (0 open bugs - BUG-011 fixed)
 
 ---
 
@@ -25,8 +25,8 @@
 | 13. Responsive Design | 9 | 1 | 1 | 0 | 0 |
 | 14. Accessibility | 7 | 4 | 4 | 0 | 0 |
 | 15. Error Handling | 13 | 4 | 4 | 0 | 0 |
-| 16. Social E2E Tests | 35 | 2 | 1 | 1 | 1 |
-| **TOTAL** | **377** | **130** | **125** | **1** | **7** |
+| 16. Social E2E Tests | 35 | 2 | 2 | 0 | 1 |
+| **TOTAL** | **377** | **130** | **126** | **0** | **8** |
 
 ---
 
@@ -42,6 +42,8 @@
 | BUG-007 | Shopping list checkboxes/buttons unresponsive | 6 | High | FIXED |
 | BUG-008 | Friend request buttons unresponsive on web | 7 | Medium | FIXED |
 | BUG-009 | "Skapa lista" button empty callback | 6 | Low | FIXED |
+| BUG-011 | Friend list not syncing bidirectionally after acceptance | 16 | Medium | FIXED |
+| BUG-012 | Platform.isIOS crashes on web in DialogFactory | 16 | High | FIXED |
 
 **BUG-003 Details:**
 - **Root Cause 1**: Firestore security rules rejected `errorReason` field in tagResult
@@ -89,9 +91,9 @@
 ### Open Bugs
 | Bug ID | Title | Phase | Test ID | Severity | Status |
 |--------|-------|-------|---------|----------|--------|
-| BUG-011 | Friend list not syncing bidirectionally after acceptance | 16 | FRIEND-E2E-02 | Medium | FIX APPLIED |
+| - | No open bugs | - | - | - | - |
 
-**BUG-011 Details:**
+**BUG-011 Details (FIXED 2026-01-10):**
 - **Issue**: After User B accepts friend request from User A, User B sees User A in friends list, but User A's friends list doesn't show User B
 - **Platform**: Web (Chrome)
 - **Steps to reproduce**: 1) User A sends friend request to User B, 2) User B accepts, 3) User B's friends shows User A, 4) User A's friends doesn't show User B
@@ -125,12 +127,29 @@
   - ❌ Malin's sent request still shows "Väntar på svar..." for fresh.testuser
   - **Analysis:** The test was conducted with the old code. Fix requires hot restart of Flutter app.
 
-- **Fix Verification Required:**
-  - The OR→AND fix in `addMutualFriends` will prevent future partial states
-  - Existing partial states (like the test case) may need manual repair or a re-acceptance flow
-  - To fully verify: Hot restart app, create new test users, perform fresh E2E test
+- **Final Verification (2026-01-10):**
+  - Created fresh test user: fresh.testuser@gmail.com / FreshTest123!
+  - Malin sent friend request to Fresh Testuser
+  - Fresh Testuser accepted via "Acceptera" button
+  - ✅ Fresh Testuser sees "Malin Gisslén" in friends list
+  - ✅ Malin sees "fresh.testuser" in friends list (bidirectional sync working!)
+  - Security rules fixes deployed: friends subcollection read/write + public_profiles friendsCount update
 
-- **Status**: FIX APPLIED - Awaiting verification with fresh test data after app restart
+- **Status**: FIXED - Verified 2026-01-10
+
+**BUG-012 Details (FIXED 2026-01-10):**
+- **Issue**: Clicking "Ta bort vän" (Remove friend) button on web crashes with `Unsupported operation: Platform._operatingSystem`
+- **Platform**: Web (Chrome)
+- **Root Cause**: `DialogFactory.showConfirmation()` used `Platform.isIOS` from `dart:io` which is not available on web
+- **Stack Trace**: `DialogFactory.showDeleteConfirmation` → `DialogFactory.showConfirmation` → `_isIOS` → `Platform.isIOS` → CRASH
+- **Fix**:
+  1. **`lib/core/dialogs/dialog_factory.dart`:**
+     - Removed `import 'dart:io';`
+     - Added `import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;`
+     - Changed `_isIOS` from `Platform.isIOS` to `!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS`
+  2. **`lib/widgets/common/icons/adaptive_icon.dart`:**
+     - Same fix applied for consistency (also used `Platform.isIOS`)
+- **Status**: FIXED - Verified 2026-01-10
 
 ### Recently Fixed
 | BUG-010 | Friend search field not accepting text input on web | 16 | FRIEND-E2E-01 | High | FIXED |
@@ -615,9 +634,9 @@ See full test case details in:
 | Test ID | Action (User A) | Verification (User B) | Status | Result | Notes |
 |---------|-----------------|----------------------|--------|--------|-------|
 | FRIEND-E2E-01 | Send friend request to User B | User B sees request in "Inkommande förfrågningar" | Completed | PASS | BUG-010 fixed. User A searched for "test.testsson2", sent request. User B sees "Friend Request" with "Acceptera"/"Avvisa" buttons. |
-| FRIEND-E2E-02 | (as B) Accept friend request | User A sees User B in friends list | Completed | PARTIAL | User B accepted, User B sees "Malin Gisslén" in friends. User A's friends list still shows old friends (malin, send) but not test.testsson2. **Possible sync/cache issue** - friendship exists on B's side but not reflecting on A's side after refresh. |
-| FRIEND-E2E-03 | (as B) Reject friend request | User A request disappears, not friends | Pending | - | - |
-| FRIEND-E2E-04 | Remove User B as friend | User B no longer sees User A as friend | Pending | - | - |
+| FRIEND-E2E-02 | (as B) Accept friend request | User A sees User B in friends list | Completed | PASS | **BUG-011 FIXED.** Security rules updated to allow bidirectional friend creation. Verified with fresh.testuser: acceptance creates bidirectional friendship, both users see each other immediately. |
+| FRIEND-E2E-03 | (as B) Reject friend request | User A request disappears, not friends | Completed | PASS | test.testsson2 logged in, saw incoming request from Malin in "Hitta Vänner" tab (notification badge). Clicked "Avvisa" - snackbar showed "Vänskapsförfrågan avböjd", request disappeared, notification badge gone. Users are not friends. |
+| FRIEND-E2E-04 | Remove User B as friend | User B no longer sees User A as friend | Completed | PASS | **BUG-012 found & fixed.** Clicking "Ta bort vän" crashed on web due to `Platform.isIOS` in DialogFactory. Fixed by using `defaultTargetPlatform`. After fix: confirmation dialog shows, friend removed successfully. |
 | FRIEND-E2E-05 | Block user | Blocked user cannot send requests/messages | Pending | - | - |
 
 ### 16.2 Groups System E2E (9 tests)
