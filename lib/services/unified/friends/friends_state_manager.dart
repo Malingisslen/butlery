@@ -31,6 +31,7 @@ class FriendsStateManager extends ChangeNotifier {
   StreamSubscription? _sentRequestsSubscription;
   StreamSubscription? _groupInvitationsSubscription;
   StreamSubscription? _categoriesSubscription;
+  StreamSubscription? _friendsSubscription;
 
   FriendsStateManager({
     required FirebaseFriendsRepository repository,
@@ -166,11 +167,13 @@ class FriendsStateManager extends ChangeNotifier {
     _sentRequestsSubscription?.cancel();
     _groupInvitationsSubscription?.cancel();
     _categoriesSubscription?.cancel();
+    _friendsSubscription?.cancel();
 
     _incomingRequestsSubscription = null;
     _sentRequestsSubscription = null;
     _groupInvitationsSubscription = null;
     _categoriesSubscription = null;
+    _friendsSubscription = null;
 
     _friends.clear();
     _incomingRequests.clear();
@@ -193,6 +196,7 @@ class FriendsStateManager extends ChangeNotifier {
       _sentRequestsSubscription?.cancel();
       _groupInvitationsSubscription?.cancel();
       _categoriesSubscription?.cancel();
+      _friendsSubscription?.cancel();
       AppLogger.debug(
           '🧹 Cancelled existing real-time listeners before setting up new ones');
 
@@ -241,6 +245,19 @@ class FriendsStateManager extends ChangeNotifier {
         },
         onError: (e) {
           AppLogger.warning('Categories stream error: $e');
+        },
+      );
+
+      // BUG-011 fix: Add real-time stream for friends list
+      // This ensures User A sees User B in friends list immediately when User B accepts
+      _friendsSubscription = _repository.friendProfilesStream(userId).listen(
+        (friendProfiles) {
+          _friends = friendProfiles;
+          AppLogger.debug('Real-time update: ${_friends.length} friends');
+          notifyListeners();
+        },
+        onError: (e) {
+          AppLogger.warning('Friends stream error: $e');
         },
       );
     } catch (e) {
@@ -446,11 +463,13 @@ class FriendsStateManager extends ChangeNotifier {
     _sentRequestsSubscription?.cancel();
     _groupInvitationsSubscription?.cancel();
     _categoriesSubscription?.cancel();
+    _friendsSubscription?.cancel();
 
     _incomingRequestsSubscription = null;
     _sentRequestsSubscription = null;
     _groupInvitationsSubscription = null;
     _categoriesSubscription = null;
+    _friendsSubscription = null;
 
     AppLogger.debug(
         'FriendsStateManager disposed - cleaned up ${_friends.length} friends data');

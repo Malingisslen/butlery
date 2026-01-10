@@ -9,6 +9,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 // Import focused repositories
 import 'package:butlery/repositories/firebase/friends/friend_request_repository.dart';
@@ -162,6 +163,8 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   Future<bool> acceptFriendRequest(String requestId) async {
     try {
       final currentUser = requireCurrentUserId();
+      AppLogger.debug(
+          '🤝 Accepting friend request $requestId for user $currentUser');
 
       // Use a single transaction to atomically:
       // 1. Validate and update the friend request
@@ -178,6 +181,8 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
         }
 
         final request = FriendRequest.fromMap(requestId, requestDoc.data()!);
+        AppLogger.debug(
+            '📋 Request details: from=${request.fromUserId}, to=${request.toUserId}, status=${request.status}');
 
         // Verify current user is the recipient
         if (currentUser != request.toUserId) {
@@ -203,30 +208,49 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
         final user1FriendDoc = await transaction.get(user1FriendRef);
         final user2FriendDoc = await transaction.get(user2FriendRef);
+        AppLogger.debug(
+            '🔍 Friendship status: user1Doc.exists=${user1FriendDoc.exists}, user2Doc.exists=${user2FriendDoc.exists}');
 
         // Update the friend request status
         transaction.update(requestRef, {
           'status': FriendRequestStatus.accepted.name,
           'respondedAt': FieldValue.serverTimestamp(),
         });
+        AppLogger.debug('✅ Updated request status to accepted');
 
-        // Only create friendship if it doesn't already exist
-        if (!user1FriendDoc.exists && !user2FriendDoc.exists) {
-          // Create friend documents for both users
+        // Create friendship documents for any that don't exist
+        // BUG-011 fix: Changed from AND to individual checks to handle partial states
+        int friendsAdded = 0;
+        if (!user1FriendDoc.exists) {
           transaction
               .set(user1FriendRef, {'addedAt': FieldValue.serverTimestamp()});
+          AppLogger.debug(
+              '➕ Created friend doc: users/${request.fromUserId}/friends/${request.toUserId}');
+          friendsAdded++;
+        }
+        if (!user2FriendDoc.exists) {
           transaction
               .set(user2FriendRef, {'addedAt': FieldValue.serverTimestamp()});
+          AppLogger.debug(
+              '➕ Created friend doc: users/${request.toUserId}/friends/${request.fromUserId}');
+          friendsAdded++;
+        }
 
-          // Update friend counts
+        // Update friend counts only if we created new friendship documents
+        if (friendsAdded > 0) {
           final user1Profile =
               firestore.collection('public_profiles').doc(request.fromUserId);
           final user2Profile =
               firestore.collection('public_profiles').doc(request.toUserId);
-          transaction
-              .update(user1Profile, {'friendsCount': FieldValue.increment(1)});
-          transaction
-              .update(user2Profile, {'friendsCount': FieldValue.increment(1)});
+          // Only increment if we added BOTH docs (new friendship)
+          // If only one was added, don't increment (partial recovery)
+          if (friendsAdded == 2) {
+            transaction.update(
+                user1Profile, {'friendsCount': FieldValue.increment(1)});
+            transaction.update(
+                user2Profile, {'friendsCount': FieldValue.increment(1)});
+            AppLogger.debug('📊 Incremented friend counts for both users');
+          }
         }
       });
 
@@ -238,8 +262,11 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
         details: 'Request $requestId accepted atomically',
       );
 
+      AppLogger.info('✅ Friend request $requestId accepted successfully');
       return true;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      AppLogger.error(
+          '❌ Failed to accept friend request $requestId: $e', stackTrace);
       return false;
     }
   }
