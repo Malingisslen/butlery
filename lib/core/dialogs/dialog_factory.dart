@@ -1,8 +1,9 @@
 // lib/core/dialogs/dialog_factory.dart - CONSOLIDATED VERSION
 // Merged from confirmation_dialog_factory.dart + feedback_dialog_factory.dart + interactive_dialog_factory.dart
 
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -14,8 +15,9 @@ class DialogFactory {
   // Prevent instantiation
   DialogFactory._();
 
-  /// Check if running on iOS platform
-  static bool get _isIOS => Platform.isIOS;
+  /// Check if running on iOS platform (web-safe)
+  static bool get _isIOS =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
 
   // Merged from confirmation_dialog_factory.dart
   /// Shows a platform-adaptive confirmation dialog.

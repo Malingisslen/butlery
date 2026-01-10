@@ -2,9 +2,9 @@
 /// Uses SF Symbols (CupertinoIcons) on iOS for a native feel,
 /// Material Icons on Android.
 
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 
 /// A platform-adaptive icon that uses SF Symbols on iOS and Material Icons on Android.
@@ -52,7 +52,8 @@ class AdaptiveIcon extends StatelessWidget {
   final String? semanticLabel;
 
   /// Whether we should use iOS icons.
-  static bool get _isIOS => !kIsWeb && Platform.isIOS;
+  static bool get _isIOS =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
 
   @override
   Widget build(BuildContext context) {
@@ -565,7 +566,8 @@ class AdaptiveIcon extends StatelessWidget {
 class AdaptiveIcons {
   AdaptiveIcons._();
 
-  static bool get _isIOS => !kIsWeb && Platform.isIOS;
+  static bool get _isIOS =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
 
   // Navigation
   static IconData get book => _isIOS ? CupertinoIcons.book : Icons.book;
