@@ -128,3 +128,33 @@ När stop hook blockerar med en `reason`:
 - Om reason nämner "analyze" → kör analyze och fixa fel
 - Om reason nämner "tests" → kör tester och fixa fel
 - Försök sedan stoppa igen
+
+## Agent Usage Rules (MANDATORY)
+
+### Tier 1: Always Use (Hook Enforced)
+
+**debugger** - MUST use when encountering ANY:
+- Bug reports (BUG-xxx pattern)
+- Errors or exceptions
+- Test failures
+- Unexpected behavior
+- "Not working" situations
+- Runtime issues
+
+**firebase-backend-security** - MUST use when modifying:
+- Any file in lib/repositories/
+- Any file containing Firebase, Firestore, or authentication logic
+- User data operations
+
+### Tier 2: Quality Gates (Commit Enforced)
+
+When committing, these agents run automatically:
+- **code-reviewer** - Reviews all staged .dart changes
+- **testing-specialist** - Verifies test coverage for modified lib/ files
+
+### Tier 3: On Request
+
+Available when explicitly requested:
+- **uiux-designer** - New views, UI changes, accessibility
+- **performance-optimizer** - Performance concerns
+- **flutter-developer** - Complex architecture questions

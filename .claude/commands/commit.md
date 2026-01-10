@@ -11,7 +11,31 @@ Follow the established commit message format used in this repository and include
 - Proper categorization (feat:, fix:, refactor:, etc.)
 - Generated with Claude Code footer
 
-Use the standard git workflow:
+## Pre-Commit Quality Gates (MANDATORY)
+
+Before creating any commit, you MUST run these agents:
+
+### 1. code-reviewer Agent
+Spawn the `code-reviewer` agent to review all staged .dart files:
+- Architecture compliance (MVVM, mixins, ServiceLocator)
+- Security patterns (PermissionValidationMixin, no direct Firebase)
+- Code quality (SerializationUtils, no deprecated APIs)
+- Comment quality (WHY not WHAT)
+
+### 2. testing-specialist Agent (if lib/ modified)
+If ANY lib/ files are staged, spawn the `testing-specialist` agent:
+- Verify tests exist for modified ViewModels/Services
+- Check test coverage isn't reduced
+- Ensure critical tests aren't skipped
+
+### 3. Gate Logic
+- If code-reviewer finds BLOCKING issues → fix before commit
+- If testing-specialist finds coverage gaps → add tests before commit
+- Only proceed to git commit after agents approve
+
+## Git Workflow
+
+After quality gates pass, use the standard git workflow:
 1. Stage all changes with `git add .`
 2. Create a descriptive commit message
 3. Commit the changes

@@ -72,7 +72,12 @@
       "Bash(lib/services/tagging/retagging_scheduler.dart )",
       "Bash(lib/viewmodels/recipe_form_viewmodel.dart )",
       "Bash(test/integration/tagging/ )",
-      "Bash(test/unit/services/tagging/conflict_resolution_test.dart )"
+      "Bash(test/unit/services/tagging/conflict_resolution_test.dart )",
+      "WebFetch(domain:twitter-thread.com)",
+      "Bash(claude --version:*)",
+      "Bash(Stop-Process -Id 35236 -Force)",
+      "Bash(powershell \"Stop-Process -Id 35236 -Force\")",
+      "WebFetch(domain:www.anthropic.com)"
     ],
     "deny": [],
     "ask": []
