@@ -155,8 +155,14 @@ service cloud.firestore {
       }
 
       // User's friends list
+      // BUG-011 fix: Allow bidirectional friend creation
+      // A user can:
+      // - Read/write their own friends (isOwner)
+      // - Read/write to another user's friends subcollection if they ARE the friendId
+      //   (i.e., when accepting a friend request, you can check and add yourself to their friends list)
       match /friends/{friendId} {
-        allow read, write: if isOwner(userId);
+        allow read: if isOwner(userId) || (isAuthenticated() && request.auth.uid == friendId);
+        allow write: if isOwner(userId) || (isAuthenticated() && request.auth.uid == friendId);
       }
       
       // Friend categories/groups
@@ -197,13 +203,24 @@ service cloud.firestore {
     match /public_profiles/{userId} {
       // Anyone authenticated can read profiles for user search functionality
       allow read: if isAuthenticated();
-      
+
       // Only profile owner can write
-      allow create: if isOwner(userId) 
+      allow create: if isOwner(userId)
         && hasRequiredFields(['displayName', 'email'])
         && request.resource.data.isSearchable is bool;
-        
-      allow update: if isOwner(userId);
+
+      // BUG-011 fix: Allow friendsCount updates during bidirectional friend creation
+      // Owner can update anything, OR authenticated users can update ONLY friendsCount
+      // This allows the atomic transaction in addMutualFriends() to update both users' counts
+      allow update: if isOwner(userId) || (
+        isAuthenticated() &&
+        // Only friendsCount field is being changed
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friendsCount']) &&
+        // friendsCount change is exactly +1 or -1 (adding or removing friend)
+        // Handle case where friendsCount might be null/0 initially
+        (request.resource.data.friendsCount == resource.data.get('friendsCount', 0) + 1 ||
+         request.resource.data.friendsCount == resource.data.get('friendsCount', 0) - 1)
+      );
       allow delete: if isOwner(userId);
     }
     

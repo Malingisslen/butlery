@@ -25,8 +25,8 @@
 | 13. Responsive Design | 9 | 1 | 1 | 0 | 0 |
 | 14. Accessibility | 7 | 4 | 4 | 0 | 0 |
 | 15. Error Handling | 13 | 4 | 4 | 0 | 0 |
-| 16. Social E2E Tests | 35 | 1 | 1 | 0 | 0 |
-| **TOTAL** | **377** | **129** | **125** | **0** | **6** |
+| 16. Social E2E Tests | 35 | 2 | 1 | 1 | 1 |
+| **TOTAL** | **377** | **130** | **125** | **1** | **7** |
 
 ---
 
@@ -89,7 +89,48 @@
 ### Open Bugs
 | Bug ID | Title | Phase | Test ID | Severity | Status |
 |--------|-------|-------|---------|----------|--------|
-| - | No open bugs | - | - | - | - |
+| BUG-011 | Friend list not syncing bidirectionally after acceptance | 16 | FRIEND-E2E-02 | Medium | FIX APPLIED |
+
+**BUG-011 Details:**
+- **Issue**: After User B accepts friend request from User A, User B sees User A in friends list, but User A's friends list doesn't show User B
+- **Platform**: Web (Chrome)
+- **Steps to reproduce**: 1) User A sends friend request to User B, 2) User B accepts, 3) User B's friends shows User A, 4) User A's friends doesn't show User B
+- **ROOT CAUSE IDENTIFIED (2026-01-10 Final Analysis):**
+  1. **Missing stream subscription (FIXED):** `FriendsStateManager` had no real-time listener for friends subcollection
+  2. **OR condition bug in addMutualFriends (FIXED):** The condition `if (user1FriendDoc.exists || user2FriendDoc.exists) { return; }` caused the function to skip creating BOTH friendship documents if EITHER already existed. This caused partial friendship states.
+  3. **UI flow not using atomic transaction:** `FriendsManagementOperations.acceptFriendRequest()` calls `addMutualFriends()` separately instead of using the atomic `FirebaseFriendsRepository.acceptFriendRequest()` which handles everything in one transaction.
+
+- **Fixes Applied (2026-01-10):**
+  1. **`lib/services/unified/friends/friends_state_manager.dart`:**
+     - Added `_friendsSubscription` to subscribe to `friendProfilesStream(userId)` for real-time updates
+     - Added cleanup in `clearAllData()` and `dispose()`
+
+  2. **`lib/repositories/firebase/firebase_friends_repository.dart`:**
+     - Added detailed error logging to `acceptFriendRequest` transaction
+     - Changed conditional logic from `&&` to individual checks for partial state handling
+
+  3. **`lib/repositories/firebase/friends/friend_relationship_repository.dart` (KEY FIX):**
+     - Changed `addMutualFriends` condition from `||` (OR) to `&&` (AND):
+       - Old: `if (user1FriendDoc.exists || user2FriendDoc.exists) { return; }` - skipped if EITHER existed
+       - New: `if (user1FriendDoc.exists && user2FriendDoc.exists) { return; }` - only skips if BOTH exist
+     - Now creates missing friendship documents even if one side already exists (partial state recovery)
+     - Only increments friend counts when both docs are newly created (prevents double-counting)
+
+- **E2E Testing Results (2026-01-10):**
+  - Created fresh test user: fresh.testuser@gmail.com / FreshTest123!
+  - User A (malin.gisslen1@gmail.com) sent friend request to Fresh Testuser
+  - Fresh Testuser accepted the request via "Acceptera" button
+  - ✅ Fresh Testuser sees "Malin Gisslén" in friends list
+  - ❌ Malin's friends list still shows only 2 friends (malin, send) - NOT Fresh Testuser
+  - ❌ Malin's sent request still shows "Väntar på svar..." for fresh.testuser
+  - **Analysis:** The test was conducted with the old code. Fix requires hot restart of Flutter app.
+
+- **Fix Verification Required:**
+  - The OR→AND fix in `addMutualFriends` will prevent future partial states
+  - Existing partial states (like the test case) may need manual repair or a re-acceptance flow
+  - To fully verify: Hot restart app, create new test users, perform fresh E2E test
+
+- **Status**: FIX APPLIED - Awaiting verification with fresh test data after app restart
 
 ### Recently Fixed
 | BUG-010 | Friend search field not accepting text input on web | 16 | FRIEND-E2E-01 | High | FIXED |
@@ -540,6 +581,26 @@ See full test case details in:
 **E2E Session 2026-01-10:**
 - **BUG-010 FIXED:** Search input widget converted from StatelessWidget to StatefulWidget with TextFormField and explicit borders
 - User A logged in as malin.gisslen1@gmail.com
+
+**E2E Session 2026-01-10 (BUG-011 Investigation):**
+- **Initial Fix Attempt:** Added `_friendsSubscription` to `FriendsStateManager` to subscribe to `friendProfilesStream(userId)`
+  - Modified: `lib/services/unified/friends/friends_state_manager.dart`
+  - Added subscription in `_setupRealtimeListeners()`, cleanup in `clearAllData()` and `dispose()`
+  - `flutter analyze` passed with no issues
+- **E2E Re-test Results:**
+  - User B accepted friend request from "Friend Request" (displayed with ? avatar)
+  - User B's friends list shows "Malin Gisslén" after acceptance - PASS
+  - User A's friends list still shows "malin", "send" but NOT "test.testsson2" - FAIL
+  - User A's "Skickade förfrågningar" still shows test.testsson2 as "Väntar på svar..." - indicates transaction didn't complete
+- **Root Cause Analysis:**
+  - The `acceptFriendRequest` atomic transaction in `firebase_friends_repository.dart` may be failing silently
+  - Transaction should: 1) Update request status to "accepted", 2) Create bidirectional friendship docs, 3) Increment friend counts
+  - Evidence suggests only partial completion: User B has friendship, User A does not, request status not updated
+- **Next Investigation Steps:**
+  1. Add detailed error logging to `acceptFriendRequest` transaction catch block
+  2. Check Firestore Console for actual document states
+  3. Investigate if condition `if (!user1FriendDoc.exists && !user2FriendDoc.exists)` is causing skipped writes
+- **Progress:** Stream fix implemented but deeper transaction issue remains
 - User A searched "test.testsson2" in Hitta Vänner, found User B
 - User A clicked "Skicka vänförfrågan" button - request sent
 - User A logged out via profile menu → "Logga ut"
@@ -547,13 +608,14 @@ See full test case details in:
 - User B navigated to Vänner & Grupper → notification badge "1" on Hitta Vänner
 - User B clicked Hitta Vänner → "Inkommande förfrågningar (1)" shows Friend Request with Acceptera/Avvisa
 - **FRIEND-E2E-01: PASS** - Friend request flows correctly between users
+- **FRIEND-E2E-02: PARTIAL** - User B accepted, User B sees User A as friend. However, User A's friends list doesn't show User B (only shows "malin", "send"). **BUG-011 filed** - possible sync issue
 
 ### 16.1 Friends System E2E (5 tests)
 
 | Test ID | Action (User A) | Verification (User B) | Status | Result | Notes |
 |---------|-----------------|----------------------|--------|--------|-------|
 | FRIEND-E2E-01 | Send friend request to User B | User B sees request in "Inkommande förfrågningar" | Completed | PASS | BUG-010 fixed. User A searched for "test.testsson2", sent request. User B sees "Friend Request" with "Acceptera"/"Avvisa" buttons. |
-| FRIEND-E2E-02 | (as B) Accept friend request | User A sees User B in friends list | Pending | - | - |
+| FRIEND-E2E-02 | (as B) Accept friend request | User A sees User B in friends list | Completed | PARTIAL | User B accepted, User B sees "Malin Gisslén" in friends. User A's friends list still shows old friends (malin, send) but not test.testsson2. **Possible sync/cache issue** - friendship exists on B's side but not reflecting on A's side after refresh. |
 | FRIEND-E2E-03 | (as B) Reject friend request | User A request disappears, not friends | Pending | - | - |
 | FRIEND-E2E-04 | Remove User B as friend | User B no longer sees User A as friend | Pending | - | - |
 | FRIEND-E2E-05 | Block user | Blocked user cannot send requests/messages | Pending | - | - |

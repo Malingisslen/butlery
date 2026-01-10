@@ -135,25 +135,35 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
       final user1FriendDoc = await transaction.get(user1FriendRef);
       final user2FriendDoc = await transaction.get(user2FriendRef);
 
-      // If friendship already exists in either direction, skip to prevent
-      // duplicate count increments
-      if (user1FriendDoc.exists || user2FriendDoc.exists) {
+      // BUG-011 fix: Changed from OR to AND - only skip if BOTH docs exist
+      // This handles partial friendship states where only one side was created
+      if (user1FriendDoc.exists && user2FriendDoc.exists) {
         return;
       }
 
-      // Create friend documents for both users
-      transaction
-          .set(user1FriendRef, {'addedAt': FieldValue.serverTimestamp()});
-      transaction
-          .set(user2FriendRef, {'addedAt': FieldValue.serverTimestamp()});
+      // Create friend documents for whichever side doesn't exist yet
+      int docsCreated = 0;
+      if (!user1FriendDoc.exists) {
+        transaction
+            .set(user1FriendRef, {'addedAt': FieldValue.serverTimestamp()});
+        docsCreated++;
+      }
+      if (!user2FriendDoc.exists) {
+        transaction
+            .set(user2FriendRef, {'addedAt': FieldValue.serverTimestamp()});
+        docsCreated++;
+      }
 
-      // Update friend counts atomically
-      final user1Profile = collection.doc(userId1);
-      final user2Profile = collection.doc(userId2);
-      transaction
-          .update(user1Profile, {'friendsCount': FieldValue.increment(1)});
-      transaction
-          .update(user2Profile, {'friendsCount': FieldValue.increment(1)});
+      // Only update friend counts if we created both documents (new friendship)
+      // If only one was created, don't increment (partial recovery scenario)
+      if (docsCreated == 2) {
+        final user1Profile = collection.doc(userId1);
+        final user2Profile = collection.doc(userId2);
+        transaction
+            .update(user1Profile, {'friendsCount': FieldValue.increment(1)});
+        transaction
+            .update(user2Profile, {'friendsCount': FieldValue.increment(1)});
+      }
     });
   }
 
