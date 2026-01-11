@@ -91,6 +91,7 @@ class AppDimensions {
 
   // Additional border radius constants for common hardcoded values
   static const double borderRadius0 = 0.0;
+  static const double borderRadius2 = 2.0;
   static const double borderRadius4 = 4.0;
   static const double borderRadius6 = 6.0;
   static const double borderRadius7 = 7.0;

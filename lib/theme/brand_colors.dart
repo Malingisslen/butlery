@@ -58,4 +58,21 @@ abstract class BrandColors {
   // Generic fallback for unknown platforms
   /// Generic platform color (neutral gray)
   static const Color generic = Color(0xFF6B7280);
+
+  // Platform-specific background colors (light tints for badges)
+  /// YouTube light background (light red tint)
+  static const Color youtubeBackground = Color(0xFFFFE0E0);
+
+  /// TikTok light background (light cyan tint)
+  static const Color tiktokBackground = Color(0xFFE0F7FA);
+
+  /// Instagram light background (light pink tint)
+  static const Color instagramBackground = Color(0xFFFCE4EC);
+
+  // Platform-specific text colors (darker shades for readability)
+  /// YouTube dark text color
+  static const Color youtubeText = Color(0xFFCC0000);
+
+  /// Instagram dark text color
+  static const Color instagramText = Color(0xFFC13584);
 }
