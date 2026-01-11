@@ -134,7 +134,7 @@ class ConversationListItem extends StatelessWidget {
           height: 56,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.accent.withValues(alpha: 0.2),
+            color: AppColors.accent.withValues(alpha: AppDimensions.opacityLight),
           ),
           child: conversation.isGroup
               ? _buildGroupAvatar()
@@ -167,7 +167,7 @@ class ConversationListItem extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.primaryBlue.withValues(alpha: 0.1),
+        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
       ),
       child: const Icon(
         Icons.group,

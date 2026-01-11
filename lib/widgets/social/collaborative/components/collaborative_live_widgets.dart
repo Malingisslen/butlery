@@ -31,10 +31,10 @@ class CollaborativeLiveWidgets {
               vertical: AppDimensions.spacingXs,
             ),
             decoration: BoxDecoration(
-              color: indicatorColor.withValues(alpha: 0.1),
+              color: indicatorColor.withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
               border: Border.all(
-                color: indicatorColor.withValues(alpha: 0.3),
+                color: indicatorColor.withValues(alpha: AppDimensions.opacityMediumLight),
               ),
             ),
             child: Row(

@@ -298,8 +298,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           children: [
             CircleAvatar(
               backgroundColor: hasActiveRules
-                  ? AppColors.success.withValues(alpha: 0.2)
-                  : colorScheme.primary.withValues(alpha: 0.2),
+                  ? AppColors.success.withValues(alpha: AppDimensions.opacityLight)
+                  : colorScheme.primary.withValues(alpha: AppDimensions.opacityLight),
               child: Icon(
                 Icons.label,
                 color: hasActiveRules ? AppColors.success : colorScheme.primary,
@@ -334,7 +334,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           _buildSubtitle(usageCount, ruleCount, enabledRuleCount),
           style: AppTextStyles.bodySmall.copyWith(
             color: isUnused
-                ? colorScheme.onSurfaceVariant.withValues(alpha: 0.7)
+                ? colorScheme.onSurfaceVariant.withValues(alpha: AppDimensions.opacityDark)
                 : colorScheme.onSurfaceVariant,
           ),
         ),

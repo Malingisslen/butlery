@@ -82,7 +82,7 @@ class SharedContentCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(AppDimensions.paddingS),
                     decoration: BoxDecoration(
-                      color: iconColor.withValues(alpha: 0.1),
+                      color: iconColor.withValues(alpha: AppDimensions.opacityVeryLight),
                       borderRadius:
                           BorderRadius.circular(AppDimensions.borderRadiusS),
                     ),
@@ -130,7 +130,7 @@ class SharedContentCard extends StatelessWidget {
                     CircleAvatar(
                       radius: 12,
                       backgroundColor:
-                          AppColors.primaryBlue.withValues(alpha: 0.2),
+                          AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
                       child: Text(
                         item.sharedByDisplayName.isNotEmpty
                             ? item.sharedByDisplayName[0].toUpperCase()

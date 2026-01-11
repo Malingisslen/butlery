@@ -209,14 +209,14 @@ class RecipeDetailContent extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: isUserAdded
-                      ? AppColors.primaryBlue.withValues(alpha: 0.15)
-                      : AppColors.primaryBlue.withValues(alpha: 0.1),
+                      ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle)
+                      : AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusRound),
                   border: Border.all(
                     color: isUserAdded
-                        ? AppColors.primaryBlue.withValues(alpha: 0.5)
-                        : AppColors.primaryBlue.withValues(alpha: 0.3),
+                        ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityHalf)
+                        : AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
                   ),
                 ),
                 child: Text(
@@ -511,10 +511,10 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: 0.15),
+        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
         border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: 0.3),
+          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Text(
@@ -536,16 +536,16 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
           vertical: AppDimensions.spacingXs,
         ),
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withValues(alpha: 0.08),
+          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
           border: Border.all(
-            color: AppColors.primaryBlue.withValues(alpha: 0.2),
+            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
           ),
         ),
         child: Text(
           '+$count till',
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.primaryBlue.withValues(alpha: 0.7),
+            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityDark),
             fontWeight: FontWeight.w500,
           ),
         ),

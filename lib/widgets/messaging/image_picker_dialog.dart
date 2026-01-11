@@ -108,7 +108,7 @@ class _SourceOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: color.withValues(alpha: 0.1),
+      color: color.withValues(alpha: AppDimensions.opacityVeryLight),
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: InkWell(
         onTap: onTap,

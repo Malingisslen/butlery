@@ -117,10 +117,10 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.info.withValues(alpha: 0.1),
+                  color: AppColors.info.withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius: BorderRadius.circular(8),
                   border:
-                      Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+                      Border.all(color: AppColors.info.withValues(alpha: AppDimensions.opacityMediumLight)),
                 ),
                 child: Row(
                   children: [
@@ -302,7 +302,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
           color: value
-              ? AppColors.primary.withValues(alpha: 0.5)
+              ? AppColors.primary.withValues(alpha: AppDimensions.opacityHalf)
               : AppColors.divider,
           width: value ? 2 : 1,
         ),
@@ -315,7 +315,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: value
-                    ? AppColors.primary.withValues(alpha: 0.1)
+                    ? AppColors.primary.withValues(alpha: AppDimensions.opacityVeryLight)
                     : AppColors.backgroundTint,
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -363,9 +363,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.1),
+        color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Row(
         children: [
@@ -423,7 +423,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
 
   Widget _buildInfoSection() {
     return Card(
-      color: AppColors.info.withValues(alpha: 0.05),
+      color: AppColors.info.withValues(alpha: AppDimensions.opacityExtraVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

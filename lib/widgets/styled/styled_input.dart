@@ -319,14 +319,14 @@ class StyledInput extends StatelessWidget {
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
             width: AppDimensions.borderWidthStandard,
           ),
         ),
         filled: true,
         fillColor: enabled
             ? AppColors.cardWhite
-            : AppColors.cardWhite.withValues(alpha: 0.7),
+            : AppColors.cardWhite.withValues(alpha: AppDimensions.opacityDark),
       ),
     );
   }

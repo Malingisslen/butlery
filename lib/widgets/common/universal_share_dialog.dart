@@ -197,7 +197,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
             boxShadow: [
               BoxShadow(
-                color: AppColors.textDark.withValues(alpha: 0.1),
+                color: AppColors.textDark.withValues(alpha: AppDimensions.opacityVeryLight),
                 blurRadius: AppDimensions.elevationHigh * 2.5,
                 offset: const Offset(0, AppDimensions.elevationMedium + 6),
               ),

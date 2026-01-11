@@ -38,7 +38,7 @@ class FriendRequestCard {
           ? Theme.of(context)
               .colorScheme
               .primaryContainer
-              .withValues(alpha: 0.3)
+              .withValues(alpha: AppDimensions.opacityMediumLight)
           : null,
       child: InkWell(
         onTap: () => onSelectionChanged(!isSelected),
@@ -112,7 +112,7 @@ class FriendRequestCard {
                               color: Theme.of(context)
                                   .colorScheme
                                   .surfaceContainerHighest
-                                  .withValues(alpha: 0.5),
+                                  .withValues(alpha: AppDimensions.opacityHalf),
                               borderRadius: BorderRadius.circular(
                                   AppDimensions.borderRadius8),
                             ),
@@ -224,7 +224,7 @@ class FriendRequestCard {
           ? Theme.of(context)
               .colorScheme
               .primaryContainer
-              .withValues(alpha: 0.3)
+              .withValues(alpha: AppDimensions.opacityMediumLight)
           : null,
       child: InkWell(
         onTap: () => onSelectionChanged(!isSelected),

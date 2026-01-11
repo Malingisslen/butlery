@@ -6,7 +6,7 @@
 /// **Usage Guidelines:**
 /// - Prefer primary names for new code
 /// - Use Material 3 ColorScheme for theme-aware components
-/// - Modern syntax: Use `color.withValues(alpha: 0.8)` not deprecated `withOpacity()`
+/// - Modern syntax: Use `color.withValues(alpha: AppDimensions.opacityVeryDark)` not deprecated `withOpacity()`
 
 import 'package:flutter/material.dart';
 

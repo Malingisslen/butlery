@@ -113,7 +113,7 @@ class _ColorCircle extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: colorValue.withValues(alpha: 0.4),
+                    color: colorValue.withValues(alpha: AppDimensions.opacityMedium),
                     blurRadius: 8,
                     spreadRadius: 2,
                   ),

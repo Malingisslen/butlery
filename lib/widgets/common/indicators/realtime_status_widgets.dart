@@ -84,7 +84,7 @@ class RealtimeStatusBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(
           (AppDimensions.spacingSm + AppDimensions.spacingXs)),
-      color: AppColors.error.withValues(alpha: 0.1),
+      color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Row(
         children: [
           Text(

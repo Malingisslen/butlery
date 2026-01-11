@@ -150,7 +150,7 @@ class RecipeDetailMetadata extends StatelessWidget {
                 style: AppTextStyles.labelLarge,
               ),
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.success.withValues(alpha: 0.1),
+                backgroundColor: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
                 foregroundColor: AppColors.success,
                 minimumSize:
                     const Size(double.infinity, AppDimensions.buttonHeight),
@@ -180,12 +180,12 @@ class RecipeDetailMetadata extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: isHighlighted
-            ? AppColors.primaryBlue.withValues(alpha: 0.1)
+            ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
             : AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
           color: isHighlighted
-              ? AppColors.primaryBlue.withValues(alpha: 0.3)
+              ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight)
               : AppColors.divider,
         ),
       ),
@@ -270,11 +270,11 @@ class RecipeDetailMetadata extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusM),
                 border: Border.all(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                  color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
                 ),
               ),
               child: Row(

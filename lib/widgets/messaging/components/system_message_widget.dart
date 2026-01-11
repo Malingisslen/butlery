@@ -25,7 +25,7 @@ class SystemMessageWidget extends StatelessWidget {
             vertical: AppDimensions.paddingS,
           ),
           decoration: BoxDecoration(
-            color: AppColors.textTertiary.withValues(alpha: 0.1),
+            color: AppColors.textTertiary.withValues(alpha: AppDimensions.opacityVeryLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
           child: Text(
@@ -62,7 +62,7 @@ class ReplyPreviewWidget extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: AppDimensions.paddingS),
       decoration: BoxDecoration(
         color: (isFromCurrentUser ? AppColors.cardWhite : AppColors.accent)
-            .withValues(alpha: 0.2),
+            .withValues(alpha: AppDimensions.opacityLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: const Border(
           left: BorderSide(color: AppColors.accent, width: 3),
@@ -75,7 +75,7 @@ class ReplyPreviewWidget extends StatelessWidget {
             senderName,
             style: AppTextStyles.labelMedium.copyWith(
               color: isFromCurrentUser
-                  ? AppColors.cardWhite.withValues(alpha: 0.8)
+                  ? AppColors.cardWhite.withValues(alpha: AppDimensions.opacityVeryDark)
                   : AppColors.primaryBlue,
             ),
           ),
@@ -84,7 +84,7 @@ class ReplyPreviewWidget extends StatelessWidget {
             content,
             style: AppTextStyles.labelSmall.copyWith(
               color: isFromCurrentUser
-                  ? AppColors.cardWhite.withValues(alpha: 0.7)
+                  ? AppColors.cardWhite.withValues(alpha: AppDimensions.opacityDark)
                   : AppColors.textMedium,
             ),
             maxLines: 2,
@@ -116,7 +116,7 @@ class MessageAvatarWidget extends StatelessWidget {
       height: 32,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.accent.withValues(alpha: 0.2),
+        color: AppColors.accent.withValues(alpha: AppDimensions.opacityLight),
       ),
       child: avatarImage ?? _buildFallback(),
     );

@@ -51,7 +51,7 @@ class ShoppingItemTiles {
                         border: Border.all(
                           color: isCompleted
                               ? AppColors.primaryBlue
-                              : AppColors.textMedium.withValues(alpha: 0.6),
+                              : AppColors.textMedium.withValues(alpha: AppDimensions.opacityMediumDark),
                           width: AppDimensions.borderWidthThick,
                         ),
                         color: isCompleted
@@ -95,7 +95,7 @@ class ShoppingItemTiles {
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: isCompleted
                                     ? AppColors.textMedium
-                                        .withValues(alpha: 0.8)
+                                        .withValues(alpha: AppDimensions.opacityVeryDark)
                                     : AppColors.textMedium,
                                 decoration: isCompleted
                                     ? TextDecoration.lineThrough
@@ -156,7 +156,7 @@ class ShoppingItemTiles {
                               Icons.delete,
                               size: AppDimensions.iconSizeS,
                               color:
-                                  AppColors.textMedium.withValues(alpha: 0.7),
+                                  AppColors.textMedium.withValues(alpha: AppDimensions.opacityDark),
                             ),
                             onPressed: () => onDeleteItem(item),
                             tooltip: 'Ta bort',

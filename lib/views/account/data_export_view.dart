@@ -160,7 +160,7 @@ class DataExportView extends StatelessWidget {
 
   Widget _buildErrorState(BuildContext context, DataExportViewModel viewModel) {
     return Card(
-      color: AppColors.error.withValues(alpha: 0.1),
+      color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -198,7 +198,7 @@ class DataExportView extends StatelessWidget {
   Widget _buildSuccessState(
       BuildContext context, DataExportViewModel viewModel) {
     return Card(
-      color: AppColors.success.withValues(alpha: 0.1),
+      color: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -267,7 +267,7 @@ class DataExportView extends StatelessWidget {
 
   Widget _buildInfoSection(BuildContext context) {
     return Card(
-      color: AppColors.info.withValues(alpha: 0.1),
+      color: AppColors.info.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

@@ -26,7 +26,7 @@ class CommentDebugPanel extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingS),
-      color: AppColors.warning.withValues(alpha: 0.1),
+      color: AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

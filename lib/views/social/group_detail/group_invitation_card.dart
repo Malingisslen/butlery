@@ -20,7 +20,7 @@ class GroupInvitationCard {
         color: Theme.of(context)
             .colorScheme
             .tertiaryContainer
-            .withValues(alpha: 0.3),
+            .withValues(alpha: AppDimensions.opacityMediumLight),
         child: ListTile(
           leading: Stack(
             children: [
@@ -32,7 +32,7 @@ class GroupInvitationCard {
                   color: Theme.of(context)
                       .colorScheme
                       .primary
-                      .withValues(alpha: 0.1),
+                      .withValues(alpha: AppDimensions.opacityVeryLight),
                   shape: BoxShape.circle,
                 ),
                 child: Center(

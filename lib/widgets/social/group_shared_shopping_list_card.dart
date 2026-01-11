@@ -53,7 +53,7 @@ class GroupSharedShoppingListCard {
         Container(
           padding: const EdgeInsets.all(AppDimensions.spacingS),
           decoration: BoxDecoration(
-            color: AppColors.primaryContainer.withValues(alpha: 0.3),
+            color: AppColors.primaryContainer.withValues(alpha: AppDimensions.opacityMediumLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           ),
           child: const Icon(
@@ -80,7 +80,7 @@ class GroupSharedShoppingListCard {
                 Text(
                   shoppingList.description!,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.onSurface.withValues(alpha: 0.7),
+                    color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -110,7 +110,7 @@ class GroupSharedShoppingListCard {
         Text(
           'Delad av $ownerName',
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.onSurface.withValues(alpha: 0.6),
+            color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark),
             fontSize: 10,
           ),
         ),
@@ -126,7 +126,7 @@ class GroupSharedShoppingListCard {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant.withValues(alpha: 0.3),
+        color: AppColors.surfaceVariant.withValues(alpha: AppDimensions.opacityMediumLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Column(
@@ -137,13 +137,13 @@ class GroupSharedShoppingListCard {
               Icon(
                 Icons.list_alt,
                 size: AppDimensions.iconSizeS,
-                color: AppColors.onSurface.withValues(alpha: 0.7),
+                color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
                 'Inkopslista',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.onSurface.withValues(alpha: 0.7),
+                  color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -155,7 +155,7 @@ class GroupSharedShoppingListCard {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.info.withValues(alpha: 0.1),
+                    color: AppColors.info.withValues(alpha: AppDimensions.opacityVeryLight),
                     borderRadius:
                         BorderRadius.circular(AppDimensions.borderRadiusS),
                   ),
@@ -173,7 +173,7 @@ class GroupSharedShoppingListCard {
           const SizedBox(height: AppDimensions.spacingS),
           LinearProgressIndicator(
             value: totalItems > 0 ? boughtItems / totalItems : 0,
-            backgroundColor: AppColors.outline.withValues(alpha: 0.2),
+            backgroundColor: AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
             valueColor: AlwaysStoppedAnimation<Color>(
               boughtItems == totalItems ? AppColors.success : AppColors.primary,
             ),
@@ -203,7 +203,7 @@ class GroupSharedShoppingListCard {
         Text(
           ShoppingListFormatter.getShareTimeText(shoppingList),
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.onSurface.withValues(alpha: 0.6),
+            color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark),
           ),
         ),
       ],
@@ -216,7 +216,7 @@ class GroupSharedShoppingListCard {
       padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingS, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Row(
@@ -271,7 +271,7 @@ class GroupSharedShoppingListCard {
               context, viewModel, shoppingList),
           icon: const Icon(Icons.more_vert),
           style: IconButton.styleFrom(
-            backgroundColor: AppColors.surfaceVariant.withValues(alpha: 0.5),
+            backgroundColor: AppColors.surfaceVariant.withValues(alpha: AppDimensions.opacityHalf),
           ),
         ),
       ],

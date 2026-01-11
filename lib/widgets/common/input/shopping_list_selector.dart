@@ -173,9 +173,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppColors.success.withValues(alpha: 0.1),
+        color: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.success.withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

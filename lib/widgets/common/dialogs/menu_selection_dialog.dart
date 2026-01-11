@@ -197,7 +197,7 @@ class _MenuListItem extends StatelessWidget {
         width: AppDimensions.iconSizeXl,
         height: AppDimensions.iconSizeXl,
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withValues(alpha: 0.1),
+          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
         child: const Icon(

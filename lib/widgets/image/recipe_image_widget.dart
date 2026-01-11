@@ -146,7 +146,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
                 end: Alignment.bottomCenter,
                 colors: [
                   AppColors.transparent,
-                  AppColors.cardWhite.withValues(alpha: 0.1),
+                  AppColors.cardWhite.withValues(alpha: AppDimensions.opacityVeryLight),
                 ],
               ),
             ),

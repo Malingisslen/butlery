@@ -61,7 +61,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: _showAppBar
-            ? AppColors.textDark.withValues(alpha: 0.7)
+            ? AppColors.textDark.withValues(alpha: AppDimensions.opacityDark)
             : AppColors.transparent,
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.light,

@@ -45,7 +45,7 @@ class _AddItemFieldState extends State<AddItemField> {
         hintText: widget.hintText,
         border: OutlineInputBorder(
           borderSide: BorderSide(
-            color: theme.colorScheme.outline.withValues(alpha: 0.5),
+            color: theme.colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
             style: BorderStyle.solid,
           ),
         ),

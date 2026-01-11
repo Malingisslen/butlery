@@ -178,7 +178,7 @@ class _PersonalTagFilterChip extends StatelessWidget {
       selected: isSelected,
       onSelected: (_) => onSelected(),
       backgroundColor: colorScheme.surface,
-      selectedColor: colorScheme.primary.withValues(alpha: 0.25),
+      selectedColor: colorScheme.primary.withValues(alpha: AppDimensions.opacityLightMedium),
       checkmarkColor: colorScheme.primary,
       side: BorderSide(
         color: isSelected ? colorScheme.primary : colorScheme.outline,
@@ -216,12 +216,12 @@ class _PersonalTagExcludeChip extends StatelessWidget {
           : Icon(
               Icons.remove_circle_outline,
               size: 16,
-              color: colorScheme.error.withValues(alpha: 0.6),
+              color: colorScheme.error.withValues(alpha: AppDimensions.opacityMediumDark),
             ),
       selected: isExcluded,
       onSelected: (_) => onSelected(),
       backgroundColor: colorScheme.surface,
-      selectedColor: colorScheme.error.withValues(alpha: 0.15),
+      selectedColor: colorScheme.error.withValues(alpha: AppDimensions.opacityLightSubtle),
       checkmarkColor: colorScheme.error,
       side: BorderSide(
         color: isExcluded ? colorScheme.error : colorScheme.outline,

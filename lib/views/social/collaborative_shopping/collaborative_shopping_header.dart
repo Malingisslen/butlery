@@ -77,9 +77,9 @@ class CollaborativeShoppingHeader extends StatelessWidget {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: color.withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Text(
         viewModel.statusText,
@@ -144,7 +144,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
       child: LinearProgressIndicator(
         value: progress,
         backgroundColor:
-            Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+            Theme.of(context).colorScheme.outline.withValues(alpha: AppDimensions.opacityLight),
         valueColor: AlwaysStoppedAnimation<Color>(progressColor),
         minHeight: 8,
       ),

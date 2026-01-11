@@ -89,7 +89,7 @@ class PlatformBadgeWidget extends StatelessWidget {
       case Platform.instagram:
         return const Color(0xFFFCE4EC); // Light pink
       case Platform.website:
-        return colorScheme.primaryContainer.withValues(alpha: 0.5);
+        return colorScheme.primaryContainer.withValues(alpha: AppDimensions.opacityHalf);
       case Platform.unknown:
         return colorScheme.surfaceContainerHighest;
     }
@@ -98,15 +98,15 @@ class PlatformBadgeWidget extends StatelessWidget {
   Color _getBorderColor(Platform platform, ColorScheme colorScheme) {
     switch (platform) {
       case Platform.youtube:
-        return const Color(0xFFFF0000).withValues(alpha: 0.3);
+        return const Color(0xFFFF0000).withValues(alpha: AppDimensions.opacityMediumLight);
       case Platform.tiktok:
-        return const Color(0xFF00F2EA).withValues(alpha: 0.5);
+        return const Color(0xFF00F2EA).withValues(alpha: AppDimensions.opacityHalf);
       case Platform.instagram:
-        return const Color(0xFFE1306C).withValues(alpha: 0.3);
+        return const Color(0xFFE1306C).withValues(alpha: AppDimensions.opacityMediumLight);
       case Platform.website:
-        return colorScheme.primary.withValues(alpha: 0.3);
+        return colorScheme.primary.withValues(alpha: AppDimensions.opacityMediumLight);
       case Platform.unknown:
-        return colorScheme.outline.withValues(alpha: 0.5);
+        return colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf);
     }
   }
 

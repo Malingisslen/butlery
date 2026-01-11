@@ -284,11 +284,20 @@ class AppDimensions {
   /// Snackbar duration (3000ms)
   static const Duration snackbarDuration = Duration(milliseconds: 3000);
 
+  /// Extra very light transparency (0.05)
+  static const double opacityExtraVeryLight = 0.05;
+
   /// Very light transparency (0.1)
   static const double opacityVeryLight = 0.1;
 
+  /// Light subtle transparency (0.15)
+  static const double opacityLightSubtle = 0.15;
+
   /// Light transparency (0.2)
   static const double opacityLight = 0.2;
+
+  /// Light medium transparency (0.25)
+  static const double opacityLightMedium = 0.25;
 
   /// Medium light transparency (0.3)
   static const double opacityMediumLight = 0.3;
@@ -307,6 +316,9 @@ class AppDimensions {
 
   /// Very dark transparency (0.8)
   static const double opacityVeryDark = 0.8;
+
+  /// Extra dark transparency (0.9)
+  static const double opacityExtraDark = 0.9;
 
   /// Thumbnail height (80px)
   static const double heightThumbnail = 80.0;
