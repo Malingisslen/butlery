@@ -130,7 +130,7 @@ class _DraftListTile extends StatelessWidget {
           children: [
             Icon(
               Icons.description_outlined,
-              size: 20,
+              size: AppDimensions.iconSizeM,
               color: theme.colorScheme.onSurfaceVariant,
             ),
             const SizedBox(width: 12),

@@ -48,7 +48,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 }
 
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(AppDimensions.paddingXl),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -84,7 +84,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   Widget _buildHeaderSection(ConsentViewModel viewModel) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppDimensions.paddingXl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -115,7 +115,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             if (viewModel.hasConsent) ...[
               const SizedBox(height: AppDimensions.spacingL),
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
                   color: AppColors.info.withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius: BorderRadius.circular(8),
@@ -125,7 +125,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 child: Row(
                   children: [
                     const Icon(Icons.info_outline,
-                        color: AppColors.info, size: 20),
+                        color: AppColors.info, size: AppDimensions.iconSizeM),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                         child: Text(
@@ -149,13 +149,13 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
       elevation: 0,
       color: AppColors.backgroundTint,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.lock, color: AppColors.textMedium, size: 20),
+                const Icon(Icons.lock, color: AppColors.textMedium, size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text('Nödvändiga samtycken',
                     style: Theme.of(context)
@@ -194,7 +194,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 20, color: AppColors.success),
+        Icon(icon, size: AppDimensions.iconSizeM, color: AppColors.success),
         const SizedBox(width: AppDimensions.spacingL),
         Expanded(
           child: Column(
@@ -214,7 +214,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             ],
           ),
         ),
-        const Icon(Icons.check_circle, color: AppColors.success, size: 20),
+        const Icon(Icons.check_circle, color: AppColors.success, size: AppDimensions.iconSizeM),
       ],
     );
   }
@@ -234,7 +234,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             TextButton.icon(
               onPressed:
                   viewModel.isSaving ? null : () => _handleRevokeAll(viewModel),
-              icon: const Icon(Icons.block, size: 16),
+              icon: const Icon(Icons.block, size: AppDimensions.iconSizeS),
               label: const Text('Avvisa alla'),
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.error,
@@ -308,7 +308,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
         child: Row(
           children: [
             Container(
@@ -321,7 +321,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               ),
               child: Icon(
                 icon,
-                size: 24,
+                size: AppDimensions.iconSizeL,
                 color: value ? AppColors.primary : AppColors.textMedium,
               ),
             ),
@@ -361,7 +361,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
 
   Widget _buildErrorMessage(ConsentViewModel viewModel) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(8),
@@ -369,7 +369,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.error, size: 20),
+          const Icon(Icons.error_outline, color: AppColors.error, size: AppDimensions.iconSizeM),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(
@@ -408,7 +408,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           : Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.save_rounded, size: 20),
+                const Icon(Icons.save_rounded, size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   'Spara ändringar',
@@ -425,13 +425,13 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     return Card(
       color: AppColors.info.withValues(alpha: AppDimensions.opacityExtraVeryLight),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.info_outline, color: AppColors.info, size: 20),
+                const Icon(Icons.info_outline, color: AppColors.info, size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   'Bra att veta',

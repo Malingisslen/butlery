@@ -99,7 +99,7 @@ class TagResultDisplay extends StatelessWidget {
           const Icon(
             Icons.update,
             color: AppColors.warning,
-            size: 18,
+            size: AppDimensions.iconSize18,
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
@@ -281,7 +281,7 @@ class TagResultDisplay extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.warning_amber_rounded,
-                  size: 16,
+                  size: AppDimensions.iconSizeS,
                   color: AppColors.warning,
                 ),
                 const SizedBox(width: AppDimensions.spacingXs),
@@ -296,7 +296,7 @@ class TagResultDisplay extends StatelessWidget {
                 if (onUnknownIngredientsTap != null)
                   const Icon(
                     Icons.chevron_right,
-                    size: 18,
+                    size: AppDimensions.iconSize18,
                     color: AppColors.warning,
                   ),
               ],

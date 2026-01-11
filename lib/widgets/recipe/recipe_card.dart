@@ -347,7 +347,7 @@ class RecipeCard extends StatelessWidget {
       children: [
         Icon(
           icon,
-          size: 16,
+          size: AppDimensions.iconSizeS,
           color: AppColors.textMedium,
         ),
         const SizedBox(width: AppDimensions.spacingXs),

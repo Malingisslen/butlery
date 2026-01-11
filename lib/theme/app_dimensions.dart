@@ -59,6 +59,9 @@ class AppDimensions {
   /// Small padding (8px)
   static const double paddingS = 8.0;
 
+  /// Medium-small padding (10px)
+  static const double paddingMs = 10.0;
+
   /// Medium padding (12px)
   static const double paddingM = 12.0;
 

@@ -109,7 +109,7 @@ class CategorySelectionWidgets {
         children: [
           Icon(
             category.emoji != null ? Icons.emoji_emotions : Icons.group,
-            size: 16,
+            size: AppDimensions.iconSizeS,
             color: isSelected ? AppColors.textDark : AppColors.textMedium,
           ),
           const SizedBox(width: AppDimensions.spacingXs),

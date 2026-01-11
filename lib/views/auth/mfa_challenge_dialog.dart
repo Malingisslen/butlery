@@ -203,7 +203,7 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
                 child: Row(
                   children: [
                     Icon(Icons.error_outline,
-                        color: Colors.red.shade700, size: 20),
+                        color: Colors.red.shade700, size: AppDimensions.iconSizeM),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       child: Text(

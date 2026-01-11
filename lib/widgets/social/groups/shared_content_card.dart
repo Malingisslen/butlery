@@ -169,7 +169,7 @@ class SharedContentCard extends StatelessWidget {
                   if (onImport != null) ...[
                     TextButton.icon(
                       onPressed: onImport,
-                      icon: const Icon(Icons.download, size: 18),
+                      icon: const Icon(Icons.download, size: AppDimensions.iconSize18),
                       label: const Text('Importera'),
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
@@ -178,7 +178,7 @@ class SharedContentCard extends StatelessWidget {
                     Flexible(
                       child: FilledButton.icon(
                         onPressed: onView,
-                        icon: const Icon(Icons.visibility, size: 18),
+                        icon: const Icon(Icons.visibility, size: AppDimensions.iconSize18),
                         label: const Text('Visa'),
                       ),
                     ),

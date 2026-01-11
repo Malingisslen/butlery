@@ -130,7 +130,7 @@ class _StandardBadge extends StatelessWidget {
     return Semantics(
       label: semanticLabel,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingMs, vertical: AppDimensions.spacing6),
         decoration: BoxDecoration(
           color: color.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(16),
@@ -139,7 +139,7 @@ class _StandardBadge extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18, color: color, semanticLabel: null),
+            Icon(icon, size: AppDimensions.iconSize18, color: color, semanticLabel: null),
             if (label != null) ...[
               const SizedBox(width: 6),
               ExcludeSemantics(
@@ -177,7 +177,7 @@ class _CompactBadge extends StatelessWidget {
     return Semantics(
       label: semanticLabel,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacing6, vertical: AppDimensions.spacingS),
         decoration: BoxDecoration(
           color: color.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(12),

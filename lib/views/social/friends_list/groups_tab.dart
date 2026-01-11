@@ -125,7 +125,7 @@ class GroupsTab {
               Icon(
                 Icons.mail_outline,
                 color: Theme.of(context).colorScheme.tertiary,
-                size: 20,
+                size: AppDimensions.iconSizeM,
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(
@@ -160,7 +160,7 @@ class GroupsTab {
           Icon(
             Icons.groups,
             color: Theme.of(context).colorScheme.primary,
-            size: 20,
+            size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
           Text(

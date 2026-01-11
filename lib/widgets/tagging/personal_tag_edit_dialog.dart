@@ -266,7 +266,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
             errorText: _nameError,
             suffixIcon: _isChecking
                 ? const Padding(
-                    padding: EdgeInsets.all(12),
+                    padding: EdgeInsets.all(AppDimensions.paddingM),
                     child: SizedBox(
                       width: 20,
                       height: 20,
@@ -313,7 +313,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
             children: [
               const Icon(
                 Icons.label,
-                size: 16,
+                size: AppDimensions.iconSizeS,
                 color: AppColors.primaryBlue,
               ),
               const SizedBox(width: AppDimensions.spacingS),

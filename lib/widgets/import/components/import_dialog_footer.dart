@@ -31,7 +31,7 @@ class ImportDialogFooter extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(color: theme.colorScheme.outlineVariant),
@@ -52,7 +52,7 @@ class ImportDialogFooter extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.warning_amber,
-                    size: 18,
+                    size: AppDimensions.iconSize18,
                     color: theme.colorScheme.onErrorContainer,
                   ),
                   const SizedBox(width: 8),
