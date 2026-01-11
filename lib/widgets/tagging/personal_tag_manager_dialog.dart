@@ -193,7 +193,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
       ),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 500, maxHeight: 650),
+        constraints: const BoxConstraints(maxWidth: AppDimensions.dialogMaxWidthMedium, maxHeight: AppDimensions.dialogMaxHeightMedium),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -381,7 +381,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
                 color: AppColors.backgroundBeige,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
               ),
               child: Text(
                 '$usageCount recept',

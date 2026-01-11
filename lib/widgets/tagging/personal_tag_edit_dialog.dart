@@ -193,7 +193,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
       ),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
+        constraints: const BoxConstraints(maxWidth: AppDimensions.dialogMaxHeightSmall),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Form(

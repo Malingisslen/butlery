@@ -393,7 +393,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: Colors.red.shade50,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(color: Colors.red.shade200),
       ),
       child: Row(

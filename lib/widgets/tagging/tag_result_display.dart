@@ -254,7 +254,7 @@ class TagResultDisplay extends StatelessWidget {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                 child: LinearProgressIndicator(
                   value: tagResult.coverage,
                   backgroundColor: AppColors.divider,

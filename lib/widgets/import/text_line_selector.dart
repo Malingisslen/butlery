@@ -246,14 +246,14 @@ class _LineItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: Material(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               border: Border.all(
                 color: borderColor,
                 width: isSelected ? 2 : 1,
@@ -319,7 +319,7 @@ class _LineItem extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: modeColor.withValues(alpha: AppDimensions.opacityVeryLight),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                     ),
                     child: Text(
                       mode == SelectionMode.ingredients ? 'Trolig' : 'Steg',

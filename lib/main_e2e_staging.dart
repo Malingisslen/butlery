@@ -210,7 +210,7 @@ class _E2EStagingErrorApp extends StatelessWidget {
                     padding: const EdgeInsets.all(AppDimensions.paddingM),
                     decoration: BoxDecoration(
                       color: AppColors.backgroundLight,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                       border: Border.all(color: AppColors.divider),
                     ),
                     child: Text(

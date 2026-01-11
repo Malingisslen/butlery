@@ -348,7 +348,7 @@ class PersonalTagDisplay extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingS, vertical: AppDimensions.spacingXs),
             decoration: BoxDecoration(
               color: AppColors.backgroundBeige,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
             ),
             child: Text(
               '+$remainingCount',
@@ -377,7 +377,7 @@ class _MiniTagChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingS, vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
           color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           border: Border.all(
             color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
           ),
@@ -418,7 +418,7 @@ class _SimpleTagChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingS, vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
           color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           border: Border.all(
             color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
           ),
@@ -588,7 +588,7 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
             padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingS, vertical: AppDimensions.spacingXs),
             decoration: BoxDecoration(
               color: AppColors.backgroundBeige,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
             ),
             child: Text(
               '+$remainingCount',
