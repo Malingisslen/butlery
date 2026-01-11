@@ -227,7 +227,7 @@ class _MessageBubbleState extends State<MessageBubble>
       height: 32,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.accent.withValues(alpha: 0.2),
+        color: AppColors.accent.withValues(alpha: AppDimensions.opacityLight),
       ),
       child: widget.message.senderAvatarUrl != null
           ? SimpleImageWidget(

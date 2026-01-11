@@ -35,7 +35,7 @@ class CollaborativeParticipantsWidgets {
                       margin:
                           EdgeInsetsDirectional.only(start: index > 0 ? 4 : 0),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
                         shape: BoxShape.circle,
                       ),
                     )),
@@ -105,7 +105,7 @@ class CollaborativeParticipantsWidgets {
             width: size,
             height: size,
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withValues(alpha: 0.2),
+              color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
               shape: BoxShape.circle,
               border: Border.all(
                 color: AppColors.primaryBlue,

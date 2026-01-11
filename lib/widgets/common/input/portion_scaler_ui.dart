@@ -28,10 +28,10 @@ class PortionScalerUI {
         color: Theme.of(context)
             .colorScheme
             .primaryContainer
-            .withValues(alpha: 0.3),
+            .withValues(alpha: AppDimensions.opacityMediumLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Column(
@@ -289,7 +289,7 @@ class PortionScalerUI {
                     ? Theme.of(context)
                         .colorScheme
                         .primaryContainer
-                        .withValues(alpha: 0.3)
+                        .withValues(alpha: AppDimensions.opacityMediumLight)
                     : null,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingS,

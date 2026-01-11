@@ -99,7 +99,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.2),
+                color: AppColors.accent.withValues(alpha: AppDimensions.opacityLight),
                 shape: BoxShape.circle,
               ),
               child: const Center(
@@ -125,7 +125,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                     BorderRadius.circular(AppDimensions.borderRadiusM),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.textLight.withValues(alpha: 0.1),
+                    color: AppColors.textLight.withValues(alpha: AppDimensions.opacityVeryLight),
                     blurRadius: 2,
                     offset: const Offset(0, 1),
                   ),

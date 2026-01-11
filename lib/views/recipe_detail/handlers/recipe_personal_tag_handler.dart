@@ -374,7 +374,7 @@ class _QuickTagChip extends StatelessWidget {
       selected: isSelected,
       onSelected: (_) => onTap(),
       backgroundColor: AppColors.backgroundBeige,
-      selectedColor: AppColors.primaryBlue.withValues(alpha: 0.25),
+      selectedColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightMedium),
       checkmarkColor: AppColors.primaryBlue,
       side: BorderSide(
         color: isSelected ? AppColors.primaryBlue : AppColors.divider,

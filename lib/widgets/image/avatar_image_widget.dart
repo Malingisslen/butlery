@@ -195,7 +195,7 @@ class AvatarImageWidget extends StatelessWidget {
         shape: BoxShape.circle,
         gradient: LinearGradient(
           colors: [
-            AppColors.primaryBlue.withValues(alpha: 0.8),
+            AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryDark),
             AppColors.primaryBlue,
           ],
           begin: Alignment.topLeft,
@@ -315,7 +315,7 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.cardWhite.withValues(alpha: 0.8),
+                color: AppColors.cardWhite.withValues(alpha: AppDimensions.opacityVeryDark),
               ),
               child: const Center(
                 child: SizedBox(

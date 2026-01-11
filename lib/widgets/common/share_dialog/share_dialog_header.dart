@@ -49,7 +49,7 @@ class ShareDialogHeader {
                     color: Theme.of(context)
                         .colorScheme
                         .onPrimaryContainer
-                        .withValues(alpha: 0.8),
+                        .withValues(alpha: AppDimensions.opacityVeryDark),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

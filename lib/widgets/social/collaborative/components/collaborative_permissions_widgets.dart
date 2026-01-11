@@ -22,10 +22,10 @@ class CollaborativePermissionsWidgets {
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       margin: const EdgeInsets.all(AppDimensions.spacingS),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
         border: Border.all(
-          color: color.withValues(alpha: 0.3),
+          color: color.withValues(alpha: AppDimensions.opacityMediumLight),
           width: 1,
         ),
       ),

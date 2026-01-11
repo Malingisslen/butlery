@@ -49,7 +49,7 @@ class AdaptiveSwitch extends StatelessWidget {
       value: value,
       onChanged: onChanged,
       activeThumbColor: activeColor,
-      activeTrackColor: activeColor?.withValues(alpha: 0.5),
+      activeTrackColor: activeColor?.withValues(alpha: AppDimensions.opacityHalf),
       inactiveTrackColor: trackColor,
       thumbColor:
           thumbColor != null ? WidgetStateProperty.all(thumbColor) : null,
@@ -123,7 +123,7 @@ class AdaptiveSwitchListTile extends StatelessWidget {
       subtitle: subtitle,
       secondary: secondary,
       activeThumbColor: activeColor,
-      activeTrackColor: activeColor?.withValues(alpha: 0.5),
+      activeTrackColor: activeColor?.withValues(alpha: AppDimensions.opacityHalf),
       contentPadding: contentPadding,
       dense: dense,
     );

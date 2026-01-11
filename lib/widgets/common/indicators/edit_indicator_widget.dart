@@ -101,10 +101,10 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: color.withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
               border: Border.all(
-                color: color.withValues(alpha: 0.3),
+                color: color.withValues(alpha: AppDimensions.opacityMediumLight),
                 width: 1,
               ),
             ),

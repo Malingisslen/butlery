@@ -22,7 +22,7 @@ class PopularWithFriendsSection {
         Text(
           'Innehåll som dina vänner gillar och delar',
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.onSurface.withValues(alpha: 0.7),
+            color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
           ),
         ),
         const SizedBox(height: AppDimensions.spacingM),
@@ -61,7 +61,7 @@ class PopularWithFriendsSection {
                 Text(
                   '${recipe.mealType} • ${recipe.portions ?? 0} portioner',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.onSurface.withValues(alpha: 0.7),
+                    color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
                   ),
                 ),
               ],

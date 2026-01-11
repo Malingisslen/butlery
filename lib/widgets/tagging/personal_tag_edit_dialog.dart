@@ -302,10 +302,10 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
             vertical: AppDimensions.paddingS,
           ),
           decoration: BoxDecoration(
-            color: AppColors.primaryBlue.withValues(alpha: 0.15),
+            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             border: Border.all(
-              color: AppColors.primaryBlue.withValues(alpha: 0.3),
+              color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
             ),
           ),
           child: Row(

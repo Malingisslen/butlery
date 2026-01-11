@@ -20,11 +20,11 @@ class GroupInvitationCard {
       color: Theme.of(context)
           .colorScheme
           .tertiaryContainer
-          .withValues(alpha: 0.3),
+          .withValues(alpha: AppDimensions.opacityMediumLight),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         side: BorderSide(
-          color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.3),
+          color: Theme.of(context).colorScheme.tertiary.withValues(alpha: AppDimensions.opacityMediumLight),
           width: 1,
         ),
       ),
@@ -42,7 +42,7 @@ class GroupInvitationCard {
                     color: Theme.of(context)
                         .colorScheme
                         .tertiary
-                        .withValues(alpha: 0.1),
+                        .withValues(alpha: AppDimensions.opacityVeryLight),
                     borderRadius:
                         BorderRadius.circular(AppDimensions.borderRadiusM),
                   ),
@@ -91,7 +91,7 @@ class GroupInvitationCard {
                   color: Theme.of(context)
                       .colorScheme
                       .primary
-                      .withValues(alpha: 0.05),
+                      .withValues(alpha: AppDimensions.opacityExtraVeryLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),

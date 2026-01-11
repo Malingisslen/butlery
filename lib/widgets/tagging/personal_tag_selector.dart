@@ -188,7 +188,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
         children: [
           Icon(
             Icons.label_outline,
-            color: AppColors.textMedium.withValues(alpha: 0.5),
+            color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityHalf),
           ),
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
@@ -213,9 +213,9 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.1),
+        color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Row(
         children: [
@@ -283,7 +283,7 @@ class _PersonalTagChip extends StatelessWidget {
         selected: isSelected,
         onSelected: (_) => onTap(),
         backgroundColor: AppColors.backgroundBeige,
-        selectedColor: AppColors.primaryBlue.withValues(alpha: 0.2),
+        selectedColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
         checkmarkColor: AppColors.primaryBlue,
         side: BorderSide(
           color: isSelected ? AppColors.primaryBlue : AppColors.divider,
@@ -376,10 +376,10 @@ class _MiniTagChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withValues(alpha: 0.15),
+          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppColors.primaryBlue.withValues(alpha: 0.3),
+            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
           ),
         ),
         child: Row(
@@ -417,10 +417,10 @@ class _SimpleTagChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withValues(alpha: 0.1),
+          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppColors.primaryBlue.withValues(alpha: 0.3),
+            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
           ),
         ),
         child: Row(

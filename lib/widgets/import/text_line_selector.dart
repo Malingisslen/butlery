@@ -140,7 +140,7 @@ class TextLineSelector extends StatelessWidget {
             Icon(
               Icons.text_fields,
               size: 48,
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: AppDimensions.opacityHalf),
             ),
             const SizedBox(height: 16),
             Text(
@@ -229,12 +229,12 @@ class _LineItem extends StatelessWidget {
     BorderStyle borderStyle;
 
     if (isSelected) {
-      backgroundColor = modeColor.withValues(alpha: 0.15);
+      backgroundColor = modeColor.withValues(alpha: AppDimensions.opacityLightSubtle);
       borderColor = modeColor;
       borderStyle = BorderStyle.solid;
     } else if (isHighlighted) {
-      backgroundColor = modeColor.withValues(alpha: 0.05);
-      borderColor = modeColor.withValues(alpha: 0.5);
+      backgroundColor = modeColor.withValues(alpha: AppDimensions.opacityExtraVeryLight);
+      borderColor = modeColor.withValues(alpha: AppDimensions.opacityHalf);
       borderStyle = BorderStyle.solid;
     } else {
       backgroundColor = AppColors.transparent;
@@ -272,7 +272,7 @@ class _LineItem extends StatelessWidget {
                     border: Border.all(
                       color: isSelected
                           ? modeColor
-                          : colorScheme.outline.withValues(alpha: 0.5),
+                          : colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
                       width: 2,
                     ),
                   ),
@@ -318,7 +318,7 @@ class _LineItem extends StatelessWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: modeColor.withValues(alpha: 0.1),
+                      color: modeColor.withValues(alpha: AppDimensions.opacityVeryLight),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(

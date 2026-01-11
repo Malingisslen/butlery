@@ -199,12 +199,12 @@ class _PhotoImportViewContent extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(AppDimensions.paddingM),
                       decoration: BoxDecoration(
-                        color: AppColors.warning.withValues(alpha: 0.1),
+                        color: AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
                         borderRadius: BorderRadius.circular(
                           AppDimensions.borderRadiusM,
                         ),
                         border: Border.all(
-                          color: AppColors.warning.withValues(alpha: 0.3),
+                          color: AppColors.warning.withValues(alpha: AppDimensions.opacityMediumLight),
                           width: AppDimensions.borderWidthStandard,
                         ),
                       ),
@@ -425,24 +425,24 @@ class _PhotoImportViewContent extends StatelessWidget {
 
     if (confidence >= 0.8) {
       // High confidence - Green
-      badgeBackgroundColor = AppColors.success.withValues(alpha: 0.1);
-      badgeBorderColor = AppColors.success.withValues(alpha: 0.3);
+      badgeBackgroundColor = AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight);
+      badgeBorderColor = AppColors.success.withValues(alpha: AppDimensions.opacityMediumLight);
       badgeIconColor = AppColors.success;
       badgeTextColor = AppColors.onSuccessContainer;
       icon = Icons.check_circle;
       label = 'Hög kvalitet';
     } else if (confidence >= 0.6) {
       // Medium confidence - Orange
-      badgeBackgroundColor = AppColors.warning.withValues(alpha: 0.1);
-      badgeBorderColor = AppColors.warning.withValues(alpha: 0.3);
+      badgeBackgroundColor = AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight);
+      badgeBorderColor = AppColors.warning.withValues(alpha: AppDimensions.opacityMediumLight);
       badgeIconColor = AppColors.warning;
       badgeTextColor = AppColors.onWarningContainer;
       icon = Icons.info;
       label = 'God kvalitet';
     } else {
       // Low confidence - Red
-      badgeBackgroundColor = AppColors.error.withValues(alpha: 0.1);
-      badgeBorderColor = AppColors.error.withValues(alpha: 0.3);
+      badgeBackgroundColor = AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight);
+      badgeBorderColor = AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight);
       badgeIconColor = AppColors.error;
       badgeTextColor = AppColors.onErrorContainer;
       icon = Icons.warning;

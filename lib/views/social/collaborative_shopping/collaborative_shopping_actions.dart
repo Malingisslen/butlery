@@ -129,7 +129,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
         color: Theme.of(context)
             .colorScheme
             .surfaceContainerHighest
-            .withValues(alpha: 0.5),
+            .withValues(alpha: AppDimensions.opacityHalf),
         border: Border(
           bottom: BorderSide(
             color: Theme.of(context).dividerColor,

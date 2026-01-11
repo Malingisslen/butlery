@@ -109,7 +109,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         color: Theme.of(context)
             .colorScheme
             .primaryContainer
-            .withValues(alpha: 0.3),
+            .withValues(alpha: AppDimensions.opacityMediumLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Column(

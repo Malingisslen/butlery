@@ -127,7 +127,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                                           viewModel.toggleTag(tag),
                                       backgroundColor: AppColors.cardWhite,
                                       selectedColor: AppColors.primaryBlue
-                                          .withValues(alpha: 0.2),
+                                          .withValues(alpha: AppDimensions.opacityLight),
                                       checkmarkColor: AppColors.primaryBlue,
                                     );
                                   }).toList(),

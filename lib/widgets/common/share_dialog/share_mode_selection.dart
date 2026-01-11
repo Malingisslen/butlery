@@ -50,7 +50,7 @@ class ShareModeSelection {
                         ? Theme.of(context)
                             .colorScheme
                             .primaryContainer
-                            .withValues(alpha: 0.3)
+                            .withValues(alpha: AppDimensions.opacityMediumLight)
                         : null,
                   ),
                   child: Row(
@@ -110,7 +110,7 @@ class ShareModeSelection {
                       ? Theme.of(context)
                           .colorScheme
                           .primaryContainer
-                          .withValues(alpha: 0.3)
+                          .withValues(alpha: AppDimensions.opacityMediumLight)
                       : null,
                 ),
                 child: Row(

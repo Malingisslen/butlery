@@ -25,7 +25,7 @@ class StatusIndicator extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(padding ?? AppDimensions.spacingS),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Icon(

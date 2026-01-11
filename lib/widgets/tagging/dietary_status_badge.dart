@@ -123,9 +123,9 @@ class _StandardBadge extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: color.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          border: Border.all(color: color.withValues(alpha: AppDimensions.opacityMediumLight)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -170,7 +170,7 @@ class _CompactBadge extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: color.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(

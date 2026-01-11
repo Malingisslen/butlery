@@ -74,7 +74,7 @@ class AppLogo extends StatelessWidget {
         boxShadow: showShadow
             ? [
                 BoxShadow(
-                  color: bgColor.withValues(alpha: 0.3),
+                  color: bgColor.withValues(alpha: AppDimensions.opacityMediumLight),
                   blurRadius: AppDimensions.elevationMedium * 2,
                   offset: const Offset(0, AppDimensions.elevationMedium),
                 ),
@@ -152,7 +152,7 @@ class AppBranding extends StatelessWidget {
                   color: Theme.of(context)
                       .colorScheme
                       .onSurface
-                      .withValues(alpha: 0.7),
+                      .withValues(alpha: AppDimensions.opacityDark),
                 ),
             textAlign: TextAlign.center,
           ),

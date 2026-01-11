@@ -132,11 +132,11 @@ class _SessionTimeoutWarningDialogState
                 vertical: AppDimensions.spacingM,
               ),
               decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.1),
+                color: AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusM),
                 border: Border.all(
-                  color: AppColors.warning.withValues(alpha: 0.3),
+                  color: AppColors.warning.withValues(alpha: AppDimensions.opacityMediumLight),
                   width: 2,
                 ),
               ),

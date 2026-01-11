@@ -92,9 +92,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           return Container(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: 0.1),
+              color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+              border: Border.all(color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
             ),
             child: Text(
               categoriesService.error ?? 'Kunde inte ladda kategorier',
@@ -109,9 +109,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           return Container(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: 0.1),
+              color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+              border: Border.all(color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
             ),
             child: Text(
               friendsVM.error ?? 'Kunde inte ladda vänner',
@@ -240,11 +240,11 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                     ),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.neutralLight.withValues(alpha: 0.8)
+                          ? AppColors.neutralLight.withValues(alpha: AppDimensions.opacityVeryDark)
                           : Theme.of(context)
                               .colorScheme
                               .primary
-                              .withValues(alpha: 0.1),
+                              .withValues(alpha: AppDimensions.opacityVeryLight),
                       borderRadius:
                           BorderRadius.circular(AppDimensions.borderRadius8),
                     ),
@@ -260,7 +260,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               ),
               onSelected: (selected) => _toggleCategory(category, service),
               selectedColor:
-                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                  Theme.of(context).colorScheme.primary.withValues(alpha: AppDimensions.opacityLight),
               checkmarkColor: Theme.of(context).colorScheme.primary,
               backgroundColor: Theme.of(context).colorScheme.surface,
               side: BorderSide(
@@ -335,7 +335,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                             ? Theme.of(context)
                                 .colorScheme
                                 .primary
-                                .withValues(alpha: 0.1)
+                                .withValues(alpha: AppDimensions.opacityVeryLight)
                             : null,
                         child: CheckboxListTile(
                           value: isSelected,
@@ -374,10 +374,10 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(

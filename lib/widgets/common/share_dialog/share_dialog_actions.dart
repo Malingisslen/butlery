@@ -34,7 +34,7 @@ class ShareDialogActions {
         ),
         border: Border(
           top: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: AppDimensions.opacityMediumLight),
           ),
         ),
       ),
@@ -94,10 +94,10 @@ class ShareDialogActions {
           vertical: AppDimensions.spacingS,
         ),
         decoration: BoxDecoration(
-          color: AppColors.warning.withValues(alpha: 0.1),
+          color: AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           border: Border.all(
-            color: AppColors.warning.withValues(alpha: 0.3),
+            color: AppColors.warning.withValues(alpha: AppDimensions.opacityMediumLight),
           ),
         ),
         child: Row(
@@ -128,10 +128,10 @@ class ShareDialogActions {
         vertical: AppDimensions.spacingS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.success.withValues(alpha: 0.1),
+        color: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.success.withValues(alpha: 0.3),
+          color: AppColors.success.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(

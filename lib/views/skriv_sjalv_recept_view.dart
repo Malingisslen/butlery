@@ -533,7 +533,7 @@ class _SkrivSjalvReceptViewContentState
             // ✅ RESPONSIVE: Constrained loading overlay
             if (_isSaving || viewModel.isSaving)
               ColoredBox(
-                color: AppColors.backgroundBeige.withValues(alpha: 0.8),
+                color: AppColors.backgroundBeige.withValues(alpha: AppDimensions.opacityVeryDark),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(

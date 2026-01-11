@@ -265,7 +265,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                             ),
                             decoration: BoxDecoration(
                               color:
-                                  AppColors.primaryBlue.withValues(alpha: 0.1),
+                                  AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
                               borderRadius: BorderRadius.circular(
                                   AppDimensions.borderRadiusS),
                             ),

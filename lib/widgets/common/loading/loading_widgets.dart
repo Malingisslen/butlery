@@ -21,7 +21,7 @@ class LoadingWidgets {
     }
 
     final overlay = ColoredBox(
-      color: overlayColor ?? AppColors.neutralDark.withValues(alpha: 0.3),
+      color: overlayColor ?? AppColors.neutralDark.withValues(alpha: AppDimensions.opacityMediumLight),
       child: Center(
         child: Container(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -81,11 +81,11 @@ class LoadingWidgets {
                   child: Container(
                     padding: const EdgeInsets.all(AppDimensions.paddingM),
                     decoration: BoxDecoration(
-                      color: AppColors.error.withValues(alpha: 0.1),
+                      color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
                       borderRadius:
                           BorderRadius.circular(AppDimensions.borderRadiusM),
                       border: Border.all(
-                          color: AppColors.error.withValues(alpha: 0.3)),
+                          color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
                     ),
                     child: Text(
                       'Ett oväntat fel uppstod',

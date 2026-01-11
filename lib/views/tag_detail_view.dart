@@ -221,7 +221,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
           children: [
             CircleAvatar(
               radius: 32,
-              backgroundColor: colorScheme.primary.withValues(alpha: 0.2),
+              backgroundColor: colorScheme.primary.withValues(alpha: AppDimensions.opacityLight),
               child: Icon(
                 Icons.label,
                 color: colorScheme.primary,

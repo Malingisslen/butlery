@@ -371,7 +371,7 @@ class _InputSection extends StatelessWidget {
       decoration: InputDecoration(
         hintText: 'Klistra in länk eller text här...',
         hintStyle: theme.textTheme.bodyLarge?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: AppDimensions.opacityMediumDark),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

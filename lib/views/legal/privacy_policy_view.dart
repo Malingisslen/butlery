@@ -202,10 +202,10 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.info.withValues(alpha: 0.1),
+        color: AppColors.info.withValues(alpha: AppDimensions.opacityVeryLight),
         border: Border(
           bottom: BorderSide(
-            color: AppColors.info.withValues(alpha: 0.3),
+            color: AppColors.info.withValues(alpha: AppDimensions.opacityMediumLight),
             width: 1,
           ),
         ),

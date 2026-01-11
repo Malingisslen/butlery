@@ -163,7 +163,7 @@ class ShoppingListContent {
           margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
           decoration: BoxDecoration(
             color: (isCompleted ? AppColors.textMedium : AppColors.primaryBlue)
-                .withValues(alpha: 0.1),
+                .withValues(alpha: AppDimensions.opacityVeryLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           ),
           child: Row(
@@ -193,7 +193,7 @@ class ShoppingListContent {
                   color: (isCompleted
                           ? AppColors.textMedium
                           : AppColors.primaryBlue)
-                      .withValues(alpha: 0.1),
+                      .withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadius8),
                 ),
@@ -290,7 +290,7 @@ class ShoppingListContent {
               Text(
                 '${viewModel.boughtItems} av ${viewModel.totalItems} varor',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.8),
+                  color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryDark),
                 ),
               ),
             ],

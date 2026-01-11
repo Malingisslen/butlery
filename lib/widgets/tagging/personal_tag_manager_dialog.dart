@@ -305,7 +305,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           children: [
             Icon(
               Icons.label_outline,
-              color: AppColors.textMedium.withValues(alpha: 0.5),
+              color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityHalf),
               size: 64,
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -360,7 +360,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withValues(alpha: 0.15),
+          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
         child: const Center(
@@ -529,7 +529,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           children: [
             Icon(
               Icons.auto_awesome_outlined,
-              color: AppColors.textMedium.withValues(alpha: 0.5),
+              color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityHalf),
               size: 64,
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -608,7 +608,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.15),
+                  color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
@@ -673,7 +673,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           Switch(
             value: rule.isEnabled,
             onChanged: (_) => viewModel.toggleRuleEnabled(tagId, rule.id),
-            activeTrackColor: AppColors.primaryBlue.withValues(alpha: 0.5),
+            activeTrackColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityHalf),
             activeThumbColor: AppColors.primaryBlue,
           ),
           IconButton(
