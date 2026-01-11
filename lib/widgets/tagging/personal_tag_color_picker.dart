@@ -124,7 +124,7 @@ class _ColorCircle extends StatelessWidget {
             ? const Icon(
                 Icons.check,
                 color: Colors.white,
-                size: 20,
+                size: AppDimensions.iconSizeM,
               )
             : null,
       ),

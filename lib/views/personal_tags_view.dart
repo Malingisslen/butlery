@@ -105,7 +105,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                 child: Row(
                   children: [
                     if (order == _sortOrder)
-                      const Icon(Icons.check, size: 18)
+                      const Icon(Icons.check, size: AppDimensions.iconSize18)
                     else
                       const SizedBox(width: 18),
                     const SizedBox(width: AppDimensions.spacingSm),
@@ -204,7 +204,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       tags: tags,
       groupId: group.id,
       trailing: PopupMenuButton<String>(
-        icon: const Icon(Icons.more_vert, size: 20),
+        icon: const Icon(Icons.more_vert, size: AppDimensions.iconSizeM),
         onSelected: (value) => _handleGroupAction(context, value, group),
         itemBuilder: (context) => [
           const PopupMenuItem(
@@ -303,7 +303,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
               child: Icon(
                 Icons.label,
                 color: hasActiveRules ? AppColors.success : colorScheme.primary,
-                size: 20,
+                size: AppDimensions.iconSizeM,
               ),
             ),
             if (hasActiveRules)
@@ -388,7 +388,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
               padding: const EdgeInsets.all(AppDimensions.spacingLg),
               child: Row(
                 children: [
-                  const Icon(Icons.label, size: 24),
+                  const Icon(Icons.label, size: AppDimensions.iconSizeL),
                   const SizedBox(width: AppDimensions.spacingM),
                   Expanded(
                     child: Text(

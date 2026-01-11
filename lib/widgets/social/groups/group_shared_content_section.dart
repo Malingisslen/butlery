@@ -296,15 +296,15 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                         unselectedLabelColor: AppColors.textSecondary,
                         tabs: [
                           Tab(
-                            icon: const Icon(Icons.restaurant_menu, size: 20),
+                            icon: const Icon(Icons.restaurant_menu, size: AppDimensions.iconSizeM),
                             text: 'Recept (${recipes.length})',
                           ),
                           Tab(
-                            icon: const Icon(Icons.calendar_today, size: 20),
+                            icon: const Icon(Icons.calendar_today, size: AppDimensions.iconSizeM),
                             text: 'Menyer (${menus.length})',
                           ),
                           Tab(
-                            icon: const Icon(Icons.shopping_cart, size: 20),
+                            icon: const Icon(Icons.shopping_cart, size: AppDimensions.iconSizeM),
                             text: 'Listor (${shoppingLists.length})',
                           ),
                         ],

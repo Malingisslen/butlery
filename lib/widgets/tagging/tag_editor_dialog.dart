@@ -298,11 +298,11 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
             ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight)
             : AppColors.divider,
       ),
-      deleteIcon: const Icon(Icons.close, size: 18),
+      deleteIcon: const Icon(Icons.close, size: AppDimensions.iconSize18),
       deleteIconColor: AppColors.textMedium,
       onDeleted: () => _removeTag(tag),
       avatar: isUserAdded
-          ? const Icon(Icons.person, size: 16, color: AppColors.primaryBlue)
+          ? const Icon(Icons.person, size: AppDimensions.iconSizeS, color: AppColors.primaryBlue)
           : null,
       tooltip: isUserAdded ? 'Manuellt tillagd' : 'Automatiskt genererad',
     );
@@ -319,7 +319,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
       ),
       backgroundColor: AppColors.backgroundBeige.withValues(alpha: AppDimensions.opacityHalf),
       side: BorderSide(color: AppColors.divider.withValues(alpha: AppDimensions.opacityHalf)),
-      avatar: const Icon(Icons.undo, size: 16, color: AppColors.textMedium),
+      avatar: const Icon(Icons.undo, size: AppDimensions.iconSizeS, color: AppColors.textMedium),
       onPressed: () => _restoreTag(tag),
       tooltip: 'Klicka för att återställa',
     );

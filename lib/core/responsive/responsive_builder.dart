@@ -363,8 +363,8 @@ class ResponsiveSpacing extends StatelessWidget {
 /// Usage:
 /// ```dart
 /// ResponsivePadding(
-///   mobile: EdgeInsets.all(16),
-///   tablet: EdgeInsets.all(24),
+///   mobile: EdgeInsets.all(AppDimensions.spacingMd),
+///   tablet: EdgeInsets.all(AppDimensions.spacingLg),
 ///   desktop: EdgeInsets.all(32),
 ///   child: Content(),
 /// )

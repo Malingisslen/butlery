@@ -82,7 +82,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppDimensions.spacingMd),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   return SingleChildScrollView(
@@ -389,7 +389,7 @@ class _InputSection extends StatelessWidget {
         ),
         filled: true,
         fillColor: theme.colorScheme.surfaceContainerLowest,
-        contentPadding: const EdgeInsets.all(16),
+        contentPadding: const EdgeInsets.all(AppDimensions.spacingMd),
         suffixIcon: controller.text.isNotEmpty
             ? IconButton(
                 icon: const Icon(Icons.clear),
@@ -422,7 +422,7 @@ class _ErrorMessage extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: colorScheme.errorContainer,
         borderRadius: BorderRadius.circular(8),
@@ -432,7 +432,7 @@ class _ErrorMessage extends StatelessWidget {
           Icon(
             Icons.error_outline,
             color: colorScheme.onErrorContainer,
-            size: 20,
+            size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingL),
           Expanded(

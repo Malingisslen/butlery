@@ -244,7 +244,7 @@ class InvitationActions {
                     target.type == InvitationTargetType.group
                         ? Icons.group
                         : Icons.person,
-                    size: 20,
+                    size: AppDimensions.iconSizeM,
                   ),
                   title: Text(
                     target.displayName,

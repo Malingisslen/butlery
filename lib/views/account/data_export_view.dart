@@ -44,7 +44,7 @@ class DataExportView extends StatelessWidget {
               child: Consumer<DataExportViewModel>(
                 builder: (context, viewModel, _) {
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(AppDimensions.paddingXl),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -74,7 +74,7 @@ class DataExportView extends StatelessWidget {
   Widget _buildHeaderSection(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppDimensions.paddingXl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -134,7 +134,7 @@ class DataExportView extends StatelessWidget {
   Widget _buildLoadingState(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppDimensions.spacingLg),
         child: Column(
           children: [
             const CircularProgressIndicator(),
@@ -162,7 +162,7 @@ class DataExportView extends StatelessWidget {
     return Card(
       color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppDimensions.paddingXl),
         child: Column(
           children: [
             const Icon(
@@ -200,7 +200,7 @@ class DataExportView extends StatelessWidget {
     return Card(
       color: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppDimensions.paddingXl),
         child: Column(
           children: [
             const Icon(
@@ -269,7 +269,7 @@ class DataExportView extends StatelessWidget {
     return Card(
       color: AppColors.info.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppDimensions.paddingXl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -278,7 +278,7 @@ class DataExportView extends StatelessWidget {
                 const Icon(
                   Icons.info_outline,
                   color: AppColors.info,
-                  size: 20,
+                  size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
@@ -318,7 +318,7 @@ class DataExportView extends StatelessWidget {
         children: [
           const Icon(
             Icons.check,
-            size: 16,
+            size: AppDimensions.iconSizeS,
             color: AppColors.success,
           ),
           const SizedBox(width: AppDimensions.spacingSm),

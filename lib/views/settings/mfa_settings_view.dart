@@ -202,7 +202,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       body: _isLoading && !_isEnrolling
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppDimensions.spacingMd),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -225,7 +225,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   Widget _buildInfoCard() {
     return StyledCard(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
         child: Row(
           children: [
             Icon(
@@ -295,7 +295,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   Widget _buildPhoneInputForm() {
     return StyledCard(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -336,7 +336,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   Widget _buildCodeVerificationForm() {
     return StyledCard(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -390,7 +390,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
 
   Widget _buildErrorMessage() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: Colors.red.shade50,
         borderRadius: BorderRadius.circular(8),

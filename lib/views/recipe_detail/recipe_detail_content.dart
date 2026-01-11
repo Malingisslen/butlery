@@ -476,7 +476,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
                   onPressed: () => setState(() => _isExpanded = !_isExpanded),
                   icon: Icon(
                     _isExpanded ? Icons.expand_less : Icons.expand_more,
-                    size: 20,
+                    size: AppDimensions.iconSizeM,
                   ),
                   label: Text(
                       _isExpanded ? 'Dölj' : 'Visa alla (${names.length})'),

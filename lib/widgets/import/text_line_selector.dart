@@ -82,7 +82,7 @@ class TextLineSelector extends StatelessWidget {
                   mode == SelectionMode.ingredients
                       ? Icons.restaurant
                       : Icons.format_list_numbered,
-                  size: 20,
+                  size: AppDimensions.iconSizeM,
                   color: _getModeColor(colorScheme),
                 ),
                 const SizedBox(width: 8),
@@ -159,7 +159,7 @@ class TextLineSelector extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       child: OutlinedButton.icon(
         onPressed: () {
           // Select all highlighted lines
@@ -279,7 +279,7 @@ class _LineItem extends StatelessWidget {
                   child: isSelected
                       ? Icon(
                           Icons.check,
-                          size: 16,
+                          size: AppDimensions.iconSizeS,
                           color: colorScheme.onPrimary,
                         )
                       : null,

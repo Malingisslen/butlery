@@ -97,7 +97,7 @@ class UploadProgressWidgets {
     } else {
       return const Icon(
         Icons.check_circle,
-        size: 16,
+        size: AppDimensions.iconSizeS,
         color: AppColors.success,
       );
     }

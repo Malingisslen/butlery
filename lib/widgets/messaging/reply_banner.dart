@@ -48,7 +48,7 @@ class ReplyBanner extends StatelessWidget {
           // Reply icon
           const Icon(
             Icons.reply,
-            size: 20,
+            size: AppDimensions.iconSizeM,
             color: AppColors.success,
           ),
           const SizedBox(width: AppDimensions.spacingS),

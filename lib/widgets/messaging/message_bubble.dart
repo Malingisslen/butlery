@@ -128,7 +128,7 @@ class _MessageBubbleState extends State<MessageBubble>
                             child: const Icon(
                               Icons.reply,
                               color: AppColors.success,
-                              size: 24,
+                              size: AppDimensions.iconSizeL,
                             ),
                           ),
                         ),

@@ -6,6 +6,8 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:butlery/services/import/input_detector.dart';
+import 'package:butlery/theme/brand_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Badge showing detected platform from user input.
 class PlatformBadgeWidget extends StatelessWidget {
@@ -48,7 +50,7 @@ class PlatformBadgeWidget extends StatelessWidget {
           children: [
             Icon(
               _getIconForPlatform(detection!.platform),
-              size: 16,
+              size: AppDimensions.iconSizeS,
               color: _getIconColor(detection!.platform, colorScheme),
             ),
             const SizedBox(width: 6),
@@ -98,11 +100,11 @@ class PlatformBadgeWidget extends StatelessWidget {
   Color _getBorderColor(Platform platform, ColorScheme colorScheme) {
     switch (platform) {
       case Platform.youtube:
-        return const Color(0xFFFF0000).withValues(alpha: AppDimensions.opacityMediumLight);
+        return BrandColors.youtube.withValues(alpha: AppDimensions.opacityMediumLight);
       case Platform.tiktok:
-        return const Color(0xFF00F2EA).withValues(alpha: AppDimensions.opacityHalf);
+        return BrandColors.tiktok.withValues(alpha: AppDimensions.opacityHalf);
       case Platform.instagram:
-        return const Color(0xFFE1306C).withValues(alpha: AppDimensions.opacityMediumLight);
+        return BrandColors.instagram.withValues(alpha: AppDimensions.opacityMediumLight);
       case Platform.website:
         return colorScheme.primary.withValues(alpha: AppDimensions.opacityMediumLight);
       case Platform.unknown:
@@ -113,11 +115,11 @@ class PlatformBadgeWidget extends StatelessWidget {
   Color _getIconColor(Platform platform, ColorScheme colorScheme) {
     switch (platform) {
       case Platform.youtube:
-        return const Color(0xFFFF0000);
+        return BrandColors.youtube;
       case Platform.tiktok:
-        return const Color(0xFF000000);
+        return Colors.black;
       case Platform.instagram:
-        return const Color(0xFFE1306C);
+        return BrandColors.instagram;
       case Platform.website:
         return colorScheme.primary;
       case Platform.unknown:
@@ -130,7 +132,7 @@ class PlatformBadgeWidget extends StatelessWidget {
       case Platform.youtube:
         return const Color(0xFFCC0000);
       case Platform.tiktok:
-        return const Color(0xFF000000);
+        return Colors.black;
       case Platform.instagram:
         return const Color(0xFFC13584);
       case Platform.website:
@@ -182,11 +184,11 @@ class PlatformIconWidget extends StatelessWidget {
   Color _getIconColor(Platform platform, ColorScheme colorScheme) {
     switch (platform) {
       case Platform.youtube:
-        return const Color(0xFFFF0000);
+        return BrandColors.youtube;
       case Platform.tiktok:
-        return const Color(0xFF000000);
+        return Colors.black;
       case Platform.instagram:
-        return const Color(0xFFE1306C);
+        return BrandColors.instagram;
       case Platform.website:
         return colorScheme.primary;
       case Platform.unknown:

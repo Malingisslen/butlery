@@ -72,7 +72,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
               ),
               if (onManageTags != null)
                 IconButton(
-                  icon: const Icon(Icons.settings, size: 18),
+                  icon: const Icon(Icons.settings, size: AppDimensions.iconSize18),
                   onPressed: onManageTags,
                   tooltip: 'Hantera taggar',
                   visualDensity: VisualDensity.compact,
@@ -142,7 +142,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXs),
           TextButton.icon(
             onPressed: onManageTags,
-            icon: const Icon(Icons.add, size: 18),
+            icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
             label: const Text('Skapa personliga taggar'),
           ),
         ],
@@ -215,7 +215,7 @@ class _PersonalTagExcludeChip extends StatelessWidget {
           ? null
           : Icon(
               Icons.remove_circle_outline,
-              size: 16,
+              size: AppDimensions.iconSizeS,
               color: colorScheme.error.withValues(alpha: AppDimensions.opacityMediumDark),
             ),
       selected: isExcluded,

@@ -257,7 +257,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
               children: [
                 const Icon(
                   Icons.check_circle,
-                  size: 18,
+                  size: AppDimensions.iconSize18,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
@@ -299,7 +299,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
         Center(
           child: TextButton.icon(
             onPressed: _navigateToManageTags,
-            icon: const Icon(Icons.settings, size: 18),
+            icon: const Icon(Icons.settings, size: AppDimensions.iconSize18),
             label: const Text('Hantera taggar'),
           ),
         ),
