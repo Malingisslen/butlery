@@ -48,9 +48,13 @@ class AppDimensions {
   // Minimal aliases for backward compatibility with existing code
   static const double spacingXxs = 2.0; // Extra extra small (2px)
   static const double spacingS = 3.0; // 3px - use sparingly
+  static const double spacing6 = 6.0; // 6px - for compact layouts
   static const double spacingM = spacingSm; // Alias for 8px
   static const double spacingL = (spacingSm + spacingXs); // 12px (8+4)
   static const double spacingXxxl = spacingLg; // Alias for 24px
+
+  /// Extra extra small padding (2px)
+  static const double paddingXxs = 2.0;
 
   /// Small padding (8px)
   static const double paddingS = 8.0;
@@ -172,11 +176,23 @@ class AppDimensions {
 
   // Removed redundant numeric aliases - use semantic names instead
 
-  /// Medium avatar size
+  /// Extra small avatar size (24px)
+  static const double avatarSizeXs = 24.0;
+
+  /// Small avatar size (32px)
+  static const double avatarSizeSm = 32.0;
+
+  /// Medium avatar size (32px) - alias for backward compatibility
   static const double avatarSizeM = 32.0;
 
   /// Medium avatar size (alias)
   static const double avatarSizeMedium = avatarSizeM;
+
+  /// Large avatar size (48px)
+  static const double avatarSizeLg = 48.0;
+
+  /// Extra large avatar size (64px)
+  static const double avatarSizeXl = 64.0;
 
   /// Thumbnail image size
   static const double imageSizeThumbnail = 80.0; // Back to original size
@@ -201,6 +217,39 @@ class AppDimensions {
 
   /// Image size hero
   static const double imageSizeHero = 400.0;
+
+  // Card Dimensions
+  /// Small card width (160px)
+  static const double cardWidthSmall = 160.0;
+
+  /// Small card image height (100px)
+  static const double cardImageHeightSmall = 100.0;
+
+  // Spinner/Progress Indicators
+  /// Small spinner size (20px)
+  static const double spinnerSizeSmall = 20.0;
+
+  /// Medium spinner size (30px)
+  static const double spinnerSizeMedium = 30.0;
+
+  // Dialog Constraints
+  /// Small dialog max width (300px)
+  static const double dialogMaxWidthSmall = 300.0;
+
+  /// Medium dialog max width (500px)
+  static const double dialogMaxWidthMedium = 500.0;
+
+  /// Large dialog max width (700px)
+  static const double dialogMaxWidthLarge = 700.0;
+
+  /// Small dialog max height (400px)
+  static const double dialogMaxHeightSmall = 400.0;
+
+  /// Medium dialog max height (600px)
+  static const double dialogMaxHeightMedium = 600.0;
+
+  /// Large dialog max height (800px)
+  static const double dialogMaxHeightLarge = 800.0;
 
   /// Minimum touch target size (Material Design requirement)
   static const double minTouchTarget = 48.0;
@@ -228,6 +277,9 @@ class AppDimensions {
 
   /// Long animation duration (500ms)
   static const Duration animationDurationLong = Duration(milliseconds: 500);
+
+  /// Extended animation duration (1200ms)
+  static const Duration animationDurationExtended = Duration(milliseconds: 1200);
 
   /// Snackbar duration (3000ms)
   static const Duration snackbarDuration = Duration(milliseconds: 3000);
