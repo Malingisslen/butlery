@@ -85,11 +85,11 @@ class PlatformBadgeWidget extends StatelessWidget {
   Color _getBackgroundColor(Platform platform, ColorScheme colorScheme) {
     switch (platform) {
       case Platform.youtube:
-        return const Color(0xFFFFE0E0); // Light red
+        return BrandColors.youtubeBackground;
       case Platform.tiktok:
-        return const Color(0xFFE0F7FA); // Light cyan
+        return BrandColors.tiktokBackground;
       case Platform.instagram:
-        return const Color(0xFFFCE4EC); // Light pink
+        return BrandColors.instagramBackground;
       case Platform.website:
         return colorScheme.primaryContainer.withValues(alpha: AppDimensions.opacityHalf);
       case Platform.unknown:
@@ -130,11 +130,11 @@ class PlatformBadgeWidget extends StatelessWidget {
   Color _getTextColor(Platform platform, ColorScheme colorScheme) {
     switch (platform) {
       case Platform.youtube:
-        return const Color(0xFFCC0000);
+        return BrandColors.youtubeText;
       case Platform.tiktok:
         return Colors.black;
       case Platform.instagram:
-        return const Color(0xFFC13584);
+        return BrandColors.instagramText;
       case Platform.website:
         return colorScheme.onPrimaryContainer;
       case Platform.unknown:

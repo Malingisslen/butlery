@@ -43,7 +43,7 @@ class ImagePickerDialogs {
             Container(
               width: AppDimensions.avatarSizeMedium,
               height: 5,
-              margin: const EdgeInsets.only(bottom: 20),
+              margin: const EdgeInsets.only(bottom: AppDimensions.paddingXl),
               decoration: BoxDecoration(
                 color: AppColors.neutralMedium,
                 borderRadius:

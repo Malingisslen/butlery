@@ -175,12 +175,12 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
             children: [
               // Handle bar
               Container(
-                margin: const EdgeInsets.only(top: 12),
+                margin: const EdgeInsets.only(top: AppDimensions.paddingM),
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
                   color: colorScheme.onSurfaceVariant,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadius2),
                 ),
               ),
               // Header
