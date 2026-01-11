@@ -130,7 +130,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
       ),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400, maxHeight: 600),
+        constraints: const BoxConstraints(maxWidth: AppDimensions.dialogMaxHeightSmall, maxHeight: AppDimensions.dialogMaxHeightMedium),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Column(

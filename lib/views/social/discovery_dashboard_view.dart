@@ -192,7 +192,7 @@ class _DiscoveryDashboardViewContentState
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                     ),
                     constraints: const BoxConstraints(
                       minWidth: 16,

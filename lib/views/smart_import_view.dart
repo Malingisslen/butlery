@@ -374,14 +374,14 @@ class _InputSection extends StatelessWidget {
           color: theme.colorScheme.onSurfaceVariant.withValues(alpha: AppDimensions.opacityMediumDark),
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           borderSide: BorderSide(color: theme.colorScheme.outline),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           borderSide: BorderSide(
             color: theme.colorScheme.primary,
             width: 2,
@@ -425,7 +425,7 @@ class _ErrorMessage extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Row(
         children: [

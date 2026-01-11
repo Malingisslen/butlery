@@ -39,7 +39,7 @@ class PlatformBadgeWidget extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: _getBackgroundColor(detection!.platform, colorScheme),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadius16),
           border: Border.all(
             color: _getBorderColor(detection!.platform, colorScheme),
             width: 1,
