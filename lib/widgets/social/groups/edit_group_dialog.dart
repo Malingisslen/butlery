@@ -75,7 +75,10 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
 
       if (success) {
         if (mounted) {
-          Navigator.of(context).pop(true);
+          // Return updated category to match expected FriendCategory? return type
+          final updatedCategory =
+              friendsService.getCategoryById(widget.group.id);
+          Navigator.of(context).pop(updatedCategory);
         }
       } else {
         if (mounted) {
@@ -104,7 +107,8 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       child: Container(
-        constraints: const BoxConstraints(maxWidth: AppDimensions.dialogMaxWidthMedium),
+        constraints:
+            const BoxConstraints(maxWidth: AppDimensions.dialogMaxWidthMedium),
         child: Form(
           key: _formKey,
           child: Column(

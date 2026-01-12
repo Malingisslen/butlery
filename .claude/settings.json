@@ -1,67 +1,36 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find:*)",
-      "Bash(flutter analyze:*)",
-      "Bash(flutter test:*)",
-      "Bash(flutter pub:*)",
-      "Bash(dart:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git diff:*)",
-      "Bash(tree:*)",
-      "Bash(ls:*)",
-      "Bash(cat:*)",
-      "Bash(head:*)",
-      "Bash(rm:*)",
-      "Bash(chmod:*)",
-      "Bash(echo:*)",
-      "Bash(awk:*)",
-      "Bash(jq:*)",
-      "Bash(python:*)",
-      "Bash(python3:*)",
-      "Bash(py:*)",
-      "Bash(node:*)",
-      "Bash(npm:*)",
-      "Bash(npx:*)",
-      "Bash(bash:*)",
-      "Bash(powershell -Command:*)",
-      "Bash(for:*)",
-      "Bash(do:*)",
-      "Bash(done)",
-      "Bash(if:*)",
-      "Bash(then:*)",
-      "Bash(else:*)",
-      "Bash(fi)",
+      "Bash",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
       "WebSearch",
-      "mcp__*",
-      "Bash(git log:*)",
-      "Bash(git show:*)",
-      "Bash(git branch:*)",
-      "Bash(git rm:*)",
-      "Bash(mkdir:*)",
-      "Bash(mv:*)",
-      "Bash(cp:*)",
-      "Bash(git checkout:*)",
-      "Bash(git merge:*)",
-      "Bash(git push:*)",
-      "Bash(git reset:*)",
-      "Bash(git restore:*)"
+      "WebFetch",
+      "Task",
+      "TodoWrite",
+      "NotebookEdit",
+      "mcp__*"
     ],
-    "deny": [],
-    "ask": []
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf ~/*)",
+      "Bash(git push --force origin main)",
+      "Bash(git push --force origin master)",
+      "Bash(git push -f origin main)",
+      "Bash(git push -f origin master)",
+      "Bash(format c:*)",
+      "Bash(format d:*)",
+      "Bash(diskpart*)",
+      "Bash(shutdown*)",
+      "Bash(reboot*)"
+    ]
   },
   "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Analyze the user's message for agent triggers. Check if message contains:\n\n1. Bug indicators: bug, BUG-, error, crash, 'not working', broken, failing, issue, problem, exception\n   → If found, add reminder: 'Note: debugger agent should be used for this'\n\n2. Firebase/repository indicators: repository, firestore, firebase, auth, permission, user data\n   → If found, add reminder: 'Note: firebase-backend-security agent should be used'\n\nRespond {\"ok\": true, \"message\": \"<reminder if applicable>\"}"
-          }
-        ]
-      }
-    ],
     "Notification": [
       {
         "matcher": "*",
@@ -72,67 +41,6 @@
           }
         ]
       }
-    ],
-    "PermissionRequest": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -Command \"[System.Media.SystemSounds]::Exclamation.Play()\""
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Review the conversation for agent enforcement compliance:\n\n## Tier 1 Agent Checks (BLOCKING)\n\n1. **debugger agent**: Was there ANY mention of: bug, BUG-, error, exception, 'not working', test failure, unexpected behavior, crash, or issue being investigated/fixed?\n   - If YES: Was a debugger agent spawned (Task tool with subagent_type='debugger')?\n   - If bug/error mentioned AND assistant tried to fix it but no debugger agent used → BLOCK\n\n2. **firebase-backend-security agent**: Were ANY files modified in lib/repositories/ or any file containing Firebase/Firestore/authentication?\n   - If YES: Was firebase-backend-security agent spawned?\n   - If Firebase/repository files modified but no security agent used → BLOCK\n\n## Completion Check\n3. Did the assistant complete the user's request?\n\n## Response Format\n- If Tier 1 violation: {\"ok\": false, \"reason\": \"AGENT ENFORCEMENT: [debugger|firebase-backend-security] agent was required but not used. Spawn the agent now.\"}\n- If incomplete work: {\"ok\": false, \"reason\": \"brief description of what remains\"}\n- If all checks pass: {\"ok\": true}"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Verify subagent task completion:\n1. Did the subagent fully complete its assigned task?\n2. Is the output quality acceptable?\n3. Were all checklist items addressed?\n\nRespond {\"ok\": true} if complete, or {\"ok\": false, \"reason\": \"what the subagent missed\"} to have it continue."
-          }
-        ]
-      }
-    ]
-  },
-  "customInstructions": {
-    "enabled": true,
-    "instructions": [
-      "Always follow Butlery's MVVM + Repository architecture pattern",
-      "Use ServiceLocator.get<T>() for runtime access (never sl<T>())",
-      "Extend BaseService for all instance-based services",
-      "Extend BaseFirebaseRepository for all Firebase repositories",
-      "Validate permissions on all repository CRUD operations",
-      "Use AsyncOperationMixin for simple loading/error state management",
-      "Files >500 LOC must use facade pattern with extracted modules",
-      "Never use FirebaseFirestore.instance directly - inject repository",
-      "Use UserService.currentUserProfile for user data (not PermissionService.currentUser)",
-      "Always dispose resources (controllers, subscriptions, etc.)"
-    ]
-  },
-  "linting": {
-    "preCommit": {
-      "runAnalyze": true,
-      "runFormat": true,
-      "runTests": false
-    }
-  },
-  "documentation": {
-    "autoUpdateMetrics": true,
-    "metricsFiles": [
-      "docs/testing/TESTING_DASHBOARD.md",
-      "docs/PROJECT_STATUS.md",
-      "README.md"
     ]
   }
 }
