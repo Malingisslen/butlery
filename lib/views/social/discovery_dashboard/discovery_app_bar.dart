@@ -36,7 +36,7 @@ class DiscoveryAppBar {
               end: Alignment.bottomRight,
               colors: [
                 AppColors.primaryBlue,
-                AppColors.primaryBlue.withValues(alpha: 0.8),
+                AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryDark),
               ],
             ),
           ),
@@ -69,7 +69,7 @@ class DiscoveryAppBar {
                           Text(
                             'Hitta populära recept, menyer och listor',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.onPrimary.withValues(alpha: 0.8),
+                              color: AppColors.onPrimary.withValues(alpha: AppDimensions.opacityVeryDark),
                             ),
                           ),
                         ],
@@ -132,7 +132,7 @@ class DiscoveryAppBar {
         vertical: AppDimensions.spacingS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.onPrimary.withValues(alpha: 0.1),
+        color: AppColors.onPrimary.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Column(
@@ -148,7 +148,7 @@ class DiscoveryAppBar {
           Text(
             'att upptäcka',
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.onPrimary.withValues(alpha: 0.8),
+              color: AppColors.onPrimary.withValues(alpha: AppDimensions.opacityVeryDark),
             ),
           ),
         ],

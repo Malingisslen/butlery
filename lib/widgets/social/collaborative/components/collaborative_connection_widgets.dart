@@ -23,7 +23,7 @@ class CollaborativeConnectionWidgets {
           vertical: AppDimensions.spacingXs,
         ),
         decoration: BoxDecoration(
-          color: AppColors.success.withValues(alpha: 0.1),
+          color: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
         ),
         child: Row(
@@ -55,9 +55,9 @@ class CollaborativeConnectionWidgets {
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.1),
+        color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
         border: Border.all(
-          color: AppColors.error.withValues(alpha: 0.3),
+          color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(

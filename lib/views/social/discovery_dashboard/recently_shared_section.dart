@@ -23,7 +23,7 @@ class RecentlySharedSection {
         Text(
           'Senast delade innehåll i ditt nätverk',
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.onSurface.withValues(alpha: 0.7),
+            color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
           ),
         ),
         const SizedBox(height: AppDimensions.spacingM),
@@ -54,7 +54,7 @@ class RecentlySharedSection {
               children: [
                 CircleAvatar(
                   radius: 16,
-                  backgroundColor: AppColors.secondary.withValues(alpha: 0.2),
+                  backgroundColor: AppColors.secondary.withValues(alpha: AppDimensions.opacityLight),
                   child: Text(
                     user.substring(0, 1).toUpperCase(),
                     style: AppTextStyles.bodySmall,
@@ -76,7 +76,7 @@ class RecentlySharedSection {
                       Text(
                         '$user delade $type',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.onSurface.withValues(alpha: 0.7),
+                          color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
                         ),
                       ),
                     ],

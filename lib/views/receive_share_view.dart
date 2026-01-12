@@ -369,7 +369,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.1),
+                  color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius: BorderRadius.circular(
                     AppDimensions.borderRadiusM,
                   ),
@@ -441,7 +441,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha: 0.1),
+                color: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
                 borderRadius: BorderRadius.circular(
                   AppDimensions.borderRadiusM,
                 ),

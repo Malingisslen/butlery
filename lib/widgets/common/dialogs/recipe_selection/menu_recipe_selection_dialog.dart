@@ -179,7 +179,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
               vertical: 2,
             ),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withValues(alpha: 0.1),
+              color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             ),
             child: Text(
@@ -327,7 +327,7 @@ class MenuRecipeListItem extends StatelessWidget {
       width: AppDimensions.iconSizeDisplay,
       height: AppDimensions.iconSizeDisplay,
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: 0.1),
+        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: const Icon(

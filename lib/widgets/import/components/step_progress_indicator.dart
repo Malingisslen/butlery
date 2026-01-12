@@ -74,7 +74,7 @@ class StepProgressIndicator extends StatelessWidget {
       ),
       child: Center(
         child: isCompleted
-            ? Icon(Icons.check, size: 16, color: textColor)
+            ? Icon(Icons.check, size: AppDimensions.iconSizeS, color: textColor)
             : Text(
                 '$stepNumber',
                 style: theme.textTheme.labelMedium?.copyWith(

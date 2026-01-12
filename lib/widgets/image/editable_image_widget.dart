@@ -326,7 +326,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: widget.config.effectiveBorderRadius,
-          color: AppColors.textDark.withValues(alpha: 0.5),
+          color: AppColors.textDark.withValues(alpha: AppDimensions.opacityHalf),
         ),
         child: const Center(
           child: CircularProgressIndicator(color: AppColors.cardWhite),

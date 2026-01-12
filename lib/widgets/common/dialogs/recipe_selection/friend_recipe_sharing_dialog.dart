@@ -178,7 +178,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
                 vertical: AppDimensions.spacingXs,
               ),
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusRound),
               ),
@@ -294,11 +294,11 @@ class FriendRecipeListItem extends StatelessWidget {
                 vertical: AppDimensions.spacingXs,
               ),
               decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha: 0.1),
+                color: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusRound),
                 border:
-                    Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+                    Border.all(color: AppColors.success.withValues(alpha: AppDimensions.opacityMediumLight)),
               ),
               child: Text('Delad',
                   style: AppTextStyles.labelSmall
@@ -403,8 +403,8 @@ class FriendRecipeListItem extends StatelessWidget {
       height: AppDimensions.iconSizeXl,
       decoration: BoxDecoration(
         color: isAlreadyShared
-            ? AppColors.success.withValues(alpha: 0.1)
-            : AppColors.primaryBlue.withValues(alpha: 0.1),
+            ? AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight)
+            : AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Icon(

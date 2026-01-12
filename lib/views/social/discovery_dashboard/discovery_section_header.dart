@@ -51,7 +51,7 @@ class DiscoverySectionHeader extends StatelessWidget {
               vertical: 2,
             ),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: AppColors.primary.withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
             ),
             child: Text(
@@ -91,10 +91,10 @@ class DiscoverySectionDivider extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AppColors.outline.withValues(alpha: 0.0),
-              AppColors.outline.withValues(alpha: 0.2),
-              AppColors.outline.withValues(alpha: 0.2),
-              AppColors.outline.withValues(alpha: 0.0),
+              AppColors.transparent,
+              AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
+              AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
+              AppColors.transparent,
             ],
             stops: const [0.0, 0.2, 0.8, 1.0],
           ),

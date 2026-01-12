@@ -97,7 +97,7 @@ class FullscreenImageViewer extends StatelessWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingL),
-              color: AppColors.textDark.withValues(alpha: 0.8),
+              color: AppColors.textDark.withValues(alpha: AppDimensions.opacityVeryDark),
               child: SafeArea(
                 top: false,
                 child: Text(

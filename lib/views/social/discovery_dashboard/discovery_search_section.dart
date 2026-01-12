@@ -41,11 +41,11 @@ class DiscoverySearchSection {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         border: Border.all(
-          color: AppColors.outline.withValues(alpha: 0.2),
+          color: AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.1),
+            color: AppColors.shadow.withValues(alpha: AppDimensions.opacityVeryLight),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -58,7 +58,7 @@ class DiscoverySearchSection {
         decoration: InputDecoration(
           hintText: 'Sök recept, menyer, inköpslistor...',
           hintStyle: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.onSurface.withValues(alpha: 0.6),
+            color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark),
           ),
           prefixIcon: const Icon(
             Icons.search,
@@ -72,7 +72,7 @@ class DiscoverySearchSection {
                     IconButton(
                       icon: Icon(
                         Icons.filter_list,
-                        color: AppColors.primary.withValues(alpha: 0.7),
+                        color: AppColors.primary.withValues(alpha: AppDimensions.opacityDark),
                       ),
                       onPressed: () => _showSearchFilters(context, viewModel),
                       tooltip: 'Sökfilter',
@@ -80,7 +80,7 @@ class DiscoverySearchSection {
                     IconButton(
                       icon: Icon(
                         Icons.clear,
-                        color: AppColors.onSurface.withValues(alpha: 0.6),
+                        color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark),
                       ),
                       onPressed: () {
                         searchController.clear();
@@ -93,7 +93,7 @@ class DiscoverySearchSection {
               : IconButton(
                   icon: Icon(
                     Icons.mic,
-                    color: AppColors.onSurface.withValues(alpha: 0.4),
+                    color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMedium),
                   ),
                   onPressed: () => _startVoiceSearch(context),
                   tooltip: 'Röstsökning',
@@ -121,10 +121,10 @@ class DiscoverySearchSection {
         vertical: AppDimensions.spacingS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primaryContainer.withValues(alpha: 0.1),
+        color: AppColors.primaryContainer.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.2),
+          color: AppColors.primary.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: Row(
@@ -171,7 +171,7 @@ class DiscoverySearchSection {
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
+        color: AppColors.primary.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Text(
@@ -268,7 +268,7 @@ class DiscoverySearchSection {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
+                color: AppColors.primary.withValues(alpha: AppDimensions.opacityVeryLight),
                 shape: BoxShape.circle,
               ),
               child: const Icon(

@@ -34,7 +34,7 @@ class OverlayButton extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color:
-            backgroundColor ?? AppColors.backgroundBeige.withValues(alpha: 0.8),
+            backgroundColor ?? AppColors.backgroundBeige.withValues(alpha: AppDimensions.opacityVeryDark),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: IconButton(

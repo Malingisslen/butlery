@@ -40,7 +40,7 @@ class ShoppingListCard extends StatelessWidget {
       child: Material(
         elevation: AppDimensions.elevationMedium,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        color: isSelected ? AppColors.primaryBlue.withValues(alpha: 0.1) : null,
+        color: isSelected ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight) : null,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -72,7 +72,7 @@ class ShoppingListCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(AppDimensions.spacingXs),
           decoration: BoxDecoration(
-            color: _getListTypeColor().withValues(alpha: 0.1),
+            color: _getListTypeColor().withValues(alpha: AppDimensions.opacityVeryLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
           child: Icon(
@@ -242,7 +242,7 @@ class ShoppingListCard extends StatelessWidget {
         vertical: AppDimensions.spacingXxs,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Row(

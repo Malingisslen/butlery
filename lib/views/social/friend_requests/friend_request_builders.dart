@@ -119,10 +119,10 @@ class FriendRequestsHeaderBuilder {
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       margin: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.1),
+        color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.error.withValues(alpha: 0.3),
+          color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
@@ -181,7 +181,7 @@ class IncomingRequestsTabBuilder {
               color: Theme.of(context)
                   .colorScheme
                   .primaryContainer
-                  .withValues(alpha: 0.3),
+                  .withValues(alpha: AppDimensions.opacityMediumLight),
               child: Row(
                 children: [
                   Icon(
@@ -268,7 +268,7 @@ class SentRequestsTabBuilder {
               color: Theme.of(context)
                   .colorScheme
                   .primaryContainer
-                  .withValues(alpha: 0.3),
+                  .withValues(alpha: AppDimensions.opacityMediumLight),
               child: Row(
                 children: [
                   Icon(

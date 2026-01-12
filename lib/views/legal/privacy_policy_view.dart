@@ -135,7 +135,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   Widget _buildErrorState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppDimensions.spacingLg),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -183,7 +183,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         _buildInfoBanner(),
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(AppDimensions.paddingXl),
             child: SelectableText(
               _policyContent!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -200,19 +200,19 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   Widget _buildInfoBanner() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: AppColors.info.withValues(alpha: 0.1),
+        color: AppColors.info.withValues(alpha: AppDimensions.opacityVeryLight),
         border: Border(
           bottom: BorderSide(
-            color: AppColors.info.withValues(alpha: 0.3),
+            color: AppColors.info.withValues(alpha: AppDimensions.opacityMediumLight),
             width: 1,
           ),
         ),
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline, color: AppColors.info, size: 20),
+          const Icon(Icons.info_outline, color: AppColors.info, size: AppDimensions.iconSizeM),
           const SizedBox(width: AppDimensions.spacingL),
           Expanded(
             child: Text(
@@ -230,7 +230,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   Widget _buildContactButton() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: const BoxDecoration(
         color: AppColors.backgroundTint,
         border: Border(

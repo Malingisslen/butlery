@@ -282,7 +282,7 @@ class _ShoppingMemberManagementDialogState
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.1),
+                  color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),
@@ -401,7 +401,7 @@ class _ShoppingMemberManagementDialogState
     return ListTile(
       leading: CircleAvatar(
         radius: 20,
-        backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
+        backgroundColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
         child: Text(
           userName.isNotEmpty ? userName[0].toUpperCase() : '?',
           style: AppTextStyles.labelMedium.copyWith(
@@ -483,7 +483,7 @@ class _ShoppingMemberManagementDialogState
     return CheckboxListTile(
       secondary: CircleAvatar(
         radius: 20,
-        backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
+        backgroundColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
         child: Text(
           friend.displayName.isNotEmpty
               ? friend.displayName[0].toUpperCase()

@@ -383,7 +383,7 @@ class _AuthViewState extends State<AuthView> {
     final messenger = ScaffoldMessenger.of(context);
     // ignore: use_build_context_synchronously
     final theme = Theme.of(context);
-    final primaryColor = theme.colorScheme.primary.withValues(alpha: 0.8);
+    final primaryColor = theme.colorScheme.primary.withValues(alpha: AppDimensions.opacityVeryDark);
     final errorColor = theme.colorScheme.error;
 
     // Use addPostFrameCallback to ensure dialog is fully unmounted

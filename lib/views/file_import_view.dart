@@ -287,7 +287,7 @@ class _FileImportViewState extends State<FileImportView> {
           left: AppDimensions.spacingM, bottom: AppDimensions.spacingXs),
       child: Row(
         children: [
-          const Icon(Icons.check, size: 16, color: AppColors.success),
+          const Icon(Icons.check, size: AppDimensions.iconSizeS, color: AppColors.success),
           const SizedBox(width: AppDimensions.spacingS),
           Text(text, style: AppTextStyles.bodySmall),
         ],
@@ -302,7 +302,7 @@ class _FileImportViewState extends State<FileImportView> {
       child: Row(
         children: [
           Icon(Icons.add,
-              size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+              size: AppDimensions.iconSizeS, color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(width: AppDimensions.spacingS),
           Text(text, style: AppTextStyles.bodySmall),
         ],

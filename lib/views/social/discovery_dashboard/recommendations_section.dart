@@ -49,10 +49,10 @@ class RecommendationsSection {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant.withValues(alpha: 0.3),
+        color: AppColors.surfaceVariant.withValues(alpha: AppDimensions.opacityMediumLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: AppColors.outline.withValues(alpha: 0.2),
+          color: AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: Center(
@@ -96,13 +96,13 @@ class RecommendationsSection {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.1),
+            color: AppColors.shadow.withValues(alpha: AppDimensions.opacityVeryLight),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
         border: Border.all(
-          color: AppColors.secondary.withValues(alpha: 0.2),
+          color: AppColors.secondary.withValues(alpha: AppDimensions.opacityLight),
           width: 1,
         ),
       ),
@@ -118,7 +118,7 @@ class RecommendationsSection {
                 width: 70,
                 height: 70,
                 decoration: BoxDecoration(
-                  color: AppColors.secondaryContainer.withValues(alpha: 0.3),
+                  color: AppColors.secondaryContainer.withValues(alpha: AppDimensions.opacityMediumLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
@@ -133,7 +133,7 @@ class RecommendationsSection {
                           fit: BoxFit.contain,
                           placeholder: (context, url) => ColoredBox(
                             color: AppColors.secondaryContainer
-                                .withValues(alpha: 0.3),
+                                .withValues(alpha: AppDimensions.opacityMediumLight),
                             child: const Center(
                               child: SizedBox(
                                 width: 24,
@@ -163,7 +163,7 @@ class RecommendationsSection {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.secondary.withValues(alpha: 0.1),
+                        color: AppColors.secondary.withValues(alpha: AppDimensions.opacityVeryLight),
                         borderRadius:
                             BorderRadius.circular(AppDimensions.borderRadiusS),
                       ),
@@ -215,7 +215,7 @@ class RecommendationsSection {
                       Text(
                         description,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.onSurface.withValues(alpha: 0.7),
+                          color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -256,7 +256,7 @@ class RecommendationsSection {
                         _likeRecommendation(context, recommendation),
                     icon: Icon(
                       Icons.favorite_border,
-                      color: AppColors.error.withValues(alpha: 0.7),
+                      color: AppColors.error.withValues(alpha: AppDimensions.opacityDark),
                       size: AppDimensions.iconSizeM,
                     ),
                     tooltip: 'Gilla',
@@ -266,7 +266,7 @@ class RecommendationsSection {
                         _dismissRecommendation(context, recommendation),
                     icon: Icon(
                       Icons.close,
-                      color: AppColors.onSurface.withValues(alpha: 0.4),
+                      color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMedium),
                       size: AppDimensions.iconSizeM,
                     ),
                     tooltip: 'Dölj',
@@ -283,7 +283,7 @@ class RecommendationsSection {
   static Widget _buildContentPlaceholder() {
     return Icon(
       Icons.auto_awesome,
-      color: AppColors.secondary.withValues(alpha: 0.6),
+      color: AppColors.secondary.withValues(alpha: AppDimensions.opacityMediumDark),
       size: AppDimensions.iconSizeXl,
     );
   }

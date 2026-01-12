@@ -45,7 +45,7 @@ class FeedbackThemes {
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryBlue.withValues(alpha: 0.5);
+          return AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityHalf);
         }
         return AppColors.divider;
       }),
@@ -90,7 +90,7 @@ class FeedbackThemes {
       activeTrackColor: AppColors.primaryBlue,
       inactiveTrackColor: AppColors.divider,
       thumbColor: AppColors.primaryBlue,
-      overlayColor: AppColors.primaryBlue.withValues(alpha: 0.2),
+      overlayColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
       valueIndicatorColor: AppColors.primaryBlue,
       valueIndicatorTextStyle: AppTextStyles.labelSmall.copyWith(
         color: AppColors.cardWhite,

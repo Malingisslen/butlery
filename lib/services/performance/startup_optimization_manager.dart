@@ -392,7 +392,7 @@ class StartupOptimizationManager {
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           const Rect.fromLTWH(0, 0, 100, 50),
-          const Radius.circular(8),
+          const Radius.circular(AppDimensions.borderRadiusM),
         ),
         paint,
       );
@@ -422,7 +422,7 @@ class StartupOptimizationManager {
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           const Rect.fromLTWH(0, 0, 100, 40),
-          const Radius.circular(20),
+          const Radius.circular(AppDimensions.borderRadius20),
         ),
         paint,
       );

@@ -82,7 +82,7 @@ class SharedContentCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(AppDimensions.paddingS),
                     decoration: BoxDecoration(
-                      color: iconColor.withValues(alpha: 0.1),
+                      color: iconColor.withValues(alpha: AppDimensions.opacityVeryLight),
                       borderRadius:
                           BorderRadius.circular(AppDimensions.borderRadiusS),
                     ),
@@ -130,7 +130,7 @@ class SharedContentCard extends StatelessWidget {
                     CircleAvatar(
                       radius: 12,
                       backgroundColor:
-                          AppColors.primaryBlue.withValues(alpha: 0.2),
+                          AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
                       child: Text(
                         item.sharedByDisplayName.isNotEmpty
                             ? item.sharedByDisplayName[0].toUpperCase()
@@ -169,7 +169,7 @@ class SharedContentCard extends StatelessWidget {
                   if (onImport != null) ...[
                     TextButton.icon(
                       onPressed: onImport,
-                      icon: const Icon(Icons.download, size: 18),
+                      icon: const Icon(Icons.download, size: AppDimensions.iconSize18),
                       label: const Text('Importera'),
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
@@ -178,7 +178,7 @@ class SharedContentCard extends StatelessWidget {
                     Flexible(
                       child: FilledButton.icon(
                         onPressed: onView,
-                        icon: const Icon(Icons.visibility, size: 18),
+                        icon: const Icon(Icons.visibility, size: AppDimensions.iconSize18),
                         label: const Text('Visa'),
                       ),
                     ),

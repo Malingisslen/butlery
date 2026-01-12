@@ -101,7 +101,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
           ? Theme.of(context)
               .colorScheme
               .surfaceContainerHighest
-              .withValues(alpha: 0.5)
+              .withValues(alpha: AppDimensions.opacityHalf)
           : null,
       child: ListTile(
         leading: _buildItemCheckbox(context, item),

@@ -268,7 +268,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 500, maxHeight: 700),
+        constraints: const BoxConstraints(maxWidth: AppDimensions.dialogMaxWidthMedium, maxHeight: AppDimensions.dialogMaxHeightLarge),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Form(
@@ -362,7 +362,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           value: tag.id,
           child: Row(
             children: [
-              const Icon(Icons.label, size: 16, color: AppColors.primaryBlue),
+              const Icon(Icons.label, size: AppDimensions.iconSizeS, color: AppColors.primaryBlue),
               const SizedBox(width: 8),
               Text(tag.name),
             ],
@@ -399,12 +399,12 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             ButtonSegment(
               value: MatchMode.all,
               label: Text('Alla villkor (AND)'),
-              icon: Icon(Icons.all_inclusive, size: 18),
+              icon: Icon(Icons.all_inclusive, size: AppDimensions.iconSize18),
             ),
             ButtonSegment(
               value: MatchMode.any,
               label: Text('Något villkor (OR)'),
-              icon: Icon(Icons.call_split, size: 18),
+              icon: Icon(Icons.call_split, size: AppDimensions.iconSize18),
             ),
           ],
           selected: {_matchMode},
@@ -433,7 +433,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             const Spacer(),
             TextButton.icon(
               onPressed: _isSaving ? null : _addCondition,
-              icon: const Icon(Icons.add, size: 18),
+              icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
               label: const Text('Lägg till'),
             ),
           ],
@@ -500,13 +500,13 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.1),
+        color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.error, size: 20),
+          const Icon(Icons.error_outline, color: AppColors.error, size: AppDimensions.iconSizeM),
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
@@ -635,7 +635,7 @@ class _ConditionRow extends StatelessWidget {
               // Delete button
               if (canDelete)
                 IconButton(
-                  icon: const Icon(Icons.close, size: 20),
+                  icon: const Icon(Icons.close, size: AppDimensions.iconSizeM),
                   onPressed: enabled ? onDelete : null,
                   tooltip: 'Ta bort villkor',
                   constraints: const BoxConstraints(

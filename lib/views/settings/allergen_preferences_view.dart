@@ -105,7 +105,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
                   label: Text(e.value),
                   selected: isSelected,
                   onSelected: (_) => viewModel.toggleAllergen(e.key),
-                  selectedColor: AppColors.success.withValues(alpha: 0.2),
+                  selectedColor: AppColors.success.withValues(alpha: AppDimensions.opacityLight),
                   checkmarkColor: AppColors.success,
                   labelStyle: AppTextStyles.labelMedium.copyWith(
                     color: isSelected ? AppColors.success : AppColors.textDark,
@@ -158,7 +158,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
                   label: Text(e.value),
                   selected: isSelected,
                   onSelected: (_) => viewModel.toggleDietary(e.key),
-                  selectedColor: AppColors.success.withValues(alpha: 0.2),
+                  selectedColor: AppColors.success.withValues(alpha: AppDimensions.opacityLight),
                   checkmarkColor: AppColors.success,
                   labelStyle: AppTextStyles.labelMedium.copyWith(
                     color: isSelected ? AppColors.success : AppColors.textDark,
@@ -201,7 +201,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
                   const Text('Visa allergenstatus på receptkort i listor'),
               value: viewModel.showOnCards,
               onChanged: viewModel.setShowOnCards,
-              activeTrackColor: AppColors.primaryBlue.withValues(alpha: 0.5),
+              activeTrackColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityHalf),
               thumbColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.selected)) {
                   return AppColors.primaryBlue;
@@ -217,7 +217,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
                   const Text('Visa fullständig allergenstatus på receptsidan'),
               value: viewModel.showOnDetail,
               onChanged: viewModel.setShowOnDetail,
-              activeTrackColor: AppColors.primaryBlue.withValues(alpha: 0.5),
+              activeTrackColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityHalf),
               thumbColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.selected)) {
                   return AppColors.primaryBlue;
@@ -233,7 +233,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
                   const Text('Visa hur stor andel ingredienser som är kända'),
               value: viewModel.showCoverage,
               onChanged: viewModel.setShowCoverage,
-              activeTrackColor: AppColors.primaryBlue.withValues(alpha: 0.5),
+              activeTrackColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityHalf),
               thumbColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.selected)) {
                   return AppColors.primaryBlue;
@@ -275,9 +275,9 @@ class _AllergenPreferencesContent extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.1),
+        color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Row(
         children: [

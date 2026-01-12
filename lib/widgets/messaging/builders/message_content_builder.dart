@@ -58,7 +58,7 @@ class MessageContentBuilder {
               'redigerad',
               style: AppTextStyles.labelSmall.copyWith(
                 color: isFromCurrentUser
-                    ? AppColors.cardWhite.withValues(alpha: 0.7)
+                    ? AppColors.cardWhite.withValues(alpha: AppDimensions.opacityDark)
                     : AppColors.textMedium,
                 fontStyle: FontStyle.italic,
               ),
@@ -129,7 +129,7 @@ class MessageContentBuilder {
       padding: const EdgeInsets.all(AppDimensions.paddingS),
       decoration: BoxDecoration(
         color: (isFromCurrentUser ? AppColors.cardWhite : AppColors.accent)
-            .withValues(alpha: 0.2),
+            .withValues(alpha: AppDimensions.opacityLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Row(
@@ -137,7 +137,7 @@ class MessageContentBuilder {
           Container(
             padding: const EdgeInsets.all(AppDimensions.paddingS),
             decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.3),
+              color: AppColors.accent.withValues(alpha: AppDimensions.opacityMediumLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             ),
             child: Icon(
@@ -174,7 +174,7 @@ class MessageContentBuilder {
                     subtitle,
                     style: AppTextStyles.labelSmall.copyWith(
                       color: isFromCurrentUser
-                          ? AppColors.cardWhite.withValues(alpha: 0.8)
+                          ? AppColors.cardWhite.withValues(alpha: AppDimensions.opacityVeryDark)
                           : AppColors.textMedium,
                     ),
                   ),
@@ -267,8 +267,8 @@ class MessageContentBuilder {
     return Container(
       height: 150,
       color: isFromCurrentUser
-          ? AppColors.cardWhite.withValues(alpha: 0.2)
-          : AppColors.accent.withValues(alpha: 0.2),
+          ? AppColors.cardWhite.withValues(alpha: AppDimensions.opacityLight)
+          : AppColors.accent.withValues(alpha: AppDimensions.opacityLight),
       child: Center(
         child: isLoading
             ? CircularProgressIndicator(
@@ -283,7 +283,7 @@ class MessageContentBuilder {
                     Icons.broken_image,
                     size: 48,
                     color: isFromCurrentUser
-                        ? AppColors.cardWhite.withValues(alpha: 0.7)
+                        ? AppColors.cardWhite.withValues(alpha: AppDimensions.opacityDark)
                         : AppColors.textMedium,
                   ),
                   const SizedBox(height: AppDimensions.spacingS),
@@ -291,7 +291,7 @@ class MessageContentBuilder {
                     'Kunde inte ladda bild',
                     style: AppTextStyles.labelSmall.copyWith(
                       color: isFromCurrentUser
-                          ? AppColors.cardWhite.withValues(alpha: 0.7)
+                          ? AppColors.cardWhite.withValues(alpha: AppDimensions.opacityDark)
                           : AppColors.textMedium,
                     ),
                   ),

@@ -284,10 +284,10 @@ class ShoppingListCard extends StatelessWidget {
         vertical: AppDimensions.spacingS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: 0.1),
+        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: 0.3),
+          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
           width: AppDimensions.borderWidthThin,
         ),
       ),
@@ -348,8 +348,8 @@ class ShoppingListCard extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: isComplete
-            ? AppColors.success.withValues(alpha: 0.15)
-            : AppColors.warning.withValues(alpha: 0.15),
+            ? AppColors.success.withValues(alpha: AppDimensions.opacityLightSubtle)
+            : AppColors.warning.withValues(alpha: AppDimensions.opacityLightSubtle),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Row(

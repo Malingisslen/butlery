@@ -328,9 +328,9 @@ class InvitationSelectors {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: 0.1),
+        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,7 +369,7 @@ class InvitationSelectors {
                   onDeleted: onRemoveTarget != null
                       ? () => onRemoveTarget(target)
                       : null,
-                  backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
+                  backgroundColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
                 );
               }).toList(),
             ),

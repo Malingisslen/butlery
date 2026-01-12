@@ -82,7 +82,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
               color: Theme.of(context)
                   .colorScheme
                   .onSurfaceVariant
-                  .withValues(alpha: 0.4),
+                  .withValues(alpha: AppDimensions.opacityMedium),
               borderRadius: BorderRadius.circular(AppDimensions.spacingXs),
             ),
           ),

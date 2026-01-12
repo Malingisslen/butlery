@@ -36,7 +36,7 @@ class ShoppingAppBar {
                 color: Theme.of(context)
                     .colorScheme
                     .onSurface
-                    .withValues(alpha: 0.7),
+                    .withValues(alpha: AppDimensions.opacityDark),
               ),
               onPressed: onCreateList,
               tooltip: 'Ny lista',
@@ -55,7 +55,7 @@ class ShoppingAppBar {
                     ? Theme.of(context)
                         .colorScheme
                         .onSurface
-                        .withValues(alpha: 0.7)
+                        .withValues(alpha: AppDimensions.opacityDark)
                     : AppColors.textTertiary,
               ),
               onPressed: canShare ? onShowShareDialog : null,
@@ -75,7 +75,7 @@ class ShoppingAppBar {
                     ? Theme.of(context)
                         .colorScheme
                         .onSurface
-                        .withValues(alpha: 0.7)
+                        .withValues(alpha: AppDimensions.opacityDark)
                     : AppColors.textTertiary,
               ),
               onPressed: canShare ? onShareExternally : null,

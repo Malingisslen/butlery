@@ -95,7 +95,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
 
   Widget _buildListInfoSection(BuildContext context) {
     return Card(
-      color: _getListTypeColor().withValues(alpha: 0.1),
+      color: _getListTypeColor().withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -166,7 +166,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     }
 
     return Card(
-      color: permissionColor.withValues(alpha: 0.1),
+      color: permissionColor.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -214,7 +214,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     allMembers.addAll(list.memberPermissions);
 
     return Card(
-      color: AppColors.primaryBlue.withValues(alpha: 0.1),
+      color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -284,7 +284,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
+            backgroundColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
             child: Text(
               displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
               style: AppTextStyles.labelMedium.copyWith(
@@ -328,7 +328,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
 
   Widget _buildActivitySection(BuildContext context) {
     return Card(
-      color: AppColors.primaryBlue.withValues(alpha: 0.1),
+      color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(

@@ -45,10 +45,10 @@ class FriendActivitySection {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant.withValues(alpha: 0.3),
+        color: AppColors.surfaceVariant.withValues(alpha: AppDimensions.opacityMediumLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: AppColors.outline.withValues(alpha: 0.2),
+          color: AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: Center(
@@ -92,7 +92,7 @@ class FriendActivitySection {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.1),
+            color: AppColors.shadow.withValues(alpha: AppDimensions.opacityVeryLight),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -110,7 +110,7 @@ class FriendActivitySection {
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryContainer.withValues(alpha: 0.3),
+                  color: AppColors.primaryContainer.withValues(alpha: AppDimensions.opacityMediumLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
@@ -125,7 +125,7 @@ class FriendActivitySection {
                           fit: BoxFit.contain,
                           placeholder: (context, url) => ColoredBox(
                             color: AppColors.primaryContainer
-                                .withValues(alpha: 0.3),
+                                .withValues(alpha: AppDimensions.opacityMediumLight),
                             child: const Center(
                               child: SizedBox(
                                 width: 20,
@@ -169,7 +169,7 @@ class FriendActivitySection {
                           child: Text(
                             'Delad av $ownerName',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.onSurface.withValues(alpha: 0.7),
+                              color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -184,7 +184,7 @@ class FriendActivitySection {
                           Text(
                             _formatTimeAgo(sharedAt),
                             style: AppTextStyles.labelMedium.copyWith(
-                              color: AppColors.onSurface.withValues(alpha: 0.6),
+                              color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark),
                             ),
                           ),
                           const SizedBox(width: AppDimensions.spacingM),
@@ -212,7 +212,7 @@ class FriendActivitySection {
               // Action indicator
               Icon(
                 Icons.chevron_right,
-                color: AppColors.onSurface.withValues(alpha: 0.4),
+                color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMedium),
                 size: AppDimensions.iconSizeM,
               ),
             ],
@@ -240,7 +240,7 @@ class FriendActivitySection {
 
     return Icon(
       icon,
-      color: AppColors.primary.withValues(alpha: 0.6),
+      color: AppColors.primary.withValues(alpha: AppDimensions.opacityMediumDark),
       size: AppDimensions.iconSizeXl,
     );
   }

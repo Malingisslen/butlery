@@ -110,7 +110,7 @@ class SocialCollaborativeComponents {
           horizontal: AppDimensions.spacingSm,
           vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
-        color: (activeColor ?? AppColors.success).withValues(alpha: 0.1),
+        color: (activeColor ?? AppColors.success).withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         border: Border.all(color: activeColor ?? AppColors.success),
       ),
@@ -218,7 +218,7 @@ class SocialCollaborativeComponents {
           horizontal: AppDimensions.spacingSm,
           vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
-        color: color ?? AppColors.success.withValues(alpha: 0.1),
+        color: color ?? AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         border: Border.all(color: color ?? AppColors.success),
       ),
@@ -254,8 +254,8 @@ class SocialCollaborativeComponents {
           horizontal: AppDimensions.spacingSm,
           vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
-        color: color?.withValues(alpha: 0.1) ??
-            AppColors.textMedium.withValues(alpha: 0.1),
+        color: color?.withValues(alpha: AppDimensions.opacityVeryLight) ??
+            AppColors.textMedium.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         border: Border.all(color: color ?? AppColors.textMedium),
       ),
@@ -292,7 +292,7 @@ class SocialCollaborativeComponents {
       padding: const EdgeInsets.all(
           (AppDimensions.spacingSm + AppDimensions.spacingXs)),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.textMedium.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityMediumLight)),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
       ),
       child: Column(
@@ -415,7 +415,7 @@ class SocialCollaborativeComponents {
           horizontal: AppDimensions.spacingTight,
           vertical: AppDimensions.spacingXxs),
       decoration: BoxDecoration(
-        color: (color ?? config.color).withValues(alpha: 0.1),
+        color: (color ?? config.color).withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(color: color ?? config.color),
       ),

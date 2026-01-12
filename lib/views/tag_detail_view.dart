@@ -221,7 +221,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
           children: [
             CircleAvatar(
               radius: 32,
-              backgroundColor: colorScheme.primary.withValues(alpha: 0.2),
+              backgroundColor: colorScheme.primary.withValues(alpha: AppDimensions.opacityLight),
               child: Icon(
                 Icons.label,
                 color: colorScheme.primary,
@@ -295,7 +295,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       children: [
         Row(
           children: [
-            const Icon(Icons.auto_awesome, size: 20),
+            const Icon(Icons.auto_awesome, size: AppDimensions.iconSizeM),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Text(
@@ -305,7 +305,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
             ),
             FilledButton.tonalIcon(
               onPressed: () => _addRule(context, tag),
-              icon: const Icon(Icons.add, size: 18),
+              icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
               label: const Text('Lägg till'),
             ),
           ],
@@ -426,7 +426,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
               onChanged: (value) => _toggleRuleEnabled(context, tag, rule),
             ),
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, size: 20),
+              icon: const Icon(Icons.more_vert, size: AppDimensions.iconSizeM),
               onSelected: (action) =>
                   _handleRuleAction(context, action, tag, rule),
               itemBuilder: (context) => [
@@ -844,12 +844,12 @@ class _RuleBuilderSheetState extends State<_RuleBuilderSheet> {
             children: [
               // Handle bar
               Container(
-                margin: const EdgeInsets.only(top: 12),
+                margin: const EdgeInsets.only(top: AppDimensions.paddingM),
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
                   color: colorScheme.onSurfaceVariant,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadius2),
                 ),
               ),
               // Header
@@ -922,7 +922,7 @@ class _RuleBuilderSheetState extends State<_RuleBuilderSheet> {
                         const Spacer(),
                         TextButton.icon(
                           onPressed: _addCondition,
-                          icon: const Icon(Icons.add, size: 18),
+                          icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
                           label: const Text('Lägg till'),
                         ),
                       ],
@@ -1113,7 +1113,7 @@ class _ConditionCardState extends State<_ConditionCard> {
                 if (widget.canDelete) ...[
                   const SizedBox(width: AppDimensions.spacingSm),
                   IconButton(
-                    icon: const Icon(Icons.close, size: 20),
+                    icon: const Icon(Icons.close, size: AppDimensions.iconSizeM),
                     onPressed: widget.onDelete,
                     tooltip: 'Ta bort villkor',
                   ),

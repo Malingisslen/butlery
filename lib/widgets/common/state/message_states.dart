@@ -53,7 +53,7 @@ class MessageStates {
                   margin: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.spacingL),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha: 0.1),
+                    color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
                     borderRadius:
                         BorderRadius.circular(AppDimensions.borderRadiusM),
                     border: Border.all(color: AppColors.error),

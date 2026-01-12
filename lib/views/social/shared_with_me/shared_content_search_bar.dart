@@ -69,7 +69,7 @@ class SharedContentSearchBar {
                 padding: const EdgeInsets.only(top: AppDimensions.spacingS),
                 child: Chip(
                   label: const Text('Visar importerade'),
-                  deleteIcon: const Icon(Icons.close, size: 18),
+                  deleteIcon: const Icon(Icons.close, size: AppDimensions.iconSize18),
                   onDeleted: () => viewModel.toggleShowImported(),
                   backgroundColor:
                       Theme.of(context).colorScheme.primaryContainer,

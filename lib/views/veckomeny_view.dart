@@ -126,7 +126,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         icon: Icon(Icons.folder_open,
             size: AppDimensions.iconSizeAction,
             color:
-                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: AppDimensions.opacityDark)),
         onPressed: () => VeckomenyDialogs.showLoadMenuBottomSheet(
           context,
           viewModel: viewModel,
@@ -142,7 +142,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
               color: Theme.of(context)
                   .colorScheme
                   .onSurface
-                  .withValues(alpha: 0.7)),
+                  .withValues(alpha: AppDimensions.opacityDark)),
           onPressed: () => VeckomenyDialogs.showSaveMenuDialog(
             context,
             viewModel: viewModel,
@@ -159,7 +159,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
               color: Theme.of(context)
                   .colorScheme
                   .onSurface
-                  .withValues(alpha: 0.7)),
+                  .withValues(alpha: AppDimensions.opacityDark)),
           onPressed: () => VeckomenyDialogs.showSocialMenuShareDialog(
             context,
             menuViewModel: viewModel,
@@ -178,7 +178,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
               color: Theme.of(context)
                   .colorScheme
                   .onSurface
-                  .withValues(alpha: 0.7)),
+                  .withValues(alpha: AppDimensions.opacityDark)),
           onPressed: _shareMenu,
           tooltip: 'Dela veckomeny',
         ),
@@ -191,7 +191,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
               color: Theme.of(context)
                   .colorScheme
                   .onSurface
-                  .withValues(alpha: 0.7)),
+                  .withValues(alpha: AppDimensions.opacityDark)),
           onPressed: _clearMenu,
           tooltip: 'Rensa meny',
         ),
@@ -281,7 +281,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
   Widget _buildLoadingOverlay(BuildContext context) {
     return ColoredBox(
-      color: AppColors.neutralDark.withValues(alpha: 0.4),
+      color: AppColors.neutralDark.withValues(alpha: AppDimensions.opacityMedium),
       child: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(

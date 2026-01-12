@@ -22,13 +22,13 @@ class MessageStatusWidget extends StatelessWidget {
           Icon(
             _getStatusIcon(),
             size: AppDimensions.iconSizeXs,
-            color: AppColors.cardWhite.withValues(alpha: 0.7),
+            color: AppColors.cardWhite.withValues(alpha: AppDimensions.opacityDark),
           ),
           const SizedBox(width: AppDimensions.spacingXxs),
           Text(
             _getStatusText(),
             style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.cardWhite.withValues(alpha: 0.7),
+              color: AppColors.cardWhite.withValues(alpha: AppDimensions.opacityDark),
               fontSize: 10,
             ),
           ),
