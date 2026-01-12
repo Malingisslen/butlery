@@ -4,6 +4,7 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// A platform-adaptive switch widget.
 /// Automatically uses CupertinoSwitch on iOS and Material Switch on Android.
@@ -49,7 +50,8 @@ class AdaptiveSwitch extends StatelessWidget {
       value: value,
       onChanged: onChanged,
       activeThumbColor: activeColor,
-      activeTrackColor: activeColor?.withValues(alpha: AppDimensions.opacityHalf),
+      activeTrackColor:
+          activeColor?.withValues(alpha: AppDimensions.opacityHalf),
       inactiveTrackColor: trackColor,
       thumbColor:
           thumbColor != null ? WidgetStateProperty.all(thumbColor) : null,
@@ -123,7 +125,8 @@ class AdaptiveSwitchListTile extends StatelessWidget {
       subtitle: subtitle,
       secondary: secondary,
       activeThumbColor: activeColor,
-      activeTrackColor: activeColor?.withValues(alpha: AppDimensions.opacityHalf),
+      activeTrackColor:
+          activeColor?.withValues(alpha: AppDimensions.opacityHalf),
       contentPadding: contentPadding,
       dense: dense,
     );

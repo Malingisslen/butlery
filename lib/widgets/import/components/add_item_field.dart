@@ -1,6 +1,7 @@
 // lib/widgets/import/components/add_item_field.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Text field for adding new items to a list.
 class AddItemField extends StatefulWidget {
@@ -45,7 +46,8 @@ class _AddItemFieldState extends State<AddItemField> {
         hintText: widget.hintText,
         border: OutlineInputBorder(
           borderSide: BorderSide(
-            color: theme.colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
+            color: theme.colorScheme.outline
+                .withValues(alpha: AppDimensions.opacityHalf),
             style: BorderStyle.solid,
           ),
         ),

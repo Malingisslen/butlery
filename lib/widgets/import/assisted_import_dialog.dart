@@ -21,6 +21,7 @@ import 'package:butlery/widgets/import/components/import_dialog_header.dart';
 import 'package:butlery/widgets/import/components/step_progress_indicator.dart';
 import 'package:butlery/widgets/import/components/import_dialog_footer.dart';
 import 'package:butlery/widgets/import/components/editable_list_builder.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Show the assisted import dialog.
 ///

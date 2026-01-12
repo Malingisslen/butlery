@@ -8,6 +8,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// App bar actions for shopping view
 class ShoppingAppBar {

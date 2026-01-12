@@ -14,6 +14,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Service initialization priority levels
 enum ServicePriority {

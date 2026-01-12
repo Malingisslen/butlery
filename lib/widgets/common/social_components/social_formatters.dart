@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Social formatting utilities for display names, numbers, and time.
 class SocialFormatters {
@@ -60,11 +61,13 @@ class SocialFormatters {
   static Map<String, Color> getSocialColorScheme() {
     return {
       'primary': AppColors.primaryBlue,
-      'secondary': AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+      'secondary': AppColors.primaryBlue
+          .withValues(alpha: AppDimensions.opacityVeryLight),
       'success': AppColors.primaryBlue,
       'warning': AppColors.textMedium,
       'danger': AppColors.error,
-      'info': AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityDark),
+      'info':
+          AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityDark),
       'muted': AppColors.textMedium,
     };
   }

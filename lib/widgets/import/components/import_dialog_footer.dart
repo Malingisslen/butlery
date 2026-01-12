@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/assisted_import_viewmodel.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Footer component for import dialogs with validation and navigation buttons.
 class ImportDialogFooter extends StatelessWidget {
@@ -46,7 +47,8 @@ class ImportDialogFooter extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: theme.colorScheme.errorContainer,
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusM),
               ),
               child: Row(
                 children: [

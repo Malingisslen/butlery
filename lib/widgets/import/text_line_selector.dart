@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Selection mode for the text line selector.
 enum SelectionMode {
@@ -140,7 +141,8 @@ class TextLineSelector extends StatelessWidget {
             Icon(
               Icons.text_fields,
               size: 48,
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: AppDimensions.opacityHalf),
+              color: theme.colorScheme.onSurfaceVariant
+                  .withValues(alpha: AppDimensions.opacityHalf),
             ),
             const SizedBox(height: 16),
             Text(
@@ -229,11 +231,13 @@ class _LineItem extends StatelessWidget {
     BorderStyle borderStyle;
 
     if (isSelected) {
-      backgroundColor = modeColor.withValues(alpha: AppDimensions.opacityLightSubtle);
+      backgroundColor =
+          modeColor.withValues(alpha: AppDimensions.opacityLightSubtle);
       borderColor = modeColor;
       borderStyle = BorderStyle.solid;
     } else if (isHighlighted) {
-      backgroundColor = modeColor.withValues(alpha: AppDimensions.opacityExtraVeryLight);
+      backgroundColor =
+          modeColor.withValues(alpha: AppDimensions.opacityExtraVeryLight);
       borderColor = modeColor.withValues(alpha: AppDimensions.opacityHalf);
       borderStyle = BorderStyle.solid;
     } else {
@@ -272,7 +276,8 @@ class _LineItem extends StatelessWidget {
                     border: Border.all(
                       color: isSelected
                           ? modeColor
-                          : colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
+                          : colorScheme.outline
+                              .withValues(alpha: AppDimensions.opacityHalf),
                       width: 2,
                     ),
                   ),
@@ -318,8 +323,10 @@ class _LineItem extends StatelessWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: modeColor.withValues(alpha: AppDimensions.opacityVeryLight),
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                      color: modeColor.withValues(
+                          alpha: AppDimensions.opacityVeryLight),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.borderRadiusS),
                     ),
                     child: Text(
                       mode == SelectionMode.ingredients ? 'Trolig' : 'Steg',
