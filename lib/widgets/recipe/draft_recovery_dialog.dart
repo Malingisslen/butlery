@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Dialog for recovering unsaved recipe drafts.
 /// Shows available drafts with metadata and allows user to:

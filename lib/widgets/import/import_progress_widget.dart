@@ -5,6 +5,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// A simple 3-step progress indicator for import operations.
 class ImportProgressWidget extends StatelessWidget {

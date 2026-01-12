@@ -1,6 +1,7 @@
 // lib/widgets/import/components/step_progress_indicator.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Progress indicator showing step completion status.
 class StepProgressIndicator extends StatelessWidget {

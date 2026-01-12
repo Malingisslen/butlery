@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Badge displaying dietary status with tri-state coloring and shape distinction.
 ///
@@ -121,16 +122,22 @@ class _StandardBadge extends StatelessWidget {
     return Semantics(
       label: semanticLabel,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingMs, vertical: AppDimensions.spacing6),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingMs,
+            vertical: AppDimensions.spacing6),
         decoration: BoxDecoration(
           color: color.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius16),
-          border: Border.all(color: color.withValues(alpha: AppDimensions.opacityMediumLight)),
+          border: Border.all(
+              color: color.withValues(alpha: AppDimensions.opacityMediumLight)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: AppDimensions.iconSize18, color: color, semanticLabel: null),
+            Icon(icon,
+                size: AppDimensions.iconSize18,
+                color: color,
+                semanticLabel: null),
             if (label != null) ...[
               const SizedBox(width: 6),
               ExcludeSemantics(
@@ -168,7 +175,9 @@ class _CompactBadge extends StatelessWidget {
     return Semantics(
       label: semanticLabel,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacing6, vertical: AppDimensions.spacingS),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacing6,
+            vertical: AppDimensions.spacingS),
         decoration: BoxDecoration(
           color: color.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
