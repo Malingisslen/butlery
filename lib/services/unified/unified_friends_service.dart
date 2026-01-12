@@ -363,7 +363,7 @@ class UnifiedFriendsService extends ChangeNotifier
       _internalOps.getCurrentUserDisplayNameInternal();
 
   /// Internal method to refresh data (for operations classes)
-  Future<void> refresh() async => await _serviceCoordinator.refresh();
+  Future<void> refresh() async => await _stateManager.refresh();
 
   /// Internal method to add outgoing friend request
   void addOutgoingRequestInternal(FriendRequest request) {

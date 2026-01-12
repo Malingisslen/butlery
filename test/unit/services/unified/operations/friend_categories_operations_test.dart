@@ -211,8 +211,10 @@ void main() {
         verify(() =>
                 mockParentService.updateCategoryInternal('category_1', any()))
             .called(1);
+        // BUG FIX: Should only call syncCategoryToFirebaseInternal once
+        // (duplicate call was causing false failure even when Firebase write succeeded)
         verify(() => mockParentService.syncCategoryToFirebaseInternal(any()))
-            .called(2);
+            .called(1);
       });
 
       test('should not update non-existent category', () async {
@@ -293,8 +295,9 @@ void main() {
         verify(() =>
                 mockParentService.updateCategoryInternal('category_1', any()))
             .called(1);
+        // Single sync call after removing friend from category
         verify(() => mockParentService.syncCategoryToFirebaseInternal(any()))
-            .called(2);
+            .called(1);
       });
 
       test('should move friend between categories', () async {

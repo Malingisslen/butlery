@@ -101,8 +101,28 @@ class FriendsCategoriesOperations {
     final category = getCategoryById(categoryId);
     if (category == null) {
       AppLogger.warning('Category not found: $categoryId');
-      return false;
+      // Try refreshing state before giving up
+      await _parent.refresh();
+      final refreshedCategory = getCategoryById(categoryId);
+      if (refreshedCategory == null) {
+        return false;
+      }
+      return await _updateCategoryInternal(
+          refreshedCategory, name, description, icon, isPrivate);
     }
+
+    return await _updateCategoryInternal(
+        category, name, description, icon, isPrivate);
+  }
+
+  Future<bool> _updateCategoryInternal(
+    FriendCategory category,
+    String? name,
+    String? description,
+    String? icon,
+    bool? isPrivate,
+  ) async {
+    final categoryId = category.id;
 
     if (!_canEditCategory(category)) {
       AppLogger.warning('No permission to edit category: $categoryId');
@@ -115,7 +135,6 @@ class FriendsCategoriesOperations {
     }
 
     try {
-      // Create updated category with new values
       final updatedCategory = category.copyWith(
         name: name?.trim(),
         description: description?.trim(),
@@ -123,14 +142,13 @@ class FriendsCategoriesOperations {
         updatedAt: DateTime.now(),
       );
 
-      // Use the internal update method that handles caching and notifications
+      // Update local state first
       _parent.updateCategoryInternal(categoryId, updatedCategory);
+
+      // Sync to Firebase (single call - duplicate was causing false failure)
       await _parent.syncCategoryToFirebaseInternal(updatedCategory);
 
-      // Sync to Firebase
-      await _parent.syncCategoryToFirebaseInternal(updatedCategory);
-
-      AppLogger.success('✅ Category updated: ${updatedCategory.name}');
+      AppLogger.success('Category updated: ${updatedCategory.name}');
       return true;
     } catch (e) {
       AppLogger.error('Error updating category: $categoryId', e);
