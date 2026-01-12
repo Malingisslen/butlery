@@ -219,7 +219,7 @@ class ShareTargetSelectionEnhanced {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: filteredFriends.length,
       separatorBuilder: (context, index) => Divider(
-        color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
+        color: Theme.of(context).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
         height: 1,
       ),
       itemBuilder: (context, index) {
@@ -249,7 +249,7 @@ class ShareTargetSelectionEnhanced {
                     ? Theme.of(context)
                         .colorScheme
                         .onSurface
-                        .withValues(alpha: 0.6)
+                        .withValues(alpha: AppDimensions.opacityMediumDark)
                     : null,
               ),
             ),
@@ -320,7 +320,7 @@ class ShareTargetSelectionEnhanced {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: filteredGroups.length,
       separatorBuilder: (context, index) => Divider(
-        color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
+        color: Theme.of(context).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
         height: 1,
       ),
       itemBuilder: (context, index) {

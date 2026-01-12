@@ -25,7 +25,7 @@ class UserAvatarWidgets {
   }) {
     final avatarSize = _getAvatarSize(size);
     final effectiveBackgroundColor =
-        backgroundColor ?? AppColors.primaryBlue.withValues(alpha: 0.1);
+        backgroundColor ?? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight);
     final effectiveTextColor = textColor ?? AppColors.primaryBlue;
 
     Widget avatar = Container(

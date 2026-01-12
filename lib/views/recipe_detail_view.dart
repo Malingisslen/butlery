@@ -127,7 +127,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       vertical: AppDimensions.paddingS,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundBeige.withValues(alpha: 0.9),
+                      color: AppColors.backgroundBeige.withValues(alpha: AppDimensions.opacityExtraDark),
                       borderRadius:
                           BorderRadius.circular(AppDimensions.borderRadiusM),
                     ),
@@ -151,7 +151,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 end: Alignment.bottomCenter,
                                 colors: [
                                   AppColors.transparent,
-                                  AppColors.textDark.withValues(alpha: 0.26),
+                                  AppColors.textDark.withValues(alpha: AppDimensions.opacityMediumLight),
                                 ],
                               ),
                             ),

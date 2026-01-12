@@ -117,22 +117,22 @@ class InputThemes {
 
   /// Trending recipe card decoration
   static BoxDecoration get trendingRecipeCardDecoration => BoxDecoration(
-        color: AppColors.primaryContainer.withValues(alpha: 0.1),
+        color: AppColors.primaryContainer.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: AppDimensions.opacityLight)),
       );
 
   /// Activity timeline item decoration
   static BoxDecoration get activityTimelineItemDecoration => BoxDecoration(
-        color: AppColors.secondaryContainer.withValues(alpha: 0.1),
+        color: AppColors.secondaryContainer.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.2)),
+        border: Border.all(color: AppColors.secondary.withValues(alpha: AppDimensions.opacityLight)),
       );
 
   /// Empty state container decoration
   static BoxDecoration get emptyStateContainerDecoration => BoxDecoration(
-        color: AppColors.primaryContainer.withValues(alpha: 0.1),
+        color: AppColors.primaryContainer.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: AppDimensions.opacityLight)),
       );
 }

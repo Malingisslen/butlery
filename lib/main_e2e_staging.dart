@@ -166,7 +166,7 @@ class _E2EStagingErrorApp extends StatelessWidget {
           foregroundColor: AppColors.cardWhite,
         ),
         body: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(AppDimensions.spacingMd),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -207,10 +207,10 @@ class _E2EStagingErrorApp extends StatelessWidget {
                 child: SingleChildScrollView(
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(AppDimensions.paddingM),
                     decoration: BoxDecoration(
                       color: AppColors.backgroundLight,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                       border: Border.all(color: AppColors.divider),
                     ),
                     child: Text(

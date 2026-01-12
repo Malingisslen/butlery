@@ -49,7 +49,7 @@ class ProgressOverlay extends StatelessWidget {
         decoration: BoxDecoration(
           shape: shape,
           color:
-              backgroundColor ?? AppColors.neutralDark.withValues(alpha: 0.7),
+              backgroundColor ?? AppColors.neutralDark.withValues(alpha: AppDimensions.opacityDark),
         ),
         child: Center(
           child: Column(

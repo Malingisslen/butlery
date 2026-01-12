@@ -193,7 +193,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
       ),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
+        constraints: const BoxConstraints(maxWidth: AppDimensions.dialogMaxHeightSmall),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Form(
@@ -266,7 +266,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
             errorText: _nameError,
             suffixIcon: _isChecking
                 ? const Padding(
-                    padding: EdgeInsets.all(12),
+                    padding: EdgeInsets.all(AppDimensions.paddingM),
                     child: SizedBox(
                       width: 20,
                       height: 20,
@@ -302,10 +302,10 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
             vertical: AppDimensions.paddingS,
           ),
           decoration: BoxDecoration(
-            color: AppColors.primaryBlue.withValues(alpha: 0.15),
+            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             border: Border.all(
-              color: AppColors.primaryBlue.withValues(alpha: 0.3),
+              color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
             ),
           ),
           child: Row(
@@ -313,7 +313,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
             children: [
               const Icon(
                 Icons.label,
-                size: 16,
+                size: AppDimensions.iconSizeS,
                 color: AppColors.primaryBlue,
               ),
               const SizedBox(width: AppDimensions.spacingS),

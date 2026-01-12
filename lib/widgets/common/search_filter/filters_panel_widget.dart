@@ -73,7 +73,7 @@ class FiltersPanelWidget extends StatelessWidget {
                 color: Theme.of(context).colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.neutralDark.withValues(alpha: 0.05),
+                    color: AppColors.neutralDark.withValues(alpha: AppDimensions.opacityExtraVeryLight),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),

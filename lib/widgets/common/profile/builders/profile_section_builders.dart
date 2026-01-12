@@ -72,7 +72,7 @@ class ProfileSectionBuilders {
             child: FilledButton.tonalIcon(
               onPressed: () => AuthActionHandler.handleLogout(context),
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.error.withValues(alpha: 0.1),
+                backgroundColor: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
                 foregroundColor: AppColors.error,
                 minimumSize:
                     const Size(double.infinity, AppDimensions.buttonHeight),

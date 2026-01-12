@@ -219,7 +219,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         children: [
           const Icon(
             Icons.info_outline,
-            size: 16,
+            size: AppDimensions.iconSizeS,
             color: AppColors.textMedium,
           ),
           const SizedBox(width: AppDimensions.spacingM),
@@ -308,7 +308,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(statusIcon, color: statusColor, size: 20),
+          Icon(statusIcon, color: statusColor, size: AppDimensions.iconSizeM),
           Text(
             statusText,
             style: AppTextStyles.bodySmall.copyWith(color: statusColor),
@@ -341,7 +341,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.1),
+                color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusM),
                 border: Border.all(color: AppColors.error),
@@ -351,7 +351,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                   const Icon(
                     Icons.error_outline,
                     color: AppColors.error,
-                    size: 20,
+                    size: AppDimensions.iconSizeM,
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
                   Expanded(

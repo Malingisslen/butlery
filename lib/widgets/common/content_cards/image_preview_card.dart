@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_shadows.dart';
 
 /// Reusable image preview card component
 /// Provides consistent styling for image preview displays.
@@ -37,13 +38,7 @@ class ImagePreviewCard extends StatelessWidget {
   })  : backgroundColor = AppColors.cardWhite,
         borderRadius = const BorderRadius.all(
             Radius.circular(AppDimensions.borderRadiusL)),
-        boxShadow = const [
-          BoxShadow(
-            color: Color.fromRGBO(0, 0, 0, 0.1),
-            blurRadius: AppDimensions.elevationLow,
-            offset: Offset(0, 2),
-          ),
-        ],
+        boxShadow = AppShadows.card,
         showBorder = false,
         borderColor = null,
         borderWidth = null;

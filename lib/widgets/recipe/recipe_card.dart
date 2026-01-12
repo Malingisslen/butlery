@@ -74,7 +74,7 @@ class RecipeCard extends StatelessWidget {
                 : AppDimensions.elevationLow,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             color: isSelected
-                ? AppColors.primaryBlue.withValues(alpha: 0.1)
+                ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
                 : null,
             child: InkWell(
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -328,7 +328,7 @@ class RecipeCard extends StatelessWidget {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: 0.1),
+        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Text(
@@ -347,7 +347,7 @@ class RecipeCard extends StatelessWidget {
       children: [
         Icon(
           icon,
-          size: 16,
+          size: AppDimensions.iconSizeS,
           color: AppColors.textMedium,
         ),
         const SizedBox(width: AppDimensions.spacingXs),
@@ -382,13 +382,13 @@ class RecipeCard extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: isUserAdded
-            ? AppColors.primaryBlue.withValues(alpha: 0.1)
+            ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
             : AppColors.backgroundBeige,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
         border: Border.all(
           color: isUserAdded
-              ? AppColors.primaryBlue.withValues(alpha: 0.3)
-              : AppColors.divider.withValues(alpha: 0.3),
+              ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight)
+              : AppColors.divider.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Text(
@@ -468,10 +468,10 @@ class RecipeCard extends StatelessWidget {
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: 0.15),
+        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: 0.3),
+          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Text(
@@ -491,16 +491,16 @@ class RecipeCard extends StatelessWidget {
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: 0.08),
+        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: 0.2),
+          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: Text(
         '+$count',
         style: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.primaryBlue.withValues(alpha: 0.7),
+          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityDark),
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -523,7 +523,7 @@ class RecipeCard extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: (hasFailed ? AppColors.error : AppColors.warning)
-              .withValues(alpha: 0.1),
+              .withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         ),
         child: Row(

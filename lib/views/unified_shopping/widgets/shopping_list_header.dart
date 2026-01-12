@@ -26,7 +26,7 @@ class ShoppingListHeader {
         color: AppColors.cardWhite,
         boxShadow: [
           BoxShadow(
-            color: AppColors.textMedium.withValues(alpha: 0.2),
+            color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityLight),
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, 1),
@@ -107,7 +107,7 @@ class ShoppingListHeader {
                 color: Theme.of(context)
                     .colorScheme
                     .onSurface
-                    .withValues(alpha: 0.7),
+                    .withValues(alpha: AppDimensions.opacityDark),
                 size: AppDimensions.iconSizeAction,
               ),
               tooltip: 'Byt namn på lista',
@@ -135,7 +135,7 @@ class ShoppingListHeader {
                 color: Theme.of(context)
                     .colorScheme
                     .onSurface
-                    .withValues(alpha: 0.7),
+                    .withValues(alpha: AppDimensions.opacityDark),
                 size: AppDimensions.iconSizeAction,
               ),
               tooltip: 'Ta bort lista',
@@ -169,7 +169,7 @@ class ShoppingListHeader {
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 side: BorderSide(
-                    color: AppColors.textMedium.withValues(alpha: 0.5)),
+                    color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityHalf)),
               ),
               icon: const Icon(Icons.clear,
                   size: AppDimensions.iconSizeS, color: AppColors.textMedium),
@@ -195,7 +195,7 @@ class ShoppingListHeader {
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 side: BorderSide(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.5)),
+                    color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityHalf)),
               ),
               icon: const Icon(Icons.check_box_outline_blank,
                   size: AppDimensions.iconSizeS, color: AppColors.primaryBlue),

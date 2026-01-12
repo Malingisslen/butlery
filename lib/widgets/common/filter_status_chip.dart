@@ -28,10 +28,10 @@ class FilterStatusChip extends StatelessWidget {
         color: Theme.of(context)
             .colorScheme
             .secondaryContainer
-            .withValues(alpha: 0.3),
+            .withValues(alpha: AppDimensions.opacityMediumLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2),
+          color: Theme.of(context).colorScheme.secondary.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: Row(

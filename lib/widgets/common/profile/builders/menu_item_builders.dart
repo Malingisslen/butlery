@@ -162,10 +162,10 @@ class MenuItemBuilders {
         width: double.infinity,
         padding: const EdgeInsets.all(AppDimensions.spacingS),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: color.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           border: Border.all(
-            color: color.withValues(alpha: 0.3),
+            color: color.withValues(alpha: AppDimensions.opacityMediumLight),
           ),
         ),
         child: Row(

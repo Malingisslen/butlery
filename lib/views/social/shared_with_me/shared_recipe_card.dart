@@ -120,7 +120,7 @@ class SharedRecipeCard {
           color: Theme.of(context)
               .colorScheme
               .errorContainer
-              .withValues(alpha: 0.1),
+              .withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           child: InkWell(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),

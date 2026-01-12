@@ -109,7 +109,7 @@ class CategorySelectionWidgets {
         children: [
           Icon(
             category.emoji != null ? Icons.emoji_emotions : Icons.group,
-            size: 16,
+            size: AppDimensions.iconSizeS,
             color: isSelected ? AppColors.textDark : AppColors.textMedium,
           ),
           const SizedBox(width: AppDimensions.spacingXs),
@@ -162,8 +162,8 @@ class CategorySelectionWidgets {
             ),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.neutralLight.withValues(alpha: 0.8)
-                  : AppColors.primaryBlue.withValues(alpha: 0.1),
+                  ? AppColors.neutralLight.withValues(alpha: AppDimensions.opacityVeryDark)
+                  : AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
             ),
             child: Text(
@@ -178,7 +178,7 @@ class CategorySelectionWidgets {
       ),
       selected: isSelected,
       onSelected: enabled ? (_) => onTap() : null,
-      selectedColor: AppColors.primaryBlue.withValues(alpha: 0.2),
+      selectedColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
       checkmarkColor: AppColors.primaryBlue,
       backgroundColor: AppColors.backgroundBeige,
       side: BorderSide(
@@ -239,10 +239,10 @@ class CategorySelectionWidgets {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: 0.1),
+        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: 0.3),
+          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(

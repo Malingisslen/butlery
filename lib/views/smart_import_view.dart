@@ -82,7 +82,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppDimensions.spacingMd),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   return SingleChildScrollView(
@@ -371,17 +371,17 @@ class _InputSection extends StatelessWidget {
       decoration: InputDecoration(
         hintText: 'Klistra in länk eller text här...',
         hintStyle: theme.textTheme.bodyLarge?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: AppDimensions.opacityMediumDark),
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           borderSide: BorderSide(color: theme.colorScheme.outline),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           borderSide: BorderSide(
             color: theme.colorScheme.primary,
             width: 2,
@@ -389,7 +389,7 @@ class _InputSection extends StatelessWidget {
         ),
         filled: true,
         fillColor: theme.colorScheme.surfaceContainerLowest,
-        contentPadding: const EdgeInsets.all(16),
+        contentPadding: const EdgeInsets.all(AppDimensions.spacingMd),
         suffixIcon: controller.text.isNotEmpty
             ? IconButton(
                 icon: const Icon(Icons.clear),
@@ -422,17 +422,17 @@ class _ErrorMessage extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Row(
         children: [
           Icon(
             Icons.error_outline,
             color: colorScheme.onErrorContainer,
-            size: 20,
+            size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingL),
           Expanded(

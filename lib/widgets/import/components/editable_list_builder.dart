@@ -61,7 +61,7 @@ class EditableListBuilder extends StatelessWidget {
                         vertical: 10,
                       ),
                       suffixIcon: IconButton(
-                        icon: const Icon(Icons.close, size: 18),
+                        icon: const Icon(Icons.close, size: AppDimensions.iconSize18),
                         onPressed: () => onRemove(index),
                         tooltip: 'Ta bort',
                       ),
@@ -115,7 +115,7 @@ class EditableListHeader extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(icon, size: 20, color: theme.colorScheme.primary),
+        Icon(icon, size: AppDimensions.iconSizeM, color: theme.colorScheme.primary),
         const SizedBox(width: 8),
         Text(
           title,
@@ -128,7 +128,7 @@ class EditableListHeader extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
             color: theme.colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           ),
           child: Text(
             '$count',

@@ -175,12 +175,12 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
             children: [
               // Handle bar
               Container(
-                margin: const EdgeInsets.only(top: 12),
+                margin: const EdgeInsets.only(top: AppDimensions.paddingM),
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
                   color: colorScheme.onSurfaceVariant,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadius2),
                 ),
               ),
               // Header
@@ -257,7 +257,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
               children: [
                 const Icon(
                   Icons.check_circle,
-                  size: 18,
+                  size: AppDimensions.iconSize18,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
@@ -299,7 +299,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
         Center(
           child: TextButton.icon(
             onPressed: _navigateToManageTags,
-            icon: const Icon(Icons.settings, size: 18),
+            icon: const Icon(Icons.settings, size: AppDimensions.iconSize18),
             label: const Text('Hantera taggar'),
           ),
         ),
@@ -374,7 +374,7 @@ class _QuickTagChip extends StatelessWidget {
       selected: isSelected,
       onSelected: (_) => onTap(),
       backgroundColor: AppColors.backgroundBeige,
-      selectedColor: AppColors.primaryBlue.withValues(alpha: 0.25),
+      selectedColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightMedium),
       checkmarkColor: AppColors.primaryBlue,
       side: BorderSide(
         color: isSelected ? AppColors.primaryBlue : AppColors.divider,

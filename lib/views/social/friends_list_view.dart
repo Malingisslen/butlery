@@ -186,11 +186,11 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                           width: double.infinity,
                           padding: const EdgeInsets.all(AppDimensions.paddingL),
                           decoration: BoxDecoration(
-                            color: AppColors.error.withValues(alpha: 0.1),
+                            color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
                             borderRadius: BorderRadius.circular(
                                 AppDimensions.borderRadiusM),
                             border: Border.all(
-                                color: AppColors.error.withValues(alpha: 0.3)),
+                                color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
                           ),
                           child: Row(
                             children: [

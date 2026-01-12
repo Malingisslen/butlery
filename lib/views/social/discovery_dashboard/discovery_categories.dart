@@ -57,12 +57,12 @@ class DiscoveryCategories {
           border: Border.all(
             color: isSelected
                 ? AppColors.primary
-                : AppColors.outline.withValues(alpha: 0.2),
+                : AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.2),
+                    color: AppColors.primary.withValues(alpha: AppDimensions.opacityLight),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -93,8 +93,8 @@ class DiscoveryCategories {
                 count.toString(),
                 style: AppTextStyles.labelSmall.copyWith(
                   color: isSelected
-                      ? AppColors.onPrimary.withValues(alpha: 0.8)
-                      : AppColors.onSurface.withValues(alpha: 0.6),
+                      ? AppColors.onPrimary.withValues(alpha: AppDimensions.opacityVeryDark)
+                      : AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark),
                 ),
               ),
           ],

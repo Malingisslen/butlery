@@ -90,16 +90,16 @@ class TagResultDisplay extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingS),
       decoration: BoxDecoration(
-        color: AppColors.warning.withValues(alpha: 0.1),
+        color: AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.warning.withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Row(
         children: [
           const Icon(
             Icons.update,
             color: AppColors.warning,
-            size: 18,
+            size: AppDimensions.iconSize18,
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
@@ -254,7 +254,7 @@ class TagResultDisplay extends StatelessWidget {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                 child: LinearProgressIndicator(
                   value: tagResult.coverage,
                   backgroundColor: AppColors.divider,
@@ -281,7 +281,7 @@ class TagResultDisplay extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.warning_amber_rounded,
-                  size: 16,
+                  size: AppDimensions.iconSizeS,
                   color: AppColors.warning,
                 ),
                 const SizedBox(width: AppDimensions.spacingXs),
@@ -296,7 +296,7 @@ class TagResultDisplay extends StatelessWidget {
                 if (onUnknownIngredientsTap != null)
                   const Icon(
                     Icons.chevron_right,
-                    size: 18,
+                    size: AppDimensions.iconSize18,
                     color: AppColors.warning,
                   ),
               ],

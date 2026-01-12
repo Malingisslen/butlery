@@ -249,7 +249,7 @@ class ImageComponents {
             horizontal: AppDimensions.spacingTight,
             vertical: AppDimensions.spacingXxs),
         decoration: BoxDecoration(
-          color: AppColors.cardWhite.withValues(alpha: 0.9),
+          color: AppColors.cardWhite.withValues(alpha: AppDimensions.opacityExtraDark),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
           border: Border.all(
             color: AppColors.divider,
@@ -294,7 +294,7 @@ class ImageComponents {
             horizontal: AppDimensions.spacingSm,
             vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
-          color: AppColors.cardWhite.withValues(alpha: 0.9),
+          color: AppColors.cardWhite.withValues(alpha: AppDimensions.opacityExtraDark),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
           border: Border.all(
             color: AppColors.divider,
@@ -339,7 +339,7 @@ class ImageComponents {
                 shape: BoxShape.circle,
                 color: index == currentIndex
                     ? AppColors.primaryBlue
-                    : AppColors.cardWhite.withValues(alpha: 0.6),
+                    : AppColors.cardWhite.withValues(alpha: AppDimensions.opacityMediumDark),
                 border: Border.all(
                   color: AppColors.divider,
                   width: AppDimensions.strokeWidth05,

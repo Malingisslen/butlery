@@ -72,7 +72,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
               ),
               if (onManageTags != null)
                 IconButton(
-                  icon: const Icon(Icons.settings, size: 18),
+                  icon: const Icon(Icons.settings, size: AppDimensions.iconSize18),
                   onPressed: onManageTags,
                   tooltip: 'Hantera taggar',
                   visualDensity: VisualDensity.compact,
@@ -142,7 +142,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXs),
           TextButton.icon(
             onPressed: onManageTags,
-            icon: const Icon(Icons.add, size: 18),
+            icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
             label: const Text('Skapa personliga taggar'),
           ),
         ],
@@ -178,7 +178,7 @@ class _PersonalTagFilterChip extends StatelessWidget {
       selected: isSelected,
       onSelected: (_) => onSelected(),
       backgroundColor: colorScheme.surface,
-      selectedColor: colorScheme.primary.withValues(alpha: 0.25),
+      selectedColor: colorScheme.primary.withValues(alpha: AppDimensions.opacityLightMedium),
       checkmarkColor: colorScheme.primary,
       side: BorderSide(
         color: isSelected ? colorScheme.primary : colorScheme.outline,
@@ -215,13 +215,13 @@ class _PersonalTagExcludeChip extends StatelessWidget {
           ? null
           : Icon(
               Icons.remove_circle_outline,
-              size: 16,
-              color: colorScheme.error.withValues(alpha: 0.6),
+              size: AppDimensions.iconSizeS,
+              color: colorScheme.error.withValues(alpha: AppDimensions.opacityMediumDark),
             ),
       selected: isExcluded,
       onSelected: (_) => onSelected(),
       backgroundColor: colorScheme.surface,
-      selectedColor: colorScheme.error.withValues(alpha: 0.15),
+      selectedColor: colorScheme.error.withValues(alpha: AppDimensions.opacityLightSubtle),
       checkmarkColor: colorScheme.error,
       side: BorderSide(
         color: isExcluded ? colorScheme.error : colorScheme.outline,

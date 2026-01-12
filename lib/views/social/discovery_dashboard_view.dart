@@ -136,7 +136,7 @@ class _DiscoveryDashboardViewContentState
             child: Container(
               margin: AppDimensions.responsiveHorizontalPadding(context),
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant.withValues(alpha: 0.3),
+                color: AppColors.surfaceVariant.withValues(alpha: AppDimensions.opacityMediumLight),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusM),
               ),
@@ -157,14 +157,14 @@ class _DiscoveryDashboardViewContentState
                     .copyWith(fontWeight: FontWeight.w600),
                 unselectedLabelStyle: AppTextStyles.bodyMedium,
                 indicator: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: AppColors.primary.withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
                 dividerColor: AppColors.transparent,
                 overlayColor: WidgetStateProperty.all(
-                  AppColors.primary.withValues(alpha: 0.05),
+                  AppColors.primary.withValues(alpha: AppDimensions.opacityExtraVeryLight),
                 ),
               ),
             ),
@@ -192,7 +192,7 @@ class _DiscoveryDashboardViewContentState
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                     ),
                     constraints: const BoxConstraints(
                       minWidth: 16,
@@ -358,13 +358,13 @@ class _DiscoveryDashboardViewContentState
             if (ownerName != null)
               Text('Av $ownerName',
                   style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.onSurface.withValues(alpha: 0.6))),
+                      color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark))),
           ],
         ),
         trailing: Icon(
           Icons.arrow_forward_ios,
           size: AppDimensions.iconSizeS,
-          color: AppColors.onSurface.withValues(alpha: 0.4),
+          color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMedium),
         ),
         onTap: () => _handleSearchResultTap(context, item),
       ),
@@ -379,7 +379,7 @@ class _DiscoveryDashboardViewContentState
       _ => (Icons.help_outline, AppColors.onSurface),
     };
     return CircleAvatar(
-      backgroundColor: iconData.$2.withValues(alpha: 0.1),
+      backgroundColor: iconData.$2.withValues(alpha: AppDimensions.opacityVeryLight),
       child:
           Icon(iconData.$1, color: iconData.$2, size: AppDimensions.iconSizeM),
     );

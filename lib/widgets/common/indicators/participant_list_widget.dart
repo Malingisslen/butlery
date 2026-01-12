@@ -34,7 +34,7 @@ class ParticipantListWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadowColor.withValues(alpha: 0.1),
+            color: AppColors.shadowColor.withValues(alpha: AppDimensions.opacityVeryLight),
             blurRadius: AppDimensions.elevationLow,
             offset: const Offset(0, 2),
           ),
@@ -83,10 +83,10 @@ class ParticipantListWidget extends StatelessWidget {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.success.withValues(alpha: 0.1),
+        color: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
         border: Border.all(
-          color: AppColors.success.withValues(alpha: 0.3),
+          color: AppColors.success.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
@@ -120,12 +120,12 @@ class ParticipantListWidget extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: isCurrentUser
-            ? AppColors.primaryBlue.withValues(alpha: 0.1)
+            ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
             : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimensions.iconSizeAction),
         border: Border.all(
           color: isCurrentUser
-              ? AppColors.primaryBlue.withValues(alpha: 0.3)
+              ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight)
               : AppColors.divider,
         ),
       ),
@@ -188,7 +188,7 @@ class ParticipantListWidget extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.primaryBlue.withValues(alpha: 0.1),
+        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
       ),
       child: Center(
         child: Text(

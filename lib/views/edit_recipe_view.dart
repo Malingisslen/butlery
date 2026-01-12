@@ -144,7 +144,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             // ✅ RESPONSIVE: Loading overlay also constrained
             if (viewModel.isSaving)
               ColoredBox(
-                color: AppColors.backgroundBeige.withValues(alpha: 0.8),
+                color: AppColors.backgroundBeige.withValues(alpha: AppDimensions.opacityVeryDark),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -181,7 +181,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           return AppBar(
             title: const Text('Redigera recept'),
             backgroundColor: isCollaborative
-                ? AppColors.primaryBlue.withValues(alpha: 0.1)
+                ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
                 : null,
             actions: [
               if (isCollaborative)

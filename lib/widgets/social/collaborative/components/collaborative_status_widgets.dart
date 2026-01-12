@@ -27,10 +27,10 @@ class CollaborativeStatusWidgets {
             vertical: AppDimensions.spacingXs,
           ),
       decoration: BoxDecoration(
-        color: effectiveColor.withValues(alpha: 0.1),
+        color: effectiveColor.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
         border: Border.all(
-          color: effectiveColor.withValues(alpha: 0.3),
+          color: effectiveColor.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
@@ -66,7 +66,7 @@ class CollaborativeStatusWidgets {
     BuildContext? context, // Needed to fetch real participants
   }) {
     final bgColor =
-        backgroundColor ?? AppColors.primaryBlue.withValues(alpha: 0.1);
+        backgroundColor ?? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight);
 
     return Container(
       width: double.infinity,
@@ -75,7 +75,7 @@ class CollaborativeStatusWidgets {
         color: bgColor,
         border: Border(
           bottom: BorderSide(
-            color: AppColors.primaryBlue.withValues(alpha: 0.3),
+            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
           ),
         ),
       ),
@@ -249,7 +249,7 @@ class _CollaborativeAppBar extends StatelessWidget
         return AppBar(
           title: Text(title ?? 'Innehåll'),
           backgroundColor: isCollaborative
-              ? AppColors.primaryBlue.withValues(alpha: 0.1)
+              ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
               : null,
           elevation: isCollaborative ? 2 : null,
           actions: [

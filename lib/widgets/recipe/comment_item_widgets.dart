@@ -25,7 +25,7 @@ class CommentItemWidgets {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: isReply
           ? BoxDecoration(
-              color: AppColors.surface.withValues(alpha: 0.5),
+              color: AppColors.surface.withValues(alpha: AppDimensions.opacityHalf),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             )
           : null,
@@ -141,7 +141,7 @@ class CommentItemWidgets {
               decoration: BoxDecoration(
                 border: Border(
                   left: BorderSide(
-                    color: AppColors.textMedium.withValues(alpha: 0.3),
+                    color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityMediumLight),
                     width: 2,
                   ),
                 ),

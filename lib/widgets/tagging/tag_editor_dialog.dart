@@ -130,7 +130,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
       ),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400, maxHeight: 600),
+        constraints: const BoxConstraints(maxWidth: AppDimensions.dialogMaxHeightSmall, maxHeight: AppDimensions.dialogMaxHeightMedium),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Column(
@@ -291,18 +291,18 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
         fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.normal,
       ),
       backgroundColor: isUserAdded
-          ? AppColors.primaryBlue.withValues(alpha: 0.1)
+          ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
           : AppColors.backgroundBeige,
       side: BorderSide(
         color: isUserAdded
-            ? AppColors.primaryBlue.withValues(alpha: 0.3)
+            ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight)
             : AppColors.divider,
       ),
-      deleteIcon: const Icon(Icons.close, size: 18),
+      deleteIcon: const Icon(Icons.close, size: AppDimensions.iconSize18),
       deleteIconColor: AppColors.textMedium,
       onDeleted: () => _removeTag(tag),
       avatar: isUserAdded
-          ? const Icon(Icons.person, size: 16, color: AppColors.primaryBlue)
+          ? const Icon(Icons.person, size: AppDimensions.iconSizeS, color: AppColors.primaryBlue)
           : null,
       tooltip: isUserAdded ? 'Manuellt tillagd' : 'Automatiskt genererad',
     );
@@ -317,9 +317,9 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
         color: AppColors.textMedium,
         decoration: TextDecoration.lineThrough,
       ),
-      backgroundColor: AppColors.backgroundBeige.withValues(alpha: 0.5),
-      side: BorderSide(color: AppColors.divider.withValues(alpha: 0.5)),
-      avatar: const Icon(Icons.undo, size: 16, color: AppColors.textMedium),
+      backgroundColor: AppColors.backgroundBeige.withValues(alpha: AppDimensions.opacityHalf),
+      side: BorderSide(color: AppColors.divider.withValues(alpha: AppDimensions.opacityHalf)),
+      avatar: const Icon(Icons.undo, size: AppDimensions.iconSizeS, color: AppColors.textMedium),
       onPressed: () => _restoreTag(tag),
       tooltip: 'Klicka för att återställa',
     );

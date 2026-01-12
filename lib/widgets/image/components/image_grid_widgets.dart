@@ -144,7 +144,7 @@ class ImageGridWidgets {
                         : Theme.of(context)
                             .colorScheme
                             .onSurface
-                            .withValues(alpha: 0.6),
+                            .withValues(alpha: AppDimensions.opacityMediumDark),
                     borderRadius:
                         BorderRadius.circular(AppDimensions.borderRadiusS),
                   ),
@@ -214,7 +214,7 @@ class ImageGridWidgets {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: AppColors.textDark.withValues(alpha: 0.2),
+              color: AppColors.textDark.withValues(alpha: AppDimensions.opacityLight),
               blurRadius: AppDimensions.spacingXs,
               offset: const Offset(0, 2),
             ),
@@ -247,10 +247,10 @@ class ImageGridWidgets {
           decoration: BoxDecoration(
             borderRadius: config.effectiveBorderRadius,
             border: Border.all(
-              color: AppColors.primaryBlue.withValues(alpha: 0.3),
+              color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
               width: AppDimensions.borderWidthThin,
             ),
-            color: AppColors.primaryBlue.withValues(alpha: 0.05),
+            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityExtraVeryLight),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,

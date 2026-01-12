@@ -125,7 +125,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
               color: Theme.of(context)
                   .colorScheme
                   .onSurfaceVariant
-                  .withValues(alpha: 0.4),
+                  .withValues(alpha: AppDimensions.opacityMedium),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
             ),
           ),
@@ -180,7 +180,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
         color: Theme.of(context)
             .colorScheme
             .primaryContainer
-            .withValues(alpha: 0.3),
+            .withValues(alpha: AppDimensions.opacityMediumLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),

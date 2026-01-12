@@ -158,7 +158,7 @@ class _StepIndicator extends StatelessWidget {
                 : isComplete
                     ? Icon(
                         Icons.check,
-                        size: 20,
+                        size: AppDimensions.iconSizeM,
                         color: colorScheme.onPrimary,
                       )
                     : Text(

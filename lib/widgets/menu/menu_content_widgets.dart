@@ -62,7 +62,7 @@ class MenuContentWidgets {
                         color: Theme.of(context)
                             .colorScheme
                             .onSurface
-                            .withValues(alpha: 0.7)),
+                            .withValues(alpha: AppDimensions.opacityDark)),
                     onPressed: onClear,
                   )
                 : null,
@@ -200,7 +200,7 @@ class MenuContentWidgets {
                   color: Theme.of(context)
                       .colorScheme
                       .onSurface
-                      .withValues(alpha: 0.7)),
+                      .withValues(alpha: AppDimensions.opacityDark)),
               onPressed: viewModel.isGenerating
                   ? null
                   : () => viewModel.regenerateSection(category),

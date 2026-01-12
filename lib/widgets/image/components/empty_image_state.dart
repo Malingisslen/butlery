@@ -24,7 +24,7 @@ class EmptyImageState extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: borderRadius,
         border: Border.all(
-          color: AppColors.divider.withValues(alpha: 0.3),
+          color: AppColors.divider.withValues(alpha: AppDimensions.opacityMediumLight),
           style: BorderStyle.solid,
         ),
         color: AppColors.cardWhite,
@@ -62,7 +62,7 @@ class EmptyImageState extends StatelessWidget {
       Text(
         'Adding image...',
         style: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.textDark.withValues(alpha: 0.7),
+          color: AppColors.textDark.withValues(alpha: AppDimensions.opacityDark),
         ),
       ),
     ];
@@ -74,7 +74,7 @@ class EmptyImageState extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: AppColors.primaryBlue.withValues(alpha: 0.1),
+          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
         ),
         child: const Icon(
           Icons.add_photo_alternate_outlined,
@@ -94,7 +94,7 @@ class EmptyImageState extends StatelessWidget {
       Text(
         'Tryck för att lägga till upp till $maxImages bilder',
         style: AppTextStyles.bodySmall.copyWith(
-          color: AppColors.textDark.withValues(alpha: 0.7),
+          color: AppColors.textDark.withValues(alpha: AppDimensions.opacityDark),
         ),
         textAlign: TextAlign.center,
       ),

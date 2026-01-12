@@ -198,12 +198,12 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: Row(
                   children: [
                     Icon(Icons.error_outline,
-                        color: Colors.red.shade700, size: 20),
+                        color: Colors.red.shade700, size: AppDimensions.iconSizeM),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       child: Text(

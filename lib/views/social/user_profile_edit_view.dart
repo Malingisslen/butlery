@@ -576,10 +576,10 @@ class _UserProfileEditViewContentState
             width: double.infinity,
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha: 0.1),
+              color: AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               border:
-                  Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                  Border.all(color: AppColors.warning.withValues(alpha: AppDimensions.opacityMediumLight)),
             ),
             child: Row(
               children: [
