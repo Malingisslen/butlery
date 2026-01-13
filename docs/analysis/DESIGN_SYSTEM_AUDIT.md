@@ -1,122 +1,68 @@
 # Design System Audit Report
 
 **Date**: 2026-01-13
-**Status**: ✅ REMEDIATION COMPLETE
-**Purpose**: Identify and fix design decisions made outside of `/lib/theme/` before app redesign
+**Status**: ✅ STREAMLINED & READY FOR REDESIGN
+**Purpose**: Centralize design decisions in `/lib/theme/` and remove bloat before app redesign
 
 ## Executive Summary
 
-The theme system in `/lib/theme/` has been extended and all major design violations have been fixed. **113 files were updated** to use centralized theme constants instead of hardcoded values.
+The theme system has been **audited and streamlined**. Unused constants were removed, duplicates eliminated, and only actually-used patterns retained.
 
-### Remediation Status
+### Final Status
 
-| Category | Original Violations | Status | Files Fixed |
-|----------|---------------------|--------|-------------|
-| Colors | ~20 files | ✅ Complete | 9 files |
-| Typography (fontSize) | ~45+ files | ✅ Complete | 17 files |
-| Typography (fontWeight) | ~100+ files | ✅ Partial (~60 files) | 20 files |
-| Spacing/Padding | ~223 files | ✅ Complete | 45 files |
-| Dimensions (height/width) | ~94+ files | ✅ Complete | 20 files |
-| Shadows | ~12 files | ✅ Complete | 13 files |
-| Animation Durations | ~50+ files | ✅ Complete | 29 files |
+| Category | Status | Notes |
+|----------|--------|-------|
+| Colors | ✅ Centralized | Use `AppColors.xxx` |
+| Typography | ✅ Centralized | Use `AppTextStyles.xxx` |
+| Spacing/Padding | ✅ Streamlined | ~35 EdgeInsets constants (from ~90) |
+| Dimensions | ✅ Streamlined | Only `height40`, `width12` kept |
+| Text Styles | ✅ Streamlined | ~12 semantic styles (from ~30) |
+| Shadows | ✅ Centralized | Use `AppShadows.xxx` |
+| Animations | ✅ Centralized | Use `AppDimensions.animationDurationXxx` |
 
----
+### Bloat Removed
 
-## Theme Extensions Made
-
-### 1. AppDimensions Extensions
-
-Added **100+ new constants**:
-
-**EdgeInsets Constants:**
-- `paddingAll2` through `paddingAll32` - All-around padding
-- `paddingHorizontal4` through `paddingHorizontal32` - Horizontal padding
-- `paddingVertical2` through `paddingVertical24` - Vertical padding
-- `paddingSymmetricXxY` variants - 25+ symmetric combinations
-- `paddingOnlyXxx` variants - Directional padding
-- Component-specific: `cardPadding`, `dialogPadding`, `chipPadding`, `buttonPadding`, etc.
-
-**Dimension Constants:**
-- `height0` through `height400` - Standard height values
-- `width0` through `width600` - Standard width values
-- `maxWidthSmall` through `maxWidthImageXLarge` - Constraint values
-
-### 2. AppTextStyles Extensions
-
-Added **30+ semantic text styles**:
-
-- `caption`, `captionEmphasized` - Small supplementary text
-- `overline` - Uppercase small labels
-- `metadata`, `metadataEmphasized` - Timestamps, counts
-- `badge`, `badgeLarge` - Badge text
-- `chip`, `counter`, `timestamp`, `status` - Specialized styles
-- `textXs`, `textXsBold`, `textSm`, `textSmMedium` - Size variants
-- `text14`, `text14Medium`, `text14SemiBold` - 14px variants
-- `text16Medium`, `text20SemiBold` - Larger text variants
-- `titleBold`, `bodyBold`, `bodyLargeBold` - Emphasized variants
-- `avatarInitials`, `avatarInitialsSmall` - Avatar text
-- `emptyStateTitle`, `emptyStateSubtitle` - Empty state text
-- `warningText`, `infoText` - Semantic status text
-
-### 3. BrandColors Extensions
-
-- Added `tiktokText` (0xFF161823) for TikTok platform badge text
-
-### 4. AppDimensions DirectionalPadding
-
-- Added `marginDirectionalOnlyStart8`, `marginDirectionalOnlyEnd8` for RTL support
+- **~150 unused constants removed** from AppDimensions
+- **~18 unused text styles removed** from AppTextStyles
+- **Duplicate constants removed**: `borderRadiusXl`, `elevationXHigh`, `avatarSizeSm`, `imageSizeL`
 
 ---
 
-## Files Modified (113 total)
+## Current Theme Constants (Actually Used)
 
-### Theme Files (3)
-- `lib/theme/app_dimensions.dart` - Extended with EdgeInsets and dimension constants
-- `lib/theme/app_text_styles.dart` - Extended with semantic text styles
-- `lib/theme/brand_colors.dart` - Added TikTok text color
+### AppDimensions - EdgeInsets (35 constants)
 
-### Views (33)
-- `lib/views/account/` - 2 files
-- `lib/views/auth/` - 1 file
-- `lib/views/messaging/` - 2 files
-- `lib/views/recipe_detail/` - 3 files
-- `lib/views/settings/` - 1 file
-- `lib/views/social/` - 17 files
-- `lib/views/unified_shopping/` - 6 files
-- Other views - 1 file
+**All-around:** `paddingAll2`, `paddingAll3`, `paddingAll8`, `paddingAll12`, `paddingAll16`, `paddingAll32`
 
-### Widgets (77)
-- `lib/widgets/branding/` - 1 file
-- `lib/widgets/common/` - 25 files
-- `lib/widgets/image/` - 7 files
-- `lib/widgets/import/` - 8 files
-- `lib/widgets/messaging/` - 5 files
-- `lib/widgets/recipe/` - 7 files
-- `lib/widgets/social/` - 8 files
-- `lib/widgets/tagging/` - 6 files
-- `lib/widgets/user/` - 1 file
+**Horizontal:** `paddingHorizontal8`
 
----
+**Vertical:** `paddingVertical4`, `paddingVertical8`, `paddingVertical16`
 
-## Remaining Items (Low Priority)
+**Symmetric:** `paddingSymmetric4x8`, `paddingSymmetric12x8`, `paddingSymmetric16x8`, `paddingSymmetric16x12`, `paddingSymmetric16x4`, `paddingSymmetric20x12`, `paddingSymmetric12x6`, `paddingSymmetric4x3`, `paddingSymmetric4x2`, `paddingSymmetric6x2`, `paddingSymmetric8x2`, `paddingSymmetric4x12`, `paddingSymmetric20x16`
 
-### 1. fontWeight violations (~140 remaining)
-Many `.copyWith(fontWeight: ...)` patterns remain in complex components where the fontWeight is combined with color or other properties. These are functional but could be further consolidated.
+**Directional:** All `paddingOnlyTop/Bottom/Left/Right` variants, `marginDirectionalOnlyStart8`, `marginDirectionalOnlyEnd8`
 
-### 2. main_e2e_*.dart files
-Test entry points with hardcoded styles - intentionally skipped as these are test-only files.
+### AppDimensions - Dimensions (2 constants)
+- `height40`, `width12`
 
-### 3. Non-standard Duration values
-Duration values that don't match theme constants (50, 100, 250, 400, 600, 800, 1000, 1500ms) were intentionally skipped as they may be specific timing requirements.
+### AppTextStyles - Semantic Styles (12 constants)
 
-### 4. Service layer timeouts
-Duration values in services/repositories were skipped as they represent intentional timeout values, not UI animations.
+**High usage (10+ files):**
+- `metadataEmphasized` (56 usages)
+- `titleBold` (52 usages)
+- `bodyBold` (34 usages)
+- `text16Medium` (24 usages)
+- `text14Medium` (19 usages)
+- `bodyLargeBold` (16 usages)
 
----
-
-## Verification
-
-All changes have been committed and pushed. Run `flutter analyze` to verify no regressions were introduced.
+**Moderate usage:**
+- `badge` (7 usages)
+- `badgeLarge` (5 usages)
+- `textXs` (5 usages)
+- `text14` (5 usages)
+- `textXsBold` (3 usages)
+- `text20SemiBold` (2 usages)
+- `textSm` (1 usage)
 
 ---
 
@@ -126,19 +72,25 @@ The codebase is now ready for redesign. All major design decisions flow through 
 
 1. **Colors**: Use `AppColors.xxx` for all colors
 2. **Typography**: Use `AppTextStyles.xxx` for all text styles
-3. **Spacing**: Use `AppDimensions.paddingXxx` for all EdgeInsets
-4. **Dimensions**: Use `AppDimensions.heightXxx` / `widthXxx` for sizes
-5. **Shadows**: Use `AppShadows.xxx` for all box shadows
-6. **Animations**: Use `AppDimensions.animationDurationXxx` for durations
+3. **Spacing**: Use `AppDimensions.paddingXxx` for EdgeInsets
+4. **Shadows**: Use `AppShadows.xxx` for all box shadows
+5. **Animations**: Use `AppDimensions.animationDurationXxx` for durations
 
 When implementing the redesign:
 - Update values in `/lib/theme/` files
 - Changes will propagate automatically to all components
-- No need to search/replace across the codebase
+- Remaining `.copyWith(color:)` patterns are intentional contextual styling
 
 ---
 
-## Commit History
+## Cleanup Summary
 
-1. `266e4d2` - Initial audit report
-2. `c505c3f` - Complete remediation (113 files, 886 insertions, 553 deletions)
+**Before cleanup:**
+- AppDimensions: ~350 lines of semantic constants
+- AppTextStyles: ~230 lines of semantic styles
+
+**After cleanup:**
+- AppDimensions: ~100 lines of semantic constants (71% reduction)
+- AppTextStyles: ~100 lines of semantic styles (57% reduction)
+
+The theme system is now lean, maintainable, and contains only patterns that are actually used in the codebase.
