@@ -98,7 +98,7 @@ class ParticipantListWidget extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
             '$onlineCount online',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.success),
+            style: AppTextStyles.successText,
           ),
         ],
       ),
