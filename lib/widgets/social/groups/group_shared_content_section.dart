@@ -252,9 +252,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                       children: [
                         Text(
                           'Delat innehåll',
-                          style: AppTextStyles.titleMedium.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: AppTextStyles.titleBold,
                         ),
                         if (totalItems > 0) ...[
                           const SizedBox(width: AppDimensions.spacingS),
@@ -271,9 +269,8 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                             ),
                             child: Text(
                               totalItems.toString(),
-                              style: AppTextStyles.bodySmall.copyWith(
+                              style: AppTextStyles.labelLarge.copyWith(
                                 color: AppColors.primaryBlue,
-                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),

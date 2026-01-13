@@ -266,8 +266,7 @@ class TagResultDisplay extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacingM),
             Text(
               '$coveragePercent%',
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: FontWeight.w600,
+              style: AppTextStyles.bodyBold.copyWith(
                 color: _getCoverageColor(),
               ),
             ),

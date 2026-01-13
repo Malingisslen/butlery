@@ -47,9 +47,7 @@ class CommentItemWidgets {
                   children: [
                     Text(
                       authorDisplayName,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextStyles.labelLarge,
                     ),
                     Text(
                       formattedTime,
@@ -106,9 +104,8 @@ class CommentItemWidgets {
               onTap: onShowLikes,
               child: Text(
                 '${comment.likeCount} ${comment.likeCount == 1 ? 'gilla-markering' : 'gilla-markeringar'}',
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.primary,
-                  fontWeight: FontWeight.w500,
                   decoration: TextDecoration.underline,
                 ),
               ),
@@ -199,9 +196,7 @@ class CommentItemWidgets {
                   ),
                   title: Text(
                     displayName,
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTextStyles.text16Medium,
                   ),
                 );
               },

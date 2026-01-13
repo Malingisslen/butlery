@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/layout_components.dart';
 
@@ -245,9 +246,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         children: [
           Text(
             'Har du frågor om vår integritetspolicy?',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: AppTextStyles.bodyBold,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppDimensions.spacingL),

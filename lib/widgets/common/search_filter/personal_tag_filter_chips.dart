@@ -184,10 +184,9 @@ class _PersonalTagFilterChip extends StatelessWidget {
         color: isSelected ? colorScheme.primary : colorScheme.outline,
         width: isSelected ? 2 : 1,
       ),
-      labelStyle: AppTextStyles.bodyMedium.copyWith(
-        color: isSelected ? colorScheme.primary : colorScheme.onSurface,
-        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-      ),
+      labelStyle: isSelected
+          ? AppTextStyles.bodyBold.copyWith(color: colorScheme.primary)
+          : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
       showCheckmark: isSelected,
     );
   }
@@ -227,10 +226,9 @@ class _PersonalTagExcludeChip extends StatelessWidget {
         color: isExcluded ? colorScheme.error : colorScheme.outline,
         width: isExcluded ? 2 : 1,
       ),
-      labelStyle: AppTextStyles.bodyMedium.copyWith(
-        color: isExcluded ? colorScheme.error : colorScheme.onSurface,
-        fontWeight: isExcluded ? FontWeight.w600 : FontWeight.normal,
-      ),
+      labelStyle: isExcluded
+          ? AppTextStyles.bodyBold.copyWith(color: colorScheme.error)
+          : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
       showCheckmark: isExcluded,
     );
   }

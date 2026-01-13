@@ -133,9 +133,8 @@ class DiscoverySearchSection {
           Expanded(
             child: Text(
               '${searchResults.length} resultat för "$query"',
-              style: AppTextStyles.bodySmall.copyWith(
+              style: AppTextStyles.metadataEmphasized.copyWith(
                 color: AppColors.primary,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -199,9 +198,7 @@ class DiscoverySearchSection {
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
                   'Sökfilter',
-                  style: AppTextStyles.titleMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.titleMedium,
                 ),
                 const Spacer(),
                 ActionButtons.textButton(

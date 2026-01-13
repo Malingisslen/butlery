@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Progress indicator showing step completion status.
 class StepProgressIndicator extends StatelessWidget {
@@ -78,9 +79,8 @@ class StepProgressIndicator extends StatelessWidget {
             ? Icon(Icons.check, size: AppDimensions.iconSizeS, color: textColor)
             : Text(
                 '$stepNumber',
-                style: theme.textTheme.labelMedium?.copyWith(
+                style: AppTextStyles.badgeLarge.copyWith(
                   color: textColor,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
       ),

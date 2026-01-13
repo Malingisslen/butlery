@@ -73,9 +73,8 @@ class DiscoveryCategories {
             const SizedBox(height: AppDimensions.spacingS),
             Text(
               category['name'],
-              style: AppTextStyles.bodySmall.copyWith(
+              style: AppTextStyles.metadataEmphasized.copyWith(
                 color: isSelected ? AppColors.onPrimary : AppColors.onSurface,
-                fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,
               maxLines: 1,

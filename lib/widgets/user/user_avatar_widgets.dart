@@ -187,9 +187,8 @@ class UserAvatarWidgets {
       child: Center(
         child: Text(
           initials,
-          style: AppTextStyles.bodyLarge.copyWith(
+          style: AppTextStyles.bodyLargeBold.copyWith(
             fontSize: fontSize,
-            fontWeight: FontWeight.w600,
             color: textColor,
             letterSpacing: 0.5,
           ),

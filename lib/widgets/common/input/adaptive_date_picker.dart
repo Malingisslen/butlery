@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// A platform-adaptive date picker helper.
 /// Shows a CupertinoDatePicker in a modal bottom sheet on iOS,
@@ -105,8 +106,7 @@ class AdaptiveDatePicker {
                             Navigator.of(context).pop(selectedDate),
                         child: Text(
                           confirmText ?? 'Klar',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
+                          style: AppTextStyles.labelLarge.copyWith(
                             color:
                                 CupertinoColors.systemBlue.resolveFrom(context),
                           ),
@@ -249,8 +249,7 @@ class AdaptiveDatePicker {
                             Navigator.of(context).pop(selectedDateTime),
                         child: Text(
                           confirmText ?? 'Klar',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
+                          style: AppTextStyles.labelLarge.copyWith(
                             color:
                                 CupertinoColors.systemBlue.resolveFrom(context),
                           ),
@@ -373,8 +372,7 @@ class AdaptiveDatePicker {
                         ),
                         child: Text(
                           confirmText ?? 'Klar',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
+                          style: AppTextStyles.labelLarge.copyWith(
                             color:
                                 CupertinoColors.systemBlue.resolveFrom(context),
                           ),

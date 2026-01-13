@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Invitation target selection widgets.
 class InvitationSelectors {
@@ -267,9 +268,7 @@ class InvitationSelectors {
                 children: [
                   Text(
                     'Sortera:',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
+                    style: AppTextStyles.text14Medium,
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
                   DropdownButton<String>(
@@ -339,9 +338,7 @@ class InvitationSelectors {
             children: [
               Text(
                 title ?? 'Valda målgrupper',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: AppTextStyles.titleBold,
               ),
               const Spacer(),
               if (showClearAll && onClearAll != null)

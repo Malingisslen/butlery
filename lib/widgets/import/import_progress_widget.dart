@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// A simple 3-step progress indicator for import operations.
 class ImportProgressWidget extends StatelessWidget {
@@ -164,11 +165,10 @@ class _StepIndicator extends StatelessWidget {
                       )
                     : Text(
                         '$step',
-                        style: theme.textTheme.labelLarge?.copyWith(
+                        style: AppTextStyles.labelLarge.copyWith(
                           color: isActive
                               ? colorScheme.onPrimary
                               : colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
           ),
@@ -176,10 +176,10 @@ class _StepIndicator extends StatelessWidget {
         const SizedBox(height: AppDimensions.spacingXs),
         Text(
           label,
-          style: theme.textTheme.labelSmall?.copyWith(
+          style: (isActive ? AppTextStyles.badgeLarge : AppTextStyles.labelSmall)
+              .copyWith(
             color:
                 isActive ? colorScheme.primary : colorScheme.onSurfaceVariant,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
       ],

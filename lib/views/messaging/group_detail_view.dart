@@ -138,7 +138,7 @@ class GroupDetailView extends StatelessWidget {
             Text(
               'Medlemmar (${viewModel.memberCount})',
               style: AppTextStyles.titleLarge.copyWith(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w700,
               ),
             ),
             ActionButtons.textButton(

@@ -4,6 +4,7 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Badge displaying allergen status with tri-state coloring and shape distinction.
 ///
@@ -152,10 +153,9 @@ class _StandardBadge extends StatelessWidget {
               ExcludeSemantics(
                 child: Text(
                   label!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: color,
-                        fontWeight: FontWeight.w500,
-                      ),
+                  style: AppTextStyles.metadataEmphasized.copyWith(
+                    color: color,
+                  ),
                 ),
               ),
             ],
@@ -200,10 +200,9 @@ class _CompactBadge extends StatelessWidget {
               ExcludeSemantics(
                 child: Text(
                   label!,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: color,
-                        fontWeight: FontWeight.w500,
-                      ),
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: color,
+                  ),
                 ),
               ),
             ],

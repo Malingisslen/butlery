@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/theme/brand_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Badge showing detected platform from user input.
 class PlatformBadgeWidget extends StatelessWidget {
@@ -56,9 +57,8 @@ class PlatformBadgeWidget extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacing6),
             Text(
               detection!.platformLabel,
-              style: theme.textTheme.labelMedium?.copyWith(
+              style: AppTextStyles.labelMedium.copyWith(
                 color: _getTextColor(detection!.platform, colorScheme),
-                fontWeight: FontWeight.w500,
               ),
             ),
           ],

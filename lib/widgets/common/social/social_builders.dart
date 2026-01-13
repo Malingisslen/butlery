@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Builder functions for social components
 class SocialBuilders {
@@ -54,9 +55,8 @@ class SocialBuilders {
           Text(
             entry.value.toString(),
             style: valueStyle ??
-                Theme.of(context).textTheme.bodyLarge?.copyWith(
+                AppTextStyles.bodyLargeBold.copyWith(
                       color: textColor ?? AppColors.primaryBlue,
-                      fontWeight: FontWeight.bold,
                     ),
           ),
           if (showLabels) ...[

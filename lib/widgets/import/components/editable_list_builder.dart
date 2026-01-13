@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/import/components/add_item_field.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// A reusable editable list widget for managing string items.
 /// Used for ingredients and instructions in recipe import.
@@ -45,9 +46,7 @@ class EditableListBuilder extends StatelessWidget {
                     width: 28,
                     child: Text(
                       '${index + 1}.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: AppTextStyles.text14Medium,
                     ),
                   ),
                 ],
@@ -122,9 +121,7 @@ class EditableListHeader extends StatelessWidget {
         const SizedBox(width: AppDimensions.spacingSm),
         Text(
           title,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.titleMedium,
         ),
         const SizedBox(width: AppDimensions.spacingSm),
         Container(

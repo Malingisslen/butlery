@@ -264,7 +264,6 @@ class _MessageBubbleState extends State<MessageBubble>
         widget.message.senderDisplayName,
         style: AppTextStyles.labelSmall.copyWith(
           color: AppColors.textMedium,
-          fontWeight: FontWeight.w500,
         ),
       ),
     );

@@ -3,6 +3,7 @@ import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/social_components/social_formatters.dart';
 
 /// Social widget builders and helper components.
@@ -315,9 +316,7 @@ class SocialBuilderComponents {
               children: [
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: AppTextStyles.titleBold,
                 ),
                 if (subtitle != null)
                   Text(

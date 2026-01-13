@@ -106,9 +106,8 @@ class SharedContentCard extends StatelessWidget {
                         const SizedBox(height: AppDimensions.spacingXs),
                         Text(
                           _getTypeLabel(item.type),
-                          style: AppTextStyles.bodySmall.copyWith(
+                          style: AppTextStyles.labelLarge.copyWith(
                             color: iconColor,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],

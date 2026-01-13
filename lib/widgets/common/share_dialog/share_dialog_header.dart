@@ -38,9 +38,8 @@ class ShareDialogHeader {
               children: [
                 Text(
                   title,
-                  style: AppTextStyles.titleMedium.copyWith(
+                  style: AppTextStyles.titleBold.copyWith(
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(

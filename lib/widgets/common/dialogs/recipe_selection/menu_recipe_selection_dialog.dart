@@ -184,9 +184,8 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
             ),
             child: Text(
               '${_selectedRecipeIds.length} valda',
-              style: AppTextStyles.bodySmall.copyWith(
+              style: AppTextStyles.metadataEmphasized.copyWith(
                 color: AppColors.primaryBlue,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -270,9 +269,8 @@ class MenuRecipeListItem extends StatelessWidget {
       children: [
         Text(
           recipe.mealType,
-          style: AppTextStyles.bodySmall.copyWith(
+          style: AppTextStyles.metadataEmphasized.copyWith(
             color: AppColors.primaryBlue,
-            fontWeight: FontWeight.w600,
           ),
         ),
         if (recipe.description.isNotEmpty) ...[

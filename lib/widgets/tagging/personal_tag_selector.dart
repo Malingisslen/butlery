@@ -352,10 +352,7 @@ class PersonalTagDisplay extends StatelessWidget {
             ),
             child: Text(
               '+$remainingCount',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMedium,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppTextStyles.metadataEmphasized,
             ),
           ),
       ],
@@ -389,9 +386,8 @@ class _MiniTagChip extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacingXxs),
             Text(
               tag.name,
-              style: AppTextStyles.bodySmall.copyWith(
+              style: AppTextStyles.metadataEmphasized.copyWith(
                 color: AppColors.primaryBlue,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -431,9 +427,8 @@ class _SimpleTagChip extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               name,
-              style: AppTextStyles.bodySmall.copyWith(
+              style: AppTextStyles.metadataEmphasized.copyWith(
                 color: AppColors.primaryBlue,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -592,10 +587,7 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
             ),
             child: Text(
               '+$remainingCount',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMedium,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppTextStyles.metadataEmphasized,
             ),
           ),
       ],

@@ -372,8 +372,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           Expanded(
             child: Text(
               tag.name,
-              style: AppTextStyles.bodyMedium
-                  .copyWith(fontWeight: FontWeight.w500),
+              style: AppTextStyles.text14Medium,
             ),
           ),
           if (!viewModel.isLoadingStats && usageCount > 0)
@@ -621,9 +620,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
               Expanded(
                 child: Text(
                   tag.name,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.bodyBold,
                 ),
               ),
               // Add rule button for this tag

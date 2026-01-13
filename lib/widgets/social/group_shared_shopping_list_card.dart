@@ -69,9 +69,7 @@ class GroupSharedShoppingListCard {
             children: [
               Text(
                 shoppingList.name,
-                style: AppTextStyles.titleMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTextStyles.titleMedium,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -141,9 +139,8 @@ class GroupSharedShoppingListCard {
               const SizedBox(width: AppDimensions.spacingS),
               Text(
                 'Inkopslista',
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
-                  fontWeight: FontWeight.w500,
                 ),
               ),
               const Spacer(),
@@ -223,8 +220,7 @@ class GroupSharedShoppingListCard {
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             value,
-            style: AppTextStyles.bodySmall
-                .copyWith(color: color, fontWeight: FontWeight.w600),
+            style: AppTextStyles.labelLarge.copyWith(color: color),
           ),
           const SizedBox(width: AppDimensions.spacingXxs),
           Text(

@@ -300,8 +300,7 @@ class ImageComponents {
         ),
         child: Text(
           '${currentIndex + 1}/$totalImages',
-          style: AppTextStyles.bodySmall.copyWith(
-            fontWeight: FontWeight.w500,
+          style: AppTextStyles.metadataEmphasized.copyWith(
             color: AppColors.textDark,
           ),
         ),

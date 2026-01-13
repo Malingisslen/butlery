@@ -44,9 +44,8 @@ class CollaborativeLiveWidgets {
                 const SizedBox(width: AppDimensions.spacingXs),
                 Text(
                   '$editorName redigerar $editingWhat',
-                  style: AppTextStyles.bodySmall.copyWith(
+                  style: AppTextStyles.metadataEmphasized.copyWith(
                     color: indicatorColor,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],

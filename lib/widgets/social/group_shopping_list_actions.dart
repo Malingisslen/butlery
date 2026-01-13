@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/group_content_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
@@ -127,9 +128,7 @@ class GroupShoppingListActions {
               children: [
                 Text(
                   'Dela inkopslista',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: AppTextStyles.titleBold,
                 ),
                 const SizedBox(height: AppDimensions.spacingM),
                 ListTile(

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Realtime status widget showing connection status
 class RealtimeStatusWidget extends StatelessWidget {
@@ -45,13 +46,14 @@ class RealtimeStatusWidget extends StatelessWidget {
                 child: Text(
                   statusDescription,
                   key: ValueKey(statusDescription),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: isOnline
-                            ? Theme.of(context).colorScheme.onSurface
-                            : AppColors.error,
-                        fontWeight:
-                            isOnline ? FontWeight.normal : FontWeight.bold,
-                      ),
+                  style: isOnline
+                      ? AppTextStyles.bodySmall.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        )
+                      : AppTextStyles.bodyBold.copyWith(
+                          color: AppColors.error,
+                          fontSize: 12,
+                        ),
                 ),
               ),
             ],
@@ -102,8 +104,7 @@ class RealtimeStatusBanner extends StatelessWidget {
               children: [
                 Text(
                   'Offline',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
+                  style: AppTextStyles.titleBold.copyWith(
                         color: AppColors.error,
                       ),
                 ),

@@ -40,9 +40,8 @@ class NotificationBadge extends StatelessWidget {
       ),
       child: Text(
         count > 99 ? '99+' : '$count',
-        style: AppTextStyles.labelSmall.copyWith(
+        style: AppTextStyles.badge.copyWith(
           color: textColor ?? AppColors.neutralLight,
-          fontWeight: FontWeight.bold,
         ),
         textAlign: TextAlign.center,
       ),

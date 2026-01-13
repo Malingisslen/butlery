@@ -85,10 +85,7 @@ class EmptyImageState extends StatelessWidget {
       const SizedBox(height: AppDimensions.spacingSm),
       Text(
         'Lägg till bilder',
-        style: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.textDark,
-          fontWeight: FontWeight.w500,
-        ),
+        style: AppTextStyles.text14Medium,
       ),
       const SizedBox(height: AppDimensions.spacingXxs),
       Text(

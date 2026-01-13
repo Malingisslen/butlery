@@ -330,9 +330,8 @@ class RecipeCard extends StatelessWidget {
       ),
       child: Text(
         recipe.mealType,
-        style: AppTextStyles.labelSmall.copyWith(
+        style: AppTextStyles.badge.copyWith(
           color: AppColors.primaryBlue,
-          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -469,7 +468,6 @@ class RecipeCard extends StatelessWidget {
         name,
         style: AppTextStyles.labelSmall.copyWith(
           color: AppColors.primaryBlue,
-          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -489,7 +487,6 @@ class RecipeCard extends StatelessWidget {
         '+$count',
         style: AppTextStyles.labelSmall.copyWith(
           color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityDark),
-          fontWeight: FontWeight.w500,
         ),
       ),
     );

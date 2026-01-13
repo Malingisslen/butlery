@@ -184,9 +184,8 @@ class FriendRecipeSharingDialog extends StatelessWidget {
               ),
               child: Text(
                 '${viewModel.selectedCount} valda',
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -327,13 +326,11 @@ class FriendRecipeListItem extends StatelessWidget {
         Text(
           recipe.mealType,
           style: isAlreadyShared
-              ? AppTextStyles.bodySmall.copyWith(
+              ? AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.textMedium,
-                  fontWeight: FontWeight.w600,
                 )
-              : AppTextStyles.bodySmall.copyWith(
+              : AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.w600,
                 ),
         ),
         if (recipe.description.isNotEmpty)

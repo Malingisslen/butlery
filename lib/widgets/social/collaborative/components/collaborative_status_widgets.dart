@@ -44,9 +44,8 @@ class CollaborativeStatusWidgets {
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text,
-            style: AppTextStyles.bodySmall.copyWith(
+            style: AppTextStyles.labelLarge.copyWith(
               color: effectiveColor,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -96,9 +95,8 @@ class CollaborativeStatusWidgets {
                 children: [
                   Text(
                     title,
-                    style: AppTextStyles.bodyLarge.copyWith(
+                    style: AppTextStyles.bodyLargeBold.copyWith(
                       color: AppColors.primaryBlue,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
