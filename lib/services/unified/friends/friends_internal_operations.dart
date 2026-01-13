@@ -76,6 +76,28 @@ class FriendsInternalOperations {
         await _categoryRepository.saveCategory(category.ownerId, category);
         AppLogger.success('✅ Category synced to Firebase: ${category.name}');
       } catch (e) {
+        final errorString = e.toString();
+        // BUG-016 FIX: Handle web Firestore SDK assertion errors that occur after successful writes
+        // The Firestore web SDK can throw "INTERNAL ASSERTION FAILED" during local state sync
+        // even when the server write succeeded. Verify by re-fetching the category.
+        if (errorString.contains('INTERNAL ASSERTION') ||
+            errorString.contains('Unexpected state')) {
+          AppLogger.warning(
+              '⚠️ Firestore assertion error during sync, verifying write succeeded...');
+          try {
+            // Verify the category was actually saved by re-fetching
+            final savedCategory = await _categoryRepository.getCategory(
+                category.ownerId, category.id);
+            if (savedCategory != null && savedCategory.name == category.name) {
+              AppLogger.success(
+                  '✅ Verified category was saved despite assertion error: ${category.name}');
+              return; // Success - don't rethrow
+            }
+          } catch (verifyError) {
+            AppLogger.warning('Could not verify save: $verifyError');
+          }
+        }
+
         final currentUser = _authRepository.currentUser?.uid;
         AppLogger.error(
             '❌ Failed to sync category to Firebase: ${category.name}', e);
