@@ -5,6 +5,7 @@ import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
 
 /// Discovery Categories - Category selector for discovery dashboard
@@ -59,15 +60,7 @@ class DiscoveryCategories {
                 ? AppColors.primary
                 : AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: AppDimensions.opacityLight),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
+          boxShadow: isSelected ? AppShadows.card : null,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

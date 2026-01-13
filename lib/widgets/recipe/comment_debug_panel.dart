@@ -25,7 +25,7 @@ class CommentDebugPanel extends StatelessWidget {
     final authUser = socialViewModel.currentUser;
 
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingS),
+      padding: AppDimensions.paddingAll3,
       color: AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

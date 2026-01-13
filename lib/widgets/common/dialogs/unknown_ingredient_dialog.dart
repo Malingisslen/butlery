@@ -96,7 +96,7 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppDimensions.spacingSm),
               Text(
                 'Denna ingrediens finns inte i databasen. '
                 'Du kan definiera dess egenskaper för bättre taggning.',
@@ -104,24 +104,24 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimensions.spacingMd),
 
               // Common allergen toggles
               Text(
                 'Innehåller allergener:',
                 style: theme.textTheme.titleSmall,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppDimensions.spacingSm),
               _buildAllergenSection(),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimensions.spacingMd),
 
               // Dietary properties
               Text(
                 'Dietegenskaper:',
                 style: theme.textTheme.titleSmall,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppDimensions.spacingSm),
               _buildDietarySection(),
             ],
           ),
@@ -142,7 +142,7 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
                 onPressed: _isSaving ? null : _previous,
                 child: const Text('Föregående'),
               ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppDimensions.spacingSm),
             FilledButton(
               onPressed: _isSaving ? null : _saveAndNext,
               child: _isSaving

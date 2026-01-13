@@ -295,7 +295,7 @@ class _PersonalTagChip extends StatelessWidget {
         avatar: isSelected
             ? null
             : const Icon(Icons.label_outline,
-                size: 14, color: AppColors.primaryBlue),
+                size: AppDimensions.iconSize14, color: AppColors.primaryBlue),
         showCheckmark: isSelected,
       ),
     );
@@ -385,8 +385,8 @@ class _MiniTagChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.label, size: 12, color: AppColors.primaryBlue),
-            const SizedBox(width: 2),
+            const Icon(Icons.label, size: AppDimensions.iconSizeXs, color: AppColors.primaryBlue),
+            const SizedBox(width: AppDimensions.spacingXxs),
             Text(
               tag.name,
               style: AppTextStyles.bodySmall.copyWith(
@@ -427,8 +427,8 @@ class _SimpleTagChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.label_outline,
-                size: 12, color: AppColors.primaryBlue),
-            const SizedBox(width: 4),
+                size: AppDimensions.iconSizeXs, color: AppColors.primaryBlue),
+            const SizedBox(width: AppDimensions.spacingXs),
             Text(
               name,
               style: AppTextStyles.bodySmall.copyWith(

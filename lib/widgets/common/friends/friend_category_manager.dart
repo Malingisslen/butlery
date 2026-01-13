@@ -236,7 +236,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.spacingXs,
-                      vertical: 1,
+                      vertical: AppDimensions.borderWidthStandard,
                     ),
                     decoration: BoxDecoration(
                       color: isSelected

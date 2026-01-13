@@ -81,7 +81,7 @@ class AdaptiveDatePicker {
                     border: Border(
                       bottom: BorderSide(
                         color: CupertinoColors.separator.resolveFrom(context),
-                        width: 0.5,
+                        width: AppDimensions.strokeWidth05,
                       ),
                     ),
                   ),
@@ -225,7 +225,7 @@ class AdaptiveDatePicker {
                     border: Border(
                       bottom: BorderSide(
                         color: CupertinoColors.separator.resolveFrom(context),
-                        width: 0.5,
+                        width: AppDimensions.strokeWidth05,
                       ),
                     ),
                   ),
@@ -348,7 +348,7 @@ class AdaptiveDatePicker {
                     border: Border(
                       bottom: BorderSide(
                         color: CupertinoColors.separator.resolveFrom(context),
-                        width: 0.5,
+                        width: AppDimensions.strokeWidth05,
                       ),
                     ),
                   ),

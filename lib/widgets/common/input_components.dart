@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
@@ -48,7 +49,7 @@ class InputComponents {
     required bool value,
     required ValueChanged<bool?>? onChanged,
     Color? activeColor,
-    Duration debounceDuration = const Duration(milliseconds: 300),
+    Duration debounceDuration = AppDimensions.animationDurationCommon,
   }) {
     return DebouncedCheckbox(
       value: value,

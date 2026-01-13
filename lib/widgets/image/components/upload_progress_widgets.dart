@@ -232,9 +232,8 @@ class UploadProgressWidgets {
                 padding: const EdgeInsets.only(top: AppDimensions.spacingXxs),
                 child: Text(
                   detail,
-                  style: AppTextStyles.bodySmall.copyWith(
+                  style: AppTextStyles.textSm.copyWith(
                     color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryDark),
-                    fontSize: 11,
                   ),
                 ),
               ))

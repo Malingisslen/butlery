@@ -148,7 +148,7 @@ class _StandardBadge extends StatelessWidget {
                 color: color,
                 semanticLabel: null),
             if (label != null) ...[
-              const SizedBox(width: 6),
+              const SizedBox(width: AppDimensions.spacing6),
               ExcludeSemantics(
                 child: Text(
                   label!,
@@ -194,9 +194,9 @@ class _CompactBadge extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: color, semanticLabel: null),
+            Icon(icon, size: AppDimensions.iconSize14, color: color, semanticLabel: null),
             if (label != null) ...[
-              const SizedBox(width: 4),
+              const SizedBox(width: AppDimensions.spacingXs),
               ExcludeSemantics(
                 child: Text(
                   label!,

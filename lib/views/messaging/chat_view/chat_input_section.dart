@@ -249,7 +249,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
 
                     // Send button
                     AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
+                      duration: AppDimensions.animationDurationMedium,
                       child: IconButton(
                         onPressed:
                             _state.isComposing ? _handleSendMessage : null,

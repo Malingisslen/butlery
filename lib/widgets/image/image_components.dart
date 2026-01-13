@@ -266,9 +266,7 @@ class ImageComponents {
             const SizedBox(width: AppDimensions.spacingXxs),
             Text(
               '$imageCount',
-              style: AppTextStyles.bodySmall.copyWith(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
+              style: AppTextStyles.textXsBold.copyWith(
                 color: AppColors.textDark,
               ),
             ),

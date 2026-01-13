@@ -7,6 +7,7 @@ import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
@@ -49,7 +50,7 @@ class RecipeTaggingHandler {
           content: Row(
             children: [
               const CircularProgressIndicator(),
-              const SizedBox(width: 16),
+              const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: Text(
                   'Analyserar ingredienser...',

@@ -135,8 +135,7 @@ class SharedContentCard extends StatelessWidget {
                         item.sharedByDisplayName.isNotEmpty
                             ? item.sharedByDisplayName[0].toUpperCase()
                             : '?',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          fontSize: 10,
+                        style: AppTextStyles.textXs.copyWith(
                           color: AppColors.primaryBlue,
                         ),
                       ),

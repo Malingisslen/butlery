@@ -29,7 +29,7 @@ class CommentFormWidget extends StatelessWidget {
       children: [
         if (socialViewModel.isReplying) ...[
           Container(
-            padding: const EdgeInsets.all(AppDimensions.spacingS),
+            padding: AppDimensions.paddingAll3,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -84,7 +84,7 @@ class CommentFormWidget extends StatelessWidget {
                     borderRadius:
                         BorderRadius.circular(AppDimensions.borderRadiusM),
                   ),
-                  contentPadding: const EdgeInsets.all(AppDimensions.spacingS),
+                  contentPadding: AppDimensions.paddingAll3,
                 ),
                 maxLines: 3,
                 minLines: 1,

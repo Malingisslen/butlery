@@ -143,7 +143,7 @@ class DraftRecoveryDialog extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
 
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppDimensions.spacingXxs),
 
                     // Metadata (time and field count)
                     Text(

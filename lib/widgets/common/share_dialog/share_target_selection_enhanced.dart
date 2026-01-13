@@ -263,7 +263,7 @@ class ShareTargetSelectionEnhanced {
                   ),
                 ),
                 if (isExistingCollaborator) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     'Delar redan listan', // PHASE 2: Status text for existing collaborators
                     style: AppTextStyles.bodySmall.copyWith(
@@ -340,9 +340,7 @@ class ShareTargetSelectionEnhanced {
               child: Center(
                 child: Text(
                   group.emoji ?? '👥',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontSize: 20,
-                      ),
+                  style: AppTextStyles.text20SemiBold,
                 ),
               ),
             ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_shadows.dart';
 
 /// Predefined colors for personal tags.
 class PersonalTagColors {
@@ -100,30 +101,22 @@ class _ColorCircle extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: AppDimensions.animationDurationFast,
         width: 36,
         height: 36,
         decoration: BoxDecoration(
           color: colorValue,
           shape: BoxShape.circle,
           border: Border.all(
-            color: isSelected ? AppColors.textDark : Colors.transparent,
+            color: isSelected ? AppColors.textDark : AppColors.transparent,
             width: isSelected ? 3 : 0,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: colorValue.withValues(alpha: AppDimensions.opacityMedium),
-                    blurRadius: 8,
-                    spreadRadius: 2,
-                  ),
-                ]
-              : null,
+          boxShadow: isSelected ? AppShadows.card : null,
         ),
         child: isSelected
             ? const Icon(
                 Icons.check,
-                color: Colors.white,
+                color: AppColors.cardWhite,
                 size: AppDimensions.iconSizeM,
               )
             : null,

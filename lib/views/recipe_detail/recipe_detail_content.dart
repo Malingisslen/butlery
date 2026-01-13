@@ -393,7 +393,7 @@ class RecipeDetailContent extends StatelessWidget {
                     // Instruction text
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 4),
+                        padding: AppDimensions.paddingOnlyTop4,
                         child: Text(
                           instruction,
                           style: AppTextStyles.bodyLarge,
@@ -481,7 +481,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
                   label: Text(
                       _isExpanded ? 'Dölj' : 'Visa alla (${names.length})'),
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: AppDimensions.paddingHorizontal8,
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),

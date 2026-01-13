@@ -39,10 +39,10 @@ class ImportProgressWidget extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return AnimatedOpacity(
-      duration: const Duration(milliseconds: 200),
+      duration: AppDimensions.animationDurationMedium,
       opacity: isVisible ? 1.0 : 0.0,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        padding: AppDimensions.paddingSymmetric20x16,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -87,9 +87,9 @@ class ImportProgressWidget extends StatelessWidget {
 
             // Progress message
             if (message.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppDimensions.paddingM),
               AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
+                duration: AppDimensions.animationDurationMedium,
                 child: Text(
                   message,
                   key: ValueKey(message),
@@ -173,7 +173,7 @@ class _StepIndicator extends StatelessWidget {
                       ),
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppDimensions.spacingXs),
         Text(
           label,
           style: theme.textTheme.labelSmall?.copyWith(
@@ -200,7 +200,7 @@ class _StepConnector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+      padding: EdgeInsets.only(bottom: AppDimensions.paddingXl),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         width: 40,

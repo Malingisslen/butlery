@@ -67,7 +67,7 @@ class RecipeCard extends StatelessWidget {
         label: 'Recipe: ${recipe.title}',
         child: Container(
           margin:
-              margin ?? const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+              margin ?? AppDimensions.paddingSymmetric16x4,
           child: Material(
             elevation: isSelected
                 ? AppDimensions.elevationMedium
@@ -83,7 +83,7 @@ class RecipeCard extends StatelessWidget {
                   onLongPress != null ? () => onLongPress!(recipe) : null,
               child: Container(
                 padding:
-                    padding ?? const EdgeInsets.all(AppDimensions.paddingM),
+                    padding ?? AppDimensions.paddingAll12,
                 child: _buildCardContent(context),
               ),
             ),
@@ -323,10 +323,7 @@ class RecipeCard extends StatelessWidget {
 
   Widget _buildMealTypeBadge() {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingSm,
-        vertical: AppDimensions.spacingXs,
-      ),
+      padding: AppDimensions.paddingSymmetric4x8,
       decoration: BoxDecoration(
         color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -376,10 +373,7 @@ class RecipeCard extends StatelessWidget {
   Widget _buildTag(String tag, {bool isUserAdded = false}) {
     final displayName = TagDisplayUtils.getDisplayName(tag);
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingXs,
-        vertical: 2,
-      ),
+      padding: AppDimensions.paddingSymmetric4x2,
       decoration: BoxDecoration(
         color: isUserAdded
             ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
@@ -463,10 +457,7 @@ class RecipeCard extends StatelessWidget {
 
   Widget _buildPersonalTag(String name) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingSm,
-        vertical: 2,
-      ),
+      padding: AppDimensions.paddingSymmetric8x2,
       decoration: BoxDecoration(
         color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -486,10 +477,7 @@ class RecipeCard extends StatelessWidget {
 
   Widget _buildOverflowChip(int count) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingSm,
-        vertical: 2,
-      ),
+      padding: AppDimensions.paddingSymmetric8x2,
       decoration: BoxDecoration(
         color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -517,10 +505,7 @@ class RecipeCard extends StatelessWidget {
           ? 'Ingrediensanalys misslyckades'
           : 'Ingredienser analyseras',
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingSm,
-          vertical: AppDimensions.spacingXs,
-        ),
+        padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
           color: (hasFailed ? AppColors.error : AppColors.warning)
               .withValues(alpha: AppDimensions.opacityVeryLight),

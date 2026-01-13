@@ -26,7 +26,6 @@ class DiscoveryAppBar {
           'Upptäck',
           style: AppTextStyles.titleMedium.copyWith(
             color: AppColors.onPrimary,
-            fontWeight: FontWeight.w600,
           ),
         ),
         background: DecoratedBox(
@@ -46,7 +45,7 @@ class DiscoveryAppBar {
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 40), // Space for back button
+                const SizedBox(height: AppDimensions.height40), // Space for back button
                 Row(
                   children: [
                     const Icon(
@@ -61,9 +60,8 @@ class DiscoveryAppBar {
                         children: [
                           Text(
                             'Upptäck nytt innehåll',
-                            style: AppTextStyles.titleLarge.copyWith(
+                            style: AppTextStyles.titleBold.copyWith(
                               color: AppColors.onPrimary,
-                              fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
@@ -140,9 +138,8 @@ class DiscoveryAppBar {
         children: [
           Text(
             '$totalContent',
-            style: AppTextStyles.titleMedium.copyWith(
+            style: AppTextStyles.titleBold.copyWith(
               color: AppColors.onPrimary,
-              fontWeight: FontWeight.bold,
             ),
           ),
           Text(
@@ -199,9 +196,7 @@ class DiscoveryAppBar {
                   const SizedBox(width: AppDimensions.spacingS),
                   Text(
                     'Filtrera innehåll',
-                    style: AppTextStyles.titleMedium.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: AppTextStyles.titleMedium,
                   ),
                   const Spacer(),
                   IconButton(
@@ -312,9 +307,7 @@ class DiscoveryAppBar {
           children: [
             Text(
               'Anpassa din upptäcktsupplevelse',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+              style: AppTextStyles.text16Medium,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             SwitchListTile(
@@ -349,9 +342,7 @@ class DiscoveryAppBar {
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
               'Aviseringar',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+              style: AppTextStyles.text16Medium,
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             SwitchListTile(

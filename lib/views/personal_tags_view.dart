@@ -107,7 +107,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                     if (order == _sortOrder)
                       const Icon(Icons.check, size: AppDimensions.iconSize18)
                     else
-                      const SizedBox(width: 18),
+                      const SizedBox(width: AppDimensions.iconSize18),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Text(order.label),
                   ],
@@ -218,8 +218,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           const PopupMenuItem(
             value: 'delete',
             child: ListTile(
-              leading: Icon(Icons.delete, color: Colors.red),
-              title: Text('Ta bort grupp', style: TextStyle(color: Colors.red)),
+              leading: Icon(Icons.delete, color: AppColors.error),
+              title: Text('Ta bort grupp', style: TextStyle(color: AppColors.error)),
               contentPadding: EdgeInsets.zero,
             ),
           ),
@@ -323,7 +323,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                   child: const Icon(
                     Icons.auto_awesome,
                     size: 10,
-                    color: Colors.white,
+                    color: AppColors.cardWhite,
                   ),
                 ),
               ),
@@ -429,7 +429,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
               ),
             if (hasRules && !allRulesDisabled)
               ListTile(
-                leading: Icon(Icons.pause, color: Colors.orange.shade700),
+                leading: const Icon(Icons.pause, color: AppColors.warning),
                 title: const Text('Inaktivera alla regler'),
                 subtitle: Text('$enabledRuleCount regler aktiva'),
                 onTap: () {
@@ -447,9 +447,9 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
+              leading: const Icon(Icons.delete, color: AppColors.error),
               title: const Text('Ta bort tagg',
-                  style: TextStyle(color: Colors.red)),
+                  style: TextStyle(color: AppColors.error)),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _deleteTag(context, tag);
@@ -623,7 +623,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
             ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Ta bort'),
@@ -755,7 +755,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                 child: const Text('Avbryt'),
               ),
               FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                style: FilledButton.styleFrom(backgroundColor: AppColors.error),
                 onPressed: () => Navigator.pop(context, true),
                 child: const Text('Ta bort'),
               ),

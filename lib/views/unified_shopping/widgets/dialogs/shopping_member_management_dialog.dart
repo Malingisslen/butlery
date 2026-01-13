@@ -296,8 +296,7 @@ class _ShoppingMemberManagementDialogState
             ],
             Text(
               'Nuvarande medlemmar (${allMembers.length})',
-              style: AppTextStyles.titleMedium
-                  .copyWith(fontWeight: FontWeight.w600),
+              style: AppTextStyles.titleMedium,
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Expanded(
@@ -329,8 +328,7 @@ class _ShoppingMemberManagementDialogState
             const SizedBox(height: AppDimensions.spacingM),
             Text(
               'Lägg till vänner',
-              style: AppTextStyles.titleMedium
-                  .copyWith(fontWeight: FontWeight.w600),
+              style: AppTextStyles.titleMedium,
             ),
             const SizedBox(height: AppDimensions.spacingM),
             StyledInput(
@@ -404,15 +402,14 @@ class _ShoppingMemberManagementDialogState
         backgroundColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
         child: Text(
           userName.isNotEmpty ? userName[0].toUpperCase() : '?',
-          style: AppTextStyles.labelMedium.copyWith(
+          style: AppTextStyles.labelLarge.copyWith(
             color: AppColors.primaryBlue,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ),
       title: Text(
         userName,
-        style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w500),
+        style: AppTextStyles.text16Medium,
       ),
       subtitle: isOwner
           ? Text('Ägare',
@@ -488,15 +485,14 @@ class _ShoppingMemberManagementDialogState
           friend.displayName.isNotEmpty
               ? friend.displayName[0].toUpperCase()
               : '?',
-          style: AppTextStyles.labelMedium.copyWith(
+          style: AppTextStyles.labelLarge.copyWith(
             color: AppColors.primaryBlue,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ),
       title: Text(
         friend.displayName,
-        style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w500),
+        style: AppTextStyles.text16Medium,
       ),
       subtitle: Text(
         'Läggs till med redigeringsbehörighet',

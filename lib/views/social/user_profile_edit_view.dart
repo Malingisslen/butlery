@@ -396,7 +396,7 @@ class _UserProfileEditViewContentState
             viewModel.updateDisplayName(value);
             // Clear previous validation errors when user types
             if (viewModel.displayNameError != null) {
-              Future.delayed(const Duration(milliseconds: 500), () {
+              Future.delayed(AppDimensions.animationDurationLong, () {
                 if (mounted && _displayNameController.text == value) {
                   _checkDisplayNameAvailability();
                 }

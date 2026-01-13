@@ -5,6 +5,7 @@ import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_shadows.dart';
 
 /// Participant list widget showing active participants
 class ParticipantListWidget extends StatelessWidget {
@@ -32,13 +33,7 @@ class ParticipantListWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadowColor.withValues(alpha: AppDimensions.opacityVeryLight),
-            blurRadius: AppDimensions.elevationLow,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: AppShadows.subtle,
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),

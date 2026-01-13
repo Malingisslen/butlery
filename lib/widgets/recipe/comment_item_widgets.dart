@@ -22,7 +22,7 @@ class CommentItemWidgets {
     final isReply = depth > 0;
 
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: AppDimensions.paddingAll12,
       decoration: isReply
           ? BoxDecoration(
               color: AppColors.surface.withValues(alpha: AppDimensions.opacityHalf),
@@ -165,14 +165,14 @@ class CommentItemWidgets {
     required String? Function(String userId) getAvatarUrl,
   }) {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: AppDimensions.paddingAll16,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
           Padding(
-            padding: const EdgeInsets.only(bottom: AppDimensions.paddingM),
+            padding: AppDimensions.paddingOnlyBottom12,
             child: Text(
               'Gilla-markeringar ($likeCount)',
               style: AppTextStyles.headlineSmall,

@@ -21,7 +21,7 @@ class EditIndicatorWidget extends StatefulWidget {
     required this.editingWhat,
     this.color,
     this.isVisible = true,
-    this.animationDuration = const Duration(milliseconds: 300),
+    this.animationDuration = AppDimensions.animationDurationCommon,
   });
 
   @override

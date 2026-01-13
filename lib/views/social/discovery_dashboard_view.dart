@@ -189,7 +189,7 @@ class _DiscoveryDashboardViewContentState
                   right: -8,
                   top: -8,
                   child: Container(
-                    padding: const EdgeInsets.all(2),
+                    padding: AppDimensions.paddingAll2,
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),

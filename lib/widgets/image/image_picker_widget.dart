@@ -311,10 +311,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             ),
             child: Text(
               '${index + 1}',
-              style: AppTextStyles.bodySmall.copyWith(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppTextStyles.textXsBold,
             ),
           ),
         ),

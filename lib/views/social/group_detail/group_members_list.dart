@@ -34,9 +34,7 @@ class GroupMembersList {
           children: [
             Text(
               'Medlemmar & Inbjudningar',
-              style: AppTextStyles.titleMedium.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTextStyles.titleBold,
             ),
             const Spacer(),
             if (canAddMembers)
@@ -53,8 +51,7 @@ class GroupMembersList {
         if (members.isNotEmpty) ...[
           Text(
             'Medlemmar (${members.length})',
-            style: AppTextStyles.titleSmall.copyWith(
-              fontWeight: FontWeight.w600,
+            style: AppTextStyles.titleMedium.copyWith(
               color: Theme.of(context).colorScheme.primary,
             ),
           ),
@@ -83,8 +80,7 @@ class GroupMembersList {
             const SizedBox(height: AppDimensions.spacingXl),
           Text(
             'Väntande inbjudningar (${pendingInvitations.length})',
-            style: AppTextStyles.titleSmall.copyWith(
-              fontWeight: FontWeight.w600,
+            style: AppTextStyles.titleMedium.copyWith(
               color: Theme.of(context).colorScheme.tertiary,
             ),
           ),

@@ -347,7 +347,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     }
     _pageController.animateToPage(
       index,
-      duration: const Duration(milliseconds: 300),
+      duration: AppDimensions.animationDurationCommon,
       curve: Curves.easeInOut,
     );
   }
@@ -407,7 +407,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       _currentIndex = newUrls.length - 1;
       _pageController.animateToPage(
         _currentIndex,
-        duration: const Duration(milliseconds: 300),
+        duration: AppDimensions.animationDurationCommon,
         curve: Curves.easeInOut,
       );
     }

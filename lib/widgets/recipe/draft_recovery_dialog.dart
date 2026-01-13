@@ -58,7 +58,7 @@ class DraftRecoveryDialog extends StatelessWidget {
             Icons.restore,
             color: theme.colorScheme.primary,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppDimensions.width12),
           const Expanded(
             child: Text('Osparade utkast hittades'),
           ),
@@ -74,7 +74,7 @@ class DraftRecoveryDialog extends StatelessWidget {
               'Du har osparade utkast. Vill du fortsätta redigera något av dem?',
               style: theme.textTheme.bodyMedium,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 200),
               child: ListView.separated(
@@ -126,7 +126,7 @@ class _DraftListTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        padding: AppDimensions.paddingSymmetric4x12,
         child: Row(
           children: [
             Icon(
@@ -134,7 +134,7 @@ class _DraftListTile extends StatelessWidget {
               size: AppDimensions.iconSizeM,
               color: theme.colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppDimensions.width12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,7 +147,7 @@ class _DraftListTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: AppDimensions.spacingXxs),
                   Text(
                     '${draft.fieldCount} fält ifyllda • ${draft.timeAgo}',
                     style: theme.textTheme.bodySmall?.copyWith(

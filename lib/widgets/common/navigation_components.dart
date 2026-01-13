@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
@@ -39,7 +40,7 @@ class NavigationComponents {
     required String editingWhat,
     Color? color,
     bool isVisible = true,
-    Duration animationDuration = const Duration(milliseconds: 300),
+    Duration animationDuration = AppDimensions.animationDurationCommon,
   }) {
     return RealtimeIndicators.editIndicator(
       editorName: editorName,

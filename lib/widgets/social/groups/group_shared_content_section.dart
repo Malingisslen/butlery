@@ -261,7 +261,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppDimensions.paddingS,
-                              vertical: 4,
+                              vertical: AppDimensions.spacingXs,
                             ),
                             decoration: BoxDecoration(
                               color:
