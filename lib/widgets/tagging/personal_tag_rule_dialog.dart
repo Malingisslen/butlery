@@ -730,10 +730,8 @@ class _ConditionRow extends StatelessWidget {
         value: '__header_${entry.key}',
         child: Text(
           entry.key,
-          style: const TextStyle(
+          style: AppTextStyles.badgeLarge.copyWith(
             fontWeight: FontWeight.bold,
-            color: AppColors.textMedium,
-            fontSize: AppDimensions.iconSizeXs,
           ),
         ),
       ));
@@ -744,7 +742,7 @@ class _ConditionRow extends StatelessWidget {
             value: prop,
             child: Padding(
               padding: AppDimensions.paddingOnlyLeft8,
-              child: Text(prop, style: const TextStyle(fontSize: AppDimensions.iconSize14)),
+              child: Text(prop, style: AppTextStyles.text14),
             ),
           ));
         }

@@ -280,9 +280,8 @@ class _CreateSharedShoppingListViewState
               const SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Vad händer när du delar?',
-                style: AppTextStyles.labelLarge.copyWith(
+                style: AppTextStyles.titleBold.copyWith(
                   color: AppColors.success,
-                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],

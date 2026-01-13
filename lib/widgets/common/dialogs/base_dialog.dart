@@ -299,9 +299,7 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
               TextSpan(text: message),
               TextSpan(
                 text: ' "$itemName"',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: AppTextStyles.bodyBold,
               ),
               const TextSpan(text: '?'),
             ],

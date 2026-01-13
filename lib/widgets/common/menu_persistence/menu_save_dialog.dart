@@ -117,9 +117,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         children: [
           Text(
             'Meny att spara',
-            style: AppTextStyles.bodyLarge.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTextStyles.bodyLargeBold,
           ),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
@@ -187,9 +185,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
       children: [
         Text(
           'Välj vänner att dela med',
-          style: AppTextStyles.bodyLarge.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.bodyLargeBold,
         ),
         const SizedBox(height: AppDimensions.spacingXs),
         Container(

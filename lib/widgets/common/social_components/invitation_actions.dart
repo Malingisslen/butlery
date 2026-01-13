@@ -3,6 +3,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Invitation action widgets.
 class InvitationActions {
@@ -53,10 +54,7 @@ class InvitationActions {
         children: [
           Text(
             '$selectedCount valda',
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(fontWeight: FontWeight.w500),
+            style: AppTextStyles.text14Medium,
           ),
           const Spacer(),
           if (showSelectAll && onSelectAll != null)
@@ -172,10 +170,7 @@ class InvitationActions {
         children: [
           Text(
             '${selectedTargets.length} valda',
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(fontWeight: FontWeight.w500),
+            style: AppTextStyles.text14Medium,
           ),
           const Spacer(),
           if (showRemove && onBulkRemove != null)
@@ -225,10 +220,7 @@ class InvitationActions {
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             'Berörda målgrupper:',
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(fontWeight: FontWeight.w500),
+            style: AppTextStyles.text14Medium,
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           Container(

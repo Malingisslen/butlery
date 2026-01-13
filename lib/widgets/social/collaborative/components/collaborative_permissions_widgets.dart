@@ -43,9 +43,8 @@ class CollaborativePermissionsWidgets {
             Expanded(
               child: Text(
                 editMode.description,
-                style: AppTextStyles.bodyLarge.copyWith(
+                style: AppTextStyles.text16Medium.copyWith(
                   color: color,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),

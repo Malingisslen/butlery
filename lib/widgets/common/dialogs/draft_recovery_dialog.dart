@@ -41,9 +41,7 @@ class DraftRecoveryDialog extends StatelessWidget {
       ),
       title: Text(
         AppStrings.draftRecovery,
-        style: AppTextStyles.headlineSmall.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
+        style: AppTextStyles.headlineSmall,
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -136,9 +134,7 @@ class DraftRecoveryDialog extends StatelessWidget {
                       draft.title.isEmpty
                           ? AppStrings.unnamedRecipe
                           : draft.title,
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: AppTextStyles.text16Medium,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

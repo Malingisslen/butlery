@@ -99,9 +99,8 @@ class PortionScalerUI {
         const SizedBox(width: AppDimensions.spacingXs),
         Text(
           'Portioner',
-          style: AppTextStyles.titleMedium.copyWith(
+          style: AppTextStyles.titleBold.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
           ),
         ),
         const Spacer(),
@@ -157,9 +156,8 @@ class PortionScalerUI {
                   ),
                   child: Text(
                     '$currentPortions',
-                    style: AppTextStyles.bodyMedium.copyWith(
+                    style: AppTextStyles.bodyBold.copyWith(
                       color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -237,9 +235,8 @@ class PortionScalerUI {
                 child: Text(
                   _buildStatusText(
                       currentPortions, originalPortions, convertToSwedish),
-                  style: AppTextStyles.bodySmall.copyWith(
+                  style: AppTextStyles.metadataEmphasized.copyWith(
                     color: Theme.of(context).colorScheme.onSecondaryContainer,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -272,9 +269,7 @@ class PortionScalerUI {
                 convertToSwedish
                     ? 'Använder svenska enheter'
                     : 'Konvertera amerikanska enheter',
-                style: AppTextStyles.bodySmall.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTextStyles.metadataEmphasized,
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: convertToSwedish
@@ -317,9 +312,8 @@ class PortionScalerUI {
       children: [
         Text(
           'Ingredienser för $currentPortions ${currentPortions == 1 ? 'portion' : 'portioner'}:',
-          style: AppTextStyles.bodyLarge.copyWith(
+          style: AppTextStyles.text16Medium.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w500,
           ),
         ),
         const SizedBox(height: AppDimensions.spacingM),
@@ -390,12 +384,13 @@ class PortionScalerUI {
           Expanded(
             child: AnimatedDefaultTextStyle(
               duration: AppDimensions.animationDurationCommon,
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: isChanged
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.onSurface,
-                fontWeight: isChanged ? FontWeight.w600 : FontWeight.normal,
-              ),
+              style: isChanged
+                  ? AppTextStyles.bodyLargeBold.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                    )
+                  : AppTextStyles.bodyLarge.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
               child: Text(ingredient),
             ),
           ),

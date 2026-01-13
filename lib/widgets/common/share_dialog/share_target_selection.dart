@@ -20,9 +20,7 @@ class ShareTargetSelection {
       children: [
         Text(
           'Välj mottagare',
-          style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.titleBold,
         ),
         const SizedBox(height: AppDimensions.spacingM),
 
@@ -125,9 +123,7 @@ class ShareTargetSelection {
           ),
           title: Text(
             friend.displayName,
-            style: AppTextStyles.bodyLarge.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppTextStyles.text16Medium,
           ),
           subtitle: Text(
             friend.email,

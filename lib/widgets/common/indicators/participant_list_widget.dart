@@ -159,8 +159,7 @@ class ParticipantListWidget extends StatelessWidget {
               Text(
                 isCurrentUser ? 'Du' : activity.displayName,
                 style: isCurrentUser
-                    ? AppTextStyles.bodyLarge.copyWith(
-                        fontWeight: FontWeight.bold,
+                    ? AppTextStyles.bodyLargeBold.copyWith(
                         color: AppColors.primaryBlue,
                       )
                     : AppTextStyles.bodyLarge,
@@ -188,9 +187,8 @@ class ParticipantListWidget extends StatelessWidget {
       child: Center(
         child: Text(
           initials,
-          style: AppTextStyles.bodyLarge.copyWith(
+          style: AppTextStyles.bodyLargeBold.copyWith(
             fontSize: size * 0.4,
-            fontWeight: FontWeight.w600,
             color: AppColors.primaryBlue,
           ),
         ),

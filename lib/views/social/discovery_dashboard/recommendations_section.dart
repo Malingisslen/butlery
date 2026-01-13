@@ -185,9 +185,7 @@ class RecommendationsSection {
                     // Title
                     Text(
                       title,
-                      style: AppTextStyles.titleSmall.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextStyles.titleMedium,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

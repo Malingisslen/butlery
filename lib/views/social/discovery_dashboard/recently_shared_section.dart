@@ -67,9 +67,7 @@ class RecentlySharedSection {
                     children: [
                       Text(
                         title,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: AppTextStyles.text14Medium,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),

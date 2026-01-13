@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
@@ -113,14 +114,11 @@ class CollaborativeParticipantsWidgets {
               ),
             ),
             child: Center(
-              child: Builder(
-                builder: (context) => Text(
-                  '+$remaining',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontSize: size * 0.35,
-                        color: AppColors.primaryBlue,
-                        fontWeight: FontWeight.bold,
-                      ),
+              child: Text(
+                '+$remaining',
+                style: AppTextStyles.bodyLargeBold.copyWith(
+                  fontSize: size * 0.35,
+                  color: AppColors.primaryBlue,
                 ),
               ),
             ),

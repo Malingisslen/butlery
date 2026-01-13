@@ -15,9 +15,7 @@ class ShareMessageInput {
       children: [
         Text(
           'Meddelande (valfritt)',
-          style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.titleBold,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         TextField(

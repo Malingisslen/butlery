@@ -4,6 +4,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Social group and friend category management components.
 class SocialGroupComponents {
@@ -313,9 +314,7 @@ class SocialGroupComponents {
           children: [
             Text(
               'Kategoristatistik',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: AppTextStyles.titleBold,
             ),
             const SizedBox(
                 height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
@@ -385,9 +384,7 @@ class SocialGroupComponents {
         const SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: AppTextStyles.titleBold,
         ),
         Text(
           label,
@@ -418,9 +415,7 @@ class SocialGroupComponents {
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: AppTextStyles.titleBold,
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           Text(

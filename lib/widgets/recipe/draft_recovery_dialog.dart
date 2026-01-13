@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Dialog for recovering unsaved recipe drafts.
 /// Shows available drafts with metadata and allows user to:
@@ -141,9 +142,7 @@ class _DraftListTile extends StatelessWidget {
                 children: [
                   Text(
                     draft.title.isNotEmpty ? draft.title : 'Namnlöst recept',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTextStyles.text14Medium,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

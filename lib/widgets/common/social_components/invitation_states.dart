@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Invitation target state widgets.
 class InvitationStates {
@@ -77,10 +78,7 @@ class InvitationStates {
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+                style: AppTextStyles.titleBold),
           if (message != null) Text(message, textAlign: TextAlign.center),
           if (onRetry != null) ...[
             const SizedBox(height: AppDimensions.spacingMd),
@@ -129,10 +127,7 @@ class InvitationStates {
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+                style: AppTextStyles.titleBold),
           if (message != null) Text(message, textAlign: TextAlign.center),
           if (onRequestAccess != null) ...[
             const SizedBox(height: AppDimensions.spacingMd),
@@ -165,10 +160,7 @@ class InvitationStates {
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+                style: AppTextStyles.titleBold),
           if (message != null) Text(message, textAlign: TextAlign.center),
           if (showAddButton && onAddTargets != null) ...[
             const SizedBox(height: AppDimensions.spacingMd),
@@ -203,10 +195,7 @@ class InvitationStates {
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+                style: AppTextStyles.titleBold),
           if (message != null) Text(message, textAlign: TextAlign.center),
           if (query != null)
             Text('Sökning: "$query"',
@@ -242,10 +231,7 @@ class InvitationStates {
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+                style: AppTextStyles.titleBold),
           if (message != null) Text(message, textAlign: TextAlign.center),
         ],
       ),
@@ -273,10 +259,7 @@ class InvitationStates {
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+                style: AppTextStyles.titleBold),
           if (message != null)
             Text(
               message.replaceAll('{count}', selectedCount.toString()),
@@ -315,10 +298,7 @@ class InvitationStates {
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+                style: AppTextStyles.titleBold),
           if (message != null)
             Text(
               message.replaceAll('{count}', sentCount.toString()),
@@ -359,10 +339,7 @@ class InvitationStates {
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
             Text(title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+                style: AppTextStyles.titleBold),
           if (showPercentage) Text('${(progress * 100).toInt()}%'),
           if (subtitle != null) Text(subtitle, textAlign: TextAlign.center),
         ],
@@ -391,10 +368,7 @@ class InvitationStates {
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             '$operationName $completed av $total',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(fontWeight: FontWeight.w500),
+            style: AppTextStyles.text16Medium,
           ),
           if (currentItem != null) ...[
             const SizedBox(height: AppDimensions.spacingSm),

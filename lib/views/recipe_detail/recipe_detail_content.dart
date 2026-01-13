@@ -221,7 +221,7 @@ class RecipeDetailContent extends StatelessWidget {
                 ),
                 child: Text(
                   displayName,
-                  style: AppTextStyles.bodySmall.copyWith(
+                  style: AppTextStyles.metadataEmphasized.copyWith(
                     color: AppColors.primaryBlue,
                     fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.w500,
                   ),
@@ -382,9 +382,9 @@ class RecipeDetailContent extends StatelessWidget {
                       child: Center(
                         child: Text(
                           '${index + 1}',
-                          style: AppTextStyles.bodySmall.copyWith(
+                          style: AppTextStyles.metadataEmphasized.copyWith(
                             color: AppColors.neutralLight,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -519,9 +519,8 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
       ),
       child: Text(
         name,
-        style: AppTextStyles.bodySmall.copyWith(
+        style: AppTextStyles.metadataEmphasized.copyWith(
           color: AppColors.primaryBlue,
-          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -544,9 +543,8 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
         ),
         child: Text(
           '+$count till',
-          style: AppTextStyles.bodySmall.copyWith(
+          style: AppTextStyles.metadataEmphasized.copyWith(
             color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityDark),
-            fontWeight: FontWeight.w500,
           ),
         ),
       ),

@@ -280,9 +280,8 @@ class ImageGridWidgets {
                 Flexible(
                   child: Text(
                     'Lägg till ($remainingSlots)',
-                    style: AppTextStyles.bodyMedium.copyWith(
+                    style: AppTextStyles.text14Medium.copyWith(
                       color: AppColors.primaryBlue,
-                      fontWeight: FontWeight.w500,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),

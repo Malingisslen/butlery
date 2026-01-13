@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -241,9 +242,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                 children: [
                   Text(
                     _hasMfa ? 'MFA aktiverat' : 'MFA inaktiverat',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: AppTextStyles.titleBold,
                   ),
                   const SizedBox(height: AppDimensions.spacingXs),
                   Text(

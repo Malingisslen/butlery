@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
@@ -231,9 +232,8 @@ class SocialCollaborativeComponents {
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            style: AppTextStyles.metadataEmphasized.copyWith(
                   color: color ?? AppColors.success,
-                  fontWeight: FontWeight.w500,
                 ),
           ),
         ],
@@ -268,9 +268,8 @@ class SocialCollaborativeComponents {
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            style: AppTextStyles.metadataEmphasized.copyWith(
                   color: color ?? AppColors.textMedium,
-                  fontWeight: FontWeight.w500,
                 ),
           ),
         ],
@@ -301,10 +300,7 @@ class SocialCollaborativeComponents {
           if (showLabels)
             Text(
               'Samarbetsstatistik',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: AppTextStyles.titleBold,
             ),
           if (showLabels) const SizedBox(height: AppDimensions.spacingSm),
           Row(
@@ -365,10 +361,7 @@ class SocialCollaborativeComponents {
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               value,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: AppTextStyles.bodyBold,
             ),
           ],
         ),
@@ -428,9 +421,8 @@ class SocialCollaborativeComponents {
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               config.label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              style: AppTextStyles.metadataEmphasized.copyWith(
                     color: color ?? config.color,
-                    fontWeight: FontWeight.w500,
                   ),
             ),
           ],

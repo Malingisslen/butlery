@@ -112,9 +112,8 @@ class _ShoppingListItem extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
             '$completedCount/$totalCount artiklar',
-            style: AppTextStyles.bodySmall.copyWith(
+            style: AppTextStyles.metadataEmphasized.copyWith(
               color: AppColors.primaryBlue,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ],

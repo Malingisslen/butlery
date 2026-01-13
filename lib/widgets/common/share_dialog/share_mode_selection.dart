@@ -22,9 +22,7 @@ class ShareModeSelection {
       children: [
         Text(
           'Delningssätt',
-          style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.titleBold,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         Column(
@@ -70,9 +68,7 @@ class ShareModeSelection {
                           children: [
                             Text(
                               'Statisk kopia',
-                              style: AppTextStyles.bodyLarge.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: AppTextStyles.text16Medium,
                             ),
                             const SizedBox(height: AppDimensions.spacingXs),
                             Text(
@@ -130,9 +126,7 @@ class ShareModeSelection {
                         children: [
                           Text(
                             'Realtidsdelning',
-                            style: AppTextStyles.bodyLarge.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: AppTextStyles.text16Medium,
                           ),
                           const SizedBox(height: AppDimensions.spacingXs),
                           Text(

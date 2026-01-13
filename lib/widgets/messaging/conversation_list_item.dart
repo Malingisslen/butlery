@@ -64,8 +64,7 @@ class ConversationListItem extends StatelessWidget {
                           child: Text(
                             conversation.getDisplayTitle(currentUserId),
                             style: _hasUnreadMessages
-                                ? AppTextStyles.bodyMedium.copyWith(
-                                    fontWeight: FontWeight.bold,
+                                ? AppTextStyles.bodyBold.copyWith(
                                     color: AppColors.textDark,
                                   )
                                 : AppTextStyles.bodyMedium.copyWith(
@@ -78,14 +77,14 @@ class ConversationListItem extends StatelessWidget {
                         const SizedBox(width: AppDimensions.paddingS),
                         Text(
                           conversation.formattedLastActivity,
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: _hasUnreadMessages
-                                ? AppColors.primaryBlue
-                                : AppColors.textMedium,
-                            fontWeight: _hasUnreadMessages
-                                ? FontWeight.w500
-                                : FontWeight.normal,
-                          ),
+                          style: _hasUnreadMessages
+                              ? AppTextStyles.labelSmall.copyWith(
+                                  color: AppColors.primaryBlue,
+                                )
+                              : AppTextStyles.labelSmall.copyWith(
+                                  color: AppColors.textMedium,
+                                  fontWeight: FontWeight.normal,
+                                ),
                         ),
                       ],
                     ),
@@ -101,7 +100,6 @@ class ConversationListItem extends StatelessWidget {
                             style: _hasUnreadMessages
                                 ? AppTextStyles.labelSmall.copyWith(
                                     color: AppColors.textDark,
-                                    fontWeight: FontWeight.w500,
                                   )
                                 : AppTextStyles.labelSmall.copyWith(
                                     color: AppColors.textMedium,
@@ -198,9 +196,8 @@ class ConversationListItem extends StatelessWidget {
     return Center(
       child: Text(
         displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-        style: AppTextStyles.headlineSmall.copyWith(
+        style: AppTextStyles.sectionHeader.copyWith(
           color: AppColors.primaryBlue,
-          fontWeight: FontWeight.bold,
         ),
       ),
     );

@@ -143,9 +143,7 @@ class TrendingContentSection {
                   children: [
                     Text(
                       recipe.title,
-                      style: AppTextStyles.titleSmall.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextStyles.titleMedium,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -170,9 +168,8 @@ class TrendingContentSection {
                         const SizedBox(width: AppDimensions.spacingXs),
                         Text(
                           '${(recipe.socialData?.memberPermissions?.length ?? 0) + 1}',
-                          style: AppTextStyles.bodySmall.copyWith(
+                          style: AppTextStyles.metadataEmphasized.copyWith(
                             color: AppColors.success,
-                            fontWeight: FontWeight.w500,
                           ),
                         ),
                         const Spacer(),
@@ -347,9 +344,8 @@ class TrendingContentSection {
           ),
           child: Text(
             count.toString(),
-            style: AppTextStyles.labelMedium.copyWith(
+            style: AppTextStyles.labelLarge.copyWith(
               color: AppColors.onPrimary,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ),

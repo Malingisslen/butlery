@@ -45,9 +45,7 @@ class ImagePickerDialog extends StatelessWidget {
               // Header
               Text(
                 'Välj bild',
-                style: AppTextStyles.titleLarge.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTextStyles.titleBold,
                 textAlign: TextAlign.center,
               ),
 
@@ -134,7 +132,6 @@ class _SourceOption extends StatelessWidget {
                 label,
                 style: AppTextStyles.titleMedium.copyWith(
                   color: color,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
               const Spacer(),

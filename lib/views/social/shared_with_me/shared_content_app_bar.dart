@@ -47,9 +47,8 @@ class SharedContentAppBar {
                     ),
                     child: Text(
                       '${viewModel.totalUnreadCount}',
-                      style: AppTextStyles.labelSmall.copyWith(
+                      style: AppTextStyles.labelLarge.copyWith(
                         color: AppColors.neutralLight,
-                        fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
                     ),

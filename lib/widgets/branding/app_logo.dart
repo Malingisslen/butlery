@@ -132,7 +132,6 @@ class AppBranding extends StatelessWidget {
           appName,
           style: nameStyle ??
               AppTextStyles.headlineMedium.copyWith(
-                fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.primary,
               ),
         ),

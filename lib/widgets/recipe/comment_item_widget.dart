@@ -48,8 +48,7 @@ class CommentItemWidget extends StatelessWidget {
                           Text(
                             socialViewModel
                                 .getAuthorDisplayName(comment.authorId),
-                            style: AppTextStyles.labelMedium
-                                .copyWith(fontWeight: FontWeight.w600),
+                            style: AppTextStyles.labelLarge,
                           ),
                           const SizedBox(width: AppDimensions.spacingS),
                           Text(

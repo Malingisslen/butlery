@@ -201,11 +201,13 @@ class RecipeDetailMetadata extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
             label,
-            style: AppTextStyles.bodySmall.copyWith(
+            style: (isHighlighted
+                    ? AppTextStyles.metadataEmphasized
+                    : AppTextStyles.bodySmall)
+                .copyWith(
               color: isHighlighted
                   ? Theme.of(context).colorScheme.primary
                   : Theme.of(context).colorScheme.onSurfaceVariant,
-              fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
             ),
             textAlign: TextAlign.center,
             maxLines: 1,
@@ -214,9 +216,11 @@ class RecipeDetailMetadata extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
             value,
-            style: AppTextStyles.bodyLarge.copyWith(
+            style: (isHighlighted
+                    ? AppTextStyles.bodyLargeBold
+                    : AppTextStyles.text16Medium)
+                .copyWith(
               color: isHighlighted ? AppColors.primaryBlue : AppColors.textDark,
-              fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.w500,
             ),
             textAlign: TextAlign.center,
             maxLines: 1,

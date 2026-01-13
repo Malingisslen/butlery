@@ -303,9 +303,8 @@ class FriendRequestCard {
                         const SizedBox(width: AppDimensions.spacingXs),
                         Text(
                           statusText,
-                          style: AppTextStyles.bodySmall.copyWith(
+                          style: AppTextStyles.metadataEmphasized.copyWith(
                             color: statusColor,
-                            fontWeight: FontWeight.w500,
                           ),
                         ),
                         const Spacer(),

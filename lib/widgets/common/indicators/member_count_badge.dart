@@ -36,9 +36,7 @@ class MemberCountBadge extends StatelessWidget {
       child: Center(
         child: Text(
           '+$additionalCount',
-          style: AppTextStyles.bodySmall.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.metadataEmphasized,
         ),
       ),
     );

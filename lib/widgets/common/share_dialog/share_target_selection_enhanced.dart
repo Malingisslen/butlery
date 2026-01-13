@@ -31,9 +31,7 @@ class ShareTargetSelectionEnhanced {
       children: [
         Text(
           'Välj mottagare',
-          style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.titleBold,
         ),
         const SizedBox(height: AppDimensions.spacingM),
 
@@ -173,12 +171,13 @@ class ShareTargetSelectionEnhanced {
             const SizedBox(width: AppDimensions.spacingS),
             Text(
               label,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: isSelected
-                    ? Theme.of(context).colorScheme.onPrimary
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              ),
+              style: isSelected
+                  ? AppTextStyles.bodyBold.copyWith(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    )
+                  : AppTextStyles.text14Medium.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
             ),
           ],
         ),
@@ -243,8 +242,7 @@ class ShareTargetSelectionEnhanced {
             ),
             title: Text(
               friend.displayName,
-              style: AppTextStyles.bodyLarge.copyWith(
-                fontWeight: FontWeight.w500,
+              style: AppTextStyles.text16Medium.copyWith(
                 color: isExistingCollaborator
                     ? Theme.of(context)
                         .colorScheme
@@ -266,9 +264,8 @@ class ShareTargetSelectionEnhanced {
                   const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     'Delar redan listan', // PHASE 2: Status text for existing collaborators
-                    style: AppTextStyles.bodySmall.copyWith(
+                    style: AppTextStyles.metadataEmphasized.copyWith(
                       color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -347,9 +344,7 @@ class ShareTargetSelectionEnhanced {
           ),
           title: Text(
             group.name,
-            style: AppTextStyles.bodyLarge.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppTextStyles.text16Medium,
           ),
           subtitle: Text(
             '${group.friendUserIds.length} medlemmar',

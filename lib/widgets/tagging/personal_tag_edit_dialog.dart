@@ -319,9 +319,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
               const SizedBox(width: AppDimensions.spacingS),
               Text(
                 name,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTextStyles.text14Medium,
               ),
             ],
           ),

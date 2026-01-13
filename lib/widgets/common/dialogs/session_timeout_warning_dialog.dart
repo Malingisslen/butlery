@@ -142,9 +142,8 @@ class _SessionTimeoutWarningDialogState
               ),
               child: Text(
                 _formatDuration(_remainingSeconds),
-                style: AppTextStyles.headlineMedium.copyWith(
+                style: AppTextStyles.headlineBold.copyWith(
                   color: AppColors.warning,
-                  fontWeight: FontWeight.bold,
                   fontFeatures: [const FontFeature.tabularFigures()],
                 ),
               ),

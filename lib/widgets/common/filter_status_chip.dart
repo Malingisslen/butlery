@@ -45,17 +45,15 @@ class FilterStatusChip extends StatelessWidget {
           Expanded(
             child: Text(
               'Filter: ${filterParts.join(' • ')}',
-              style: AppTextStyles.bodySmall.copyWith(
+              style: AppTextStyles.metadataEmphasized.copyWith(
                 color: Theme.of(context).colorScheme.onSecondaryContainer,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ),
           Text(
             '$selectedCount valda',
-            style: AppTextStyles.bodySmall.copyWith(
+            style: AppTextStyles.metadataEmphasized.copyWith(
               color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ],

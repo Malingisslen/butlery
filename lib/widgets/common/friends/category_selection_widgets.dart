@@ -168,8 +168,7 @@ class CategorySelectionWidgets {
             ),
             child: Text(
               '${category.friendCount}',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
+              style: AppTextStyles.badge.copyWith(
                     color: AppColors.primaryBlue,
                   ),
             ),
@@ -266,9 +265,8 @@ class CategorySelectionWidgets {
               children: [
                 Text(
                   'Valda kategorier',
-                  style: AppTextStyles.labelMedium.copyWith(
+                  style: AppTextStyles.labelLarge.copyWith(
                     color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(

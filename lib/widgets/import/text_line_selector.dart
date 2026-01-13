@@ -7,6 +7,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Selection mode for the text line selector.
 enum SelectionMode {
@@ -89,9 +90,7 @@ class TextLineSelector extends StatelessWidget {
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   headerText!,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.titleMedium,
                 ),
                 const Spacer(),
                 Text(
@@ -313,9 +312,9 @@ class _LineItem extends StatelessWidget {
                 Expanded(
                   child: Text(
                     text.trim(),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: isSelected ? FontWeight.w500 : null,
-                    ),
+                    style: isSelected
+                        ? AppTextStyles.text14Medium
+                        : AppTextStyles.bodyMedium,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -333,9 +332,8 @@ class _LineItem extends StatelessWidget {
                     ),
                     child: Text(
                       mode == SelectionMode.ingredients ? 'Trolig' : 'Steg',
-                      style: theme.textTheme.labelSmall?.copyWith(
+                      style: AppTextStyles.labelSmall.copyWith(
                         color: modeColor,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
