@@ -1,8 +1,8 @@
 # Manual Testing Log - Butlery App
 
 **Created**: 2026-01-07
-**Last Updated**: 2026-01-12 (BUG-016 verified as false negative - data saves despite error message)
-**Status**: In Progress (2 open bugs - BUG-014, BUG-016)
+**Last Updated**: 2026-01-13 (BUG-016 FIXED - web Firestore assertion error handled)
+**Status**: In Progress (1 open bug - BUG-014)
 
 ---
 
@@ -47,6 +47,7 @@
 | BUG-012 | Platform.isIOS crashes on web in DialogFactory | 16 | High | FIXED |
 | BUG-013 | Group edit fails with TypeError | 16 | High | FIXED |
 | BUG-015 | Group updateCategory service returns false | 16 | High | FIXED |
+| BUG-016 | Group edit shows error but data saves (false negative) | 16 | Medium | FIXED |
 
 **BUG-003 Details:**
 - **Root Cause 1**: Firestore security rules rejected `errorReason` field in tagResult
@@ -95,7 +96,6 @@
 | Bug ID | Title | Phase | Test ID | Severity | Status |
 |--------|-------|-------|---------|----------|--------|
 | BUG-014 | Group edit dialog bottom overflow by 17 pixels | 16 | GROUP-E2E-05 | Low | OPEN |
-| BUG-016 | Group edit shows error but data saves (false negative) | 16 | GROUP-E2E-05-06 | Medium | OPEN |
 
 **BUG-013 Details (FIXED 2026-01-11):**
 - **Issue**: Clicking "Spara ändringar" (Save changes) in group edit dialog throws TypeError
@@ -131,35 +131,21 @@
 - **Severity**: Low (visual issue, doesn't block functionality)
 - **Note**: Likely caused by error message expanding dialog content beyond available space
 
-**BUG-016 Details:**
+**BUG-016 Details (FIXED 2026-01-13):**
 - **Issue**: All group operations (invite, edit, rename) fail with Firestore internal error
 - **Platform**: Web (Chrome)
 - **Error Messages**:
   - "Kunde inte skicka gruppinbjudningar. Försök igen." (Could not send group invitations)
   - "Kunde inte uppdatera grupp. Försök igen." (Could not update group)
 - **Console Error**: `FIRESTORE INTERNAL ASSERTION FAILED: Unexpected state`
-- **Steps to reproduce**:
-  1. Navigate to group detail page (E2E Test Group)
-  2. Click overflow menu (3 dots) → "Redigera grupp"
-  3. Change name or description
-  4. Click "Spara ändringar" → Error appears
-  5. OR: Click "Lägg till" to invite member → Error appears
-- **Impact**: Blocks GROUP-E2E-04, 05, 06, 07, 08, 09 (all remaining group E2E tests)
-- **Severity**: High (blocks all group management functionality)
-- **Root Cause Analysis (2026-01-12)**:
-  1. ~~Duplicate `syncCategoryToFirebaseInternal()` calls causing rapid successive Firestore writes~~
-  2. ~~On web platform, this triggers Firestore SDK's internal assertion failure~~
-  3. **ACTUAL ISSUE**: Data IS being saved to Firebase, but `updateCategory()` returns `false` (false negative)
-  4. The error message appears even when the operation succeeds
-  5. Verified: Group rename and description changes ARE persisted to Firebase
-- **Fix Applied** (partial):
-  1. `friend_categories_operations.dart` - Removed duplicate `syncCategoryToFirebaseInternal()` call
-  2. `unified_friends_service.dart` - Fixed `refresh()` to delegate to `_stateManager.refresh()`
-- **Remaining Issue**: `updateCategory()` returns `false` even when Firebase write succeeds
-  - Possible cause: Exception thrown after successful write, or callback/listener issue
-  - **Workaround**: Users can ignore error message - data IS saved. Refresh page to verify.
-- **Severity Downgrade**: Medium (UX issue - confusing error message, but functionality works)
-- **Status**: Data saves correctly. Error message is false negative - needs further investigation
+- **Root Cause**: Web Firestore SDK throws assertion errors after successful writes during local state sync
+- **Fix Applied (2026-01-13)**:
+  1. `friends_internal_operations.dart` - Added error handling in `syncCategoryToFirebaseInternal()`:
+     - Catches Firestore assertion errors (contains "INTERNAL ASSERTION" or "Unexpected state")
+     - Verifies save succeeded by re-fetching the category from Firebase
+     - If verification confirms data saved, returns success instead of failing
+  2. Previous fixes preserved: removed duplicate sync call, fixed refresh delegation
+- **Verified**: 2026-01-13 - Group edit saves successfully with "Gruppen uppdaterades!" success message
 
 **BUG-011 Details (FIXED 2026-01-10):**
 - **Issue**: After User B accepts friend request from User A, User B sees User A in friends list, but User A's friends list doesn't show User B
@@ -711,12 +697,12 @@ See full test case details in:
 | GROUP-E2E-01 | Create group "E2E Test Group" | Group exists (admin only initially) | Completed | PASS | Group created with name "E2E Test Group", description "E2E testing". Note: Description field required despite being labeled "optional" - possible validation bug. Group shows 1 member (creator). |
 | GROUP-E2E-02 | Invite User B to group | User B sees group invite notification | Completed | PASS | From group detail page, clicked "Lägg till" → selected friend "send" → clicked "Skicka 1 inbjudningar". Success message: "1 inbjudningar skickade!" Invitation sent successfully. |
 | GROUP-E2E-03 | (as B) Accept group invite | User A sees User B as member | Completed | PASS | Logged in as send@test.se. Found group invitation in "Grupper" tab with notification badge. Clicked "Acceptera" - invitation accepted. "E2E Test Group" now shows "2 vänner" (2 members). |
-| GROUP-E2E-04 | (as B) Decline group invite | User B not in group, invite removed | BLOCKED | - | **BUG-016:** Cannot send group invitations due to Firestore error. Need to fix bug before testing decline flow. |
-| GROUP-E2E-05 | Rename group | User B sees new group name | Completed | PASS* | Renamed "E2E Test Group" → "E2E Test Group Fixed" → "E2E Test Group Verified". **Data saves correctly despite error message (BUG-016 false negative).** User B would see the new name after refresh. |
-| GROUP-E2E-06 | Change group description | User B sees new description | Completed | PASS* | Changed description to "BUG-016 test". **Data saves correctly despite error message (BUG-016 false negative).** |
-| GROUP-E2E-07 | (as B) Leave group | User A sees member count decrease | BLOCKED | - | **BUG-016:** Group operations failing. Needs investigation before testing. |
-| GROUP-E2E-08 | Remove User B from group (as admin) | User B no longer sees group | BLOCKED | - | **BUG-016:** Group member management operations failing. |
-| GROUP-E2E-09 | Delete group | User B no longer sees group | BLOCKED | - | **BUG-016:** Group operations failing. Needs fix before testing. |
+| GROUP-E2E-04 | (as B) Decline group invite | User B not in group, invite removed | Pending | - | BUG-016 fixed. Ready for testing. |
+| GROUP-E2E-05 | Rename group | User B sees new group name | Completed | PASS | Renamed group successfully. BUG-016 fixed - no more false error message. |
+| GROUP-E2E-06 | Change group description | User B sees new description | Completed | PASS | Changed description successfully. BUG-016 fixed - success message shows correctly. |
+| GROUP-E2E-07 | (as B) Leave group | User A sees member count decrease | Pending | - | BUG-016 fixed. Ready for testing. |
+| GROUP-E2E-08 | Remove User B from group (as admin) | User B no longer sees group | Pending | - | BUG-016 fixed. Ready for testing. |
+| GROUP-E2E-09 | Delete group | User B no longer sees group | Pending | - | BUG-016 fixed. Ready for testing. |
 
 ### 16.3 Recipe Sharing E2E (6 tests)
 
