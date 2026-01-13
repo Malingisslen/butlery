@@ -129,11 +129,7 @@ class UserCollectionWidgets {
     EdgeInsets? padding,
   }) {
     return Container(
-      padding: padding ??
-          const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingXs,
-            vertical: AppDimensions.spacingXs / 2,
-          ),
+      padding: padding ?? AppDimensions.paddingSymmetric4x2,
       decoration: BoxDecoration(
         color: backgroundColor ?? AppColors.primaryBlue,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),

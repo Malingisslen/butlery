@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Checkbox with debounce functionality to prevent spam clicking
 /// This widget wraps a standard checkbox and provides debouncing to prevent
@@ -17,7 +18,7 @@ class DebouncedCheckbox extends StatefulWidget {
     required this.value,
     required this.onChanged,
     this.activeColor,
-    this.debounceDuration = const Duration(milliseconds: 300),
+    this.debounceDuration = AppDimensions.animationDurationCommon,
   });
 
   @override

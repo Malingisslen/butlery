@@ -53,7 +53,7 @@ class GroupActionButtons extends StatelessWidget {
         Text(
           'Dela med gruppen',
           style:
-              AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.bold),
+              AppTextStyles.titleBold,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         Row(
@@ -95,7 +95,7 @@ class GroupActionButtons extends StatelessWidget {
         Text(
           'Hantera grupp',
           style:
-              AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.bold),
+              AppTextStyles.titleBold,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         if (_isAdmin) ...[

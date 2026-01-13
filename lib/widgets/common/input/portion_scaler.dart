@@ -49,7 +49,7 @@ class _PortionScalerState extends State<PortionScaler>
         PortionScalerLogic.detectAmericanUnits(widget.originalIngredients);
 
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 150),
+      duration: AppDimensions.animationDurationFast,
       vsync: this,
     );
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(

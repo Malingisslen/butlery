@@ -179,7 +179,7 @@ class GroupShoppingListActions {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('Dela "${shoppingList.name}" med:'),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimensions.spacingMd),
               ListTile(
                 leading: const Icon(Icons.people),
                 title: const Text('Vanner'),
@@ -271,7 +271,7 @@ class GroupShoppingListActions {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text('Varfor vill du rapportera denna inkopslista?'),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimensions.spacingMd),
               RadioGroup<String>(
                 groupValue: selectedReason,
                 onChanged: (value) => setState(() => selectedReason = value),

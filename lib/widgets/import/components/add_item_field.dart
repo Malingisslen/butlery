@@ -51,9 +51,9 @@ class _AddItemFieldState extends State<AddItemField> {
             style: BorderStyle.solid,
           ),
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 10,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingM,
+          vertical: AppDimensions.paddingMs,
         ),
         suffixIcon: IconButton(
           icon: Icon(

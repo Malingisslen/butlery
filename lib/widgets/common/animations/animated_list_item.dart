@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// A widget that animates its child with a fade-in and scale entrance effect.
 ///
@@ -58,7 +59,7 @@ class AnimatedListItem extends StatefulWidget {
     this.duration = const Duration(milliseconds: 400),
     this.curve = Curves.easeOut,
     this.startScale = 0.95,
-    this.maxStaggerDelay = const Duration(milliseconds: 500),
+    this.maxStaggerDelay = AppDimensions.animationDurationLong,
   });
 
   @override

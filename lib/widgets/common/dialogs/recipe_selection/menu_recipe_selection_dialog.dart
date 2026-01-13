@@ -176,7 +176,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingXs,
-              vertical: 2,
+              vertical: AppDimensions.spacingXxs,
             ),
             decoration: BoxDecoration(
               color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),

@@ -33,10 +33,10 @@ class PlatformBadgeWidget extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return AnimatedOpacity(
-      duration: const Duration(milliseconds: 200),
+      duration: AppDimensions.animationDurationMedium,
       opacity: isVisible ? 1.0 : 0.0,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: AppDimensions.paddingSymmetric12x6,
         decoration: BoxDecoration(
           color: _getBackgroundColor(detection!.platform, colorScheme),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius16),
@@ -53,7 +53,7 @@ class PlatformBadgeWidget extends StatelessWidget {
               size: AppDimensions.iconSizeS,
               color: _getIconColor(detection!.platform, colorScheme),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: AppDimensions.spacing6),
             Text(
               detection!.platformLabel,
               style: theme.textTheme.labelMedium?.copyWith(
@@ -117,7 +117,7 @@ class PlatformBadgeWidget extends StatelessWidget {
       case Platform.youtube:
         return BrandColors.youtube;
       case Platform.tiktok:
-        return Colors.black;
+        return BrandColors.tiktokText;
       case Platform.instagram:
         return BrandColors.instagram;
       case Platform.website:
@@ -132,7 +132,7 @@ class PlatformBadgeWidget extends StatelessWidget {
       case Platform.youtube:
         return BrandColors.youtubeText;
       case Platform.tiktok:
-        return Colors.black;
+        return BrandColors.tiktokText;
       case Platform.instagram:
         return BrandColors.instagramText;
       case Platform.website:
@@ -186,7 +186,7 @@ class PlatformIconWidget extends StatelessWidget {
       case Platform.youtube:
         return BrandColors.youtube;
       case Platform.tiktok:
-        return Colors.black;
+        return BrandColors.tiktokText;
       case Platform.instagram:
         return BrandColors.instagram;
       case Platform.website:

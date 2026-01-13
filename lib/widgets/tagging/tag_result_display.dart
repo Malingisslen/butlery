@@ -381,8 +381,8 @@ class CompactAllergenRow extends StatelessWidget {
     if (badges.isEmpty) return const SizedBox.shrink();
 
     return Wrap(
-      spacing: 4,
-      runSpacing: 4,
+      spacing: AppDimensions.spacingXs,
+      runSpacing: AppDimensions.spacingXs,
       children: badges.take(maxBadges).map((allergen) {
         final status = tagResult.getAllergenStatus(allergen);
         return AllergenStatusBadge(
@@ -452,8 +452,8 @@ class CompactDietaryRow extends StatelessWidget {
     if (badges.isEmpty) return const SizedBox.shrink();
 
     return Wrap(
-      spacing: 4,
-      runSpacing: 4,
+      spacing: AppDimensions.spacingXs,
+      runSpacing: AppDimensions.spacingXs,
       children: badges.take(maxBadges).map((diet) {
         return DietaryStatusBadge(
           diet: diet,

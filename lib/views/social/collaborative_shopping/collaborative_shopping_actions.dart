@@ -229,7 +229,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
       context: context,
       action: () async {
         // In real implementation, this would call viewModel.clearCompletedItems()
-        await Future.delayed(const Duration(milliseconds: 500));
+        await Future.delayed(AppDimensions.animationDurationLong);
         return true;
       },
       confirmationTitle: 'Rensa klara artiklar?',
@@ -314,7 +314,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
       context: context,
       action: () async {
         // In real implementation, copy link to clipboard
-        await Future.delayed(const Duration(milliseconds: 200));
+        await Future.delayed(AppDimensions.animationDurationMedium);
         return true;
       },
       successMessage: 'Länk kopierad till urklipp',

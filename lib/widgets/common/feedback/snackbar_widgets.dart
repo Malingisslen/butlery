@@ -28,7 +28,7 @@ class SnackbarWidgets {
         ),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
+        duration: AppDimensions.snackbarDuration,
       ),
     );
   }

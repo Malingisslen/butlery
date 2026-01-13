@@ -180,7 +180,7 @@ class CategoryHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingXs,
-              vertical: 2,
+              vertical: AppDimensions.spacingXxs,
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.secondary,

@@ -174,8 +174,7 @@ class ShoppingListContent {
               Expanded(
                 child: Text(
                   category,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.bodyLargeBold.copyWith(
                     color: isCompleted
                         ? AppColors.textMedium
                         : AppColors.primaryBlue,
@@ -199,8 +198,7 @@ class ShoppingListContent {
                 ),
                 child: Text(
                   '${items.length}',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontWeight: FontWeight.w500,
+                  style: AppTextStyles.metadataEmphasized.copyWith(
                     color: isCompleted
                         ? AppColors.textMedium
                         : AppColors.primaryBlue,
@@ -282,8 +280,7 @@ class ShoppingListContent {
             children: [
               Text(
                 'Inhandlat',
-                style: AppTextStyles.bodyLarge.copyWith(
-                  fontWeight: FontWeight.w600,
+                style: AppTextStyles.bodyLargeBold.copyWith(
                   color: AppColors.primaryBlue,
                 ),
               ),

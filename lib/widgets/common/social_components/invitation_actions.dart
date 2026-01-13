@@ -140,7 +140,7 @@ class InvitationActions {
       mainAxisSize: MainAxisSize.min,
       children: buttons.reversed
           .map((button) => Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
+                padding: AppDimensions.paddingOnlyBottom16,
                 child: button,
               ))
           .toList(),

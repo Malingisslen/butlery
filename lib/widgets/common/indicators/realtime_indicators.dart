@@ -1,6 +1,7 @@
 // lib/widgets/common/indicators/realtime_indicators.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 import 'package:butlery/widgets/common/indicators/edit_indicator_widget.dart';
 import 'package:butlery/widgets/common/indicators/participant_list_widget.dart';
@@ -22,7 +23,7 @@ class RealtimeIndicators {
     required String editingWhat,
     Color? color,
     bool isVisible = true,
-    Duration animationDuration = const Duration(milliseconds: 300),
+    Duration animationDuration = AppDimensions.animationDurationCommon,
   }) {
     return EditIndicatorWidget(
       editorName: editorName,

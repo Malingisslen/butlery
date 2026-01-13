@@ -29,9 +29,7 @@ class GroupDetailHeader {
                   children: [
                     Text(
                       group.name,
-                      style: AppTextStyles.headlineSmall.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppTextStyles.sectionHeader,
                     ),
                     const SizedBox(height: AppDimensions.spacingXs),
                     Text(
@@ -70,8 +68,7 @@ class GroupDetailHeader {
                     const SizedBox(width: AppDimensions.spacingXs),
                     Text(
                       'Gruppinformation',
-                      style: AppTextStyles.titleSmall.copyWith(
-                        fontWeight: FontWeight.w600,
+                      style: AppTextStyles.titleMedium.copyWith(
                         color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
@@ -122,9 +119,7 @@ class GroupDetailHeader {
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             '$label: ',
-            style: AppTextStyles.bodySmall.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppTextStyles.metadataEmphasized,
           ),
           Expanded(
             child: Text(

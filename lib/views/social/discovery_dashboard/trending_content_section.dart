@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
 
@@ -89,13 +90,7 @@ class TrendingContentSection {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadow.withValues(alpha: AppDimensions.opacityVeryLight),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          boxShadow: AppShadows.card,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

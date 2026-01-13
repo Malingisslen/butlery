@@ -347,7 +347,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Colors.white,
+                    color: AppColors.cardWhite,
                   ),
                 )
               : Text(_isEditing ? 'Spara' : 'Skapa'),

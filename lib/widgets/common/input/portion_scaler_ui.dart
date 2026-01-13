@@ -372,10 +372,10 @@ class PortionScalerUI {
         children: [
           // Bullet point
           Container(
-            width: 6,
-            height: 6,
+            width: AppDimensions.spacing6,
+            height: AppDimensions.spacing6,
             margin: const EdgeInsets.only(
-              top: 8,
+              top: AppDimensions.spacingSm,
               right: AppDimensions.spacingS,
             ),
             decoration: BoxDecoration(
@@ -389,7 +389,7 @@ class PortionScalerUI {
           // Ingredient text
           Expanded(
             child: AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 300),
+              duration: AppDimensions.animationDurationCommon,
               style: AppTextStyles.bodyLarge.copyWith(
                 color: isChanged
                     ? Theme.of(context).colorScheme.primary

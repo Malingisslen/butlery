@@ -130,8 +130,7 @@ class GroupsTab {
               const SizedBox(width: AppDimensions.spacingSm),
               Text(
                 'Gruppinbjudningar (${invitations.length})',
-                style: AppTextStyles.titleMedium.copyWith(
-                  fontWeight: FontWeight.bold,
+                style: AppTextStyles.titleBold.copyWith(
                   color: Theme.of(context).colorScheme.tertiary,
                 ),
               ),
@@ -165,9 +164,7 @@ class GroupsTab {
           const SizedBox(width: AppDimensions.spacingSm),
           Text(
             'Mina grupper (${groups.length})',
-            style: AppTextStyles.titleMedium.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: AppTextStyles.titleBold,
           ),
         ],
       ),

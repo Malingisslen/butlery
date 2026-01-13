@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -24,14 +25,7 @@ class ShoppingListHeader {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityLight),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        boxShadow: AppShadows.subtle,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,7 +54,7 @@ class ShoppingListHeader {
         // Dropdown container
         Expanded(
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: AppDimensions.paddingSymmetric16x12,
             decoration: BoxDecoration(
               color: AppColors.backgroundBeige,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
@@ -167,7 +161,7 @@ class ShoppingListHeader {
             child: OutlinedButton.icon(
               onPressed: onClearCompleted,
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: AppDimensions.paddingVertical8,
                 side: BorderSide(
                     color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityHalf)),
               ),
@@ -175,9 +169,8 @@ class ShoppingListHeader {
                   size: AppDimensions.iconSizeS, color: AppColors.textMedium),
               label: Text(
                 'Rensa (${viewModel.boughtItems})',
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.textMedium,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -193,7 +186,7 @@ class ShoppingListHeader {
             child: OutlinedButton.icon(
               onPressed: onUncheckAll,
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: AppDimensions.paddingVertical8,
                 side: BorderSide(
                     color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityHalf)),
               ),
@@ -201,9 +194,8 @@ class ShoppingListHeader {
                   size: AppDimensions.iconSizeS, color: AppColors.primaryBlue),
               label: Text(
                 'Avbocka alla',
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -287,9 +279,7 @@ class ShoppingListHeader {
             children: [
               Text(
                 list.name,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTextStyles.text14Medium,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -304,9 +294,8 @@ class ShoppingListHeader {
                   if (permissionText != null) ...[
                     Text(
                       ' • $permissionText',
-                      style: AppTextStyles.bodySmall.copyWith(
+                      style: AppTextStyles.metadataEmphasized.copyWith(
                         color: sharingColor,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],

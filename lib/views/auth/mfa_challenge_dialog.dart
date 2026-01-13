@@ -3,7 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Dialog for handling MFA challenge during sign-in.
@@ -195,22 +197,21 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
             if (_errorMessage != null) ...[
               const SizedBox(height: AppDimensions.spacingL),
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: AppDimensions.paddingAll8,
                 decoration: BoxDecoration(
-                  color: Colors.red.shade50,
+                  color: AppColors.errorContainer,
                   borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.error_outline,
-                        color: Colors.red.shade700, size: AppDimensions.iconSizeM),
+                    const Icon(Icons.error_outline,
+                        color: AppColors.onErrorContainer, size: AppDimensions.iconSizeM),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       child: Text(
                         _errorMessage!,
-                        style: TextStyle(
-                          color: Colors.red.shade700,
-                          fontSize: 13,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.onErrorContainer,
                         ),
                       ),
                     ),

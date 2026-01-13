@@ -203,8 +203,8 @@ class ActionButtons {
           onPressed: isLoading ? null : onPressed,
           icon: isLoading
               ? const SizedBox(
-                  width: 24,
-                  height: 24,
+                  width: AppDimensions.iconSizeAction,
+                  height: AppDimensions.iconSizeAction,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     color: AppColors.onPrimary,

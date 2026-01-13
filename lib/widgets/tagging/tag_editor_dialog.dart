@@ -243,7 +243,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                               icon: const Icon(Icons.add),
                               style: IconButton.styleFrom(
                                 backgroundColor: AppColors.primaryBlue,
-                                foregroundColor: Colors.white,
+                                foregroundColor: AppColors.cardWhite,
                               ),
                             ),
                           ],

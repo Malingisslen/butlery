@@ -53,8 +53,8 @@ class UserAvatarWidgets {
                     avatarSize,
                     effectiveBackgroundColor,
                     effectiveTextColor),
-                fadeInDuration: const Duration(milliseconds: 300),
-                fadeOutDuration: const Duration(milliseconds: 300),
+                fadeInDuration: AppDimensions.animationDurationCommon,
+                fadeOutDuration: AppDimensions.animationDurationCommon,
               ),
             )
           : _buildInitialsAvatar(displayName, avatarSize,

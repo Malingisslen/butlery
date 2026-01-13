@@ -31,8 +31,7 @@ class SocialBuilders {
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor ?? AppColors.primaryBlue,
         foregroundColor: foregroundColor ?? AppColors.cardWhite,
-        padding:
-            padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: padding ?? AppDimensions.paddingSymmetric16x8,
       ),
     );
   }

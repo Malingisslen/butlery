@@ -117,7 +117,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   Future<void> _refreshConversations() async {
     // The stream listener will automatically update the UI
     // This is just for the RefreshIndicator feedback
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(AppDimensions.animationDurationLong);
   }
 
   void _navigateToChat(Conversation conversation) {

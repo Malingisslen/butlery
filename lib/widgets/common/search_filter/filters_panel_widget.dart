@@ -5,6 +5,7 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/widgets/common/search_filter/filter_chips_widget.dart';
 import 'package:butlery/widgets/common/search_filter/personal_tag_filter_chips.dart';
@@ -71,13 +72,7 @@ class FiltersPanelWidget extends StatelessWidget {
           ? DecoratedBox(
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.neutralDark.withValues(alpha: AppDimensions.opacityExtraVeryLight),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                boxShadow: AppShadows.subtle,
               ),
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxHeight: maxFilterHeight),

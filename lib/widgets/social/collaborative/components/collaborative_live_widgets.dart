@@ -13,7 +13,7 @@ class CollaborativeLiveWidgets {
     required String editingWhat,
     Color? color,
     bool isVisible = true,
-    Duration animationDuration = const Duration(milliseconds: 300),
+    Duration animationDuration = AppDimensions.animationDurationCommon,
   }) {
     if (!isVisible) return const SizedBox.shrink();
 

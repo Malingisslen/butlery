@@ -31,7 +31,7 @@ class RealtimeStatusWidget extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
+              duration: AppDimensions.animationDurationCommon,
               child: Text(
                 statusEmoji,
                 key: ValueKey(statusEmoji),
@@ -41,7 +41,7 @@ class RealtimeStatusWidget extends StatelessWidget {
             if (showText) ...[
               const SizedBox(width: AppDimensions.spacingXs),
               AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
+                duration: AppDimensions.animationDurationCommon,
                 child: Text(
                   statusDescription,
                   key: ValueKey(statusDescription),

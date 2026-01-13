@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Dialog builders for profile actions.
@@ -52,13 +53,13 @@ class ProfileDialogs {
                       fontWeight: FontWeight.bold,
                     ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppDimensions.spacingSm),
               Text('• ${l10n.profileDeleteWarningRecipes}'),
               Text('• ${l10n.profileDeleteWarningMenus}'),
               Text('• ${l10n.profileDeleteWarningShoppingLists}'),
               Text('• ${l10n.profileDeleteWarningFriends}'),
               Text('• ${l10n.profileDeleteWarningSharedContent}'),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimensions.spacingMd),
               Text(
                 l10n.profileDeleteIrreversible,
                 style: Theme.of(builderContext).textTheme.bodyMedium?.copyWith(
@@ -99,7 +100,7 @@ class ProfileDialogs {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(l10n.profileEnterPasswordToConfirm),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             TextField(
               controller: controller,
               obscureText: true,

@@ -55,8 +55,7 @@ class GroupDetailStats {
         const SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
-          style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.bold,
+          style: AppTextStyles.titleBold.copyWith(
             color: color,
           ),
         ),

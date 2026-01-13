@@ -54,7 +54,7 @@ class RecipeImagePicker {
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              padding: AppDimensions.paddingAll16,
               child: Text(
                 AppStrings.addImage,
                 style: AppTextStyles.titleMedium,

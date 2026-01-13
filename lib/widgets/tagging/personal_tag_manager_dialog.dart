@@ -57,7 +57,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
       viewModel.loadTagStatistics();
     } else if (viewModel.isLoading) {
       // Retry after a short delay if still loading
-      Future.delayed(const Duration(milliseconds: 300), () {
+      Future.delayed(AppDimensions.animationDurationCommon, () {
         if (mounted) _loadStatsWhenReady();
       });
     }
@@ -306,7 +306,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             Icon(
               Icons.label_outline,
               color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityHalf),
-              size: 64,
+              size: AppDimensions.iconSizeXXXl,
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
@@ -354,7 +354,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingL,
-        vertical: 4,
+        vertical: AppDimensions.spacingXs,
       ),
       leading: Container(
         width: 40,
@@ -378,7 +378,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           ),
           if (!viewModel.isLoadingStats && usageCount > 0)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: AppDimensions.paddingSymmetric8x2,
               decoration: BoxDecoration(
                 color: AppColors.backgroundBeige,
                 borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
@@ -486,7 +486,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             const Icon(
               Icons.warning_amber_outlined,
               color: AppColors.warning,
-              size: 48,
+              size: AppDimensions.iconSizeXxl,
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
@@ -530,7 +530,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             Icon(
               Icons.auto_awesome_outlined,
               color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityHalf),
-              size: 64,
+              size: AppDimensions.iconSizeXXXl,
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
@@ -568,8 +568,8 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           value: tag.id,
           child: Row(
             children: [
-              const Icon(Icons.label, size: 12, color: AppColors.primaryBlue),
-              const SizedBox(width: 8),
+              const Icon(Icons.label, size: AppDimensions.iconSizeXs, color: AppColors.primaryBlue),
+              const SizedBox(width: AppDimensions.spacingSm),
               Text(tag.name),
             ],
           ),
@@ -614,7 +614,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
                 ),
                 child: const Center(
                   child:
-                      Icon(Icons.label, size: 14, color: AppColors.primaryBlue),
+                      Icon(Icons.label, size: AppDimensions.iconSize14, color: AppColors.primaryBlue),
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingS),
@@ -722,7 +722,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             children: [
               if (hasEnabledRules)
                 Padding(
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: AppDimensions.paddingOnlyRight8,
                   child: OutlinedButton.icon(
                     onPressed: _applyRulesToRecipes,
                     icon: const Icon(Icons.play_arrow, size: AppDimensions.iconSizeM),
@@ -849,7 +849,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             const Icon(
               Icons.error_outline,
               color: AppColors.error,
-              size: 48,
+              size: AppDimensions.iconSizeXxl,
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Text(

@@ -44,7 +44,7 @@ class ImportDialogFooter extends StatelessWidget {
           // Validation error
           if (validationError != null) ...[
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: AppDimensions.paddingSymmetric12x8,
               decoration: BoxDecoration(
                 color: theme.colorScheme.errorContainer,
                 borderRadius:
@@ -57,7 +57,7 @@ class ImportDialogFooter extends StatelessWidget {
                     size: AppDimensions.iconSize18,
                     color: theme.colorScheme.onErrorContainer,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppDimensions.spacingSm),
                   Expanded(
                     child: Text(
                       validationError!,
@@ -69,7 +69,7 @@ class ImportDialogFooter extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppDimensions.paddingM),
           ],
           // Buttons
           Row(

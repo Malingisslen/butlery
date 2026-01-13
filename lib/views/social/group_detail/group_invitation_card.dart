@@ -40,9 +40,8 @@ class GroupInvitationCard {
                     invitation.fromUserName.isNotEmpty
                         ? invitation.fromUserName[0].toUpperCase()
                         : '?',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    style: AppTextStyles.bodyBold.copyWith(
                           color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
                         ),
                   ),
                 ),

@@ -36,7 +36,7 @@ class EditableListBuilder extends StatelessWidget {
           final item = entry.value;
 
           return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: AppDimensions.paddingOnlyBottom8,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -57,9 +57,9 @@ class EditableListBuilder extends StatelessWidget {
                     decoration: InputDecoration(
                       isDense: true,
                       border: const OutlineInputBorder(),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: AppDimensions.paddingM,
+                        vertical: AppDimensions.paddingMs,
                       ),
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.close,
@@ -80,7 +80,7 @@ class EditableListBuilder extends StatelessWidget {
 
         // Add new item
         Padding(
-          padding: const EdgeInsets.only(top: 4),
+          padding: AppDimensions.paddingOnlyTop4,
           child: Row(
             children: [
               if (showNumbers) const SizedBox(width: 28),
@@ -119,16 +119,16 @@ class EditableListHeader extends StatelessWidget {
       children: [
         Icon(icon,
             size: AppDimensions.iconSizeM, color: theme.colorScheme.primary),
-        const SizedBox(width: 8),
+        const SizedBox(width: AppDimensions.spacingSm),
         Text(
           title,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: AppDimensions.spacingSm),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          padding: AppDimensions.paddingSymmetric8x2,
           decoration: BoxDecoration(
             color: theme.colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
