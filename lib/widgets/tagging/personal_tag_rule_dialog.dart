@@ -511,7 +511,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           Expanded(
             child: Text(
               _error!,
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
+              style: AppTextStyles.errorText,
             ),
           ),
         ],
