@@ -193,51 +193,16 @@ class AppTextStyles {
       );
 
   // ============================================================
-  // ADDITIONAL SEMANTIC TEXT STYLES
-  // Use these instead of inline TextStyle() with hardcoded values
+  // ADDITIONAL SEMANTIC TEXT STYLES (ACTUALLY USED)
   // ============================================================
 
-  /// Caption style - small supplementary text
-  static TextStyle get caption => bodySmall.copyWith(
-        color: AppColors.textLight,
-      );
-
-  /// Caption emphasized - small text with emphasis
-  static TextStyle get captionEmphasized => bodySmall.copyWith(
-        color: AppColors.textMedium,
-        fontWeight: FontWeight.w500,
-      );
-
-  /// Overline style - uppercase small labels
-  static TextStyle get overline => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 10,
-        fontWeight: FontWeight.w500,
-        color: AppColors.textMedium,
-        letterSpacing: 1.5,
-      );
-
-  /// Metadata style - for timestamps, counts, etc.
-  static TextStyle get metadata => bodySmall.copyWith(
-        color: AppColors.textMedium,
-        fontWeight: FontWeight.w400,
-      );
-
-  /// Metadata emphasized
+  /// Metadata emphasized - for timestamps, counts with emphasis (56 usages)
   static TextStyle get metadataEmphasized => bodySmall.copyWith(
         color: AppColors.textMedium,
         fontWeight: FontWeight.w500,
       );
 
-  /// Price/number display style
-  static TextStyle get price => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: AppColors.textDark,
-      );
-
-  /// Badge text style
+  /// Badge text style (7 usages)
   static TextStyle get badge => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 10,
@@ -245,7 +210,7 @@ class AppTextStyles {
         color: AppColors.textLight,
       );
 
-  /// Badge text style large
+  /// Badge text style large (5 usages)
   static TextStyle get badgeLarge => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 12,
@@ -253,80 +218,22 @@ class AppTextStyles {
         color: AppColors.textMedium,
       );
 
-  /// Chip text style
-  static TextStyle get chip => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        color: AppColors.textMedium,
-      );
-
-  /// Input text style
-  static TextStyle get input => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 16,
-        fontWeight: FontWeight.normal,
-        color: AppColors.textDark,
-      );
-
-  /// Counter text style (for character counts, etc.)
-  static TextStyle get counter => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 12,
-        fontWeight: FontWeight.normal,
-        color: AppColors.textLight,
-      );
-
-  /// Link text style
-  static TextStyle get link => bodyMedium.copyWith(
-        color: AppColors.primaryBlue,
-        decoration: TextDecoration.underline,
-      );
-
-  /// Timestamp style
-  static TextStyle get timestamp => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 11,
-        fontWeight: FontWeight.normal,
-        color: AppColors.textLight,
-      );
-
-  /// Status text style (online, offline, etc.)
-  static TextStyle get status => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        color: AppColors.textMedium,
-      );
-
-  /// Warning text style
-  static TextStyle get warningText => bodySmall.copyWith(
-        color: AppColors.warning,
-        fontWeight: FontWeight.w500,
-      );
-
-  /// Info text style
-  static TextStyle get infoText => bodySmall.copyWith(
-        color: AppColors.info,
-        fontWeight: FontWeight.w500,
-      );
-
-  /// Title bold - for emphasized titles
+  /// Title bold - for emphasized titles (52 usages)
   static TextStyle get titleBold => titleMedium.copyWith(
         fontWeight: FontWeight.w700,
       );
 
-  /// Body bold - for emphasized body text
+  /// Body bold - for emphasized body text (34 usages)
   static TextStyle get bodyBold => bodyMedium.copyWith(
         fontWeight: FontWeight.w600,
       );
 
-  /// Body large bold
+  /// Body large bold (16 usages)
   static TextStyle get bodyLargeBold => bodyLarge.copyWith(
         fontWeight: FontWeight.w600,
       );
 
-  /// Small text - 10px for very small labels
+  /// Small text - 10px for very small labels (5 usages)
   static TextStyle get textXs => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 10,
@@ -334,7 +241,7 @@ class AppTextStyles {
         color: AppColors.textMedium,
       );
 
-  /// Small text emphasized - 10px bold
+  /// Small text emphasized - 10px bold (3 usages)
   static TextStyle get textXsBold => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 10,
@@ -342,7 +249,7 @@ class AppTextStyles {
         color: AppColors.textMedium,
       );
 
-  /// Medium small text - 11px
+  /// Medium small text - 11px (1 usage)
   static TextStyle get textSm => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 11,
@@ -350,15 +257,7 @@ class AppTextStyles {
         color: AppColors.textMedium,
       );
 
-  /// Medium small text emphasized - 11px medium weight
-  static TextStyle get textSmMedium => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 11,
-        fontWeight: FontWeight.w500,
-        color: AppColors.textMedium,
-      );
-
-  /// 14px regular text
+  /// 14px regular text (5 usages)
   static TextStyle get text14 => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 14,
@@ -366,7 +265,7 @@ class AppTextStyles {
         color: AppColors.textDark,
       );
 
-  /// 14px medium weight text
+  /// 14px medium weight text (19 usages)
   static TextStyle get text14Medium => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 14,
@@ -374,15 +273,7 @@ class AppTextStyles {
         color: AppColors.textDark,
       );
 
-  /// 14px semibold text
-  static TextStyle get text14SemiBold => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        color: AppColors.textDark,
-      );
-
-  /// 16px medium weight text
+  /// 16px medium weight text (24 usages)
   static TextStyle get text16Medium => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 16,
@@ -390,40 +281,12 @@ class AppTextStyles {
         color: AppColors.textDark,
       );
 
-  /// 20px semibold text (for dialog headers, etc.)
+  /// 20px semibold text (2 usages)
   static TextStyle get text20SemiBold => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: AppColors.textDark,
-      );
-
-  /// Avatar initials text style
-  static TextStyle get avatarInitials => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        color: AppColors.cardWhite,
-        letterSpacing: 0.5,
-      );
-
-  /// Avatar initials small text style
-  static TextStyle get avatarInitialsSmall => TextStyle(
-        fontFamily: _primaryFontFamily,
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-        color: AppColors.cardWhite,
-        letterSpacing: 0.5,
-      );
-
-  /// Empty state title style
-  static TextStyle get emptyStateTitle => titleLarge.copyWith(
-        color: AppColors.textMedium,
-      );
-
-  /// Empty state subtitle style
-  static TextStyle get emptyStateSubtitle => bodyMedium.copyWith(
-        color: AppColors.textLight,
       );
 
   /// Creates a complete Material 3 TextTheme with platform-adaptive font family.
