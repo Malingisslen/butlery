@@ -335,10 +335,7 @@ class InvitationActions {
               builder: (context) => ListTile(
                 leading: const Icon(Icons.delete, color: AppColors.error),
                 title: Text('Ta bort',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(color: AppColors.error)),
+                    style: AppTextStyles.bodyMediumError),
                 dense: true,
               ),
             ),
@@ -375,10 +372,7 @@ class InvitationActions {
                 if (leftLabel != null)
                   Text(
                     leftLabel,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: AppColors.cardWhite),
+                    style: AppTextStyles.buttonTextLight,
                   ),
               ],
             ),
@@ -395,10 +389,7 @@ class InvitationActions {
                 if (rightLabel != null)
                   Text(
                     rightLabel,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: AppColors.cardWhite),
+                    style: AppTextStyles.buttonTextLight,
                   ),
               ],
             ),

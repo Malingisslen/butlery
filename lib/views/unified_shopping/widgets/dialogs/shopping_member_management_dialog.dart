@@ -413,8 +413,7 @@ class _ShoppingMemberManagementDialogState
       ),
       subtitle: isOwner
           ? Text('Ägare',
-              style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.primaryBlue))
+              style: AppTextStyles.linkSmall)
           : DropdownButton<SharedListPermission>(
               value: permission,
               onChanged: _isLoading

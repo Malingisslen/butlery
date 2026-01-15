@@ -128,10 +128,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                     Expanded(
                         child: Text(
                             'Senast uppdaterad: ${viewModel.getConsentTimestampText()}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(color: AppColors.info))),
+                            style: AppTextStyles.infoText)),
                   ],
                 ),
               ),
@@ -162,10 +159,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
                 'Dessa samtycken krävs för att appen ska fungera och kan inte inaktiveras.',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: AppColors.textMedium)),
+                style: AppTextStyles.metadataEmphasized),
             const SizedBox(height: AppDimensions.spacingMd),
             _buildRequiredConsentItem(
               'Grundläggande tjänster',
@@ -233,10 +227,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         ),
         const SizedBox(height: AppDimensions.spacingXs),
         Text('Du kan när som helst aktivera eller inaktivera dessa samtycken.',
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: AppColors.textMedium)),
+            style: AppTextStyles.metadataEmphasized),
         const SizedBox(height: AppDimensions.spacingMd),
         _buildConsentToggle(
           viewModel,

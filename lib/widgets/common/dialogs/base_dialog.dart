@@ -60,8 +60,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
         children: [
           if (widget.subtitle != null) ...[
             Text(widget.subtitle!,
-                style: AppTextStyles.bodyMedium
-                    .copyWith(color: AppColors.textSecondary)),
+                style: AppTextStyles.bodyMediumMuted),
             const SizedBox(height: AppDimensions.spacingM),
           ],
           widget.buildContent(context),

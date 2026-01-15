@@ -289,8 +289,7 @@ class FriendRequestCard extends StatelessWidget {
                   const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     'Vill bli din vän',
-                    style: AppTextStyles.bodySmall
-                        .copyWith(color: AppColors.textMedium),
+                    style: AppTextStyles.metadataEmphasized,
                   ),
                   if (friendRequest.message?.isNotEmpty == true) ...[
                     const SizedBox(height: AppDimensions.spacingXs),
@@ -334,8 +333,7 @@ class FriendRequestCard extends StatelessWidget {
               ),
               child: Text(
                 'Avvisa',
-                style: AppTextStyles.labelMedium
-                    .copyWith(color: AppColors.textMedium),
+                style: AppTextStyles.labelMediumMuted,
               ),
             ),
           ),

@@ -279,8 +279,7 @@ class FriendRecipeListItem extends StatelessWidget {
             child: Text(
               recipe.title,
               style: isAlreadyShared
-                  ? AppTextStyles.titleMedium
-                      .copyWith(color: AppColors.textMedium)
+                  ? AppTextStyles.titleMediumMuted
                   : AppTextStyles.titleMedium,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -300,8 +299,7 @@ class FriendRecipeListItem extends StatelessWidget {
                     Border.all(color: AppColors.success.withValues(alpha: AppDimensions.opacityMediumLight)),
               ),
               child: Text('Delad',
-                  style: AppTextStyles.labelSmall
-                      .copyWith(color: AppColors.success)),
+                  style: AppTextStyles.labelSmallSuccess),
             ),
         ],
       ),

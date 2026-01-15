@@ -281,8 +281,7 @@ class GroupRecipeListItem extends StatelessWidget {
             child: Text(
               recipe.title,
               style: isAlreadyShared
-                  ? AppTextStyles.titleMedium
-                      .copyWith(color: AppColors.textMedium)
+                  ? AppTextStyles.titleMediumMuted
                   : AppTextStyles.titleMedium,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -303,8 +302,7 @@ class GroupRecipeListItem extends StatelessWidget {
               ),
               child: Text(
                 'Delad',
-                style:
-                    AppTextStyles.labelSmall.copyWith(color: AppColors.success),
+                style: AppTextStyles.labelSmallSuccess,
               ),
             ),
         ],
