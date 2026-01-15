@@ -244,8 +244,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
               const TextSpan(text: 'Vill du verkligen ta bort '),
               TextSpan(
                 text: '"$itemName"',
-                style: AppTextStyles.bodyMedium
-                    .copyWith(fontWeight: FontWeight.bold),
+                style: AppTextStyles.bodyBold,
               ),
               const TextSpan(text: '?'),
             ],

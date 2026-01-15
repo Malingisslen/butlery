@@ -169,10 +169,9 @@ class CategoryHeader extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: AppTextStyles.titleMedium.copyWith(
+              style: AppTextStyles.titleBold.copyWith(
                 color: textColor ??
                     Theme.of(context).colorScheme.onSecondaryContainer,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -180,7 +179,7 @@ class CategoryHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingXs,
-              vertical: 2,
+              vertical: AppDimensions.spacingXxs,
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.secondary,
@@ -188,9 +187,8 @@ class CategoryHeader extends StatelessWidget {
             ),
             child: Text(
               '$count',
-              style: AppTextStyles.labelSmall.copyWith(
+              style: AppTextStyles.badge.copyWith(
                 color: Theme.of(context).colorScheme.onSecondary,
-                fontWeight: FontWeight.bold,
               ),
             ),
           ),

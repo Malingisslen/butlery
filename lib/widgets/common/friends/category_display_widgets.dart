@@ -392,8 +392,7 @@ class _StatItem extends StatelessWidget {
         const SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+          style: AppTextStyles.titleBold.copyWith(
                 color: color,
               ),
         ),

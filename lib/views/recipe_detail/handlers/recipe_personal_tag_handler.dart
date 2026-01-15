@@ -262,9 +262,8 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   '${_selectedTags.length} tagg${_selectedTags.length == 1 ? '' : 'ar'} vald${_selectedTags.length == 1 ? '' : 'a'}',
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: AppTextStyles.text14Medium.copyWith(
                     color: colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const Spacer(),
@@ -380,9 +379,9 @@ class _QuickTagChip extends StatelessWidget {
         color: isSelected ? AppColors.primaryBlue : AppColors.divider,
         width: isSelected ? 2 : 1,
       ),
-      labelStyle: AppTextStyles.bodyMedium.copyWith(
+      labelStyle: (isSelected ? AppTextStyles.bodyBold : AppTextStyles.bodyMedium)
+          .copyWith(
         color: isSelected ? AppColors.primaryBlue : AppColors.textDark,
-        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
       ),
       showCheckmark: isSelected,
       padding: const EdgeInsets.symmetric(

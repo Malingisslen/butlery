@@ -58,9 +58,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
         Expanded(
           child: Text(
             viewModel.listTitle,
-            style: AppTextStyles.headlineSmall.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: AppTextStyles.sectionHeader,
           ),
         ),
         _buildStatusBadge(context),
@@ -83,9 +81,8 @@ class CollaborativeShoppingHeader extends StatelessWidget {
       ),
       child: Text(
         viewModel.statusText,
-        style: AppTextStyles.labelSmall.copyWith(
+        style: AppTextStyles.labelLarge.copyWith(
           color: color,
-          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -122,14 +119,11 @@ class CollaborativeShoppingHeader extends StatelessWidget {
       children: [
         Text(
           '${viewModel.completedItems} av ${viewModel.totalItems} klara',
-          style: AppTextStyles.bodyMedium.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.bodyBold,
         ),
         Text(
           '${viewModel.completionPercentage.toStringAsFixed(0)}%',
-          style: AppTextStyles.bodyMedium.copyWith(
-            fontWeight: FontWeight.w600,
+          style: AppTextStyles.bodyBold.copyWith(
             color: progressColor,
           ),
         ),
@@ -175,7 +169,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
         const SizedBox(width: AppDimensions.spacingXs),
         Text(
           viewModel.memberCountText,
-          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+          style: AppTextStyles.metadataEmphasized,
         ),
       ],
     );
@@ -194,7 +188,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
           child: Text(
             viewModel.activitySummary,
             style:
-                AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+                AppTextStyles.metadataEmphasized,
             overflow: TextOverflow.ellipsis,
           ),
         ),

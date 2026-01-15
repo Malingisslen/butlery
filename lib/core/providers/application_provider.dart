@@ -313,7 +313,7 @@ class ApplicationReadyBuilder extends StatelessWidget {
             'Application Error',
             style: TextStyle(
               fontSize: 20,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 8),

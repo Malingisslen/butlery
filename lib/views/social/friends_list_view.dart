@@ -200,8 +200,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                               Expanded(
                                 child: Text(
                                   viewModel.error!,
-                                  style: AppTextStyles.bodyMedium
-                                      .copyWith(color: AppColors.error),
+                                  style: AppTextStyles.bodyMediumError,
                                 ),
                               ),
                               ActionButtons.secondaryButton(

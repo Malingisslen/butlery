@@ -115,7 +115,6 @@ class MenuPreviewView extends StatelessWidget {
                             color: Theme.of(context)
                                 .colorScheme
                                 .onPrimaryContainer,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         Text(
@@ -138,9 +137,8 @@ class MenuPreviewView extends StatelessWidget {
               // Meny titel och beskrivning
               Text(
                 sharedMenu.menuTitle,
-                style: AppTextStyles.headlineSmall.copyWith(
+                style: AppTextStyles.sectionHeader.copyWith(
                   color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  fontWeight: FontWeight.bold,
                 ),
               ),
 
@@ -194,9 +192,7 @@ class MenuPreviewView extends StatelessWidget {
                     children: [
                       Text(
                         'Meddelande:',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppTextStyles.labelLarge,
                       ),
                       const SizedBox(height: AppDimensions.spacingXs),
                       Text(

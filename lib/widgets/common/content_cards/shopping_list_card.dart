@@ -184,7 +184,7 @@ class ShoppingListCard extends StatelessWidget {
 
     return Text(
       metadata.join(' • '),
-      style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+      style: AppTextStyles.metadataEmphasized,
     );
   }
 
@@ -209,7 +209,7 @@ class ShoppingListCard extends StatelessWidget {
             Text(
               'Inga föremål i listan',
               style:
-                  AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+                  AppTextStyles.metadataEmphasized,
             ),
           ],
         ),
@@ -222,7 +222,7 @@ class ShoppingListCard extends StatelessWidget {
         Text(
           'Föremål på listan:',
           style:
-              AppTextStyles.labelMedium.copyWith(color: AppColors.textMedium),
+              AppTextStyles.labelMediumMuted,
         ),
         const SizedBox(height: AppDimensions.spacingS),
         ...items.take(4).map((item) => Padding(
@@ -263,7 +263,7 @@ class ShoppingListCard extends StatelessWidget {
             child: Text(
               '+ ${items.length - 4} fler föremål',
               style:
-                  AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+                  AppTextStyles.metadataEmphasized,
             ),
           ),
       ],
@@ -302,7 +302,7 @@ class ShoppingListCard extends StatelessWidget {
           Text(
             memberCount > 0 ? 'Delad med $memberCount personer' : 'Delad lista',
             style:
-                AppTextStyles.bodySmall.copyWith(color: AppColors.primaryBlue),
+                AppTextStyles.linkSmall,
           ),
         ],
       ),

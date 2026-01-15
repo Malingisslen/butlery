@@ -76,8 +76,7 @@ class ShoppingItemTiles {
                         children: [
                           Text(
                             item.displayText,
-                            style: AppTextStyles.bodyLarge.copyWith(
-                              fontWeight: FontWeight.w500,
+                            style: AppTextStyles.text16Medium.copyWith(
                               color: isCompleted
                                   ? AppColors.textMedium
                                   : AppColors.textDark,

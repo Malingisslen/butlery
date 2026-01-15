@@ -3,6 +3,7 @@ import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Invitation target list and grid layouts.
 class InvitationLists {
@@ -108,9 +109,7 @@ class InvitationLists {
               padding: const EdgeInsets.all(AppDimensions.spacingMd),
               child: Text(
                 type == InvitationTargetType.group ? 'Grupper' : 'Individer',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: AppTextStyles.titleBold,
               ),
             ),
             ...typeTargets.map((target) => ListTile(
@@ -247,9 +246,7 @@ class InvitationLists {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
+                    style: AppTextStyles.text14Medium,
                   ),
                   const SizedBox(height: AppDimensions.spacingXs),
                   Text(

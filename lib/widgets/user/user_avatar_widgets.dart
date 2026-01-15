@@ -53,8 +53,8 @@ class UserAvatarWidgets {
                     avatarSize,
                     effectiveBackgroundColor,
                     effectiveTextColor),
-                fadeInDuration: const Duration(milliseconds: 300),
-                fadeOutDuration: const Duration(milliseconds: 300),
+                fadeInDuration: AppDimensions.animationDurationCommon,
+                fadeOutDuration: AppDimensions.animationDurationCommon,
               ),
             )
           : _buildInitialsAvatar(displayName, avatarSize,
@@ -187,9 +187,8 @@ class UserAvatarWidgets {
       child: Center(
         child: Text(
           initials,
-          style: AppTextStyles.bodyLarge.copyWith(
+          style: AppTextStyles.bodyLargeBold.copyWith(
             fontSize: fontSize,
-            fontWeight: FontWeight.w600,
             color: textColor,
             letterSpacing: 0.5,
           ),

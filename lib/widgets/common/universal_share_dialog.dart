@@ -8,6 +8,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 
 // Import focused components
@@ -195,13 +196,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.textDark.withValues(alpha: AppDimensions.opacityVeryLight),
-                blurRadius: AppDimensions.elevationHigh * 2.5,
-                offset: const Offset(0, AppDimensions.elevationMedium + 6),
-              ),
-            ],
+            boxShadow: AppShadows.floating,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

@@ -35,9 +35,7 @@ class GroupMemberCard {
         ),
         title: Text(
           member.displayName,
-          style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.titleMedium,
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,9 +55,8 @@ class GroupMemberCard {
                     ),
                     child: Text(
                       'Ägare',
-                      style: AppTextStyles.bodySmall.copyWith(
+                      style: AppTextStyles.metadataEmphasized.copyWith(
                         color: Theme.of(context).colorScheme.onPrimary,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
@@ -81,9 +78,8 @@ class GroupMemberCard {
                     ),
                     child: Text(
                       'Skapare',
-                      style: AppTextStyles.bodySmall.copyWith(
+                      style: AppTextStyles.metadataEmphasized.copyWith(
                         color: Theme.of(context).colorScheme.onSecondary,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),

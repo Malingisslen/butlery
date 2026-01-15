@@ -91,7 +91,7 @@ class ServiceWidgets {
           ),
           child: Text(
             error,
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+            style: AppTextStyles.bodyMediumError,
           ),
         ),
       ),

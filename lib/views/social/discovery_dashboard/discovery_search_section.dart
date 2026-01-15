@@ -5,6 +5,7 @@ import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Discovery Search Section - Enhanced search for discovery dashboard
@@ -43,13 +44,7 @@ class DiscoverySearchSection {
         border: Border.all(
           color: AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow.withValues(alpha: AppDimensions.opacityVeryLight),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: AppShadows.card,
       ),
       child: TextField(
         controller: searchController,
@@ -138,9 +133,8 @@ class DiscoverySearchSection {
           Expanded(
             child: Text(
               '${searchResults.length} resultat för "$query"',
-              style: AppTextStyles.bodySmall.copyWith(
+              style: AppTextStyles.metadataEmphasized.copyWith(
                 color: AppColors.primary,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -204,9 +198,7 @@ class DiscoverySearchSection {
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
                   'Sökfilter',
-                  style: AppTextStyles.titleMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.titleMedium,
                 ),
                 const Spacer(),
                 ActionButtons.textButton(

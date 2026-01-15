@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/group_content_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
@@ -127,9 +128,7 @@ class GroupShoppingListActions {
               children: [
                 Text(
                   'Dela inkopslista',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: AppTextStyles.titleBold,
                 ),
                 const SizedBox(height: AppDimensions.spacingM),
                 ListTile(
@@ -179,7 +178,7 @@ class GroupShoppingListActions {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('Dela "${shoppingList.name}" med:'),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimensions.spacingMd),
               ListTile(
                 leading: const Icon(Icons.people),
                 title: const Text('Vanner'),
@@ -271,7 +270,7 @@ class GroupShoppingListActions {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text('Varfor vill du rapportera denna inkopslista?'),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimensions.spacingMd),
               RadioGroup<String>(
                 groupValue: selectedReason,
                 onChanged: (value) => setState(() => selectedReason = value),

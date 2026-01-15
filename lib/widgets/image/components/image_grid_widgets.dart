@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -212,13 +213,7 @@ class ImageGridWidgets {
         decoration: BoxDecoration(
           color: isDestructive ? AppColors.error : AppColors.cardWhite,
           shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.textDark.withValues(alpha: AppDimensions.opacityLight),
-              blurRadius: AppDimensions.spacingXs,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          boxShadow: AppShadows.subtle,
         ),
         child: Icon(
           icon,
@@ -285,9 +280,8 @@ class ImageGridWidgets {
                 Flexible(
                   child: Text(
                     'Lägg till ($remainingSlots)',
-                    style: AppTextStyles.bodyMedium.copyWith(
+                    style: AppTextStyles.text14Medium.copyWith(
                       color: AppColors.primaryBlue,
-                      fontWeight: FontWeight.w500,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),

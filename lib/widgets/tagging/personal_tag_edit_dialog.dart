@@ -319,9 +319,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
               const SizedBox(width: AppDimensions.spacingS),
               Text(
                 name,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTextStyles.text14Medium,
               ),
             ],
           ),
@@ -347,7 +345,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Colors.white,
+                    color: AppColors.cardWhite,
                   ),
                 )
               : Text(_isEditing ? 'Spara' : 'Skapa'),

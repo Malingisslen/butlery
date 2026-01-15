@@ -27,9 +27,8 @@ class MessageStatusWidget extends StatelessWidget {
           const SizedBox(width: AppDimensions.spacingXxs),
           Text(
             _getStatusText(),
-            style: AppTextStyles.labelSmall.copyWith(
+            style: AppTextStyles.textXs.copyWith(
               color: AppColors.cardWhite.withValues(alpha: AppDimensions.opacityDark),
-              fontSize: 10,
             ),
           ),
         ],
@@ -112,9 +111,8 @@ class MessageTimestampWidget extends StatelessWidget {
       ),
       child: Text(
         MessageTimeFormatter.format(timestamp),
-        style: AppTextStyles.labelSmall.copyWith(
+        style: AppTextStyles.textXs.copyWith(
           color: AppColors.textLight,
-          fontSize: 10,
         ),
       ),
     );

@@ -74,7 +74,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
   /// Analyze content and classify type/platform for routing.
   Future<void> _analyzeContent() async {
     // Simulate processing for better UX
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(AppDimensions.animationDurationLong);
 
     final result = await _detector.detectContent(widget.content);
     if (mounted) {

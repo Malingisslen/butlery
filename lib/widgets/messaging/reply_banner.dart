@@ -62,14 +62,13 @@ class ReplyBanner extends StatelessWidget {
                 // Sender name
                 Text(
                   'Svarar till ${message.senderDisplayName}',
-                  style: AppTextStyles.bodySmall.copyWith(
+                  style: AppTextStyles.metadataEmphasized.copyWith(
                     color: AppColors.success,
-                    fontWeight: FontWeight.w600,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: AppDimensions.spacingXxs),
 
                 // Original message content
                 Text(

@@ -76,9 +76,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
                 const EdgeInsets.symmetric(horizontal: AppDimensions.spacingS),
             child: Text(
               'KLARA (${viewModel.completedItemsCount})',
-              style: AppTextStyles.bodySmall.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.bodyBold,
             ),
           ),
           Expanded(
@@ -131,13 +129,12 @@ class CollaborativeShoppingItems extends StatelessWidget {
   Widget _buildItemTitle(BuildContext context, dynamic item) {
     return Text(
       item.displayText,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            decoration: item.bought ? TextDecoration.lineThrough : null,
-            color: item.bought
-                ? Theme.of(context).colorScheme.onSurfaceVariant
-                : null,
-            fontWeight: item.bought ? FontWeight.normal : FontWeight.w500,
-          ),
+      style: item.bought
+          ? AppTextStyles.bodyMedium.copyWith(
+              decoration: TextDecoration.lineThrough,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            )
+          : AppTextStyles.text14Medium,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
     );
@@ -149,7 +146,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
         ? Text(
             subtitle,
             style:
-                AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+                AppTextStyles.metadataEmphasized,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           )

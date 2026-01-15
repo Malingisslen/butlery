@@ -7,6 +7,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Selection mode for the text line selector.
 enum SelectionMode {
@@ -76,7 +77,7 @@ class TextLineSelector extends StatelessWidget {
       children: [
         if (headerText != null) ...[
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: AppDimensions.paddingSymmetric16x8,
             child: Row(
               children: [
                 Icon(
@@ -86,12 +87,10 @@ class TextLineSelector extends StatelessWidget {
                   size: AppDimensions.iconSizeM,
                   color: _getModeColor(colorScheme),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   headerText!,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.titleMedium,
                 ),
                 const Spacer(),
                 Text(
@@ -110,7 +109,7 @@ class TextLineSelector extends StatelessWidget {
               ? _buildEmptyState(theme)
               : ListView.builder(
                   itemCount: visibleLines.length,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: AppDimensions.paddingVertical8,
                   itemBuilder: (context, index) {
                     final entry = visibleLines[index];
                     return _LineItem(
@@ -134,7 +133,7 @@ class TextLineSelector extends StatelessWidget {
   Widget _buildEmptyState(ThemeData theme) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: AppDimensions.paddingAll32,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -144,7 +143,7 @@ class TextLineSelector extends StatelessWidget {
               color: theme.colorScheme.onSurfaceVariant
                   .withValues(alpha: AppDimensions.opacityHalf),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             Text(
               'Inga rader att visa',
               style: theme.textTheme.bodyLarge?.copyWith(
@@ -247,7 +246,10 @@ class _LineItem extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingM,
+        vertical: AppDimensions.spacingXxs,
+      ),
       child: Material(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -255,7 +257,10 @@ class _LineItem extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingM,
+              vertical: AppDimensions.paddingMs,
+            ),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               border: Border.all(
@@ -289,7 +294,7 @@ class _LineItem extends StatelessWidget {
                         )
                       : null,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppDimensions.width12),
                 // Line number (optional)
                 if (showLineNumber) ...[
                   SizedBox(
@@ -307,21 +312,18 @@ class _LineItem extends StatelessWidget {
                 Expanded(
                   child: Text(
                     text.trim(),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: isSelected ? FontWeight.w500 : null,
-                    ),
+                    style: isSelected
+                        ? AppTextStyles.text14Medium
+                        : AppTextStyles.bodyMedium,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 // Highlighted indicator
                 if (isHighlighted && !isSelected) ...[
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppDimensions.spacingSm),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
+                    padding: AppDimensions.paddingSymmetric6x2,
                     decoration: BoxDecoration(
                       color: modeColor.withValues(
                           alpha: AppDimensions.opacityVeryLight),
@@ -330,9 +332,8 @@ class _LineItem extends StatelessWidget {
                     ),
                     child: Text(
                       mode == SelectionMode.ingredients ? 'Trolig' : 'Steg',
-                      style: theme.textTheme.labelSmall?.copyWith(
+                      style: AppTextStyles.labelSmall.copyWith(
                         color: modeColor,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),

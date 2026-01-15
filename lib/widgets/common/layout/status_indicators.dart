@@ -68,9 +68,8 @@ class OfflineIndicator extends StatelessWidget {
               const SizedBox(width: AppDimensions.spacingM),
               Text(
                 message ?? 'Offline-läge - Ändringar sparas lokalt',
-                style: AppTextStyles.bodyLarge.copyWith(
+                style: AppTextStyles.text16Medium.copyWith(
                   color: AppColors.neutralLight,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],

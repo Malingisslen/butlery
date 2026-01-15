@@ -89,8 +89,7 @@ class LoadingWidgets {
                     ),
                     child: Text(
                       'Ett oväntat fel uppstod',
-                      style: AppTextStyles.bodyMedium
-                          .copyWith(color: AppColors.error),
+                      style: AppTextStyles.bodyMediumError,
                     ),
                   ),
                 ),

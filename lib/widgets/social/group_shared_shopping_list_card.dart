@@ -69,9 +69,7 @@ class GroupSharedShoppingListCard {
             children: [
               Text(
                 shoppingList.name,
-                style: AppTextStyles.titleMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTextStyles.titleMedium,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -106,12 +104,11 @@ class GroupSharedShoppingListCard {
           displayName: ownerName,
           size: ImageSize.small,
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: AppDimensions.spacingXxs),
         Text(
           'Delad av $ownerName',
-          style: AppTextStyles.bodySmall.copyWith(
+          style: AppTextStyles.textXs.copyWith(
             color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark),
-            fontSize: 10,
           ),
         ),
       ],
@@ -142,9 +139,8 @@ class GroupSharedShoppingListCard {
               const SizedBox(width: AppDimensions.spacingS),
               Text(
                 'Inkopslista',
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
-                  fontWeight: FontWeight.w500,
                 ),
               ),
               const Spacer(),
@@ -152,7 +148,7 @@ class GroupSharedShoppingListCard {
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.spacingS,
-                    vertical: 2,
+                    vertical: AppDimensions.spacingXxs,
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.info.withValues(alpha: AppDimensions.opacityVeryLight),
@@ -161,10 +157,8 @@ class GroupSharedShoppingListCard {
                   ),
                   child: Text(
                     'Kollaborativ',
-                    style: AppTextStyles.bodySmall.copyWith(
+                    style: AppTextStyles.textXsBold.copyWith(
                       color: AppColors.info,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
@@ -214,7 +208,7 @@ class GroupSharedShoppingListCard {
       String value, String label, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingS, vertical: 4),
+          horizontal: AppDimensions.spacingS, vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
         color: color.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -223,16 +217,15 @@ class GroupSharedShoppingListCard {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: AppDimensions.iconSizeXs, color: color),
-          const SizedBox(width: 4),
+          const SizedBox(width: AppDimensions.spacingXs),
           Text(
             value,
-            style: AppTextStyles.bodySmall
-                .copyWith(color: color, fontWeight: FontWeight.w600),
+            style: AppTextStyles.labelLarge.copyWith(color: color),
           ),
-          const SizedBox(width: 2),
+          const SizedBox(width: AppDimensions.spacingXxs),
           Text(
             label,
-            style: AppTextStyles.bodySmall.copyWith(color: color, fontSize: 10),
+            style: AppTextStyles.textXs.copyWith(color: color),
           ),
         ],
       ),

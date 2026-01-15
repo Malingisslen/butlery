@@ -108,9 +108,8 @@ class MenuItemBuilders {
                       ),
                       child: Text(
                         count > 99 ? '99+' : '$count',
-                        style: AppTextStyles.bodySmall.copyWith(
+                        style: AppTextStyles.badge.copyWith(
                           color: AppColors.neutralLight,
-                          fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
                       ),

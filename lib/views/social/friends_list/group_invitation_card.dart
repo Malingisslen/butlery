@@ -61,9 +61,7 @@ class GroupInvitationCard {
                     children: [
                       Text(
                         invitation.groupName,
-                        style: AppTextStyles.titleMedium.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: AppTextStyles.titleBold,
                       ),
                       Text(
                         'Inbjudan från ${invitation.fromUserName}',

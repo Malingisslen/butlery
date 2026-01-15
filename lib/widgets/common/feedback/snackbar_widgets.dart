@@ -20,15 +20,14 @@ class SnackbarWidgets {
             Expanded(
               child: Text(
                 message,
-                style: AppTextStyles.bodyLarge
-                    .copyWith(color: AppColors.neutralLight),
+                style: AppTextStyles.bodyLargeLight,
               ),
             ),
           ],
         ),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
+        duration: AppDimensions.snackbarDuration,
       ),
     );
   }
@@ -45,8 +44,7 @@ class SnackbarWidgets {
             Expanded(
               child: Text(
                 message,
-                style: AppTextStyles.bodyLarge
-                    .copyWith(color: AppColors.neutralLight),
+                style: AppTextStyles.bodyLargeLight,
               ),
             ),
           ],
@@ -73,8 +71,7 @@ class SnackbarWidgets {
             Expanded(
               child: Text(
                 message,
-                style: AppTextStyles.bodyLarge
-                    .copyWith(color: AppColors.neutralLight),
+                style: AppTextStyles.bodyLargeLight,
               ),
             ),
           ],

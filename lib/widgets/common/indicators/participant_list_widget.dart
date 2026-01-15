@@ -5,6 +5,7 @@ import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_shadows.dart';
 
 /// Participant list widget showing active participants
 class ParticipantListWidget extends StatelessWidget {
@@ -32,13 +33,7 @@ class ParticipantListWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadowColor.withValues(alpha: AppDimensions.opacityVeryLight),
-            blurRadius: AppDimensions.elevationLow,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: AppShadows.subtle,
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -103,7 +98,7 @@ class ParticipantListWidget extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
             '$onlineCount online',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.success),
+            style: AppTextStyles.successText,
           ),
         ],
       ),
@@ -164,8 +159,7 @@ class ParticipantListWidget extends StatelessWidget {
               Text(
                 isCurrentUser ? 'Du' : activity.displayName,
                 style: isCurrentUser
-                    ? AppTextStyles.bodyLarge.copyWith(
-                        fontWeight: FontWeight.bold,
+                    ? AppTextStyles.bodyLargeBold.copyWith(
                         color: AppColors.primaryBlue,
                       )
                     : AppTextStyles.bodyLarge,
@@ -193,9 +187,8 @@ class ParticipantListWidget extends StatelessWidget {
       child: Center(
         child: Text(
           initials,
-          style: AppTextStyles.bodyLarge.copyWith(
+          style: AppTextStyles.bodyLargeBold.copyWith(
             fontSize: size * 0.4,
-            fontWeight: FontWeight.w600,
             color: AppColors.primaryBlue,
           ),
         ),

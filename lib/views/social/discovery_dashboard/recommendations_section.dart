@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/services/recommendation_service.dart';
 import 'package:butlery/models/recommendation.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -94,13 +95,7 @@ class RecommendationsSection {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow.withValues(alpha: AppDimensions.opacityVeryLight),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: AppShadows.card,
         border: Border.all(
           color: AppColors.secondary.withValues(alpha: AppDimensions.opacityLight),
           width: 1,
@@ -190,9 +185,7 @@ class RecommendationsSection {
                     // Title
                     Text(
                       title,
-                      style: AppTextStyles.titleSmall.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextStyles.titleMedium,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

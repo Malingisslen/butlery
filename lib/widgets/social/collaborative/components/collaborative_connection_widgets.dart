@@ -40,9 +40,8 @@ class CollaborativeConnectionWidgets {
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               'Online',
-              style: AppTextStyles.bodySmall.copyWith(
+              style: AppTextStyles.metadataEmphasized.copyWith(
                 color: AppColors.success,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -80,8 +79,7 @@ class CollaborativeConnectionWidgets {
               children: [
                 Text(
                   'Offline',
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontWeight: FontWeight.bold,
+                  style: AppTextStyles.bodyLargeBold.copyWith(
                     color: AppColors.error,
                   ),
                 ),

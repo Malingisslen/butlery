@@ -296,7 +296,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
 
     _pageController.animateToPage(
       index,
-      duration: const Duration(milliseconds: 300),
+      duration: AppDimensions.animationDurationCommon,
       curve: Curves.easeInOut,
     );
   }
@@ -414,7 +414,7 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
 
     _pageController.animateToPage(
       index,
-      duration: const Duration(milliseconds: 300),
+      duration: AppDimensions.animationDurationCommon,
       curve: Curves.easeInOut,
     );
   }

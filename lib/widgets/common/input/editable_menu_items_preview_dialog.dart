@@ -88,9 +88,7 @@ class _EditableMenuItemsPreviewDialogState
                       ),
                       title: Text(
                         item.name,
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: AppTextStyles.text16Medium,
                       ),
                       subtitle: item.amount > 0
                           ? Text(

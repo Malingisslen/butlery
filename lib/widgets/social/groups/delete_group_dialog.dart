@@ -51,8 +51,7 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
               ),
               TextSpan(
                 text: '"${group.name}"',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.bold,
+                style: AppTextStyles.bodyBold.copyWith(
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),

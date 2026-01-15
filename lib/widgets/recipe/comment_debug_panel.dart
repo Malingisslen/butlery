@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/user_service.dart';
 
@@ -25,16 +26,14 @@ class CommentDebugPanel extends StatelessWidget {
     final authUser = socialViewModel.currentUser;
 
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingS),
+      padding: AppDimensions.paddingAll3,
       color: AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             '🔍 DEBUG INFO:',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: AppTextStyles.bodyBold,
           ),
           Text(
               'SocialViewModel.currentUser: ${socialViewModel.currentUser?.displayName ?? "NULL"}'),

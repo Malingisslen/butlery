@@ -189,9 +189,8 @@ class GroupRecipeSharingDialog extends StatelessWidget {
               ),
               child: Text(
                 '${viewModel.selectedCount} valda',
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -282,8 +281,7 @@ class GroupRecipeListItem extends StatelessWidget {
             child: Text(
               recipe.title,
               style: isAlreadyShared
-                  ? AppTextStyles.titleMedium
-                      .copyWith(color: AppColors.textMedium)
+                  ? AppTextStyles.titleMediumMuted
                   : AppTextStyles.titleMedium,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -304,8 +302,7 @@ class GroupRecipeListItem extends StatelessWidget {
               ),
               child: Text(
                 'Delad',
-                style:
-                    AppTextStyles.labelSmall.copyWith(color: AppColors.success),
+                style: AppTextStyles.labelSmallSuccess,
               ),
             ),
         ],
@@ -331,20 +328,18 @@ class GroupRecipeListItem extends StatelessWidget {
         Text(
           recipe.mealType,
           style: isAlreadyShared
-              ? AppTextStyles.bodySmall.copyWith(
+              ? AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.textMedium,
-                  fontWeight: FontWeight.w600,
                 )
-              : AppTextStyles.bodySmall.copyWith(
+              : AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.w600,
                 ),
         ),
         if (recipe.description.isNotEmpty)
           Text(
             recipe.description,
             style: isAlreadyShared
-                ? AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium)
+                ? AppTextStyles.metadataEmphasized
                 : AppTextStyles.bodySmall,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

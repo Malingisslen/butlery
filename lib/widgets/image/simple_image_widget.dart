@@ -329,7 +329,7 @@ class _ExpandableImageWidgetState extends State<ExpandableImageWidget>
     super.initState();
     _isExpanded = widget.initiallyExpanded;
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: AppDimensions.animationDurationCommon,
       vsync: this,
     );
     _scaleAnimation = Tween<double>(

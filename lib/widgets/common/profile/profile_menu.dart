@@ -196,9 +196,8 @@ class _ProfileMenuState extends State<ProfileMenu> {
                   children: [
                     Text(
                       'Min profil',
-                      style: AppTextStyles.titleMedium.copyWith(
+                      style: AppTextStyles.titleBold.copyWith(
                         color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: AppDimensions.spacingXs),
@@ -271,9 +270,8 @@ class _ProfileMenuState extends State<ProfileMenu> {
       child: Center(
         child: Text(
           initials,
-          style: AppTextStyles.titleMedium.copyWith(
+          style: AppTextStyles.titleBold.copyWith(
             color: Theme.of(context).colorScheme.primary,
-            fontWeight: FontWeight.bold,
             fontSize: size * 0.35,
           ),
         ),
@@ -301,9 +299,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
       children: [
         Text(
           widget.displayName,
-          style: AppTextStyles.bodyLarge.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.bodyLargeBold,
         ),
         if (widget.email != null) ...[
           const SizedBox(height: AppDimensions.spacingXs),

@@ -24,7 +24,7 @@ class CommentItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return RepaintBoundary(
       child: Container(
-        margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+        margin: AppDimensions.paddingOnlyBottom3,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -48,8 +48,7 @@ class CommentItemWidget extends StatelessWidget {
                           Text(
                             socialViewModel
                                 .getAuthorDisplayName(comment.authorId),
-                            style: AppTextStyles.labelMedium
-                                .copyWith(fontWeight: FontWeight.w600),
+                            style: AppTextStyles.labelLarge,
                           ),
                           const SizedBox(width: AppDimensions.spacingS),
                           Text(
@@ -86,10 +85,7 @@ class CommentItemWidget extends StatelessWidget {
     return InkWell(
       onTap: () => socialViewModel.toggleCommentLike(comment.id),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: AppDimensions.spacingXs,
-          horizontal: AppDimensions.spacingS,
-        ),
+        padding: AppDimensions.paddingSymmetric4x3,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -119,10 +115,7 @@ class CommentItemWidget extends StatelessWidget {
     return InkWell(
       onTap: () => socialViewModel.setReplyTo(comment.id),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: AppDimensions.spacingXs,
-          horizontal: AppDimensions.spacingS,
-        ),
+        padding: AppDimensions.paddingSymmetric4x3,
         child: Text(
           'Svara',
           style: AppTextStyles.bodySmall.copyWith(

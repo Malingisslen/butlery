@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Edit indicator widget showing active editor
 class EditIndicatorWidget extends StatefulWidget {
@@ -21,7 +22,7 @@ class EditIndicatorWidget extends StatefulWidget {
     required this.editingWhat,
     this.color,
     this.isVisible = true,
-    this.animationDuration = const Duration(milliseconds: 300),
+    this.animationDuration = AppDimensions.animationDurationCommon,
   });
 
   @override
@@ -143,9 +144,8 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
                 const SizedBox(width: AppDimensions.spacingTight),
                 Text(
                   '${widget.editorName} redigerar ${widget.editingWhat}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  style: AppTextStyles.metadataEmphasized.copyWith(
                         color: color,
-                        fontWeight: FontWeight.w500,
                       ),
                 ),
               ],

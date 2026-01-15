@@ -86,7 +86,7 @@ class ShoppingAppBar {
 
           // Sharing status indicator
           Container(
-            margin: const EdgeInsetsDirectional.only(start: 8),
+            margin: AppDimensions.marginDirectionalOnlyStart8,
             child: Semantics(
               label: _getSharingStatusTooltip(viewModel),
               button: true,

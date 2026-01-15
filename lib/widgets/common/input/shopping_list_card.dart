@@ -90,9 +90,9 @@ class ShoppingListCard extends StatelessWidget {
             children: [
               Text(
                 list.name,
-                style: AppTextStyles.titleMedium.copyWith(
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                ),
+                style: isSelected
+                    ? AppTextStyles.titleBold
+                    : AppTextStyles.titleMedium,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

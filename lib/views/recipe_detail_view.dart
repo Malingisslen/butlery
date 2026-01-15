@@ -133,9 +133,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     ),
                     child: Text(
                       recipe.title,
-                      style: AppTextStyles.titleLarge.copyWith(
-                        fontSize: 16, // Smaller for app bar
-                      ),
+                      style: AppTextStyles.bodyLargeBold,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

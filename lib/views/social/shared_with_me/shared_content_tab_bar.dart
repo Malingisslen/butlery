@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 
 /// SharedContentTabBar - Tab bar for shared content view
@@ -105,10 +106,9 @@ class SharedContentTabBar {
       ),
       child: Text(
         '$count',
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppColors.neutralLight,
-              fontWeight: FontWeight.bold,
-            ),
+        style: AppTextStyles.labelLarge.copyWith(
+          color: AppColors.neutralLight,
+        ),
       ),
     );
   }

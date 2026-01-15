@@ -80,11 +80,8 @@ class AppDimensions {
   /// Medium border radius (8px)
   static const double borderRadiusM = 8.0;
 
-  /// Large border radius (12px)
+  /// Large border radius (12px) - max allowed per design spec
   static const double borderRadiusL = 12.0;
-
-  /// Extra large border radius (12px) - max allowed per design spec
-  static const double borderRadiusXl = 12.0;
 
   /// Round border radius (50px) for fully rounded elements
   static const double borderRadiusRound = 50.0;
@@ -111,9 +108,6 @@ class AppDimensions {
 
   /// High elevation (matching original AppTheme)
   static const double elevationHigh = 8.0;
-
-  /// Extra high elevation (8dp)
-  static const double elevationXHigh = 8.0;
 
   /// Maximum elevation (12dp)
   static const double elevationMax = 12.0;
@@ -183,10 +177,7 @@ class AppDimensions {
   /// Extra small avatar size (24px)
   static const double avatarSizeXs = 24.0;
 
-  /// Small avatar size (32px)
-  static const double avatarSizeSm = 32.0;
-
-  /// Medium avatar size (32px) - alias for backward compatibility
+  /// Small/Medium avatar size (32px)
   static const double avatarSizeM = 32.0;
 
   /// Medium avatar size (alias)
@@ -199,10 +190,7 @@ class AppDimensions {
   static const double avatarSizeXl = 64.0;
 
   /// Thumbnail image size
-  static const double imageSizeThumbnail = 80.0; // Back to original size
-
-  /// Large image size
-  static const double imageSizeL = 300.0;
+  static const double imageSizeThumbnail = 80.0;
 
   /// Recipe card image height
   static const double recipeImageHeight = 160.0;
@@ -213,8 +201,8 @@ class AppDimensions {
   /// Image height medium
   static const double imageHeightMedium = 160.0;
 
-  /// Image size large
-  static const double imageSizeLarge = imageSizeL;
+  /// Image size large (300px)
+  static const double imageSizeLarge = 300.0;
 
   /// Image size card
   static const double imageSizeCard = 150.0;
@@ -351,6 +339,98 @@ class AppDimensions {
   /// Section padding
   static const EdgeInsets sectionPadding = EdgeInsets.all(paddingL);
 
+  // ============================================================
+  // SEMANTIC EDGEINSETS CONSTANTS (ACTUALLY USED)
+  // ============================================================
+
+  /// All-around padding variants (used)
+  static const EdgeInsets paddingAll2 = EdgeInsets.all(2.0);
+  static const EdgeInsets paddingAll3 = EdgeInsets.all(spacingS);
+  static const EdgeInsets paddingAll8 = EdgeInsets.all(spacingSm);
+  static const EdgeInsets paddingAll12 = EdgeInsets.all(paddingM);
+  static const EdgeInsets paddingAll16 = EdgeInsets.all(spacingMd);
+  static const EdgeInsets paddingAll32 = EdgeInsets.all(spacingXl);
+
+  /// Horizontal-only padding (used)
+  static const EdgeInsets paddingHorizontal8 =
+      EdgeInsets.symmetric(horizontal: spacingSm);
+
+  /// Vertical-only padding (used)
+  static const EdgeInsets paddingVertical4 =
+      EdgeInsets.symmetric(vertical: spacingXs);
+  static const EdgeInsets paddingVertical8 =
+      EdgeInsets.symmetric(vertical: spacingSm);
+  static const EdgeInsets paddingVertical16 =
+      EdgeInsets.symmetric(vertical: spacingMd);
+
+  /// Symmetric padding combinations (used)
+  static const EdgeInsets paddingSymmetric4x8 =
+      EdgeInsets.symmetric(horizontal: spacingSm, vertical: spacingXs);
+  static const EdgeInsets paddingSymmetric12x8 =
+      EdgeInsets.symmetric(horizontal: spacingSm, vertical: paddingM);
+  static const EdgeInsets paddingSymmetric16x8 =
+      EdgeInsets.symmetric(horizontal: spacingMd, vertical: spacingSm);
+  static const EdgeInsets paddingSymmetric16x12 =
+      EdgeInsets.symmetric(horizontal: spacingMd, vertical: paddingM);
+  static const EdgeInsets paddingSymmetric16x4 =
+      EdgeInsets.symmetric(horizontal: spacingMd, vertical: spacingXs);
+  static const EdgeInsets paddingSymmetric20x12 =
+      EdgeInsets.symmetric(horizontal: paddingXl, vertical: paddingM);
+  static const EdgeInsets paddingSymmetric12x6 =
+      EdgeInsets.symmetric(horizontal: paddingM, vertical: spacing6);
+  static const EdgeInsets paddingSymmetric4x3 =
+      EdgeInsets.symmetric(horizontal: spacingS, vertical: spacingXs);
+  static const EdgeInsets paddingSymmetric4x2 =
+      EdgeInsets.symmetric(horizontal: spacingXs, vertical: 2.0);
+  static const EdgeInsets paddingSymmetric6x2 =
+      EdgeInsets.symmetric(horizontal: spacing6, vertical: 2.0);
+  static const EdgeInsets paddingSymmetric8x2 =
+      EdgeInsets.symmetric(horizontal: spacingSm, vertical: 2.0);
+  static const EdgeInsets paddingSymmetric4x12 =
+      EdgeInsets.symmetric(horizontal: spacingXs, vertical: paddingM);
+  static const EdgeInsets paddingSymmetric20x16 =
+      EdgeInsets.symmetric(horizontal: paddingXl, vertical: spacingMd);
+
+  /// Only-directional padding (used)
+  static const EdgeInsets paddingOnlyTop4 = EdgeInsets.only(top: spacingXs);
+  static const EdgeInsets paddingOnlyTop8 = EdgeInsets.only(top: spacingSm);
+  static const EdgeInsets paddingOnlyTop12 = EdgeInsets.only(top: paddingM);
+  static const EdgeInsets paddingOnlyTop16 = EdgeInsets.only(top: spacingMd);
+  static const EdgeInsets paddingOnlyTop24 = EdgeInsets.only(top: spacingLg);
+  static const EdgeInsets paddingOnlyBottom3 =
+      EdgeInsets.only(bottom: spacingS);
+  static const EdgeInsets paddingOnlyBottom4 =
+      EdgeInsets.only(bottom: spacingXs);
+  static const EdgeInsets paddingOnlyBottom8 =
+      EdgeInsets.only(bottom: spacingSm);
+  static const EdgeInsets paddingOnlyBottom12 =
+      EdgeInsets.only(bottom: paddingM);
+  static const EdgeInsets paddingOnlyBottom16 =
+      EdgeInsets.only(bottom: spacingMd);
+  static const EdgeInsets paddingOnlyBottom24 =
+      EdgeInsets.only(bottom: spacingLg);
+  static const EdgeInsets paddingOnlyLeft8 = EdgeInsets.only(left: spacingSm);
+  static const EdgeInsets paddingOnlyLeft16 = EdgeInsets.only(left: spacingMd);
+  static const EdgeInsets paddingOnlyRight8 = EdgeInsets.only(right: spacingSm);
+  static const EdgeInsets paddingOnlyRight16 =
+      EdgeInsets.only(right: spacingMd);
+
+  /// Directional EdgeInsets for RTL support (used)
+  static const EdgeInsetsDirectional marginDirectionalOnlyStart8 =
+      EdgeInsetsDirectional.only(start: spacingSm);
+  static const EdgeInsetsDirectional marginDirectionalOnlyEnd8 =
+      EdgeInsetsDirectional.only(end: spacingSm);
+
+  // ============================================================
+  // DIMENSION CONSTANTS (ACTUALLY USED)
+  // ============================================================
+
+  /// Height 40px (1 usage)
+  static const double height40 = 40.0;
+
+  /// Width 12px (3 usages)
+  static const double width12 = 12.0;
+
   // Component-specific radius aliases (semantic value)
   /// Card border radius (8px)
   static const double cardBorderRadius = borderRadiusM;
@@ -359,7 +439,7 @@ class AppDimensions {
   static const double chipRadius = borderRadiusS;
 
   /// Bottom sheet border radius (12px)
-  static const double bottomSheetBorderRadius = borderRadiusXl;
+  static const double bottomSheetBorderRadius = borderRadiusL;
 
   /// Divider height
   static const double dividerHeight = 1.0;

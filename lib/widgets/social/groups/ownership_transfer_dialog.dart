@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Dialog for selecting a new group owner when the current owner wants to leave.
 /// Returns the selected UserProfile or null if cancelled.
@@ -48,9 +49,7 @@ class OwnershipTransferDialog extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             'Välj ny ägare:',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: AppTextStyles.bodyBold,
           ),
           const SizedBox(height: AppDimensions.spacingM),
           // List of available members

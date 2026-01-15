@@ -182,8 +182,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
           const SizedBox(width: AppDimensions.spacingSm),
           Text(
             '${_selectedImages.length} selected',
-            style: AppTextStyles.bodyLarge.copyWith(
-              fontWeight: FontWeight.w500,
+            style: AppTextStyles.text16Medium.copyWith(
               color: AppColors.cardWhite,
             ),
           ),

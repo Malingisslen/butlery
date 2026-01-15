@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// A button wrapper that prevents rapid successive taps through debouncing.
 /// Useful for preventing double-submits on forms and duplicate API calls.
@@ -48,7 +49,7 @@ class DebouncedButton extends StatefulWidget {
     super.key,
     required this.onPressed,
     required this.child,
-    this.debounceDuration = const Duration(milliseconds: 500),
+    this.debounceDuration = AppDimensions.animationDurationLong,
     this.showLoadingIndicator = false,
     this.loadingIndicator,
     this.disabled = false,
@@ -148,7 +149,7 @@ class DebouncedElevatedButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     required this.child,
-    this.debounceDuration = const Duration(milliseconds: 500),
+    this.debounceDuration = AppDimensions.animationDurationLong,
     this.style,
   });
 
@@ -177,7 +178,7 @@ class DebouncedTextButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     required this.child,
-    this.debounceDuration = const Duration(milliseconds: 500),
+    this.debounceDuration = AppDimensions.animationDurationLong,
     this.style,
   });
 
