@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -145,8 +144,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
     return subtitle != null
         ? Text(
             subtitle,
-            style:
-                AppTextStyles.metadataEmphasized,
+            style: AppTextStyles.metadataEmphasized,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           )

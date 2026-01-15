@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_logic.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
 

@@ -94,7 +94,7 @@ class FriendsInternalOperations {
               final expectedMemberCount = category.friendUserIds.length;
               if (savedMemberCount == expectedMemberCount) {
                 AppLogger.success(
-                    '✅ Verified category was saved despite assertion error: ${category.name} (${savedMemberCount} members)');
+                    '✅ Verified category was saved despite assertion error: ${category.name} ($savedMemberCount members)');
                 return; // Success - don't rethrow
               } else {
                 AppLogger.warning(
@@ -103,7 +103,7 @@ class FriendsInternalOperations {
                 await _categoryRepository.saveCategory(
                     category.ownerId, category);
                 AppLogger.success(
-                    '✅ Retry succeeded: ${category.name} (${expectedMemberCount} members)');
+                    '✅ Retry succeeded: ${category.name} ($expectedMemberCount members)');
                 return;
               }
             }

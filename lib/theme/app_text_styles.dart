@@ -43,6 +43,14 @@ class AppTextStyles {
         color: AppColors.textDark,
       );
 
+  /// Headline Bold - For prominent countdown timers and emphasis
+  static TextStyle get headlineBold => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+        color: AppColors.textDark,
+      );
+
   /// Title Large - For recipe names and primary content
   static TextStyle get titleLarge => TextStyle(
         fontFamily: _primaryFontFamily,
@@ -183,9 +191,6 @@ class AppTextStyles {
 
   /// Dialog content style
   static TextStyle get dialogContent => bodyLarge;
-
-  /// Snackbar text style
-  static TextStyle get snackbarText => bodyMedium;
 
   /// Hint text style
   static TextStyle get hintText => bodyMedium.copyWith(

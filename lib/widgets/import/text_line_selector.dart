@@ -246,7 +246,7 @@ class _LineItem extends StatelessWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingM,
         vertical: AppDimensions.spacingXxs,
       ),
@@ -257,7 +257,7 @@ class _LineItem extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           child: Container(
-            padding: EdgeInsets.symmetric(
+            padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.paddingM,
               vertical: AppDimensions.paddingMs,
             ),

@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_colors.dart';
 
 /// Search input field with clear functionality.
 /// Uses TextFormField for better Flutter Web compatibility with text input handling.
