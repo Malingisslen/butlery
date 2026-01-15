@@ -27,8 +27,6 @@ class EditableListBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Column(
       children: [
         // Existing items
@@ -56,7 +54,7 @@ class EditableListBuilder extends StatelessWidget {
                     decoration: InputDecoration(
                       isDense: true,
                       border: const OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(
+                      contentPadding: const EdgeInsets.symmetric(
                         horizontal: AppDimensions.paddingM,
                         vertical: AppDimensions.paddingMs,
                       ),

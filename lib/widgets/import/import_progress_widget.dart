@@ -128,8 +128,6 @@ class _StepIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -176,8 +174,9 @@ class _StepIndicator extends StatelessWidget {
         const SizedBox(height: AppDimensions.spacingXs),
         Text(
           label,
-          style: (isActive ? AppTextStyles.badgeLarge : AppTextStyles.labelSmall)
-              .copyWith(
+          style:
+              (isActive ? AppTextStyles.badgeLarge : AppTextStyles.labelSmall)
+                  .copyWith(
             color:
                 isActive ? colorScheme.primary : colorScheme.onSurfaceVariant,
           ),
@@ -200,7 +199,7 @@ class _StepConnector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: AppDimensions.paddingXl),
+      padding: const EdgeInsets.only(bottom: AppDimensions.paddingXl),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         width: 40,
