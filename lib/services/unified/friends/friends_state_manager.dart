@@ -225,16 +225,8 @@ class FriendsStateManager extends ChangeNotifier {
         },
       );
 
-      _groupInvitationsSubscription =
-          _repository.receivedInvitationsStream(userId).listen(
-        (invitations) {
-          _receivedInvitations = invitations;
-          notifyListeners();
-        },
-        onError: (e) {
-          AppLogger.warning('Group invitations stream error: $e');
-        },
-      );
+      // BUG-017 FIX: Use helper method with retry support for Firestore assertion errors
+      _setupGroupInvitationsStream(userId);
 
       _categoriesSubscription =
           _categoryRepository.categoriesStream(userId).listen(
@@ -263,6 +255,45 @@ class FriendsStateManager extends ChangeNotifier {
     } catch (e) {
       AppLogger.warning('Failed to setup real-time listeners: $e');
     }
+  }
+
+  /// BUG-017 FIX: Separate method for setting up invitation stream with retry support
+  /// Limited to 3 retries to prevent infinite retry loops
+  void _setupGroupInvitationsStream(String userId, {int retryCount = 0}) {
+    const maxRetries = 3;
+    _groupInvitationsSubscription?.cancel();
+    _groupInvitationsSubscription =
+        _repository.receivedInvitationsStream(userId).listen(
+      (invitations) {
+        _receivedInvitations = invitations;
+        AppLogger.debug(
+            'Real-time update: ${invitations.length} received invitations');
+        notifyListeners();
+      },
+      onError: (e) {
+        final errorString = e.toString();
+        // BUG-017 FIX: Handle Firestore SDK assertion errors with limited retries
+        if (errorString.contains('INTERNAL ASSERTION') ||
+            errorString.contains('Unexpected state')) {
+          if (retryCount < maxRetries) {
+            AppLogger.warning(
+                '⚠️ Firestore assertion in invitations stream, retry ${retryCount + 1}/$maxRetries...');
+            _groupInvitationsSubscription?.cancel();
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (_isInitialized) {
+                _setupGroupInvitationsStream(userId,
+                    retryCount: retryCount + 1);
+              }
+            });
+          } else {
+            AppLogger.error(
+                '❌ Max retries exceeded for invitations stream after $maxRetries attempts');
+          }
+        } else {
+          AppLogger.warning('Group invitations stream error: $e');
+        }
+      },
+    );
   }
 
   void clearError() {

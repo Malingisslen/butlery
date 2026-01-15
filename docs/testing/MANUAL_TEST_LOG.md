@@ -1,7 +1,7 @@
 # Manual Testing Log - Butlery App
 
 **Created**: 2026-01-07
-**Last Updated**: 2026-01-13 (BUG-016 FIXED - web Firestore assertion error handled)
+**Last Updated**: 2026-01-15 (BUG-017 FIXED - group invitations now visible to recipients)
 **Status**: In Progress (1 open bug - BUG-014)
 
 ---
@@ -48,6 +48,7 @@
 | BUG-013 | Group edit fails with TypeError | 16 | High | FIXED |
 | BUG-015 | Group updateCategory service returns false | 16 | High | FIXED |
 | BUG-016 | Group edit shows error but data saves (false negative) | 16 | Medium | FIXED |
+| BUG-017 | Group invitations not visible to recipients | 16 | High | FIXED |
 
 **BUG-003 Details:**
 - **Root Cause 1**: Firestore security rules rejected `errorReason` field in tagResult
@@ -146,6 +147,27 @@
      - If verification confirms data saved, returns success instead of failing
   2. Previous fixes preserved: removed duplicate sync call, fixed refresh delegation
 - **Verified**: 2026-01-13 - Group edit saves successfully with "Gruppen uppdaterades!" success message
+
+**BUG-017 Details (FIXED 2026-01-15):**
+- **Issue**: Group invitations not visible to recipients - User B cannot see invitations sent by User A
+- **Platform**: Web (Chrome)
+- **Root Cause**: Same Firestore Web SDK "INTERNAL ASSERTION FAILED" error as BUG-016, but affecting the `receivedInvitationsStream` listener. When the error occurred, the stream listener's `onError` only logged a warning with no recovery logic, causing the stream to die silently.
+- **Fix Applied (2026-01-15)**:
+  1. `lib/services/unified/friends/friends_state_manager.dart`:
+     - Added `_setupGroupInvitationsStream()` helper method (lines 268-297) with:
+       - INTERNAL ASSERTION error detection in `onError` handler
+       - Automatic stream subscription cancel and retry after 500ms delay
+       - Only retries if manager is still initialized
+     - Updated `_setupRealtimeListeners()` to call the new helper method
+- **Verification (2026-01-15)**:
+  1. User A (malin.gisslen1@gmail.com) logged in
+  2. Navigated to Groups → "Test Remove Member" group
+  3. Sent invitation to User B (test.testsson2)
+  4. User A logged out
+  5. User B (test.testsson2@gmail.com) logged in
+  6. Navigated to Vänner & Grupper → Grupper tab
+  7. **PASS**: User B sees "Gruppinbjudningar (1)" with invitation from Malin Gisslén
+  8. Invitation displays correctly with "Acceptera" and "Avvisa" buttons
 
 **BUG-011 Details (FIXED 2026-01-10):**
 - **Issue**: After User B accepts friend request from User A, User B sees User A in friends list, but User A's friends list doesn't show User B
@@ -633,6 +655,46 @@ See full test case details in:
 - **Complete sharing flow verified:** Dialog → Type → Message → Recipients → Confirm
 - **Updated Progress:** 128/377 tests (124 passed, 2 partial), **0 open bugs**
 
+**Session 11 - 2026-01-13 (GROUP-E2E-08, GROUP-E2E-09 Testing):**
+- **GROUP-E2E-08 (Remove member from group):** BLOCKED - Cannot test because group invitation sending fails.
+- **GROUP-E2E-09 (Delete group):** PASS - Verified after hot restart. Delete dialog worked, group removed (6->5 groups).
+- **Code Fix Applied** to `friends_internal_operations.dart` - enhanced BUG-016 fix to verify member count changes and retry if mismatch.
+- **Investigation (continued session):**
+  - Extended BUG-016 fix to `friends_invitations_operations.dart` for invitation saves
+  - Error: "Kunde inte skicka gruppinbjudningar" still occurs despite fix
+  - **Root Cause Analysis:** Firestore Web SDK 12.3.0 "INTERNAL ASSERTION FAILED: Unexpected state" error
+  - Error occurs during Firestore stream listener setup (`onSnapshot`), not during the write operation
+  - The fix catches errors during `saveInvitation()` but the SDK error happens later during UI rebuild/stream subscription
+  - This is a known Firestore Web SDK bug where internal TargetState management corrupts during listener setup
+  - **Recommendation:** Consider upgrading Firebase Web SDK or implementing workaround at stream listener level
+- **Re-test after code revert (Session 11 continued):**
+  - Reverted `friends_invitations_operations.dart` changes
+  - **CONFIRMED: Original code WORKS** - invitation to "send" was sent successfully
+  - "send" disappeared from available friends list after sending invitation = invitation saved to Firestore
+  - Conclusion: My code changes introduced a regression; the original code handles invitations correctly
+  - **Remaining UI issue:** Pending invitations section shows infinite loading spinner (UnifiedFriendsService notification assertion errors)
+- **User B E2E Test (Session 11 continued):**
+  - Logged out User A, logged in as User B (test.testsson2@gmail.com)
+  - Firestore SDK INTERNAL ASSERTION error on login (but login succeeded)
+  - Navigated to Groups tab
+  - **ISSUE FOUND:** User B sees "Inga grupper än" (No groups yet) - NO pending invitations displayed
+  - User A sent invitation appeared to succeed (send removed from friends list), but User B has no way to accept
+  - **BUG IDENTIFIED:** Either invitations not saved to Firestore OR UI doesn't show received group invitations
+  - **GROUP-E2E-08:** BLOCKED - Cannot complete without working invitation receipt/acceptance flow
+- **Code Analysis (Session 11 continued):**
+  - Verified invitation flow in code: `sendGroupInvitationToUser()` → `saveInvitation()` → Firestore `group_invitations` collection
+  - GroupInvitation model correctly serializes `toUserId` field to Firestore
+  - `receivedInvitationsStream()` queries Firestore where `toUserId == userId`
+  - **Root Cause Hypothesis:** BUG-016 pattern (Firestore SDK INTERNAL ASSERTION error) likely affecting the `receivedInvitationsStream` listener
+  - Evidence: User B encountered "INTERNAL ASSERTION FAILED" error on login, which disrupts Firestore stream listeners
+  - Stream listener has `onError` handler that only logs warning, so invitation query failures are silent
+  - **BUG-017 IDENTIFIED:** Group invitation receipt blocked by Firestore SDK stream listener bug
+  - **Next Steps:**
+    1. Verify invitation document exists in Firestore `group_invitations` collection
+    2. If exists: Issue is stream listener (BUG-016 variant affecting invitation streams)
+    3. If not exists: Issue is in `saveInvitation()` operation
+  - **Workaround Needed:** Apply same BUG-016 fix pattern to `receivedInvitationsStream` with retry logic
+
 ---
 
 ## Phase 16: Social E2E Tests (35 tests)
@@ -701,8 +763,8 @@ See full test case details in:
 | GROUP-E2E-05 | Rename group | User B sees new group name | Completed | PASS | Renamed group successfully. BUG-016 fixed - no more false error message. |
 | GROUP-E2E-06 | Change group description | User B sees new description | Completed | PASS | Changed description successfully. BUG-016 fixed - success message shows correctly. |
 | GROUP-E2E-07 | (as B) Leave group | User A sees member count decrease | Pending | - | BUG-016 fixed. Ready for testing. |
-| GROUP-E2E-08 | Remove User B from group (as admin) | User B no longer sees group | Pending | - | BUG-016 fixed. Ready for testing. |
-| GROUP-E2E-09 | Delete group | User B no longer sees group | Pending | - | BUG-016 fixed. Ready for testing. |
+| GROUP-E2E-08 | Remove User B from group (as admin) | User B no longer sees group | Pending | - | **BUG-017 FIXED (2026-01-15).** Group invitations now visible to recipients. Ready for testing member removal flow. |
+| GROUP-E2E-09 | Delete group | User B no longer sees group | Completed | PASS | **VERIFIED after hot restart.** Delete dialog worked, group successfully removed from list (6→5 groups). |
 
 ### 16.3 Recipe Sharing E2E (6 tests)
 

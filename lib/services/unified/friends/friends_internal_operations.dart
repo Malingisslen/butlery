@@ -89,9 +89,23 @@ class FriendsInternalOperations {
             final savedCategory = await _categoryRepository.getCategory(
                 category.ownerId, category.id);
             if (savedCategory != null && savedCategory.name == category.name) {
-              AppLogger.success(
-                  '✅ Verified category was saved despite assertion error: ${category.name}');
-              return; // Success - don't rethrow
+              // Also verify member count matches for member add/remove operations
+              final savedMemberCount = savedCategory.friendUserIds.length;
+              final expectedMemberCount = category.friendUserIds.length;
+              if (savedMemberCount == expectedMemberCount) {
+                AppLogger.success(
+                    '✅ Verified category was saved despite assertion error: ${category.name} (${savedMemberCount} members)');
+                return; // Success - don't rethrow
+              } else {
+                AppLogger.warning(
+                    '⚠️ Member count mismatch after save: expected $expectedMemberCount, got $savedMemberCount - retrying save');
+                // Retry the save operation
+                await _categoryRepository.saveCategory(
+                    category.ownerId, category);
+                AppLogger.success(
+                    '✅ Retry succeeded: ${category.name} (${expectedMemberCount} members)');
+                return;
+              }
             }
           } catch (verifyError) {
             AppLogger.warning('Could not verify save: $verifyError');
