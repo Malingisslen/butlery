@@ -393,7 +393,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
       ),
       subtitle: Text(
         'Skapad ${_formatDate(tag.createdAt)}',
-        style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+        style: AppTextStyles.metadataEmphasized,
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
