@@ -289,7 +289,7 @@ class _ShoppingMemberManagementDialogState
                 child: Text(
                   _error!,
                   style:
-                      AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+                      AppTextStyles.bodyMediumError,
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingM),

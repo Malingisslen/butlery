@@ -851,7 +851,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             const SizedBox(height: AppDimensions.spacingM),
             Text(
               error,
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+              style: AppTextStyles.bodyMediumError,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.spacingM),

@@ -289,6 +289,26 @@ class AppTextStyles {
         color: AppColors.textDark,
       );
 
+  /// Body medium with error color - for inline error messages
+  static TextStyle get bodyMediumError => bodyMedium.copyWith(
+        color: AppColors.error,
+      );
+
+  /// Small link text - for clickable metadata links
+  static TextStyle get linkSmall => bodySmall.copyWith(
+        color: AppColors.primaryBlue,
+      );
+
+  /// Muted label - for section headers in cards
+  static TextStyle get labelMediumMuted => labelMedium.copyWith(
+        color: AppColors.textMedium,
+      );
+
+  /// Light body large - for text on dark/overlay backgrounds
+  static TextStyle get bodyLargeLight => bodyLarge.copyWith(
+        color: AppColors.neutralLight,
+      );
+
   /// Creates a complete Material 3 TextTheme with platform-adaptive font family.
   /// Uses SF Pro (system font) on iOS, Inter on Android.
   static TextTheme createTextTheme() {
