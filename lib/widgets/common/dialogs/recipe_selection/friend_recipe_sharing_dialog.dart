@@ -218,7 +218,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
           content: Text(
             shareMessage,
             style:
-                AppTextStyles.bodyLarge.copyWith(color: AppColors.neutralLight),
+                AppTextStyles.bodyLargeLight,
           ),
           backgroundColor: AppColors.success,
           duration: const Duration(seconds: 3),
@@ -230,7 +230,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
           content: Text(
             viewModel.error ?? 'Kunde inte dela recept',
             style:
-                AppTextStyles.bodyLarge.copyWith(color: AppColors.neutralLight),
+                AppTextStyles.bodyLargeLight,
           ),
           backgroundColor: AppColors.error,
           duration: const Duration(seconds: 3),

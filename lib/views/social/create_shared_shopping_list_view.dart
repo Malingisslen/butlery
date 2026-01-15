@@ -150,7 +150,7 @@ class _CreateSharedShoppingListViewState
                 child: Text(
                   viewModel.error!,
                   style:
-                      AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+                      AppTextStyles.bodyMediumError,
                 ),
               ),
             ],

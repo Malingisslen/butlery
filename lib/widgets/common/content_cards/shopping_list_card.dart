@@ -222,7 +222,7 @@ class ShoppingListCard extends StatelessWidget {
         Text(
           'Föremål på listan:',
           style:
-              AppTextStyles.labelMedium.copyWith(color: AppColors.textMedium),
+              AppTextStyles.labelMediumMuted,
         ),
         const SizedBox(height: AppDimensions.spacingS),
         ...items.take(4).map((item) => Padding(
@@ -302,7 +302,7 @@ class ShoppingListCard extends StatelessWidget {
           Text(
             memberCount > 0 ? 'Delad med $memberCount personer' : 'Delad lista',
             style:
-                AppTextStyles.bodySmall.copyWith(color: AppColors.primaryBlue),
+                AppTextStyles.linkSmall,
           ),
         ],
       ),

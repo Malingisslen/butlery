@@ -221,7 +221,7 @@ class MenuCard extends StatelessWidget {
         Text(
           'Recept i menyn:',
           style:
-              AppTextStyles.labelMedium.copyWith(color: AppColors.textMedium),
+              AppTextStyles.labelMediumMuted,
         ),
         const SizedBox(height: AppDimensions.spacingS),
         ...recipesToShow.map((recipe) => Padding(
@@ -293,7 +293,7 @@ class MenuCard extends StatelessWidget {
           Text(
             memberCount > 0 ? 'Delad med $memberCount personer' : 'Delad meny',
             style:
-                AppTextStyles.bodySmall.copyWith(color: AppColors.primaryBlue),
+                AppTextStyles.linkSmall,
           ),
         ],
       ),
