@@ -294,6 +294,31 @@ class AppTextStyles {
         color: AppColors.error,
       );
 
+  /// Body medium with success color - for success state messages
+  static TextStyle get bodyMediumSuccess => bodyMedium.copyWith(
+        color: AppColors.success,
+      );
+
+  /// Body medium with warning color - for warning state messages
+  static TextStyle get bodyMediumWarning => bodyMedium.copyWith(
+        color: AppColors.warning,
+      );
+
+  /// Body medium muted - for secondary/muted body text
+  static TextStyle get bodyMediumMuted => bodyMedium.copyWith(
+        color: AppColors.textMedium,
+      );
+
+  /// Title medium muted - for muted/disabled titles
+  static TextStyle get titleMediumMuted => titleMedium.copyWith(
+        color: AppColors.textMedium,
+      );
+
+  /// Label small success - for success badges/indicators
+  static TextStyle get labelSmallSuccess => labelSmall.copyWith(
+        color: AppColors.success,
+      );
+
   /// Small link text - for clickable metadata links
   static TextStyle get linkSmall => bodySmall.copyWith(
         color: AppColors.primaryBlue,
@@ -307,6 +332,26 @@ class AppTextStyles {
   /// Light body large - for text on dark/overlay backgrounds
   static TextStyle get bodyLargeLight => bodyLarge.copyWith(
         color: AppColors.neutralLight,
+      );
+
+  /// Snackbar/toast text - light text on dark backgrounds
+  static TextStyle get snackbarText => bodyMedium.copyWith(
+        color: AppColors.neutralLight,
+      );
+
+  /// Button text on colored backgrounds - white text for contrast
+  static TextStyle get buttonTextLight => labelLarge.copyWith(
+        color: AppColors.cardWhite,
+      );
+
+  /// Warning text - for warning state messages
+  static TextStyle get warningText => bodySmall.copyWith(
+        color: AppColors.warning,
+      );
+
+  /// Info text - for informational messages
+  static TextStyle get infoText => bodySmall.copyWith(
+        color: AppColors.info,
       );
 
   /// Creates a complete Material 3 TextTheme with platform-adaptive font family.

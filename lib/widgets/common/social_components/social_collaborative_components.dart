@@ -333,10 +333,7 @@ class SocialCollaborativeComponents {
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
               'Senast aktiv: ${_formatRelativeTime(lastActivity)}',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: AppColors.textMedium),
+              style: AppTextStyles.metadataEmphasized,
             ),
           ],
         ],
@@ -368,10 +365,7 @@ class SocialCollaborativeComponents {
         const SizedBox(height: AppDimensions.spacingXxs),
         Text(
           label,
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(color: AppColors.textMedium),
+          style: AppTextStyles.metadataEmphasized,
         ),
       ],
     );

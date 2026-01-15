@@ -374,10 +374,7 @@ class InvitationStates {
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
               'Aktuell: $currentItem',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: AppColors.textMedium),
+              style: AppTextStyles.bodyMediumMuted,
             ),
           ],
         ],

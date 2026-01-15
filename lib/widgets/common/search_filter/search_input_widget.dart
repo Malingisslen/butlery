@@ -72,8 +72,7 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
       textInputAction: TextInputAction.search,
       decoration: InputDecoration(
         hintText: widget.hintText,
-        hintStyle:
-            AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
+        hintStyle: AppTextStyles.bodyMediumMuted,
         prefixIcon: Icon(
           Icons.search,
           size: AppDimensions.iconSizeAction,
