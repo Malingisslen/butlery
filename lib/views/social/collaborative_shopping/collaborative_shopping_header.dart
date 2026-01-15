@@ -169,7 +169,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
         const SizedBox(width: AppDimensions.spacingXs),
         Text(
           viewModel.memberCountText,
-          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+          style: AppTextStyles.metadataEmphasized,
         ),
       ],
     );
@@ -188,7 +188,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
           child: Text(
             viewModel.activitySummary,
             style:
-                AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+                AppTextStyles.metadataEmphasized,
             overflow: TextOverflow.ellipsis,
           ),
         ),

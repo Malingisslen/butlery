@@ -341,7 +341,7 @@ class GroupRecipeListItem extends StatelessWidget {
           Text(
             recipe.description,
             style: isAlreadyShared
-                ? AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium)
+                ? AppTextStyles.metadataEmphasized
                 : AppTextStyles.bodySmall,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

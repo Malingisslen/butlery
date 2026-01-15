@@ -146,7 +146,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
         ? Text(
             subtitle,
             style:
-                AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+                AppTextStyles.metadataEmphasized,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           )

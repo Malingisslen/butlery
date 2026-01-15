@@ -173,7 +173,7 @@ class FriendCard extends StatelessWidget {
   Widget _buildSubtitle(BuildContext context) {
     return Text(
       subtitle!,
-      style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+      style: AppTextStyles.metadataEmphasized,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );
@@ -193,7 +193,7 @@ class FriendCard extends StatelessWidget {
 
     return Text(
       metadata.join(' • '),
-      style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+      style: AppTextStyles.metadataEmphasized,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );

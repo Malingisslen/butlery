@@ -184,7 +184,7 @@ class ShoppingListCard extends StatelessWidget {
 
     return Text(
       metadata.join(' • '),
-      style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+      style: AppTextStyles.metadataEmphasized,
     );
   }
 
@@ -209,7 +209,7 @@ class ShoppingListCard extends StatelessWidget {
             Text(
               'Inga föremål i listan',
               style:
-                  AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+                  AppTextStyles.metadataEmphasized,
             ),
           ],
         ),
@@ -263,7 +263,7 @@ class ShoppingListCard extends StatelessWidget {
             child: Text(
               '+ ${items.length - 4} fler föremål',
               style:
-                  AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+                  AppTextStyles.metadataEmphasized,
             ),
           ),
       ],

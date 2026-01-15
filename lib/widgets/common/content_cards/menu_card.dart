@@ -181,7 +181,7 @@ class MenuCard extends StatelessWidget {
 
     return Text(
       metadata.join(' • '),
-      style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+      style: AppTextStyles.metadataEmphasized,
     );
   }
 
@@ -206,7 +206,7 @@ class MenuCard extends StatelessWidget {
             Text(
               'Inga recept i menyn',
               style:
-                  AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+                  AppTextStyles.metadataEmphasized,
             ),
           ],
         ),
@@ -254,7 +254,7 @@ class MenuCard extends StatelessWidget {
             child: Text(
               '+ ${allRecipes.length - 3} fler recept',
               style:
-                  AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+                  AppTextStyles.metadataEmphasized,
             ),
           ),
       ],
