@@ -13,7 +13,7 @@ class CollaborativeLiveWidgets {
     required String editingWhat,
     Color? color,
     bool isVisible = true,
-    Duration animationDuration = const Duration(milliseconds: 300),
+    Duration animationDuration = AppDimensions.animationDurationCommon,
   }) {
     if (!isVisible) return const SizedBox.shrink();
 
@@ -44,9 +44,8 @@ class CollaborativeLiveWidgets {
                 const SizedBox(width: AppDimensions.spacingXs),
                 Text(
                   '$editorName redigerar $editingWhat',
-                  style: AppTextStyles.bodySmall.copyWith(
+                  style: AppTextStyles.metadataEmphasized.copyWith(
                     color: indicatorColor,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],

@@ -38,9 +38,7 @@ class DiscoverySectionHeader extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: AppTextStyles.titleMedium.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppTextStyles.titleMedium,
           ),
         ),
         if (count != null && count! > 0)
@@ -56,9 +54,8 @@ class DiscoverySectionHeader extends StatelessWidget {
             ),
             child: Text(
               count! > 99 ? '99+' : count.toString(),
-              style: AppTextStyles.labelSmall.copyWith(
+              style: AppTextStyles.labelLarge.copyWith(
                 color: AppColors.primary,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),

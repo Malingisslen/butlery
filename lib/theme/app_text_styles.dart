@@ -192,6 +192,168 @@ class AppTextStyles {
         color: AppColors.textLight,
       );
 
+  // ============================================================
+  // ADDITIONAL SEMANTIC TEXT STYLES (ACTUALLY USED)
+  // ============================================================
+
+  /// Metadata emphasized - for timestamps, counts with emphasis (56 usages)
+  static TextStyle get metadataEmphasized => bodySmall.copyWith(
+        color: AppColors.textMedium,
+        fontWeight: FontWeight.w500,
+      );
+
+  /// Badge text style (7 usages)
+  static TextStyle get badge => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 10,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textLight,
+      );
+
+  /// Badge text style large (5 usages)
+  static TextStyle get badgeLarge => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textMedium,
+      );
+
+  /// Title bold - for emphasized titles (52 usages)
+  static TextStyle get titleBold => titleMedium.copyWith(
+        fontWeight: FontWeight.w700,
+      );
+
+  /// Body bold - for emphasized body text (34 usages)
+  static TextStyle get bodyBold => bodyMedium.copyWith(
+        fontWeight: FontWeight.w600,
+      );
+
+  /// Body large bold (16 usages)
+  static TextStyle get bodyLargeBold => bodyLarge.copyWith(
+        fontWeight: FontWeight.w600,
+      );
+
+  /// Small text - 10px for very small labels (5 usages)
+  static TextStyle get textXs => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 10,
+        fontWeight: FontWeight.normal,
+        color: AppColors.textMedium,
+      );
+
+  /// Small text emphasized - 10px bold (3 usages)
+  static TextStyle get textXsBold => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 10,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textMedium,
+      );
+
+  /// Medium small text - 11px (1 usage)
+  static TextStyle get textSm => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 11,
+        fontWeight: FontWeight.normal,
+        color: AppColors.textMedium,
+      );
+
+  /// 14px regular text (5 usages)
+  static TextStyle get text14 => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 14,
+        fontWeight: FontWeight.normal,
+        color: AppColors.textDark,
+      );
+
+  /// 14px medium weight text (19 usages)
+  static TextStyle get text14Medium => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: AppColors.textDark,
+      );
+
+  /// 16px medium weight text (24 usages)
+  static TextStyle get text16Medium => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+        color: AppColors.textDark,
+      );
+
+  /// 20px semibold text (2 usages)
+  static TextStyle get text20SemiBold => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textDark,
+      );
+
+  /// Body medium with error color - for inline error messages
+  static TextStyle get bodyMediumError => bodyMedium.copyWith(
+        color: AppColors.error,
+      );
+
+  /// Body medium with success color - for success state messages
+  static TextStyle get bodyMediumSuccess => bodyMedium.copyWith(
+        color: AppColors.success,
+      );
+
+  /// Body medium with warning color - for warning state messages
+  static TextStyle get bodyMediumWarning => bodyMedium.copyWith(
+        color: AppColors.warning,
+      );
+
+  /// Body medium muted - for secondary/muted body text
+  static TextStyle get bodyMediumMuted => bodyMedium.copyWith(
+        color: AppColors.textMedium,
+      );
+
+  /// Title medium muted - for muted/disabled titles
+  static TextStyle get titleMediumMuted => titleMedium.copyWith(
+        color: AppColors.textMedium,
+      );
+
+  /// Label small success - for success badges/indicators
+  static TextStyle get labelSmallSuccess => labelSmall.copyWith(
+        color: AppColors.success,
+      );
+
+  /// Small link text - for clickable metadata links
+  static TextStyle get linkSmall => bodySmall.copyWith(
+        color: AppColors.primaryBlue,
+      );
+
+  /// Muted label - for section headers in cards
+  static TextStyle get labelMediumMuted => labelMedium.copyWith(
+        color: AppColors.textMedium,
+      );
+
+  /// Light body large - for text on dark/overlay backgrounds
+  static TextStyle get bodyLargeLight => bodyLarge.copyWith(
+        color: AppColors.neutralLight,
+      );
+
+  /// Snackbar/toast text - light text on dark backgrounds
+  static TextStyle get snackbarText => bodyMedium.copyWith(
+        color: AppColors.neutralLight,
+      );
+
+  /// Button text on colored backgrounds - white text for contrast
+  static TextStyle get buttonTextLight => labelLarge.copyWith(
+        color: AppColors.cardWhite,
+      );
+
+  /// Warning text - for warning state messages
+  static TextStyle get warningText => bodySmall.copyWith(
+        color: AppColors.warning,
+      );
+
+  /// Info text - for informational messages
+  static TextStyle get infoText => bodySmall.copyWith(
+        color: AppColors.info,
+      );
+
   /// Creates a complete Material 3 TextTheme with platform-adaptive font family.
   /// Uses SF Pro (system font) on iOS, Inter on Android.
   static TextTheme createTextTheme() {

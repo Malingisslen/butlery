@@ -73,6 +73,9 @@ abstract class BrandColors {
   /// YouTube dark text color
   static const Color youtubeText = Color(0xFFCC0000);
 
+  /// TikTok dark text color (black per brand guidelines)
+  static const Color tiktokText = Color(0xFF161823);
+
   /// Instagram dark text color
   static const Color instagramText = Color(0xFFC13584);
 }

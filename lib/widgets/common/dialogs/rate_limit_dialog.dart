@@ -168,9 +168,8 @@ class RateLimitDialog extends StatelessWidget {
       children: [
         Text(
           'Alternativ:',
-          style: AppTextStyles.bodySmall.copyWith(
+          style: AppTextStyles.metadataEmphasized.copyWith(
             color: AppColors.textSecondary,
-            fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: AppDimensions.spacingS),
@@ -258,9 +257,7 @@ class _ActionTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: AppTextStyles.bodyBold,
                   ),
                   Text(
                     subtitle,

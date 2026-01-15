@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/assisted_import_viewmodel.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 
 /// Header component for import dialogs with icon, title, and close button.
 class ImportDialogHeader extends StatelessWidget {
@@ -19,7 +20,12 @@ class ImportDialogHeader extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 8, 8),
+      padding: EdgeInsets.fromLTRB(
+        AppDimensions.paddingXl,
+        AppDimensions.spacingMd,
+        AppDimensions.spacingSm,
+        AppDimensions.spacingSm,
+      ),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(color: theme.colorScheme.outlineVariant),
@@ -31,7 +37,7 @@ class ImportDialogHeader extends StatelessWidget {
             Icons.edit_note,
             color: theme.colorScheme.primary,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppDimensions.width12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

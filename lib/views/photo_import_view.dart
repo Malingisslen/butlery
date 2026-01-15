@@ -224,7 +224,6 @@ class _PhotoImportViewContent extends StatelessWidget {
                                   'Bildkvaliteten är låg (${(viewModel.qualityScore! * 100).toInt()}%)',
                                   style: AppTextStyles.titleSmall.copyWith(
                                     color: AppColors.onWarningContainer,
-                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
@@ -235,9 +234,8 @@ class _PhotoImportViewContent extends StatelessWidget {
                             const SizedBox(height: AppDimensions.spacingSm),
                             Text(
                               'Förbättringsförslag:',
-                              style: AppTextStyles.labelMedium.copyWith(
+                              style: AppTextStyles.badgeLarge.copyWith(
                                 color: AppColors.onWarningContainer,
-                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             const SizedBox(height: AppDimensions.spacingXs),
@@ -471,9 +469,9 @@ class _PhotoImportViewContent extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacingXxs),
             Text(
               '$percentage%',
-              style: AppTextStyles.labelSmall.copyWith(
+              style: AppTextStyles.badgeLarge.copyWith(
                 color: badgeTextColor,
-                fontWeight: FontWeight.w600,
+                fontSize: 11,
               ),
             ),
           ],

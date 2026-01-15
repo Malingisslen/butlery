@@ -61,9 +61,7 @@ class ModalHeaderText extends StatelessWidget {
       children: [
         Text(
           text,
-          style: AppTextStyles.headlineSmall.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTextStyles.sectionHeader,
         ),
         const SizedBox(height: AppDimensions.paddingL),
       ],

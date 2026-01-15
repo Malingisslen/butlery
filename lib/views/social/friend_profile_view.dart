@@ -66,9 +66,7 @@ class FriendProfileView extends StatelessWidget {
                           const SizedBox(height: AppDimensions.spacingL),
                           Text(
                             friend.displayName,
-                            style: AppTextStyles.headlineMedium.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: AppTextStyles.headlineMedium,
                           ),
                         ],
                       ),
@@ -83,9 +81,7 @@ class FriendProfileView extends StatelessWidget {
                         children: [
                           Text(
                             'Statistik',
-                            style: AppTextStyles.titleLarge.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: AppTextStyles.titleBold,
                           ),
                           const SizedBox(height: AppDimensions.spacingL),
                           Row(
@@ -245,7 +241,6 @@ class FriendProfileView extends StatelessWidget {
           value,
           style: AppTextStyles.headlineMedium.copyWith(
             color: AppColors.primaryBlue,
-            fontWeight: FontWeight.bold,
           ),
         ),
         Text(

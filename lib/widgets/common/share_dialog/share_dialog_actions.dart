@@ -111,9 +111,8 @@ class ShareDialogActions {
             Expanded(
               child: Text(
                 'Välj minst en vän för att dela $contentTypeName',
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.warning,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -145,9 +144,8 @@ class ShareDialogActions {
           Expanded(
             child: Text(
               '$selectedCount vän${selectedCount > 1 ? 'ner' : ''} valda',
-              style: AppTextStyles.bodySmall.copyWith(
+              style: AppTextStyles.metadataEmphasized.copyWith(
                 color: AppColors.success,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ),

@@ -105,7 +105,6 @@ class ShoppingShareStatusDialog extends StatelessWidget {
               'Listinformation',
               style: AppTextStyles.titleMedium.copyWith(
                 color: AppColors.primaryBlue,
-                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -181,7 +180,6 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                   'Din behörighet',
                   style: AppTextStyles.titleMedium.copyWith(
                     color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -189,9 +187,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingM),
             Text(
               permissionLabel,
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.bodyBold,
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
@@ -230,7 +226,6 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                   'Medlemmar (${allMembers.length})',
                   style: AppTextStyles.titleMedium.copyWith(
                     color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -287,9 +282,8 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             backgroundColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
             child: Text(
               displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-              style: AppTextStyles.labelMedium.copyWith(
+              style: AppTextStyles.labelLarge.copyWith(
                 color: AppColors.primaryBlue,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -300,9 +294,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
               children: [
                 Text(
                   displayName,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppTextStyles.text16Medium,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -344,7 +336,6 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                   'Senaste aktivitet',
                   style: AppTextStyles.titleMedium.copyWith(
                     color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -370,9 +361,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             width: 80,
             child: Text(
               '$label:',
-              style: AppTextStyles.labelMedium.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppTextStyles.labelMedium,
             ),
           ),
           const SizedBox(width: AppDimensions.spacingS),

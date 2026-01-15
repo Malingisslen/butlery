@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Utility for displaying operation results via snackbars.
@@ -25,7 +26,7 @@ class ResultDisplayer {
       Navigator.of(context).pop();
 
       // Use a delay to show the snackbar after the modal closes
-      Future.delayed(const Duration(milliseconds: 300), () {
+      Future.delayed(AppDimensions.animationDurationCommon, () {
         _showSnackBar(context, success, message);
       });
     } else {

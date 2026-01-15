@@ -292,10 +292,9 @@ class _CreateGroupConversationViewState
               children: [
                 Text(
                   friend.displayName,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
+                  style: isSelected
+                      ? AppTextStyles.bodyLargeBold
+                      : AppTextStyles.bodyLarge,
                 ),
                 if (friend.email.isNotEmpty)
                   Text(

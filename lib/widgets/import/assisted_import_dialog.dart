@@ -245,7 +245,7 @@ class _ReviewEditStep extends StatelessWidget {
             onChanged: viewModel.setTitle,
             textCapitalization: TextCapitalization.sentences,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
 
           // Description
           TextFormField(
@@ -259,7 +259,7 @@ class _ReviewEditStep extends StatelessWidget {
             maxLines: 2,
             textCapitalization: TextCapitalization.sentences,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
 
           // Portions and Time row
           Row(
@@ -279,7 +279,7 @@ class _ReviewEditStep extends StatelessWidget {
                   },
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: TextFormField(
                   initialValue: viewModel.timeMinutes.toString(),
@@ -297,7 +297,7 @@ class _ReviewEditStep extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppDimensions.spacingMd),
 
           // Meal type dropdown
           DropdownButtonFormField<String>(
@@ -317,7 +317,7 @@ class _ReviewEditStep extends StatelessWidget {
               if (value != null) viewModel.setMealType(value);
             },
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppDimensions.spacingLg),
 
           // Ingredients section
           EditableListHeader(
@@ -325,7 +325,7 @@ class _ReviewEditStep extends StatelessWidget {
             icon: Icons.restaurant,
             count: viewModel.editedIngredients.length,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppDimensions.spacingSm),
           EditableListBuilder(
             items: viewModel.editedIngredients,
             onUpdate: viewModel.updateIngredient,
@@ -333,7 +333,7 @@ class _ReviewEditStep extends StatelessWidget {
             onAdd: viewModel.addIngredient,
             hintText: 'Lägg till ingrediens',
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppDimensions.spacingLg),
 
           // Instructions section
           EditableListHeader(
@@ -341,7 +341,7 @@ class _ReviewEditStep extends StatelessWidget {
             icon: Icons.format_list_numbered,
             count: viewModel.editedInstructions.length,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppDimensions.spacingSm),
           EditableListBuilder(
             items: viewModel.editedInstructions,
             onUpdate: viewModel.updateInstruction,

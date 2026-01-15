@@ -266,9 +266,7 @@ class ImageComponents {
             const SizedBox(width: AppDimensions.spacingXxs),
             Text(
               '$imageCount',
-              style: AppTextStyles.bodySmall.copyWith(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
+              style: AppTextStyles.textXsBold.copyWith(
                 color: AppColors.textDark,
               ),
             ),
@@ -302,8 +300,7 @@ class ImageComponents {
         ),
         child: Text(
           '${currentIndex + 1}/$totalImages',
-          style: AppTextStyles.bodySmall.copyWith(
-            fontWeight: FontWeight.w500,
+          style: AppTextStyles.metadataEmphasized.copyWith(
             color: AppColors.textDark,
           ),
         ),

@@ -50,9 +50,7 @@ class GroupInfoCard extends StatelessWidget {
           // Group name
           Text(
             groupTitle,
-            style: AppTextStyles.headlineMedium.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: AppTextStyles.headlineMedium,
             textAlign: TextAlign.center,
           ),
 

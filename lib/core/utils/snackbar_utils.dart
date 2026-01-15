@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Centralized snackbar utilities for consistent user feedback throughout the application.
@@ -266,10 +267,9 @@ class SnackBarUtils {
   }) {
     Widget content = Text(
       message,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: textColor,
-            fontWeight: FontWeight.w500,
-          ),
+      style: AppTextStyles.text14Medium.copyWith(
+        color: textColor,
+      ),
     );
 
     if (icon != null) {

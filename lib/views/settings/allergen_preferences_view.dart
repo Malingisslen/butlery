@@ -286,7 +286,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
           Expanded(
             child: Text(
               error,
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
+              style: AppTextStyles.errorText,
             ),
           ),
         ],

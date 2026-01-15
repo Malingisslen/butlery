@@ -32,9 +32,8 @@ class PrimaryBadge extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               'Primary',
-              style: AppTextStyles.bodySmall.copyWith(
+              style: AppTextStyles.metadataEmphasized.copyWith(
                 color: AppColors.cardWhite,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ],

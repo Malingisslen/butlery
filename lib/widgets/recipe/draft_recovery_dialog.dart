@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Dialog for recovering unsaved recipe drafts.
 /// Shows available drafts with metadata and allows user to:
@@ -58,7 +59,7 @@ class DraftRecoveryDialog extends StatelessWidget {
             Icons.restore,
             color: theme.colorScheme.primary,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppDimensions.width12),
           const Expanded(
             child: Text('Osparade utkast hittades'),
           ),
@@ -74,7 +75,7 @@ class DraftRecoveryDialog extends StatelessWidget {
               'Du har osparade utkast. Vill du fortsätta redigera något av dem?',
               style: theme.textTheme.bodyMedium,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.spacingMd),
             ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 200),
               child: ListView.separated(
@@ -126,7 +127,7 @@ class _DraftListTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        padding: AppDimensions.paddingSymmetric4x12,
         child: Row(
           children: [
             Icon(
@@ -134,20 +135,18 @@ class _DraftListTile extends StatelessWidget {
               size: AppDimensions.iconSizeM,
               color: theme.colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppDimensions.width12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     draft.title.isNotEmpty ? draft.title : 'Namnlöst recept',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTextStyles.text14Medium,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: AppDimensions.spacingXxs),
                   Text(
                     '${draft.fieldCount} fält ifyllda • ${draft.timeAgo}',
                     style: theme.textTheme.bodySmall?.copyWith(

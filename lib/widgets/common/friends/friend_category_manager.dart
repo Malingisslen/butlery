@@ -79,9 +79,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                 const SizedBox(height: AppDimensions.spacingXl),
                 Text(
                   'Laddar vänner och kategorier...',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
+                  style: AppTextStyles.text16Medium,
                 ),
               ],
             ),
@@ -164,9 +162,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
       children: [
         Text(
           widget.title,
-          style: AppTextStyles.headlineSmall.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTextStyles.headlineBold,
         ),
         if (widget.subtitle.isNotEmpty) ...[
           const SizedBox(height: AppDimensions.spacingM),
@@ -196,8 +192,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             const SizedBox(width: AppDimensions.spacingM),
             Text(
               'Kategorier',
-              style: AppTextStyles.titleMedium.copyWith(
-                fontWeight: FontWeight.w600,
+              style: AppTextStyles.titleBold.copyWith(
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
@@ -236,7 +231,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.spacingXs,
-                      vertical: 1,
+                      vertical: AppDimensions.borderWidthStandard,
                     ),
                     decoration: BoxDecoration(
                       color: isSelected
@@ -250,8 +245,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                     ),
                     child: Text(
                       '${category.friendCount}',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
+                      style: AppTextStyles.badge.copyWith(
                             color: Theme.of(context).colorScheme.primary,
                           ),
                     ),
@@ -289,8 +283,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             const SizedBox(width: AppDimensions.spacingM),
             Text(
               'Individuellt val',
-              style: AppTextStyles.titleMedium.copyWith(
-                fontWeight: FontWeight.w600,
+              style: AppTextStyles.titleBold.copyWith(
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
@@ -342,14 +335,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                           onChanged: (selected) => _toggleFriend(friend.uid),
                           title: Text(
                             friend.displayName,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                                  fontWeight: isSelected
-                                      ? FontWeight.w600
-                                      : FontWeight.normal,
-                                ),
+                            style: isSelected
+                                ? AppTextStyles.bodyBold
+                                : AppTextStyles.bodyMedium,
                           ),
                           subtitle: null,
                           dense: true,
@@ -401,16 +389,14 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               children: [
                 Text(
                   'Valda vänner',
-                  style: AppTextStyles.labelMedium.copyWith(
+                  style: AppTextStyles.labelLarge.copyWith(
                     color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
                   '${_selectedFriends.length} ${_selectedFriends.length == 1 ? 'vän vald' : 'vänner valda'}',
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: AppTextStyles.text14Medium.copyWith(
                     color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],

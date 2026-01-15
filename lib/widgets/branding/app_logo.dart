@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_shadows.dart';
 
 class AppLogo extends StatelessWidget {
   final double? size;
@@ -71,15 +72,7 @@ class AppLogo extends StatelessWidget {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-        boxShadow: showShadow
-            ? [
-                BoxShadow(
-                  color: bgColor.withValues(alpha: AppDimensions.opacityMediumLight),
-                  blurRadius: AppDimensions.elevationMedium * 2,
-                  offset: const Offset(0, AppDimensions.elevationMedium),
-                ),
-              ]
-            : null,
+        boxShadow: showShadow ? AppShadows.elevated : null,
       ),
       child: Icon(
         logoIcon,
@@ -139,7 +132,6 @@ class AppBranding extends StatelessWidget {
           appName,
           style: nameStyle ??
               AppTextStyles.headlineMedium.copyWith(
-                fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.primary,
               ),
         ),

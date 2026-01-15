@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 /// Dialog for handling unknown ingredients found during recipe tagging.
 ///
@@ -92,11 +94,9 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
               // Ingredient name
               Text(
                 _current.name,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTextStyles.headlineBold,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppDimensions.spacingSm),
               Text(
                 'Denna ingrediens finns inte i databasen. '
                 'Du kan definiera dess egenskaper för bättre taggning.',
@@ -104,24 +104,24 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimensions.spacingMd),
 
               // Common allergen toggles
               Text(
                 'Innehåller allergener:',
                 style: theme.textTheme.titleSmall,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppDimensions.spacingSm),
               _buildAllergenSection(),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: AppDimensions.spacingMd),
 
               // Dietary properties
               Text(
                 'Dietegenskaper:',
                 style: theme.textTheme.titleSmall,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppDimensions.spacingSm),
               _buildDietarySection(),
             ],
           ),
@@ -142,7 +142,7 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
                 onPressed: _isSaving ? null : _previous,
                 child: const Text('Föregående'),
               ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppDimensions.spacingSm),
             FilledButton(
               onPressed: _isSaving ? null : _saveAndNext,
               child: _isSaving

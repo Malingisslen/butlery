@@ -58,8 +58,7 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
               ),
               TextSpan(
                 text: member.displayName,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.bold,
+                style: AppTextStyles.bodyBold.copyWith(
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
@@ -68,8 +67,7 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
               ),
               TextSpan(
                 text: '"${group.name}"',
-                style: AppTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.bold,
+                style: AppTextStyles.bodyBold.copyWith(
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),

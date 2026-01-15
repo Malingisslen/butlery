@@ -158,7 +158,7 @@ class CategorySelectionWidgets {
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingXs,
-              vertical: 1,
+              vertical: AppDimensions.borderWidthStandard,
             ),
             decoration: BoxDecoration(
               color: isSelected
@@ -168,8 +168,7 @@ class CategorySelectionWidgets {
             ),
             child: Text(
               '${category.friendCount}',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
+              style: AppTextStyles.badge.copyWith(
                     color: AppColors.primaryBlue,
                   ),
             ),
@@ -266,9 +265,8 @@ class CategorySelectionWidgets {
               children: [
                 Text(
                   'Valda kategorier',
-                  style: AppTextStyles.labelMedium.copyWith(
+                  style: AppTextStyles.labelLarge.copyWith(
                     color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
@@ -282,7 +280,7 @@ class CategorySelectionWidgets {
           ),
           TextButton.icon(
             onPressed: onClear,
-            icon: const Icon(Icons.clear, size: 18.0),
+            icon: const Icon(Icons.clear, size: AppDimensions.iconSize18),
             label: const Text('Rensa'),
             style: TextButton.styleFrom(
               foregroundColor: AppColors.primaryBlue,

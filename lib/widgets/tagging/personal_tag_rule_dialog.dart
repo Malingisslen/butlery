@@ -363,7 +363,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           child: Row(
             children: [
               const Icon(Icons.label, size: AppDimensions.iconSizeS, color: AppColors.primaryBlue),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppDimensions.spacingSm),
               Text(tag.name),
             ],
           ),
@@ -511,7 +511,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           Expanded(
             child: Text(
               _error!,
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
+              style: AppTextStyles.errorText,
             ),
           ),
         ],
@@ -583,17 +583,13 @@ class _ConditionRow extends StatelessWidget {
                   initialValue: condition.type,
                   decoration: const InputDecoration(
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
+                    contentPadding: AppDimensions.paddingSymmetric12x8,
                     border: OutlineInputBorder(),
                   ),
                   items: ConditionType.values.map((type) {
                     return DropdownMenuItem(
                       value: type,
-                      child: Text(type.label,
-                          style: const TextStyle(fontSize: 14)),
+                      child: Text(type.label, style: AppTextStyles.text14),
                     );
                   }).toList(),
                   onChanged: enabled
@@ -603,7 +599,7 @@ class _ConditionRow extends StatelessWidget {
                       : null,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppDimensions.spacingSm),
               // Operator dropdown
               Expanded(
                 flex: 2,
@@ -611,17 +607,13 @@ class _ConditionRow extends StatelessWidget {
                   initialValue: condition.operator,
                   decoration: const InputDecoration(
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
+                    contentPadding: AppDimensions.paddingSymmetric12x8,
                     border: OutlineInputBorder(),
                   ),
                   items: ConditionOperator.values.map((op) {
                     return DropdownMenuItem(
                       value: op,
-                      child:
-                          Text(op.label, style: const TextStyle(fontSize: 14)),
+                      child: Text(op.label, style: AppTextStyles.text14),
                     );
                   }).toList(),
                   onChanged: enabled
@@ -631,7 +623,7 @@ class _ConditionRow extends StatelessWidget {
                       : null,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppDimensions.spacingSm),
               // Delete button
               if (canDelete)
                 IconButton(
@@ -645,7 +637,7 @@ class _ConditionRow extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppDimensions.spacingSm),
           // Value field - dropdown for property, text field for others
           if (condition.type == ConditionType.property)
             _buildPropertyDropdown()
@@ -654,10 +646,7 @@ class _ConditionRow extends StatelessWidget {
               initialValue: condition.value,
               decoration: InputDecoration(
                 isDense: true,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
+                contentPadding: AppDimensions.paddingAll12,
                 hintText: _getHintText(),
                 border: const OutlineInputBorder(),
               ),
@@ -741,10 +730,8 @@ class _ConditionRow extends StatelessWidget {
         value: '__header_${entry.key}',
         child: Text(
           entry.key,
-          style: const TextStyle(
+          style: AppTextStyles.badgeLarge.copyWith(
             fontWeight: FontWeight.bold,
-            color: AppColors.textMedium,
-            fontSize: 12,
           ),
         ),
       ));
@@ -754,8 +741,8 @@ class _ConditionRow extends StatelessWidget {
           items.add(DropdownMenuItem<String>(
             value: prop,
             child: Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Text(prop, style: const TextStyle(fontSize: 14)),
+              padding: AppDimensions.paddingOnlyLeft8,
+              child: Text(prop, style: AppTextStyles.text14),
             ),
           ));
         }
@@ -769,10 +756,7 @@ class _ConditionRow extends StatelessWidget {
           : null,
       decoration: const InputDecoration(
         isDense: true,
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 12,
-        ),
+        contentPadding: AppDimensions.paddingAll12,
         hintText: 'Välj egenskap...',
         border: OutlineInputBorder(),
       ),

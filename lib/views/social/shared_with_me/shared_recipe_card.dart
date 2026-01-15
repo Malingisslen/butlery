@@ -101,10 +101,13 @@ class SharedRecipeCard {
             children: [
               Text(
                 'Delat av ${sharedRecipe.sharedByDisplayName}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontWeight: isRead ? FontWeight.normal : FontWeight.w600,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                style: isRead
+                    ? AppTextStyles.bodySmall.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                      )
+                    : AppTextStyles.bodyBold.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
               ),
               Text(
                 timeago.format(sharedRecipe.sharedAt, locale: 'sv'),

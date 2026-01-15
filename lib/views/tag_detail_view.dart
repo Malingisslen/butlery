@@ -172,8 +172,8 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
             const PopupMenuItem(
               value: 'delete',
               child: ListTile(
-                leading: Icon(Icons.delete, color: Colors.red),
-                title: Text('Ta bort', style: TextStyle(color: Colors.red)),
+                leading: Icon(Icons.delete, color: AppColors.error),
+                title: Text('Ta bort', style: TextStyle(color: AppColors.error)),
                 contentPadding: EdgeInsets.zero,
               ),
             ),
@@ -441,8 +441,8 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
                 const PopupMenuItem(
                   value: 'delete',
                   child: ListTile(
-                    leading: Icon(Icons.delete, color: Colors.red),
-                    title: Text('Ta bort', style: TextStyle(color: Colors.red)),
+                    leading: Icon(Icons.delete, color: AppColors.error),
+                    title: Text('Ta bort', style: TextStyle(color: AppColors.error)),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
@@ -578,7 +578,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
             child: const Text('Avbryt'),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Ta bort'),
           ),
@@ -627,7 +627,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         content: Row(
           children: [
             CircularProgressIndicator(),
-            SizedBox(width: 16),
+            SizedBox(width: AppDimensions.spacingMd),
             Text('Kör regler på recept...'),
           ],
         ),
@@ -673,7 +673,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
             child: const Text('Avbryt'),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Ta bort'),
           ),
@@ -1067,8 +1067,7 @@ class _ConditionCardState extends State<_ConditionCard> {
                     items: ConditionType.values.map((type) {
                       return DropdownMenuItem(
                         value: type,
-                        child: Text(type.label,
-                            style: const TextStyle(fontSize: 14)),
+                        child: Text(type.label, style: AppTextStyles.text14),
                       );
                     }).toList(),
                     onChanged: (value) {
@@ -1101,8 +1100,7 @@ class _ConditionCardState extends State<_ConditionCard> {
                     items: operators.map((op) {
                       return DropdownMenuItem(
                         value: op,
-                        child: Text(op.label,
-                            style: const TextStyle(fontSize: 14)),
+                        child: Text(op.label, style: AppTextStyles.text14),
                       );
                     }).toList(),
                     onChanged: (value) {

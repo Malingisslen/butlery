@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:butlery/viewmodels/account/data_export_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// GDPR Article 20 - Right to Data Portability UI
@@ -89,9 +90,7 @@ class DataExportView extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'Ladda ner dina data',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: AppTextStyles.titleBold,
                   ),
                 ),
               ],
@@ -123,10 +122,8 @@ class DataExportView extends StatelessWidget {
       icon: const Icon(Icons.cloud_download_rounded),
       label: const Text('Exportera mina data'),
       style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+        padding: AppDimensions.paddingVertical16,
+        textStyle: AppTextStyles.titleMedium,
       ),
     );
   }
@@ -141,9 +138,7 @@ class DataExportView extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
               'Exporterar dina data...',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+              style: AppTextStyles.text16Medium,
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
@@ -173,9 +168,7 @@ class DataExportView extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
               'Export misslyckades',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: AppTextStyles.titleBold,
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
@@ -211,9 +204,7 @@ class DataExportView extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
               'Data exporterad',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: AppTextStyles.titleBold,
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
@@ -283,9 +274,7 @@ class DataExportView extends StatelessWidget {
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   'Vad ingår i exporten?',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: AppTextStyles.titleBold,
                 ),
               ],
             ),
@@ -313,7 +302,7 @@ class DataExportView extends StatelessWidget {
 
   Widget _buildInfoItem(BuildContext context, String text) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: AppDimensions.paddingVertical4,
       child: Row(
         children: [
           const Icon(

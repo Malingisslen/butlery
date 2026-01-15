@@ -53,9 +53,8 @@ class SearchStatsWidget extends StatelessWidget {
           Expanded(
             child: Text(
               statsText,
-              style: AppTextStyles.bodySmall.copyWith(
+              style: AppTextStyles.metadataEmphasized.copyWith(
                 color: Theme.of(context).colorScheme.onPrimaryContainer,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ),

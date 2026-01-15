@@ -49,9 +49,8 @@ class UploadProgressWidgets {
                   Expanded(
                     child: Text(
                       uploadQueueStatus,
-                      style: AppTextStyles.bodySmall.copyWith(
+                      style: AppTextStyles.metadataEmphasized.copyWith(
                         color: AppColors.primaryBlue,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
@@ -232,9 +231,8 @@ class UploadProgressWidgets {
                 padding: const EdgeInsets.only(top: AppDimensions.spacingXxs),
                 child: Text(
                   detail,
-                  style: AppTextStyles.bodySmall.copyWith(
+                  style: AppTextStyles.textSm.copyWith(
                     color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryDark),
-                    fontSize: 11,
                   ),
                 ),
               ))
@@ -275,9 +273,8 @@ class UploadProgressWidgets {
                 children: [
                   Text(
                     status.statusDescription,
-                    style: AppTextStyles.bodySmall.copyWith(
+                    style: AppTextStyles.metadataEmphasized.copyWith(
                       color: AppColors.cardWhite,
-                      fontWeight: FontWeight.w500,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -448,9 +445,8 @@ class UploadProgressWidgets {
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               label,
-              style: AppTextStyles.bodySmall.copyWith(
+              style: AppTextStyles.metadataEmphasized.copyWith(
                 color: AppColors.cardWhite,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ],

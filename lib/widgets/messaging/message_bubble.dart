@@ -56,7 +56,7 @@ class _MessageBubbleState extends State<MessageBubble>
     super.initState();
     _swipeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: AppDimensions.animationDurationMedium,
     );
     _swipeAnimation = Tween<Offset>(
       begin: Offset.zero,
@@ -74,7 +74,7 @@ class _MessageBubbleState extends State<MessageBubble>
     if (_reduceMotion) {
       _swipeController.duration = Duration.zero;
     } else {
-      _swipeController.duration = const Duration(milliseconds: 200);
+      _swipeController.duration = AppDimensions.animationDurationMedium;
     }
   }
 
@@ -264,7 +264,6 @@ class _MessageBubbleState extends State<MessageBubble>
         widget.message.senderDisplayName,
         style: AppTextStyles.labelSmall.copyWith(
           color: AppColors.textMedium,
-          fontWeight: FontWeight.w500,
         ),
       ),
     );

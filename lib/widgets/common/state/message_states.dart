@@ -60,8 +60,7 @@ class MessageStates {
                   ),
                   child: Text(
                     message,
-                    style: AppTextStyles.bodyMedium
-                        .copyWith(color: AppColors.error),
+                    style: AppTextStyles.bodyMediumError,
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -125,8 +124,7 @@ class MessageStates {
                 const SizedBox(height: AppDimensions.spacingM),
                 Text(
                   message,
-                  style: AppTextStyles.bodyMedium
-                      .copyWith(color: AppColors.success),
+                  style: AppTextStyles.bodyMediumSuccess,
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -240,8 +238,7 @@ class MessageStates {
               if (message != null) ...[
                 Text(
                   message,
-                  style: AppTextStyles.bodyMedium
-                      .copyWith(color: AppColors.warning),
+                  style: AppTextStyles.bodyMediumWarning,
                   textAlign: TextAlign.center,
                 ),
               ],

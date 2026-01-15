@@ -221,7 +221,7 @@ class RecipeDetailContent extends StatelessWidget {
                 ),
                 child: Text(
                   displayName,
-                  style: AppTextStyles.bodySmall.copyWith(
+                  style: AppTextStyles.metadataEmphasized.copyWith(
                     color: AppColors.primaryBlue,
                     fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.w500,
                   ),
@@ -382,9 +382,9 @@ class RecipeDetailContent extends StatelessWidget {
                       child: Center(
                         child: Text(
                           '${index + 1}',
-                          style: AppTextStyles.bodySmall.copyWith(
+                          style: AppTextStyles.metadataEmphasized.copyWith(
                             color: AppColors.neutralLight,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -393,7 +393,7 @@ class RecipeDetailContent extends StatelessWidget {
                     // Instruction text
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 4),
+                        padding: AppDimensions.paddingOnlyTop4,
                         child: Text(
                           instruction,
                           style: AppTextStyles.bodyLarge,
@@ -481,7 +481,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
                   label: Text(
                       _isExpanded ? 'Dölj' : 'Visa alla (${names.length})'),
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: AppDimensions.paddingHorizontal8,
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -519,9 +519,8 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
       ),
       child: Text(
         name,
-        style: AppTextStyles.bodySmall.copyWith(
+        style: AppTextStyles.metadataEmphasized.copyWith(
           color: AppColors.primaryBlue,
-          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -544,9 +543,8 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
         ),
         child: Text(
           '+$count till',
-          style: AppTextStyles.bodySmall.copyWith(
+          style: AppTextStyles.metadataEmphasized.copyWith(
             color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityDark),
-            fontWeight: FontWeight.w500,
           ),
         ),
       ),

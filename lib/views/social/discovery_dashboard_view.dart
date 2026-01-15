@@ -153,8 +153,7 @@ class _DiscoveryDashboardViewContentState
                 labelColor: Theme.of(context).colorScheme.primary,
                 unselectedLabelColor:
                     Theme.of(context).colorScheme.onSurfaceVariant,
-                labelStyle: AppTextStyles.bodyMedium
-                    .copyWith(fontWeight: FontWeight.w600),
+                labelStyle: AppTextStyles.bodyBold,
                 unselectedLabelStyle: AppTextStyles.bodyMedium,
                 indicator: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: AppDimensions.opacityVeryLight),
@@ -189,7 +188,7 @@ class _DiscoveryDashboardViewContentState
                   right: -8,
                   top: -8,
                   child: Container(
-                    padding: const EdgeInsets.all(2),
+                    padding: AppDimensions.paddingAll2,
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -199,9 +198,8 @@ class _DiscoveryDashboardViewContentState
                       minHeight: 16,
                     ),
                     child: Text(count > 99 ? '99+' : count.toString(),
-                        style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.onPrimary,
-                            fontWeight: FontWeight.bold),
+                        style: AppTextStyles.labelLarge.copyWith(
+                            color: AppColors.onPrimary),
                         textAlign: TextAlign.center),
                   ),
                 ),

@@ -60,8 +60,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
         children: [
           if (widget.subtitle != null) ...[
             Text(widget.subtitle!,
-                style: AppTextStyles.bodyMedium
-                    .copyWith(color: AppColors.textSecondary)),
+                style: AppTextStyles.bodyMediumMuted),
             const SizedBox(height: AppDimensions.spacingM),
           ],
           widget.buildContent(context),
@@ -299,9 +298,7 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
               TextSpan(text: message),
               TextSpan(
                 text: ' "$itemName"',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: AppTextStyles.bodyBold,
               ),
               const TextSpan(text: '?'),
             ],
