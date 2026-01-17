@@ -303,9 +303,14 @@ class FriendsStateManager extends ChangeNotifier {
     const maxRetries = 3;
     _categoriesSubscription?.cancel();
 
-    // Track results from both streams
-    List<FriendCategory> ownedCategories = [];
-    List<FriendCategory> memberCategories = [];
+    // BUG-018 FIX: Pre-populate from existing _categories to avoid race condition
+    // When refresh() calls _loadCategories first, the streams may fire with stale
+    // data before both have updated. Pre-populating ensures we don't lose data
+    // when only one stream fires initially after a refresh.
+    List<FriendCategory> ownedCategories =
+        _categories.where((cat) => cat.ownerId == userId).toList();
+    List<FriendCategory> memberCategories =
+        _categories.where((cat) => cat.ownerId != userId).toList();
 
     void mergeAndNotify() {
       // Combine both lists, avoiding duplicates by ID
