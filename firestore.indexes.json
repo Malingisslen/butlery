@@ -361,44 +361,6 @@
       ]
     },
     {
-      "collectionGroup": "globalRecipeCache",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "contentFingerprint",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "globalRecipeCache",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "domain",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "cachedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "globalRecipeCache",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "sourceType",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "cachedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
       "collectionGroup": "recipes",
       "queryScope": "COLLECTION",
       "fields": [
@@ -449,7 +411,7 @@
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "tagResult.allergenStatus.mjölk",
+          "fieldPath": "tagResult.allergenStatus.`mjölk`",
           "order": "ASCENDING"
         }
       ]
@@ -463,7 +425,7 @@
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "tagResult.allergenStatus.nötter",
+          "fieldPath": "tagResult.allergenStatus.`nötter`",
           "order": "ASCENDING"
         }
       ]
@@ -512,6 +474,20 @@
     }
   ],
   "fieldOverrides": [
+    {
+      "collectionGroup": "friendCategories",
+      "fieldPath": "friendUserIds",
+      "indexes": [
+        {
+          "arrayConfig": "CONTAINS",
+          "queryScope": "COLLECTION"
+        },
+        {
+          "arrayConfig": "CONTAINS",
+          "queryScope": "COLLECTION_GROUP"
+        }
+      ]
+    },
     {
       "collectionGroup": "members",
       "fieldPath": "userId",

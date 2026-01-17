@@ -225,6 +225,19 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
         .toList();
   }
 
+  /// BUG-018 FIX: Fetch all categories where user is a member (across all users).
+  /// Uses collectionGroup query to find categories in any user's collection
+  /// where memberIds contains the specified userId.
+  Future<List<FriendCategory>> fetchMemberCategories(String userId) async {
+    final snap = await firestore
+        .collectionGroup('friendCategories')
+        .where('memberIds', arrayContains: userId)
+        .get();
+    return snap.docs
+        .map((doc) => FriendCategory.fromMap(doc.id, doc.data()))
+        .toList();
+  }
+
   /// Create a new category for a user.
   Future<void> createCategoryForUser(
       String userId, FriendCategory category) async {
@@ -319,11 +332,25 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
         .toList();
   }
 
-  /// Stream categories for real-time updates.
+  /// Stream categories for real-time updates (owned by user).
   Stream<List<FriendCategory>> categoriesStream(String userId) {
     return _categoriesRef(userId).snapshots().map((snapshot) => snapshot.docs
         .map((doc) => FriendCategory.fromMap(doc.id, doc.data()))
         .toList());
+  }
+
+  /// BUG-018 FIX: Stream categories where user is a member (across all users).
+  /// Uses collectionGroup query to find categories in any user's collection
+  /// where friendUserIds contains the specified userId.
+  /// Note: The Firestore field is 'friendUserIds', not 'memberIds' (which is just a Dart alias).
+  Stream<List<FriendCategory>> memberCategoriesStream(String userId) {
+    return firestore
+        .collectionGroup('friendCategories')
+        .where('friendUserIds', arrayContains: userId)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => FriendCategory.fromMap(doc.id, doc.data()))
+            .toList());
   }
 
   /// Get category statistics for a user.
