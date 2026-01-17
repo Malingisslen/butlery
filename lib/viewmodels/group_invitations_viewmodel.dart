@@ -260,9 +260,10 @@ class GroupInvitationsViewModel extends ChangeNotifier
       AppLogger.info(
           '🔄 Accepterar inbjudan från "${invitation.fromUserName}"...');
 
-      // Använd UnifiedFriendsService för att acceptera
-      final success = await _friendsService.invitations
-          .markInvitationAsViewed(invitationId);
+      // Använd UnifiedFriendsService för att acceptera inbjudan och gå med i gruppen
+      // BUG-018 FIX: Use acceptGroupInvitation which adds user to friendUserIds
+      final success =
+          await _friendsService.invitations.acceptGroupInvitation(invitationId);
 
       if (success) {
         AppLogger.success(
