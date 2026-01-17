@@ -31,6 +31,7 @@ class FriendsStateManager extends ChangeNotifier {
   StreamSubscription? _sentRequestsSubscription;
   StreamSubscription? _groupInvitationsSubscription;
   StreamSubscription? _categoriesSubscription;
+  StreamSubscription? _memberCategoriesSubscription; // BUG-018 FIX
   StreamSubscription? _friendsSubscription;
 
   FriendsStateManager({
@@ -139,9 +140,11 @@ class FriendsStateManager extends ChangeNotifier {
 
   Future<void> _loadCategories(String userId) async {
     try {
-      _categories = await _categoryRepository.fetchCategories(userId);
+      // BUG-018 FIX: Use fetchMemberCategories to get ALL categories where user
+      // is a member (across all users' collections), not just categories they own
+      _categories = await _categoryRepository.fetchMemberCategories(userId);
       AppLogger.debug(
-          'Loaded ${_categories.length} categories using FriendCategoryRepository');
+          'Loaded ${_categories.length} member categories (BUG-018 fix)');
     } catch (e) {
       AppLogger.warning('Failed to load categories: $e');
       _categories = [];
@@ -167,12 +170,14 @@ class FriendsStateManager extends ChangeNotifier {
     _sentRequestsSubscription?.cancel();
     _groupInvitationsSubscription?.cancel();
     _categoriesSubscription?.cancel();
+    _memberCategoriesSubscription?.cancel(); // BUG-018 FIX
     _friendsSubscription?.cancel();
 
     _incomingRequestsSubscription = null;
     _sentRequestsSubscription = null;
     _groupInvitationsSubscription = null;
     _categoriesSubscription = null;
+    _memberCategoriesSubscription = null; // BUG-018 FIX
     _friendsSubscription = null;
 
     _friends.clear();
@@ -196,6 +201,7 @@ class FriendsStateManager extends ChangeNotifier {
       _sentRequestsSubscription?.cancel();
       _groupInvitationsSubscription?.cancel();
       _categoriesSubscription?.cancel();
+      _memberCategoriesSubscription?.cancel(); // BUG-018 FIX
       _friendsSubscription?.cancel();
       AppLogger.debug(
           '🧹 Cancelled existing real-time listeners before setting up new ones');
@@ -228,17 +234,8 @@ class FriendsStateManager extends ChangeNotifier {
       // BUG-017 FIX: Use helper method with retry support for Firestore assertion errors
       _setupGroupInvitationsStream(userId);
 
-      _categoriesSubscription =
-          _categoryRepository.categoriesStream(userId).listen(
-        (categories) {
-          _categories = categories;
-          AppLogger.debug('Real-time update: ${_categories.length} categories');
-          notifyListeners();
-        },
-        onError: (e) {
-          AppLogger.warning('Categories stream error: $e');
-        },
-      );
+      // BUG-018 FIX: Use retry-capable method for categories stream
+      _setupCategoriesStream(userId);
 
       // BUG-011 fix: Add real-time stream for friends list
       // This ensures User A sees User B in friends list immediately when User B accepts
@@ -292,6 +289,79 @@ class FriendsStateManager extends ChangeNotifier {
         } else {
           AppLogger.warning('Group invitations stream error: $e');
         }
+      },
+    );
+  }
+
+  /// BUG-018 FIX: Separate method for setting up categories stream with retry support
+  /// Limited to 3 retries to prevent infinite retry loops
+  ///
+  /// Uses TWO streams and merges results:
+  /// 1. categoriesStream(userId) - categories the user OWNS
+  /// 2. memberCategoriesStream(userId) - categories where user is a MEMBER (not owner)
+  void _setupCategoriesStream(String userId, {int retryCount = 0}) {
+    const maxRetries = 3;
+    _categoriesSubscription?.cancel();
+
+    // Track results from both streams
+    List<FriendCategory> ownedCategories = [];
+    List<FriendCategory> memberCategories = [];
+
+    void mergeAndNotify() {
+      // Combine both lists, avoiding duplicates by ID
+      final allCategories = <String, FriendCategory>{};
+      for (final cat in ownedCategories) {
+        allCategories[cat.id] = cat;
+      }
+      for (final cat in memberCategories) {
+        allCategories[cat.id] = cat;
+      }
+      _categories = allCategories.values.toList();
+      AppLogger.debug(
+          'Real-time update: ${_categories.length} categories (${ownedCategories.length} owned + ${memberCategories.length} member, BUG-018 fix)');
+      notifyListeners();
+    }
+
+    // Stream 1: Categories user OWNS
+    _categoriesSubscription =
+        _categoryRepository.categoriesStream(userId).listen(
+      (categories) {
+        ownedCategories = categories;
+        mergeAndNotify();
+      },
+      onError: (e) {
+        final errorString = e.toString();
+        if (errorString.contains('INTERNAL ASSERTION') ||
+            errorString.contains('Unexpected state')) {
+          if (retryCount < maxRetries) {
+            AppLogger.warning(
+                '⚠️ Firestore assertion in owned categories stream, retry ${retryCount + 1}/$maxRetries...');
+            _categoriesSubscription?.cancel();
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (_isInitialized) {
+                _setupCategoriesStream(userId, retryCount: retryCount + 1);
+              }
+            });
+          } else {
+            AppLogger.error(
+                '❌ Max retries exceeded for owned categories stream after $maxRetries attempts');
+          }
+        } else {
+          AppLogger.warning('Owned categories stream error: $e');
+        }
+      },
+    );
+
+    // Stream 2: Categories where user is a MEMBER (not owner) - BUG-018 FIX
+    _memberCategoriesSubscription?.cancel();
+    _memberCategoriesSubscription =
+        _categoryRepository.memberCategoriesStream(userId).listen(
+      (categories) {
+        memberCategories = categories;
+        mergeAndNotify();
+      },
+      onError: (e) {
+        AppLogger.warning('Member categories stream error: $e');
       },
     );
   }
@@ -494,12 +564,14 @@ class FriendsStateManager extends ChangeNotifier {
     _sentRequestsSubscription?.cancel();
     _groupInvitationsSubscription?.cancel();
     _categoriesSubscription?.cancel();
+    _memberCategoriesSubscription?.cancel(); // BUG-018 FIX
     _friendsSubscription?.cancel();
 
     _incomingRequestsSubscription = null;
     _sentRequestsSubscription = null;
     _groupInvitationsSubscription = null;
     _categoriesSubscription = null;
+    _memberCategoriesSubscription = null; // BUG-018 FIX
     _friendsSubscription = null;
 
     AppLogger.debug(
