@@ -227,11 +227,12 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
 
   /// BUG-018 FIX: Fetch all categories where user is a member (across all users).
   /// Uses collectionGroup query to find categories in any user's collection
-  /// where memberIds contains the specified userId.
+  /// where friendUserIds contains the specified userId.
+  /// Note: The Firestore field is 'friendUserIds', not 'memberIds'.
   Future<List<FriendCategory>> fetchMemberCategories(String userId) async {
     final snap = await firestore
         .collectionGroup('friendCategories')
-        .where('memberIds', arrayContains: userId)
+        .where('friendUserIds', arrayContains: userId)
         .get();
     return snap.docs
         .map((doc) => FriendCategory.fromMap(doc.id, doc.data()))
