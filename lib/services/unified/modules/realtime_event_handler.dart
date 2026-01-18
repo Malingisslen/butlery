@@ -259,7 +259,7 @@ class RealtimeEventHandler {
     required void Function(String, dynamic) onRealtimeError,
   }) {
     return firestore
-        .collection('unified_collaborative_recipes')
+        .collection('realtime_recipes')
         .doc(recipeId)
         .snapshots()
         .listen(

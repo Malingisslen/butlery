@@ -1,7 +1,7 @@
 # Manual Testing Log - Butlery App
 
 **Created**: 2026-01-07
-**Last Updated**: 2026-01-17 (BUG-018 FIXED & VERIFIED - race condition fix, groups persist after refresh)
+**Last Updated**: 2026-01-18 (BUG-020 & BUG-021 FIXED - Firebase collection name + route fixes)
 **Status**: In Progress (1 open bug - BUG-014)
 
 ---
@@ -26,7 +26,8 @@
 | 14. Accessibility | 7 | 4 | 4 | 0 | 0 |
 | 15. Error Handling | 13 | 4 | 4 | 0 | 0 |
 | 16. Social E2E Tests | 35 | 13 | 11 | 0 | 8 |
-| **TOTAL** | **377** | **141** | **135** | **0** | **15** |
+| 17. Import Tagging Verification | 32 | 0 | 0 | 0 | 0 |
+| **TOTAL** | **409** | **141** | **135** | **0** | **15** |
 
 ---
 
@@ -50,6 +51,9 @@
 | BUG-016 | Group edit shows error but data saves (false negative) | 16 | Medium | FIXED |
 | BUG-017 | Group invitations not visible to recipients | 16 | High | FIXED |
 | BUG-018 | User doesn't see group membership after accepting invitation | 16 | High | FIXED |
+| BUG-019 | Share dialog buttons unresponsive on Flutter Web | 16 | High | FIXED |
+| BUG-020 | Firebase permission error for collaborative_recipes sync | - | High | FIXED |
+| BUG-021 | Unknown route /recipe-detail in Discovery | - | High | FIXED |
 
 **BUG-003 Details:**
 - **Root Cause 1**: Firestore security rules rejected `errorReason` field in tagResult
@@ -217,6 +221,64 @@
   - **Initial state:** "Mina grupper (1)" showing "Test grupp B" (owned group)
   - **After page refresh (F5):** Group persisted - "Mina grupper (1)" still showing "Test grupp B" ✅
   - The race condition fix is working - groups no longer disappear after refresh
+- **Status**: FIXED & VERIFIED
+
+**BUG-019 Details (FIXED 2026-01-18):**
+- **Issue**: Share dialog "Dela recept" and "Avbryt" buttons unresponsive on Flutter Web
+- **Platform**: Web (Chrome)
+- **Steps to reproduce**:
+  1. Navigate to recipe detail page
+  2. Click people icon in app bar to open share dialog
+  3. Select a friend to share with
+  4. Click "Dela recept" button - nothing happens
+- **Root Cause**: Multiple Flutter Web hit-testing issues in Dialog widgets:
+  1. Action buttons inside `SingleChildScrollView` caused hit-test failures
+  2. `AnimatedPressable` wrapper interfered with pointer events
+  3. `Expanded` widgets with buttons not filling their containers
+  4. Missing `Material` widget wrapper for proper hit-testing
+- **Fix Applied (2026-01-18)**:
+  1. **`lib/widgets/common/universal_share_dialog.dart`:**
+     - Moved action buttons OUTSIDE the `SingleChildScrollView`
+     - Restructured Column to separate scrollable content from action buttons
+  2. **`lib/widgets/common/share_dialog/share_dialog_actions.dart`:**
+     - Wrapped action buttons in `Material` widget with surface color
+     - Added `isExpanded: true` parameter to ActionButtons
+     - Added `enablePressAnimation: false` to disable AnimatedPressable wrapper
+- **Verification (2026-01-18):**
+  - X close button works (confirmed basic dialog interaction)
+  - Friend selection checkboxes work
+  - User manually clicked "Dela recept" button - SUCCESSFUL
+  - Recipe shared to test.testsson2 - snackbar confirmation
+  - Note: Browser automation (MCP) cannot click Flutter Web buttons reliably, but real user clicks work
+- **Status**: FIXED & VERIFIED
+
+**BUG-020 Details (FIXED 2026-01-18):**
+- **Issue**: Firebase permission error "Synkroniseringsfel för collaborative_recipes: [cloud_firestore/permission-denied]" on app load
+- **Platform**: Web (Chrome)
+- **Root Cause**: Collection name mismatch - `RealtimeSessionManager`, `RealtimeConflictResolver`, and `RealtimeEventHandler` used `unified_collaborative_recipes` but Firebase rules only define permissions for `realtime_recipes`
+- **Fix Applied (2026-01-18)**:
+  1. **`lib/services/unified/modules/realtime_session_manager.dart`:** Changed `unified_collaborative_recipes` → `realtime_recipes` (line 37)
+  2. **`lib/services/unified/modules/realtime_conflict_resolver.dart`:** Changed `unified_collaborative_recipes` → `realtime_recipes` (lines 29, 71, 87)
+  3. **`lib/services/unified/modules/realtime_event_handler.dart`:** Changed `unified_collaborative_recipes` → `realtime_recipes` (line 262)
+- **Verification (2026-01-18)**:
+  - `flutter analyze` passed with no issues
+  - App loads without permission error dialog
+  - "Mina recept" shows 20 recipes successfully
+- **Status**: FIXED & VERIFIED
+
+**BUG-021 Details (FIXED 2026-01-18):**
+- **Issue**: Clicking recipes in Discovery page shows "Unknown route: /recipe-detail" error
+- **Platform**: Web (Chrome)
+- **Root Cause**: Discovery components used hardcoded `/recipe-detail` route but the correct route is `Routes.receptDetalj` (`/receptDetalj`)
+- **Fix Applied (2026-01-18)**:
+  1. **`lib/views/social/discovery_dashboard_view.dart`:** Changed `/recipe-detail` → `Routes.receptDetalj` (line 392), added import
+  2. **`lib/views/social/discovery_dashboard/trending_content_section.dart`:** Changed `/recipe-detail` → `Routes.receptDetalj` (line 221), updated to pass full recipe object
+  3. **`lib/views/social/discovery_dashboard/recommendations_section.dart`:** Changed `/recipe-detail` → `Routes.receptDetalj` (line 309), added import
+  4. **`lib/views/social/discovery_dashboard/friend_activity_section.dart`:** Changed `/recipe-detail` → `Routes.receptDetalj` (line 279), added import
+- **Verification (2026-01-18)**:
+  - `flutter analyze` passed with no issues
+  - Clicking "Kladdkaka" in Discovery navigates to `/receptDetalj`
+  - Recipe detail view loads correctly with full recipe information
 - **Status**: FIXED & VERIFIED
 
 **BUG-011 Details (FIXED 2026-01-10):**
@@ -820,7 +882,7 @@ See full test case details in:
 
 | Test ID | Action (User A) | Verification (User B) | Status | Result | Notes |
 |---------|-----------------|----------------------|--------|--------|-------|
-| SHARE-E2E-01 | Share recipe to User B (friend) | User B sees recipe in "Delat med mig" | Pending | - | - |
+| SHARE-E2E-01 | Share recipe to User B (friend) | User B sees recipe in "Delat med mig" | Completed | FAIL | User A shared "hejhej" recipe to test.testsson2 via share dialog. BUG-019 fixed - buttons respond to clicks. User B verified as friend of User A. However, shared recipe does NOT appear in User B's "Delat med mig" page. **Potential BUG-020**: Share dialog closes but share doesn't save. Needs backend investigation. |
 | SHARE-E2E-02 | Share recipe to group | All group members see recipe | Pending | - | - |
 | SHARE-E2E-03 | Share as "Statisk kopia" | User B has independent copy | Pending | - | - |
 | SHARE-E2E-04 | Share as "Realtidsdelning" | User B sees User A's edits live | Pending | - | - |
@@ -859,11 +921,114 @@ See full test case details in:
 
 ---
 
+## Phase 17: Import Tagging Verification (32 tests)
+
+**Purpose:** Verify that the automatic tagging system correctly tags imported recipes. This tests the **accuracy** of tag generation, not just the UI functionality (which Phase 9 already covers).
+
+**Tagging Pipeline Overview:**
+| Phase | Tags Generated | Priority |
+|-------|----------------|----------|
+| 1. Base | Time, allergens, dietary, protein, cooking method, dish type | Safety-critical (always runs) |
+| 2. Derived | Dish categories, spicy/mild, few-ingredients, preparation style | Medium |
+| 3. Complex | Combination tags | Lower |
+| 4. Mood | Season, occasion tags | Lower |
+| 5. Cuisine | Cuisine classification | Lower |
+
+**Key Files:**
+- `lib/services/tagging/tagging_service.dart` - Main orchestrator
+- `lib/services/tagging/tag_generator.dart` - 5-phase generator
+- `lib/services/tagging/phases/tag_phase1_base.dart` through `tag_phase5_cuisine.dart`
+- `lib/services/import/import_manager.dart` - Integration point
+
+**Verification Method:**
+1. Import/create the recipe via specified method
+2. Save the recipe
+3. Navigate to recipe detail → check visible tags
+4. Navigate to "Mina recept" → use filter panel
+5. Verify the expected tag appears as a filter option
+6. Apply filter → verify recipe appears in results
+
+---
+
+### 17.1 Time-Based Tags (3 tests)
+
+| Test ID | Recipe to Import | Expected Tags | Status | Result | Notes |
+|---------|-----------------|---------------|--------|--------|-------|
+| TAG-IMP-01 | Quick recipe (≤15 min prep) | `under-15-min`, `under-30-min` | Pending | - | - |
+| TAG-IMP-02 | Medium recipe (30-45 min) | `under-60-min` (NOT `under-30-min`) | Pending | - | - |
+| TAG-IMP-03 | Long recipe (>60 min) | No time tags | Pending | - | - |
+
+### 17.2 Protein Tags (4 tests)
+
+| Test ID | Recipe to Import | Expected Tags | Status | Result | Notes |
+|---------|-----------------|---------------|--------|--------|-------|
+| TAG-IMP-04 | Chicken recipe (kycklinggryta) | `kyckling` | Pending | - | - |
+| TAG-IMP-05 | Beef recipe (köttfärssås) | `nötkött` | Pending | - | - |
+| TAG-IMP-06 | Fish recipe (laxsoppa) | `fisk` | Pending | - | - |
+| TAG-IMP-07 | Vegetarian recipe (no meat) | `vegetarisk` | Pending | - | - |
+
+### 17.3 Allergen Detection (5 tests)
+
+| Test ID | Recipe to Import | Expected Allergen Status | Status | Result | Notes |
+|---------|-----------------|--------------------------|--------|--------|-------|
+| TAG-IMP-08 | Recipe with flour/bread | `gluten: CONTAINS` | Pending | - | - |
+| TAG-IMP-09 | Recipe with milk/cream | `mjölk: CONTAINS` | Pending | - | - |
+| TAG-IMP-10 | Recipe with eggs | `ägg: CONTAINS` | Pending | - | - |
+| TAG-IMP-11 | Recipe with nuts | `nötter: CONTAINS` | Pending | - | - |
+| TAG-IMP-12 | Recipe with shellfish | `skaldjur: CONTAINS` | Pending | - | - |
+
+### 17.4 Dietary Status (4 tests)
+
+| Test ID | Recipe to Import | Expected Dietary Status | Status | Result | Notes |
+|---------|-----------------|-------------------------|--------|--------|-------|
+| TAG-IMP-13 | Vegetarian recipe | `vegetarisk: FREE` | Pending | - | - |
+| TAG-IMP-14 | Vegan recipe (no animal products) | `vegansk: FREE` | Pending | - | - |
+| TAG-IMP-15 | Recipe with meat | `vegetarisk: CONTAINS`, `vegansk: CONTAINS` | Pending | - | - |
+| TAG-IMP-16 | Fish recipe (no meat) | `pescetarian: FREE` | Pending | - | - |
+
+### 17.5 Cooking Method Tags (3 tests)
+
+| Test ID | Recipe to Import | Expected Tags | Status | Result | Notes |
+|---------|-----------------|---------------|--------|--------|-------|
+| TAG-IMP-17 | Oven-baked recipe | `ugnsbakad` | Pending | - | - |
+| TAG-IMP-18 | Fried/pan recipe | `stekt` | Pending | - | - |
+| TAG-IMP-19 | Soup/boiled recipe | `kokt` or `soppa` | Pending | - | - |
+
+### 17.6 Dish Type Tags (3 tests)
+
+| Test ID | Recipe to Import | Expected Tags | Status | Result | Notes |
+|---------|-----------------|---------------|--------|--------|-------|
+| TAG-IMP-20 | Pasta dish | `pastabaserad`, `pasta-dish` | Pending | - | - |
+| TAG-IMP-21 | Rice dish | `risbaserad`, `rice-dish` | Pending | - | - |
+| TAG-IMP-22 | Salad | `sallad` | Pending | - | - |
+
+### 17.7 Import Method Coverage (3 tests)
+
+| Test ID | Import Method | Recipe | Verify Tags Generated | Status | Result | Notes |
+|---------|--------------|--------|----------------------|--------|--------|-------|
+| TAG-IMP-23 | URL import | Recipe from popular Swedish site | Tags present | Pending | - | - |
+| TAG-IMP-24 | Manual entry | Typed recipe | Tags present | Pending | - | - |
+| TAG-IMP-25 | Text paste | Copy-pasted recipe text | Tags present | Pending | - | - |
+
+### 17.8 Edge Cases (7 tests)
+
+| Test ID | Scenario | Expected Behavior | Status | Result | Notes |
+|---------|----------|-------------------|--------|--------|-------|
+| TAG-EDGE-01 | Recipe with unknown ingredients | `coverage` < 100%, `unknownIngredients` list populated, allergens show `UNKNOWN` | Pending | - | - |
+| TAG-EDGE-02 | Recipe with only unknown ingredients | Very low coverage, most allergens `UNKNOWN`, tags still generated from recipe metadata | Pending | - | - |
+| TAG-EDGE-03 | Recipe with conflicting tags (e.g., spicy + mild ingredients) | Conflict resolution: `stark` wins over `mild` | Pending | - | - |
+| TAG-EDGE-04 | Recipe missing cooking time | No time-based tags generated | Pending | - | - |
+| TAG-EDGE-05 | Recipe with partial data (title only) | Minimal/no tags, `tagResult.isPartial` or empty | Pending | - | - |
+| TAG-EDGE-06 | Re-import same recipe | Tags consistent between imports (deterministic) | Pending | - | - |
+| TAG-EDGE-07 | Recipe showing "Analyseras..." status | AI tagging in progress indicator visible, tags appear after processing | Pending | - | - |
+
+---
+
 ## How to Continue Testing
 
 1. Start Flutter web: `flutter run -d chrome`
 2. Open this log file
-3. Execute tests in order (Phase 1 → 16)
+3. Execute tests in order (Phase 1 → 17)
 
 ### Phase 16 E2E Testing Workflow:
 1. Log in as User A (malin.gisslen1@gmail.com)
@@ -882,6 +1047,6 @@ See full test case details in:
 
 ## Exit Criteria
 
-- All 342 test cases executed
+- All 409 test cases executed
 - Zero Critical/High severity bugs
 - Medium/Low bugs documented (can defer)

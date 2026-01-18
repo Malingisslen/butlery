@@ -11,6 +11,7 @@ import 'package:butlery/services/recommendation_service.dart';
 import 'package:butlery/models/recommendation.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
+import 'package:butlery/core/constants/routes.dart';
 
 /// Recommendations Section - Shows personalized content recommendations
 class RecommendationsSection {
@@ -50,10 +51,12 @@ class RecommendationsSection {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant.withValues(alpha: AppDimensions.opacityMediumLight),
+        color: AppColors.surfaceVariant
+            .withValues(alpha: AppDimensions.opacityMediumLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
+          color:
+              AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: Center(
@@ -97,7 +100,8 @@ class RecommendationsSection {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         boxShadow: AppShadows.card,
         border: Border.all(
-          color: AppColors.secondary.withValues(alpha: AppDimensions.opacityLight),
+          color:
+              AppColors.secondary.withValues(alpha: AppDimensions.opacityLight),
           width: 1,
         ),
       ),
@@ -113,7 +117,8 @@ class RecommendationsSection {
                 width: 70,
                 height: 70,
                 decoration: BoxDecoration(
-                  color: AppColors.secondaryContainer.withValues(alpha: AppDimensions.opacityMediumLight),
+                  color: AppColors.secondaryContainer
+                      .withValues(alpha: AppDimensions.opacityMediumLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
@@ -127,8 +132,8 @@ class RecommendationsSection {
                           height: 70,
                           fit: BoxFit.contain,
                           placeholder: (context, url) => ColoredBox(
-                            color: AppColors.secondaryContainer
-                                .withValues(alpha: AppDimensions.opacityMediumLight),
+                            color: AppColors.secondaryContainer.withValues(
+                                alpha: AppDimensions.opacityMediumLight),
                             child: const Center(
                               child: SizedBox(
                                 width: 24,
@@ -158,7 +163,8 @@ class RecommendationsSection {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.secondary.withValues(alpha: AppDimensions.opacityVeryLight),
+                        color: AppColors.secondary
+                            .withValues(alpha: AppDimensions.opacityVeryLight),
                         borderRadius:
                             BorderRadius.circular(AppDimensions.borderRadiusS),
                       ),
@@ -208,7 +214,8 @@ class RecommendationsSection {
                       Text(
                         description,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
+                          color: AppColors.onSurface
+                              .withValues(alpha: AppDimensions.opacityDark),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -249,7 +256,8 @@ class RecommendationsSection {
                         _likeRecommendation(context, recommendation),
                     icon: Icon(
                       Icons.favorite_border,
-                      color: AppColors.error.withValues(alpha: AppDimensions.opacityDark),
+                      color: AppColors.error
+                          .withValues(alpha: AppDimensions.opacityDark),
                       size: AppDimensions.iconSizeM,
                     ),
                     tooltip: 'Gilla',
@@ -259,7 +267,8 @@ class RecommendationsSection {
                         _dismissRecommendation(context, recommendation),
                     icon: Icon(
                       Icons.close,
-                      color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMedium),
+                      color: AppColors.onSurface
+                          .withValues(alpha: AppDimensions.opacityMedium),
                       size: AppDimensions.iconSizeM,
                     ),
                     tooltip: 'Dölj',
@@ -276,7 +285,8 @@ class RecommendationsSection {
   static Widget _buildContentPlaceholder() {
     return Icon(
       Icons.auto_awesome,
-      color: AppColors.secondary.withValues(alpha: AppDimensions.opacityMediumDark),
+      color: AppColors.secondary
+          .withValues(alpha: AppDimensions.opacityMediumDark),
       size: AppDimensions.iconSizeXl,
     );
   }
@@ -305,7 +315,7 @@ class RecommendationsSection {
       case 'recipe':
         Navigator.pushNamed(
           context,
-          '/recipe-detail',
+          Routes.receptDetalj,
           arguments: {'recipeId': contentId},
         );
         break;

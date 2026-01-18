@@ -77,10 +77,7 @@ void main() {
     group('Real-time Editing Session Management', () {
       test('should start real-time editing session', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'title': 'Original Recipe',
           'activeEditors': {},
         });
@@ -96,10 +93,7 @@ void main() {
 
       test('should stop real-time editing session', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'title': 'Original Recipe',
           'activeEditors': {},
         });
@@ -116,17 +110,11 @@ void main() {
 
       test('should handle multiple editing sessions', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'title': 'Recipe 1',
           'activeEditors': {},
         });
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_2')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_2').set({
           'title': 'Recipe 2',
           'activeEditors': {},
         });
@@ -143,10 +131,7 @@ void main() {
 
       test('should not start duplicate sessions', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'title': 'Original Recipe',
           'activeEditors': {},
         });
@@ -164,10 +149,7 @@ void main() {
     group('Real-time Content Operations', () {
       test('should update recipe title in real-time', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'title': 'Original Title',
           'description': 'Original description',
           'activeEditors': {},
@@ -178,7 +160,7 @@ void main() {
 
         // Assert
         final doc = await fakeFirestore
-            .collection('unified_collaborative_recipes')
+            .collection('realtime_recipes')
             .doc('recipe_1')
             .get();
         expect(doc.data()?['title'], equals('Updated Title'));
@@ -186,10 +168,7 @@ void main() {
 
       test('should update recipe description in real-time', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'title': 'Original Title',
           'description': 'Original description',
           'activeEditors': {},
@@ -201,7 +180,7 @@ void main() {
 
         // Assert
         final doc = await fakeFirestore
-            .collection('unified_collaborative_recipes')
+            .collection('realtime_recipes')
             .doc('recipe_1')
             .get();
         expect(doc.data()?['description'], equals('Updated description'));
@@ -209,10 +188,7 @@ void main() {
 
       test('should add ingredient in real-time', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'ingredients': ['ingredient1', 'ingredient2'],
           'activeEditors': {},
         });
@@ -223,7 +199,7 @@ void main() {
 
         // Assert
         final doc = await fakeFirestore
-            .collection('unified_collaborative_recipes')
+            .collection('realtime_recipes')
             .doc('recipe_1')
             .get();
         final ingredients = doc.data()?['ingredients'] as List<dynamic>?;
@@ -232,10 +208,7 @@ void main() {
 
       test('should update ingredient in real-time', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'ingredients': ['ingredient1', 'ingredient2'],
           'activeEditors': {},
         });
@@ -246,7 +219,7 @@ void main() {
 
         // Assert
         final doc = await fakeFirestore
-            .collection('unified_collaborative_recipes')
+            .collection('realtime_recipes')
             .doc('recipe_1')
             .get();
         final ingredients = doc.data()?['ingredients'] as List<dynamic>?;
@@ -255,10 +228,7 @@ void main() {
 
       test('should remove ingredient in real-time', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'ingredients': ['ingredient1', 'ingredient2', 'ingredient3'],
           'activeEditors': {},
         });
@@ -268,7 +238,7 @@ void main() {
 
         // Assert
         final doc = await fakeFirestore
-            .collection('unified_collaborative_recipes')
+            .collection('realtime_recipes')
             .doc('recipe_1')
             .get();
         final ingredients = doc.data()?['ingredients'] as List<dynamic>?;
@@ -278,10 +248,7 @@ void main() {
 
       test('should add instruction in real-time', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'instructions': ['step1', 'step2'],
           'activeEditors': {},
         });
@@ -291,7 +258,7 @@ void main() {
 
         // Assert
         final doc = await fakeFirestore
-            .collection('unified_collaborative_recipes')
+            .collection('realtime_recipes')
             .doc('recipe_1')
             .get();
         final instructions = doc.data()?['instructions'] as List<dynamic>?;
@@ -300,10 +267,7 @@ void main() {
 
       test('should handle batch updates', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'title': 'Original',
           'description': 'Original',
           'portions': 2,
@@ -321,7 +285,7 @@ void main() {
 
         // Assert
         final doc = await fakeFirestore
-            .collection('unified_collaborative_recipes')
+            .collection('realtime_recipes')
             .doc('recipe_1')
             .get();
         expect(doc.data()?['title'], equals('Batch Updated'));
@@ -333,10 +297,7 @@ void main() {
     group('Active Editor Management', () {
       test('should get active editors for recipe', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'activeEditors': {
             'user_1': {
               'displayName': 'User 1',
@@ -359,10 +320,7 @@ void main() {
 
       test('should check if user is active editor', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'activeEditors': {
             'user_123': {
               'displayName': 'Test User',
@@ -387,10 +345,7 @@ void main() {
       test('should clean up stale editors', () async {
         // Arrange
         final staleTime = DateTime.now().subtract(const Duration(hours: 2));
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'activeEditors': {
             'user_1': {
               'displayName': 'User 1',
@@ -409,7 +364,7 @@ void main() {
 
         // Assert
         final doc = await fakeFirestore
-            .collection('unified_collaborative_recipes')
+            .collection('realtime_recipes')
             .doc('recipe_1')
             .get();
         final activeEditors =
@@ -422,10 +377,7 @@ void main() {
     group('Conflict Resolution', () {
       test('should handle conflicting edits', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'title': 'Original Title',
           'activeEditors': {},
           'lastEditedBy': 'user_1',
@@ -440,7 +392,7 @@ void main() {
 
         // Assert - last write wins
         final doc = await fakeFirestore
-            .collection('unified_collaborative_recipes')
+            .collection('realtime_recipes')
             .doc('recipe_1')
             .get();
         expect(doc.data()?['title'], equals('Edit by User 2'));
@@ -448,10 +400,7 @@ void main() {
 
       test('should merge non-conflicting edits', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'title': 'Original Title',
           'description': 'Original Description',
           'activeEditors': {},
@@ -464,7 +413,7 @@ void main() {
 
         // Assert - both changes applied
         final doc = await fakeFirestore
-            .collection('unified_collaborative_recipes')
+            .collection('realtime_recipes')
             .doc('recipe_1')
             .get();
         expect(doc.data()?['title'], equals('Updated Title'));
@@ -475,10 +424,7 @@ void main() {
     group('Cache Management', () {
       test('should cache recipe during real-time editing', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'title': 'Recipe to Cache',
           'activeEditors': {},
         });
@@ -516,10 +462,7 @@ void main() {
         mockCacheHelper.setCacheState(cache: {
           'recipe_1': testRecipe.toJson(),
         });
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'title': 'Recipe',
           'activeEditors': {},
         });
@@ -548,10 +491,7 @@ void main() {
       test('should handle null user ID', () async {
         // Arrange
         currentUserId = null;
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'title': 'Recipe',
           'activeEditors': {},
         });
@@ -565,10 +505,7 @@ void main() {
 
       test('should notify listeners on changes', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'title': 'Original',
           'activeEditors': {},
         });
@@ -585,17 +522,11 @@ void main() {
     group('Disposal', () {
       test('should dispose all resources', () async {
         // Arrange
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_1')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_1').set({
           'title': 'Recipe 1',
           'activeEditors': {},
         });
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc('recipe_2')
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc('recipe_2').set({
           'title': 'Recipe 2',
           'activeEditors': {},
         });

@@ -52,10 +52,7 @@ void main() {
       test('should apply edit with conflict resolution', () async {
         // Arrange
         final recipeId = 'recipe_1';
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc(recipeId)
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc(recipeId).set({
           'title': 'Original Recipe',
           'description': 'Original description',
           'ingredients': ['ingredient1'],
@@ -78,7 +75,7 @@ void main() {
 
         // Assert
         final doc = await fakeFirestore
-            .collection('unified_collaborative_recipes')
+            .collection('realtime_recipes')
             .doc(recipeId)
             .get();
         expect(doc.data()?['title'], equals('Updated Recipe'));
@@ -88,10 +85,7 @@ void main() {
       test('should cancel existing timer when applying new edit', () async {
         // Arrange
         final recipeId = 'recipe_1';
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc(recipeId)
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc(recipeId).set({
           'title': 'Original Recipe',
         });
 
@@ -141,10 +135,7 @@ void main() {
       test('should resolve pending edit conflicts', () async {
         // Arrange
         final recipeId = 'recipe_1';
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc(recipeId)
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc(recipeId).set({
           'title': 'Original Recipe',
           'description': 'Original description',
         });
@@ -174,7 +165,7 @@ void main() {
 
         // Assert - last write wins
         final doc = await fakeFirestore
-            .collection('unified_collaborative_recipes')
+            .collection('realtime_recipes')
             .doc(recipeId)
             .get();
         expect(doc.data()?['title'], equals('Second Edit'));
@@ -571,10 +562,7 @@ void main() {
       test('should handle simultaneous edits from multiple users', () async {
         // Arrange
         final recipeId = 'recipe_1';
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc(recipeId)
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc(recipeId).set({
           'title': 'Original',
           'description': 'Original desc',
         });
@@ -786,10 +774,7 @@ void main() {
       test('should handle timer cleanup on rapid edits', () async {
         // Arrange
         final recipeId = 'recipe_1';
-        await fakeFirestore
-            .collection('unified_collaborative_recipes')
-            .doc(recipeId)
-            .set({
+        await fakeFirestore.collection('realtime_recipes').doc(recipeId).set({
           'title': 'Original',
         });
 

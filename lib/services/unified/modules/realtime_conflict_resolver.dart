@@ -26,7 +26,7 @@ class RealtimeConflictResolver {
 
       // Apply edit immediately (optimistic update)
       await firestore
-          .collection('unified_collaborative_recipes')
+          .collection('realtime_recipes')
           .doc(recipeId)
           .update(editMetadata);
 
@@ -67,10 +67,8 @@ class RealtimeConflictResolver {
           '🔄 Resolving conflicts for recipe $recipeId (${pendingEdits.length} pending edits)');
 
       // Load current recipe state
-      final snapshot = await firestore
-          .collection('unified_collaborative_recipes')
-          .doc(recipeId)
-          .get();
+      final snapshot =
+          await firestore.collection('realtime_recipes').doc(recipeId).get();
 
       if (!snapshot.exists) {
         AppLogger.warning(
@@ -84,7 +82,7 @@ class RealtimeConflictResolver {
 
       // Apply resolved changes
       await firestore
-          .collection('unified_collaborative_recipes')
+          .collection('realtime_recipes')
           .doc(recipeId)
           .update(resolvedData);
 

@@ -1,6 +1,6 @@
 /// Universal share dialog ViewModel for multi-content sharing (recipes, menus, shopping lists) with friend/group targeting.
 /// ```dart
-/// final vm = UniversalShareDialogViewModel(socialRecipeService: sl.get());
+/// final vm = UniversalShareDialogViewModel(socialRecipeCoordinator: sl.get());
 /// await vm.shareRecipe(recipe, friendUserIds: [id], message: 'Check this!');
 
 // lib/viewmodels/universal_share_dialog_viewmodel.dart
@@ -8,8 +8,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
-import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -93,7 +94,7 @@ class ShareValidationResult {
 /// - Swedish localized error messages and user feedback coordination throughout sharing operations
 class UniversalShareDialogViewModel extends ChangeNotifier
     with StreamManagementMixin {
-  final SocialRecipeService _socialRecipeService;
+  final SocialRecipeCoordinator _socialRecipeCoordinator;
   final UnifiedShoppingService _shoppingService;
 
   /// Share operation state for UI progress indication during sharing operations.
@@ -107,20 +108,20 @@ class UniversalShareDialogViewModel extends ChangeNotifier
   String? _errorMessage;
 
   /// Initializes universal share dialog ViewModel with comprehensive service integration and sharing preparation.
-  /// [socialRecipeService] SocialRecipeService instance for recipe and menu sharing operations
+  /// [socialRecipeCoordinator] SocialRecipeCoordinator instance for recipe and menu sharing operations
   /// [shoppingService] UnifiedShoppingService instance for shopping list sharing coordination
   /// Establishes universal sharing infrastructure with multi-service integration, enabling comprehensive
   /// social content distribution functionality with recipe sharing, menu distribution, shopping list coordination,
   /// and recipient management through unified sharing interface and consistent operation patterns.
   /// **Service Integration:**
-  /// - SocialRecipeService integration for recipe and menu sharing with social distribution
+  /// - SocialRecipeCoordinator integration for recipe and menu sharing with social distribution
   /// - UnifiedShoppingService integration for shopping list sharing and collaborative coordination
   /// - Cross-service sharing coordination for consistent user experience across content types
   /// - Unified error handling and state management across different sharing operations
   UniversalShareDialogViewModel({
-    required SocialRecipeService socialRecipeService,
+    required SocialRecipeCoordinator socialRecipeCoordinator,
     required UnifiedShoppingService shoppingService,
-  })  : _socialRecipeService = socialRecipeService,
+  })  : _socialRecipeCoordinator = socialRecipeCoordinator,
         _shoppingService = shoppingService;
 
   /// Share operation state for UI progress indication and interaction control.
@@ -157,17 +158,20 @@ class UniversalShareDialogViewModel extends ChangeNotifier
     try {
       // Share to friends if any selected
       if (friendUserIds.isNotEmpty) {
-        await _socialRecipeService.shareRecipeToFriends(
-          recipe.id,
-          friendUserIds,
+        await _socialRecipeCoordinator.shareRecipeWithFriends(
+          recipeId: recipe.id,
+          friendIds: friendUserIds,
+          message: message,
+          allowCollaboration: allowCollaboration,
         );
       }
 
       // Share to groups if any selected
       if (groupIds != null && groupIds.isNotEmpty) {
-        await _socialRecipeService.shareRecipeToGroups(
+        await _socialRecipeCoordinator.shareRecipeWithGroups(
           recipe.id,
           groupIds,
+          ResourcePermission.read,
         );
       }
 

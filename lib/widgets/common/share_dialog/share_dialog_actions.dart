@@ -24,41 +24,53 @@ class ShareDialogActions {
       supportsRealtimeSharing,
     );
 
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(AppDimensions.borderRadiusM),
-          bottomRight: Radius.circular(AppDimensions.borderRadiusM),
-        ),
-        border: Border(
-          top: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: AppDimensions.opacityMediumLight),
-          ),
-        ),
+    // BUG-019 fix: Use Material widget to ensure proper hit-testing on Flutter Web
+    return Material(
+      color: Theme.of(context).colorScheme.surface,
+      borderRadius: const BorderRadius.only(
+        bottomLeft: Radius.circular(AppDimensions.borderRadiusM),
+        bottomRight: Radius.circular(AppDimensions.borderRadiusM),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 3,
-            child: ActionButtons.outlinedButton(
-              context,
-              label: 'Avbryt',
-              onPressed: isLoading ? null : onCancel,
+      child: Container(
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: Theme.of(context)
+                  .colorScheme
+                  .outline
+                  .withValues(alpha: AppDimensions.opacityMediumLight),
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingM),
-          Expanded(
-            flex: 4,
-            child: ActionButtons.primaryButton(
-              context,
-              label: shareButtonText,
-              onPressed: (!hasSelectedFriends || isLoading) ? null : onShare,
-              isLoading: isLoading,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: ActionButtons.outlinedButton(
+                context,
+                label: 'Avbryt',
+                onPressed: isLoading ? null : onCancel,
+                // Fix BUG-019: use isExpanded to fill container and fix hit-testing
+                isExpanded: true,
+                enablePressAnimation: false,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(width: AppDimensions.spacingM),
+            Expanded(
+              flex: 4,
+              child: ActionButtons.primaryButton(
+                context,
+                label: shareButtonText,
+                onPressed: (!hasSelectedFriends || isLoading) ? null : onShare,
+                isLoading: isLoading,
+                // Fix BUG-019: use isExpanded to fill container and fix hit-testing
+                isExpanded: true,
+                enablePressAnimation: false,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -94,10 +106,12 @@ class ShareDialogActions {
           vertical: AppDimensions.spacingS,
         ),
         decoration: BoxDecoration(
-          color: AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
+          color: AppColors.warning
+              .withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           border: Border.all(
-            color: AppColors.warning.withValues(alpha: AppDimensions.opacityMediumLight),
+            color: AppColors.warning
+                .withValues(alpha: AppDimensions.opacityMediumLight),
           ),
         ),
         child: Row(
@@ -127,10 +141,12 @@ class ShareDialogActions {
         vertical: AppDimensions.spacingS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.success.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: AppColors.success
+              .withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
