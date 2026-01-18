@@ -34,7 +34,7 @@ class RealtimeSessionManager {
       // Start listening to real-time changes
       // ignore: cancel_subscriptions - stored and cancelled by caller
       final subscription = firestore
-          .collection('unified_collaborative_recipes')
+          .collection('realtime_recipes')
           .doc(recipeId)
           .snapshots()
           .listen(

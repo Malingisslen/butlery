@@ -14,6 +14,7 @@ import 'package:butlery/widgets/common/state/loading_states.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
+import 'package:butlery/core/constants/routes.dart';
 
 // Import focused components
 import 'package:butlery/views/social/discovery_dashboard/discovery_app_bar.dart';
@@ -136,7 +137,8 @@ class _DiscoveryDashboardViewContentState
             child: Container(
               margin: AppDimensions.responsiveHorizontalPadding(context),
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant.withValues(alpha: AppDimensions.opacityMediumLight),
+                color: AppColors.surfaceVariant
+                    .withValues(alpha: AppDimensions.opacityMediumLight),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusM),
               ),
@@ -156,14 +158,16 @@ class _DiscoveryDashboardViewContentState
                 labelStyle: AppTextStyles.bodyBold,
                 unselectedLabelStyle: AppTextStyles.bodyMedium,
                 indicator: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+                  color: AppColors.primary
+                      .withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
                 dividerColor: AppColors.transparent,
                 overlayColor: WidgetStateProperty.all(
-                  AppColors.primary.withValues(alpha: AppDimensions.opacityExtraVeryLight),
+                  AppColors.primary
+                      .withValues(alpha: AppDimensions.opacityExtraVeryLight),
                 ),
               ),
             ),
@@ -191,15 +195,16 @@ class _DiscoveryDashboardViewContentState
                     padding: AppDimensions.paddingAll2,
                     decoration: BoxDecoration(
                       color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.borderRadiusM),
                     ),
                     constraints: const BoxConstraints(
                       minWidth: 16,
                       minHeight: 16,
                     ),
                     child: Text(count > 99 ? '99+' : count.toString(),
-                        style: AppTextStyles.labelLarge.copyWith(
-                            color: AppColors.onPrimary),
+                        style: AppTextStyles.labelLarge
+                            .copyWith(color: AppColors.onPrimary),
                         textAlign: TextAlign.center),
                   ),
                 ),
@@ -356,13 +361,15 @@ class _DiscoveryDashboardViewContentState
             if (ownerName != null)
               Text('Av $ownerName',
                   style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark))),
+                      color: AppColors.onSurface
+                          .withValues(alpha: AppDimensions.opacityMediumDark))),
           ],
         ),
         trailing: Icon(
           Icons.arrow_forward_ios,
           size: AppDimensions.iconSizeS,
-          color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMedium),
+          color: AppColors.onSurface
+              .withValues(alpha: AppDimensions.opacityMedium),
         ),
         onTap: () => _handleSearchResultTap(context, item),
       ),
@@ -377,7 +384,8 @@ class _DiscoveryDashboardViewContentState
       _ => (Icons.help_outline, AppColors.onSurface),
     };
     return CircleAvatar(
-      backgroundColor: iconData.$2.withValues(alpha: AppDimensions.opacityVeryLight),
+      backgroundColor:
+          iconData.$2.withValues(alpha: AppDimensions.opacityVeryLight),
       child:
           Icon(iconData.$1, color: iconData.$2, size: AppDimensions.iconSizeM),
     );
@@ -388,7 +396,7 @@ class _DiscoveryDashboardViewContentState
 
     switch (type) {
       case 'recipe':
-        Navigator.pushNamed(context, '/recipe-detail',
+        Navigator.pushNamed(context, Routes.receptDetalj,
             arguments: {'recipeId': id});
         break;
       case 'menu':

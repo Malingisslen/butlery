@@ -99,7 +99,8 @@ class TrendingContentSection {
             Container(
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.primaryContainer.withValues(alpha: AppDimensions.opacityMediumLight),
+                color: AppColors.primaryContainer
+                    .withValues(alpha: AppDimensions.opacityMediumLight),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(AppDimensions.borderRadiusM),
                   topRight: Radius.circular(AppDimensions.borderRadiusM),
@@ -117,8 +118,8 @@ class TrendingContentSection {
                         height: 100,
                         fit: BoxFit.contain,
                         placeholder: (context, url) => ColoredBox(
-                          color:
-                              AppColors.primaryContainer.withValues(alpha: AppDimensions.opacityMediumLight),
+                          color: AppColors.primaryContainer.withValues(
+                              alpha: AppDimensions.opacityMediumLight),
                           child: const Center(
                             child: SizedBox(
                               width: 30,
@@ -152,7 +153,8 @@ class TrendingContentSection {
                       Text(
                         'Av ${recipe.socialData!.ownerDisplayName}',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark),
+                          color: AppColors.onSurface.withValues(
+                              alpha: AppDimensions.opacityMediumDark),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -179,7 +181,8 @@ class TrendingContentSection {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
+                            color: AppColors.success.withValues(
+                                alpha: AppDimensions.opacityVeryLight),
                             borderRadius: BorderRadius.circular(
                                 AppDimensions.borderRadiusS),
                           ),
@@ -206,10 +209,12 @@ class TrendingContentSection {
     return Container(
       width: double.infinity,
       height: 100,
-      color: AppColors.primaryContainer.withValues(alpha: AppDimensions.opacityMediumLight),
+      color: AppColors.primaryContainer
+          .withValues(alpha: AppDimensions.opacityMediumLight),
       child: Icon(
         Icons.restaurant,
-        color: AppColors.primary.withValues(alpha: AppDimensions.opacityMediumDark),
+        color: AppColors.primary
+            .withValues(alpha: AppDimensions.opacityMediumDark),
         size: AppDimensions.iconSizeL,
       ),
     );
@@ -218,8 +223,8 @@ class TrendingContentSection {
   static void _openRecipe(BuildContext context, dynamic recipe) {
     Navigator.pushNamed(
       context,
-      '/recipe-detail',
-      arguments: {'recipeId': recipe.id},
+      Routes.receptDetalj,
+      arguments: recipe,
     );
   }
 

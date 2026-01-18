@@ -206,9 +206,11 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
               Flexible(
                 child: SingleChildScrollView(
                   physics: const ClampingScrollPhysics(),
-                  child: _buildContentArea(),
+                  child: _buildScrollableContent(),
                 ),
               ),
+              // Action buttons outside scroll view to fix web hit-testing (BUG-019)
+              if (_hasFriends) _buildActionButtons(),
             ],
           ),
         ),
@@ -224,7 +226,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
     );
   }
 
-  Widget _buildContentArea() {
+  Widget _buildScrollableContent() {
     if (!_hasFriends) {
       return ShareDialogStates.buildNoFriendsState(context, widget.contentType);
     }
@@ -243,9 +245,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
 
           // Target selection
           _buildTargetSelection(),
-
-          // Action buttons
-          _buildActionButtons(),
+          // Note: Action buttons moved outside scroll view (BUG-019 fix)
         ],
       ),
     );

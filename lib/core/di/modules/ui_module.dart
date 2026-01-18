@@ -41,7 +41,7 @@ import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
@@ -280,10 +280,10 @@ class UIModule implements DIModule {
         () => CollaborativeStatusViewModel(),
       );
 
-      // Universal Share Dialog ViewModel - requires social and shopping services
+      // Universal Share Dialog ViewModel - requires social coordinator and shopping services
       container.registerFactory<UniversalShareDialogViewModel>(
         () => UniversalShareDialogViewModel(
-          socialRecipeService: container<SocialRecipeService>(),
+          socialRecipeCoordinator: container<SocialRecipeCoordinator>(),
           shoppingService: container<UnifiedShoppingService>(),
         ),
       );

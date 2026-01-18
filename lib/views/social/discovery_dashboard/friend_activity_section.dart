@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
+import 'package:butlery/core/constants/routes.dart';
 
 /// Friend Activity Section - Shows friend activity timeline
 class FriendActivitySection {
@@ -46,10 +47,12 @@ class FriendActivitySection {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant.withValues(alpha: AppDimensions.opacityMediumLight),
+        color: AppColors.surfaceVariant
+            .withValues(alpha: AppDimensions.opacityMediumLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
+          color:
+              AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: Center(
@@ -105,7 +108,8 @@ class FriendActivitySection {
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryContainer.withValues(alpha: AppDimensions.opacityMediumLight),
+                  color: AppColors.primaryContainer
+                      .withValues(alpha: AppDimensions.opacityMediumLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
@@ -119,8 +123,8 @@ class FriendActivitySection {
                           height: 60,
                           fit: BoxFit.contain,
                           placeholder: (context, url) => ColoredBox(
-                            color: AppColors.primaryContainer
-                                .withValues(alpha: AppDimensions.opacityMediumLight),
+                            color: AppColors.primaryContainer.withValues(
+                                alpha: AppDimensions.opacityMediumLight),
                             child: const Center(
                               child: SizedBox(
                                 width: 20,
@@ -162,7 +166,8 @@ class FriendActivitySection {
                           child: Text(
                             'Delad av $ownerName',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
+                              color: AppColors.onSurface
+                                  .withValues(alpha: AppDimensions.opacityDark),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -177,7 +182,8 @@ class FriendActivitySection {
                           Text(
                             _formatTimeAgo(sharedAt),
                             style: AppTextStyles.labelMedium.copyWith(
-                              color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark),
+                              color: AppColors.onSurface.withValues(
+                                  alpha: AppDimensions.opacityMediumDark),
                             ),
                           ),
                           const SizedBox(width: AppDimensions.spacingM),
@@ -205,7 +211,8 @@ class FriendActivitySection {
               // Action indicator
               Icon(
                 Icons.chevron_right,
-                color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMedium),
+                color: AppColors.onSurface
+                    .withValues(alpha: AppDimensions.opacityMedium),
                 size: AppDimensions.iconSizeM,
               ),
             ],
@@ -233,7 +240,8 @@ class FriendActivitySection {
 
     return Icon(
       icon,
-      color: AppColors.primary.withValues(alpha: AppDimensions.opacityMediumDark),
+      color:
+          AppColors.primary.withValues(alpha: AppDimensions.opacityMediumDark),
       size: AppDimensions.iconSizeXl,
     );
   }
@@ -275,7 +283,7 @@ class FriendActivitySection {
       case 'recipe':
         Navigator.pushNamed(
           context,
-          '/recipe-detail',
+          Routes.receptDetalj,
           arguments: {'recipeId': contentId},
         );
         break;
@@ -387,13 +395,13 @@ class FriendActivitySection {
                       if (activityType == 'recipe' && contentId != null) {
                         Navigator.pushNamed(
                           context,
-                          '/receptDetalj',
+                          Routes.receptDetalj,
                           arguments: {'recipeId': contentId},
                         );
                       } else if (activityType == 'menu' && contentId != null) {
                         Navigator.pushNamed(
                           context,
-                          '/menu-preview',
+                          Routes.menuPreview,
                           arguments: {'menuId': contentId},
                         );
                       }
