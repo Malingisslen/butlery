@@ -63,6 +63,8 @@ class LayoutComponents {
     VoidCallback? onViewFriends,
     VoidCallback? onViewNotifications,
     VoidCallback? onViewMessages,
+    VoidCallback? onViewAllergens,
+    VoidCallback? onViewPersonalTags,
     bool showBackupOptions = true,
     bool showSocialOptions = true,
     BuildContext? rootContext,
@@ -76,6 +78,8 @@ class LayoutComponents {
       onViewFriends: onViewFriends,
       onViewNotifications: onViewNotifications,
       onViewMessages: onViewMessages,
+      onViewAllergens: onViewAllergens,
+      onViewPersonalTags: onViewPersonalTags,
       showBackupOptions: showBackupOptions,
       showSocialOptions: showSocialOptions,
       rootContext: rootContext,
@@ -93,6 +97,8 @@ class LayoutComponents {
     VoidCallback? onViewFriends,
     VoidCallback? onViewNotifications,
     VoidCallback? onViewMessages,
+    VoidCallback? onViewAllergens,
+    VoidCallback? onViewPersonalTags,
     bool showBackupOptions = true,
     bool showSocialOptions = true,
   }) {
@@ -112,6 +118,8 @@ class LayoutComponents {
         onViewFriends: onViewFriends,
         onViewNotifications: onViewNotifications,
         onViewMessages: onViewMessages,
+        onViewAllergens: onViewAllergens,
+        onViewPersonalTags: onViewPersonalTags,
         showBackupOptions: showBackupOptions,
         showSocialOptions: showSocialOptions,
         rootContext: rootContext, // Pass the original context for notifications
@@ -159,7 +167,8 @@ class LayoutComponents {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimensions.borderRadius16)),
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppDimensions.borderRadius16)),
       ),
       builder: (context) => LoadMenuBottomSheet(viewModel: viewModel),
     );
