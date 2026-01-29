@@ -120,10 +120,34 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
               );
             }).toList(),
           ),
-          IconButton(
+          PopupMenuButton<String>(
             icon: const Icon(Icons.add),
-            tooltip: 'Skapa tagg',
-            onPressed: () => _createTag(context),
+            tooltip: 'Skapa',
+            onSelected: (value) {
+              if (value == 'tag') {
+                _createTag(context);
+              } else if (value == 'group') {
+                _createGroup(context);
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: 'tag',
+                child: ListTile(
+                  leading: Icon(Icons.label_outline),
+                  title: Text('Skapa tagg'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              PopupMenuItem(
+                value: 'group',
+                child: ListTile(
+                  leading: Icon(Icons.folder_outlined),
+                  title: Text('Skapa grupp'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -568,14 +592,73 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     );
 
     if (result == true && nameController.text.trim().isNotEmpty) {
-      try {
-        await viewModel.createTag(name: nameController.text.trim());
+      final name = nameController.text.trim();
+
+      // Validate before attempting to create
+      final validationError = viewModel.validateTagName(name);
+      if (validationError != null) {
         if (context.mounted) {
-          SnackBarUtils.showSuccess(context, 'Tagg skapad');
+          SnackBarUtils.showError(context, validationError);
         }
-      } catch (e) {
-        if (context.mounted) {
-          SnackBarUtils.showError(context, e.toString());
+        return;
+      }
+
+      final success = await viewModel.createTag(name: name);
+      if (context.mounted) {
+        if (success) {
+          SnackBarUtils.showSuccess(context, 'Tagg skapad');
+        } else {
+          SnackBarUtils.showError(
+              context, viewModel.error ?? 'Kunde inte skapa taggen');
+        }
+      }
+    }
+
+    nameController.dispose();
+  }
+
+  Future<void> _createGroup(BuildContext context) async {
+    final viewModel = context.read<PersonalTagViewModel>();
+    final nameController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Skapa grupp'),
+        content: TextField(
+          controller: nameController,
+          decoration: const InputDecoration(
+            labelText: 'Gruppnamn',
+            hintText: 'T.ex. Middagar',
+          ),
+          autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Avbryt'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Skapa'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && nameController.text.trim().isNotEmpty) {
+      final success = await viewModel.createGroup(
+        name: nameController.text.trim(),
+      );
+      if (context.mounted) {
+        if (success) {
+          SnackBarUtils.showSuccess(context, 'Grupp skapad');
+        } else {
+          SnackBarUtils.showError(
+            context,
+            viewModel.error ?? 'Kunde inte skapa gruppen',
+          );
         }
       }
     }
@@ -673,6 +756,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   Future<void> _moveTagToGroup(BuildContext context, PersonalTag tag) async {
     final viewModel = context.read<PersonalTagViewModel>();
     final groups = viewModel.groups;
+    const createNewSentinel = '__create_new__';
 
     final selectedGroupId = await showDialog<String?>(
       context: context,
@@ -697,22 +781,96 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                 selected: tag.groupId == group.id,
               ),
             ),
+          const Divider(),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, createNewSentinel),
+            child: const ListTile(
+              leading: Icon(Icons.add),
+              title: Text('Skapa ny grupp'),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
         ],
       ),
     );
 
-    if (selectedGroupId != null) {
-      try {
-        final groupId = selectedGroupId.isEmpty ? null : selectedGroupId;
-        await viewModel.moveTagToGroup(tag.id, groupId);
-        if (context.mounted) {
-          SnackBarUtils.showSuccess(context, 'Tagg flyttad');
-        }
-      } catch (e) {
-        if (context.mounted) {
-          SnackBarUtils.showError(context, e.toString());
+    if (selectedGroupId == null || !context.mounted) return;
+
+    if (selectedGroupId == createNewSentinel) {
+      await _createGroupAndMoveTag(context, tag);
+      return;
+    }
+
+    try {
+      final groupId = selectedGroupId.isEmpty ? null : selectedGroupId;
+      await viewModel.moveTagToGroup(tag.id, groupId);
+      if (context.mounted) {
+        SnackBarUtils.showSuccess(context, 'Tagg flyttad');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        SnackBarUtils.showError(context, e.toString());
+      }
+    }
+  }
+
+  Future<void> _createGroupAndMoveTag(
+    BuildContext context,
+    PersonalTag tag,
+  ) async {
+    final viewModel = context.read<PersonalTagViewModel>();
+    final nameController = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Skapa ny grupp'),
+        content: TextField(
+          controller: nameController,
+          decoration: const InputDecoration(
+            labelText: 'Gruppnamn',
+            hintText: 'T.ex. Middagar',
+          ),
+          autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Avbryt'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Skapa'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || nameController.text.trim().isEmpty) {
+      nameController.dispose();
+      return;
+    }
+
+    try {
+      final success = await viewModel.createGroup(
+        name: nameController.text.trim(),
+      );
+      if (success && context.mounted) {
+        final newGroup = viewModel.groups.lastOrNull;
+        if (newGroup != null) {
+          await viewModel.moveTagToGroup(tag.id, newGroup.id);
+          if (context.mounted) {
+            SnackBarUtils.showSuccess(context, 'Grupp skapad och tagg flyttad');
+          }
         }
       }
+    } catch (e) {
+      if (context.mounted) {
+        SnackBarUtils.showError(context, e.toString());
+      }
+    } finally {
+      nameController.dispose();
     }
   }
 
