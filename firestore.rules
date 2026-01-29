@@ -154,6 +154,16 @@ service cloud.firestore {
         allow delete: if isOwner(userId);
       }
 
+      // User's personal tags for custom recipe categorization
+      match /personalTagIds/{tagId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // User's personal tag groups for organizing tags
+      match /personalTagGroups/{groupId} {
+        allow read, write: if isOwner(userId);
+      }
+
       // User's friends list
       // BUG-011 fix: Allow bidirectional friend creation
       // A user can:

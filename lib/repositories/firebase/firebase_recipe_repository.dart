@@ -495,18 +495,18 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }
 
   @override
-  Future<List<Recipe>> fetchUserRecipes(String userId) async {
+  Future<List<Recipe>> fetchUserRecipes(String userId, {int limit = 50}) async {
     // Use the mixin method for user-specific collection
-    // ✅ PERFORMANCE FIX: Added limit to prevent unbounded query
     return await FirebasePerformanceService.traceFirebaseQuery(
       (trace) async {
         final snap = await getCollectionForUser(userId)
             .orderBy('core.updatedAt', descending: true)
-            .limit(50) // Limit to 50 most recent recipes
+            .limit(limit)
             .get();
 
         final recipes = snap.docs.map(fromFirestore).toList();
         trace.putAttribute('user_id', userId);
+        trace.setMetric('limit', limit);
         return recipes;
       },
       collection: 'recipes',

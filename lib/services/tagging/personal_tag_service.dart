@@ -518,7 +518,7 @@ class PersonalTagService extends BaseService {
             await _evaluateRules(recipe, tagRulePairs, userId: userId);
 
         // #6: Enforce exclusive group constraints
-        return _enforceExclusiveGroups(matchingTags);
+        return await _enforceExclusiveGroups(matchingTags);
       },
       operationName: 'Evaluate rules for recipe',
       requiresAuth: true,

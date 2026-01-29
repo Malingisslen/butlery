@@ -9,7 +9,8 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 
 /// ViewModel for managing personal tags, groups, and automation rules.
@@ -478,7 +479,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     _safeNotifyListeners();
 
     try {
-      final recipeRepo = ServiceLocator.get<FirebaseRecipeRepository>();
+      final recipeRepo = ServiceLocator.get<RecipeRepository>();
 
       // #8: Single query to fetch all recipes
       final recipes = await _getAllUserRecipes(recipeRepo);
@@ -532,7 +533,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     _safeNotifyListeners();
 
     try {
-      final recipeRepo = ServiceLocator.get<FirebaseRecipeRepository>();
+      final recipeRepo = ServiceLocator.get<RecipeRepository>();
       final recipes = await _getAllUserRecipes(recipeRepo);
 
       if (recipes.isEmpty) {
@@ -573,7 +574,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
   Future<BatchApplyResult> applyRulesToExistingRecipes({
     void Function(int completed, int total)? onProgress,
   }) async {
-    final recipeRepo = ServiceLocator.get<FirebaseRecipeRepository>();
+    final recipeRepo = ServiceLocator.get<RecipeRepository>();
 
     try {
       // Get all user recipes
@@ -652,21 +653,12 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Gets all user recipes from the repository.
-  Future<List<Recipe>> _getAllUserRecipes(
-    FirebaseRecipeRepository recipeRepo,
-  ) async {
-    // Use the repository's getAll method which is inherited from base
-    final userId = recipeRepo.currentUserId;
+  Future<List<Recipe>> _getAllUserRecipes(RecipeRepository recipeRepo) async {
+    final userId = ServiceLocator.get<PermissionService>().currentUserId;
     if (userId == null) return [];
 
-    // Get recipes ordered by update date, limited for performance
-    final snap = await recipeRepo
-        .getCollectionForUser(userId)
-        .orderBy('core.updatedAt', descending: true)
-        .limit(500) // Process max 500 recipes per batch
-        .get();
-
-    return snap.docs.map((doc) => Recipe.fromFirestore(doc)).toList();
+    // Use interface method with higher limit for batch operations
+    return await recipeRepo.fetchUserRecipes(userId, limit: 500);
   }
 
   // ============================================================

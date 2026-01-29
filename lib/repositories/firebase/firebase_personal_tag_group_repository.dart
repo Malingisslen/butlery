@@ -60,20 +60,22 @@ class FirebasePersonalTagGroupRepository
       true;
 
   /// Gets all groups sorted by sortOrder.
+  ///
+  /// Uses single-field ordering to avoid requiring composite Firestore indexes.
+  /// If sortOrder is equal, Firestore returns documents in document ID order.
   Future<List<PersonalTagGroup>> getAllSorted() async {
-    final snapshot = await getCollectionRef()
-        .orderBy('sortOrder')
-        .orderBy('createdAt')
-        .get();
+    final snapshot = await getCollectionRef().orderBy('sortOrder').get();
 
     return snapshot.docs.map(fromFirestore).toList();
   }
 
   /// Watches all groups with real-time updates, sorted by sortOrder.
+  ///
+  /// Uses single-field ordering to avoid requiring composite Firestore indexes
+  /// for user-scoped subcollections.
   Stream<List<PersonalTagGroup>> watchAllSorted() {
     return getCollectionRef()
         .orderBy('sortOrder')
-        .orderBy('createdAt')
         .snapshots()
         .map((snapshot) => snapshot.docs.map(fromFirestore).toList());
   }

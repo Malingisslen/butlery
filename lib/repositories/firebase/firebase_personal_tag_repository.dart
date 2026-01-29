@@ -59,20 +59,22 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
       true;
 
   /// Gets all tags sorted by sortOrder.
+  ///
+  /// Uses single-field ordering to avoid requiring composite Firestore indexes.
+  /// If sortOrder is equal, Firestore returns documents in document ID order.
   Future<List<PersonalTag>> getAllSorted() async {
-    final snapshot = await getCollectionRef()
-        .orderBy('sortOrder')
-        .orderBy('createdAt')
-        .get();
+    final snapshot = await getCollectionRef().orderBy('sortOrder').get();
 
     return snapshot.docs.map(fromFirestore).toList();
   }
 
   /// Watches all tags with real-time updates, sorted by sortOrder.
+  ///
+  /// Uses single-field ordering to avoid requiring composite Firestore indexes
+  /// for user-scoped subcollections.
   Stream<List<PersonalTag>> watchAllSorted() {
     return getCollectionRef()
         .orderBy('sortOrder')
-        .orderBy('createdAt')
         .snapshots()
         .map((snapshot) => snapshot.docs.map(fromFirestore).toList());
   }
