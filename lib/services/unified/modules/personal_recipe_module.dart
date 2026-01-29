@@ -892,6 +892,7 @@ class PersonalRecipeModule {
       // Evaluate all enabled rules against this recipe
       final matchingTagIds =
           await _personalTagService.evaluateRulesForRecipe(recipe);
+
       if (matchingTagIds.isEmpty) return recipe;
 
       // Get the actual tag objects to get their names
@@ -907,9 +908,8 @@ class PersonalRecipeModule {
       final existingTags = recipe.personalTagIds?.toSet() ?? <String>{};
       final mergedTags = existingTags.union(ruleTagNames).toList();
 
-      AppLogger.debug(
-        '🏷️ Personal tag rules: added ${ruleTagNames.length} tags to "${recipe.title}" '
-        '(${ruleTagNames.join(", ")})',
+      AppLogger.info(
+        '🏷️ Personal tag rules: added ${ruleTagNames.length} tags to "${recipe.title}"',
       );
 
       return recipe.copyWith(personalTagIds: mergedTags);

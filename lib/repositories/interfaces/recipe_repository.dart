@@ -29,6 +29,6 @@ abstract class RecipeRepository extends Repository<Recipe>
   /// Fetch specific archive recipe by ID.
   Future<Recipe> fetchArchiveRecipe(String id);
 
-  /// Fetch all recipes for a specific user.
-  Future<List<Recipe>> fetchUserRecipes(String userId);
+  /// Fetch recipes for a specific user with optional limit.
+  Future<List<Recipe>> fetchUserRecipes(String userId, {int limit = 50});
 }

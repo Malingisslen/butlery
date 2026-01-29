@@ -7,6 +7,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
@@ -697,7 +698,9 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
           ),
         );
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      AppLogger.error(
+          'Failed to apply rules to recipes', e, 'TagDetailView', stackTrace);
       if (context.mounted) {
         Navigator.pop(context); // Close progress dialog
         SnackBarUtils.showError(context, 'Kunde inte köra regler');
