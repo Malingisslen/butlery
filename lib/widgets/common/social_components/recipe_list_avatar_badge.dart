@@ -86,6 +86,10 @@ class RecipeListAvatarBadge extends StatelessWidget {
       onViewNotifications: () =>
           Navigator.pushNamed(context, Routes.friendRequests),
       onViewMessages: () => Navigator.pushNamed(context, Routes.messages),
+      onViewAllergens: () =>
+          Navigator.pushNamed(context, Routes.settingsAllergens),
+      onViewPersonalTags: () =>
+          Navigator.pushNamed(context, Routes.settingsPersonalTags),
     );
   }
 }

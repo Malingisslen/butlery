@@ -93,6 +93,11 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).maybePop(),
+          tooltip: '', // Empty tooltip to avoid layout issues on web
+        ),
         title: const Text('Personliga taggar'),
         actions: [
           PopupMenuButton<TagSortOrder>(
@@ -159,33 +164,48 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     final groups = viewModel.groups;
     final ungroupedTags = _sortTags(viewModel.getTagsForGroup(null), viewModel);
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        await viewModel.initialize();
-        await viewModel.loadTagStatistics();
-      },
-      child: ListView(
-        padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingMd),
-        children: [
-          // Ungrouped tags section
-          if (ungroupedTags.isNotEmpty) ...[
-            _buildTagSection(
-              context,
-              viewModel,
-              title: 'Taggar',
-              tags: ungroupedTags,
-              groupId: null,
+    return SafeArea(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final contentWidth =
+              constraints.maxWidth > 700 ? 700.0 : constraints.maxWidth;
+          return Align(
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              width: contentWidth,
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await viewModel.initialize();
+                  await viewModel.loadTagStatistics();
+                },
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: AppDimensions.spacingMd),
+                  children: [
+                    // Ungrouped tags section
+                    if (ungroupedTags.isNotEmpty) ...[
+                      _buildTagSection(
+                        context,
+                        viewModel,
+                        title: 'Taggar',
+                        tags: ungroupedTags,
+                        groupId: null,
+                      ),
+                    ],
+
+                    // Grouped tags
+                    for (final group in groups) ...[
+                      _buildGroupSection(context, viewModel, group),
+                    ],
+
+                    // Bottom padding
+                    const SizedBox(height: AppDimensions.spacingXxl),
+                  ],
+                ),
+              ),
             ),
-          ],
-
-          // Grouped tags
-          for (final group in groups) ...[
-            _buildGroupSection(context, viewModel, group),
-          ],
-
-          // Bottom padding
-          const SizedBox(height: AppDimensions.spacingXxl),
-        ],
+          );
+        },
       ),
     );
   }
@@ -219,7 +239,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             value: 'delete',
             child: ListTile(
               leading: Icon(Icons.delete, color: AppColors.error),
-              title: Text('Ta bort grupp', style: TextStyle(color: AppColors.error)),
+              title: Text('Ta bort grupp',
+                  style: TextStyle(color: AppColors.error)),
               contentPadding: EdgeInsets.zero,
             ),
           ),
@@ -298,8 +319,10 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           children: [
             CircleAvatar(
               backgroundColor: hasActiveRules
-                  ? AppColors.success.withValues(alpha: AppDimensions.opacityLight)
-                  : colorScheme.primary.withValues(alpha: AppDimensions.opacityLight),
+                  ? AppColors.success
+                      .withValues(alpha: AppDimensions.opacityLight)
+                  : colorScheme.primary
+                      .withValues(alpha: AppDimensions.opacityLight),
               child: Icon(
                 Icons.label,
                 color: hasActiveRules ? AppColors.success : colorScheme.primary,
@@ -334,7 +357,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           _buildSubtitle(usageCount, ruleCount, enabledRuleCount),
           style: AppTextStyles.bodySmall.copyWith(
             color: isUnused
-                ? colorScheme.onSurfaceVariant.withValues(alpha: AppDimensions.opacityDark)
+                ? colorScheme.onSurfaceVariant
+                    .withValues(alpha: AppDimensions.opacityDark)
                 : colorScheme.onSurfaceVariant,
           ),
         ),

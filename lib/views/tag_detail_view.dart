@@ -109,17 +109,31 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
 
         if (viewModel.isLoading && tag == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Läser in...')),
+            appBar: AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.of(context).maybePop(),
+                tooltip: '',
+              ),
+              title: const Text('Läser in...'),
+            ),
             body: StateWidget.loading(),
           );
         }
 
         if (tag == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Tagg')),
+            appBar: AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.of(context).maybePop(),
+                tooltip: '',
+              ),
+              title: const Text('Tagg'),
+            ),
             body: StateWidget.error(
               message: 'Taggen kunde inte hittas',
-              onAction: () => Navigator.of(context).pop(),
+              onAction: () => Navigator.of(context).maybePop(),
             ),
           );
         }
@@ -150,6 +164,11 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
     }
 
     return AppBar(
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => Navigator.of(context).maybePop(),
+        tooltip: '',
+      ),
       title: Text(tag.name),
       actions: [
         IconButton(
@@ -173,7 +192,8 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
               value: 'delete',
               child: ListTile(
                 leading: Icon(Icons.delete, color: AppColors.error),
-                title: Text('Ta bort', style: TextStyle(color: AppColors.error)),
+                title:
+                    Text('Ta bort', style: TextStyle(color: AppColors.error)),
                 contentPadding: EdgeInsets.zero,
               ),
             ),
@@ -192,16 +212,27 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       return _buildEditModeBody(context, tag);
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppDimensions.spacingLg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildTagHeader(context, tag, viewModel),
-          const SizedBox(height: AppDimensions.spacingXl),
-          _buildRulesSection(context, viewModel, tag),
-          const SizedBox(height: AppDimensions.spacingXxl),
-        ],
+    return SafeArea(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final contentWidth =
+              constraints.maxWidth > 700 ? 700.0 : constraints.maxWidth;
+          return Align(
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              width: contentWidth,
+              child: ListView(
+                padding: const EdgeInsets.all(AppDimensions.spacingLg),
+                children: [
+                  _buildTagHeader(context, tag, viewModel),
+                  const SizedBox(height: AppDimensions.spacingXl),
+                  _buildRulesSection(context, viewModel, tag),
+                  const SizedBox(height: AppDimensions.spacingXxl),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -221,7 +252,8 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
           children: [
             CircleAvatar(
               radius: 32,
-              backgroundColor: colorScheme.primary.withValues(alpha: AppDimensions.opacityLight),
+              backgroundColor: colorScheme.primary
+                  .withValues(alpha: AppDimensions.opacityLight),
               child: Icon(
                 Icons.label,
                 color: colorScheme.primary,
@@ -260,24 +292,34 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
   }
 
   Widget _buildEditModeBody(BuildContext context, PersonalTag tag) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppDimensions.spacingLg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Name field
-          Text('Namn', style: AppTextStyles.labelLarge),
-          const SizedBox(height: AppDimensions.spacingSm),
-          TextField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              hintText: 'Taggnamn',
-              border: OutlineInputBorder(),
+    return SafeArea(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final contentWidth =
+              constraints.maxWidth > 700 ? 700.0 : constraints.maxWidth;
+          return Align(
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              width: contentWidth,
+              child: ListView(
+                padding: const EdgeInsets.all(AppDimensions.spacingLg),
+                children: [
+                  Text('Namn', style: AppTextStyles.labelLarge),
+                  const SizedBox(height: AppDimensions.spacingSm),
+                  TextField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(
+                      hintText: 'Taggnamn',
+                      border: OutlineInputBorder(),
+                    ),
+                    textCapitalization: TextCapitalization.sentences,
+                  ),
+                  const SizedBox(height: AppDimensions.spacingXxl),
+                ],
+              ),
             ),
-            textCapitalization: TextCapitalization.sentences,
-          ),
-          const SizedBox(height: AppDimensions.spacingXxl),
-        ],
+          );
+        },
       ),
     );
   }
@@ -303,10 +345,14 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
                 style: AppTextStyles.titleMedium,
               ),
             ),
-            FilledButton.tonalIcon(
-              onPressed: () => _addRule(context, tag),
-              icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
-              label: const Text('Lägg till'),
+            const SizedBox(width: AppDimensions.spacingSm),
+            Flexible(
+              fit: FlexFit.loose,
+              child: FilledButton.tonalIcon(
+                onPressed: () => _addRule(context, tag),
+                icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
+                label: const Text('Lägg till'),
+              ),
             ),
           ],
         ),
@@ -442,7 +488,8 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
                   value: 'delete',
                   child: ListTile(
                     leading: Icon(Icons.delete, color: AppColors.error),
-                    title: Text('Ta bort', style: TextStyle(color: AppColors.error)),
+                    title: Text('Ta bort',
+                        style: TextStyle(color: AppColors.error)),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
@@ -849,7 +896,8 @@ class _RuleBuilderSheetState extends State<_RuleBuilderSheet> {
                 height: 4,
                 decoration: BoxDecoration(
                   color: colorScheme.onSurfaceVariant,
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadius2),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadius2),
                 ),
               ),
               // Header
@@ -863,14 +911,20 @@ class _RuleBuilderSheetState extends State<_RuleBuilderSheet> {
                         style: AppTextStyles.titleLarge,
                       ),
                     ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Avbryt'),
+                    Flexible(
+                      fit: FlexFit.loose,
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Avbryt'),
+                      ),
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
-                    FilledButton(
-                      onPressed: _save,
-                      child: Text(_isEditing ? 'Spara' : 'Skapa'),
+                    Flexible(
+                      fit: FlexFit.loose,
+                      child: FilledButton(
+                        onPressed: _save,
+                        child: Text(_isEditing ? 'Spara' : 'Skapa'),
+                      ),
                     ),
                   ],
                 ),
@@ -920,10 +974,14 @@ class _RuleBuilderSheetState extends State<_RuleBuilderSheet> {
                       children: [
                         Text('Villkor', style: AppTextStyles.labelLarge),
                         const Spacer(),
-                        TextButton.icon(
-                          onPressed: _addCondition,
-                          icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
-                          label: const Text('Lägg till'),
+                        Flexible(
+                          fit: FlexFit.loose,
+                          child: TextButton.icon(
+                            onPressed: _addCondition,
+                            icon: const Icon(Icons.add,
+                                size: AppDimensions.iconSize18),
+                            label: const Text('Lägg till'),
+                          ),
                         ),
                       ],
                     ),
@@ -933,6 +991,7 @@ class _RuleBuilderSheetState extends State<_RuleBuilderSheet> {
                         padding: const EdgeInsets.only(
                             bottom: AppDimensions.spacingSm),
                         child: _ConditionCard(
+                          key: ValueKey('condition_$index'),
                           condition: _conditions[index],
                           canDelete: _conditions.length > 1,
                           onTypeChanged: (type) =>
@@ -982,6 +1041,7 @@ class _ConditionCard extends StatefulWidget {
   final VoidCallback onDelete;
 
   const _ConditionCard({
+    super.key,
     required this.condition,
     required this.canDelete,
     required this.onTypeChanged,
@@ -1002,14 +1062,6 @@ class _ConditionCardState extends State<_ConditionCard> {
     super.initState();
     _valueController =
         TextEditingController(text: widget.condition.stringValue);
-  }
-
-  @override
-  void didUpdateWidget(_ConditionCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.condition.value != widget.condition.value) {
-      _valueController.text = widget.condition.stringValue;
-    }
   }
 
   @override
@@ -1111,7 +1163,8 @@ class _ConditionCardState extends State<_ConditionCard> {
                 if (widget.canDelete) ...[
                   const SizedBox(width: AppDimensions.spacingSm),
                   IconButton(
-                    icon: const Icon(Icons.close, size: AppDimensions.iconSizeM),
+                    icon:
+                        const Icon(Icons.close, size: AppDimensions.iconSizeM),
                     onPressed: widget.onDelete,
                     tooltip: 'Ta bort villkor',
                   ),

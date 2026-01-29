@@ -25,6 +25,8 @@ class ProfileMenu extends StatefulWidget {
   final VoidCallback? onViewFriends;
   final VoidCallback? onViewNotifications;
   final VoidCallback? onViewMessages;
+  final VoidCallback? onViewAllergens;
+  final VoidCallback? onViewPersonalTags;
   final bool showBackupOptions;
   final bool showSocialOptions;
   final BuildContext? rootContext;
@@ -39,6 +41,8 @@ class ProfileMenu extends StatefulWidget {
     this.onViewFriends,
     this.onViewNotifications,
     this.onViewMessages,
+    this.onViewAllergens,
+    this.onViewPersonalTags,
     this.showBackupOptions = true,
     this.showSocialOptions = true,
     this.rootContext,
@@ -366,20 +370,14 @@ class _ProfileMenuState extends State<ProfileMenu> {
             title: 'Allergeninställningar',
             subtitle: 'Välj vilka allergener du vill spåra',
             icon: Icons.health_and_safety,
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/settings/allergens');
-            },
+            onTap: widget.onViewAllergens,
           ),
           ProfileActions.buildMenuItem(
             context,
             title: 'Mina taggar',
             subtitle: 'Hantera dina personliga taggar',
             icon: Icons.local_offer_outlined,
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/settings/personal-tags');
-            },
+            onTap: widget.onViewPersonalTags,
           ),
         ],
       ),
