@@ -5,6 +5,18 @@
 
 ---
 
+## ⚠️ PLANNED CHANGES
+
+> **REMOVE "Upptäck" (Discovery) Tab**: The "Upptäck" section will be removed from the new design. This includes:
+> - The bottom navigation tab (#5)
+> - The Discovery Dashboard view (`/discovery`)
+> - All discovery-related sub-views and components
+> - Navigation will be reduced to **4 tabs**: Mina recept, Lägg till, Veckomeny, Inköpslista
+>
+> Social features (friends, groups, messaging, sharing) will need alternative access points in the new design.
+
+---
+
 ## Table of Contents
 
 1. [Navigation Structure](#navigation-structure)
@@ -20,15 +32,15 @@
 
 ## Navigation Structure
 
-### Bottom Navigation (5 Tabs)
+### Bottom Navigation (Currently 5 Tabs → Changing to 4)
 
-| Tab | Swedish Label | Icon (Inactive) | Icon (Active) | Route |
-|-----|---------------|-----------------|---------------|-------|
-| 1 | Mina recept | bookOutlined | book | `/` |
-| 2 | Lägg till | addOutlined | add | `/laggTill` |
-| 3 | Veckomeny | calendarOutlined | calendar | `/veckomeny` |
-| 4 | Inköpslista | cartOutlined | cart | `/inkopslista` |
-| 5 | Upptäck | exploreOutlined | explore | `/discovery` |
+| Tab | Swedish Label | Icon (Inactive) | Icon (Active) | Route | Status |
+|-----|---------------|-----------------|---------------|-------|--------|
+| 1 | Mina recept | bookOutlined | book | `/` | ✅ Keep |
+| 2 | Lägg till | addOutlined | add | `/laggTill` | ✅ Keep |
+| 3 | Veckomeny | calendarOutlined | calendar | `/veckomeny` | ✅ Keep |
+| 4 | Inköpslista | cartOutlined | cart | `/inkopslista` | ✅ Keep |
+| 5 | Upptäck | exploreOutlined | explore | `/discovery` | ⚠️ **REMOVING** |
 
 ### Responsive Navigation
 
@@ -250,7 +262,9 @@
 
 ---
 
-### 5. Upptäck (Discovery)
+### 5. Upptäck (Discovery) ⚠️ TO BE REMOVED
+
+> **Note**: This entire section will be removed in the new design. Social features will need alternative access points.
 
 **Route:** `/discovery`
 **Tab:** Upptäck
@@ -1036,12 +1050,196 @@ Same tri-state pattern as allergen, but uses leaf icon (🌿) for FREE state.
 
 ### Snackbar Variants
 
-| Type | Color | Icon |
-|------|-------|------|
-| **Success** | Green (#10B981) | ✓ check_circle |
-| **Error** | Red (#EF4444) | ✕ error |
-| **Warning** | Amber (#F59E0B) | ⚠ warning |
-| **Info** | Blue (#3B82F6) | ℹ info |
+| Type | Color | Icon | Duration |
+|------|-------|------|----------|
+| **Success** | Green (#10B981) | ✓ check_circle | 3 seconds |
+| **Error** | Red (#EF4444) | ✕ error | 5 seconds + OK button |
+| **Warning** | Amber (#F59E0B) | ⚠ warning | 4 seconds |
+| **Info** | Blue (#3B82F6) | ℹ info | 4 seconds |
+| **Loading** | Dark | Spinner | 2 seconds |
+
+---
+
+## All Dialogs & Overlays
+
+### Confirmation Dialogs
+
+| Dialog | Trigger | Title | Message | Actions |
+|--------|---------|-------|---------|---------|
+| **Delete Recipe** | Recipe detail menu | "Ta bort recept?" | "Receptet kommer att tas bort permanent." | "Ta bort" (red), "Avbryt" |
+| **Delete Group** | Group settings | "Ta bort grupp?" | "Alla medlemmar kommer att lämna gruppen." | "Ta bort grupp" (red), "Avbryt" |
+| **Delete Shopping List** | List menu | "Ta bort lista?" | "Alla varor på listan kommer att försvinna." | "Ta bort" (red), "Avbryt" |
+| **Leave Group** | Group settings | "Lämna grupp?" | "Du kommer inte längre ha tillgång till gruppens innehåll." | "Lämna", "Avbryt" |
+| **Unsaved Changes** | Back with edits | "Osparade ändringar" | "Du har osparade ändringar. Vill du spara dem?" | "Spara", "Kasta", "Avbryt" |
+| **Clear Menu** | Menu actions | "Rensa meny?" | "Alla recept i menyn kommer att tas bort." | "Rensa", "Avbryt" |
+| **Clear Completed Items** | Shopping list | "Rensa avbockade?" | "Ta bort alla inhandlade varor från listan?" | "Rensa", "Avbryt" |
+| **Remove Friend** | Friend profile | "Ta bort vän?" | "Du kommer inte längre kunna dela med [namn]." | "Ta bort", "Avbryt" |
+| **Remove Group Member** | Group detail | "Ta bort medlem?" | "[Namn] kommer att tas bort från gruppen." | "Ta bort", "Avbryt" |
+
+### Form Dialogs
+
+| Dialog | Trigger | Fields | Actions |
+|--------|---------|--------|---------|
+| **Add Shopping Item** | FAB in shopping list | Name, Amount, Unit (dropdown), Category (dropdown) | "Lägg till", "Avbryt" |
+| **Edit Shopping Item** | Edit icon on item | Same as add (pre-filled) | "Uppdatera", "Avbryt" |
+| **Create Shopping List** | List dropdown "Ny lista" | List name | "Skapa", "Avbryt" |
+| **Rename Shopping List** | List menu | List name (pre-filled) | "Byt namn", "Avbryt" |
+| **Save Menu** | Save icon on menu | Menu name, Share with (friend selector) | "Spara", "Avbryt" |
+| **Create Group** | Groups tab FAB | Group name, Description, Emoji picker, Friend multi-select | "Skapa grupp", "Avbryt" |
+| **Edit Group** | Group settings | Same as create (pre-filled) | "Spara ändringar", "Avbryt" |
+| **Create Personal Tag** | Tags FAB | Tag name, Color picker | "Skapa", "Avbryt" |
+| **Edit Personal Tag** | Tag edit icon | Same as create (pre-filled) | "Spara", "Avbryt" |
+| **Create Tag Rule** | Tag detail | Rule name, Conditions (keyword, ingredient) | "Spara regel", "Avbryt" |
+| **New Conversation** | Messages + icon | Friend search/multi-select | "Skapa konversation", "Avbryt" |
+| **Feedback** | Help menu | Multiline text input (3 lines) | "Skicka", "Avbryt" |
+
+### Selection Dialogs
+
+| Dialog | Trigger | Content | Selection Type |
+|--------|---------|---------|----------------|
+| **Shopping List Selector** | "Add to list" from recipe | List of user's shopping lists | Single select |
+| **Friend Selector** | Share actions | Searchable friend list | Multi-select with checkboxes |
+| **Group Selector** | Share to group | List of user's groups | Single select |
+| **Menu Selector** | Load saved menu | List of saved menus with metadata | Single select |
+| **Recipe Selector** | Share recipes | User's recipe list with search | Multi-select |
+| **Personal Tag Selector** | Tag recipe | All personal tags as chips | Multi-select toggle |
+
+### Specialized Dialogs
+
+| Dialog | Trigger | Description |
+|--------|---------|-------------|
+| **Draft Recovery** | App launch with drafts | Shows list of auto-saved recipe drafts with timestamps. Options: "Återställ senaste", "Börja från början" |
+| **Unknown Ingredient** | Recipe tagging | Wizard for defining unknown ingredients' allergen/dietary properties. Step-through with "Hoppa över", "Spara och nästa" |
+| **Rate Limit** | AI import quota exceeded | Shows limit type + countdown timer. Options: "Försök senare", "Importera utan AI", "Manuell import" |
+| **Assisted Import** | Smart import fallback | Step-by-step form for manual recipe extraction when AI fails |
+| **Session Timeout** | Session expiring | Countdown timer (MM:SS). Options: "Fortsätt session", "Logga ut nu" |
+| **MFA Challenge** | Login with MFA | Phone hint + 6-digit code input. Options: "Verifiera", "Avbryt" |
+| **Ownership Transfer** | Transfer group ownership | Member selector dropdown. Options: "Överför ägande", "Avbryt" |
+| **Universal Share** | Share recipe/menu/list | Tabbed interface (Friends/Groups/Permissions) with multi-select and permission levels |
+| **Image Permission** | Camera/gallery access denied | Explains permission need. Options: "Gå till inställningar", "Avbryt" |
+
+### Bottom Sheets
+
+| Sheet | Trigger | Content |
+|-------|---------|---------|
+| **Image Source** | Add recipe image, avatar | "Ta ett foto" / "Välj från galleri" with icons |
+| **Filter Recipes** | Filter icon on Mina recept | Allergen toggles, dietary prefs, tags, rating, time sliders |
+| **Load Menu** | Folder icon on Veckomeny | List of saved menus with name, date, recipe count |
+| **Share Options** | Share icon on recipe | "Dela med vänner", "Dela med grupp", "Dela externt" |
+| **Recipe Actions** | Long-press recipe card | "Redigera", "Ta bort", "Dela", "Forka", "Lägg till i meny" |
+| **Shopping List Selector** | "Till inköpslista" | Draggable sheet with list selector + "Add from menu" option |
+
+### Popup Menus
+
+| Menu | Location | Options |
+|------|----------|---------|
+| **Recipe Sort** | AppBar on Mina recept | Senaste, Namn A-Ö, Namn Ö-A, Betyg ↓, Betyg ↑ |
+| **Recipe Actions** | ⋮ on recipe card | Redigera, Ta bort, Dela, Forka |
+| **Tag Sort** | AppBar on Personal Tags | Namn, Användning, Skapad |
+| **Tag Actions** | ⋮ on tag card | Redigera, Ta bort, Flytta till grupp |
+| **List Operations** | ⋮ on shopping list | Byt namn, Rensa avbockade, Ta bort lista |
+| **Message Actions** | Long-press message | Kopiera, Redigera, Ta bort |
+| **Conversation Actions** | Long-press conversation | Stäng av notiser, Lämna, Ta bort |
+
+---
+
+## All Snackbar Messages
+
+### Recipe Management
+
+| Action | Message | Type |
+|--------|---------|------|
+| Recipe deleted | "Recept borttaget" | Success |
+| Recipe saved | "Recept sparat!" | Success |
+| Recipe shared | "Recept delat" | Success |
+| Edit saved | "Ändringar sparade!" | Success |
+| Tags updated | "Taggar uppdaterade" | Success |
+| Mark as cooked | "Recept markerat som lagat idag!" | Success |
+| Delete fails | "Kunde inte ta bort recept" | Error |
+| Save fails | "Kunde inte spara recept" | Error |
+| Share fails | "Kunde inte dela recept" | Error |
+| Tagging fails | "Kunde inte analysera recept" | Error |
+
+### Shopping List
+
+| Action | Message | Type |
+|--------|---------|------|
+| Item added | "[Namn] tillagd!" | Success |
+| Item deleted | "[Namn] borttagen!" | Success |
+| Item updated | "[Namn] uppdaterad!" | Success |
+| List created | "Lista \"[namn]\" skapad!" | Success |
+| List renamed | "Lista döpt om till \"[namn]\"" | Success |
+| List deleted | "Lista \"[namn]\" borttagen" | Success |
+| Items cleared | "Inhandlade varor rensade!" | Success |
+| All unchecked | "Alla artiklar avbockade!" | Success |
+| Add fails | "Kunde inte lägga till [namn]" | Error |
+| Delete fails | "Kunde inte ta bort [namn]" | Error |
+| Permission denied | "Du har inte behörighet att redigera denna inköpslista" | Error |
+| No ingredients | "Receptet har inga ingredienser att lägga till" | Warning |
+
+### Tags & Groups
+
+| Action | Message | Type |
+|--------|---------|------|
+| Tag created | "Tagg skapad" | Success |
+| Tag updated | "Tagg uppdaterad" | Success |
+| Tag deleted | "Tagg borttagen" | Success |
+| Group created | "Gruppen skapades! 🎉" | Success |
+| Group updated | "Grupp uppdaterad" | Success |
+| Group deleted | "Grupp borttagen" | Success |
+| Rule created | "Regel skapad" | Success |
+| Rule updated | "Regel uppdaterad" | Success |
+| Rule deleted | "Regel borttagen" | Success |
+| Rules executed | "Regel kördes framgångsrikt" | Success |
+| Tag name empty | "Taggnamn krävs" | Error |
+| Rule name empty | "Ange ett regelnamn" | Error |
+
+### Social & Friends
+
+| Action | Message | Type |
+|--------|---------|------|
+| Request accepted | "Vänskapsförfrågan accepterad! 🎉" | Success |
+| Invitation accepted | "Inbjudan accepterad! Välkommen till gruppen! 🎉" | Success |
+| Menu shared | "Veckomeny delad!" | Success |
+| Request rejected | "Vänskapsförfrågan avböjd" | Warning |
+| Invitation rejected | "Inbjudan avvisad" | Warning |
+| Accept fails | "Kunde inte acceptera inbjudan. Försök igen." | Error |
+
+### Profile & Settings
+
+| Action | Message | Type |
+|--------|---------|------|
+| Avatar uploaded | "Avatar uppladdad!" | Success |
+| Profile saved | "Profil sparad!" | Success |
+| MFA enabled | "MFA aktiverat!" | Success |
+| MFA disabled | "MFA inaktiverat" | Success |
+| Invalid phone | "Ogiltigt telefonnummer. Ange med landskod (+46)." | Error |
+| Invalid code | "Ogiltig kod. Försök igen." | Error |
+| Quota exceeded | "För många försök. Försök igen senare." | Error |
+
+### Messaging
+
+| Action | Message | Type |
+|--------|---------|------|
+| Message copied | "Meddelandet kopierades" | Success |
+| Image sent | "Bild skickad" | Success |
+| Group name updated | "Gruppnamn uppdaterat" | Success |
+| Members added | "Medlemmar tillagda" | Success |
+| Member removed | "Medlem borttagen" | Success |
+| Left group | "Du har lämnat gruppen" | Success |
+| Settings changed | "Meddelandeinställningar uppdaterade" | Info |
+| Send fails | "Kunde inte skicka meddelandet. Försök igen." | Error |
+| Copy fails | "Kunde inte kopiera meddelandet" | Error |
+| No image selected | "Ingen bild vald" | Error |
+
+### Sync & Network
+
+| Action | Message | Type |
+|--------|---------|------|
+| Sync complete | "Synkronisering klar!" | Success |
+| Syncing | "Synkroniserar..." | Info/Loading |
+| Network error | "Ingen internetanslutning. Kontrollera din anslutning." | Error |
+| Sync fails | "Synkronisering misslyckades: [error]" | Error |
 
 ---
 
@@ -1110,15 +1308,15 @@ Same tri-state pattern as allergen, but uses leaf icon (🌿) for FREE state.
 
 ### Refresh/Scroll Behaviors
 
-| View | Pull-to-Refresh | Infinite Scroll |
-|------|-----------------|-----------------|
-| Mina Recept | ✅ Yes | ✅ Yes |
-| Veckomeny | ❌ No | ❌ No |
-| Inköpslista | ✅ Yes | ❌ No |
-| Upptäck | ✅ Yes | ✅ Yes |
-| Vänner | ✅ Yes | ❌ No |
-| Meddelanden | ✅ Yes | ❌ No |
-| Chatt | ❌ No | ✅ Yes (older messages) |
+| View | Pull-to-Refresh | Infinite Scroll | Status |
+|------|-----------------|-----------------|--------|
+| Mina Recept | ✅ Yes | ✅ Yes | Keep |
+| Veckomeny | ❌ No | ❌ No | Keep |
+| Inköpslista | ✅ Yes | ❌ No | Keep |
+| Upptäck | ✅ Yes | ✅ Yes | ⚠️ Removing |
+| Vänner | ✅ Yes | ❌ No | Keep (needs new access) |
+| Meddelanden | ✅ Yes | ❌ No | Keep (needs new access) |
+| Chatt | ❌ No | ✅ Yes (older messages) | Keep
 
 ---
 
@@ -1166,8 +1364,15 @@ Same tri-state pattern as allergen, but uses leaf icon (🌿) for FREE state.
 
 ## Summary Statistics
 
+**Current State:**
 - **Total Named Routes**: 30
-- **Main Navigation Tabs**: 5
+- **Main Navigation Tabs**: 5 (→ 4 after removing Upptäck)
 - **Main Views**: 18
 - **Component View Files**: 67+
 - **Deferred Loading Modules**: 3 (Extraction, Social, Messaging)
+- **Total Dialogs/Overlays**: 35+
+- **Total Snackbar Message Types**: 50+
+
+**After Removing Upptäck:**
+- Discovery Dashboard and all sub-components removed
+- Social features need new access points (profile menu, settings, or dedicated section)
