@@ -3,12 +3,15 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/components/input_themes.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 
 /// Recipe card widget for displaying recipe information with comprehensive functionality.
+///
+/// **UI Redesign:** Uses left green border + bottom rust border styling.
 /// This widget provides a complete recipe card implementation with support for:
 /// - Recipe display with image, title, description, and metadata
 /// - Interactive callbacks for tap, long press, and favorite toggle
@@ -66,24 +69,30 @@ class RecipeCard extends StatelessWidget {
       child: Semantics(
         label: 'Recipe: ${recipe.title}',
         child: Container(
-          margin:
-              margin ?? AppDimensions.paddingSymmetric16x4,
+          margin: margin ?? AppDimensions.paddingSymmetric16x4,
+          // UI Redesign: Left green border + bottom rust border
+          decoration: isSelected
+              ? BoxDecoration(
+                  color: AppColors.forestGreen
+                      .withValues(alpha: AppDimensions.opacityVeryLight),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusM),
+                  border: Border.all(
+                    color: AppColors.forestGreen,
+                    width: 2,
+                  ),
+                )
+              : InputThemes.recipeCardDecoration,
           child: Material(
-            elevation: isSelected
-                ? AppDimensions.elevationMedium
-                : AppDimensions.elevationLow,
+            color: Colors.transparent,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            color: isSelected
-                ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
-                : null,
             child: InkWell(
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               onTap: onTap != null ? () => onTap!(recipe) : null,
               onLongPress:
                   onLongPress != null ? () => onLongPress!(recipe) : null,
               child: Container(
-                padding:
-                    padding ?? AppDimensions.paddingAll12,
+                padding: padding ?? AppDimensions.paddingAll12,
                 child: _buildCardContent(context),
               ),
             ),
@@ -325,13 +334,13 @@ class RecipeCard extends StatelessWidget {
     return Container(
       padding: AppDimensions.paddingSymmetric4x8,
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Text(
         recipe.mealType,
         style: AppTextStyles.badge.copyWith(
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         ),
       ),
     );
@@ -375,19 +384,19 @@ class RecipeCard extends StatelessWidget {
       padding: AppDimensions.paddingSymmetric4x2,
       decoration: BoxDecoration(
         color: isUserAdded
-            ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
+            ? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight)
             : AppColors.backgroundBeige,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
         border: Border.all(
           color: isUserAdded
-              ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight)
+              ? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityMediumLight)
               : AppColors.divider.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Text(
         displayName,
         style: AppTextStyles.labelSmall.copyWith(
-          color: isUserAdded ? AppColors.primaryBlue : AppColors.textMedium,
+          color: isUserAdded ? AppColors.forestGreen : AppColors.textMedium,
         ),
       ),
     );
@@ -458,16 +467,16 @@ class RecipeCard extends StatelessWidget {
     return Container(
       padding: AppDimensions.paddingSymmetric8x2,
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
+        color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLightSubtle),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Text(
         name,
         style: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         ),
       ),
     );
@@ -477,16 +486,16 @@ class RecipeCard extends StatelessWidget {
     return Container(
       padding: AppDimensions.paddingSymmetric8x2,
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
+          color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: Text(
         '+$count',
         style: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityDark),
+          color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityDark),
         ),
       ),
     );

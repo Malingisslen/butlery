@@ -1,8 +1,10 @@
 // lib/widgets/common/layout/layout_scaffolds.dart
+//
+// UI Redesign: Updated to use ButleryHeader and new navigation
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
+import 'package:butlery/widgets/common/butlery_header.dart';
 
 /// Layout scaffold components for main navigation and simple layouts
 /// This module provides the core layout structures including
@@ -75,7 +77,8 @@ class _MainMenuLayout extends StatelessWidget {
   }
 }
 
-/// Simple layout for views without bottom navigation
+/// Simple layout for views without bottom navigation.
+/// **UI Redesign:** Uses ButleryHeader for consistent styling.
 class _SimpleLayout extends StatelessWidget {
   final Widget body;
   final String? title;
@@ -96,12 +99,14 @@ class _SimpleLayout extends StatelessWidget {
     return Scaffold(
       appBar: appBar ??
           (title != null
-              ? AppBar(
-                  title: Text(
-                    title!,
-                    style: AppTextStyles.headlineSmall,
-                  ),
-                  actions: actions,
+              ? ButleryHeader(
+                  title: title!,
+                  trailing: actions != null && actions!.isNotEmpty
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: actions!,
+                        )
+                      : null,
                 )
               : null),
       body: body,
