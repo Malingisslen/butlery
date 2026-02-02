@@ -11,6 +11,13 @@ Follow the established commit message format used in this repository and include
 - Proper categorization (feat:, fix:, refactor:, etc.)
 - Generated with Claude Code footer
 
+## Pre-Commit Lesson Check
+
+If `/tasks/lessons.md` exists:
+1. Review last 5 entries
+2. Verify none were violated in staged changes
+3. If a lesson was specifically followed, note in commit message
+
 ## Pre-Commit Quality Gates (MANDATORY)
 
 Before creating any commit, you MUST run these agents:
