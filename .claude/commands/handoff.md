@@ -29,6 +29,11 @@ Check the current todo list state:
 - Which todo was in progress?
 - What's the logical next step?
 
+### 1.4 Session Lessons
+- New lessons added this session?
+- Patterns next session should know?
+- Include relevant lessons in handoff context
+
 ## Phase 2: Quality Checks
 
 ### 2.1 Run Flutter Analyze

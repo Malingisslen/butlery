@@ -120,6 +120,33 @@ See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 4. **Single data source** - don't mix UserService/PermissionService
 5. **Ask before deviating** - from planned todos
 
+## Workflow Discipline
+
+**Plan Mode (automatic for complex tasks):**
+- Triggers: 3+ files, new services/viewmodels, architectural changes, "refactor"/"migrate" requests
+- Enter plan mode automatically (no user action needed)
+- Write plan to `/tasks/todo.md`, get approval, then implement
+- If going sideways → STOP and re-plan immediately
+
+**Verification Before Done:**
+- `flutter analyze` passes
+- Relevant tests pass
+- Diff behavior vs main if relevant
+- Ask: "Would a staff engineer approve this?"
+
+**Self-Improvement Loop (automatic):**
+- After ANY user correction → add entry to `/tasks/lessons.md`
+- Format: `### [Category] Title` + Date, Trigger, Rule, Example
+- Categories: Architecture, Code Quality, Testing, Workflow, Firebase, UI/UX
+- At session start → read last 5 lessons for context
+- If lesson should become CLAUDE.md rule → propose update
+
+**Autonomous Problem Solving:**
+- Bug report → just fix it (spawn debugger agent)
+- Failing CI → go fix without being told how
+- Point at logs/errors → resolve them
+- Don't ask for hand-holding on standard debugging
+
 ## Stop Hook Response
 
 När stop hook blockerar med en `reason`:
