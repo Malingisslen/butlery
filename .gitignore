@@ -75,6 +75,10 @@ test/**/results/*.log
 .claude/cache/**
 nul
 
+# Tasks directory (except lessons.md)
+/tasks/*.md
+!/tasks/lessons.md
+
 # Node.js
 node_modules/
 service-account.json

@@ -1,7 +1,7 @@
 # Manual Testing Log - Butlery App
 
 **Created**: 2026-01-07
-**Last Updated**: 2026-01-18 (BUG-020 & BUG-021 FIXED - Firebase collection name + route fixes)
+**Last Updated**: 2026-01-30 (Added Phase 18: Tag & Allergen System - 129 new tests)
 **Status**: In Progress (1 open bug - BUG-014)
 
 ---
@@ -19,6 +19,7 @@
 | 7. Social Features | 40 | 19 | 18 | 0 | 1 |
 | 8. Messaging | 23 | 3 | 3 | 0 | 0 |
 | 9. Personal Tags | 21 | 8 | 8 | 0 | 0 |
+| **18. Tag & Allergen System** | **129** | **0** | **0** | **0** | **0** |
 | 10. Settings & Account | 23 | 14 | 12 | 0 | 0 |
 | 11. Dialogs & Modals | 11 | 8 | 8 | 0 | 0 |
 | 12. Widgets & Components | 44 | 6 | 6 | 0 | 0 |
@@ -27,7 +28,7 @@
 | 15. Error Handling | 13 | 4 | 4 | 0 | 0 |
 | 16. Social E2E Tests | 35 | 13 | 11 | 0 | 8 |
 | 17. Import Tagging Verification | 32 | 0 | 0 | 0 | 0 |
-| **TOTAL** | **409** | **141** | **135** | **0** | **15** |
+| **TOTAL** | **538** | **141** | **135** | **0** | **15** |
 
 ---
 
@@ -1024,11 +1025,26 @@ See full test case details in:
 
 ---
 
+## Phase 18: Tag & Allergen System (129 tests)
+
+**Comprehensive testing document:** See [TAG_ALLERGEN_MANUAL_TESTS.md](TAG_ALLERGEN_MANUAL_TESTS.md)
+
+This phase covers:
+- Personal Tags CRUD (create, edit, delete)
+- Tag Groups management
+- Automation Rules (conditions, match modes, bulk operations)
+- Allergen/Dietary preferences configuration
+- Tri-state badge display (FREE/CONTAINS/UNKNOWN)
+- Recipe integration (display, filtering, search)
+- Edge cases and performance testing
+
+---
+
 ## How to Continue Testing
 
 1. Start Flutter web: `flutter run -d chrome`
 2. Open this log file
-3. Execute tests in order (Phase 1 → 17)
+3. Execute tests in order (Phase 1 → 18)
 
 ### Phase 16 E2E Testing Workflow:
 1. Log in as User A (malin.gisslen1@gmail.com)
@@ -1047,6 +1063,6 @@ See full test case details in:
 
 ## Exit Criteria
 
-- All 409 test cases executed
+- All 538 test cases executed
 - Zero Critical/High severity bugs
 - Medium/Low bugs documented (can defer)
