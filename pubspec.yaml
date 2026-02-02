@@ -19,7 +19,7 @@ dependencies:
   # ==================== FIREBASE & BACKEND ====================
   firebase_core: ^4.2.1        # Updated for CVE-2025-0838 fix
   firebase_auth: ^6.1.2        # Updated for security patches
-  cloud_firestore: ^6.1.0      # Updated for CVE-2024-7254 fix
+  cloud_firestore: ^6.1.2      # Updated for CVE-2024-7254 fix
   firebase_storage: ^13.0.4    # Updated for bug fixes
   firebase_analytics: ^12.0.4  # Updated for tracking improvements
   firebase_app_check: ^0.4.0
@@ -38,7 +38,7 @@ dependencies:
 
   # ==================== LOCAL STORAGE ====================
   shared_preferences: ^2.3.2
-  drift: ^2.12.0               # Modern SQL-based local storage
+  drift: ^2.30.1               # Modern SQL-based local storage
   sqlcipher_flutter_libs: ^0.6.4  # Encrypted SQLite for Drift (replaces sqlite3_flutter_libs)
   flutter_secure_storage: ^9.2.2  # Platform-secure storage for sensitive data
   pointycastle: ^4.0.0  # Cryptography for AES field-level encryption (matches firebase_auth_mocks)
@@ -68,7 +68,7 @@ dependencies:
   clock: ^1.1.1  # For testable time-dependent code
   share_plus: ^12.0.1        # För utgående sharing (skicka till andra appar)
   path_provider: ^2.1.4
-  file_picker: ^10.3.3
+  file_picker: ^10.3.10
   path: ^1.9.0
   flutter_dotenv: ^5.2.1     # För säker API key hantering
   crypto: ^3.0.5             # För OCR service image hashing och caching
@@ -82,10 +82,10 @@ dependencies:
   # ==================== SOCIAL FEATURES (FAS 18) ====================
   timeago: ^3.6.1
   receive_intent: ^0.2.0     # För hantering av deep links och app launch intents
-  cloud_functions: ^6.0.4
+  cloud_functions: ^6.0.6
 
   # ==================== SEARCH (Algolia - migration-ready) ====================
-  algoliasearch: ^1.36.1     # Official Algolia SDK (can migrate to Meilisearch/Typesense later)
+  algoliasearch: ^1.43.3     # Official Algolia SDK (can migrate to Meilisearch/Typesense later)
 
 dev_dependencies:
   flutter_test:
@@ -100,7 +100,7 @@ dev_dependencies:
   
   # ==================== MOCKING (Mocktail preferred over Mockito) ====================
   mocktail: ^1.0.4
-  build_runner: ^2.7.1  # Downgraded for drift_dev compatibility
+  build_runner: ^2.10.5  # Downgraded for drift_dev compatibility
   drift_dev: ^2.12.0    # Code generator for Drift database (compatible version)
   
   # ==================== FIREBASE MOCKING ====================
@@ -113,7 +113,7 @@ dev_dependencies:
   fake_async: ^1.3.1  # For controlling time in tests
   
   # ==================== INTEGRATION TESTING FRAMEWORK ====================
-  patrol: ^4.0.1
+  patrol: ^4.1.0
   
   # ==================== CODE QUALITY ====================
   very_good_analysis: ^10.0.0
