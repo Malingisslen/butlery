@@ -129,10 +129,10 @@ class InputThemes {
   }
 
   /// Recipe card decoration - Left green border + bottom rust border
-  static BoxDecoration get recipeCardDecoration => BoxDecoration(
+  /// Note: Cannot use borderRadius with non-uniform border colors in Flutter
+  static BoxDecoration get recipeCardDecoration => const BoxDecoration(
         color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: const Border(
+        border: Border(
           left: BorderSide(
             color: AppColors.recipeCardLeftBorder,
             width: 3,
@@ -184,10 +184,10 @@ class InputThemes {
       );
 
   /// Search box decoration (focused) - Green/rust accent
-  static BoxDecoration get searchBoxDecorationFocused => BoxDecoration(
+  /// Note: Cannot use borderRadius with non-uniform border colors in Flutter
+  static BoxDecoration get searchBoxDecorationFocused => const BoxDecoration(
         color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        border: const Border(
+        border: Border(
           left: BorderSide(
             color: AppColors.forestGreen,
             width: 2,
