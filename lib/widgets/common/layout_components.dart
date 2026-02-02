@@ -20,12 +20,16 @@ import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 /// Facade for layout components. Delegates to specialized layout modules.
 class LayoutComponents {
   /// Creates the primary application layout with bottom navigation.
+  ///
+  /// Set [appBar] to provide a custom header (e.g., MainViewHeader).
+  /// If [appBar] is null, uses default title-based header.
   static Widget mainMenu({
     required Widget body,
     int? currentIndex,
     String? title,
     List<Widget>? actions,
     Widget? floatingActionButton,
+    PreferredSizeWidget? appBar,
   }) {
     return LayoutScaffolds.mainMenu(
       body: body,
@@ -33,6 +37,7 @@ class LayoutComponents {
       title: title,
       actions: actions,
       floatingActionButton: floatingActionButton,
+      appBar: appBar,
     );
   }
 

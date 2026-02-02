@@ -17,6 +17,7 @@ import 'package:butlery/services/share_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart';
 import 'package:butlery/widgets/menu/menu_content_widgets.dart';
+import 'package:butlery/widgets/common/main_view_header.dart';
 
 /// Weekly menu planning view with natural language input and social sharing.
 class VeckomenyView extends StatelessWidget {
@@ -89,9 +90,19 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     }
   }
 
+  /// Get current week number
+  int _getCurrentWeekNumber() {
+    final now = DateTime.now();
+    final firstDayOfYear = DateTime(now.year, 1, 1);
+    final daysSinceFirst = now.difference(firstDayOfYear).inDays;
+    return ((daysSinceFirst + firstDayOfYear.weekday - 1) / 7).ceil();
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<MenuViewModel>();
+    final weekNumber = _getCurrentWeekNumber();
+    final menuItemCount = viewModel.hasMenu ? viewModel.totalRecipeCount : 0;
 
     return PopScope(
       canPop: false,
@@ -100,8 +111,14 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       },
       child: LayoutComponents.mainMenu(
         currentIndex: 2,
-        title: 'Veckomeny',
-        actions: _buildActions(context, viewModel),
+        // UI Redesign: Use MainViewHeader with week badge
+        appBar: MainViewHeader(
+          title: 'veckans meny',
+          countBadge: viewModel.hasMenu
+              ? 'Vecka $weekNumber · $menuItemCount rätter'
+              : 'Vecka $weekNumber',
+          actions: _buildHeaderActions(context, viewModel),
+        ),
         body: _buildBody(context, viewModel),
         floatingActionButton: viewModel.hasMenu
             ? ActionButtons.actionButton(
@@ -119,30 +136,21 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     );
   }
 
-  List<Widget> _buildActions(BuildContext context, MenuViewModel viewModel) {
+  List<Widget> _buildHeaderActions(BuildContext context, MenuViewModel viewModel) {
     return [
       // Load menu button
       IconButton(
-        icon: Icon(Icons.folder_open,
-            size: AppDimensions.iconSizeAction,
-            color:
-                Theme.of(context).colorScheme.onSurface.withValues(alpha: AppDimensions.opacityDark)),
+        icon: const Icon(Icons.folder_open, color: AppColors.headerForeground),
         onPressed: () => VeckomenyDialogs.showLoadMenuBottomSheet(
           context,
           viewModel: viewModel,
         ),
         tooltip: 'Ladda sparad meny',
       ),
-
       // Save menu button (only when menu exists)
       if (viewModel.hasMenu)
         IconButton(
-          icon: Icon(Icons.save,
-              size: AppDimensions.iconSizeAction,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: AppDimensions.opacityDark)),
+          icon: const Icon(Icons.save, color: AppColors.headerForeground),
           onPressed: () => VeckomenyDialogs.showSaveMenuDialog(
             context,
             viewModel: viewModel,
@@ -150,58 +158,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           ),
           tooltip: 'Spara meny',
         ),
-
-      // Social share button
-      if (viewModel.hasMenu)
-        IconButton(
-          icon: Icon(Icons.people_outline,
-              size: AppDimensions.iconSizeAction,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: AppDimensions.opacityDark)),
-          onPressed: () => VeckomenyDialogs.showSocialMenuShareDialog(
-            context,
-            menuViewModel: viewModel,
-            friendsService: _friendsService,
-          ),
-          tooltip: _friendsService.friends.isEmpty
-              ? 'Lagg till vanner for att dela'
-              : 'Dela med vanner',
-        ),
-
-      // Regular share button
-      if (viewModel.hasMenu)
-        IconButton(
-          icon: Icon(Icons.share,
-              size: AppDimensions.iconSizeAction,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: AppDimensions.opacityDark)),
-          onPressed: _shareMenu,
-          tooltip: 'Dela veckomeny',
-        ),
-
       // Clear menu button
       if (viewModel.hasMenu)
         IconButton(
-          icon: Icon(Icons.clear,
-              size: AppDimensions.iconSizeAction,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: AppDimensions.opacityDark)),
+          icon: const Icon(Icons.clear, color: AppColors.headerForeground),
           onPressed: _clearMenu,
           tooltip: 'Rensa meny',
-        ),
-
-      // Error indicator
-      if (viewModel.hasError)
-        IconButton(
-          icon: const Icon(Icons.error, color: AppColors.error),
-          onPressed: () => SnackBarUtils.showError(context, viewModel.error!),
-          tooltip: 'Visa fel',
         ),
     ];
   }
