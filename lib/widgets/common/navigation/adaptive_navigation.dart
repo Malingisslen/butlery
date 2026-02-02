@@ -1,7 +1,11 @@
 // lib/widgets/common/navigation/adaptive_navigation.dart
+//
+// UI Redesign: Updated to 4 nav items (removed Upptäck to avatar menu)
+// Uses forest green background with rust indicator for selected item
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
@@ -133,8 +137,9 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
   }
 
   Widget _buildBottomNavigation(BuildContext context) {
-    return BottomNavigationBar(
+    return ButleryBottomNavigation(
       currentIndex: currentIndex,
+      items: items,
       onTap: (index) {
         if (onNavigationChanged != null) {
           onNavigationChanged!(index);
@@ -142,15 +147,6 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
           _navigateToRoute(context, items[index].route, currentIndex, index);
         }
       },
-      type: BottomNavigationBarType.fixed,
-      items: items.map((item) {
-        return BottomNavigationBarItem(
-          icon: _buildBadgedIcon(item.icon, item.badgeCount),
-          activeIcon: _buildBadgedIcon(item.activeIcon, item.badgeCount),
-          label: item.label,
-          tooltip: item.accessibleLabel,
-        );
-      }).toList(),
     );
   }
 
@@ -242,41 +238,36 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
     this.floatingActionButton,
   });
 
+  /// Navigation items for the bottom bar (4 items).
+  /// Note: "Upptäck" was moved to the avatar menu in the UI redesign.
   static List<AdaptiveNavigationItem> get _navigationItems => [
         AdaptiveNavigationItem(
-          label: 'Mina recept',
+          label: 'recept',
           icon: AdaptiveIcons.bookOutlined,
           activeIcon: AdaptiveIcons.book,
           route: '/',
           semanticLabel: 'Navigera till mina recept',
         ),
         AdaptiveNavigationItem(
-          label: 'Lägg till',
+          label: 'lägg till',
           icon: AdaptiveIcons.addOutlined,
           activeIcon: AdaptiveIcons.add,
           route: '/laggTill',
           semanticLabel: 'Lägg till nytt recept',
         ),
         AdaptiveNavigationItem(
-          label: 'Veckomeny',
+          label: 'meny',
           icon: AdaptiveIcons.calendarOutlined,
           activeIcon: AdaptiveIcons.calendar,
           route: '/veckomeny',
           semanticLabel: 'Navigera till veckomeny',
         ),
         AdaptiveNavigationItem(
-          label: 'Inköpslista',
+          label: 'inköp',
           icon: AdaptiveIcons.cartOutlined,
           activeIcon: AdaptiveIcons.cart,
           route: '/inkopslista',
           semanticLabel: 'Navigera till inköpslista',
-        ),
-        AdaptiveNavigationItem(
-          label: 'Upptäck',
-          icon: AdaptiveIcons.exploreOutlined,
-          activeIcon: AdaptiveIcons.explore,
-          route: '/discovery',
-          semanticLabel: 'Navigera till upptäck',
         ),
       ];
 
@@ -407,5 +398,138 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
       label: Text(badgeCount.toString()),
       child: Icon(icon),
     );
+  }
+}
+
+/// Custom bottom navigation bar with Butlery styling.
+///
+/// Features:
+/// - Forest green background
+/// - Rust indicator for selected item
+/// - Josefin Sans lowercase labels
+class ButleryBottomNavigation extends StatelessWidget {
+  const ButleryBottomNavigation({
+    super.key,
+    required this.currentIndex,
+    required this.items,
+    required this.onTap,
+  });
+
+  final int currentIndex;
+  final List<AdaptiveNavigationItem> items;
+  final ValueChanged<int> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: AppColors.navBackground,
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 56 + AppDimensions.spacingXs, // Standard nav height + indicator
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: items.asMap().entries.map((entry) {
+              final index = entry.key;
+              final item = entry.value;
+              final isSelected = index == currentIndex;
+
+              return Expanded(
+                child: _BottomNavItem(
+                  item: item,
+                  isSelected: isSelected,
+                  onTap: () => onTap(index),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomNavItem extends StatelessWidget {
+  const _BottomNavItem({
+    required this.item,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final AdaptiveNavigationItem item;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isSelected
+        ? AppColors.navSelectedItem
+        : AppColors.navUnselectedItem;
+
+    return Semantics(
+      label: item.accessibleLabel,
+      button: true,
+      selected: isSelected,
+      child: InkWell(
+        onTap: onTap,
+        splashColor: AppColors.cardWhite.withValues(alpha: 0.1),
+        highlightColor: AppColors.cardWhite.withValues(alpha: 0.05),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Rust indicator bar at top when selected
+            AnimatedContainer(
+              duration: AppDimensions.animationDurationFast,
+              height: 3,
+              width: isSelected ? 24 : 0,
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.navSelectedIndicator : Colors.transparent,
+                borderRadius: BorderRadius.circular(1.5),
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingXs),
+            // Icon with optional badge
+            _buildIcon(color),
+            const SizedBox(height: AppDimensions.spacingXxs),
+            // Label in Josefin Sans lowercase
+            Text(
+              item.label.toLowerCase(),
+              style: AppTextStyles.navLabel.copyWith(
+                color: color,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIcon(Color color) {
+    final iconData = isSelected ? item.activeIcon : item.icon;
+
+    Widget icon = Icon(
+      iconData,
+      color: color,
+      size: AppDimensions.iconSizeL,
+    );
+
+    if (item.badgeCount != null && item.badgeCount! > 0) {
+      icon = Badge(
+        label: Text(
+          item.badgeCount.toString(),
+          style: const TextStyle(fontSize: 10),
+        ),
+        backgroundColor: AppColors.rust,
+        child: icon,
+      );
+    }
+
+    return icon;
   }
 }
