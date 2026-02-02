@@ -149,7 +149,7 @@ class SnackBarUtils {
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.forestGreen,
         textColor: AppColors.neutralLight,
         icon: Icons.info_outline,
         duration: duration ?? const Duration(seconds: 4),

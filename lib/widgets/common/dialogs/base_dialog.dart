@@ -50,7 +50,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
           ? Icon(widget.titleIcon!,
               color: widget.isDangerous
                   ? AppColors.error
-                  : widget.primaryActionColor ?? AppColors.primaryBlue,
+                  : widget.primaryActionColor ?? AppColors.forestGreen,
               size: AppDimensions.iconSizeXxl)
           : null,
       title: Text(widget.title),
@@ -87,7 +87,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
   Widget _buildPrimaryButton() {
     final buttonColor = widget.isDangerous
         ? AppColors.error
-        : (widget.primaryActionColor ?? AppColors.primaryBlue);
+        : (widget.primaryActionColor ?? AppColors.forestGreen);
     if (widget.isDangerous) {
       return FilledButton.icon(
         onPressed: _isLoading ? null : _onPrimaryAction,
@@ -191,7 +191,7 @@ abstract class BaseFormDialog<T> extends BaseDialog<T> {
     super.primaryActionText = 'Spara',
     super.secondaryActionText = 'Avbryt',
     super.primaryActionIcon = Icons.save,
-    super.primaryActionColor = AppColors.primaryBlue,
+    super.primaryActionColor = AppColors.forestGreen,
   });
 
   List<Widget> buildFormFields(BuildContext context);

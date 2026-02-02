@@ -32,7 +32,7 @@ void main() {
       return MaterialApp(
         locale: const Locale('sv', 'SE'),
         theme: ThemeData(
-          primaryColor: AppColors.primaryBlue,
+          primaryColor: AppColors.forestGreen,
           scaffoldBackgroundColor: Colors.white,
         ),
         home: MediaQuery(
@@ -166,7 +166,7 @@ void main() {
               widget is Container &&
               widget.decoration is BoxDecoration &&
               (widget.decoration as BoxDecoration).color ==
-                  AppColors.primaryBlue &&
+                  AppColors.forestGreen &&
               (widget.decoration as BoxDecoration).shape == BoxShape.circle &&
               widget.constraints?.maxWidth == AppDimensions.spacingSm,
         );
@@ -198,7 +198,7 @@ void main() {
 
         // Timestamp should be primary color
         final timestampText = tester.widget<Text>(find.text('12:34'));
-        expect(timestampText.style?.color, equals(AppColors.primaryBlue));
+        expect(timestampText.style?.color, equals(AppColors.forestGreen));
       });
 
       testWidgets('shows normal styling for read conversations',

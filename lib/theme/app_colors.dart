@@ -49,11 +49,6 @@ class AppColors {
   static const Color cardWhite = Color(0xFFFFFFFF);
   static const Color cardWhite54 = Color(0x8AFFFFFF); // 54% opacity white
 
-  // Legacy aliases for backward compatibility during migration
-  static const Color primaryBlue = forestGreen;
-  static const Color darkNavy = forestGreenDark;
-  static const Color backgroundBeige = cream;
-
   // ============================================================
   // TEXT COLORS
   // ============================================================

@@ -34,8 +34,8 @@ class DiscoveryAppBar {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.primaryBlue,
-                AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryDark),
+                AppColors.forestGreen,
+                AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryDark),
               ],
             ),
           ),

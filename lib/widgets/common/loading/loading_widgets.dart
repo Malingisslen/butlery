@@ -38,7 +38,7 @@ class LoadingWidgets {
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                      AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
                 ),
               ),
               if (loadingMessage != null) ...[

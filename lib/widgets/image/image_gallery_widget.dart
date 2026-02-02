@@ -169,7 +169,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: const BoxDecoration(
-        color: AppColors.primaryBlue,
+        color: AppColors.forestGreen,
         borderRadius: BorderRadius.vertical(
             top: Radius.circular(AppDimensions.borderRadius16)),
       ),
@@ -177,7 +177,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
         children: [
           const Icon(
             Icons.check_circle,
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
           Text(
@@ -192,7 +192,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             child: Text(
               'Cancel',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
               ),
             ),
           ),
@@ -226,13 +226,13 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                 const Icon(
                   Icons.add_photo_alternate_outlined,
                   size: AppDimensions.iconSizeXl,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                 ),
                 const SizedBox(height: AppDimensions.spacingXs),
                 Text(
                   'Add',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.primaryBlue,
+                    color: AppColors.forestGreen,
                   ),
                 ),
               ],
@@ -256,7 +256,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             borderRadius: widget.config.effectiveBorderRadius,
             border: Border.all(
               color: isSelected
-                  ? AppColors.primaryBlue
+                  ? AppColors.forestGreen
                   : AppColors.divider.withValues(alpha: AppDimensions.opacityLight),
               width: isSelected ? 2 : 1,
             ),
@@ -285,7 +285,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                   // Selection overlay
                   if (isSelected)
                     Container(
-                      color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
+                      color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLight),
                     ),
                 ],
               ),
@@ -303,7 +303,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected
-                    ? AppColors.primaryBlue
+                    ? AppColors.forestGreen
                     : AppColors.cardWhite.withValues(alpha: AppDimensions.opacityVeryDark),
                 border: Border.all(
                   color: AppColors.divider.withValues(alpha: AppDimensions.opacityMediumLight),

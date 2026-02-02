@@ -55,7 +55,7 @@ class EmptyImageState extends StatelessWidget {
         height: AppDimensions.iconSizeXl,
         child: CircularProgressIndicator(
           strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
         ),
       ),
       const SizedBox(height: AppDimensions.spacingSm),
@@ -74,12 +74,12 @@ class EmptyImageState extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+          color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
         ),
         child: const Icon(
           Icons.add_photo_alternate_outlined,
           size: AppDimensions.iconSizeXl,
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         ),
       ),
       const SizedBox(height: AppDimensions.spacingSm),

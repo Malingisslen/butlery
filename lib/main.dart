@@ -200,7 +200,7 @@ class _ErrorApp extends StatelessWidget {
       title: 'Butlery - Error',
       theme: AppTheme.lightTheme,
       home: Scaffold(
-        backgroundColor: AppColors.backgroundBeige,
+        backgroundColor: AppColors.cream,
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppDimensions.spacingL),
@@ -612,7 +612,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       title: 'Butlery',
       theme: AppTheme.lightTheme,
       home: Scaffold(
-        backgroundColor: AppColors.backgroundBeige,
+        backgroundColor: AppColors.cream,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -621,7 +621,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                 width: AppDimensions.iconSizeHero,
                 height: AppDimensions.iconSizeHero,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                   borderRadius: BorderRadius.circular(
                     AppDimensions.borderRadiusL,
                   ),

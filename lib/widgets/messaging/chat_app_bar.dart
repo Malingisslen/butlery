@@ -37,7 +37,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       title: _buildTitle(),
-      backgroundColor: AppColors.primaryBlue,
+      backgroundColor: AppColors.forestGreen,
       foregroundColor: AppColors.cardWhite,
       actions: [
         PopupMenuButton<String>(

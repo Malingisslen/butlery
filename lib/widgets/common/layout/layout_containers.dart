@@ -86,7 +86,7 @@ class BottomActionContainer extends StatelessWidget {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.backgroundBeige,
+        color: backgroundColor ?? AppColors.cream,
         border: Border(
           top: BorderSide(
             color: borderColor ?? AppColors.divider,

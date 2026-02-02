@@ -215,9 +215,9 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
               ),
               child: TabBar(
                 controller: _tabController,
-                labelColor: AppColors.primaryBlue,
+                labelColor: AppColors.forestGreen,
                 unselectedLabelColor: AppColors.textMedium,
-                indicatorColor: AppColors.primaryBlue,
+                indicatorColor: AppColors.forestGreen,
                 tabs: const [
                   Tab(text: 'Taggar'),
                   Tab(text: 'Regler'),
@@ -248,7 +248,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
       children: [
         const Icon(
           Icons.local_offer_outlined,
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
           size: AppDimensions.iconSizeAction,
         ),
         const SizedBox(width: AppDimensions.spacingM),
@@ -360,11 +360,11 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
+          color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLightSubtle),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
         child: const Center(
-          child: Icon(Icons.label, size: AppDimensions.iconSizeM, color: AppColors.primaryBlue),
+          child: Icon(Icons.label, size: AppDimensions.iconSizeM, color: AppColors.forestGreen),
         ),
       ),
       title: Row(
@@ -379,7 +379,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             Container(
               padding: AppDimensions.paddingSymmetric8x2,
               decoration: BoxDecoration(
-                color: AppColors.backgroundBeige,
+                color: AppColors.cream,
                 borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
               ),
               child: Text(
@@ -400,7 +400,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
         children: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
             onPressed: () => _editTag(tag),
             tooltip: 'Redigera',
           ),
@@ -567,7 +567,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           value: tag.id,
           child: Row(
             children: [
-              const Icon(Icons.label, size: AppDimensions.iconSizeXs, color: AppColors.primaryBlue),
+              const Icon(Icons.label, size: AppDimensions.iconSizeXs, color: AppColors.forestGreen),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(tag.name),
             ],
@@ -607,13 +607,13 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
+                  color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLightSubtle),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: const Center(
                   child:
-                      Icon(Icons.label, size: AppDimensions.iconSize14, color: AppColors.primaryBlue),
+                      Icon(Icons.label, size: AppDimensions.iconSize14, color: AppColors.forestGreen),
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingS),
@@ -626,7 +626,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
               // Add rule button for this tag
               IconButton(
                 icon: const Icon(Icons.add, size: AppDimensions.iconSizeM),
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
                 onPressed: () => _createRule(tag.id),
                 tooltip: 'Lägg till regel',
               ),
@@ -670,12 +670,12 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           Switch(
             value: rule.isEnabled,
             onChanged: (_) => viewModel.toggleRuleEnabled(tagId, rule.id),
-            activeTrackColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityHalf),
-            activeThumbColor: AppColors.primaryBlue,
+            activeTrackColor: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityHalf),
+            activeThumbColor: AppColors.forestGreen,
           ),
           IconButton(
             icon: const Icon(Icons.edit_outlined, size: AppDimensions.iconSizeM),
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
             onPressed: () => _editRule(tagId, rule),
             tooltip: 'Redigera',
             constraints: const BoxConstraints(minWidth: 36, minHeight: 36),

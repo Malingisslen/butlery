@@ -123,7 +123,7 @@ class TagResultDisplay extends StatelessWidget {
               child: Text(
                 'Uppdatera',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -143,7 +143,7 @@ class TagResultDisplay extends StatelessWidget {
           children: [
             Icon(
               Icons.shield_outlined,
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
               size: compact
                   ? AppDimensions.iconSizeS
                   : AppDimensions.iconSizeAction,
@@ -193,7 +193,7 @@ class TagResultDisplay extends StatelessWidget {
           children: [
             Icon(
               Icons.restaurant_outlined,
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
               size: compact
                   ? AppDimensions.iconSizeS
                   : AppDimensions.iconSizeAction,
@@ -235,7 +235,7 @@ class TagResultDisplay extends StatelessWidget {
           children: [
             Icon(
               Icons.analytics_outlined,
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
               size: compact
                   ? AppDimensions.iconSizeS
                   : AppDimensions.iconSizeAction,

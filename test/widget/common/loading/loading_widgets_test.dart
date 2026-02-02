@@ -192,7 +192,7 @@ void main() {
         expect(progressIndicator.strokeWidth, equals(2));
         final valueColor =
             progressIndicator.valueColor as AlwaysStoppedAnimation<Color>;
-        expect(valueColor.value, equals(AppColors.primaryBlue));
+        expect(valueColor.value, equals(AppColors.forestGreen));
       });
 
       testWidgets('should transition from loading to not loading',

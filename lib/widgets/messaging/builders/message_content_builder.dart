@@ -144,7 +144,7 @@ class MessageContentBuilder {
               icon,
               color: isFromCurrentUser
                   ? AppColors.cardWhite
-                  : AppColors.primaryBlue,
+                  : AppColors.forestGreen,
               size: AppDimensions.iconSizeM,
             ),
           ),
@@ -158,7 +158,7 @@ class MessageContentBuilder {
                   style: AppTextStyles.labelMedium.copyWith(
                     color: isFromCurrentUser
                         ? AppColors.cardWhite
-                        : AppColors.primaryBlue,
+                        : AppColors.forestGreen,
                   ),
                 ),
                 Text(
@@ -274,7 +274,7 @@ class MessageContentBuilder {
             ? CircularProgressIndicator(
                 color: isFromCurrentUser
                     ? AppColors.cardWhite
-                    : AppColors.primaryBlue,
+                    : AppColors.forestGreen,
               )
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -314,7 +314,7 @@ class MessageContentBuilder {
           Icon(
             Icons.play_arrow,
             color:
-                isFromCurrentUser ? AppColors.cardWhite : AppColors.primaryBlue,
+                isFromCurrentUser ? AppColors.cardWhite : AppColors.forestGreen,
           ),
           const SizedBox(width: AppDimensions.paddingS),
           Text(

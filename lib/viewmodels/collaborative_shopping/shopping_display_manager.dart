@@ -25,7 +25,7 @@ class ShoppingDisplayManager {
   Color getProgressColor(double completionPercentage) {
     if (completionPercentage == 100) return AppColors.success;
     if (completionPercentage > 50) return AppColors.warning;
-    return AppColors.primaryBlue;
+    return AppColors.forestGreen;
   }
 
   String? getItemSubtitle(UnifiedShoppingItem item) {

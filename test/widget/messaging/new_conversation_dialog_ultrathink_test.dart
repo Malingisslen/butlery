@@ -44,7 +44,7 @@ void main() {
       return MaterialApp(
         locale: const Locale('sv', 'SE'),
         theme: ThemeData(
-          primaryColor: AppColors.primaryBlue,
+          primaryColor: AppColors.forestGreen,
           scaffoldBackgroundColor: Colors.white,
         ),
         home: MediaQuery(

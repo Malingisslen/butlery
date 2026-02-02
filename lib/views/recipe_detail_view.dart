@@ -89,9 +89,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           return Scaffold(
             appBar: AppBar(
               title: const Text('Tar bort recept...'),
-              backgroundColor: AppColors.backgroundBeige,
+              backgroundColor: AppColors.cream,
             ),
-            backgroundColor: AppColors.backgroundBeige,
+            backgroundColor: AppColors.cream,
             body: const Center(
               child: CircularProgressIndicator(),
             ),
@@ -102,7 +102,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         final bottomPadding = MediaQuery.of(context).padding.bottom;
 
         return Scaffold(
-          backgroundColor: AppColors.backgroundBeige,
+          backgroundColor: AppColors.cream,
           body: CustomScrollView(
             slivers: [
               // App bar with recipe title and actions
@@ -127,7 +127,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       vertical: AppDimensions.paddingS,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundBeige.withValues(alpha: AppDimensions.opacityExtraDark),
+                      color: AppColors.cream.withValues(alpha: AppDimensions.opacityExtraDark),
                       borderRadius:
                           BorderRadius.circular(AppDimensions.borderRadiusM),
                     ),

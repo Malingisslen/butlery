@@ -22,7 +22,7 @@ void main() {
         theme: ThemeData(
           primarySwatch: Colors.blue,
           colorScheme: ColorScheme.light(
-            primary: AppColors.primaryBlue,
+            primary: AppColors.forestGreen,
             error: AppColors.error,
           ),
         ),

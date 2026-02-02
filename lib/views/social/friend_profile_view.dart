@@ -34,7 +34,7 @@ class FriendProfileView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(friend.displayName),
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.forestGreen,
         foregroundColor: AppColors.neutralLight,
       ),
       body: SafeArea(
@@ -233,14 +233,14 @@ class FriendProfileView extends StatelessWidget {
       children: [
         Icon(
           icon,
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
           size: AppDimensions.iconSizeXl,
         ),
         const SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
           style: AppTextStyles.headlineMedium.copyWith(
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
           ),
         ),
         Text(

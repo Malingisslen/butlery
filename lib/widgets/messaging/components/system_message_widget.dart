@@ -76,7 +76,7 @@ class ReplyPreviewWidget extends StatelessWidget {
             style: AppTextStyles.labelMedium.copyWith(
               color: isFromCurrentUser
                   ? AppColors.cardWhite.withValues(alpha: AppDimensions.opacityVeryDark)
-                  : AppColors.primaryBlue,
+                  : AppColors.forestGreen,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXxs),
@@ -126,7 +126,7 @@ class MessageAvatarWidget extends StatelessWidget {
     return Center(
       child: Text(
         displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-        style: AppTextStyles.labelMedium.copyWith(color: AppColors.primaryBlue),
+        style: AppTextStyles.labelMedium.copyWith(color: AppColors.forestGreen),
       ),
     );
   }

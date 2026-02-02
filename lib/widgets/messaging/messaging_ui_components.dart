@@ -122,7 +122,7 @@ class SearchBarContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
-      color: AppColors.backgroundBeige,
+      color: AppColors.cream,
       child: child,
     );
   }

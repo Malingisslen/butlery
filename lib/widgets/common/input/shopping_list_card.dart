@@ -40,7 +40,7 @@ class ShoppingListCard extends StatelessWidget {
       child: Material(
         elevation: AppDimensions.elevationMedium,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        color: isSelected ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight) : null,
+        color: isSelected ? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight) : null,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -148,7 +148,7 @@ class ShoppingListCard extends StatelessWidget {
             context,
             Icons.people,
             '${list.memberCount} medlemmar',
-            AppColors.primaryBlue,
+            AppColors.forestGreen,
           ),
           // User permission badge
           ..._buildUserPermissionBadge(context),
@@ -293,9 +293,9 @@ class ShoppingListCard extends StatelessWidget {
   Color _getListTypeColor() {
     switch (list.type) {
       case ShoppingListType.personal:
-        return AppColors.primaryBlue;
+        return AppColors.forestGreen;
       case ShoppingListType.collaborative:
-        return AppColors.primaryBlue;
+        return AppColors.forestGreen;
       case ShoppingListType.template:
         return AppColors.warning;
     }
@@ -319,7 +319,7 @@ class ShoppingListCard extends StatelessWidget {
     if (isOwner) {
       permissionLabel = 'Ägare';
       permissionIcon = Icons.admin_panel_settings;
-      permissionColor = AppColors.primaryBlue;
+      permissionColor = AppColors.forestGreen;
     } else {
       switch (userPermission) {
         case SharedListPermission.view:
@@ -335,7 +335,7 @@ class ShoppingListCard extends StatelessWidget {
         case SharedListPermission.admin:
           permissionLabel = 'Admin';
           permissionIcon = Icons.admin_panel_settings;
-          permissionColor = AppColors.primaryBlue;
+          permissionColor = AppColors.forestGreen;
           break;
         default:
           // If not in permissions map but is collaborative, assume edit permission

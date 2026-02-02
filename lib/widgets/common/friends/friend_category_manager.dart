@@ -73,7 +73,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor:
-                        AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                        AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingXl),

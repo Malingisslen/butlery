@@ -74,7 +74,7 @@ void main() {
             tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(decoration.color,
-            equals(AppColors.backgroundBeige.withValues(alpha: 0.8)));
+            equals(AppColors.cream.withValues(alpha: 0.8)));
       });
 
       testWidgets('handles null onPressed callback',
@@ -255,7 +255,7 @@ void main() {
         final decoration = decoratedBox.decoration as BoxDecoration;
         // Remove variant sets backgroundColor to null, so it uses the default
         expect(decoration.color,
-            equals(AppColors.backgroundBeige.withValues(alpha: 0.8)));
+            equals(AppColors.cream.withValues(alpha: 0.8)));
       });
 
       testWidgets('executes onPressed callback when remove button tapped',
@@ -393,7 +393,7 @@ void main() {
             tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(decoration.color,
-            equals(AppColors.backgroundBeige.withValues(alpha: 0.8)));
+            equals(AppColors.cream.withValues(alpha: 0.8)));
       });
     });
 

@@ -44,7 +44,7 @@ class ParticipantListWidget extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.people,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                   size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
@@ -115,12 +115,12 @@ class ParticipantListWidget extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: isCurrentUser
-            ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
+            ? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight)
             : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimensions.iconSizeAction),
         border: Border.all(
           color: isCurrentUser
-              ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight)
+              ? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityMediumLight)
               : AppColors.divider,
         ),
       ),
@@ -160,7 +160,7 @@ class ParticipantListWidget extends StatelessWidget {
                 isCurrentUser ? 'Du' : activity.displayName,
                 style: isCurrentUser
                     ? AppTextStyles.bodyLargeBold.copyWith(
-                        color: AppColors.primaryBlue,
+                        color: AppColors.forestGreen,
                       )
                     : AppTextStyles.bodyLarge,
               ),
@@ -182,14 +182,14 @@ class ParticipantListWidget extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
       ),
       child: Center(
         child: Text(
           initials,
           style: AppTextStyles.bodyLargeBold.copyWith(
             fontSize: size * 0.4,
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
           ),
         ),
       ),

@@ -118,7 +118,7 @@ class RecipeDetailContent extends StatelessWidget {
             children: [
               const Icon(
                 Icons.description_outlined,
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
@@ -185,7 +185,7 @@ class RecipeDetailContent extends StatelessWidget {
             children: [
               const Icon(
                 Icons.local_offer_outlined,
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
@@ -209,20 +209,20 @@ class RecipeDetailContent extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: isUserAdded
-                      ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle)
-                      : AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+                      ? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLightSubtle)
+                      : AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusRound),
                   border: Border.all(
                     color: isUserAdded
-                        ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityHalf)
-                        : AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+                        ? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityHalf)
+                        : AppColors.forestGreen.withValues(alpha: AppDimensions.opacityMediumLight),
                   ),
                 ),
                 child: Text(
                   displayName,
                   style: AppTextStyles.metadataEmphasized.copyWith(
-                    color: AppColors.primaryBlue,
+                    color: AppColors.forestGreen,
                     fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
@@ -276,7 +276,7 @@ class RecipeDetailContent extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.photo_library_outlined,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                   size: AppDimensions.iconSizeAction,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
@@ -342,7 +342,7 @@ class RecipeDetailContent extends StatelessWidget {
             children: [
               const Icon(
                 Icons.format_list_numbered,
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
@@ -376,7 +376,7 @@ class RecipeDetailContent extends StatelessWidget {
                       margin: const EdgeInsetsDirectional.only(
                           end: AppDimensions.spacingS),
                       decoration: const BoxDecoration(
-                        color: AppColors.primaryBlue,
+                        color: AppColors.forestGreen,
                         shape: BoxShape.circle,
                       ),
                       child: Center(
@@ -461,7 +461,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
             children: [
               const Icon(
                 Icons.label_outline,
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
@@ -511,16 +511,16 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
+        color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLightSubtle),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
         border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Text(
         name,
         style: AppTextStyles.metadataEmphasized.copyWith(
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         ),
       ),
     );
@@ -535,16 +535,16 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
           vertical: AppDimensions.spacingXs,
         ),
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+          color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
           border: Border.all(
-            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
+            color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLight),
           ),
         ),
         child: Text(
           '+$count till',
           style: AppTextStyles.metadataEmphasized.copyWith(
-            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityDark),
+            color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityDark),
           ),
         ),
       ),

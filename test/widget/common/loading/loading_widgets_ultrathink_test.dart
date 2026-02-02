@@ -221,7 +221,7 @@ void main() {
         );
         expect(progressIndicator.strokeWidth, equals(2));
         expect(
-            progressIndicator.valueColor?.value, equals(AppColors.primaryBlue));
+            progressIndicator.valueColor?.value, equals(AppColors.forestGreen));
       });
     });
 

@@ -432,19 +432,19 @@ class SocialCollaborativeComponents {
         return const _PermissionConfig(
           icon: Icons.star,
           label: 'Ägare',
-          color: AppColors.darkNavy,
+          color: AppColors.forestGreenDark,
         );
       case 'admin':
         return const _PermissionConfig(
           icon: Icons.admin_panel_settings,
           label: 'Admin',
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         );
       case 'editor':
         return const _PermissionConfig(
           icon: Icons.edit,
           label: 'Redigera',
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         );
       case 'viewer':
         return const _PermissionConfig(

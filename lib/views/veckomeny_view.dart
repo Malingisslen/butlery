@@ -8,9 +8,9 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/indicators/pea_loading_animation.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/share_service.dart';
@@ -279,48 +279,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     );
   }
 
+  /// UI Redesign: Uses PeaLoadingAnimation for branded loading experience
   Widget _buildLoadingOverlay(BuildContext context) {
-    return ColoredBox(
-      color: AppColors.neutralDark.withValues(alpha: AppDimensions.opacityMedium),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: LayoutComponents.valueFor(
-              context: context,
-              mobile: double.infinity,
-              tablet: 500,
-              desktop: 600,
-            ),
-          ),
-          child: Container(
-            padding: AppDimensions.responsiveContentPadding(context),
-            margin: AppDimensions.responsiveContentPadding(context),
-            decoration: BoxDecoration(
-              color: AppColors.cardWhite,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(color: AppColors.divider),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(),
-                SizedBox(
-                  height: LayoutComponents.valueFor(
-                    context: context,
-                    mobile: AppDimensions.spacingM,
-                    tablet: AppDimensions.spacingL,
-                    desktop: AppDimensions.spacingL,
-                  ),
-                ),
-                Text(
-                  'Genererar meny...',
-                  style: AppTextStyles.titleMedium,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return const PeaLoadingOverlay(
+      message: 'Genererar meny...',
     );
   }
 }

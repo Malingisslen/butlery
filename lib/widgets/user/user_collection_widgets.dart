@@ -109,7 +109,7 @@ class UserCollectionWidgets {
               ElevatedButton(
                 onPressed: onAction,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
+                  backgroundColor: AppColors.forestGreen,
                   foregroundColor: AppColors.cardWhite,
                 ),
                 child: Text(actionLabel),
@@ -131,7 +131,7 @@ class UserCollectionWidgets {
     return Container(
       padding: padding ?? AppDimensions.paddingSymmetric4x2,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.primaryBlue,
+        color: backgroundColor ?? AppColors.forestGreen,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Text(

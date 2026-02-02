@@ -128,8 +128,8 @@ class CategorySelectionWidgets {
       ),
       selected: isSelected,
       onSelected: enabled ? (_) => onTap() : null,
-      backgroundColor: AppColors.backgroundBeige,
-      selectedColor: AppColors.primaryBlue,
+      backgroundColor: AppColors.cream,
+      selectedColor: AppColors.forestGreen,
       checkmarkColor: AppColors.textDark,
       labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: isSelected ? AppColors.textDark : AppColors.textMedium,
@@ -163,13 +163,13 @@ class CategorySelectionWidgets {
             decoration: BoxDecoration(
               color: isSelected
                   ? AppColors.neutralLight.withValues(alpha: AppDimensions.opacityVeryDark)
-                  : AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+                  : AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
             ),
             child: Text(
               '${category.friendCount}',
               style: AppTextStyles.badge.copyWith(
-                    color: AppColors.primaryBlue,
+                    color: AppColors.forestGreen,
                   ),
             ),
           ),
@@ -177,11 +177,11 @@ class CategorySelectionWidgets {
       ),
       selected: isSelected,
       onSelected: enabled ? (_) => onTap() : null,
-      selectedColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
-      checkmarkColor: AppColors.primaryBlue,
-      backgroundColor: AppColors.backgroundBeige,
+      selectedColor: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLight),
+      checkmarkColor: AppColors.forestGreen,
+      backgroundColor: AppColors.cream,
       side: BorderSide(
-        color: isSelected ? AppColors.primaryBlue : AppColors.textMedium,
+        color: isSelected ? AppColors.forestGreen : AppColors.textMedium,
       ),
     );
   }
@@ -238,10 +238,10 @@ class CategorySelectionWidgets {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
@@ -249,7 +249,7 @@ class CategorySelectionWidgets {
           Container(
             padding: const EdgeInsets.all(AppDimensions.spacingXs),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius6),
             ),
             child: const Icon(
@@ -266,13 +266,13 @@ class CategorySelectionWidgets {
                 Text(
                   'Valda kategorier',
                   style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.primaryBlue,
+                    color: AppColors.forestGreen,
                   ),
                 ),
                 Text(
                   '${selectedCategories.length} ${selectedCategories.length == 1 ? 'kategori' : 'kategorier'} ($totalFriends vänner)',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.primaryBlue,
+                    color: AppColors.forestGreen,
                   ),
                 ),
               ],
@@ -283,7 +283,7 @@ class CategorySelectionWidgets {
             icon: const Icon(Icons.clear, size: AppDimensions.iconSize18),
             label: const Text('Rensa'),
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.primaryBlue,
+              foregroundColor: AppColors.forestGreen,
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.spacingS,
                 vertical: AppDimensions.spacingXs,
@@ -324,7 +324,7 @@ class CategorySelectionWidgets {
             title: Text(category.name),
             subtitle: Text('${category.friendUserIds.length} vänner'),
             dense: true,
-            activeColor: AppColors.primaryBlue,
+            activeColor: AppColors.forestGreen,
           );
         }).toList(),
       ),

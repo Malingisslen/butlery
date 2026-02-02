@@ -67,7 +67,7 @@ void main() {
         expect(
             decoration.color,
             equals(
-                AppColors.backgroundBeige.withValues(alpha: 0.8))); // Line 37
+                AppColors.cream.withValues(alpha: 0.8))); // Line 37
         expect(
             decoration.borderRadius,
             equals(
@@ -239,7 +239,7 @@ void main() {
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(
             decoration.color,
-            equals(AppColors.backgroundBeige
+            equals(AppColors.cream
                 .withValues(alpha: 0.8))); // Default applied
 
         // Verify callback works
@@ -293,7 +293,7 @@ void main() {
     });
 
     group('Theme Integration Tests', () {
-      testWidgets('applies default AppColors.backgroundBeige with alpha',
+      testWidgets('applies default AppColors.cream with alpha',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code default theme colors from line 37
         const testChild = Icon(Icons.palette);
@@ -308,12 +308,12 @@ void main() {
 
         expect(tester.takeException(), isNull);
 
-        // ULTRATHINK: Should use default AppColors.backgroundBeige.withValues(alpha: 0.8)
+        // ULTRATHINK: Should use default AppColors.cream.withValues(alpha: 0.8)
         final decoratedBox =
             tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(decoration.color,
-            equals(AppColors.backgroundBeige.withValues(alpha: 0.8)));
+            equals(AppColors.cream.withValues(alpha: 0.8)));
       });
 
       testWidgets('applies AppDimensions.borderRadiusM for border radius',

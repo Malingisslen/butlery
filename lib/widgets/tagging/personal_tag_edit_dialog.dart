@@ -230,7 +230,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
       children: [
         Icon(
           _isEditing ? Icons.edit_outlined : Icons.add_circle_outline,
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
           size: AppDimensions.iconSizeAction,
         ),
         const SizedBox(width: AppDimensions.spacingM),
@@ -302,10 +302,10 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
             vertical: AppDimensions.paddingS,
           ),
           decoration: BoxDecoration(
-            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
+            color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLightSubtle),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             border: Border.all(
-              color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+              color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityMediumLight),
             ),
           ),
           child: Row(
@@ -314,7 +314,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
               const Icon(
                 Icons.label,
                 size: AppDimensions.iconSizeS,
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(

@@ -140,7 +140,7 @@ class AvatarImageWidget extends StatelessWidget {
               padding: const EdgeInsets.all(AppDimensions.spacingXs),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
                 border: Border.all(
                   color: AppColors.cardWhite,
                   width: 2,
@@ -195,8 +195,8 @@ class AvatarImageWidget extends StatelessWidget {
         shape: BoxShape.circle,
         gradient: LinearGradient(
           colors: [
-            AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryDark),
-            AppColors.primaryBlue,
+            AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryDark),
+            AppColors.forestGreen,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -324,7 +324,7 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.primaryBlue,
+                      AppColors.forestGreen,
                     ),
                   ),
                 ),

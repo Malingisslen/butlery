@@ -292,7 +292,7 @@ abstract class BaseActionHandler {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.forestGreen,
         duration: const Duration(seconds: 3),
       ),
     );

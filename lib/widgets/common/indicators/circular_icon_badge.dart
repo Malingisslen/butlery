@@ -26,7 +26,7 @@ class CircularIconBadge extends StatelessWidget {
     super.key,
     this.size,
   })  : icon = Icons.add,
-        backgroundColor = AppColors.primaryBlue,
+        backgroundColor = AppColors.forestGreen,
         iconColor = AppColors.cardWhite;
 
   @override
@@ -37,7 +37,7 @@ class CircularIconBadge extends StatelessWidget {
       width: badgeSize,
       height: badgeSize,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.primaryBlue,
+        color: backgroundColor ?? AppColors.forestGreen,
         shape: BoxShape.circle,
       ),
       child: Icon(

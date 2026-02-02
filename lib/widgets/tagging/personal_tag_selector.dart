@@ -133,7 +133,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
                   icon: const Icon(Icons.settings, size: AppDimensions.iconSize18),
                   label: const Text('Hantera'),
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.primaryBlue,
+                    foregroundColor: AppColors.forestGreen,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingS,
                     ),
@@ -180,7 +180,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.backgroundBeige,
+        color: AppColors.cream,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(color: AppColors.divider),
       ),
@@ -282,20 +282,20 @@ class _PersonalTagChip extends StatelessWidget {
         label: Text(tag.name),
         selected: isSelected,
         onSelected: (_) => onTap(),
-        backgroundColor: AppColors.backgroundBeige,
-        selectedColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
-        checkmarkColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.cream,
+        selectedColor: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLight),
+        checkmarkColor: AppColors.forestGreen,
         side: BorderSide(
-          color: isSelected ? AppColors.primaryBlue : AppColors.divider,
+          color: isSelected ? AppColors.forestGreen : AppColors.divider,
         ),
         labelStyle: AppTextStyles.bodySmall.copyWith(
-          color: isSelected ? AppColors.primaryBlue : AppColors.textDark,
+          color: isSelected ? AppColors.forestGreen : AppColors.textDark,
           fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
         ),
         avatar: isSelected
             ? null
             : const Icon(Icons.label_outline,
-                size: AppDimensions.iconSize14, color: AppColors.primaryBlue),
+                size: AppDimensions.iconSize14, color: AppColors.forestGreen),
         showCheckmark: isSelected,
       ),
     );
@@ -347,7 +347,7 @@ class PersonalTagDisplay extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingS, vertical: AppDimensions.spacingXs),
             decoration: BoxDecoration(
-              color: AppColors.backgroundBeige,
+              color: AppColors.cream,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
             ),
             child: Text(
@@ -373,21 +373,21 @@ class _MiniTagChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingS, vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
+          color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLightSubtle),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           border: Border.all(
-            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+            color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityMediumLight),
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.label, size: AppDimensions.iconSizeXs, color: AppColors.primaryBlue),
+            const Icon(Icons.label, size: AppDimensions.iconSizeXs, color: AppColors.forestGreen),
             const SizedBox(width: AppDimensions.spacingXxs),
             Text(
               tag.name,
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
               ),
             ),
           ],
@@ -413,22 +413,22 @@ class _SimpleTagChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingS, vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+          color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           border: Border.all(
-            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+            color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityMediumLight),
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.label_outline,
-                size: AppDimensions.iconSizeXs, color: AppColors.primaryBlue),
+                size: AppDimensions.iconSizeXs, color: AppColors.forestGreen),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               name,
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
               ),
             ),
           ],
@@ -582,7 +582,7 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingS, vertical: AppDimensions.spacingXs),
             decoration: BoxDecoration(
-              color: AppColors.backgroundBeige,
+              color: AppColors.cream,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
             ),
             child: Text(

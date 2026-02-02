@@ -132,7 +132,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.primaryBlue,
+                        AppColors.forestGreen,
                       ),
                     ),
                   ),
@@ -150,12 +150,12 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     padding: const EdgeInsets.all(AppDimensions.spacingMd),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+                      color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
                     ),
                     child: const Icon(
                       Icons.add_photo_alternate_outlined,
                       size: AppDimensions.iconSizeXl,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.forestGreen,
                     ),
                   ),
                   const SizedBox(

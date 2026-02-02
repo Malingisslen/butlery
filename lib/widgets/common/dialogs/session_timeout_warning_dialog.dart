@@ -171,7 +171,7 @@ class _SessionTimeoutWarningDialogState
         FilledButton(
           onPressed: _handleExtendSession,
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: AppColors.forestGreen,
           ),
           child: Text(
             'Fortsätt session',

@@ -148,7 +148,7 @@ class CommonDialogActions {
       message: 'Vill du dela $itemType med $recipients?',
       confirmText: context.l10n.commonShare,
       icon: AdaptiveIcons.share,
-      confirmColor: AppColors.primaryBlue,
+      confirmColor: AppColors.forestGreen,
     );
   }
 
@@ -301,7 +301,7 @@ class _ActionConfirmationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final buttonColor =
-        isDangerous ? AppColors.error : (confirmColor ?? AppColors.primaryBlue);
+        isDangerous ? AppColors.error : (confirmColor ?? AppColors.forestGreen);
 
     return AlertDialog(
       icon: icon != null
