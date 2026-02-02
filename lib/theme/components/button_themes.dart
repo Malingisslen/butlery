@@ -1,4 +1,10 @@
 /// Button theme configurations for Material Design 3.
+///
+/// **UI Redesign:**
+/// - Primary buttons: Forest green background
+/// - Secondary buttons: White with forest green border
+/// - Danger buttons: Error red (NOT rust)
+/// - FAB: Forest green
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -10,14 +16,14 @@ class ButtonThemes {
   /// Private constructor
   ButtonThemes._();
 
-  /// Elevated button theme
+  /// Elevated button theme - Forest green primary
   static ElevatedButtonThemeData get elevatedButtonTheme {
     return ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.forestGreen,
         foregroundColor: AppColors.cardWhite,
-        elevation: 2,
-        shadowColor: Colors.black26,
+        elevation: 0, // Flat design
+        shadowColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         ),
@@ -31,11 +37,11 @@ class ButtonThemes {
     );
   }
 
-  /// Filled button theme
+  /// Filled button theme - Forest green
   static FilledButtonThemeData get filledButtonTheme {
     return FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.forestGreen,
         foregroundColor: AppColors.cardWhite,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
@@ -50,15 +56,15 @@ class ButtonThemes {
     );
   }
 
-  /// Outlined button theme
+  /// Outlined button theme - Forest green border
   static OutlinedButtonThemeData get outlinedButtonTheme {
     return OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primaryBlue,
+        foregroundColor: AppColors.forestGreen,
         backgroundColor: AppColors.transparent,
         side: const BorderSide(
-          color: AppColors.primaryBlue,
-          width: 1,
+          color: AppColors.forestGreen,
+          width: 1.5,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
@@ -73,11 +79,11 @@ class ButtonThemes {
     );
   }
 
-  /// Text button theme
+  /// Text button theme - Forest green text
   static TextButtonThemeData get textButtonTheme {
     return TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: AppColors.primaryBlue,
+        foregroundColor: AppColors.forestGreen,
         backgroundColor: AppColors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
@@ -105,22 +111,23 @@ class ButtonThemes {
     );
   }
 
-  /// Floating action button theme
+  /// Floating action button theme - Forest green
   static FloatingActionButtonThemeData get floatingActionButtonTheme {
     return const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.primaryBlue,
+      backgroundColor: AppColors.forestGreen,
       foregroundColor: AppColors.cardWhite,
-      elevation: 6,
-      highlightElevation: 8,
+      elevation: 4,
+      highlightElevation: 6,
       shape: CircleBorder(),
       iconSize: AppDimensions.iconSizeL,
     );
   }
 
-  /// Primary button style
+  /// Primary button style - Forest green
   static ButtonStyle get primaryButtonStyle => ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.forestGreen,
         foregroundColor: AppColors.cardWhite,
+        elevation: 0,
         padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingL,
             vertical: AppDimensions.paddingM),
@@ -128,9 +135,9 @@ class ButtonThemes {
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
       );
 
-  /// Text button style
+  /// Text button style - Forest green text
   static ButtonStyle get textButtonStyle => TextButton.styleFrom(
-        foregroundColor: AppColors.primaryBlue,
+        foregroundColor: AppColors.forestGreen,
         padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingL,
             vertical: AppDimensions.paddingM),
@@ -138,11 +145,12 @@ class ButtonThemes {
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
       );
 
-  /// Secondary button style
+  /// Secondary button style - White with forest green border
   static ButtonStyle get secondaryButtonStyle => ElevatedButton.styleFrom(
         backgroundColor: AppColors.cardWhite,
-        foregroundColor: AppColors.primaryBlue,
-        side: const BorderSide(color: AppColors.primaryBlue),
+        foregroundColor: AppColors.forestGreen,
+        elevation: 0,
+        side: const BorderSide(color: AppColors.forestGreen, width: 1.5),
         padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingL,
             vertical: AppDimensions.paddingM),
@@ -150,10 +158,11 @@ class ButtonThemes {
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
       );
 
-  /// Danger button style
+  /// Danger button style - Error red (NOT rust)
   static ButtonStyle get dangerButtonStyle => ElevatedButton.styleFrom(
         backgroundColor: AppColors.error,
         foregroundColor: AppColors.cardWhite,
+        elevation: 0,
         padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingL,
             vertical: AppDimensions.paddingM),
@@ -161,19 +170,19 @@ class ButtonThemes {
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
       );
 
-  /// Outlined button style
+  /// Outlined button style - Forest green border
   static ButtonStyle get outlinedButtonStyle => OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primaryBlue,
+        foregroundColor: AppColors.forestGreen,
         backgroundColor: AppColors.transparent,
         padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingL,
             vertical: AppDimensions.paddingM),
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
-        side: const BorderSide(color: AppColors.primaryBlue, width: 1),
+        side: const BorderSide(color: AppColors.forestGreen, width: 1.5),
       );
 
-  /// Delete button style
+  /// Delete button style - Error red border (NOT rust)
   static ButtonStyle get deleteButtonStyle => OutlinedButton.styleFrom(
         foregroundColor: AppColors.error,
         backgroundColor: AppColors.transparent,
@@ -182,12 +191,12 @@ class ButtonThemes {
             vertical: AppDimensions.paddingM),
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
-        side: const BorderSide(color: AppColors.error, width: 1),
+        side: const BorderSide(color: AppColors.error, width: 1.5),
       );
 
-  /// Extended FAB style for Swedish text with proper sizing
+  /// Extended FAB style - Forest green
   static ButtonStyle get extendedFabStyle => ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.forestGreen,
         foregroundColor: AppColors.cardWhite,
         elevation: AppDimensions.elevationMedium,
         shadowColor: Colors.black26,

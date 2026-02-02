@@ -1,4 +1,10 @@
 /// Input and data display theme configurations.
+///
+/// **UI Redesign:**
+/// - Inputs: Forest green focus border
+/// - Cards: White with subtle shadow, recipe cards get left green + bottom rust borders
+/// - Chips: Pill-shaped with forest green selection
+/// - Error states use error red (NOT rust)
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -10,29 +16,30 @@ class InputThemes {
   /// Private constructor
   InputThemes._();
 
-  /// Input decoration theme
+  /// Input decoration theme - Forest green focus
   static InputDecorationTheme get inputDecorationTheme {
     return InputDecorationTheme(
-      filled: false,
+      filled: true,
+      fillColor: AppColors.cardWhite,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         borderSide: const BorderSide(
-          color: AppColors.textMedium,
+          color: AppColors.divider,
           width: 1,
         ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         borderSide: const BorderSide(
-          color: AppColors.textMedium,
+          color: AppColors.divider,
           width: 1,
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         borderSide: const BorderSide(
-          color: AppColors.primaryBlue,
-          width: 1.5,
+          color: AppColors.forestGreen,
+          width: 2,
         ),
       ),
       errorBorder: OutlineInputBorder(
@@ -46,27 +53,31 @@ class InputThemes {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         borderSide: const BorderSide(
           color: AppColors.error,
-          width: 1.5,
+          width: 2,
         ),
       ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.spacingModerate,
       ),
-      hintStyle: const TextStyle(color: AppColors.textMedium),
+      hintStyle: const TextStyle(color: AppColors.textLight),
       labelStyle: AppTextStyles.bodyMedium,
       errorStyle: AppTextStyles.errorText,
     );
   }
 
-  /// Card theme
+  /// Card theme - White with subtle shadow
   static CardThemeData get cardTheme {
     return CardThemeData(
       color: AppColors.cardWhite,
-      elevation: 1,
-      shadowColor: Colors.black12,
+      elevation: 0,
+      shadowColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        side: const BorderSide(
+          color: AppColors.divider,
+          width: 1,
+        ),
       ),
       margin: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingMd,
@@ -79,7 +90,7 @@ class InputThemes {
     return ListTileThemeData(
       tileColor: AppColors.cardWhite,
       selectedTileColor: AppColors.lightColorScheme.primaryContainer,
-      iconColor: AppColors.textMedium,
+      iconColor: AppColors.forestGreen,
       textColor: AppColors.textDark,
       titleTextStyle: AppTextStyles.listTileTitle,
       subtitleTextStyle: AppTextStyles.listTileSubtitle,
@@ -94,13 +105,15 @@ class InputThemes {
     );
   }
 
-  /// Chip theme
+  /// Chip theme - Pill-shaped with forest green selection
   static ChipThemeData get chipTheme {
     return ChipThemeData(
-      backgroundColor: AppColors.lightColorScheme.surfaceContainerHighest,
-      selectedColor: AppColors.primaryBlue,
+      backgroundColor: AppColors.creamDark,
+      selectedColor: AppColors.forestGreen,
       disabledColor: AppColors.divider,
-      labelStyle: AppTextStyles.labelMedium,
+      labelStyle: AppTextStyles.labelMedium.copyWith(
+        color: AppColors.textDark,
+      ),
       secondaryLabelStyle: AppTextStyles.labelMedium.copyWith(
         color: AppColors.cardWhite,
       ),
@@ -110,29 +123,87 @@ class InputThemes {
         vertical: AppDimensions.paddingS,
       ),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
       ),
     );
   }
 
-  /// Trending recipe card decoration
+  /// Recipe card decoration - Left green border + bottom rust border
+  static BoxDecoration get recipeCardDecoration => BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: const Border(
+          left: BorderSide(
+            color: AppColors.recipeCardLeftBorder,
+            width: 3,
+          ),
+          bottom: BorderSide(
+            color: AppColors.recipeCardBottomBorder,
+            width: 2,
+          ),
+          top: BorderSide(
+            color: AppColors.divider,
+            width: 1,
+          ),
+          right: BorderSide(
+            color: AppColors.divider,
+            width: 1,
+          ),
+        ),
+      );
+
+  /// Trending recipe card decoration - Uses new palette
   static BoxDecoration get trendingRecipeCardDecoration => BoxDecoration(
         color: AppColors.primaryContainer.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.primary.withValues(alpha: AppDimensions.opacityLight)),
+        border: Border.all(color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLight)),
       );
 
-  /// Activity timeline item decoration
+  /// Activity timeline item decoration - Uses rust accent
   static BoxDecoration get activityTimelineItemDecoration => BoxDecoration(
         color: AppColors.secondaryContainer.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.secondary.withValues(alpha: AppDimensions.opacityLight)),
+        border: Border.all(color: AppColors.rust.withValues(alpha: AppDimensions.opacityLight)),
       );
 
-  /// Empty state container decoration
+  /// Empty state container decoration - Light green background
   static BoxDecoration get emptyStateContainerDecoration => BoxDecoration(
         color: AppColors.primaryContainer.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.primary.withValues(alpha: AppDimensions.opacityLight)),
+        border: Border.all(color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLight)),
+      );
+
+  /// Search box decoration - Custom for ButlerySearchBox
+  static BoxDecoration get searchBoxDecoration => BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        border: Border.all(
+          color: AppColors.divider,
+          width: 1,
+        ),
+      );
+
+  /// Search box decoration (focused) - Green/rust accent
+  static BoxDecoration get searchBoxDecorationFocused => BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+        border: const Border(
+          left: BorderSide(
+            color: AppColors.forestGreen,
+            width: 2,
+          ),
+          bottom: BorderSide(
+            color: AppColors.rust,
+            width: 2,
+          ),
+          top: BorderSide(
+            color: AppColors.forestGreen,
+            width: 1,
+          ),
+          right: BorderSide(
+            color: AppColors.forestGreen,
+            width: 1,
+          ),
+        ),
       );
 }
