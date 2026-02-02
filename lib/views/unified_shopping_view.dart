@@ -24,6 +24,10 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_list_header.dart
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
 
+// UI Redesign header component
+import 'package:butlery/widgets/common/main_view_header.dart';
+import 'package:butlery/theme/app_colors.dart';
+
 /// Shopping list management view using facade pattern architecture.
 class UnifiedShoppingView extends StatefulWidget {
   const UnifiedShoppingView({super.key});
@@ -50,36 +54,35 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _viewModel,
-      child: LayoutComponents.mainMenu(
-        title: 'Inköpslistor',
-        currentIndex: 3,
-        actions: [
-          // Dynamic action bar with shopping operations
-          Consumer<UnifiedShoppingViewModel>(
-            builder: (context, viewModel, child) {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: ShoppingAppBar.buildActions(
-                  context,
-                  viewModel,
-                  _showCreateListDialog,
-                  _showShoppingShareDialog,
-                  _shareListExternally,
-                  () => _showSharingStatus(viewModel),
-                ),
-              );
-            },
-          ),
-        ],
-        // Floating action button for quick item addition
-        floatingActionButton: ShoppingAppBar.buildFloatingActionButton(
-          context,
-          _showAddItemDialog,
-        ),
-        body: Consumer<UnifiedShoppingViewModel>(
-          builder: (context, viewModel, child) {
-            // ✅ RESPONSIVE: Center and constrain content on large screens
-            return Center(
+      child: Consumer<UnifiedShoppingViewModel>(
+        builder: (context, viewModel, child) {
+          final itemCount = viewModel.currentList?.items.length ?? 0;
+          final uncheckedCount = viewModel.currentList?.items
+                  .where((item) => !item.isBought)
+                  .length ??
+              0;
+
+          return LayoutComponents.mainMenu(
+            currentIndex: 3,
+            // UI Redesign: Use MainViewHeader with count badge
+            appBar: MainViewHeader(
+              title: 'inkopslista',
+              countBadge: '$uncheckedCount av $itemCount artiklar',
+              actions: ShoppingAppBar.buildHeaderActions(
+                context,
+                viewModel,
+                _showCreateListDialog,
+                _showShoppingShareDialog,
+                _shareListExternally,
+                () => _showSharingStatus(viewModel),
+              ),
+            ),
+            // Floating action button for quick item addition
+            floatingActionButton: ShoppingAppBar.buildFloatingActionButton(
+              context,
+              _showAddItemDialog,
+            ),
+            body: Center(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: LayoutComponents.valueFor(
@@ -92,8 +95,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                 child: Column(
                   children: [
                     // Collaborative offline indicator for connection awareness
-                    if (!viewModel.isOnline)
-                      LayoutComponents.offlineIndicator(),
+                    if (!viewModel.isOnline) LayoutComponents.offlineIndicator(),
 
                     // Shopping list header with statistics and bulk operations
                     ShoppingListHeader.build(
@@ -120,9 +122,9 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                   ],
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

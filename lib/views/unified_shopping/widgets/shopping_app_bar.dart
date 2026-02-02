@@ -106,6 +106,63 @@ class ShoppingAppBar {
     ];
   }
 
+  /// Build header actions for MainViewHeader (UI Redesign)
+  /// Uses headerForeground color for icons
+  static List<Widget> buildHeaderActions(
+    BuildContext context,
+    UnifiedShoppingViewModel viewModel,
+    VoidCallback onCreateList,
+    VoidCallback onShowShareDialog,
+    VoidCallback onShareExternally,
+    VoidCallback onShowSyncStatus,
+  ) {
+    final canShare = viewModel.hasItems;
+
+    return [
+      // Ny lista-knapp
+      IconButton(
+        icon: Icon(
+          AdaptiveIcons.add,
+          color: AppColors.headerForeground,
+        ),
+        onPressed: onCreateList,
+        tooltip: 'Ny lista',
+      ),
+
+      // Dela med vänner-knapp (social)
+      if (canShare)
+        IconButton(
+          icon: Icon(
+            AdaptiveIcons.peopleOutlined,
+            color: AppColors.headerForeground,
+          ),
+          onPressed: onShowShareDialog,
+          tooltip: 'Dela med vänner',
+        ),
+
+      // Dela externt-knapp
+      if (canShare)
+        IconButton(
+          icon: Icon(
+            AdaptiveIcons.share,
+            color: AppColors.headerForeground,
+          ),
+          onPressed: onShareExternally,
+          tooltip: 'Dela externt',
+        ),
+
+      // Sharing status indicator
+      IconButton(
+        icon: Icon(
+          _getSharingStatusIcon(viewModel),
+          color: AppColors.headerForeground.withValues(alpha: 0.8),
+        ),
+        onPressed: onShowSyncStatus,
+        tooltip: _getSharingStatusTooltip(viewModel),
+      ),
+    ];
+  }
+
   static Widget buildFloatingActionButton(
     BuildContext context,
     VoidCallback onAddItem,
