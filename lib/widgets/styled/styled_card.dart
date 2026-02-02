@@ -131,7 +131,7 @@ class StyledCard extends StatelessWidget {
             : AppDimensions.elevationLow,
         borderRadius = AppDimensions.borderRadius8,
         showBorder = isSelected,
-        borderColor = isSelected ? AppColors.primaryBlue : null;
+        borderColor = isSelected ? AppColors.forestGreen : null;
 
   @override
   Widget build(BuildContext context) {

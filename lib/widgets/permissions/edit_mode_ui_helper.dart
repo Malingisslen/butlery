@@ -13,7 +13,7 @@ class EditModeUIHelper {
     switch (mode) {
       case EditMode.owner:
       case EditMode.edit:
-        return AppColors.primaryBlue;
+        return AppColors.forestGreen;
       case EditMode.collaborative:
         return AppColors.success;
       case EditMode.readOnlyWithFork:

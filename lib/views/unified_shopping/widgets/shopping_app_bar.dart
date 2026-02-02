@@ -161,15 +161,15 @@ class ShoppingAppBar {
   /// Get the appropriate color for sharing status based on list type and user permissions
   static Color _getSharingStatusColor(UnifiedShoppingViewModel viewModel) {
     final activeList = viewModel.activeList;
-    if (activeList == null) return AppColors.primaryBlue;
+    if (activeList == null) return AppColors.forestGreen;
 
     switch (activeList.type) {
       case ListType.personal:
-        return AppColors.primaryBlue;
+        return AppColors.forestGreen;
       case ListType.collaborative:
         final permissionService = ServiceLocator.get<PermissionService>();
         final currentUserId = permissionService.currentUser?.uid;
-        if (currentUserId == null) return AppColors.primaryBlue;
+        if (currentUserId == null) return AppColors.forestGreen;
 
         final userPermission = activeList.memberPermissions[currentUserId];
         switch (userPermission) {
@@ -178,11 +178,11 @@ class ShoppingAppBar {
           case SharedListPermission.edit:
             return AppColors.accent; // Trusted access
           case SharedListPermission.admin:
-            return AppColors.primaryBlue; // Blue for admin
+            return AppColors.forestGreen; // Blue for admin
           default:
             // If not in permissions map, check if owner (admin)
             return activeList.ownerId == currentUserId
-                ? AppColors.primaryBlue
+                ? AppColors.forestGreen
                 : AppColors.accent;
         }
       case ListType.template:

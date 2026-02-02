@@ -126,9 +126,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                                       onSelected: (_) =>
                                           viewModel.toggleTag(tag),
                                       backgroundColor: AppColors.cardWhite,
-                                      selectedColor: AppColors.primaryBlue
+                                      selectedColor: AppColors.forestGreen
                                           .withValues(alpha: AppDimensions.opacityLight),
-                                      checkmarkColor: AppColors.primaryBlue,
+                                      checkmarkColor: AppColors.forestGreen,
                                     );
                                   }).toList(),
                                 ),
@@ -195,9 +195,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
           selected: viewModel.timeFilter == TimeFilter.all,
           onSelected: (_) => viewModel.setTimeFilter(TimeFilter.all),
           backgroundColor: viewModel.timeFilter == TimeFilter.all
-              ? AppColors.primaryBlue
+              ? AppColors.forestGreen
               : AppColors.cardWhite,
-          selectedColor: AppColors.primaryBlue,
+          selectedColor: AppColors.forestGreen,
           labelStyle: AppTextStyles.labelSmall.copyWith(
             color: viewModel.timeFilter == TimeFilter.all
                 ? AppColors.neutralLight
@@ -209,9 +209,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
           selected: viewModel.timeFilter == TimeFilter.under15,
           onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under15),
           backgroundColor: viewModel.timeFilter == TimeFilter.under15
-              ? AppColors.primaryBlue
+              ? AppColors.forestGreen
               : AppColors.cardWhite,
-          selectedColor: AppColors.primaryBlue,
+          selectedColor: AppColors.forestGreen,
           labelStyle: AppTextStyles.labelSmall.copyWith(
             color: viewModel.timeFilter == TimeFilter.under15
                 ? AppColors.neutralLight
@@ -223,9 +223,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
           selected: viewModel.timeFilter == TimeFilter.under30,
           onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under30),
           backgroundColor: viewModel.timeFilter == TimeFilter.under30
-              ? AppColors.primaryBlue
+              ? AppColors.forestGreen
               : AppColors.cardWhite,
-          selectedColor: AppColors.primaryBlue,
+          selectedColor: AppColors.forestGreen,
           labelStyle: AppTextStyles.labelSmall.copyWith(
             color: viewModel.timeFilter == TimeFilter.under30
                 ? AppColors.neutralLight
@@ -237,9 +237,9 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
           selected: viewModel.timeFilter == TimeFilter.under60,
           onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under60),
           backgroundColor: viewModel.timeFilter == TimeFilter.under60
-              ? AppColors.primaryBlue
+              ? AppColors.forestGreen
               : AppColors.cardWhite,
-          selectedColor: AppColors.primaryBlue,
+          selectedColor: AppColors.forestGreen,
           labelStyle: AppTextStyles.labelSmall.copyWith(
             color: viewModel.timeFilter == TimeFilter.under60
                 ? AppColors.neutralLight

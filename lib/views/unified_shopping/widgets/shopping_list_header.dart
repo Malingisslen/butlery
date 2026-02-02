@@ -56,7 +56,7 @@ class ShoppingListHeader {
           child: Container(
             padding: AppDimensions.paddingSymmetric16x12,
             decoration: BoxDecoration(
-              color: AppColors.backgroundBeige,
+              color: AppColors.cream,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
               border: Border.all(color: AppColors.divider),
             ),
@@ -90,7 +90,7 @@ class ShoppingListHeader {
           // Rename button
           DecoratedBox(
             decoration: BoxDecoration(
-              color: AppColors.backgroundBeige,
+              color: AppColors.cream,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
               border: Border.all(color: AppColors.divider),
             ),
@@ -118,7 +118,7 @@ class ShoppingListHeader {
           // Delete button
           DecoratedBox(
             decoration: BoxDecoration(
-              color: AppColors.backgroundBeige,
+              color: AppColors.cream,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
               border: Border.all(color: AppColors.divider),
             ),
@@ -188,14 +188,14 @@ class ShoppingListHeader {
               style: OutlinedButton.styleFrom(
                 padding: AppDimensions.paddingVertical8,
                 side: BorderSide(
-                    color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityHalf)),
+                    color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityHalf)),
               ),
               icon: const Icon(Icons.check_box_outline_blank,
-                  size: AppDimensions.iconSizeS, color: AppColors.primaryBlue),
+                  size: AppDimensions.iconSizeS, color: AppColors.forestGreen),
               label: Text(
                 'Avbocka alla',
                 style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                 ),
               ),
             ),
@@ -217,7 +217,7 @@ class ShoppingListHeader {
     switch (list.type) {
       case ListType.personal:
         sharingIcon = Icons.person;
-        sharingColor = AppColors.primaryBlue;
+        sharingColor = AppColors.forestGreen;
         break;
       case ListType.collaborative:
         if (currentUserId != null) {
@@ -226,7 +226,7 @@ class ShoppingListHeader {
 
           if (isOwner) {
             sharingIcon = Icons.admin_panel_settings;
-            sharingColor = AppColors.primaryBlue;
+            sharingColor = AppColors.forestGreen;
             permissionText = 'Ägare';
           } else {
             switch (userPermission) {
@@ -242,12 +242,12 @@ class ShoppingListHeader {
                 break;
               case SharedListPermission.admin:
                 sharingIcon = Icons.admin_panel_settings;
-                sharingColor = AppColors.primaryBlue;
+                sharingColor = AppColors.forestGreen;
                 permissionText = 'Admin';
                 break;
               default:
                 sharingIcon = Icons.people;
-                sharingColor = AppColors.primaryBlue;
+                sharingColor = AppColors.forestGreen;
                 permissionText = 'Delad';
             }
           }

@@ -362,7 +362,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           value: tag.id,
           child: Row(
             children: [
-              const Icon(Icons.label, size: AppDimensions.iconSizeS, color: AppColors.primaryBlue),
+              const Icon(Icons.label, size: AppDimensions.iconSizeS, color: AppColors.forestGreen),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(tag.name),
             ],
@@ -568,7 +568,7 @@ class _ConditionRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.backgroundBeige,
+        color: AppColors.cream,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(color: AppColors.divider),
       ),

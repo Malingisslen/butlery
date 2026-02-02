@@ -30,10 +30,10 @@ class UploadProgressWidgets {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Column(
@@ -50,7 +50,7 @@ class UploadProgressWidgets {
                     child: Text(
                       uploadQueueStatus,
                       style: AppTextStyles.metadataEmphasized.copyWith(
-                        color: AppColors.primaryBlue,
+                        color: AppColors.forestGreen,
                       ),
                     ),
                   ),
@@ -89,7 +89,7 @@ class UploadProgressWidgets {
         child: CircularProgressIndicator(
           strokeWidth: 2,
           valueColor:
-              const AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+              const AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
           value: (managementSummary['overallProgress'] as double?),
         ),
       );
@@ -125,7 +125,7 @@ class UploadProgressWidgets {
           icon: Icons.refresh,
           label: 'Försök alla ($failed)',
           onTap: onRetryAllFailed,
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         ),
       );
     }
@@ -232,7 +232,7 @@ class UploadProgressWidgets {
                 child: Text(
                   detail,
                   style: AppTextStyles.textSm.copyWith(
-                    color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryDark),
+                    color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryDark),
                   ),
                 ),
               ))
@@ -311,7 +311,7 @@ class UploadProgressWidgets {
                       icon: Icons.refresh,
                       label: 'Försök igen',
                       onTap: () => onRetryUpload(imageUrl),
-                      color: AppColors.primaryBlue,
+                      color: AppColors.forestGreen,
                     ),
                   if (status.canRetry &&
                       onRetryUpload != null &&
@@ -363,7 +363,7 @@ class UploadProgressWidgets {
             valueColor: AlwaysStoppedAnimation<Color>(
               status.state == ImageUploadState.retrying
                   ? AppColors.textMedium
-                  : AppColors.primaryBlue,
+                  : AppColors.forestGreen,
             ),
           ),
         );
@@ -374,7 +374,7 @@ class UploadProgressWidgets {
           height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityExtraDark),
+            color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityExtraDark),
           ),
           child: const Icon(
             Icons.check,

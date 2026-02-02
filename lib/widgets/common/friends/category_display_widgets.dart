@@ -25,7 +25,7 @@ class CategoryDisplayWidgets {
         return ListTile(
           leading: Icon(
             category.emoji != null ? Icons.emoji_emotions : Icons.group,
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
           ),
           title: Text(category.name),
           subtitle: showMemberCount
@@ -69,7 +69,7 @@ class CategoryDisplayWidgets {
                   Icon(
                     category.emoji != null ? Icons.emoji_emotions : Icons.group,
                     size: AppDimensions.iconSizeXl,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.forestGreen,
                   ),
                   const SizedBox(height: AppDimensions.spacingS),
                   Text(
@@ -125,7 +125,7 @@ class CategoryDisplayWidgets {
                     icon: Icons.category,
                     label: 'Kategorier',
                     value: categories.length.toString(),
-                    color: AppColors.primaryBlue,
+                    color: AppColors.forestGreen,
                   ),
                 ),
                 Expanded(
@@ -191,7 +191,7 @@ class CategoryDisplayWidgets {
                       category.emoji != null
                           ? Icons.emoji_emotions
                           : Icons.group,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.forestGreen,
                       size: AppDimensions.iconSizeM,
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
@@ -291,7 +291,7 @@ class CategoryDisplayWidgets {
         children: [
           const Icon(
             Icons.category,
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingMd),

@@ -63,7 +63,7 @@ class FriendRequestsHeaderBuilder {
           PopupMenuButton<String>(
             icon: const Icon(
               Icons.checklist,
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
             ),
             onSelected: (value) {
               if (value == 'accept_all') {

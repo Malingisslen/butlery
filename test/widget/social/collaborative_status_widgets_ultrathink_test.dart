@@ -111,7 +111,7 @@ void main() {
         expect(icon.color, equals(customColor));
       });
 
-      testWidgets('uses AppColors.primaryBlue as default color',
+      testWidgets('uses AppColors.forestGreen as default color',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code color fallback from line 21
         await tester.pumpWidget(
@@ -122,9 +122,9 @@ void main() {
 
         expect(tester.takeException(), isNull);
 
-        // ULTRATHINK: Should use AppColors.primaryBlue when no color provided
+        // ULTRATHINK: Should use AppColors.forestGreen when no color provided
         final icon = tester.widget<Icon>(find.byIcon(Icons.people));
-        expect(icon.color, equals(AppColors.primaryBlue));
+        expect(icon.color, equals(AppColors.forestGreen));
       });
 
       testWidgets('applies correct padding and styling from AppDimensions',
@@ -267,7 +267,7 @@ void main() {
         expect(find.byType(Container), findsOneWidget);
       });
 
-      testWidgets('uses AppColors.primaryBlue default background with alpha',
+      testWidgets('uses AppColors.forestGreen default background with alpha',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code default background from lines 68-69
         const title = 'Default Background';
@@ -284,7 +284,7 @@ void main() {
 
         expect(tester.takeException(), isNull);
 
-        // ULTRATHINK: Should use AppColors.primaryBlue.withValues(alpha: 0.1)
+        // ULTRATHINK: Should use AppColors.forestGreen.withValues(alpha: 0.1)
         expect(find.byType(Container), findsOneWidget);
       });
     });

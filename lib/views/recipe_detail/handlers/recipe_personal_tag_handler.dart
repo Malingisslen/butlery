@@ -368,20 +368,20 @@ class _QuickTagChip extends StatelessWidget {
           ? null
           : const CircleAvatar(
               radius: 6,
-              backgroundColor: AppColors.primaryBlue,
+              backgroundColor: AppColors.forestGreen,
             ),
       selected: isSelected,
       onSelected: (_) => onTap(),
-      backgroundColor: AppColors.backgroundBeige,
-      selectedColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightMedium),
-      checkmarkColor: AppColors.primaryBlue,
+      backgroundColor: AppColors.cream,
+      selectedColor: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLightMedium),
+      checkmarkColor: AppColors.forestGreen,
       side: BorderSide(
-        color: isSelected ? AppColors.primaryBlue : AppColors.divider,
+        color: isSelected ? AppColors.forestGreen : AppColors.divider,
         width: isSelected ? 2 : 1,
       ),
       labelStyle: (isSelected ? AppTextStyles.bodyBold : AppTextStyles.bodyMedium)
           .copyWith(
-        color: isSelected ? AppColors.primaryBlue : AppColors.textDark,
+        color: isSelected ? AppColors.forestGreen : AppColors.textDark,
       ),
       showCheckmark: isSelected,
       padding: const EdgeInsets.symmetric(

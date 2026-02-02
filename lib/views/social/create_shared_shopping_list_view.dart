@@ -176,14 +176,14 @@ class _CreateSharedShoppingListViewState
             children: [
               const Icon(
                 Icons.group,
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Skapa delad inköpslista',
                 style: AppTextStyles.titleMedium.copyWith(
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                 ),
               ),
             ],

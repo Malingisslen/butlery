@@ -120,7 +120,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             ),
         ],
       ),
-      backgroundColor: AppColors.backgroundBeige,
+      backgroundColor: AppColors.cream,
       foregroundColor: AppColors.textDark,
       elevation: AppDimensions.elevationLow,
       actions: [
@@ -323,7 +323,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       onChanged: (value) {
         viewModel.toggleFriendSelection(friend.uid);
       },
-      activeColor: AppColors.primaryBlue,
+      activeColor: AppColors.forestGreen,
     );
   }
 

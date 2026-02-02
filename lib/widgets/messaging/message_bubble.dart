@@ -248,7 +248,7 @@ class _MessageBubbleState extends State<MessageBubble>
             ? widget.message.senderDisplayName[0].toUpperCase()
             : '?',
         style: AppTextStyles.labelMedium.copyWith(
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         ),
       ),
     );
@@ -278,7 +278,7 @@ class _MessageBubbleState extends State<MessageBubble>
         onLongPress: widget.onLongPress,
         child: StyledCard(
           backgroundColor:
-              _isFromCurrentUser ? AppColors.primaryBlue : AppColors.cardWhite,
+              _isFromCurrentUser ? AppColors.forestGreen : AppColors.cardWhite,
           borderRadius: AppDimensions.borderRadiusM,
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingM,

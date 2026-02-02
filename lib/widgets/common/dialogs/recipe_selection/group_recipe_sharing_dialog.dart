@@ -57,7 +57,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
                       ? null
                       : () => _shareSelectedRecipes(context, viewModel),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.forestGreen,
                     foregroundColor: AppColors.cardWhite,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingL,
@@ -183,14 +183,14 @@ class GroupRecipeSharingDialog extends StatelessWidget {
                 vertical: AppDimensions.spacingXs,
               ),
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+                color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusRound),
               ),
               child: Text(
                 '${viewModel.selectedCount} valda',
                 style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                 ),
               ),
             ),
@@ -312,7 +312,7 @@ class GroupRecipeListItem extends StatelessWidget {
         value: isSelected,
         onChanged: (value) => onSelectionChanged(value ?? false),
         activeColor:
-            isAlreadyShared ? AppColors.textMedium : AppColors.primaryBlue,
+            isAlreadyShared ? AppColors.textMedium : AppColors.forestGreen,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
         ),
@@ -332,7 +332,7 @@ class GroupRecipeListItem extends StatelessWidget {
                   color: AppColors.textMedium,
                 )
               : AppTextStyles.metadataEmphasized.copyWith(
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                 ),
         ),
         if (recipe.description.isNotEmpty)
@@ -405,12 +405,12 @@ class GroupRecipeListItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: isAlreadyShared
             ? AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight)
-            : AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+            : AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Icon(
         Icons.restaurant_menu,
-        color: isAlreadyShared ? AppColors.success : AppColors.primaryBlue,
+        color: isAlreadyShared ? AppColors.success : AppColors.forestGreen,
         size: AppDimensions.iconSizeAction,
       ),
     );

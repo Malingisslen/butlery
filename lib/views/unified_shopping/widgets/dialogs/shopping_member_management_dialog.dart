@@ -100,7 +100,7 @@ class _ShoppingMemberManagementDialogState
             SnackBar(
               content: Text(
                   'Behörighet uppdaterad för ${widget.userDisplayNames[userId] ?? 'användare'}'),
-              backgroundColor: AppColors.primaryBlue,
+              backgroundColor: AppColors.forestGreen,
               duration: const Duration(seconds: 2),
             ),
           );
@@ -168,7 +168,7 @@ class _ShoppingMemberManagementDialogState
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('$userName borttagen från listan'),
-              backgroundColor: AppColors.primaryBlue,
+              backgroundColor: AppColors.forestGreen,
               duration: const Duration(seconds: 2),
             ),
           );
@@ -233,7 +233,7 @@ class _ShoppingMemberManagementDialogState
             SnackBar(
               content: Text(
                   '${addedMembers.length} ${addedMembers.length == 1 ? 'medlem' : 'medlemmar'} tillagda'),
-              backgroundColor: AppColors.primaryBlue,
+              backgroundColor: AppColors.forestGreen,
               duration: const Duration(seconds: 2),
             ),
           );
@@ -399,11 +399,11 @@ class _ShoppingMemberManagementDialogState
     return ListTile(
       leading: CircleAvatar(
         radius: 20,
-        backgroundColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+        backgroundColor: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
         child: Text(
           userName.isNotEmpty ? userName[0].toUpperCase() : '?',
           style: AppTextStyles.labelLarge.copyWith(
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
           ),
         ),
       ),
@@ -454,7 +454,7 @@ class _ShoppingMemberManagementDialogState
                     children: [
                       Icon(Icons.admin_panel_settings,
                           size: AppDimensions.iconSizeS,
-                          color: AppColors.primaryBlue),
+                          color: AppColors.forestGreen),
                       SizedBox(width: AppDimensions.spacingXs),
                       Text('Admin'),
                     ],
@@ -479,13 +479,13 @@ class _ShoppingMemberManagementDialogState
     return CheckboxListTile(
       secondary: CircleAvatar(
         radius: 20,
-        backgroundColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+        backgroundColor: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
         child: Text(
           friend.displayName.isNotEmpty
               ? friend.displayName[0].toUpperCase()
               : '?',
           style: AppTextStyles.labelLarge.copyWith(
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
           ),
         ),
       ),

@@ -263,14 +263,14 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                             ),
                             decoration: BoxDecoration(
                               color:
-                                  AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+                                  AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
                               borderRadius: BorderRadius.circular(
                                   AppDimensions.borderRadiusS),
                             ),
                             child: Text(
                               totalItems.toString(),
                               style: AppTextStyles.labelLarge.copyWith(
-                                color: AppColors.primaryBlue,
+                                color: AppColors.forestGreen,
                               ),
                             ),
                           ),
@@ -288,8 +288,8 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                       ),
                       child: TabBar(
                         controller: _tabController,
-                        indicatorColor: AppColors.primaryBlue,
-                        labelColor: AppColors.primaryBlue,
+                        indicatorColor: AppColors.forestGreen,
+                        labelColor: AppColors.forestGreen,
                         unselectedLabelColor: AppColors.textSecondary,
                         tabs: [
                           Tab(

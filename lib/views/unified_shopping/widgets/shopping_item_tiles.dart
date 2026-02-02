@@ -50,12 +50,12 @@ class ShoppingItemTiles {
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: isCompleted
-                              ? AppColors.primaryBlue
+                              ? AppColors.forestGreen
                               : AppColors.textMedium.withValues(alpha: AppDimensions.opacityMediumDark),
                           width: AppDimensions.borderWidthThick,
                         ),
                         color: isCompleted
-                            ? AppColors.primaryBlue
+                            ? AppColors.forestGreen
                             : AppColors.transparent,
                       ),
                       child: isCompleted
@@ -181,9 +181,9 @@ class ShoppingItemTiles {
   static Color _getPriorityColor(int priority) {
     switch (priority) {
       case 5:
-        return AppColors.darkNavy; // Highest priority - strong brand color
+        return AppColors.forestGreenDark; // Highest priority - strong brand color
       case 4:
-        return AppColors.primaryBlue; // High priority - main brand color
+        return AppColors.forestGreen; // High priority - main brand color
       default:
         return AppColors.textMedium; // Normal priority - subtle brand color
     }

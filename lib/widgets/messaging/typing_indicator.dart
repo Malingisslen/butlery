@@ -92,7 +92,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
           horizontal: AppDimensions.paddingM,
           vertical: AppDimensions.paddingS,
         ),
-        color: AppColors.backgroundBeige,
+        color: AppColors.cream,
         child: Row(
           children: [
             // Avatar placeholder
@@ -106,7 +106,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
               child: const Center(
                 child: Icon(
                   Icons.more_horiz,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                   size: AppDimensions.iconSizeS,
                 ),
               ),

@@ -108,7 +108,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         const Icon(
           Icons.shopping_cart,
           size: AppDimensions.iconSizeAction,
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         ),
         const SizedBox(width: AppDimensions.spacingM),
         Expanded(

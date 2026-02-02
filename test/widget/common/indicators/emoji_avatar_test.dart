@@ -71,7 +71,7 @@ void main() {
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.color,
-            equals(AppColors.primaryBlue.withValues(alpha: 0.1)));
+            equals(AppColors.forestGreen.withValues(alpha: 0.1)));
       });
 
       testWidgets('should apply custom size', (WidgetTester tester) async {

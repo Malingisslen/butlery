@@ -98,7 +98,7 @@ void main() {
               isOnline: true,
               size: ImageSize.large,
               showStatus: true,
-              borderColor: AppColors.primaryBlue,
+              borderColor: AppColors.forestGreen,
               borderWidth: 3.0,
               onTap: () {},
             ),
@@ -375,7 +375,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code border application from lines 114-119
         final config = ImageConfig.avatar(
-          borderColor: AppColors.primaryBlue,
+          borderColor: AppColors.forestGreen,
           borderWidth: 3.0,
         );
 
@@ -399,7 +399,7 @@ void main() {
             final decoration = container.decoration as BoxDecoration;
             if (decoration.border != null) {
               final border = decoration.border as Border;
-              if (border.top.color == AppColors.primaryBlue &&
+              if (border.top.color == AppColors.forestGreen &&
                   border.top.width == 3.0) {
                 hasBorder = true;
                 break;

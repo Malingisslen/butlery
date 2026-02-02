@@ -1,4 +1,6 @@
 // lib/widgets/common/search_filter/search_input_widget.dart
+//
+// UI Redesign: Uses theme system for consistent search box styling
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -62,7 +64,8 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Use TextFormField for better web compatibility with text input
+    // UI Redesign: Uses InputThemes via the theme system for consistent styling
+    // The InputDecorationTheme in app_theme.dart provides forest green focus borders
     final searchField = TextFormField(
       controller: widget.controller,
       focusNode: widget.focusNode,

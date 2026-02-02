@@ -162,7 +162,7 @@ class ShoppingListContent {
               vertical: AppDimensions.spacingSm),
           margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
           decoration: BoxDecoration(
-            color: (isCompleted ? AppColors.textMedium : AppColors.primaryBlue)
+            color: (isCompleted ? AppColors.textMedium : AppColors.forestGreen)
                 .withValues(alpha: AppDimensions.opacityVeryLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           ),
@@ -177,7 +177,7 @@ class ShoppingListContent {
                   style: AppTextStyles.bodyLargeBold.copyWith(
                     color: isCompleted
                         ? AppColors.textMedium
-                        : AppColors.primaryBlue,
+                        : AppColors.forestGreen,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -191,7 +191,7 @@ class ShoppingListContent {
                 decoration: BoxDecoration(
                   color: (isCompleted
                           ? AppColors.textMedium
-                          : AppColors.primaryBlue)
+                          : AppColors.forestGreen)
                       .withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadius8),
@@ -201,7 +201,7 @@ class ShoppingListContent {
                   style: AppTextStyles.metadataEmphasized.copyWith(
                     color: isCompleted
                         ? AppColors.textMedium
-                        : AppColors.primaryBlue,
+                        : AppColors.forestGreen,
                   ),
                 ),
               ),
@@ -261,7 +261,7 @@ class ShoppingListContent {
     return Icon(
       iconData,
       size: AppDimensions.iconSizeS,
-      color: isCompleted ? AppColors.textMedium : AppColors.primaryBlue,
+      color: isCompleted ? AppColors.textMedium : AppColors.forestGreen,
     );
   }
 
@@ -271,7 +271,7 @@ class ShoppingListContent {
         const Icon(
           Icons.check_circle,
           size: AppDimensions.iconSizeM,
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         ),
         const SizedBox(width: AppDimensions.spacingSm),
         Expanded(
@@ -281,13 +281,13 @@ class ShoppingListContent {
               Text(
                 'Inhandlat',
                 style: AppTextStyles.bodyLargeBold.copyWith(
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                 ),
               ),
               Text(
                 '${viewModel.boughtItems} av ${viewModel.totalItems} varor',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryDark),
+                  color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryDark),
                 ),
               ),
             ],

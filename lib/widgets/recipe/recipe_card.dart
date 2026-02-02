@@ -248,7 +248,7 @@ class RecipeCard extends StatelessWidget {
       height: height ?? size ?? 80,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        color: AppColors.backgroundBeige,
+        color: AppColors.cream,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -385,7 +385,7 @@ class RecipeCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isUserAdded
             ? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight)
-            : AppColors.backgroundBeige,
+            : AppColors.cream,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
         border: Border.all(
           color: isUserAdded

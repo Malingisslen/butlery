@@ -397,7 +397,7 @@ class FloatingActionButtonWidget extends StatelessWidget {
     required this.onPressed,
     this.enablePressAnimation = true,
   })  : child = const Icon(Icons.message),
-        backgroundColor = AppColors.primaryBlue,
+        backgroundColor = AppColors.forestGreen,
         foregroundColor = AppColors.cardWhite,
         semanticLabel = 'Nytt meddelande';
 
@@ -409,7 +409,7 @@ class FloatingActionButtonWidget extends StatelessWidget {
       enabled: onPressed != null,
       child: FloatingActionButton(
         onPressed: onPressed,
-        backgroundColor: backgroundColor ?? AppColors.primaryBlue,
+        backgroundColor: backgroundColor ?? AppColors.forestGreen,
         foregroundColor: foregroundColor ?? AppColors.cardWhite,
         child: child,
       ),

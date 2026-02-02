@@ -93,7 +93,7 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
 
   @override
   Widget build(BuildContext context) {
-    final color = widget.color ?? AppColors.primaryBlue;
+    final color = widget.color ?? AppColors.forestGreen;
     return AnimatedBuilder(
       animation: _fadeAnimation,
       builder: (context, child) {

@@ -84,7 +84,7 @@ class ButleryHeader extends StatelessWidget implements PreferredSizeWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
+        ColoredBox(
           color: AppColors.headerBackground,
           child: SafeArea(
             bottom: false,
@@ -242,9 +242,12 @@ class _AccentBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: ButleryHeader.accentBarHeight,
+    return const ColoredBox(
       color: AppColors.headerAccent,
+      child: SizedBox(
+        height: ButleryHeader.accentBarHeight,
+        width: double.infinity,
+      ),
     );
   }
 }

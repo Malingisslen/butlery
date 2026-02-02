@@ -144,7 +144,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             // ✅ RESPONSIVE: Loading overlay also constrained
             if (viewModel.isSaving)
               ColoredBox(
-                color: AppColors.backgroundBeige.withValues(alpha: AppDimensions.opacityVeryDark),
+                color: AppColors.cream.withValues(alpha: AppDimensions.opacityVeryDark),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -181,7 +181,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           return AppBar(
             title: const Text('Redigera recept'),
             backgroundColor: isCollaborative
-                ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
+                ? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight)
                 : null,
             actions: [
               if (isCollaborative)
@@ -464,8 +464,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           horizontal: AppDimensions.paddingL,
           vertical: AppDimensions.paddingM,
         ),
-        side: const BorderSide(color: AppColors.primaryBlue),
-        foregroundColor: AppColors.primaryBlue,
+        side: const BorderSide(color: AppColors.forestGreen),
+        foregroundColor: AppColors.forestGreen,
       ),
     );
   }

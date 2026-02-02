@@ -97,13 +97,13 @@ class ModuleLoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundBeige,
+      backgroundColor: AppColors.cream,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const CircularProgressIndicator(
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
               strokeWidth: 3,
             ),
             const SizedBox(height: AppDimensions.spacingLg),
@@ -136,10 +136,10 @@ class ModuleLoadErrorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundBeige,
+      backgroundColor: AppColors.cream,
       appBar: AppBar(
         title: const Text('Fel'),
-        backgroundColor: AppColors.backgroundBeige,
+        backgroundColor: AppColors.cream,
       ),
       body: Center(
         child: Padding(

@@ -66,7 +66,7 @@ class GroupDetailView extends StatelessWidget {
         'Gruppinformation',
         style: AppTextStyles.headlineSmall,
       ),
-      backgroundColor: AppColors.backgroundBeige,
+      backgroundColor: AppColors.cream,
       foregroundColor: AppColors.textDark,
       elevation: AppDimensions.elevationLow,
       actions: [

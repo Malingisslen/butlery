@@ -36,7 +36,7 @@ class CollaborativeParticipantsWidgets {
                       margin:
                           EdgeInsetsDirectional.only(start: index > 0 ? 4 : 0),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+                        color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
                         shape: BoxShape.circle,
                       ),
                     )),
@@ -106,10 +106,10 @@ class CollaborativeParticipantsWidgets {
             width: size,
             height: size,
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
+              color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLight),
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
                 width: 1,
               ),
             ),
@@ -118,7 +118,7 @@ class CollaborativeParticipantsWidgets {
                 '+$remaining',
                 style: AppTextStyles.bodyLargeBold.copyWith(
                   fontSize: size * 0.35,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                 ),
               ),
             ),

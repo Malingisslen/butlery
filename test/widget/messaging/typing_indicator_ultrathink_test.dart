@@ -20,7 +20,7 @@ void main() {
       return MaterialApp(
         locale: const Locale('sv', 'SE'),
         theme: ThemeData(
-          primaryColor: AppColors.primaryBlue,
+          primaryColor: AppColors.forestGreen,
           scaffoldBackgroundColor: Colors.white,
         ),
         home: MediaQuery(
@@ -92,7 +92,7 @@ void main() {
 
         // Check the icon inside
         final icon = tester.widget<Icon>(find.byIcon(Icons.more_horiz));
-        expect(icon.color, equals(AppColors.primaryBlue));
+        expect(icon.color, equals(AppColors.forestGreen));
         expect(icon.size, equals(16));
       });
 
@@ -464,7 +464,7 @@ void main() {
         // Check main container padding
         final mainContainer = find.byWidgetPredicate(
           (widget) =>
-              widget is Container && widget.color == AppColors.backgroundBeige,
+              widget is Container && widget.color == AppColors.cream,
         );
 
         expect(mainContainer, findsOneWidget);
@@ -640,7 +640,7 @@ void main() {
 
         final container = find.byWidgetPredicate(
           (widget) =>
-              widget is Container && widget.color == AppColors.backgroundBeige,
+              widget is Container && widget.color == AppColors.cream,
         );
 
         expect(container, findsOneWidget);

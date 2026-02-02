@@ -23,7 +23,7 @@ void main() {
       return MaterialApp(
         locale: const Locale('sv', 'SE'),
         theme: ThemeData(
-          primaryColor: AppColors.primaryBlue,
+          primaryColor: AppColors.forestGreen,
           scaffoldBackgroundColor: Colors.white,
         ),
         home: Scaffold(
@@ -326,7 +326,7 @@ void main() {
 
         // Avatar fallback should have correct styling
         final fallbackText = tester.widget<Text>(find.text('E'));
-        expect(fallbackText.style?.color, equals(AppColors.primaryBlue));
+        expect(fallbackText.style?.color, equals(AppColors.forestGreen));
       });
 
       testWidgets('avatar fallback handles empty display name',
@@ -614,7 +614,7 @@ void main() {
         );
 
         final styledCard = tester.widget<StyledCard>(find.byType(StyledCard));
-        expect(styledCard.backgroundColor, equals(AppColors.primaryBlue));
+        expect(styledCard.backgroundColor, equals(AppColors.forestGreen));
         expect(styledCard.borderRadius, equals(AppDimensions.borderRadiusM));
         expect(
             styledCard.padding,

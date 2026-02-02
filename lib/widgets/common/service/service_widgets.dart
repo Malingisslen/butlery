@@ -65,7 +65,7 @@ class ServiceWidgets {
             height: AppDimensions.iconSizeM,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXl),
@@ -113,7 +113,7 @@ class ServiceWidgets {
             height: AppDimensions.iconSizeM,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
             ),
           ),
         ),

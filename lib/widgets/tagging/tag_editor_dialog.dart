@@ -142,7 +142,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                 children: [
                   const Icon(
                     Icons.local_offer_outlined,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.forestGreen,
                     size: AppDimensions.iconSizeAction,
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
@@ -242,7 +242,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                               onPressed: _addNewTag,
                               icon: const Icon(Icons.add),
                               style: IconButton.styleFrom(
-                                backgroundColor: AppColors.primaryBlue,
+                                backgroundColor: AppColors.forestGreen,
                                 foregroundColor: AppColors.cardWhite,
                               ),
                             ),
@@ -287,22 +287,22 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
     return InputChip(
       label: Text(displayName),
       labelStyle: AppTextStyles.bodySmall.copyWith(
-        color: isUserAdded ? AppColors.primaryBlue : AppColors.textDark,
+        color: isUserAdded ? AppColors.forestGreen : AppColors.textDark,
         fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.normal,
       ),
       backgroundColor: isUserAdded
-          ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
-          : AppColors.backgroundBeige,
+          ? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight)
+          : AppColors.cream,
       side: BorderSide(
         color: isUserAdded
-            ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight)
+            ? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityMediumLight)
             : AppColors.divider,
       ),
       deleteIcon: const Icon(Icons.close, size: AppDimensions.iconSize18),
       deleteIconColor: AppColors.textMedium,
       onDeleted: () => _removeTag(tag),
       avatar: isUserAdded
-          ? const Icon(Icons.person, size: AppDimensions.iconSizeS, color: AppColors.primaryBlue)
+          ? const Icon(Icons.person, size: AppDimensions.iconSizeS, color: AppColors.forestGreen)
           : null,
       tooltip: isUserAdded ? 'Manuellt tillagd' : 'Automatiskt genererad',
     );
@@ -317,7 +317,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
         color: AppColors.textMedium,
         decoration: TextDecoration.lineThrough,
       ),
-      backgroundColor: AppColors.backgroundBeige.withValues(alpha: AppDimensions.opacityHalf),
+      backgroundColor: AppColors.cream.withValues(alpha: AppDimensions.opacityHalf),
       side: BorderSide(color: AppColors.divider.withValues(alpha: AppDimensions.opacityHalf)),
       avatar: const Icon(Icons.undo, size: AppDimensions.iconSizeS, color: AppColors.textMedium),
       onPressed: () => _restoreTag(tag),

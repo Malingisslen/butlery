@@ -20,7 +20,7 @@ class AdminBadge extends StatelessWidget {
         vertical: AppDimensions.paddingS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Row(
@@ -29,13 +29,13 @@ class AdminBadge extends StatelessWidget {
           const Icon(
             Icons.admin_panel_settings,
             size: AppDimensions.iconSizeS,
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
           ),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             label ?? 'Du är administratör',
             style: AppTextStyles.bodyBold.copyWith(
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
               fontSize: 12,
             ),
           ),

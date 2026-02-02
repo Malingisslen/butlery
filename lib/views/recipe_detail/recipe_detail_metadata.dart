@@ -63,7 +63,7 @@ class RecipeDetailMetadata extends StatelessWidget {
             children: [
               const Icon(
                 Icons.info_outline,
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
@@ -180,12 +180,12 @@ class RecipeDetailMetadata extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: isHighlighted
-            ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
+            ? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight)
             : AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
           color: isHighlighted
-              ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight)
+              ? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityMediumLight)
               : AppColors.divider,
         ),
       ),
@@ -220,7 +220,7 @@ class RecipeDetailMetadata extends StatelessWidget {
                     ? AppTextStyles.bodyLargeBold
                     : AppTextStyles.text16Medium)
                 .copyWith(
-              color: isHighlighted ? AppColors.primaryBlue : AppColors.textDark,
+              color: isHighlighted ? AppColors.forestGreen : AppColors.textDark,
             ),
             textAlign: TextAlign.center,
             maxLines: 1,
@@ -253,7 +253,7 @@ class RecipeDetailMetadata extends StatelessWidget {
             children: [
               Icon(
                 isArchiveUrl ? Icons.archive : Icons.link,
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
@@ -274,11 +274,11 @@ class RecipeDetailMetadata extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+                color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusM),
                 border: Border.all(
-                  color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+                  color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityMediumLight),
                 ),
               ),
               child: Row(
@@ -287,7 +287,7 @@ class RecipeDetailMetadata extends StatelessWidget {
                     child: Text(
                       sourceUrl,
                       style: AppTextStyles.bodyLarge.copyWith(
-                        color: AppColors.primaryBlue,
+                        color: AppColors.forestGreen,
                         decoration: TextDecoration.underline,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -296,7 +296,7 @@ class RecipeDetailMetadata extends StatelessWidget {
                   const SizedBox(width: AppDimensions.spacingM),
                   const Icon(
                     Icons.open_in_new,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.forestGreen,
                     size: AppDimensions.iconSizeM,
                   ),
                 ],

@@ -39,7 +39,7 @@ class ProfileSectionBuilders {
             subtitle: 'Spara alla recept som JSON',
             onTap: () =>
                 BackupRestoreHandler.handleBackup(rootContext ?? context),
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
           ),
           const SizedBox(height: AppDimensions.spacingM),
           MenuItemBuilders.buildDataButton(
@@ -49,7 +49,7 @@ class ProfileSectionBuilders {
             subtitle: 'Importera recept från JSON',
             onTap: () =>
                 BackupRestoreHandler.handleRestore(rootContext ?? context),
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
           ),
         ],
       ),

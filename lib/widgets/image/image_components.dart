@@ -206,7 +206,7 @@ class ImageComponents {
           child: CircularProgressIndicator(
             strokeWidth: AppDimensions.strokeWidth2,
             valueColor: AlwaysStoppedAnimation<Color>(
-              AppColors.primaryBlue,
+              AppColors.forestGreen,
             ),
           ),
         ),
@@ -335,7 +335,7 @@ class ImageComponents {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: index == currentIndex
-                    ? AppColors.primaryBlue
+                    ? AppColors.forestGreen
                     : AppColors.cardWhite.withValues(alpha: AppDimensions.opacityMediumDark),
                 border: Border.all(
                   color: AppColors.divider,

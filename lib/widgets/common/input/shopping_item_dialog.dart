@@ -95,7 +95,7 @@ class _AddUnifiedShoppingItemDialogState
         children: [
           Icon(
             isEditing ? Icons.edit : Icons.add_shopping_cart,
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
             size: AppDimensions.iconSizeAction,
           ),
           const SizedBox(width: AppDimensions.spacingM),
@@ -120,7 +120,7 @@ class _AddUnifiedShoppingItemDialogState
                 hint: 'T.ex. Mjölk',
                 prefixIcon: const Icon(
                   Icons.shopping_basket,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                   size: AppDimensions.iconSizeAction,
                 ),
                 validator: FormValidators.shoppingItemName(),
@@ -139,7 +139,7 @@ class _AddUnifiedShoppingItemDialogState
                       hint: '1',
                       prefixIcon: const Icon(
                         Icons.numbers,
-                        color: AppColors.primaryBlue,
+                        color: AppColors.forestGreen,
                         size: AppDimensions.iconSizeAction,
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
@@ -161,7 +161,7 @@ class _AddUnifiedShoppingItemDialogState
                         labelStyle: AppTextStyles.labelLarge,
                         prefixIcon: const Icon(
                           Icons.straighten,
-                          color: AppColors.primaryBlue,
+                          color: AppColors.forestGreen,
                           size: AppDimensions.iconSizeAction,
                         ),
                         border: const OutlineInputBorder(),
@@ -204,7 +204,7 @@ class _AddUnifiedShoppingItemDialogState
                   labelStyle: AppTextStyles.labelLarge,
                   prefixIcon: const Icon(
                     Icons.category,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.forestGreen,
                     size: AppDimensions.iconSizeAction,
                   ),
                   border: const OutlineInputBorder(),

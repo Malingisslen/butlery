@@ -63,7 +63,7 @@ class SocialBuilderComponents {
       text: text,
       onPressed: onPressed,
       icon: icon,
-      backgroundColor: AppColors.primaryBlue,
+      backgroundColor: AppColors.forestGreen,
       textColor: AppColors.cardWhite,
       loading: loading,
     );

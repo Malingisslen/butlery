@@ -36,7 +36,7 @@ class SharedContentCard extends StatelessWidget {
   Color _getColorForType(String type) {
     switch (type) {
       case 'recipe':
-        return AppColors.primaryBlue;
+        return AppColors.forestGreen;
       case 'menu':
         return AppColors.success;
       case 'shopping_list':
@@ -129,13 +129,13 @@ class SharedContentCard extends StatelessWidget {
                     CircleAvatar(
                       radius: 12,
                       backgroundColor:
-                          AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
+                          AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLight),
                       child: Text(
                         item.sharedByDisplayName.isNotEmpty
                             ? item.sharedByDisplayName[0].toUpperCase()
                             : '?',
                         style: AppTextStyles.textXs.copyWith(
-                          color: AppColors.primaryBlue,
+                          color: AppColors.forestGreen,
                         ),
                       ),
                     ),
