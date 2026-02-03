@@ -240,7 +240,7 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
 
   /// Navigation items for the bottom bar (4 items).
   /// Note: "Upptäck" was moved to the avatar menu in the UI redesign.
-  static List<AdaptiveNavigationItem> get _navigationItems => [
+  static List<AdaptiveNavigationItem> get navigationItems => [
         AdaptiveNavigationItem(
           label: 'recept',
           icon: AdaptiveIcons.bookOutlined,
@@ -275,7 +275,7 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     return AdaptiveNavigationScaffold(
       currentIndex: currentIndex,
-      items: _navigationItems,
+      items: navigationItems,
       body: body,
       title: title,
       actions: actions,

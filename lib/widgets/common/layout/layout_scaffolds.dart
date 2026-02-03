@@ -12,12 +12,16 @@ import 'package:butlery/widgets/common/butlery_header.dart';
 class LayoutScaffolds {
   /// Main layout with bottom navigation and app bar
   /// Exactly like original MainLayoutMenu with ALL functionality preserved
+  ///
+  /// Set [appBar] to provide a custom header (e.g., MainViewHeader).
+  /// If [appBar] is null, uses default title-based header.
   static Widget mainMenu({
     required Widget body,
     int? currentIndex,
     String? title,
     List<Widget>? actions,
     Widget? floatingActionButton,
+    PreferredSizeWidget? appBar,
   }) {
     return _MainMenuLayout(
       body: body,
@@ -25,6 +29,7 @@ class LayoutScaffolds {
       title: title,
       actions: actions,
       floatingActionButton: floatingActionButton,
+      appBar: appBar,
     );
   }
 
@@ -54,6 +59,7 @@ class _MainMenuLayout extends StatelessWidget {
   final String? title;
   final List<Widget>? actions;
   final Widget? floatingActionButton;
+  final PreferredSizeWidget? appBar;
 
   const _MainMenuLayout({
     required this.body,
@@ -61,18 +67,20 @@ class _MainMenuLayout extends StatelessWidget {
     this.title,
     this.actions,
     this.floatingActionButton,
+    this.appBar,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Use ButleryAdaptiveNavigation which automatically switches between
-    // BottomNavigationBar (mobile) and NavigationRail (tablet/desktop)
-    return ButleryAdaptiveNavigation(
+    // Use AdaptiveNavigationScaffold with Butlery's navigation items
+    return AdaptiveNavigationScaffold(
       currentIndex: currentIndex ?? 0,
+      items: ButleryAdaptiveNavigation.navigationItems,
       body: body,
-      title: title,
-      actions: actions,
+      title: appBar == null ? title : null, // Only use title if no custom appBar
+      actions: appBar == null ? actions : null,
       floatingActionButton: floatingActionButton,
+      appBar: appBar,
     );
   }
 }

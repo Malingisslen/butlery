@@ -32,6 +32,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
 import 'package:butlery/widgets/common/social_components/recipe_list_avatar_badge.dart';
+import 'package:butlery/widgets/common/main_view_header.dart';
 
 // Service integration for functionality and data management
 import 'package:butlery/services/search_service.dart';
@@ -223,6 +224,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     final viewModel = context.watch<RecipeListViewModel>();
     final offlineService = context.watch<offline_service.OfflineService>();
     final personalTagViewModel = context.watch<PersonalTagViewModel>();
+    final recipeCount = viewModel.recipes.length;
 
     return PopScope(
       canPop: false,
@@ -232,41 +234,20 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         }
       },
       child: LayoutComponents.mainMenu(
-        // ✅ UPPDATERAD WIDGET
         currentIndex: 0,
-        title: 'Mina recept',
-        actions: [
-          // OFFLINE STATUS ICON - ✅ UPPDATERAD
-          LayoutComponents.offlineStatusIcon(),
-
-          // ✅ UPPDATERAD: USER AVATAR med notification badge
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
-            child: RecipeListAvatarBadge(),
-          ),
-
-          // Error indicator
-          if (viewModel.hasError)
-            Semantics(
-              label: 'Visa felmeddelande',
-              button: true,
-              child: IconButton(
-                icon: const Icon(Icons.error, color: AppColors.error),
-                onPressed: () {
-                  SnackBarUtils.showError(context, viewModel.error!);
-                },
-                tooltip: 'Visa fel',
-              ),
-            ),
-
-          // Sort menu
-          Semantics(
-            label: 'Sortera recept',
-            button: true,
-            child: PopupMenuButton<SortCriteria>(
-              icon: Icon(
+        // UI Redesign: Use MainViewHeader with large title and count badge
+        appBar: MainViewHeader(
+          title: 'dina recept',
+          countBadge: '$recipeCount recept',
+          trailing: const RecipeListAvatarBadge(),
+          actions: [
+            // Offline status
+            LayoutComponents.offlineStatusIcon(),
+            // Sort menu
+            PopupMenuButton<SortCriteria>(
+              icon: const Icon(
                 Icons.sort,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: AppColors.headerForeground,
               ),
               tooltip: 'Sortera',
               onSelected: _onSortChanged,
@@ -276,19 +257,18 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 sortAscending: viewModel.sortAscending,
               ),
             ),
-          ),
-        ],
+          ],
+        ),
         body: Column(
           children: [
-            // OFFLINE INDICATOR - ✅ UPPDATERAD
+            // OFFLINE INDICATOR
             LayoutComponents.offlineIndicator(),
 
-            // ✅ HELT NY: SearchFilterWidget ersätter ~50 rader kod!
+            // UI Redesign: Search box with new styling
             SearchFilterWidget(
-              // Search properties
               searchQuery: viewModel.searchQuery,
               onSearchChanged: viewModel.updateSearch,
-              searchHint: 'Sök recept...',
+              searchHint: 'sök bland recepten...',
 
               // Filter properties
               activeTimeFilters: viewModel.activeTimeFilters,
@@ -322,9 +302,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               hasActiveFilters: viewModel.hasActiveFilters,
               onClearAllFilters: viewModel.clearAllFilters,
 
-              // Results info
-              resultCount: viewModel.recipes.length,
-              showStats: true,
+              // Results info - hidden since we show count in header
+              resultCount: recipeCount,
+              showStats: false,
             ),
 
             // Huvudinnehåll

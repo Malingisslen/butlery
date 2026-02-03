@@ -130,24 +130,17 @@ class InputThemes {
 
   /// Recipe card decoration - Left green border + bottom rust border
   /// Note: Cannot use borderRadius with non-uniform border colors in Flutter
+  /// UI Redesign: 5px left green border, 3px bottom rust border per mockup
   static BoxDecoration get recipeCardDecoration => const BoxDecoration(
         color: AppColors.cardWhite,
         border: Border(
           left: BorderSide(
             color: AppColors.recipeCardLeftBorder,
-            width: 3,
+            width: 5,
           ),
           bottom: BorderSide(
             color: AppColors.recipeCardBottomBorder,
-            width: 2,
-          ),
-          top: BorderSide(
-            color: AppColors.divider,
-            width: 1,
-          ),
-          right: BorderSide(
-            color: AppColors.divider,
-            width: 1,
+            width: 3,
           ),
         ),
       );
