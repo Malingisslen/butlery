@@ -407,6 +407,42 @@ class AppTextStyles {
         letterSpacing: 0.5,
       );
 
+  /// Main view header title - large style for main views (32px, Josefin Sans)
+  /// Used for "dina recept", "veckans meny", "inkopslista" headers
+  static TextStyle get mainViewTitle => TextStyle(
+        fontFamily: _headerFontFamily,
+        fontSize: 32,
+        fontWeight: FontWeight.w600,
+        color: AppColors.headerForeground,
+        letterSpacing: 2,
+        height: 1.1,
+      );
+
+  /// Header count badge text style
+  static TextStyle get headerCountBadge => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        color: AppColors.forestGreenDark,
+        letterSpacing: 1,
+      );
+
+  /// Section header label style (uppercase, small, with letter-spacing)
+  static TextStyle get sectionLabel => TextStyle(
+        fontFamily: _headerFontFamily,
+        fontSize: 10,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 3,
+        color: AppColors.rust,
+      );
+
+  /// Filter chip text style
+  static TextStyle get filterChip => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+      );
+
   /// Navigation item label (Josefin Sans)
   static TextStyle get navLabel => TextStyle(
         fontFamily: _headerFontFamily,

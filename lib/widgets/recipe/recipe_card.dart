@@ -40,6 +40,8 @@ class RecipeCard extends StatelessWidget {
   final bool showPersonalTags;
   final Map<String, String>? personalTagNames;
   final int maxPersonalTags;
+  final bool showMealType;
+  final bool showAnalysisStatus;
 
   const RecipeCard({
     super.key,
@@ -48,19 +50,21 @@ class RecipeCard extends StatelessWidget {
     this.onLongPress,
     this.showContextMenu = false,
     this.showImage = true,
-    this.showTags = true,
+    this.showTags = false, // UI Redesign: Clean list cards by default
     this.showMetadata = true,
-    this.showAllergenBadges = true,
+    this.showAllergenBadges = false, // UI Redesign: Clean list cards by default
     this.userAllergenPrefs,
-    this.showDietaryBadges = true,
+    this.showDietaryBadges = false, // UI Redesign: Clean list cards by default
     this.userDietaryPrefs,
     this.isSelected = false,
     this.margin,
     this.padding,
     this.style = RecipeCardStyle.detailed,
-    this.showPersonalTags = true,
+    this.showPersonalTags = false, // UI Redesign: Clean list cards by default
     this.personalTagNames,
     this.maxPersonalTags = 3,
+    this.showMealType = false, // UI Redesign: Clean list cards by default
+    this.showAnalysisStatus = false, // UI Redesign: Hide analysis status in list
   });
 
   @override
@@ -294,8 +298,8 @@ class RecipeCard extends StatelessWidget {
   Widget _buildMetadataRow(BuildContext context, {bool compact = false}) {
     final items = <Widget>[];
 
-    // Meal type badge
-    if (recipe.mealType.isNotEmpty) {
+    // Meal type badge - only if showMealType is true
+    if (showMealType && recipe.mealType.isNotEmpty) {
       items.add(_buildMealTypeBadge());
     }
 
@@ -303,7 +307,7 @@ class RecipeCard extends StatelessWidget {
     if (recipe.portions != null && recipe.portions! > 0) {
       items.add(_buildMetadataItem(
         Icons.people,
-        '${recipe.portions} portioner',
+        '${recipe.portions} port',
       ));
     }
 
@@ -403,8 +407,9 @@ class RecipeCard extends StatelessWidget {
   }
 
   /// Whether to show untagged indicator.
-  /// Shows when tagResult is null or has failed status, and badges are enabled.
+  /// Shows when tagResult is null or has failed status, and badges/analysis are enabled.
   bool get _showUntaggedIndicator {
+    if (!showAnalysisStatus) return false;
     if (!showAllergenBadges && !showDietaryBadges) return false;
     final tagResult = recipe.tagResult;
     return tagResult == null || tagResult.hasFailed;
