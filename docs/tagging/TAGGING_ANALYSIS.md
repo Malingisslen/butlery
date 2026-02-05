@@ -148,159 +148,208 @@ Phase 3 generates a `barnvänlig` TAG, but the dietary config also has a `barnv�
 
 Season conflict resolution uses `DateTime.now().month` to prefer the current season. A recipe tagged in winter might lose its "sommar" tag. When retagged in summer, it might lose "vinter". This means seasonal tags are unstable across retagging runs.
 
----
+### Bug 6: `createPersonalCopy()` Drops All Tags
 
-## Part 3: Improvement Recommendations
+**File**: `recipe_factory.dart:294-324`, `realtime_recipe.dart`
+**Severity**: HIGH
 
-### Category A: Accuracy Improvements
+When a user copies a shared or realtime recipe to their personal collection, `createPersonalCopy()` does NOT include `tagResult`. The copied recipe loses all auto-generated tags, allergen status, and dietary information. The user sees a blank slate where there used to be complete tag data.
 
-#### A1. Relax TriState Logic for Partial Coverage
+### Bug 7: Recipe.copyWith() Doesn't Expose tagResult
 
-**Current**: Coverage < 100% -> all allergens/dietary = UNKNOWN
-**Proposed**: Use graduated confidence levels
+**File**: `recipe_unified.dart:1031-1083`
 
-If a recipe has 90% coverage and no gluten-containing ingredients are found among the 90%, the probability that the remaining 10% contains gluten is low. The system could use:
-- 100% coverage: CONFIRMED FREE/CONFIRMED CONTAINS
-- 80-99% coverage: LIKELY FREE/LIKELY CONTAINS
-- 50-79% coverage: UNCERTAIN
-- <50% coverage: UNKNOWN
-
-This would make the system dramatically more useful for real-world recipes where 100% ingredient match is rare.
-
-#### A2. Contextual Ingredient Inference
-
-When an ingredient is unmatched, the system could infer its properties from context:
-- If the ingredient name contains "ost" -> likely dairy, contains lactose
-- If it's in the protein group context of other matched ingredients -> likely protein
-- If it's a common preparation like "salt och peppar" -> known safe defaults (no allergens)
-
-This would reduce the "all UNKNOWN" problem for common misses.
-
-#### A3. Fuzzy Matching with Levenshtein Distance
-
-The current fuzzy matching uses prefix/substring matching with score weighting. Adding Levenshtein distance matching would catch typos and minor spelling variations:
-- "tomatpure" vs "tomatpuré" (missing accent)
-- "spagetti" vs "spaghetti" (common misspelling)
-- "rödlök" vs "rodlok" (normalized form)
-
-#### A4. NLP-Based Ingredient Parsing
-
-The current `IngredientParser` uses regex-based parsing which misses many Swedish constructions. A proper NLP-based parser trained on Swedish recipe text could handle:
-- "ca 2-3 dl" (approximate quantities with ranges)
-- "salt och peppar efter smak" (to-taste instructions mixed with ingredients)
-- "1 paket (400g) tofu" (packaging descriptions)
-- "valfri grönsak" (abstract ingredient references)
-
-#### A5. Machine Learning for Cuisine Detection
-
-Phase 5 uses keyword matching for cuisine detection. An ML model trained on recipe text could detect cuisine more accurately by considering ingredient combinations, cooking methods, and flavor profiles together rather than isolated keyword checks.
-
-### Category B: Speed Improvements
-
-#### B1. Pre-Compute Tags at Write Time, Not Read Time
-
-Currently tagging is synchronous with recipe save. For web where cache is no-op, this blocks the save. Moving tagging to a background Cloud Function triggered on recipe write would:
-- Make saves instant
-- Allow more sophisticated tag generation (ML models, etc.)
-- Enable global ingredient database updates to cascade retag without client involvement
-
-#### B2. Batch Ingredient Lookup Instead of Sequential
-
-`IngredientLookupService.lookupIngredients()` looks up ingredients one at a time in a loop (line 160-167). For Firestore-backed repositories, this means N sequential reads. A batch `getAll()` query loading all ingredients into memory on init (which the repository already does) means lookups are O(1) in-memory - but the loop still has overhead from async/await per ingredient.
-
-A synchronous batch lookup method that searches the in-memory cache without async would eliminate this overhead.
-
-#### B3. Cache Ingredient Normalization Results
-
-`IngredientNormalizer.normalize()` is pure (no side effects, deterministic). Results could be cached to avoid re-normalizing the same strings across tagging runs. This matters for batch retagging of 100+ recipes where many share common ingredients.
-
-### Category C: Smarter Tag Generation
-
-#### C1. Title-Based Tag Reinforcement
-
-The system generates tags from ingredients, instructions, and title separately. But it doesn't use the title to REINFORCE or CORRECT ingredient-based tags. For example:
-- Title "Vegansk pasta" but ingredients have dairy -> flag conflict, trust title for dietary intent
-- Title "Snabb kycklinggryta" but time is missing -> infer "under-30-min" from "snabb"
-- Title "Mormors köttbullar" -> could add "husmanskost" tag
-
-#### C2. Instruction-Based Ingredient Inference
-
-When ingredients are unmatched, instructions can provide context:
-- "Stek kycklingen i olivolja" -> confirms kyckling is present even if ingredient lookup failed
-- "Servera med ris" -> side dishes mentioned in instructions could add tags
-
-#### C3. Cross-Recipe Learning
-
-Track which ingredients commonly appear together across all user recipes. Use this to:
-- Suggest missing ingredients (improving normalization)
-- Detect unusual combinations (potential input errors)
-- Generate "similar to" tags
-
-#### C4. User Feedback Loop
-
-When a user manually corrects a tag (via tag overrides), feed this back into the system:
-- If users frequently override "gluten: UNKNOWN" to "gluten: FREE" for recipes with >90% coverage, the system should learn the 90% threshold is safe
-- Track which unknown ingredients users identify, and auto-add to database
-
-#### C5. Temporal and Seasonal Context
-
-The system detects seasons from ingredients but doesn't use recipe creation date or user location:
-- A recipe created in December with "glögg" should get "jul" (Christmas) tag
-- A recipe with strawberries created in June should prefer "sommar" over other seasons
-- Consider Swedish food calendar events (midsommar, kräftskiva, etc.)
-
-#### C6. Portion and Quantity-Aware Tagging
-
-Currently, the system ignores quantities. But quantities matter:
-- "2 kg kyckling" vs "50g kyckling" - the first is a chicken-focused dish, the second uses chicken as garnish
-- "1 liter grädde" vs "1 msk grädde" - the first is actually a cream-based dish
-- This could improve tags like "proteinrik", "krämig", "ostig"
-
-#### C7. Image-Based Tag Verification (Future)
-
-If the app supports recipe images, ML image classification could verify or supplement text-based tags:
-- Detect dish type from image (soup, salad, pasta)
-- Verify color-based tags (green = veggie-rich)
-- Add presentation tags (plated, rustic, colorful)
-
-### Category D: Architecture Improvements
-
-#### D1. Fix the Compound Suffix Bug
-
-Normalize the compound suffix lists to ASCII, or apply the variation generation BEFORE Swedish character normalization. This is the most impactful quick fix.
-
-#### D2. Add Ingredient Database Analytics
-
-Track unmatched ingredients in production to identify gaps in the database. The code has `trackUnmatchedIngredients` Cloud Function, but the client should also surface common unknowns to the user and/or admin.
-
-#### D3. Separate Allergen Safety from Tag Generation
-
-Currently, allergen/dietary status and category tags are generated in the same pipeline. Safety-critical allergen detection should be a separate, more conservative system with:
-- Explicit "I don't know" UI for unknown allergens
-- User confirmation for allergen-free claims
-- Stricter coverage requirements (keep 100% for allergen FREE claims)
-- More relaxed requirements for general tags (50% coverage is enough for "pasta-dish")
-
-#### D4. Versioned Tag Schema with Migration
-
-The system has `kTagGeneratorVersion = '1.0.0'` but no automatic migration when the version changes. When tag generation logic changes, ALL recipes need retagging. The `RetaggingScheduler` handles this, but in batches of 10 at app startup with a 5-second delay. For a user with hundreds of recipes, this could take many app sessions.
-
-Consider server-side batch retagging via Cloud Functions when the generator version changes.
-
-#### D5. Tag Taxonomy and Hierarchy
-
-Tags are flat strings. A hierarchical taxonomy would enable:
-- Tag inheritance ("kyckling" implies "protein", "kött")
-- Faceted search (filter by category -> subcategory)
-- Tag conflict detection at the schema level rather than hardcoded rules
-- Localization (tag keys could be locale-independent, display names localized)
+The `Recipe` facade's `copyWith()` method has no `tagResult` parameter. Code that needs to update tags must manually construct `Recipe(core: recipe.core.copyWith(tagResult: ...))` instead. This is a footgun - any code using `recipe.copyWith(...)` silently preserves the OLD tags via fallback, even when it should be regenerating them.
 
 ---
 
-## Part 4: Quick Wins (Highest Impact, Lowest Effort)
+## Part 3: Systemic Architectural Problems
 
-1. **Fix compound suffix bug** (Theory 2 / Bug 1) - Normalize suffix lists to ASCII or defer normalization
-2. **Add common multi-ingredient strings** to KnownIngredients: "salt och peppar", "salt och svartpeppar", etc.
-3. **Relax coverage for non-safety tags** - Don't require 100% for protein tags, cooking method tags, etc. Only require 100% for allergen FREE claims
-4. **Log and surface unknown ingredients** to users with a "help us identify" prompt
-5. **Pre-populate `ingredientsNormalized`** before tagging runs to ensure consistent input
+These are the deep structural issues that no amount of bug-fixing will resolve.
+
+### Problem 1: The System Is Fundamentally a Closed-World Classifier in an Open-World Domain
+
+The entire tagging architecture assumes a **closed world**: every ingredient that matters is in the database, and if it isn't, the system cannot make any claims. This is the 100% coverage gate on TriState.
+
+But recipes exist in an **open world**: users import from websites, type freeform text, use brand names, regional dialects, abbreviations, and creative descriptions. The gap between the ~2230 known ingredients and the infinite variety of real recipe text is the root cause of most failures.
+
+**Systemic fix**: The architecture needs an **open-world reasoning layer** between the lookup service and the tag generator. Instead of binary matched/unmatched, ingredients should carry a confidence score:
+
+```
+matched exactly     -> confidence 1.0, properties from DB
+matched by alias    -> confidence 0.95, properties from DB
+matched by fuzzy    -> confidence 0.8, properties from DB
+inferred from name  -> confidence 0.5, properties guessed from naming patterns
+completely unknown  -> confidence 0.0, no properties
+
+Coverage = weighted average of confidence scores (not binary match count)
+```
+
+This changes the fundamental equation: a recipe where "salt" has confidence 1.0 and "kryddmått kanel" has confidence 0.5 (inferred as spice, no allergens) would have high effective coverage instead of being degraded to UNKNOWN for everything.
+
+### Problem 2: Tags Are Generated but Never Used for Discovery
+
+The system generates ~50+ possible tags per recipe across 5 phases: time, allergen, dietary, protein, carb, cooking method, dish type, difficulty, texture, temperature, nutrition, practical, sustainability, mood, occasion, holiday, season, cuisine. This is impressive engineering.
+
+But looking at how tags are actually consumed:
+- `SearchService.filterByTags()` only filters by **personal tags** (user-created), not auto-generated tags
+- The UI shows allergen/dietary badges but doesn't let users filter by "show me all grillad recipes" or "find me barnvänlig dishes"
+- There's no browse-by-tag view, no tag cloud, no "recipes like this" feature
+
+**The tagging system is generating data that nothing consumes.** The auto-generated tags (which are the bulk of the system's output) are essentially stored and forgotten. Only allergen/dietary status and personal tags have functional UI.
+
+**Systemic fix**: Either remove the unused phases (2-5) to simplify maintenance, or build the discovery UI that makes those tags valuable. The tagging system should be designed backward from user needs: what do users want to FIND? Then generate exactly those tags.
+
+### Problem 3: Two Parallel Tag Systems That Don't Talk to Each Other
+
+Auto-tags (`TagResult.tags`) and personal tags (`PersonalTag`) are completely separate systems with separate storage, separate UI, and separate filtering logic.
+
+- Auto-tags are in `recipe.core.tagResult.tags` (a `Set<String>` on the recipe document)
+- Personal tags are in `recipe.core.personalTagIds` (a `List<String>` referencing separate tag documents)
+- The search/filter UI only uses personal tags
+- The display UI shows auto-tags as badges but personal tags as filter chips
+
+This means a user who wants "show me all Thai recipes" cannot do it unless they manually create a "Thai" personal tag and apply it to recipes, even though the auto-tagger already generates a "thailändsk" tag. The two systems are solving the same problem in incompatible ways.
+
+**Systemic fix**: Unify the tag model. Every tag (auto or personal) should be a first-class entity that can be used for filtering, browsing, and discovery. Auto-tags should automatically appear as filterable options alongside personal tags.
+
+### Problem 4: The Pipeline Is Hardcoded and Brittle
+
+All tag generation logic is hardcoded in Dart classes. Adding a new cuisine requires editing `cuisine_config.dart`. Adding a new cooking method requires editing `tag_phase1_base.dart`. Every change requires an app release.
+
+The Firebase config system (`TagConfigService`) exists but only covers allergen and dietary configs. The 676 lines of `cuisine_config.dart` with 22 hardcoded cuisine entries, the season ingredient lists, the holiday ingredient lists, the cooking method keyword lists - all of these are static.
+
+**Systemic fix**: Move the entire tag vocabulary and detection rules to Firebase Remote Config or Firestore. Tag definitions should be data, not code:
+
+```json
+{
+  "tagId": "thailandsk",
+  "category": "cuisine",
+  "displayName": { "sv": "Thailändsk", "en": "Thai" },
+  "detection": {
+    "titleKeywords": ["thai", "pad thai", "tom yum"],
+    "ingredientKeywords": ["kokosmjölk", "fisksås", "citrongräs"],
+    "minIngredientMatches": 2
+  }
+}
+```
+
+This makes the entire tag system updatable without app releases, and opens the door for admin tooling to manage tags.
+
+### Problem 5: No Ingredient Lifecycle Management
+
+The ingredient database is a static artifact synced from CSV files via a manual tool (`tool/sync_ingredients.dart`). There is no:
+- Dashboard showing match rates and coverage trends over time
+- Automated detection of frequently-unmatched ingredients
+- Pipeline from "user-defined ingredient" to "global ingredient" (user ingredients are siloed per-user)
+- Quality scoring for ingredient entries (do they have all aliases? correct properties?)
+- A/B testing capability for normalization or matching changes
+
+The database is the foundation the entire system stands on, but it has no growth mechanism. It will always have coverage gaps because nothing systematically closes them.
+
+**Systemic fix**: Build an ingredient management pipeline:
+1. **Telemetry**: Every unmatched ingredient gets logged to a Firestore collection with frequency counts
+2. **Admin dashboard**: Shows top-N unmatched ingredients, sorted by frequency. One-click to add to database
+3. **User-to-global promotion**: When 3+ users define the same custom ingredient, flag it for promotion to global
+4. **Quality scores**: Each ingredient has a completeness score (has Swedish name + English name + properties + aliases + group)
+5. **Automated testing**: A test suite of ~500 real recipe ingredient strings that validates match rates on every database change
+
+### Problem 6: The Phase Architecture Creates Coupling Without Value
+
+The 5-phase design (Base -> Derived -> Complex -> Mood -> Cuisine) was designed so each phase builds on previous results. But examining the actual dependencies:
+
+- **Phase 2** depends on Phase 1 tags (e.g., `hasTag('pastabaserad')` -> add `pasta-dish`). But these derived tags are just renaming Phase 1 tags. "pastabaserad" and "pasta-dish" carry the same information.
+- **Phase 3** checks Phase 2 tags like `mild` (which itself depends on Phase 1 coverage). The phase chain amplifies the coverage problem: one failed phase cascades through all subsequent phases.
+- **Phase 4** does completely independent things (season detection from ingredient names, holiday detection from title keywords) that don't actually need Phases 2-3.
+- **Phase 5** (cuisine) also doesn't need Phases 2-4, which is why there's already a `calculateFromPhase1` fallback.
+
+The phase architecture adds complexity (5 result types, cascading failures, timeout handling per phase) without adding real value. Most phases could run independently from the ingredient lookup result and recipe metadata.
+
+**Systemic fix**: Replace the sequential phase chain with independent **tag generators** that each receive the same input (recipe + ingredient lookup) and produce tags independently. Run them in parallel. No cascading failures. Simpler code.
+
+```
+IngredientLookupResult + Recipe
+  |
+  +-- AllergenTagGenerator    -> allergen status
+  +-- DietaryTagGenerator     -> dietary status
+  +-- ProteinTagGenerator     -> protein tags
+  +-- CookingMethodGenerator  -> method tags
+  +-- DifficultyGenerator     -> difficulty tag
+  +-- MoodGenerator           -> mood/occasion tags
+  +-- CuisineGenerator        -> cuisine tags
+  +-- SeasonGenerator         -> season tags
+  |
+  v
+  TagResult (merged)
+```
+
+### Problem 7: No Observability or Debugging Tools
+
+When tagging "doesn't work," there's no way to diagnose WHY without reading source code. The system has logging (`AppLogger`) but no structured diagnostics.
+
+Questions that should be answerable from the app itself:
+- For recipe X, what was the coverage? Which ingredients were unmatched? Why?
+- What normalization steps did "2 dl hackad gul lök" go through? What was the final lookup query?
+- Which tag generation rules fired? Which didn't and why?
+- Across all my recipes, what's the average coverage? What are the most common unknown ingredients?
+
+The `TagDecision` model captures some of this for allergens/dietary, but it's not stored in Firestore by default and there's no UI to view it.
+
+**Systemic fix**: Build a tag debugging view accessible from the recipe detail screen. Show the full pipeline trace: raw input -> parsed -> normalized -> lookup result -> which rules fired -> final tags. This is invaluable for both development and user support.
+
+---
+
+## Part 4: Improvement Recommendations (Tactical)
+
+### Category A: Accuracy
+
+#### A1. Open-World Confidence Scoring
+Replace binary matched/unmatched with confidence scores. Ingredients matched exactly get 1.0. Fuzzy matches get 0.8. Name-pattern inferences get 0.5. Coverage becomes a weighted average. Allergen FREE claims still require high confidence, but most tags become usable at 60%+ coverage.
+
+#### A2. Property Inference for Unmatched Ingredients
+When an ingredient is unmatched, run a second pass that infers properties from naming patterns: words ending in "-ost" are likely dairy, words ending in "-kött" are likely meat, words containing "mjöl" are likely grain. This doesn't need to be perfect - even 70% accuracy on inferences dramatically improves effective coverage.
+
+#### A3. Common Ingredient Pairs as Single Entries
+"salt och peppar", "olja och vinäger", "socker och vanilj" - these common pairs should be recognized by the parser and split into individual ingredients before lookup, or added to the database as composite entries with "no allergen" properties.
+
+### Category B: Architecture
+
+#### B1. Unify Tag Systems
+Merge auto-tags and personal tags into a single tag model. Auto-tags become system-managed tags that users can filter by just like personal tags. The recipe list filter UI shows both in the same chip bar.
+
+#### B2. Data-Driven Tag Definitions
+Move all tag detection rules (cuisine keywords, season ingredients, holiday ingredients, cooking methods) to Firestore. Each tag rule is a document with detection criteria. The client downloads these at startup and evaluates locally. Changes are instant, no app release needed.
+
+#### B3. Independent Tag Generators
+Replace the 5-phase chain with independent generators that run in parallel. Each generator receives the same input and produces tags independently. No cascading failures. Easier to test, debug, and extend.
+
+#### B4. Ingredient Telemetry Pipeline
+Log every unmatched ingredient to Firestore with frequency counts. Build an admin view to see the top gaps. Create a one-click "add to database" flow. This turns the ingredient database from a static artifact into a living, growing system.
+
+### Category C: UX
+
+#### C1. Tag-Based Recipe Discovery
+Build a browse-by-tag view. Show tag categories (cuisine, difficulty, mood, dietary) as sections. Let users drill into "All Thai recipes" or "All comfort food". This makes the tag system's output visible and useful.
+
+#### C2. Tag Debugging UI
+Add a "Why these tags?" section to recipe detail. Show coverage percentage, unmatched ingredients, and which rules produced which tags. Let power users understand and trust the system.
+
+#### C3. Unknown Ingredient Feedback Loop
+When recipes have unmatched ingredients, show a non-intrusive prompt: "We couldn't identify 2 ingredients. Help us improve?" Let users classify unknowns (it's a spice, it's dairy, etc.) and feed this back into the system.
+
+---
+
+## Part 5: Priority Matrix
+
+| Change | Impact | Effort | Priority |
+|--------|--------|--------|----------|
+| Fix compound suffix bug | HIGH | LOW | Do first |
+| Expose auto-tags in search/filter UI | HIGH | MEDIUM | Do second |
+| Add confidence scoring to IngredientLookupResult | HIGH | MEDIUM | Do third |
+| Property inference for unmatched ingredients | HIGH | MEDIUM | Do fourth |
+| Ingredient telemetry pipeline | HIGH | MEDIUM | Do fifth |
+| Unify auto-tags and personal tags for filtering | VERY HIGH | HIGH | Plan next |
+| Data-driven tag definitions (Firebase) | HIGH | HIGH | Plan next |
+| Independent tag generators (remove phase chain) | MEDIUM | HIGH | Plan later |
+| Tag debugging UI | MEDIUM | MEDIUM | Plan later |
+| Browse-by-tag discovery view | HIGH | HIGH | Plan later |
