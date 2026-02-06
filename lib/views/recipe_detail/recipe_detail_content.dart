@@ -1,6 +1,11 @@
 // lib/views/recipe_detail/recipe_detail_content.dart
+//
+// UI Redesign: Converted to tab layout with Description/Tags/Allergens ABOVE tabs,
+// and Ingredienser + Instruktioner (with checkable steps) inside tabs.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/widgets/common/dialogs/unknown_ingredient_dialog.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
@@ -12,14 +17,12 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
-/// Recipe detail content widget
-/// This widget displays the main recipe content including:
-/// - Recipe description
-/// - Tags display
-/// - Image carousel
-/// - Instructions list
-/// - Portion scaler integration
-class RecipeDetailContent extends StatelessWidget {
+/// Recipe detail content widget with tabbed layout.
+///
+/// **UI Redesign:** Converted to tab-based layout:
+/// - ABOVE TABS: Description, Tags, Allergens, Image Carousel
+/// - TABS: Ingredienser (with PortionScaler) + Instruktioner (with checkable steps)
+class RecipeDetailContent extends StatefulWidget {
   final RecipeDetailViewModel viewModel;
   final List<String> scaledIngredients;
   final Function(int, List<String>) onPortionChanged;
@@ -50,22 +53,58 @@ class RecipeDetailContent extends StatelessWidget {
   });
 
   @override
+  State<RecipeDetailContent> createState() => _RecipeDetailContentState();
+}
+
+class _RecipeDetailContentState extends State<RecipeDetailContent>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  /// Tracks which instruction steps are completed (local state, not persisted).
+  final Set<int> _completedSteps = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  RecipeDetailViewModel get viewModel => widget.viewModel;
+  List<String> get scaledIngredients => widget.scaledIngredients;
+  Function(int, List<String>) get onPortionChanged => widget.onPortionChanged;
+  Function(List<String>, int) get onImageTap => widget.onImageTap;
+  Set<String>? get userAllergenPrefs => widget.userAllergenPrefs;
+  Set<String>? get userDietaryPrefs => widget.userDietaryPrefs;
+  bool get showCoverage => widget.showCoverage;
+  Map<String, String>? get personalTagNames => widget.personalTagNames;
+
+  @override
   Widget build(BuildContext context) {
     final recipe = viewModel.recipe;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // =====================================
+        // ABOVE TABS: Description, Tags, Allergens, Image Carousel
+        // =====================================
+
         // Description
         if (recipe.description.isNotEmpty) ...[
           _buildDescription(context),
-          const SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.spacingMd),
         ],
 
         // Tags (effective tags: auto-generated + user overrides)
         if (_hasEffectiveTags) ...[
           _buildTags(context),
-          const SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.spacingMd),
         ],
 
         // Personal tags (user-defined categories)
@@ -74,13 +113,13 @@ class RecipeDetailContent extends StatelessWidget {
             tagIds: viewModel.recipe.personalTagIds!,
             tagNames: personalTagNames!,
           ),
-          const SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.spacingMd),
         ],
 
         // Allergen and dietary information from tagging system
         if (recipe.tagResult != null) ...[
           _buildTaggingInfo(context),
-          const SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.spacingMd),
         ],
 
         // Images
@@ -89,17 +128,318 @@ class RecipeDetailContent extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingXl),
         ],
 
-        // Portion scaler
-        _buildPortionScaler(context),
-        const SizedBox(height: AppDimensions.spacingXl),
-
-        // Instructions
-        if (recipe.instructions.isNotEmpty) ...[
-          _buildInstructions(context),
-          const SizedBox(height: AppDimensions.spacingXl),
-        ],
+        // =====================================
+        // TABS: Ingredienser + Instruktioner
+        // =====================================
+        _buildTabbedContent(context),
       ],
     );
+  }
+
+  /// Builds the tabbed section with Ingredienser and Instruktioner tabs.
+  Widget _buildTabbedContent(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Column(
+        children: [
+          // Tab bar
+          TabBar(
+            controller: _tabController,
+            indicatorColor: AppColors.forestGreen,
+            indicatorWeight: 3,
+            labelColor: AppColors.forestGreenDark,
+            unselectedLabelColor: AppColors.textMedium,
+            labelStyle: AppTextStyles.titleMedium.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+            unselectedLabelStyle: AppTextStyles.titleMedium,
+            tabs: const [
+              Tab(text: 'Ingredienser'),
+              Tab(text: 'Instruktioner'),
+            ],
+          ),
+          const Divider(height: 1, color: AppColors.divider),
+
+          // Tab content - using AnimatedSize for smooth transitions
+          AnimatedSize(
+            duration: AppDimensions.animationDurationMedium,
+            child: _buildTabContent(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabContent() {
+    // Use AnimatedBuilder to rebuild when tab changes
+    return AnimatedBuilder(
+      animation: _tabController,
+      builder: (context, _) {
+        return IndexedStack(
+          index: _tabController.index,
+          children: [
+            _buildIngredientsTab(context),
+            _buildInstructionsTab(context),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Ingredients tab with portion scaler.
+  Widget _buildIngredientsTab(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Portion scaler
+          _buildPortionScaler(context),
+          const SizedBox(height: AppDimensions.spacingMd),
+
+          // Structured ingredient table
+          ...scaledIngredients.map((ingredient) {
+            final parsed = IngredientParser.parseIngredient(ingredient);
+            final isAllergen = _isAllergenIngredient(parsed.name);
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: AppDimensions.spacingXs,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Quantity + unit column (fixed width, right-aligned)
+                  SizedBox(
+                    width: 80,
+                    child: Text(
+                      parsed.unit.isNotEmpty
+                          ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
+                          : parsed.quantity > 0
+                              ? _formatQuantity(parsed.quantity)
+                              : '',
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        color: AppColors.textMedium,
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                  // Separator
+                  if (parsed.unit.isNotEmpty || parsed.quantity > 0)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingSm,
+                      ),
+                      child: Text(
+                        '|',
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          color: AppColors.divider,
+                        ),
+                      ),
+                    )
+                  else
+                    const SizedBox(width: AppDimensions.spacingMd),
+                  // Ingredient name
+                  Expanded(
+                    child: Row(
+                      children: [
+                        if (isAllergen)
+                          const Padding(
+                            padding: EdgeInsets.only(
+                              right: AppDimensions.spacingXs,
+                            ),
+                            child: Icon(
+                              Icons.warning_amber,
+                              size: AppDimensions.iconSizeS,
+                              color: AppColors.error,
+                            ),
+                          ),
+                        Expanded(
+                          child: Text(
+                            parsed.name,
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              color: isAllergen
+                                  ? AppColors.error
+                                  : AppColors.textDark,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  /// Instructions tab with checkable steps.
+  Widget _buildInstructionsTab(BuildContext context) {
+    final instructions = viewModel.recipe.instructions;
+    if (instructions.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        child: Text(
+          'Inga instruktioner angivna.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textMedium,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: instructions.asMap().entries.map((entry) {
+          final index = entry.key;
+          final instruction = entry.value;
+          final isCompleted = _completedSteps.contains(index);
+
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: index < instructions.length - 1
+                  ? AppDimensions.spacingMd
+                  : 0,
+            ),
+            child: InkWell(
+              onTap: () => _toggleStepCompletion(index),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppDimensions.spacingXs,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Checkable step indicator
+                    _buildStepCheckbox(index + 1, isCompleted),
+                    const SizedBox(width: AppDimensions.spacingMd),
+
+                    // Instruction text
+                    Expanded(
+                      child: Text(
+                        instruction,
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          color: isCompleted
+                              ? AppColors.textMedium
+                              : AppColors.textDark,
+                          decoration: isCompleted
+                              ? TextDecoration.lineThrough
+                              : TextDecoration.none,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildStepCheckbox(int stepNumber, bool isCompleted) {
+    return AnimatedContainer(
+      duration: AppDimensions.animationDurationFast,
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        color: isCompleted ? AppColors.forestGreen : AppColors.cardWhite,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: AppColors.forestGreen,
+          width: 2,
+        ),
+      ),
+      child: Center(
+        child: isCompleted
+            ? const Icon(
+                Icons.check,
+                size: 16,
+                color: AppColors.cardWhite,
+              )
+            : Text(
+                '$stepNumber',
+                style: AppTextStyles.metadataEmphasized.copyWith(
+                  color: AppColors.forestGreen,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+      ),
+    );
+  }
+
+  /// Checks if an ingredient name matches a known allergen with 'contains' status.
+  bool _isAllergenIngredient(String ingredientName) {
+    if (userAllergenPrefs == null || userAllergenPrefs!.isEmpty) return false;
+    final allergenStatus = viewModel.recipe.tagResult?.allergenStatus;
+    if (allergenStatus == null) return false;
+
+    final nameLower = ingredientName.toLowerCase();
+    for (final entry in allergenStatus.entries) {
+      if (entry.value != TriState.contains) continue;
+      if (!userAllergenPrefs!.contains(entry.key)) continue;
+      // Check if allergen key appears in the ingredient name
+      if (nameLower.contains(entry.key.toLowerCase())) return true;
+    }
+    return false;
+  }
+
+  /// Formats a quantity for display, removing trailing .0 for whole numbers.
+  String _formatQuantity(double quantity) {
+    if (quantity == quantity.roundToDouble()) {
+      return quantity.toInt().toString();
+    }
+    return quantity.toStringAsFixed(1);
+  }
+
+  void _toggleStepCompletion(int index) {
+    setState(() {
+      if (_completedSteps.contains(index)) {
+        _completedSteps.remove(index);
+      } else {
+        _completedSteps.add(index);
+      }
+    });
+  }
+
+  /// Whether there are effective tags to display.
+  bool get _hasEffectiveTags {
+    final recipe = viewModel.recipe;
+    final autoTags = recipe.tagResult?.tags ?? <String>{};
+    final userAddedTags = recipe.tagOverrides?.addedTags ?? <String>{};
+    final removedTags = recipe.tagOverrides?.removedTags ?? <String>{};
+    final effectiveTags = autoTags.union(userAddedTags).difference(removedTags);
+    return effectiveTags.isNotEmpty;
+  }
+
+  /// Whether there are personal tags to display.
+  bool get _hasPersonalTags {
+    final tagIds = viewModel.recipe.personalTagIds;
+    if (tagIds == null || tagIds.isEmpty) return false;
+    if (personalTagNames == null || personalTagNames!.isEmpty) return false;
+    return tagIds.any((id) => personalTagNames!.containsKey(id));
+  }
+
+  /// Gets the top 5 effective tags with smart priority.
+  List<String> get _topEffectiveTags {
+    final recipe = viewModel.recipe;
+    final autoTags = recipe.tagResult?.tags ?? <String>{};
+    final userAddedTags = recipe.tagOverrides?.addedTags ?? <String>{};
+    final removedTags = recipe.tagOverrides?.removedTags ?? <String>{};
+    final effectiveTags = autoTags.union(userAddedTags).difference(removedTags);
+    return TagDisplayUtils.getTopTags(effectiveTags, userAddedTags, limit: 5);
   }
 
   Widget _buildDescription(BuildContext context) {
@@ -136,34 +476,6 @@ class RecipeDetailContent extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  /// Whether there are effective tags to display.
-  bool get _hasEffectiveTags {
-    final recipe = viewModel.recipe;
-    final autoTags = recipe.tagResult?.tags ?? <String>{};
-    final userAddedTags = recipe.tagOverrides?.addedTags ?? <String>{};
-    final removedTags = recipe.tagOverrides?.removedTags ?? <String>{};
-    final effectiveTags = autoTags.union(userAddedTags).difference(removedTags);
-    return effectiveTags.isNotEmpty;
-  }
-
-  /// Whether there are personal tags to display.
-  bool get _hasPersonalTags {
-    final tagIds = viewModel.recipe.personalTagIds;
-    if (tagIds == null || tagIds.isEmpty) return false;
-    if (personalTagNames == null || personalTagNames!.isEmpty) return false;
-    return tagIds.any((id) => personalTagNames!.containsKey(id));
-  }
-
-  /// Gets the top 5 effective tags with smart priority.
-  List<String> get _topEffectiveTags {
-    final recipe = viewModel.recipe;
-    final autoTags = recipe.tagResult?.tags ?? <String>{};
-    final userAddedTags = recipe.tagOverrides?.addedTags ?? <String>{};
-    final removedTags = recipe.tagOverrides?.removedTags ?? <String>{};
-    final effectiveTags = autoTags.union(userAddedTags).difference(removedTags);
-    return TagDisplayUtils.getTopTags(effectiveTags, userAddedTags, limit: 5);
   }
 
   Widget _buildTags(BuildContext context) {
@@ -303,7 +615,7 @@ class RecipeDetailContent extends StatelessWidget {
               ),
               child: img.UniversalImageManager.recipeDetail(
                 imageUrls: viewModel.recipe.imageUrls,
-                size: ImageSize.large, // Now properly sized for recipe detail
+                size: ImageSize.large,
                 showNavigationDots: true,
                 showImageCounter: true,
                 onImageTap: (index) =>
@@ -323,90 +635,6 @@ class RecipeDetailContent extends StatelessWidget {
       onPortionChanged: onPortionChanged,
       minPortions: 1,
       maxPortions: 20,
-    );
-  }
-
-  Widget _buildInstructions(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.format_list_numbered,
-                color: AppColors.forestGreen,
-                size: AppDimensions.iconSizeAction,
-              ),
-              const SizedBox(width: AppDimensions.spacingM),
-              Text(
-                'Instruktioner',
-                style: AppTextStyles.titleMedium,
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDimensions.spacingM),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children:
-                viewModel.recipe.instructions.asMap().entries.map((entry) {
-              final index = entry.key;
-              final instruction = entry.value;
-
-              return Padding(
-                padding: EdgeInsets.only(
-                  bottom: index < viewModel.recipe.instructions.length - 1
-                      ? AppDimensions.spacingS
-                      : 0,
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Step number
-                    Container(
-                      width: 28,
-                      height: 28,
-                      margin: const EdgeInsetsDirectional.only(
-                          end: AppDimensions.spacingS),
-                      decoration: const BoxDecoration(
-                        color: AppColors.forestGreen,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${index + 1}',
-                          style: AppTextStyles.metadataEmphasized.copyWith(
-                            color: AppColors.neutralLight,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Instruction text
-                    Expanded(
-                      child: Padding(
-                        padding: AppDimensions.paddingOnlyTop4,
-                        child: Text(
-                          instruction,
-                          style: AppTextStyles.bodyLarge,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
     );
   }
 }

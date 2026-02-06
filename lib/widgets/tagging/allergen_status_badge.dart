@@ -6,12 +6,17 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
-/// Badge displaying allergen status with tri-state coloring and shape distinction.
+/// Badge displaying allergen status with tri-state coloring.
+///
+/// **UI Redesign:** Uses left-border style instead of pill/chip style:
+/// - 3px left border (color based on status)
+/// - Light tinted background (10-12% opacity)
+/// - Icon + label in row
 ///
 /// Both color AND shape are used for accessibility (color-blind users):
-/// - FREE: Green circle with checkmark (safe)
-/// - CONTAINS: Red triangle with exclamation (allergen present)
-/// - UNKNOWN: Grey circle with question mark (uncertain)
+/// - FREE: Green with checkmark (safe)
+/// - CONTAINS: Red with exclamation (allergen present)
+/// - UNKNOWN: Grey with question mark (uncertain)
 class AllergenStatusBadge extends StatelessWidget {
   /// The allergen key (e.g., 'gluten', 'mjölk').
   final String allergen;
@@ -114,6 +119,7 @@ class AllergenStatusBadge extends StatelessWidget {
   }
 }
 
+/// Standard badge with left-border style (UI Redesign).
 class _StandardBadge extends StatelessWidget {
   final Color color;
   final IconData icon;
@@ -133,21 +139,27 @@ class _StandardBadge extends StatelessWidget {
       label: semanticLabel,
       child: Container(
         padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingMs,
-            vertical: AppDimensions.spacing6),
+          horizontal: AppDimensions.paddingMs,
+          vertical: AppDimensions.spacing6,
+        ),
         decoration: BoxDecoration(
+          // Light tinted background (10-12% opacity)
           color: color.withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius16),
+          // Full rectangular border on all sides per mockup
           border: Border.all(
-              color: color.withValues(alpha: AppDimensions.opacityMediumLight)),
+            color: color,
+            width: 1.5,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon,
-                size: AppDimensions.iconSize18,
-                color: color,
-                semanticLabel: null),
+            Icon(
+              icon,
+              size: AppDimensions.iconSize18,
+              color: color,
+              semanticLabel: null,
+            ),
             if (label != null) ...[
               const SizedBox(width: AppDimensions.spacing6),
               ExcludeSemantics(
@@ -166,6 +178,7 @@ class _StandardBadge extends StatelessWidget {
   }
 }
 
+/// Compact badge with left-border style (UI Redesign).
 class _CompactBadge extends StatelessWidget {
   final Color color;
   final IconData icon;
@@ -185,16 +198,27 @@ class _CompactBadge extends StatelessWidget {
       label: semanticLabel,
       child: Container(
         padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacing6,
-            vertical: AppDimensions.spacingS),
+          horizontal: AppDimensions.spacing6,
+          vertical: AppDimensions.spacingS,
+        ),
         decoration: BoxDecoration(
+          // Light tinted background (10-12% opacity)
           color: color.withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+          // Full rectangular border on all sides per mockup
+          border: Border.all(
+            color: color,
+            width: 1,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: AppDimensions.iconSize14, color: color, semanticLabel: null),
+            Icon(
+              icon,
+              size: AppDimensions.iconSize14,
+              color: color,
+              semanticLabel: null,
+            ),
             if (label != null) ...[
               const SizedBox(width: AppDimensions.spacingXs),
               ExcludeSemantics(

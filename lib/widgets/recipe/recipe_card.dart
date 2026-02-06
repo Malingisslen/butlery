@@ -7,6 +7,7 @@ import 'package:butlery/theme/components/input_themes.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
+import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 
 /// Recipe card widget for displaying recipe information with comprehensive functionality.
@@ -73,7 +74,7 @@ class RecipeCard extends StatelessWidget {
       child: Semantics(
         label: 'Recipe: ${recipe.title}',
         child: Container(
-          margin: margin ?? AppDimensions.paddingSymmetric16x4,
+          margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
           // UI Redesign: Left green border + bottom rust border
           decoration: isSelected
               ? BoxDecoration(
@@ -246,10 +247,11 @@ class RecipeCard extends StatelessWidget {
   Widget _buildRecipeImage({double? size, double? width, double? height}) {
     final imageUrls = recipe.imageUrls;
     final hasImage = imageUrls.isNotEmpty;
+    final imageSize = size ?? 80.0;
 
     return Container(
-      width: width ?? size ?? 80,
-      height: height ?? size ?? 80,
+      width: width ?? imageSize,
+      height: height ?? imageSize,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         color: AppColors.cream,
@@ -266,10 +268,11 @@ class RecipeCard extends StatelessWidget {
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
               )
-            : Icon(
-                Icons.restaurant,
-                size: (size ?? 80) * 0.4,
-                color: AppColors.textMedium,
+            // UI Redesign: Random vegetable fallback when no photo
+            : VegetableIllustration(
+                type: VegetableIllustration.randomForRecipe(recipe.id),
+                size: imageSize * 0.7,
+                opacity: 0.8,
               ),
       ),
     );

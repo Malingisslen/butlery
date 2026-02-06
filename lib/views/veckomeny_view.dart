@@ -110,7 +110,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         if (!didPop) VeckomenyDialogs.showExitDialog(context);
       },
       child: LayoutComponents.mainMenu(
-        currentIndex: 2,
+        currentIndex: 1, // UI Redesign: nav order is recept(0), meny(1), inköp(2), lägg till(3)
         // UI Redesign: Use MainViewHeader with week badge
         appBar: MainViewHeader(
           title: 'veckans meny',
@@ -225,9 +225,13 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                 Expanded(
                   child: Padding(
                     padding: AppDimensions.responsiveHorizontalPadding(context),
+                    // UI Redesign: Pass retry callback for inline error handling
                     child: MenuContentWidgets.buildMenuContent(
                       context,
                       viewModel: viewModel,
+                      onRetry: _promptController.text.isNotEmpty
+                          ? _generateMenu
+                          : null,
                     ),
                   ),
                 ),
@@ -244,7 +248,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   /// UI Redesign: Uses PeaLoadingAnimation for branded loading experience
   Widget _buildLoadingOverlay(BuildContext context) {
     return const PeaLoadingOverlay(
-      message: 'Genererar meny...',
+      message: 'Genererar din veckomeny...',
+      subtitle: 'Hittar recept som passar dina preferenser',
     );
   }
 }

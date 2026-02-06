@@ -189,15 +189,23 @@ class PortionScalerUI {
       color: AppColors.transparent,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        borderRadius: BorderRadius.zero,
         child: Container(
-          padding: const EdgeInsets.all(AppDimensions.spacingS),
+          padding: const EdgeInsets.all(AppDimensions.spacingSm),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: onPressed != null
+                  ? AppColors.forestGreen
+                  : AppColors.divider,
+              width: 1.5,
+            ),
+          ),
           child: Icon(
             icon,
-            size: AppDimensions.iconSizeS,
+            size: AppDimensions.iconSizeL,
             color: onPressed != null
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.outline,
+                ? AppColors.forestGreen
+                : AppColors.textMedium,
           ),
         ),
       ),
