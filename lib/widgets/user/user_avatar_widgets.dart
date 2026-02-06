@@ -24,22 +24,22 @@ class UserAvatarWidgets {
     bool isOnline = false,
   }) {
     final avatarSize = _getAvatarSize(size);
+    // UI Redesign: Avatar uses rust color scheme
     final effectiveBackgroundColor =
-        backgroundColor ?? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight);
-    final effectiveTextColor = textColor ?? AppColors.forestGreen;
+        backgroundColor ?? AppColors.rust.withValues(alpha: AppDimensions.opacityVeryLight);
+    final effectiveTextColor = textColor ?? AppColors.rust;
 
     Widget avatar = Container(
       width: avatarSize,
       height: avatarSize,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
         color: effectiveBackgroundColor,
         border: borderWidth != null && borderColor != null
             ? Border.all(width: borderWidth, color: borderColor)
             : null,
       ),
       child: (imageUrl != null && imageUrl.isNotEmpty)
-          ? ClipOval(
+          ? ClipRect(
               child: CachedNetworkImage(
                 imageUrl: imageUrl,
                 width: avatarSize,
@@ -91,7 +91,7 @@ class UserAvatarWidgets {
             color: AppColors.transparent,
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(avatarSize / 2),
+              borderRadius: BorderRadius.zero,
               child: avatar,
             ),
           )
@@ -181,7 +181,6 @@ class UserAvatarWidgets {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
         color: backgroundColor,
       ),
       child: Center(

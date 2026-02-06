@@ -52,7 +52,7 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
   static const double accentBarHeight = 4.0;
 
   /// Total header height including safe area.
-  static const double headerHeight = 120.0;
+  static const double headerHeight = 130.0;
 
   @override
   Size get preferredSize => Size.fromHeight(
@@ -64,7 +64,7 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
+        ColoredBox(
           color: AppColors.forestGreenDark,
           child: SafeArea(
             bottom: false,
@@ -93,7 +93,7 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
                           ),
                           // Count badge
                           if (countBadge != null) ...[
-                            const SizedBox(height: AppDimensions.spacingSm),
+                            const SizedBox(height: AppDimensions.spacingXs),
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: AppDimensions.spacingSm,
@@ -177,7 +177,8 @@ class ButlerySearchBox extends StatelessWidget {
           top: const BorderSide(color: AppColors.forestGreen, width: 2),
           left: const BorderSide(color: AppColors.forestGreen, width: 2),
           right: const BorderSide(color: AppColors.forestGreen, width: 2),
-          bottom: BorderSide(color: AppColors.rust.withValues(alpha: 0.7), width: 4),
+          bottom: BorderSide(
+              color: AppColors.rust.withValues(alpha: 0.7), width: 4),
         ),
       ),
       child: Row(

@@ -1,6 +1,7 @@
 // lib/widgets/common/search_filter/filter_toggle_button.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Toggle button for showing/hiding filters
@@ -18,47 +19,34 @@ class FilterToggleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(
-          color: showFilters
-              ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.outline,
-          width: showFilters ? 2 : 1,
-        ),
-        color: showFilters
-            ? Theme.of(context).colorScheme.primaryContainer
-            : Theme.of(context).colorScheme.surface,
-      ),
-      child: Stack(
-        children: [
-          IconButton(
-            onPressed: onToggle,
-            icon: Icon(
-              Icons.filter_list,
-              color: showFilters
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            tooltip: showFilters ? 'Dölj filter' : 'Visa filter',
+    return Stack(
+      children: [
+        IconButton(
+          onPressed: onToggle,
+          icon: Icon(
+            Icons.filter_list,
+            size: AppDimensions.iconSizeAction,
+            color: showFilters
+                ? AppColors.forestGreen
+                : AppColors.textMedium,
           ),
-          // Active filters indicator
-          if (hasActiveFilters && !showFilters)
-            Positioned(
-              right: 8,
-              top: 8,
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.error,
-                  shape: BoxShape.circle,
-                ),
+          tooltip: showFilters ? 'Dölj filter' : 'Visa filter',
+        ),
+        // Active filters indicator
+        if (hasActiveFilters && !showFilters)
+          Positioned(
+            right: 8,
+            top: 8,
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(
+                color: AppColors.rust,
+                shape: BoxShape.circle,
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 }

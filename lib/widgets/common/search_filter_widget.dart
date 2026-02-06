@@ -251,28 +251,18 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
   Widget _buildSearchSection(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
-      child: Row(
-        children: [
-          // Search field
-          Expanded(
-            child: SearchInputWidget(
-              controller: _searchController,
-              focusNode: _searchFocusNode,
-              hintText: widget.searchHint,
-              onClear: _onSearchCleared,
-            ),
-          ),
-
-          // Filter toggle button (only if filters available)
-          if (_hasFilters() && widget.onToggleFilters != null) ...[
-            const SizedBox(width: AppDimensions.spacingM),
-            FilterToggleButton(
-              showFilters: widget.showFilters ?? false,
-              hasActiveFilters: widget.hasActiveFilters ?? false,
-              onToggle: widget.onToggleFilters!,
-            ),
-          ],
-        ],
+      child: SearchInputWidget(
+        controller: _searchController,
+        focusNode: _searchFocusNode,
+        hintText: widget.searchHint,
+        onClear: _onSearchCleared,
+        trailing: _hasFilters() && widget.onToggleFilters != null
+            ? FilterToggleButton(
+                showFilters: widget.showFilters ?? false,
+                hasActiveFilters: widget.hasActiveFilters ?? false,
+                onToggle: widget.onToggleFilters!,
+              )
+            : null,
       ),
     );
   }

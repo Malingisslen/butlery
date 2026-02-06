@@ -19,9 +19,12 @@ import 'package:butlery/theme/app_dimensions.dart';
 /// ```
 class PeaLoadingAnimation extends StatefulWidget {
   /// Creates a pea loading animation.
+  ///
+  /// UI Redesign: Updated frame interval to ~310ms for 3.1s cycle
+  /// matching the mockup CSS timing (10 frames × 310ms = 3.1s).
   const PeaLoadingAnimation({
     this.size = 80,
-    this.frameInterval = const Duration(milliseconds: 120),
+    this.frameInterval = const Duration(milliseconds: 310),
     super.key,
   });
 
@@ -120,12 +123,16 @@ class PeaLoadingOverlay extends StatelessWidget {
   /// Creates a pea loading overlay.
   const PeaLoadingOverlay({
     this.message,
+    this.subtitle,
     this.size = 100,
     super.key,
   });
 
   /// Optional message to display below the animation.
   final String? message;
+
+  /// Optional subtitle below the message.
+  final String? subtitle;
 
   /// Size of the animation.
   final double size;
@@ -147,6 +154,16 @@ class PeaLoadingOverlay extends StatelessWidget {
                 message!,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurface,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+            if (subtitle != null) ...[
+              const SizedBox(height: AppDimensions.spacingSm),
+              Text(
+                subtitle!,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 textAlign: TextAlign.center,
               ),
