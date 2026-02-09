@@ -11,9 +11,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/indicators/pea_loading_animation.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/share_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart';
 import 'package:butlery/widgets/menu/menu_content_widgets.dart';
@@ -46,7 +44,6 @@ class _VeckomenyViewContent extends StatefulWidget {
 
 class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   final TextEditingController _promptController = TextEditingController();
-  final ShareService _shareService = ServiceLocator.get<ShareService>();
   final UnifiedFriendsService _friendsService =
       ServiceLocator.get<UnifiedFriendsService>();
 
@@ -81,14 +78,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   void _clearMenu() {
     context.read<MenuViewModel>().clearMenu();
     _promptController.clear();
-  }
-
-  Future<void> _shareMenu() async {
-    final viewModel = context.read<MenuViewModel>();
-    await _shareService.shareWeekMenuFromCategories(viewModel.menu);
-    if (mounted) {
-      SnackBarUtils.showSuccess(context, context.l10n.menuShared);
-    }
   }
 
   /// Get current week number
