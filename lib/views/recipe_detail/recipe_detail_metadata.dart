@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/time_format_utils.dart';
 
 /// Recipe detail metadata widget — inline row with time, portions, rating,
 /// and "Lagat idag" chip. Source URL is shown as subtitle in the parent view.
@@ -30,40 +31,31 @@ class RecipeDetailMetadata extends StatelessWidget {
   Widget _buildMetadata(BuildContext context) {
     final recipe = viewModel.recipe;
 
-    // UI Redesign: All metadata items + "Lagat idag" chip inline using Wrap
-    final metadataWidgets = <Widget>[];
+    // UI Redesign: Text+dots format for metadata + "Lagat idag" subtle chip
+    final parts = <String>[];
 
     if ((recipe.timeMinutes ?? 0) > 0) {
-      metadataWidgets.add(Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.access_time, size: AppDimensions.iconSizeS, color: AppColors.textMedium),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Text(
-            _formatTime(recipe.timeMinutes!),
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
-          ),
-        ],
-      ));
+      parts.add(TimeFormatUtils.formatCookingTime(recipe.timeMinutes!));
     }
 
     if (currentPortions > 0) {
-      metadataWidgets.add(Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.people, size: AppDimensions.iconSizeS, color: AppColors.textMedium),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Text(
-            '$currentPortions ${currentPortions == 1 ? 'portion' : 'port'}',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: isScaled ? AppColors.forestGreen : AppColors.textMedium,
-              fontWeight: isScaled ? FontWeight.w600 : FontWeight.w400,
-            ),
-          ),
-        ],
+      parts.add('$currentPortions ${currentPortions == 1 ? 'portion' : 'port'}');
+    }
+
+    final metadataWidgets = <Widget>[];
+
+    // Dot-separated metadata text
+    if (parts.isNotEmpty) {
+      metadataWidgets.add(Text(
+        parts.join(' \u00B7 '),
+        style: AppTextStyles.bodySmall.copyWith(
+          color: isScaled ? AppColors.forestGreen : AppColors.textDark,
+          fontWeight: isScaled ? FontWeight.w600 : FontWeight.w400,
+        ),
       ));
     }
 
+    // Star rating row (detail keeps star row, not pill)
     if ((recipe.rating ?? 0) > 0) {
       metadataWidgets.add(Row(
         mainAxisSize: MainAxisSize.min,
@@ -72,13 +64,13 @@ class RecipeDetailMetadata extends StatelessWidget {
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             recipe.rating!.toStringAsFixed(1),
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textDark),
           ),
         ],
       ));
     }
 
-    // "Lagat idag" as small outlined chip
+    // "Lagat idag" as subtle chip (thin border, minimal padding)
     metadataWidgets.add(
       OutlinedButton.icon(
         onPressed: () => _markAsCooked(context),
@@ -86,10 +78,10 @@ class RecipeDetailMetadata extends StatelessWidget {
         label: Text('Lagat idag', style: AppTextStyles.labelSmall),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.success,
-          side: const BorderSide(color: AppColors.success, width: 1),
+          side: const BorderSide(color: AppColors.success, width: 0.5),
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingSm,
-            vertical: AppDimensions.spacingXs,
+            vertical: 2,
           ),
           minimumSize: Size.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -143,20 +135,6 @@ class RecipeDetailMetadata extends StatelessWidget {
                 )),
       ],
     );
-  }
-
-  String _formatTime(int minutes) {
-    if (minutes < 60) {
-      return '$minutes min';
-    } else {
-      final hours = minutes ~/ 60;
-      final remainingMinutes = minutes % 60;
-      if (remainingMinutes == 0) {
-        return '$hours h';
-      } else {
-        return '$hours h $remainingMinutes min';
-      }
-    }
   }
 
   Future<void> _markAsCooked(BuildContext context) async {

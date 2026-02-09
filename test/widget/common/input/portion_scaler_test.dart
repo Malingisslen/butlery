@@ -70,8 +70,9 @@ void main() {
         );
 
         // Assert
-        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
-        expect(find.text('Portioner'), findsOneWidget);
+        // UI Redesign: restaurant_menu icon removed per mockup
+        expect(find.byIcon(Icons.restaurant_menu), findsNothing);
+        expect(find.text('Portioner:'), findsOneWidget);
         expect(find.text('$originalPortions'), findsOneWidget);
         expect(find.byIcon(Icons.remove), findsOneWidget);
         expect(find.byIcon(Icons.add), findsOneWidget);
@@ -414,7 +415,7 @@ void main() {
         );
 
         // Assert - controls are rendered (Column with header)
-        expect(find.text('Portioner'), findsOneWidget);
+        expect(find.text('Portioner:'), findsOneWidget);
         expect(find.byIcon(Icons.remove), findsOneWidget);
         expect(find.byIcon(Icons.add), findsOneWidget);
       });
@@ -443,10 +444,10 @@ void main() {
           ),
         );
 
-        // Assert - Production code uses titleBold (w700) with copyWith
-        final portionText = tester.widget<Text>(find.text('Portioner'));
-        expect(portionText.style?.fontSize, equals(15.0)); // titleMedium size
-        expect(portionText.style?.fontWeight, equals(FontWeight.w700));
+        // Assert - UI Redesign: Uses bodySmall (13px) w400 per mockup
+        final portionText = tester.widget<Text>(find.text('Portioner:'));
+        expect(portionText.style?.fontSize, equals(13.0));
+        expect(portionText.style?.fontWeight, equals(FontWeight.w400));
       });
     });
 
@@ -476,7 +477,8 @@ void main() {
         );
 
         // Assert - Should not crash
-        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
+        // UI Redesign: restaurant_menu icon removed per mockup
+        expect(find.byIcon(Icons.restaurant_menu), findsNothing);
       });
 
       testWidgets('handles very large portion numbers',
@@ -525,7 +527,7 @@ void main() {
 
         // Assert - controls render correctly
         expect(find.text('6'), findsOneWidget);
-        expect(find.text('Portioner'), findsOneWidget);
+        expect(find.text('Portioner:'), findsOneWidget);
       });
 
       testWidgets('handles rapid portion changes', (WidgetTester tester) async {

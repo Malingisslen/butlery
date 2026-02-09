@@ -313,7 +313,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         currentIndex: 0,
         // UI Redesign: Use MainViewHeader with large title and count badge
         appBar: MainViewHeader(
-          title: 'dina recept',
+          title: 'dina\nrecept',
           countBadge: '$recipeCount recept',
           trailing: const RecipeListAvatarBadge(),
           actions: [

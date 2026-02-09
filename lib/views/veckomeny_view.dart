@@ -113,7 +113,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         currentIndex: 1, // UI Redesign: nav order is recept(0), meny(1), inköp(2), lägg till(3)
         // UI Redesign: Use MainViewHeader with week badge
         appBar: MainViewHeader(
-          title: 'veckans meny',
+          title: 'veckans\nmeny',
           countBadge: viewModel.hasMenu
               ? 'Vecka $weekNumber · $menuItemCount rätter'
               : 'Vecka $weekNumber',

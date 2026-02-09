@@ -253,10 +253,12 @@ class MenuContentWidgets {
               Expanded(
                 child: Text(
                   MenuViewHelpers.capitalizeCategory(category).toUpperCase(),
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: AppColors.forestGreenDark,
+                  style: const TextStyle(
+                    fontFamily: AppTextStyles.headerFont,
+                    fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 3,
+                    color: AppColors.forestGreenDark,
                   ),
                 ),
               ),
@@ -419,8 +421,8 @@ class _MenuRecipeCard extends StatelessWidget {
                     children: [
                       Text(
                         recipe.title,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textDark,
+                        style: AppTextStyles.titleMedium.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

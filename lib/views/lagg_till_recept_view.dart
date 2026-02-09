@@ -31,7 +31,7 @@ class LaggTillReceptView extends StatelessWidget {
       currentIndex: 3, // UI Redesign: nav order is recept(0), meny(1), inköp(2), lägg till(3)
       // UI Redesign: Use MainViewHeader with lowercase title
       appBar: const MainViewHeader(
-        title: 'lägg till recept',
+        title: 'lägg till\nrecept',
       ),
       body: SafeArea(
         child: Center(
