@@ -18,15 +18,15 @@ dependencies:
 
   # ==================== FIREBASE & BACKEND ====================
   firebase_core: ^4.2.1        # Updated for CVE-2025-0838 fix
-  firebase_auth: ^6.1.2        # Updated for security patches
+  firebase_auth: ^6.1.4        # Updated for security patches
   cloud_firestore: ^6.1.0      # Updated for CVE-2024-7254 fix
-  firebase_storage: ^13.0.4    # Updated for bug fixes
-  firebase_analytics: ^12.0.4  # Updated for tracking improvements
+  firebase_storage: ^13.0.6    # Updated for bug fixes
+  firebase_analytics: ^12.1.1  # Updated for tracking improvements
   firebase_app_check: ^0.4.0
-  firebase_messaging: ^16.0.4  # Updated for FCM improvements
+  firebase_messaging: ^16.1.1  # Updated for FCM improvements
   firebase_performance: ^0.11.0  # For performance monitoring
-  firebase_crashlytics: ^5.0.4  # Updated for reporting improvements
-  firebase_remote_config: ^6.0.4  # Feature flags and A/B testing
+  firebase_crashlytics: ^5.0.7  # Updated for reporting improvements
+  firebase_remote_config: ^6.1.4  # Feature flags and A/B testing
   flutter_local_notifications: ^19.0.0  # For Android notification channels
   local_auth: ^2.3.0  # For biometric authentication (Face ID, Touch ID, fingerprint)
   device_info_plus: ^11.1.0  # For unique device identification
