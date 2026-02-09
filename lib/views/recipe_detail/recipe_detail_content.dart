@@ -25,6 +25,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 class RecipeDetailContent extends StatefulWidget {
   final RecipeDetailViewModel viewModel;
   final List<String> scaledIngredients;
+  final int currentPortions;
   final Function(int, List<String>) onPortionChanged;
   final Function(List<String>, int) onImageTap;
 
@@ -44,6 +45,7 @@ class RecipeDetailContent extends StatefulWidget {
     super.key,
     required this.viewModel,
     required this.scaledIngredients,
+    required this.currentPortions,
     required this.onPortionChanged,
     required this.onImageTap,
     this.userAllergenPrefs,
@@ -77,6 +79,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
 
   RecipeDetailViewModel get viewModel => widget.viewModel;
   List<String> get scaledIngredients => widget.scaledIngredients;
+  int get currentPortions => widget.currentPortions;
   Function(int, List<String>) get onPortionChanged => widget.onPortionChanged;
   Function(List<String>, int) get onImageTap => widget.onImageTap;
   Set<String>? get userAllergenPrefs => widget.userAllergenPrefs;
@@ -91,20 +94,16 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // =====================================
-        // ABOVE TABS: Description, Tags, Allergens, Image Carousel
-        // =====================================
-
         // Description
         if (recipe.description.isNotEmpty) ...[
           _buildDescription(context),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.spacingSm),
         ],
 
         // Tags (effective tags: auto-generated + user overrides)
         if (_hasEffectiveTags) ...[
           _buildTags(context),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.spacingSm),
         ],
 
         // Personal tags (user-defined categories)
@@ -113,24 +112,22 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
             tagIds: viewModel.recipe.personalTagIds!,
             tagNames: personalTagNames!,
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.spacingSm),
         ],
 
         // Allergen and dietary information from tagging system
         if (recipe.tagResult != null) ...[
           _buildTaggingInfo(context),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.spacingS),
         ],
 
         // Images
         if (recipe.imageUrls.isNotEmpty) ...[
           _buildImageCarousel(context),
-          const SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.spacingMd),
         ],
 
-        // =====================================
-        // TABS: Ingredienser + Instruktioner
-        // =====================================
+        // Tabs: Ingredienser + Instruktioner
         _buildTabbedContent(context),
       ],
     );
@@ -138,39 +135,33 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
 
   /// Builds the tabbed section with Ingredienser and Instruktioner tabs.
   Widget _buildTabbedContent(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Column(
-        children: [
-          // Tab bar
-          TabBar(
-            controller: _tabController,
-            indicatorColor: AppColors.forestGreen,
-            indicatorWeight: 3,
-            labelColor: AppColors.forestGreenDark,
-            unselectedLabelColor: AppColors.textMedium,
-            labelStyle: AppTextStyles.titleMedium.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-            unselectedLabelStyle: AppTextStyles.titleMedium,
-            tabs: const [
-              Tab(text: 'Ingredienser'),
-              Tab(text: 'Instruktioner'),
-            ],
+    // UI Redesign: No card border — tabs sit directly on cream background
+    return Column(
+      children: [
+        // Tab bar
+        TabBar(
+          controller: _tabController,
+          indicatorColor: AppColors.forestGreen,
+          indicatorWeight: 3,
+          labelColor: AppColors.forestGreenDark,
+          unselectedLabelColor: AppColors.textMedium,
+          labelStyle: AppTextStyles.titleMedium.copyWith(
+            fontWeight: FontWeight.w600,
           ),
-          const Divider(height: 1, color: AppColors.divider),
+          unselectedLabelStyle: AppTextStyles.titleMedium,
+          tabs: const [
+            Tab(text: 'Ingredienser'),
+            Tab(text: 'Instruktioner'),
+          ],
+        ),
+        const Divider(height: 1, color: AppColors.divider),
 
-          // Tab content - using AnimatedSize for smooth transitions
-          AnimatedSize(
-            duration: AppDimensions.animationDurationMedium,
-            child: _buildTabContent(),
-          ),
-        ],
-      ),
+        // Tab content - using AnimatedSize for smooth transitions
+        AnimatedSize(
+          duration: AppDimensions.animationDurationMedium,
+          child: _buildTabContent(),
+        ),
+      ],
     );
   }
 
@@ -190,16 +181,27 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
     );
   }
 
-  /// Ingredients tab with portion scaler.
+  /// Ingredients tab with portion scaler and structured table.
   Widget _buildIngredientsTab(BuildContext context) {
+    final portionLabel = currentPortions == 1 ? 'portion' : 'portioner';
+
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Portion scaler
+          // Portion scaler controls (no ingredient list)
           _buildPortionScaler(context),
           const SizedBox(height: AppDimensions.spacingMd),
+
+          // Section label
+          Text(
+            'Ingredienser för $currentPortions $portionLabel:',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textMedium,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
 
           // Structured ingredient table
           ...scaledIngredients.map((ingredient) {
@@ -443,37 +445,11 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
   }
 
   Widget _buildDescription(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.description_outlined,
-                color: AppColors.forestGreen,
-                size: AppDimensions.iconSizeAction,
-              ),
-              const SizedBox(width: AppDimensions.spacingM),
-              Text(
-                'Beskrivning',
-                style: AppTextStyles.titleMedium,
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDimensions.spacingM),
-          Text(
-            viewModel.recipe.description,
-            style: AppTextStyles.bodyLarge,
-          ),
-        ],
+    // UI Redesign: Plain text, no card wrapper
+    return Text(
+      viewModel.recipe.description,
+      style: AppTextStyles.bodyMedium.copyWith(
+        color: AppColors.textMedium,
       ),
     );
   }
@@ -550,11 +526,12 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
     final tagResult = viewModel.recipe.tagResult;
     if (tagResult == null) return const SizedBox.shrink();
 
+    // UI Redesign: No coverage section shown
     return TagResultDisplay(
       tagResult: tagResult,
       userAllergenPrefs: userAllergenPrefs,
       userDietaryPrefs: userDietaryPrefs,
-      showCoverage: showCoverage,
+      showCoverage: false,
       onUnknownIngredientsTap: tagResult.hasUnknowns
           ? () => _showUnknownIngredientsDialog(context, tagResult)
           : null,

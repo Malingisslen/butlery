@@ -49,40 +49,65 @@ class TagResultDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(
-          compact ? AppDimensions.paddingM : AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Version mismatch indicator (if outdated)
-          if (tagResult.needsRetagging && !tagResult.hasFailed) ...[
-            _buildRetagIndicator(context),
-            const SizedBox(height: AppDimensions.spacingM),
-          ],
-
-          // Allergens section
-          _buildAllergenSection(context),
-
-          // Dietary section
-          if (_hasDietaryToShow()) ...[
-            const SizedBox(height: AppDimensions.spacingL),
-            _buildDietarySection(context),
-          ],
-
-          // Coverage section
-          if (showCoverage) ...[
-            const SizedBox(height: AppDimensions.spacingL),
-            _buildCoverageSection(context),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Version mismatch indicator (if outdated)
+        if (tagResult.needsRetagging && !tagResult.hasFailed) ...[
+          _buildRetagIndicator(context),
+          const SizedBox(height: AppDimensions.spacingM),
         ],
-      ),
+
+        // All badges inline in a single Wrap
+        _buildInlineBadges(context),
+
+        // Coverage section
+        if (showCoverage) ...[
+          const SizedBox(height: AppDimensions.spacingL),
+          _buildCoverageSection(context),
+        ],
+      ],
+    );
+  }
+
+  /// Renders allergen and dietary badges inline without card wrapper.
+  Widget _buildInlineBadges(BuildContext context) {
+    final allergens = _getAllergensToShow();
+    final diets = _getDietaryToShow();
+
+    if (allergens.isEmpty && diets.isEmpty) {
+      return Text(
+        'Inga allergener att visa',
+        style: AppTextStyles.bodySmall.copyWith(
+          color: AppColors.textMedium,
+          fontStyle: FontStyle.italic,
+        ),
+      );
+    }
+
+    return Wrap(
+      spacing: AppDimensions.spacingS,
+      runSpacing: AppDimensions.spacingS,
+      children: [
+        // Allergen badges
+        ...allergens.map((allergen) {
+          final status = tagResult.getAllergenStatus(allergen);
+          return AllergenStatusBadge(
+            allergen: allergen,
+            status: status,
+            compact: compact,
+          );
+        }),
+        // Dietary badges
+        ...diets.map((diet) {
+          final status = tagResult.getDietaryStatus(diet);
+          return DietaryStatusBadge(
+            diet: diet,
+            status: status,
+            compact: compact,
+          );
+        }),
+      ],
     );
   }
 
@@ -130,97 +155,6 @@ class TagResultDisplay extends StatelessWidget {
             ),
         ],
       ),
-    );
-  }
-
-  Widget _buildAllergenSection(BuildContext context) {
-    final allergens = _getAllergensToShow();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(
-              Icons.shield_outlined,
-              color: AppColors.forestGreen,
-              size: compact
-                  ? AppDimensions.iconSizeS
-                  : AppDimensions.iconSizeAction,
-            ),
-            const SizedBox(width: AppDimensions.spacingS),
-            Text(
-              'Allergener',
-              style: compact
-                  ? AppTextStyles.titleSmall
-                  : AppTextStyles.titleMedium,
-            ),
-          ],
-        ),
-        const SizedBox(height: AppDimensions.spacingM),
-        if (allergens.isEmpty)
-          Text(
-            'Inga allergener att visa',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textMedium,
-              fontStyle: FontStyle.italic,
-            ),
-          )
-        else
-          Wrap(
-            spacing: AppDimensions.spacingS,
-            runSpacing: AppDimensions.spacingS,
-            children: allergens.map((allergen) {
-              final status = tagResult.getAllergenStatus(allergen);
-              return AllergenStatusBadge(
-                allergen: allergen,
-                status: status,
-                compact: compact,
-              );
-            }).toList(),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildDietarySection(BuildContext context) {
-    final diets = _getDietaryToShow();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(
-              Icons.restaurant_outlined,
-              color: AppColors.forestGreen,
-              size: compact
-                  ? AppDimensions.iconSizeS
-                  : AppDimensions.iconSizeAction,
-            ),
-            const SizedBox(width: AppDimensions.spacingS),
-            Text(
-              'Specialkost',
-              style: compact
-                  ? AppTextStyles.titleSmall
-                  : AppTextStyles.titleMedium,
-            ),
-          ],
-        ),
-        const SizedBox(height: AppDimensions.spacingM),
-        Wrap(
-          spacing: AppDimensions.spacingS,
-          runSpacing: AppDimensions.spacingS,
-          children: diets.map((diet) {
-            final status = tagResult.getDietaryStatus(diet);
-            return DietaryStatusBadge(
-              diet: diet,
-              status: status,
-              compact: compact,
-            );
-          }).toList(),
-        ),
-      ],
     );
   }
 
@@ -314,7 +248,10 @@ class TagResultDisplay extends StatelessWidget {
 
   List<String> _getAllergensToShow() {
     if (userAllergenPrefs != null && userAllergenPrefs!.isNotEmpty) {
-      return userAllergenPrefs!.toList();
+      // UI Redesign: Filter out unknown status even from user prefs
+      return userAllergenPrefs!.where((allergen) {
+        return tagResult.getAllergenStatus(allergen) != TriState.unknown;
+      }).toList();
     }
 
     // Show allergens with known status (not unknown)
@@ -322,10 +259,6 @@ class TagResultDisplay extends StatelessWidget {
         .where((e) => e.value != TriState.unknown)
         .map((e) => e.key)
         .toList();
-  }
-
-  bool _hasDietaryToShow() {
-    return _getDietaryToShow().isNotEmpty;
   }
 
   List<String> _getDietaryToShow() {

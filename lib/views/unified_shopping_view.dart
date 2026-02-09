@@ -26,7 +26,6 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
 
 // UI Redesign header component
 import 'package:butlery/widgets/common/main_view_header.dart';
-import 'package:butlery/theme/app_colors.dart';
 
 /// Shopping list management view using facade pattern architecture.
 class UnifiedShoppingView extends StatefulWidget {
@@ -43,11 +42,9 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   void initState() {
     super.initState();
     _viewModel = ServiceLocator.get<UnifiedShoppingViewModel>();
-    _initializeViewModel();
-  }
-
-  Future<void> _initializeViewModel() async {
-    await _viewModel.initialize();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _viewModel.initialize();
+    });
   }
 
   @override
@@ -56,18 +53,18 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
       value: _viewModel,
       child: Consumer<UnifiedShoppingViewModel>(
         builder: (context, viewModel, child) {
-          final itemCount = viewModel.currentList?.items.length ?? 0;
-          final uncheckedCount = viewModel.currentList?.items
-                  .where((item) => !item.isBought)
+          final itemCount = viewModel.activeList?.items.length ?? 0;
+          final boughtCount = viewModel.activeList?.items
+                  .where((item) => item.bought)
                   .length ??
               0;
 
           return LayoutComponents.mainMenu(
-            currentIndex: 3,
-            // UI Redesign: Use MainViewHeader with count badge
+            currentIndex: 2, // UI Redesign: nav order is recept(0), meny(1), inköp(2), lägg till(3)
+            // UI Redesign: Use MainViewHeader with line break title
             appBar: MainViewHeader(
-              title: 'inkopslista',
-              countBadge: '$uncheckedCount av $itemCount artiklar',
+              title: 'inköps-\nlista', // UI Redesign: forced line break per mockup
+              countBadge: '$itemCount varor · $boughtCount klara', // UI Redesign: "X varor · X klara"
               actions: ShoppingAppBar.buildHeaderActions(
                 context,
                 viewModel,

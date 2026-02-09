@@ -121,6 +121,16 @@ class RecipeDetailActions {
     );
   }
 
+  /// Show add to cart confirmation dialog (FAB action)
+  /// UI Redesign: Shows ingredient list before adding to shopping list
+  Future<void> showAddToCartConfirmation(BuildContext context) async {
+    await RecipeShoppingHandler.showAddToCartConfirmation(
+      context,
+      currentPortions: _currentPortions,
+      showSnackBar: _showSnackBar,
+    );
+  }
+
   /// Re-tag recipe with new allergen and dietary analysis
   Future<void> retagRecipe(BuildContext context) async {
     await RecipeTaggingHandler.retagRecipe(

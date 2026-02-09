@@ -83,6 +83,65 @@ class MenuGenerator {
     return null;
   }
 
+  /// UI Redesign: Swap a single recipe with another matching the same category.
+  /// Finds a random recipe from available recipes that:
+  /// - Matches the same meal type (category)
+  /// - Is not already in the current menu
+  /// - Has similar characteristics to the original
+  Recipe? swapSingleRecipe(
+    Recipe currentRecipe,
+    String category,
+    Map<String, List<Recipe>> currentMenu,
+  ) {
+    // Get all recipe IDs currently in the menu to avoid duplicates
+    final currentMenuRecipeIds = <String>{};
+    for (final recipes in currentMenu.values) {
+      for (final recipe in recipes) {
+        currentMenuRecipeIds.add(recipe.id);
+      }
+    }
+
+    // Find eligible recipes that match the category and aren't in the menu
+    final eligibleRecipes = availableRecipes.where((recipe) {
+      // Skip if already in menu
+      if (currentMenuRecipeIds.contains(recipe.id)) return false;
+
+      // Match by meal type or category-appropriate recipes
+      final categoryLower = category.toLowerCase();
+      final mealTypeLower = recipe.mealType.toLowerCase();
+
+      // Check if meal type matches category
+      if (categoryLower.contains('middag') ||
+          categoryLower.contains('dinner')) {
+        return mealTypeLower.contains('middag') ||
+            mealTypeLower.contains('dinner') ||
+            mealTypeLower.isEmpty; // Include uncategorized recipes
+      }
+      if (categoryLower.contains('lunch')) {
+        return mealTypeLower.contains('lunch') || mealTypeLower.isEmpty;
+      }
+      if (categoryLower.contains('frukost') ||
+          categoryLower.contains('breakfast')) {
+        return mealTypeLower.contains('frukost') ||
+            mealTypeLower.contains('breakfast') ||
+            mealTypeLower.isEmpty;
+      }
+
+      // Default: include if meal type matches or is empty
+      return mealTypeLower == categoryLower || mealTypeLower.isEmpty;
+    }).toList();
+
+    if (eligibleRecipes.isEmpty) {
+      AppLogger.warning(
+          'No eligible recipes found for swap in category: $category');
+      return null;
+    }
+
+    // Shuffle and return a random recipe
+    eligibleRecipes.shuffle();
+    return eligibleRecipes.first;
+  }
+
   /// Validate menu generation prerequisites
   void validateGenerationPrerequisites(String prompt) {
     if (prompt.trim().isEmpty) {

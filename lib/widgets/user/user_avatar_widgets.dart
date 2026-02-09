@@ -26,8 +26,8 @@ class UserAvatarWidgets {
     final avatarSize = _getAvatarSize(size);
     // UI Redesign: Avatar uses rust color scheme
     final effectiveBackgroundColor =
-        backgroundColor ?? AppColors.rust.withValues(alpha: AppDimensions.opacityVeryLight);
-    final effectiveTextColor = textColor ?? AppColors.rust;
+        backgroundColor ?? AppColors.rust;
+    final effectiveTextColor = textColor ?? AppColors.cardWhite;
 
     Widget avatar = Container(
       width: avatarSize,

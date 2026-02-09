@@ -16,7 +16,9 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Recipe Detail View - Complete recipe display with metadata, actions, and social features
 /// This view provides comprehensive recipe details including:
@@ -103,41 +105,51 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
         return Scaffold(
           backgroundColor: AppColors.cream,
+          // UI Redesign: FAB cart button for quick add to shopping list
+          floatingActionButton: SizedBox(
+            width: 48,
+            height: 48,
+            child: FloatingActionButton(
+              onPressed: () => _actions.showAddToCartConfirmation(context),
+              backgroundColor: AppColors.forestGreen,
+              elevation: 2,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.zero,
+              ),
+              child: const Icon(
+                Icons.shopping_cart,
+                color: AppColors.cardWhite,
+                size: AppDimensions.iconSizeM,
+              ),
+            ),
+          ),
           body: CustomScrollView(
             slivers: [
               // App bar with recipe title and actions
+              // UI Redesign: Hero buttons are solid cream squares with green icons
               SliverAppBar(
                 expandedHeight: 200.0,
                 floating: false,
                 pinned: true,
                 backgroundColor: Theme.of(context).colorScheme.surface,
                 foregroundColor: AppColors.textDark,
-                iconTheme: const IconThemeData(
-                  color: AppColors.cardWhite,
-                  size: AppDimensions.iconSizeL,
-                ),
-                actionsIconTheme: const IconThemeData(
-                  color: AppColors.cardWhite,
-                  size: AppDimensions.iconSizeL,
-                ),
-                flexibleSpace: FlexibleSpaceBar(
-                  title: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.paddingM,
-                      vertical: AppDimensions.paddingS,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.cream.withValues(alpha: AppDimensions.opacityExtraDark),
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.borderRadiusM),
-                    ),
-                    child: Text(
-                      recipe.title,
-                      style: AppTextStyles.bodyLargeBold,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                // UI Redesign: Custom leading widget (back button)
+                leading: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: _HeroButton(
+                    icon: Icons.arrow_back,
+                    onPressed: () => Navigator.pop(context),
+                    tooltip: 'Tillbaka',
                   ),
+                ),
+                // Show recipe title in collapsed app bar
+              title: Text(
+                recipe.title,
+                style: AppTextStyles.bodyLargeBold,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              flexibleSpace: FlexibleSpaceBar(
                   background: recipe.imageUrls.isNotEmpty
                       ? GestureDetector(
                           onTap: () => _showFullscreenImage(
@@ -175,48 +187,48 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             ),
                           ),
                         )
-                      : const ColoredBox(
-                          color: AppColors.cardWhite,
-                          child: Icon(
-                            Icons.restaurant,
-                            size: AppDimensions.iconSizeHero,
-                            color: AppColors.textSecondary,
+                      : ColoredBox(
+                          color: AppColors.cream,
+                          child: Center(
+                            child: VegetableIllustration(
+                              type: VegetableIllustration.randomForRecipe(recipe.id),
+                              size: 120,
+                              opacity: 0.6,
+                            ),
                           ),
                         ),
                 ),
+                // UI Redesign: Hero action buttons with cream background
                 actions: [
                   // Internal sharing with friends and groups
-                  Semantics(
-                    label: 'Dela recept med vänner och grupper',
-                    button: true,
-                    child: IconButton(
-                      icon: const Icon(Icons.people_outline),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: _HeroButton(
+                      icon: Icons.people_outline,
                       onPressed: () => _actions.showSocialShareDialog(context),
                       tooltip: 'Dela med vänner',
                     ),
                   ),
                   // External sharing
-                  Semantics(
-                    label: 'Dela recept externt',
-                    button: true,
-                    child: IconButton(
-                      icon: const Icon(Icons.share),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: _HeroButton(
+                      icon: Icons.share_outlined,
                       onPressed: () => _actions.shareRecipe(context),
                       tooltip: 'Dela externt',
                     ),
                   ),
                   // More actions menu
-                  Semantics(
-                    label: 'Fler receptåtgärder',
-                    button: true,
-                    child: PopupMenuButton(
-                      icon: const Icon(Icons.more_vert),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8, bottom: 8, right: 8),
+                    child: _HeroMenuButton(
+                      icon: Icons.more_horiz,
                       itemBuilder: (context) => [
                         const PopupMenuItem(
                           value: 'edit',
                           child: Row(
                             children: [
-                              Icon(Icons.edit, size: AppDimensions.iconSizeM),
+                              Icon(Icons.edit_outlined, size: AppDimensions.iconSizeM),
                               SizedBox(width: AppDimensions.spacingM),
                               Text('Redigera recept'),
                             ],
@@ -226,7 +238,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           value: 'fork',
                           child: Row(
                             children: [
-                              Icon(Icons.content_copy,
+                              Icon(Icons.content_copy_outlined,
                                   size: AppDimensions.iconSizeM),
                               SizedBox(width: AppDimensions.spacingM),
                               Text('Skapa kopia'),
@@ -237,7 +249,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           value: 'generate_shopping_list',
                           child: Row(
                             children: [
-                              Icon(Icons.shopping_cart,
+                              Icon(Icons.shopping_cart_outlined,
                                   size: AppDimensions.iconSizeM),
                               SizedBox(width: AppDimensions.spacingM),
                               Text('Skapa inköpslista'),
@@ -248,7 +260,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           value: 're_tag',
                           child: Row(
                             children: [
-                              Icon(Icons.local_offer,
+                              Icon(Icons.local_offer_outlined,
                                   size: AppDimensions.iconSizeM),
                               SizedBox(width: AppDimensions.spacingM),
                               Text('Uppdatera taggar'),
@@ -259,7 +271,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           value: 'delete',
                           child: Row(
                             children: [
-                              const Icon(Icons.delete,
+                              const Icon(Icons.delete_outlined,
                                   size: AppDimensions.iconSizeM,
                                   color: AppColors.error),
                               const SizedBox(width: AppDimensions.spacingM),
@@ -279,7 +291,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             value: 'source',
                             child: Row(
                               children: [
-                                Icon(Icons.link, size: AppDimensions.iconSizeM),
+                                Icon(Icons.link_outlined, size: AppDimensions.iconSizeM),
                                 SizedBox(width: AppDimensions.spacingM),
                                 Text('View Source'),
                               ],
@@ -310,6 +322,30 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Recipe title below hero image
+                          Text(
+                            recipe.title,
+                            style: AppTextStyles.titleLarge.copyWith(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          if (recipe.sourceUrl != null &&
+                              recipe.sourceUrl!.isNotEmpty) ...[
+                            const SizedBox(height: AppDimensions.spacingXs),
+                            GestureDetector(
+                              onTap: () => _launchSourceUrl(context, recipe.sourceUrl!),
+                              child: Text(
+                                'Från ${Uri.tryParse(recipe.sourceUrl!)?.host ?? recipe.sourceUrl!}',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.textMedium,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: AppDimensions.spacingSm),
+
                           // Recipe metadata
                           RecipeDetailMetadata(
                             viewModel: viewModel,
@@ -317,7 +353,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             isScaled: _actions.currentPortions !=
                                 (recipe.portions ?? 1),
                           ),
-                          const SizedBox(height: AppDimensions.spacingXl),
+                          const SizedBox(height: AppDimensions.spacingMd),
 
                           // Recipe main content
                           Builder(
@@ -328,6 +364,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               return RecipeDetailContent(
                                 viewModel: viewModel,
                                 scaledIngredients: _actions.scaledIngredients,
+                                currentPortions: _actions.currentPortions,
                                 onPortionChanged: (portions, ingredients) {
                                   setState(() {
                                     _actions.onPortionChanged(
@@ -347,7 +384,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               );
                             },
                           ),
-                          const SizedBox(height: AppDimensions.spacingXl),
+                          const SizedBox(height: AppDimensions.spacingMd),
 
                           // Recipe comments
                           RecipeDetailComments(
@@ -372,6 +409,17 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         );
       },
     );
+  }
+
+  Future<void> _launchSourceUrl(BuildContext context, String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      // Silently fail — URL is best-effort
+    }
   }
 
   void _showFullscreenImage(
@@ -415,5 +463,77 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         }
         break;
     }
+  }
+}
+
+/// UI Redesign: Hero button with solid cream background and green icon.
+/// Used for back button and action buttons in recipe detail hero image.
+class _HeroButton extends StatelessWidget {
+  const _HeroButton({
+    required this.icon,
+    required this.onPressed,
+    this.tooltip,
+  });
+
+  final IconData icon;
+  final VoidCallback onPressed;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip ?? '',
+      child: Material(
+        color: AppColors.cream,
+        borderRadius: BorderRadius.zero,
+        child: InkWell(
+          onTap: onPressed,
+          child: SizedBox(
+            width: 40,
+            height: 40,
+            child: Icon(
+              icon,
+              color: AppColors.forestGreen,
+              size: AppDimensions.iconSizeM,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// UI Redesign: Hero menu button with solid cream background for popup menus.
+class _HeroMenuButton extends StatelessWidget {
+  const _HeroMenuButton({
+    required this.icon,
+    required this.itemBuilder,
+    required this.onSelected,
+  });
+
+  final IconData icon;
+  final List<PopupMenuEntry<String>> Function(BuildContext) itemBuilder;
+  final void Function(String) onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Material(
+        color: AppColors.cream,
+        borderRadius: BorderRadius.zero,
+        child: PopupMenuButton<String>(
+          padding: EdgeInsets.zero,
+          icon: Icon(
+            icon,
+            color: AppColors.forestGreen,
+            size: AppDimensions.iconSizeM,
+          ),
+          itemBuilder: itemBuilder,
+          onSelected: onSelected,
+        ),
+      ),
+    );
   }
 }

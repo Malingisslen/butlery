@@ -278,6 +278,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
   }
 
   /// Large centered avatar for profile header - UI Redesign
+  /// Sharp corners (square) per interview decisions
   Widget _buildSimpleAvatar(BuildContext context) {
     final hasImage =
         widget.userImageUrl != null && widget.userImageUrl!.isNotEmpty;
@@ -287,16 +288,18 @@ class _ProfileMenuState extends State<ProfileMenu> {
       width: avatarSize,
       height: avatarSize,
       decoration: const BoxDecoration(
-        shape: BoxShape.circle,
+        // UI Redesign: Square avatar with sharp corners
+        borderRadius: BorderRadius.zero,
         color: AppColors.cream,
       ),
       child: hasImage
-          ? ClipOval(
+          ? ClipRRect(
+              borderRadius: BorderRadius.zero,
               child: Image.network(
                 widget.userImageUrl!,
                 width: avatarSize,
                 height: avatarSize,
-                fit: BoxFit.contain,
+                fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) =>
                     _buildInitialsAvatar(context, avatarSize),
               ),
@@ -305,14 +308,15 @@ class _ProfileMenuState extends State<ProfileMenu> {
     );
   }
 
-  /// Initials avatar - UI Redesign: Cream bg, green dark text
+  /// Initials avatar - UI Redesign: Cream bg, green dark text, sharp corners
   Widget _buildInitialsAvatar(BuildContext context, double size) {
     final initials = _getInitials(widget.displayName);
     return Container(
       width: size,
       height: size,
       decoration: const BoxDecoration(
-        shape: BoxShape.circle,
+        // UI Redesign: Square with sharp corners
+        borderRadius: BorderRadius.zero,
         color: AppColors.cream,
       ),
       child: Center(

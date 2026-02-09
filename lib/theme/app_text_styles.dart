@@ -407,12 +407,13 @@ class AppTextStyles {
         letterSpacing: 0.5,
       );
 
-  /// Main view header title - large style for main views (32px, Josefin Sans)
+  /// Main view header title - elegant style for main views (24px, Josefin Sans)
   /// Used for "dina recept", "veckans meny", "inkopslista" headers
+  /// UI Redesign: Lighter weight (w400) matching mockup proportions
   static TextStyle get mainViewTitle => TextStyle(
         fontFamily: _headerFontFamily,
-        fontSize: 32,
-        fontWeight: FontWeight.w600,
+        fontSize: 24,
+        fontWeight: FontWeight.w400,
         color: AppColors.headerForeground,
         letterSpacing: 2,
         height: 1.1,

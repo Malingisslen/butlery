@@ -49,7 +49,7 @@ class LaggTillReceptView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: AppDimensions.spacingMd),
+                  const SizedBox(height: AppDimensions.spacingSm),
                   // UI Redesign: 2x2 grid with 4 simplified options
                   Expanded(
                     child: _buildButtonGrid(context),

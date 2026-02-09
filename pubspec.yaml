@@ -141,16 +141,19 @@ flutter:
     - assets/illustrations/
     - assets/illustrations/arta/
 
-  # Fonts temporarily disabled - using system fallback
-  # TODO: Bundle actual font files (current ones are corrupted HTML)
-  # fonts:
-  #   - family: JosefinSans
-  #     fonts:
-  #       - asset: assets/fonts/JosefinSans-Regular.ttf
-  #       - asset: assets/fonts/JosefinSans-SemiBold.ttf
-  #         weight: 600
-  #   - family: SpaceGrotesk
-  #     fonts:
-  #       - asset: assets/fonts/SpaceGrotesk-Regular.ttf
-  #       - asset: assets/fonts/SpaceGrotesk-Medium.ttf
-  #         weight: 500
+  # UI Redesign Fonts
+  # - JosefinSans: Headers, navigation (geometric, elegant, vintage feel)
+  # - SpaceGrotesk: Body text (clean, readable sans-serif)
+  fonts:
+    - family: JosefinSans
+      fonts:
+        - asset: assets/fonts/JosefinSans-Regular.ttf
+        - asset: assets/fonts/JosefinSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/JosefinSans-Bold.ttf
+          weight: 700
+    - family: SpaceGrotesk
+      fonts:
+        - asset: assets/fonts/SpaceGrotesk-Regular.ttf
+        - asset: assets/fonts/SpaceGrotesk-Medium.ttf
+          weight: 500

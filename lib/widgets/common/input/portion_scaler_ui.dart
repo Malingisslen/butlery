@@ -5,15 +5,16 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
-/// UI components for the portion scaler widget
+/// UI components for the portion scaler widget.
+///
+/// Renders only the portion controls (header + status + unit toggle).
+/// Ingredient rendering is handled by the caller (recipe_detail_content.dart).
 class PortionScalerUI {
-  /// Builds the complete portion scaler widget
+  /// Builds the portion scaler controls (no ingredient list).
   static Widget buildScaler({
     required BuildContext context,
     required int currentPortions,
     required int originalPortions,
-    required List<String> scaledIngredients,
-    required List<String> originalIngredients,
     required bool convertToSwedish,
     required bool hasAmericanUnits,
     required int minPortions,
@@ -22,61 +23,38 @@ class PortionScalerUI {
     required Function(int) onUpdatePortions,
     required VoidCallback onToggleUnitConversion,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .primaryContainer
-            .withValues(alpha: AppDimensions.opacityMediumLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header with portion controls
+        _buildHeader(
+          context,
+          currentPortions,
+          minPortions,
+          maxPortions,
+          scaleAnimation,
+          onUpdatePortions,
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header with portion controls
-          _buildHeader(
-            context,
-            currentPortions,
-            minPortions,
-            maxPortions,
-            scaleAnimation,
-            onUpdatePortions,
-          ),
 
-          const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.spacingM),
 
-          // Status info
-          if (currentPortions != originalPortions || convertToSwedish)
-            _buildStatusInfo(
-              context,
-              currentPortions,
-              originalPortions,
-              convertToSwedish,
-            ),
-
-          // Unit conversion toggle
-          if (hasAmericanUnits)
-            _buildUnitConversionToggle(
-              context,
-              convertToSwedish,
-              onToggleUnitConversion,
-            ),
-
-          // Scaled ingredients
-          _buildScaledIngredients(
+        // Status info
+        if (currentPortions != originalPortions || convertToSwedish)
+          _buildStatusInfo(
             context,
             currentPortions,
             originalPortions,
-            scaledIngredients,
-            originalIngredients,
             convertToSwedish,
           ),
-        ],
-      ),
+
+        // Unit conversion toggle
+        if (hasAmericanUnits)
+          _buildUnitConversionToggle(
+            context,
+            convertToSwedish,
+            onToggleUnitConversion,
+          ),
+      ],
     );
   }
 
@@ -301,115 +279,6 @@ class PortionScalerUI {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  /// Builds the scaled ingredients list
-  static Widget _buildScaledIngredients(
-    BuildContext context,
-    int currentPortions,
-    int originalPortions,
-    List<String> scaledIngredients,
-    List<String> originalIngredients,
-    bool convertToSwedish,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Ingredienser för $currentPortions ${currentPortions == 1 ? 'portion' : 'portioner'}:',
-          style: AppTextStyles.text16Medium.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingM),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outlineVariant,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: scaledIngredients.asMap().entries.map((entry) {
-              final index = entry.key;
-              final ingredient = entry.value;
-              final originalIngredient = index < originalIngredients.length
-                  ? originalIngredients[index]
-                  : '';
-              final isChanged = currentPortions != originalPortions ||
-                  convertToSwedish ||
-                  ingredient != originalIngredient;
-
-              return _buildIngredientItem(
-                context,
-                ingredient,
-                isChanged,
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Builds individual ingredient item
-  static Widget _buildIngredientItem(
-    BuildContext context,
-    String ingredient,
-    bool isChanged,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: AppDimensions.spacingXs,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Bullet point
-          Container(
-            width: AppDimensions.spacing6,
-            height: AppDimensions.spacing6,
-            margin: const EdgeInsets.only(
-              top: AppDimensions.spacingSm,
-              right: AppDimensions.spacingS,
-            ),
-            decoration: BoxDecoration(
-              color: isChanged
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.outline,
-              shape: BoxShape.circle,
-            ),
-          ),
-
-          // Ingredient text
-          Expanded(
-            child: AnimatedDefaultTextStyle(
-              duration: AppDimensions.animationDurationCommon,
-              style: isChanged
-                  ? AppTextStyles.bodyLargeBold.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                    )
-                  : AppTextStyles.bodyLarge.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-              child: Text(ingredient),
-            ),
-          ),
-
-          // Changed indicator
-          if (isChanged)
-            Icon(
-              Icons.refresh,
-              size: AppDimensions.iconSizeS,
-              color: Theme.of(context).colorScheme.primary,
-            ),
         ],
       ),
     );

@@ -111,7 +111,9 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // UI Redesign: Green border + rust bottom accent
+    // UI Redesign: Green border on top/left/right + rust bottom accent
+    // Uses Container border instead of OutlineInputBorder to ensure
+    // the rust bottom accent renders visibly (OutlineInputBorder paints over DecoratedBox)
     final searchField = TextFormField(
       controller: widget.controller,
       focusNode: widget.focusNode,
@@ -127,30 +129,10 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
           color: AppColors.forestGreen,
         ),
         suffixIcon: _buildSuffixIcon(),
-        // Border configuration: green on all sides
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          borderSide: const BorderSide(
-            color: AppColors.forestGreen,
-            width: 2,
-          ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          borderSide: const BorderSide(
-            color: AppColors.forestGreen,
-            width: 2,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          borderSide: const BorderSide(
-            color: AppColors.forestGreen,
-            width: 2,
-          ),
-        ),
-        filled: true,
-        fillColor: AppColors.cardWhite,
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        filled: false,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingMd,
           vertical: AppDimensions.spacingMd,
@@ -158,36 +140,38 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
       ),
     );
 
-    // Classic style without rust accent
+    // Classic style: green border on all sides, no rust accent
     if (widget.useClassicStyle) {
+      final classicField = DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppColors.cardWhite,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          border: Border.all(color: AppColors.forestGreen, width: 2),
+        ),
+        child: searchField,
+      );
       if (widget.padding != null) {
-        return Padding(
-          padding: widget.padding!,
-          child: searchField,
-        );
+        return Padding(padding: widget.padding!, child: classicField);
       }
-      return searchField;
+      return classicField;
     }
 
-    // UI Redesign style: Add rust bottom border accent
+    // UI Redesign style: green top/left/right + rust bottom accent
     final styledSearchField = DecoratedBox(
       decoration: const BoxDecoration(
+        color: AppColors.cardWhite,
         border: Border(
-          bottom: BorderSide(
-            color: AppColors.rust,
-            width: 4,
-          ),
+          top: BorderSide(color: AppColors.forestGreen, width: 2),
+          left: BorderSide(color: AppColors.forestGreen, width: 2),
+          right: BorderSide(color: AppColors.forestGreen, width: 2),
+          bottom: BorderSide(color: AppColors.rust, width: 4),
         ),
       ),
       child: searchField,
     );
 
-    // Wrap with padding if provided
     if (widget.padding != null) {
-      return Padding(
-        padding: widget.padding!,
-        child: styledSearchField,
-      );
+      return Padding(padding: widget.padding!, child: styledSearchField);
     }
 
     return styledSearchField;

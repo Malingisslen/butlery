@@ -11,6 +11,8 @@ class SnackBarUtils {
   // Prevent instantiation
   SnackBarUtils._();
 
+  /// Show success toast with green background.
+  /// UI Redesign: 5 second duration per mockup.
   static void showSuccess(
     BuildContext context,
     String message, {
@@ -23,10 +25,10 @@ class SnackBarUtils {
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: AppColors.success,
-        textColor: AppColors.neutralLight,
-        icon: Icons.check_circle_outline,
-        duration: duration ?? const Duration(seconds: 3),
+        backgroundColor: AppColors.forestGreen, // UI Redesign: green background
+        textColor: AppColors.cardWhite,
+        icon: Icons.check,
+        duration: duration ?? const Duration(seconds: 5), // UI Redesign: 5s
         actionLabel: actionLabel,
         onAction: onAction,
         showCloseButton: showCloseButton,
@@ -54,6 +56,8 @@ class SnackBarUtils {
     );
   }
 
+  /// Show error toast with rust background.
+  /// UI Redesign: rust (#8B5A3C) instead of red per interview.
   static void showError(
     BuildContext context,
     String message, {
@@ -66,9 +70,9 @@ class SnackBarUtils {
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: AppColors.error,
-        textColor: AppColors.neutralLight,
-        icon: Icons.error_outline,
+        backgroundColor: AppColors.rust, // UI Redesign: rust background
+        textColor: AppColors.cardWhite,
+        icon: Icons.close,
         duration: duration ?? const Duration(seconds: 5),
         actionLabel: actionLabel ?? (showCloseButton ? 'OK' : null),
         onAction: onAction ?? (showCloseButton ? () => hide(context) : null),
@@ -329,10 +333,11 @@ extension SnackBarExtensions on BuildContext {
 }
 
 /// Snackbar configuration constants
+/// UI Redesign: default duration is 5 seconds per interview.
 class SnackBarConfig {
-  static const Duration shortDuration = Duration(seconds: 2);
-  static const Duration normalDuration = Duration(seconds: 3);
-  static const Duration longDuration = Duration(seconds: 5);
+  static const Duration shortDuration = Duration(seconds: 3);
+  static const Duration normalDuration = Duration(seconds: 5); // UI Redesign
+  static const Duration longDuration = Duration(seconds: 7);
   static const Duration persistentDuration = Duration(seconds: 10);
 
   static const EdgeInsets defaultMargin =
