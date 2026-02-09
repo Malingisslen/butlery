@@ -60,6 +60,16 @@ See ADRs in `/docs/adr/` for complete architectural decisions.
 - Avoid: README files for every directory, V1/V2 versions (update in place), analysis reports that won't be acted upon
 - Cleanup mindset: Delete implementation plans once implemented, remove debug docs when resolved
 
+**Git Safety**:
+- NEVER run destructive git operations (checkout, reset, clean) with uncommitted changes
+- Always run `git status` first; `git stash` if uncommitted work exists
+- Ask user before any operation that could lose work
+
+**UI Mockup Comparison**:
+- Be EXHAUSTIVE: check search box accents, avatar initials/images, icon colors, spacing, border radius, opacity, typography weight, and all small details
+- List ALL differences, not just obvious ones
+- Don't declare match until every element is verified
+
 ## Infrastructure
 
 **Mixins & Utilities** (REQUIRED in new code):
@@ -119,6 +129,12 @@ See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 3. **Security validation** - PermissionValidationMixin on all repositories
 4. **Single data source** - don't mix UserService/PermissionService
 5. **Ask before deviating** - from planned todos
+6. **Existing plan = execute** - if a plan/spec file exists, START implementing. Don't re-explore or re-plan.
+7. **Run when asked to run** - `flutter run -d chrome` when asked to test/run. Don't create planning docs instead.
+8. **Plan = plan + verify** - when a plan includes verification steps, "implement this" means execute ALL steps including testing. Never claim done until verification is run.
+9. **Terse follow-up after "done" = you missed something** - if the user sends a short prompt right after you claimed completion (e.g. "you test", "did you test it?"), re-read what you skipped. Don't ask what they mean.
+10. **"No" starts a redirect, not a discussion** - when user says "No, I want X", you misunderstood. Re-read their prior request. Don't ask what went wrong.
+11. **Be accurate about scope** - don't call simple tasks "massive" or over-estimate complexity. The user notices and loses trust.
 
 ## Workflow Discipline
 
@@ -133,6 +149,8 @@ See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 - Relevant tests pass
 - Diff behavior vs main if relevant
 - Ask: "Would a staff engineer approve this?"
+- For layout/UI bugs: test the fix in Chrome before declaring done. Never assume from static analysis alone.
+- If first fix fails: STOP guessing. Find 3 similar working views, compare their layout pattern to the broken view, then fix based on the working pattern.
 
 **Self-Improvement Loop (automatic):**
 - After ANY user correction → add entry to `/tasks/lessons.md`
@@ -146,6 +164,12 @@ See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 - Failing CI → go fix without being told how
 - Point at logs/errors → resolve them
 - Don't ask for hand-holding on standard debugging
+- Max 3 fix attempts per bug. If all fail: write a diagnostic summary of what was tried and why it failed, then ask for direction. Do NOT keep cycling.
+
+**Parallel Agent Tasks:**
+- Process files in small chunks (50-100 items), never entire large files at once
+- Define explicit chunk boundaries before launching agents
+- Each agent must checkpoint progress and report completion status
 
 ## Stop Hook Response
 
