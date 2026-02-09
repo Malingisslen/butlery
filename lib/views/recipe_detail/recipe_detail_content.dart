@@ -16,6 +16,7 @@ import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Recipe detail content widget with tabbed layout.
 ///
@@ -155,9 +156,9 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
             fontWeight: FontWeight.w400,
             color: AppColors.textMedium,
           ),
-          tabs: const [
-            Tab(text: 'Ingredienser'),
-            Tab(text: 'Instruktioner'),
+          tabs: [
+            Tab(text: context.l10n.recipeIngredients),
+            Tab(text: context.l10n.recipeInstructions),
           ],
         ),
         const Divider(height: 1, color: AppColors.divider),
@@ -189,8 +190,6 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
 
   /// Ingredients tab with portion scaler and structured table.
   Widget _buildIngredientsTab(BuildContext context) {
-    final portionLabel = currentPortions == 1 ? 'portion' : 'portioner';
-
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Column(
@@ -202,7 +201,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
 
           // Section label
           Text(
-            'Ingredienser för $currentPortions $portionLabel:',
+            context.l10n.recipeIngredientsForPortions(currentPortions),
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textMedium,
             ),
@@ -296,7 +295,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
       return Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Text(
-          'Inga instruktioner angivna.',
+          context.l10n.recipeNoInstructions,
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textMedium,
             fontStyle: FontStyle.italic,
@@ -485,7 +484,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Text(
-                'Taggar',
+                context.l10n.recipeTags,
                 style: AppTextStyles.titleMedium,
               ),
             ],
@@ -577,12 +576,12 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
                 Text(
-                  'Bilder',
+                  context.l10n.recipeImagesTitle,
                   style: AppTextStyles.titleMedium,
                 ),
                 const Spacer(),
                 Text(
-                  '${viewModel.recipe.imageUrls.length} ${viewModel.recipe.imageUrls.length == 1 ? 'bild' : 'bilder'}',
+                  context.l10n.recipeImageCount(viewModel.recipe.imageUrls.length),
                   style: AppTextStyles.bodySmall,
                 ),
               ],
@@ -679,7 +678,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
               const SizedBox(width: AppDimensions.spacingM),
               Expanded(
                 child: Text(
-                  'Personliga taggar',
+                  context.l10n.recipePersonalTags,
                   style: AppTextStyles.titleMedium,
                 ),
               ),
@@ -691,7 +690,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
                     size: AppDimensions.iconSizeM,
                   ),
                   label: Text(
-                      _isExpanded ? 'Dölj' : 'Visa alla (${names.length})'),
+                      _isExpanded ? context.l10n.commonHide : context.l10n.commonShowAllCount(names.length)),
                   style: TextButton.styleFrom(
                     padding: AppDimensions.paddingHorizontal8,
                     minimumSize: Size.zero,
@@ -754,7 +753,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
           ),
         ),
         child: Text(
-          '+$count till',
+          context.l10n.commonMoreCount(count),
           style: AppTextStyles.metadataEmphasized.copyWith(
             color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityDark),
           ),

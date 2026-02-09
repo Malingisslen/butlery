@@ -438,5 +438,156 @@
       "itemName": {"type": "String"},
       "itemType": {"type": "String"}
     }
-  }
+  },
+
+  "recipePortionAbbreviation": "port",
+  "recipePortionSingular": "portion",
+  "recipePortionsPlural": "portioner",
+  "recipeCookedToday": "Lagat idag",
+  "recipeCookedTodaySuccess": "Recept markerat som lagat idag!",
+  "recipeCookedTodayError": "Kunde inte markera som lagat",
+  "recipeNoInstructions": "Inga instruktioner angivna.",
+  "recipeTags": "Taggar",
+  "recipeImagesTitle": "Bilder",
+  "recipeImageCount": "{count, plural, =1{1 bild} other{{count} bilder}}",
+  "@recipeImageCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "recipePersonalTags": "Personliga taggar",
+  "recipeIngredientsForPortions": "Ingredienser för {count} {count, plural, =1{portion} other{portioner}}:",
+  "@recipeIngredientsForPortions": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "recipeAnalysisFailed": "Analys misslyckades",
+  "recipeAnalyzing": "Analyseras...",
+  "recipeAnalysisFailedA11y": "Ingrediensanalys misslyckades",
+  "recipeAnalyzingA11y": "Ingredienser analyseras",
+  "recipeSearchHint": "sök bland recepten...",
+  "recipeShowMore": "Visa fler recept",
+  "recipeCountBadge": "{count} recept",
+  "@recipeCountBadge": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "scalerPortionsLabel": "Portioner:",
+  "scalerUsingSwedishUnits": "Använder svenska enheter",
+  "scalerConvertAmericanUnits": "Konvertera amerikanska enheter",
+  "scalerScaledFromTo": "Skalat från {from} till {to} portioner",
+  "@scalerScaledFromTo": {
+    "placeholders": {
+      "from": {"type": "int"},
+      "to": {"type": "int"}
+    }
+  },
+  "scalerAmericanConverted": "Amerikanska enheter konverterade till svenska",
+
+  "menuPromptQuestion": "Vad vill du ha för meny?",
+  "menuPromptHint": "Ex: 3 middagar, 2 luncher och 1 frukost",
+  "menuGenerating": "Genererar...",
+  "menuGenerateNew": "Generera ny meny",
+  "menuGenerate": "Generera meny",
+  "menuYourWeeklyMenu": "Din veckomeny",
+  "menuRecipeCount": "{recipes} recept i {categories} kategorier",
+  "@menuRecipeCount": {
+    "placeholders": {
+      "recipes": {"type": "int"},
+      "categories": {"type": "int"}
+    }
+  },
+  "menuChooseManually": "Välj recept manuellt",
+  "menuNoMoreRecipes": "Inga fler recept tillgängliga för byte",
+  "menuGenerateError": "Kunde inte generera meny",
+  "menuWeekBadgeWithCount": "Vecka {week} · {count} rätter",
+  "@menuWeekBadgeWithCount": {
+    "placeholders": {
+      "week": {"type": "int"},
+      "count": {"type": "int"}
+    }
+  },
+  "menuWeekBadge": "Vecka {week}",
+  "@menuWeekBadge": {
+    "placeholders": {
+      "week": {"type": "int"}
+    }
+  },
+  "menuToShoppingList": "Till inköpslista",
+  "menuLoadSaved": "Ladda sparad meny",
+  "menuClear": "Rensa meny",
+  "menuShared": "Veckomeny delad!",
+  "menuGeneratingOverlay": "Genererar din veckomeny...",
+  "menuGeneratingSubtitle": "Hittar recept som passar dina preferenser",
+
+  "shoppingCountBadge": "{items} varor · {done} klara",
+  "@shoppingCountBadge": {
+    "placeholders": {
+      "items": {"type": "int"},
+      "done": {"type": "int"}
+    }
+  },
+
+  "commonSort": "Sortera",
+  "commonHide": "Dölj",
+  "commonShowAllCount": "Visa alla ({count})",
+  "@commonShowAllCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "commonMoreCount": "+{count} till",
+  "@commonMoreCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "commonDismiss": "Avfärda",
+  "errorUnexpected": "Ett oväntat fel uppstod",
+
+  "searchClearSearch": "Rensa sökning",
+  "searchClearFilters": "Rensa filter",
+
+  "syncComplete": "Synkronisering klar!",
+  "syncFailed": "Synkronisering misslyckades: {error}",
+  "@syncFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "offlineShowingLocal": "Offline-läge - visar lokala recept",
+
+  "recipeCreateCopy": "Skapa kopia",
+  "recipeCreateShoppingList": "Skapa inköpslista",
+  "recipeUpdateTags": "Uppdatera taggar",
+  "recipeViewSource": "Visa källa",
+  "recipeShareWithFriends": "Dela med vänner",
+  "recipeShareExternal": "Dela externt",
+  "recipeSourceFrom": "Från {host}",
+  "@recipeSourceFrom": {
+    "placeholders": {
+      "host": {"type": "String"}
+    }
+  },
+  "errorCouldNotOpenLink": "Kunde inte öppna länk",
+  "errorInvalidLink": "Ogiltig länk",
+
+  "shoppingItemRemoved": "{name} borttagen!",
+  "@shoppingItemRemoved": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "shoppingItemRemoveError": "Kunde inte ta bort {name}",
+  "@shoppingItemRemoveError": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "shoppingAllUnchecked": "Alla artiklar avbockade!",
+  "shoppingNoListForRename": "Ingen lista vald för att byta namn",
+  "shoppingNoListForDelete": "Ingen lista vald för borttagning"
 }

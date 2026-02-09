@@ -11,6 +11,7 @@ import 'package:butlery/views/recipe_detail/handlers/recipe_social_handler.dart'
 import 'package:butlery/views/recipe_detail/handlers/recipe_shopping_handler.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_tagging_handler.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_personal_tag_handler.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Recipe detail actions facade
 /// **SRP Compliance:** This facade coordinates action handlers and manages view state.
@@ -175,12 +176,12 @@ class RecipeDetailActions {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         if (!context.mounted) return;
-        _showSnackBar('Kunde inte öppna länk',
+        _showSnackBar(context.l10n.errorCouldNotOpenLink,
             backgroundColor: AppColors.error);
       }
     } catch (e) {
       if (!context.mounted) return;
-      _showSnackBar('Ogiltig länk', backgroundColor: AppColors.error);
+      _showSnackBar(context.l10n.errorInvalidLink, backgroundColor: AppColors.error);
     }
   }
 

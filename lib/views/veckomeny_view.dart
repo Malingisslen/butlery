@@ -18,6 +18,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart';
 import 'package:butlery/widgets/menu/menu_content_widgets.dart';
 import 'package:butlery/widgets/common/main_view_header.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Weekly menu planning view with natural language input and social sharing.
 class VeckomenyView extends StatelessWidget {
@@ -86,7 +87,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     final viewModel = context.read<MenuViewModel>();
     await _shareService.shareWeekMenuFromCategories(viewModel.menu);
     if (mounted) {
-      SnackBarUtils.showSuccess(context, 'Veckomeny delad!');
+      SnackBarUtils.showSuccess(context, context.l10n.menuShared);
     }
   }
 
@@ -115,15 +116,15 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         appBar: MainViewHeader(
           title: 'veckans\nmeny',
           countBadge: viewModel.hasMenu
-              ? 'Vecka $weekNumber · $menuItemCount rätter'
-              : 'Vecka $weekNumber',
+              ? context.l10n.menuWeekBadgeWithCount(weekNumber, menuItemCount)
+              : context.l10n.menuWeekBadge(weekNumber),
           actions: _buildHeaderActions(context, viewModel),
         ),
         body: _buildBody(context, viewModel),
         floatingActionButton: viewModel.hasMenu
             ? ActionButtons.actionButton(
                 context,
-                label: 'Till inkopslista',
+                label: context.l10n.menuToShoppingList,
                 icon: Icons.shopping_cart,
                 onPressed: () => VeckomenyDialogs.showShoppingListSelector(
                   context,
@@ -145,7 +146,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           context,
           viewModel: viewModel,
         ),
-        tooltip: 'Ladda sparad meny',
+        tooltip: context.l10n.menuLoadSaved,
       ),
       // Save menu button (only when menu exists)
       if (viewModel.hasMenu)
@@ -156,14 +157,14 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             viewModel: viewModel,
             availableFriends: _friendsService.friends,
           ),
-          tooltip: 'Spara meny',
+          tooltip: context.l10n.menuSave,
         ),
       // Clear menu button
       if (viewModel.hasMenu)
         IconButton(
           icon: const Icon(Icons.clear, color: AppColors.headerForeground),
           onPressed: _clearMenu,
-          tooltip: 'Rensa meny',
+          tooltip: context.l10n.menuClear,
         ),
     ];
   }
@@ -247,9 +248,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
   /// UI Redesign: Uses PeaLoadingAnimation for branded loading experience
   Widget _buildLoadingOverlay(BuildContext context) {
-    return const PeaLoadingOverlay(
-      message: 'Genererar din veckomeny...',
-      subtitle: 'Hittar recept som passar dina preferenser',
+    return PeaLoadingOverlay(
+      message: context.l10n.menuGeneratingOverlay,
+      subtitle: context.l10n.menuGeneratingSubtitle,
     );
   }
 }

@@ -1,10 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../test_support/base_unit_test.dart';
+
+/// Wraps a widget in MaterialApp with l10n delegates for testing.
+Widget _testApp({required Widget home}) {
+  return MaterialApp(
+    locale: const Locale('sv'),
+    supportedLocales: AppLocalizations.supportedLocales,
+    localizationsDelegates: const [
+      AppLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    home: home,
+  );
+}
 
 void main() {
   group('RecipeCard', () {
@@ -60,7 +77,7 @@ void main() {
     group('Rendering - Detailed Style', () {
       testWidgets('should render recipe with all details', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -83,7 +100,7 @@ void main() {
       testWidgets('should render recipe without image correctly',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: recipeWithoutImage,
@@ -101,7 +118,7 @@ void main() {
       testWidgets('should hide elements based on display options',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -127,7 +144,7 @@ void main() {
 
       testWidgets('should handle minimal recipe data', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: minimalRecipe,
@@ -147,7 +164,7 @@ void main() {
     group('Rendering - Compact Style', () {
       testWidgets('should render compact layout correctly', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -166,7 +183,7 @@ void main() {
 
       testWidgets('should use smaller image in compact mode', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -187,7 +204,7 @@ void main() {
     group('Rendering - Grid Style', () {
       testWidgets('should render grid layout correctly', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: SizedBox(
               width: 200,
               child: RecipeCard(
@@ -208,7 +225,7 @@ void main() {
       testWidgets('should position favorite button as overlay in grid mode',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: SizedBox(
               width: 200,
               child: RecipeCard(
@@ -230,7 +247,7 @@ void main() {
         Recipe? tappedRecipe;
 
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -250,7 +267,7 @@ void main() {
         Recipe? longPressedRecipe;
 
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -268,7 +285,7 @@ void main() {
 
       testWidgets('should not display favorite buttons', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -285,7 +302,7 @@ void main() {
       testWidgets('should not respond to tap when callback is null',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -305,7 +322,7 @@ void main() {
       testWidgets('should show selection state visually',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -322,7 +339,7 @@ void main() {
 
       testWidgets('should show normal state when not selected', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -343,7 +360,7 @@ void main() {
         const customMargin = EdgeInsets.all(20);
 
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -364,7 +381,7 @@ void main() {
         const customPadding = EdgeInsets.all(24);
 
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -394,7 +411,7 @@ void main() {
       testWidgets('should apply default styling when not specified',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -418,7 +435,7 @@ void main() {
       testWidgets('should show context menu button when enabled',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -434,7 +451,7 @@ void main() {
       testWidgets('should hide context menu button when disabled',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -451,7 +468,7 @@ void main() {
     group('Accessibility', () {
       testWidgets('should have semantic label for recipe', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -476,7 +493,7 @@ void main() {
 
       testWidgets('should have proper contrast for text', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -503,7 +520,7 @@ void main() {
         );
 
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: swedishRecipe,
@@ -521,7 +538,7 @@ void main() {
 
       testWidgets('should use Swedish units for metadata', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: testRecipe,
@@ -543,7 +560,7 @@ void main() {
         );
 
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: SizedBox(
               width: 300,
               child: RecipeCard(
@@ -567,7 +584,7 @@ void main() {
         );
 
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: noTagsRecipe,
@@ -589,7 +606,7 @@ void main() {
         );
 
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: zeroPortionsRecipe,
@@ -608,7 +625,7 @@ void main() {
         );
 
         await tester.pumpWidget(
-          MaterialApp(
+          _testApp(
             home: Scaffold(
               body: RecipeCard(
                 recipe: negativeTimeRecipe,

@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/time_format_utils.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Recipe detail metadata widget — inline row with time, portions, rating,
 /// and "Lagat idag" chip. Source URL is shown as subtitle in the parent view.
@@ -39,7 +40,7 @@ class RecipeDetailMetadata extends StatelessWidget {
     }
 
     if (currentPortions > 0) {
-      parts.add('$currentPortions ${currentPortions == 1 ? 'portion' : 'port'}');
+      parts.add('$currentPortions ${currentPortions == 1 ? context.l10n.recipePortionSingular : context.l10n.recipePortionAbbreviation}');
     }
 
     final metadataWidgets = <Widget>[];
@@ -75,7 +76,7 @@ class RecipeDetailMetadata extends StatelessWidget {
       OutlinedButton.icon(
         onPressed: () => _markAsCooked(context),
         icon: const Icon(Icons.check_circle_outline, size: 14),
-        label: Text('Lagat idag', style: AppTextStyles.labelSmall),
+        label: Text(context.l10n.recipeCookedToday, style: AppTextStyles.labelSmall),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.success,
           side: const BorderSide(color: AppColors.success, width: 0.5),
@@ -143,14 +144,14 @@ class RecipeDetailMetadata extends StatelessWidget {
       if (!context.mounted) return;
       _showSnackBarSafely(
         context,
-        'Recept markerat som lagat idag!',
+        context.l10n.recipeCookedTodaySuccess,
         backgroundColor: AppColors.success,
       );
     } catch (e) {
       if (!context.mounted) return;
       _showSnackBarSafely(
         context,
-        'Kunde inte markera som lagat',
+        context.l10n.recipeCookedTodayError,
         backgroundColor: AppColors.error,
       );
     }

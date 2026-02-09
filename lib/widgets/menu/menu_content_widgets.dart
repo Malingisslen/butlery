@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Widget builders for the Veckomeny (weekly menu) view content.
 ///
@@ -46,7 +47,7 @@ class MenuContentWidgets {
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                'Vad vill du ha for meny?',
+                context.l10n.menuPromptQuestion,
                 style: AppTextStyles.labelMedium.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -57,7 +58,7 @@ class MenuContentWidgets {
           StyledInput(
             controller: controller,
             enabled: !isGenerating,
-            hint: 'Ex: 3 middagar, 2 luncher och 1 frukost',
+            hint: context.l10n.menuPromptHint,
             prefixIcon: const Icon(Icons.edit),
             suffixIcon: controller.text.isNotEmpty
                 ? IconButton(
@@ -89,12 +90,12 @@ class MenuContentWidgets {
       child: ActionButtons.primaryButton(
         context,
         label: viewModel.isGenerating
-            ? 'Genererar...'
-            : (viewModel.hasMenu ? 'Generera ny meny' : 'Generera meny'),
+            ? context.l10n.menuGenerating
+            : (viewModel.hasMenu ? context.l10n.menuGenerateNew : context.l10n.menuGenerate),
         icon: Icons.restaurant_menu,
         onPressed: !viewModel.isGenerating && hasPrompt ? onGenerate : null,
         isLoading: viewModel.isGenerating,
-        loadingText: 'Genererar...',
+        loadingText: context.l10n.menuGenerating,
       ),
     );
   }
@@ -126,14 +127,14 @@ class MenuContentWidgets {
           children: [
             ActionButtons.primaryButton(
               context,
-              label: 'Generera meny',
+              label: context.l10n.menuGenerate,
               icon: Icons.restaurant_menu,
               onPressed: onRetry,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             ActionButtons.outlinedButton(
               context,
-              label: 'Välj recept manuellt',
+              label: context.l10n.menuChooseManually,
               icon: Icons.list,
               onPressed: () => Navigator.pushNamed(context, '/'),
             ),
@@ -189,13 +190,13 @@ class MenuContentWidgets {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Din veckomeny',
+                      context.l10n.menuYourWeeklyMenu,
                       style: AppTextStyles.titleMedium.copyWith(
                         color: Theme.of(context).colorScheme.onPrimaryContainer,
                       ),
                     ),
                     Text(
-                      '${viewModel.totalRecipeCount} recept i ${viewModel.menu.length} kategorier',
+                      context.l10n.menuRecipeCount(viewModel.totalRecipeCount, viewModel.menu.length),
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Theme.of(context).colorScheme.onPrimaryContainer,
                       ),
@@ -337,7 +338,7 @@ Widget _buildInlineError(
 
           // Error title
           Text(
-            'Kunde inte generera meny',
+            context.l10n.menuGenerateError,
             style: AppTextStyles.titleMedium.copyWith(
               color: AppColors.rust,
             ),
@@ -347,7 +348,7 @@ Widget _buildInlineError(
 
           // Error message
           Text(
-            viewModel.error ?? 'Ett oväntat fel uppstod',
+            viewModel.error ?? context.l10n.errorUnexpected,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textMedium,
             ),
@@ -359,7 +360,7 @@ Widget _buildInlineError(
           if (onRetry != null)
             ActionButtons.primaryButton(
               context,
-              label: 'Försök igen',
+              label: context.l10n.commonRetry,
               icon: Icons.refresh,
               onPressed: () {
                 viewModel.clearError();
@@ -372,7 +373,7 @@ Widget _buildInlineError(
           TextButton(
             onPressed: () => viewModel.clearError(),
             child: Text(
-              'Avfärda',
+              context.l10n.commonDismiss,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textMedium,
               ),
@@ -431,9 +432,9 @@ class _MenuRecipeCard extends StatelessWidget {
                         Text(
                           [
                             if (recipe.timeMinutes != null)
-                              '${recipe.timeMinutes} min',
+                              '${recipe.timeMinutes} ${context.l10n.unitMinutesShort}',
                             if (recipe.portions != null)
-                              '${recipe.portions} portioner',
+                              '${recipe.portions} ${context.l10n.recipePortionsPlural}',
                           ].join(' · '),
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.textMedium,
@@ -455,9 +456,9 @@ class _MenuRecipeCard extends StatelessWidget {
                                 await viewModel.swapRecipe(recipe, category);
                             if (!success && context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
+                                SnackBar(
                                   content:
-                                      Text('Inga fler recept tillgängliga för byte'),
+                                      Text(context.l10n.menuNoMoreRecipes),
                                   backgroundColor: AppColors.rust,
                                 ),
                               );
