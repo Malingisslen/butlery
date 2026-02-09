@@ -84,7 +84,7 @@ void main() {
 
         expect(decoration.borderRadius,
             equals(BorderRadius.circular(AppDimensions.borderRadiusL)));
-        expect(decoration.color, equals(AppColors.backgroundBeige));
+        expect(decoration.color, equals(AppColors.cream));
         expect(decoration.border, isNotNull);
       });
 

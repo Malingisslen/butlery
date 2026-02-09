@@ -132,11 +132,13 @@ class _SessionTimeoutWarningDialogState
                 vertical: AppDimensions.spacingM,
               ),
               decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
+                color: AppColors.warning
+                    .withValues(alpha: AppDimensions.opacityVeryLight),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusM),
                 border: Border.all(
-                  color: AppColors.warning.withValues(alpha: AppDimensions.opacityMediumLight),
+                  color: AppColors.warning
+                      .withValues(alpha: AppDimensions.opacityMediumLight),
                   width: 2,
                 ),
               ),
@@ -171,7 +173,7 @@ class _SessionTimeoutWarningDialogState
         FilledButton(
           onPressed: _handleExtendSession,
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: AppColors.forestGreen,
           ),
           child: Text(
             'Fortsätt session',

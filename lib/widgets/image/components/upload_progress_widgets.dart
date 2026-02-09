@@ -30,10 +30,12 @@ class UploadProgressWidgets {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: AppColors.forestGreen
+            .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: AppColors.forestGreen
+              .withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Column(
@@ -50,7 +52,7 @@ class UploadProgressWidgets {
                     child: Text(
                       uploadQueueStatus,
                       style: AppTextStyles.metadataEmphasized.copyWith(
-                        color: AppColors.primaryBlue,
+                        color: AppColors.forestGreen,
                       ),
                     ),
                   ),
@@ -89,7 +91,7 @@ class UploadProgressWidgets {
         child: CircularProgressIndicator(
           strokeWidth: 2,
           valueColor:
-              const AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+              const AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
           value: (managementSummary['overallProgress'] as double?),
         ),
       );
@@ -125,7 +127,7 @@ class UploadProgressWidgets {
           icon: Icons.refresh,
           label: 'Försök alla ($failed)',
           onTap: onRetryAllFailed,
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         ),
       );
     }
@@ -232,7 +234,8 @@ class UploadProgressWidgets {
                 child: Text(
                   detail,
                   style: AppTextStyles.textSm.copyWith(
-                    color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryDark),
+                    color: AppColors.forestGreen
+                        .withValues(alpha: AppDimensions.opacityVeryDark),
                   ),
                 ),
               ))
@@ -252,7 +255,8 @@ class UploadProgressWidgets {
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: borderRadius,
-          color: AppColors.textDark.withValues(alpha: AppDimensions.opacityMediumDark),
+          color: AppColors.textDark
+              .withValues(alpha: AppDimensions.opacityMediumDark),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -265,7 +269,8 @@ class UploadProgressWidgets {
                 vertical: AppDimensions.paddingS,
               ),
               decoration: BoxDecoration(
-                color: AppColors.textDark.withValues(alpha: AppDimensions.opacityVeryDark),
+                color: AppColors.textDark
+                    .withValues(alpha: AppDimensions.opacityVeryDark),
                 borderRadius: BorderRadius.circular(AppDimensions.paddingS),
               ),
               child: Column(
@@ -284,7 +289,8 @@ class UploadProgressWidgets {
                     Text(
                       '${status.formattedTimeRemaining} kvar',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.cardWhite.withValues(alpha: AppDimensions.opacityVeryDark),
+                        color: AppColors.cardWhite
+                            .withValues(alpha: AppDimensions.opacityVeryDark),
                       ),
                     ),
                   ],
@@ -293,7 +299,8 @@ class UploadProgressWidgets {
                     Text(
                       '${status.fileSizeMB!.toStringAsFixed(1)} MB',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.cardWhite.withValues(alpha: AppDimensions.opacityDark),
+                        color: AppColors.cardWhite
+                            .withValues(alpha: AppDimensions.opacityDark),
                       ),
                     ),
                   ],
@@ -311,7 +318,7 @@ class UploadProgressWidgets {
                       icon: Icons.refresh,
                       label: 'Försök igen',
                       onTap: () => onRetryUpload(imageUrl),
-                      color: AppColors.primaryBlue,
+                      color: AppColors.forestGreen,
                     ),
                   if (status.canRetry &&
                       onRetryUpload != null &&
@@ -342,7 +349,8 @@ class UploadProgressWidgets {
           height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.cardWhite.withValues(alpha: AppDimensions.opacityLight),
+            color: AppColors.cardWhite
+                .withValues(alpha: AppDimensions.opacityLight),
           ),
           child: const Icon(
             Icons.schedule,
@@ -359,11 +367,12 @@ class UploadProgressWidgets {
           child: CircularProgressIndicator(
             value: status.progress > 0 ? status.progress : null,
             strokeWidth: 4,
-            backgroundColor: AppColors.cardWhite.withValues(alpha: AppDimensions.opacityMediumLight),
+            backgroundColor: AppColors.cardWhite
+                .withValues(alpha: AppDimensions.opacityMediumLight),
             valueColor: AlwaysStoppedAnimation<Color>(
               status.state == ImageUploadState.retrying
                   ? AppColors.textMedium
-                  : AppColors.primaryBlue,
+                  : AppColors.forestGreen,
             ),
           ),
         );
@@ -374,7 +383,8 @@ class UploadProgressWidgets {
           height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityExtraDark),
+            color: AppColors.forestGreen
+                .withValues(alpha: AppDimensions.opacityExtraDark),
           ),
           child: const Icon(
             Icons.check,
@@ -389,7 +399,8 @@ class UploadProgressWidgets {
           height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.error.withValues(alpha: AppDimensions.opacityExtraDark),
+            color: AppColors.error
+                .withValues(alpha: AppDimensions.opacityExtraDark),
           ),
           child: const Icon(
             Icons.error,
@@ -404,7 +415,8 @@ class UploadProgressWidgets {
           height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityExtraDark),
+            color: AppColors.textMedium
+                .withValues(alpha: AppDimensions.opacityExtraDark),
           ),
           child: const Icon(
             Icons.cancel,

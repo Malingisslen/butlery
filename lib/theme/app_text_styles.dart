@@ -1,4 +1,12 @@
 /// Typography system for unified text styling in the Butlery application.
+///
+/// **UI Redesign Typography:**
+/// - Headers & Navigation: Josefin Sans (lowercase, with letter-spacing)
+/// - Body text: Space Grotesk
+///
+/// **Usage:**
+/// - Use [headerFont] for app headers, navigation items
+/// - Use [bodyFont] for body text, labels, buttons
 
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -10,61 +18,76 @@ class AppTextStyles {
   /// Private constructor
   AppTextStyles._();
 
-  /// Platform-adaptive font family.
-  /// Returns null on iOS to use the system font (SF Pro).
-  /// Returns 'Inter' on Android and other platforms.
+  /// Header font family - Josefin Sans for headers and navigation
+  static const String headerFont = 'JosefinSans';
+
+  /// Body font family - Space Grotesk for body text
+  static const String bodyFont = 'SpaceGrotesk';
+
+  /// Primary font family for body text.
+  /// Uses Space Grotesk, falls back to system font on iOS.
   static String? get _primaryFontFamily {
-    if (kIsWeb) return 'Inter';
-    return Platform.isIOS ? null : 'Inter';
+    if (kIsWeb) return bodyFont;
+    return Platform.isIOS ? null : bodyFont;
   }
 
-  /// Display Small - For prominent section headlines
+  /// Header font family for headers and navigation.
+  /// Uses Josefin Sans, falls back to system font on iOS.
+  static String? get _headerFontFamily {
+    if (kIsWeb) return headerFont;
+    return Platform.isIOS ? null : headerFont;
+  }
+
+  /// Display Small - For prominent section headlines (Josefin Sans)
   static TextStyle get displaySmall => TextStyle(
-        fontFamily: _primaryFontFamily,
+        fontFamily: _headerFontFamily,
         fontSize: 24,
         fontWeight: FontWeight.w600,
         color: AppColors.textDark,
+        letterSpacing: 0.5,
       );
 
-  /// Headline Medium - For section headers and content categories
+  /// Headline Medium - For section headers and content categories (Josefin Sans)
   static TextStyle get headlineMedium => TextStyle(
-        fontFamily: _primaryFontFamily,
+        fontFamily: _headerFontFamily,
         fontSize: 24,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
         color: AppColors.sectionHeader,
-        letterSpacing: -0.25,
+        letterSpacing: 0.5,
       );
 
-  /// Headline Small - For subsection titles and secondary headers
+  /// Headline Small - For subsection titles and secondary headers (Josefin Sans)
   static TextStyle get headlineSmall => TextStyle(
-        fontFamily: _primaryFontFamily,
+        fontFamily: _headerFontFamily,
         fontSize: 22,
         fontWeight: FontWeight.w600,
         color: AppColors.textDark,
+        letterSpacing: 0.5,
       );
 
-  /// Headline Bold - For prominent countdown timers and emphasis
+  /// Headline Bold - For prominent countdown timers and emphasis (Josefin Sans)
   static TextStyle get headlineBold => TextStyle(
-        fontFamily: _primaryFontFamily,
+        fontFamily: _headerFontFamily,
         fontSize: 28,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
         color: AppColors.textDark,
+        letterSpacing: 0.5,
       );
 
-  /// Title Large - For recipe names and primary content
+  /// Title Large - For recipe names and primary content (Space Grotesk)
   static TextStyle get titleLarge => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 17,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w500,
         color: AppColors.textDark,
         height: 1.3,
       );
 
-  /// Title Medium - For secondary titles and content headers
+  /// Title Medium - For secondary titles and content headers (Space Grotesk)
   static TextStyle get titleMedium => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 15,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w500,
         color: AppColors.textDark,
         height: 1.3,
       );
@@ -156,8 +179,14 @@ class AppTextStyles {
   /// Tab text style
   static TextStyle get tabText => labelMedium;
 
-  /// Navigation text style
-  static TextStyle get navigationText => labelSmall;
+  /// Navigation text style (Josefin Sans for nav items)
+  static TextStyle get navigationText => TextStyle(
+        fontFamily: _headerFontFamily,
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+        color: AppColors.navUnselectedItem,
+        letterSpacing: 0.3,
+      );
 
   /// Error text style
   static TextStyle get errorText => bodySmall.copyWith(
@@ -171,8 +200,14 @@ class AppTextStyles {
         fontWeight: FontWeight.w500,
       );
 
-  /// App bar title style
-  static TextStyle get appBarTitle => headlineMedium;
+  /// App bar title style (Josefin Sans, 18px per mockup)
+  static TextStyle get appBarTitle => TextStyle(
+        fontFamily: _headerFontFamily,
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: AppColors.headerForeground,
+        letterSpacing: 0.5,
+      );
 
   /// Card title style
   static TextStyle get cardTitle => titleMedium;
@@ -326,7 +361,7 @@ class AppTextStyles {
 
   /// Small link text - for clickable metadata links
   static TextStyle get linkSmall => bodySmall.copyWith(
-        color: AppColors.primaryBlue,
+        color: AppColors.forestGreen,
       );
 
   /// Muted label - for section headers in cards
@@ -359,8 +394,93 @@ class AppTextStyles {
         color: AppColors.info,
       );
 
+  // ============================================================
+  // UI REDESIGN SPECIFIC STYLES
+  // ============================================================
+
+  /// Header title style - for ButleryHeader (Josefin Sans, lowercase)
+  static TextStyle get headerTitle => TextStyle(
+        fontFamily: _headerFontFamily,
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: AppColors.headerForeground,
+        letterSpacing: 0.5,
+      );
+
+  /// Main view header title - elegant style for main views (32px, Josefin Sans)
+  /// Used for "dina recept", "veckans meny", "inkopslista" headers
+  /// UI Redesign: 32px/w600 matching mockup .header-title
+  static TextStyle get mainViewTitle => TextStyle(
+        fontFamily: _headerFontFamily,
+        fontSize: 32,
+        fontWeight: FontWeight.w600,
+        color: AppColors.headerForeground,
+        letterSpacing: 2,
+        height: 1.1,
+      );
+
+  /// Header count badge text style
+  static TextStyle get headerCountBadge => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        color: AppColors.forestGreenDark,
+        letterSpacing: 1,
+      );
+
+  /// Section header label style (uppercase, small, with letter-spacing)
+  static TextStyle get sectionLabel => TextStyle(
+        fontFamily: _headerFontFamily,
+        fontSize: 10,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 3,
+        color: AppColors.rust,
+      );
+
+  /// Filter chip text style
+  static TextStyle get filterChip => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+      );
+
+  /// Navigation item label (Josefin Sans, 10px per mockup)
+  static TextStyle get navLabel => TextStyle(
+        fontFamily: _headerFontFamily,
+        fontSize: 10,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.3,
+      );
+
+  /// Empty state title (Josefin Sans, green-dark per mockup)
+  static TextStyle get emptyStateTitle => TextStyle(
+        fontFamily: _headerFontFamily,
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: AppColors.forestGreenDark,
+        letterSpacing: 1.0,
+      );
+
+  /// Empty state body
+  static TextStyle get emptyStateBody => bodyMedium.copyWith(
+        color: AppColors.textMedium,
+      );
+
+  /// Recipe card title (15px/w600 per mockup)
+  static TextStyle get recipeCardTitle => titleMedium.copyWith(
+        fontWeight: FontWeight.w600,
+      );
+
+  /// Badge text style for unified badges
+  static TextStyle get badgeText => TextStyle(
+        fontFamily: _primaryFontFamily,
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.2,
+      );
+
   /// Creates a complete Material 3 TextTheme with platform-adaptive font family.
-  /// Uses SF Pro (system font) on iOS, Inter on Android.
+  /// Uses Josefin Sans for headers, Space Grotesk for body.
   static TextTheme createTextTheme() {
     return TextTheme(
       displaySmall: displaySmall,

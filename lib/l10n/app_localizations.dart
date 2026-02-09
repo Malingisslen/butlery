@@ -1693,6 +1693,414 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Är du säker på att du vill ta bort {itemName} från {itemType}?'**
   String dialogConfirmDeleteMessage(String itemName, String itemType);
+
+  /// No description provided for @recipePortionAbbreviation.
+  ///
+  /// In sv, this message translates to:
+  /// **'port'**
+  String get recipePortionAbbreviation;
+
+  /// No description provided for @recipePortionSingular.
+  ///
+  /// In sv, this message translates to:
+  /// **'portion'**
+  String get recipePortionSingular;
+
+  /// No description provided for @recipePortionsPlural.
+  ///
+  /// In sv, this message translates to:
+  /// **'portioner'**
+  String get recipePortionsPlural;
+
+  /// No description provided for @recipeCookedToday.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lagat idag'**
+  String get recipeCookedToday;
+
+  /// No description provided for @recipeCookedTodaySuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept markerat som lagat idag!'**
+  String get recipeCookedTodaySuccess;
+
+  /// No description provided for @recipeCookedTodayError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte markera som lagat'**
+  String get recipeCookedTodayError;
+
+  /// No description provided for @recipeNoInstructions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga instruktioner angivna.'**
+  String get recipeNoInstructions;
+
+  /// No description provided for @recipeTags.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggar'**
+  String get recipeTags;
+
+  /// No description provided for @recipeImagesTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilder'**
+  String get recipeImagesTitle;
+
+  /// No description provided for @recipeImageCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 bild} other{{count} bilder}}'**
+  String recipeImageCount(int count);
+
+  /// No description provided for @recipePersonalTags.
+  ///
+  /// In sv, this message translates to:
+  /// **'Personliga taggar'**
+  String get recipePersonalTags;
+
+  /// No description provided for @recipeIngredientsForPortions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser för {count} {count, plural, =1{portion} other{portioner}}:'**
+  String recipeIngredientsForPortions(int count);
+
+  /// No description provided for @recipeAnalysisFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Analys misslyckades'**
+  String get recipeAnalysisFailed;
+
+  /// No description provided for @recipeAnalyzing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Analyseras...'**
+  String get recipeAnalyzing;
+
+  /// No description provided for @recipeAnalysisFailedA11y.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingrediensanalys misslyckades'**
+  String get recipeAnalysisFailedA11y;
+
+  /// No description provided for @recipeAnalyzingA11y.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser analyseras'**
+  String get recipeAnalyzingA11y;
+
+  /// No description provided for @recipeSearchHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'sök bland recepten...'**
+  String get recipeSearchHint;
+
+  /// No description provided for @recipeShowMore.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa fler recept'**
+  String get recipeShowMore;
+
+  /// No description provided for @recipeCountBadge.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept'**
+  String recipeCountBadge(int count);
+
+  /// No description provided for @scalerPortionsLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Portioner:'**
+  String get scalerPortionsLabel;
+
+  /// No description provided for @scalerUsingSwedishUnits.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använder svenska enheter'**
+  String get scalerUsingSwedishUnits;
+
+  /// No description provided for @scalerConvertAmericanUnits.
+  ///
+  /// In sv, this message translates to:
+  /// **'Konvertera amerikanska enheter'**
+  String get scalerConvertAmericanUnits;
+
+  /// No description provided for @scalerScaledFromTo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skalat från {from} till {to} portioner'**
+  String scalerScaledFromTo(int from, int to);
+
+  /// No description provided for @scalerAmericanConverted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Amerikanska enheter konverterade till svenska'**
+  String get scalerAmericanConverted;
+
+  /// No description provided for @menuPromptQuestion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad vill du ha för meny?'**
+  String get menuPromptQuestion;
+
+  /// No description provided for @menuPromptHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ex: 3 middagar, 2 luncher och 1 frukost'**
+  String get menuPromptHint;
+
+  /// No description provided for @menuGenerating.
+  ///
+  /// In sv, this message translates to:
+  /// **'Genererar...'**
+  String get menuGenerating;
+
+  /// No description provided for @menuGenerateNew.
+  ///
+  /// In sv, this message translates to:
+  /// **'Generera ny meny'**
+  String get menuGenerateNew;
+
+  /// No description provided for @menuGenerate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Generera meny'**
+  String get menuGenerate;
+
+  /// No description provided for @menuYourWeeklyMenu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din veckomeny'**
+  String get menuYourWeeklyMenu;
+
+  /// No description provided for @menuRecipeCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{recipes} recept i {categories} kategorier'**
+  String menuRecipeCount(int recipes, int categories);
+
+  /// No description provided for @menuChooseManually.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj recept manuellt'**
+  String get menuChooseManually;
+
+  /// No description provided for @menuNoMoreRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga fler recept tillgängliga för byte'**
+  String get menuNoMoreRecipes;
+
+  /// No description provided for @menuGenerateError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte generera meny'**
+  String get menuGenerateError;
+
+  /// No description provided for @menuWeekBadgeWithCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vecka {week} · {count} rätter'**
+  String menuWeekBadgeWithCount(int week, int count);
+
+  /// No description provided for @menuWeekBadge.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vecka {week}'**
+  String menuWeekBadge(int week);
+
+  /// No description provided for @menuToShoppingList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Till inköpslista'**
+  String get menuToShoppingList;
+
+  /// No description provided for @menuLoadSaved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ladda sparad meny'**
+  String get menuLoadSaved;
+
+  /// No description provided for @menuClear.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rensa meny'**
+  String get menuClear;
+
+  /// No description provided for @menuShared.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckomeny delad!'**
+  String get menuShared;
+
+  /// No description provided for @menuGeneratingOverlay.
+  ///
+  /// In sv, this message translates to:
+  /// **'Genererar din veckomeny...'**
+  String get menuGeneratingOverlay;
+
+  /// No description provided for @menuGeneratingSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hittar recept som passar dina preferenser'**
+  String get menuGeneratingSubtitle;
+
+  /// No description provided for @shoppingCountBadge.
+  ///
+  /// In sv, this message translates to:
+  /// **'{items} varor · {done} klara'**
+  String shoppingCountBadge(int items, int done);
+
+  /// No description provided for @commonSort.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sortera'**
+  String get commonSort;
+
+  /// No description provided for @commonHide.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dölj'**
+  String get commonHide;
+
+  /// No description provided for @commonShowAllCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa alla ({count})'**
+  String commonShowAllCount(int count);
+
+  /// No description provided for @commonMoreCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'+{count} till'**
+  String commonMoreCount(int count);
+
+  /// No description provided for @commonDismiss.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avfärda'**
+  String get commonDismiss;
+
+  /// No description provided for @errorUnexpected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett oväntat fel uppstod'**
+  String get errorUnexpected;
+
+  /// No description provided for @searchClearSearch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rensa sökning'**
+  String get searchClearSearch;
+
+  /// No description provided for @searchClearFilters.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rensa filter'**
+  String get searchClearFilters;
+
+  /// No description provided for @syncComplete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Synkronisering klar!'**
+  String get syncComplete;
+
+  /// No description provided for @syncFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Synkronisering misslyckades: {error}'**
+  String syncFailed(String error);
+
+  /// No description provided for @offlineShowingLocal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Offline-läge - visar lokala recept'**
+  String get offlineShowingLocal;
+
+  /// No description provided for @recipeCreateCopy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa kopia'**
+  String get recipeCreateCopy;
+
+  /// No description provided for @recipeCreateShoppingList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa inköpslista'**
+  String get recipeCreateShoppingList;
+
+  /// No description provided for @recipeUpdateTags.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppdatera taggar'**
+  String get recipeUpdateTags;
+
+  /// No description provided for @recipeViewSource.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa källa'**
+  String get recipeViewSource;
+
+  /// No description provided for @recipeShareWithFriends.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela med vänner'**
+  String get recipeShareWithFriends;
+
+  /// No description provided for @recipeShareExternal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela externt'**
+  String get recipeShareExternal;
+
+  /// No description provided for @recipeSourceFrom.
+  ///
+  /// In sv, this message translates to:
+  /// **'Från {host}'**
+  String recipeSourceFrom(String host);
+
+  /// No description provided for @errorCouldNotOpenLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte öppna länk'**
+  String get errorCouldNotOpenLink;
+
+  /// No description provided for @errorInvalidLink.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltig länk'**
+  String get errorInvalidLink;
+
+  /// No description provided for @shoppingItemRemoved.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} borttagen!'**
+  String shoppingItemRemoved(String name);
+
+  /// No description provided for @shoppingItemRemoveError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort {name}'**
+  String shoppingItemRemoveError(String name);
+
+  /// No description provided for @shoppingAllUnchecked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla artiklar avbockade!'**
+  String get shoppingAllUnchecked;
+
+  /// No description provided for @shoppingNoListForRename.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen lista vald för att byta namn'**
+  String get shoppingNoListForRename;
+
+  /// No description provided for @shoppingNoListForDelete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen lista vald för borttagning'**
+  String get shoppingNoListForDelete;
 }
 
 class _AppLocalizationsDelegate

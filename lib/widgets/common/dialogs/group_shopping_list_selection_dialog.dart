@@ -84,12 +84,13 @@ class _ShoppingListItem extends StatelessWidget {
         width: AppDimensions.iconSizeXl,
         height: AppDimensions.iconSizeXl,
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+          color: AppColors.forestGreen
+              .withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
         child: const Icon(
           Icons.shopping_cart,
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
           size: AppDimensions.iconSizeAction,
         ),
       ),
@@ -113,7 +114,7 @@ class _ShoppingListItem extends StatelessWidget {
           Text(
             '$completedCount/$totalCount artiklar',
             style: AppTextStyles.metadataEmphasized.copyWith(
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
             ),
           ),
         ],

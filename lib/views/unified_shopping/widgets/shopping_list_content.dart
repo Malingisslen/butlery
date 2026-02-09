@@ -1,4 +1,6 @@
 // lib/views/unified_shopping/widgets/shopping_list_content.dart
+//
+// UI Redesign: Color-coded category headers with full-width colored bars
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -9,7 +11,10 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
 
-/// Main content area for shopping list
+/// Main content area for shopping list.
+///
+/// **UI Redesign:** Category headers now use full-width colored bars
+/// with category-specific colors from AppColors.category* constants.
 class ShoppingListContent {
   static Widget build(
     BuildContext context,
@@ -152,56 +157,55 @@ class ShoppingListContent {
     Function(UnifiedShoppingItem) onEditItem,
     Function(UnifiedShoppingItem) onDeleteItem,
   ) {
+    // UI Redesign: Get category-specific color
+    final categoryColor =
+        isCompleted ? AppColors.textMedium : _getCategoryColor(category);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Category header
+        // UI Redesign: Full-width colored category header bar
         Container(
+          width: double.infinity,
           padding: const EdgeInsets.symmetric(
-              horizontal: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-              vertical: AppDimensions.spacingSm),
+            horizontal: AppDimensions.spacingMd,
+            vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
+          ),
           margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
           decoration: BoxDecoration(
-            color: (isCompleted ? AppColors.textMedium : AppColors.primaryBlue)
-                .withValues(alpha: AppDimensions.opacityVeryLight),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+            color: categoryColor,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           ),
           child: Row(
             children: [
-              _getCategoryIcon(category, isCompleted),
-              const SizedBox(
-                  width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
               Expanded(
                 child: Text(
-                  category,
-                  style: AppTextStyles.bodyLargeBold.copyWith(
-                    color: isCompleted
-                        ? AppColors.textMedium
-                        : AppColors.primaryBlue,
+                  category.toUpperCase(),
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: AppColors.cardWhite,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 2,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingSm),
+              // Count badge
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingTight,
-                    vertical: AppDimensions.spacingXxs),
+                  horizontal: AppDimensions.spacingSm,
+                  vertical: AppDimensions.spacingXxs,
+                ),
                 decoration: BoxDecoration(
-                  color: (isCompleted
-                          ? AppColors.textMedium
-                          : AppColors.primaryBlue)
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
+                  color: AppColors.cardWhite.withValues(alpha: 0.2),
                   borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadius8),
+                      BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: Text(
                   '${items.length}',
-                  style: AppTextStyles.metadataEmphasized.copyWith(
-                    color: isCompleted
-                        ? AppColors.textMedium
-                        : AppColors.primaryBlue,
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: AppColors.cardWhite,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -219,50 +223,34 @@ class ShoppingListContent {
               onDeleteItem,
             )),
 
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.spacingMd),
       ],
     );
   }
 
-  static Widget _getCategoryIcon(String category, bool isCompleted) {
-    IconData iconData;
+  /// Get category-specific color from AppColors.
+  static Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
-      case 'frukt & grönt':
-        iconData = Icons.eco;
-        break;
-      case 'mejeri':
-        iconData = Icons.local_drink;
-        break;
       case 'kött & fisk':
-        iconData = Icons.set_meal;
-        break;
+      case 'kött':
+      case 'fisk':
+        return AppColors.categoryMeatFish;
+      case 'mejeri':
+        return AppColors.categoryDairy;
+      case 'frukt & grönt':
+      case 'grönsaker':
+      case 'frukt':
+        return AppColors.categoryVegetables;
       case 'bröd':
-        iconData = Icons.bakery_dining;
-        break;
-      case 'skafferi':
-        iconData = Icons.kitchen;
-        break;
+      case 'bröd & spannmål':
+        return AppColors.categoryBreadGrains;
       case 'fryst':
-        iconData = Icons.ac_unit;
-        break;
-      case 'dryck':
-        iconData = Icons.local_cafe;
-        break;
-      case 'snacks & godis':
-        iconData = Icons.cookie;
-        break;
-      case 'städ & hygien':
-        iconData = Icons.cleaning_services;
-        break;
+        return AppColors.categoryFrozen;
+      case 'skafferi':
+        return AppColors.categoryDryGoods;
       default:
-        iconData = Icons.shopping_basket;
+        return AppColors.categoryOther;
     }
-
-    return Icon(
-      iconData,
-      size: AppDimensions.iconSizeS,
-      color: isCompleted ? AppColors.textMedium : AppColors.primaryBlue,
-    );
   }
 
   static Widget _buildCompletedItemsHeader(UnifiedShoppingViewModel viewModel) {
@@ -271,7 +259,7 @@ class ShoppingListContent {
         const Icon(
           Icons.check_circle,
           size: AppDimensions.iconSizeM,
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         ),
         const SizedBox(width: AppDimensions.spacingSm),
         Expanded(
@@ -281,13 +269,14 @@ class ShoppingListContent {
               Text(
                 'Inhandlat',
                 style: AppTextStyles.bodyLargeBold.copyWith(
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                 ),
               ),
               Text(
                 '${viewModel.boughtItems} av ${viewModel.totalItems} varor',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryDark),
+                  color: AppColors.forestGreen
+                      .withValues(alpha: AppDimensions.opacityVeryDark),
                 ),
               ),
             ],

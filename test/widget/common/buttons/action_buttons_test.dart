@@ -424,7 +424,7 @@ void main() {
         final fab = tester.widget<FloatingActionButton>(
           find.byType(FloatingActionButton),
         );
-        expect(fab.backgroundColor, equals(AppColors.primaryBlue));
+        expect(fab.backgroundColor, equals(AppColors.forestGreen));
         expect(fab.foregroundColor, equals(AppColors.cardWhite));
       });
 

@@ -60,14 +60,14 @@ class SocialFormatters {
   /// Get social color scheme
   static Map<String, Color> getSocialColorScheme() {
     return {
-      'primary': AppColors.primaryBlue,
-      'secondary': AppColors.primaryBlue
+      'primary': AppColors.forestGreen,
+      'secondary': AppColors.forestGreen
           .withValues(alpha: AppDimensions.opacityVeryLight),
-      'success': AppColors.primaryBlue,
+      'success': AppColors.forestGreen,
       'warning': AppColors.textMedium,
       'danger': AppColors.error,
       'info':
-          AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityDark),
+          AppColors.forestGreen.withValues(alpha: AppDimensions.opacityDark),
       'muted': AppColors.textMedium,
     };
   }

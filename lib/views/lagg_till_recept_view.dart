@@ -1,14 +1,21 @@
-/// Recipe addition view with multiple import method options.
+/// Recipe addition view with 4 simplified import method options.
+///
+/// **UI Redesign:** Simplified from 7 buttons to 4 buttons in a 2x2 grid:
+/// - Importera länk (rust) → /smartImport
+/// - Skriv manuellt (green) → /skrivSjalv
+/// - Från bild (rust) → /photoImport
+/// - Från arkiv (green) → /importFranArkiv
 
 // lib/views/lagg_till_recept_view.dart
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-// Removed unused dialog_service import
+import 'package:butlery/widgets/common/main_view_header.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
-/// Recipe addition view with grid of import method options.
+/// Recipe addition view with simplified 2x2 grid of import options.
 class LaggTillReceptView extends StatelessWidget {
   const LaggTillReceptView({super.key});
 
@@ -18,27 +25,24 @@ class LaggTillReceptView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ RESPONSIVE: Get responsive padding and spacing
     final padding = AppDimensions.responsiveContentPadding(context);
-    final spacing = LayoutComponents.valueFor(
-      context: context,
-      mobile: AppDimensions.spacingL,
-      tablet: AppDimensions.spacingXl,
-      desktop: AppDimensions.spacingXl * 1.5,
-    );
 
     return LayoutComponents.mainMenu(
-      currentIndex: 1,
+      currentIndex:
+          3, // UI Redesign: nav order is recept(0), meny(1), inköp(2), lägg till(3)
+      // UI Redesign: Use MainViewHeader with lowercase title
+      appBar: const MainViewHeader(
+        title: 'lägg till\nrecept',
+      ),
       body: SafeArea(
-        // ✅ RESPONSIVE: Center and constrain content on large screens
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: LayoutComponents.valueFor(
                 context: context,
                 mobile: double.infinity,
-                tablet: 700,
-                desktop: 800,
+                tablet: 500,
+                desktop: 600,
               ),
             ),
             child: Padding(
@@ -46,58 +50,138 @@ class LaggTillReceptView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'Hur vill du lägga till ditt recept?',
-                    style: AppTextStyles.headlineSmall,
-                    textAlign: LayoutComponents.isDesktop(context)
-                        ? TextAlign.center
-                        : TextAlign.start,
-                  ),
-                  SizedBox(height: spacing),
-
-                  // Recipe import options - all social/URL routes go to unified SmartImport
-                  LayoutComponents.recipeUploadButtonGrid(
-                    context,
-                    buttons: [
-                      {
-                        'label': 'YOUTUBE',
-                        'icon': Icons.play_circle,
-                        'onPressed': () => _navigate(context, '/smartImport'),
-                      },
-                      {
-                        'label': 'FOTO',
-                        'icon': Icons.photo_camera,
-                        'onPressed': () => _navigate(context, '/photoImport'),
-                      },
-                      {
-                        'label': 'LÄNK',
-                        'icon': Icons.link,
-                        'onPressed': () => _navigate(context, '/smartImport'),
-                      },
-                      {
-                        'label': 'INSTAGRAM',
-                        'icon': Icons.camera_alt,
-                        'onPressed': () => _navigate(context, '/smartImport'),
-                      },
-                      {
-                        'label': 'TIKTOK',
-                        'icon': Icons.music_note,
-                        'onPressed': () => _navigate(context, '/smartImport'),
-                      },
-                      {
-                        'label': 'SKRIV SJÄLV',
-                        'icon': Icons.edit,
-                        'onPressed': () => _navigate(context, '/skrivSjalv'),
-                      },
-                    ],
-                    archiveButton: {
-                      'label': 'ARKIV',
-                      'icon': Icons.archive,
-                      'onPressed': () => _navigate(context, '/importFranArkiv'),
-                    },
+                  const SizedBox(height: AppDimensions.spacingSm),
+                  // UI Redesign: 2x2 grid with 4 simplified options
+                  Expanded(
+                    child: _buildButtonGrid(context),
                   ),
                 ],
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Builds the 2x2 button grid with alternating rust/green colors.
+  Widget _buildButtonGrid(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate button size to fit a 2x2 grid with spacing
+        const spacing = AppDimensions.spacingMd;
+        final buttonWidth = (constraints.maxWidth - spacing) / 2;
+        final buttonHeight = (constraints.maxHeight - spacing) / 2;
+        final buttonSize =
+            buttonWidth < buttonHeight ? buttonWidth : buttonHeight;
+
+        // Clamp to reasonable sizes
+        final size = buttonSize.clamp(120.0, AppDimensions.gridButtonSize);
+
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Row 1: Importera länk (rust) + Skriv manuellt (green)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _AddRecipeButton(
+                    label: 'Importera länk',
+                    icon: Icons.link,
+                    color: AppColors.rust,
+                    size: size,
+                    onTap: () => _navigate(context, '/smartImport'),
+                  ),
+                  const SizedBox(width: spacing),
+                  _AddRecipeButton(
+                    label: 'Skriv manuellt',
+                    icon: Icons.edit,
+                    color: AppColors.forestGreen,
+                    size: size,
+                    onTap: () => _navigate(context, '/skrivSjalv'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: spacing),
+              // Row 2: Från bild (rust) + Scanna recept (green)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _AddRecipeButton(
+                    label: 'Från bild',
+                    icon: Icons.image,
+                    color: AppColors.rust,
+                    size: size,
+                    onTap: () => _navigate(context, '/photoImport'),
+                  ),
+                  const SizedBox(width: spacing),
+                  _AddRecipeButton(
+                    label: 'Från arkiv',
+                    icon: Icons.archive,
+                    color: AppColors.forestGreen,
+                    size: size,
+                    onTap: () => _navigate(context, '/importFranArkiv'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Single button in the add recipe grid.
+class _AddRecipeButton extends StatelessWidget {
+  const _AddRecipeButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.size,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final double size;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Material(
+        color: color,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingMd),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  size: AppDimensions.iconSizeXl,
+                  color: AppColors.cardWhite,
+                ),
+                const SizedBox(height: AppDimensions.spacingSm),
+                Text(
+                  label,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: AppColors.cardWhite,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
         ),

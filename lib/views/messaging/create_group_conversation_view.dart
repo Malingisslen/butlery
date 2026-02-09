@@ -102,7 +102,7 @@ class _CreateGroupConversationViewState
         'Skapa gruppkonversation',
         style: AppTextStyles.headlineSmall,
       ),
-      backgroundColor: AppColors.backgroundBeige,
+      backgroundColor: AppColors.cream,
       foregroundColor: AppColors.textDark,
       elevation: AppDimensions.elevationLow,
       actions: [
@@ -204,13 +204,13 @@ class _CreateGroupConversationViewState
             const Icon(
               Icons.people,
               size: AppDimensions.iconSizeM,
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
               'Valda medlemmar (${viewModel.selectedMemberCount})',
               style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
               ),
             ),
           ],
@@ -309,7 +309,7 @@ class _CreateGroupConversationViewState
           if (isSelected)
             const Icon(
               Icons.check_circle,
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
             ),
         ],
       ),

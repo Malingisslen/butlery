@@ -1,9 +1,10 @@
 // test/widget/common/search_filter/filter_toggle_button_test.dart
-// Comprehensive tests for FilterToggleButton using ultrathink methodology
+// Tests for FilterToggleButton - updated for UI Redesign (simplified styling)
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/search_filter/filter_toggle_button.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 void main() {
@@ -28,13 +29,12 @@ void main() {
         );
 
         expect(find.byType(FilterToggleButton), findsOneWidget);
-        expect(find.byType(DecoratedBox), findsOneWidget);
+        expect(find.byType(Stack), findsAtLeastNWidgets(1));
         expect(find.byType(IconButton), findsOneWidget);
         expect(find.byIcon(Icons.filter_list), findsOneWidget);
       });
 
-      testWidgets('should have correct border radius',
-          (WidgetTester tester) async {
+      testWidgets('should use correct icon size', (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -47,18 +47,13 @@ void main() {
           ),
         );
 
-        final decoratedBox =
-            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
-        final decoration = decoratedBox.decoration as BoxDecoration;
-        expect(
-          decoration.borderRadius,
-          equals(BorderRadius.circular(AppDimensions.borderRadiusM)),
-        );
+        final icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
+        expect(icon.size, equals(AppDimensions.iconSizeAction));
       });
     });
 
     group('Filter State - Hidden', () {
-      testWidgets('should display inactive state when filters hidden',
+      testWidgets('should display textMedium color when filters hidden',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -72,16 +67,8 @@ void main() {
           ),
         );
 
-        final decoratedBox =
-            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
-        final decoration = decoratedBox.decoration as BoxDecoration;
-
-        // Should use surface color when inactive
-        expect(decoration.color, isNotNull);
-
-        // Should have outline border when inactive
-        final border = decoration.border as Border;
-        expect(border.top.width, 1);
+        final icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
+        expect(icon.color, AppColors.textMedium);
       });
 
       testWidgets('should show Swedish tooltip for hidden state',
@@ -101,33 +88,10 @@ void main() {
         final iconButton = tester.widget<IconButton>(find.byType(IconButton));
         expect(iconButton.tooltip, 'Visa filter');
       });
-
-      testWidgets('should use onSurfaceVariant color for icon when hidden',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData(
-              colorScheme: const ColorScheme.light().copyWith(
-                onSurfaceVariant: Colors.grey,
-              ),
-            ),
-            home: Scaffold(
-              body: FilterToggleButton(
-                showFilters: false,
-                hasActiveFilters: false,
-                onToggle: () {},
-              ),
-            ),
-          ),
-        );
-
-        final icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
-        expect(icon.color, Colors.grey);
-      });
     });
 
     group('Filter State - Shown', () {
-      testWidgets('should display active state when filters shown',
+      testWidgets('should display forestGreen color when filters shown',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -141,16 +105,8 @@ void main() {
           ),
         );
 
-        final decoratedBox =
-            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
-        final decoration = decoratedBox.decoration as BoxDecoration;
-
-        // Should use primary container color when active
-        expect(decoration.color, isNotNull);
-
-        // Should have primary border when active
-        final border = decoration.border as Border;
-        expect(border.top.width, 2);
+        final icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
+        expect(icon.color, AppColors.forestGreen);
       });
 
       testWidgets('should show Swedish tooltip for shown state',
@@ -168,30 +124,7 @@ void main() {
         );
 
         final iconButton = tester.widget<IconButton>(find.byType(IconButton));
-        expect(iconButton.tooltip, 'Dölj filter');
-      });
-
-      testWidgets('should use primary color for icon when shown',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData(
-              colorScheme: const ColorScheme.light().copyWith(
-                primary: Colors.blue,
-              ),
-            ),
-            home: Scaffold(
-              body: FilterToggleButton(
-                showFilters: true,
-                hasActiveFilters: false,
-                onToggle: () {},
-              ),
-            ),
-          ),
-        );
-
-        final icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
-        expect(icon.color, Colors.blue);
+        expect(iconButton.tooltip, 'D\u00f6lj filter');
       });
     });
 
@@ -210,7 +143,6 @@ void main() {
           ),
         );
 
-        // Should not find any positioned indicator
         expect(find.byType(Positioned), findsNothing);
       });
 
@@ -229,22 +161,19 @@ void main() {
           ),
         );
 
-        // Should find the positioned indicator
         expect(find.byType(Positioned), findsOneWidget);
 
-        // Should find the indicator container
+        // Find the indicator container with rust color
         final containers = tester.widgetList<Container>(find.byType(Container));
-        expect(containers.length, greaterThan(0));
-
-        // Find a container with circular decoration (the indicator)
-        final hasCircularContainer = containers.any((container) {
+        final hasRustCircle = containers.any((container) {
           if (container.decoration is BoxDecoration) {
             final decoration = container.decoration as BoxDecoration;
-            return decoration.shape == BoxShape.circle;
+            return decoration.shape == BoxShape.circle &&
+                decoration.color == AppColors.rust;
           }
           return false;
         });
-        expect(hasCircularContainer, true);
+        expect(hasRustCircle, true);
       });
 
       testWidgets(
@@ -262,7 +191,6 @@ void main() {
           ),
         );
 
-        // Should not show indicator when filters are visible
         expect(find.byType(Positioned), findsNothing);
       });
 
@@ -283,39 +211,6 @@ void main() {
         final positioned = tester.widget<Positioned>(find.byType(Positioned));
         expect(positioned.right, 8);
         expect(positioned.top, 8);
-      });
-
-      testWidgets('should use error color for indicator',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData(
-              colorScheme: const ColorScheme.light().copyWith(
-                error: Colors.red,
-              ),
-            ),
-            home: Scaffold(
-              body: FilterToggleButton(
-                showFilters: false,
-                hasActiveFilters: true,
-                onToggle: () {},
-              ),
-            ),
-          ),
-        );
-
-        final containers = tester.widgetList<Container>(find.byType(Container));
-
-        // Find a container with red circular decoration (the indicator)
-        final hasRedCircularContainer = containers.any((container) {
-          if (container.decoration is BoxDecoration) {
-            final decoration = container.decoration as BoxDecoration;
-            return decoration.shape == BoxShape.circle &&
-                decoration.color == Colors.red;
-          }
-          return false;
-        });
-        expect(hasRedCircularContainer, true);
       });
     });
 
@@ -387,7 +282,6 @@ void main() {
           ),
         );
 
-        // Rapid taps
         await tester.tap(find.byType(IconButton));
         await tester.tap(find.byType(IconButton));
         await tester.tap(find.byType(IconButton));
@@ -410,13 +304,11 @@ void main() {
           ),
         );
 
-        // Tap and hold to see ripple
         final gesture = await tester.startGesture(
           tester.getCenter(find.byType(IconButton)),
         );
         await tester.pump(const Duration(milliseconds: 100));
 
-        // IconButton should show ripple effect
         expect(find.byType(IconButton), findsOneWidget);
 
         await gesture.up();
@@ -458,14 +350,14 @@ void main() {
         expect(find.byType(FilterToggleButton), findsOneWidget);
       });
 
-      testWidgets('should use theme primary color',
+      testWidgets(
+          'should use AppColors.forestGreen when shown regardless of theme',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
               colorScheme: const ColorScheme.light().copyWith(
                 primary: Colors.purple,
-                primaryContainer: Colors.purple.withValues(alpha: 0.2),
               ),
             ),
             home: Scaffold(
@@ -478,17 +370,19 @@ void main() {
           ),
         );
 
+        // UI Redesign: uses AppColors directly, not theme colors
         final icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
-        expect(icon.color, Colors.purple);
+        expect(icon.color, AppColors.forestGreen);
       });
 
-      testWidgets('should use theme surface color',
+      testWidgets(
+          'should use AppColors.textMedium when hidden regardless of theme',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
               colorScheme: const ColorScheme.light().copyWith(
-                surface: Colors.white,
+                onSurfaceVariant: Colors.grey,
               ),
             ),
             home: Scaffold(
@@ -501,36 +395,9 @@ void main() {
           ),
         );
 
-        final decoratedBox =
-            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
-        final decoration = decoratedBox.decoration as BoxDecoration;
-        expect(decoration.color, Colors.white);
-      });
-
-      testWidgets('should use theme outline color',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: ThemeData(
-              colorScheme: const ColorScheme.light().copyWith(
-                outline: Colors.grey,
-              ),
-            ),
-            home: Scaffold(
-              body: FilterToggleButton(
-                showFilters: false,
-                hasActiveFilters: false,
-                onToggle: () {},
-              ),
-            ),
-          ),
-        );
-
-        final decoratedBox =
-            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
-        final decoration = decoratedBox.decoration as BoxDecoration;
-        final border = decoration.border as Border;
-        expect(border.top.color, Colors.grey);
+        // UI Redesign: uses AppColors directly, not theme colors
+        final icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
+        expect(icon.color, AppColors.textMedium);
       });
     });
 
@@ -618,7 +485,7 @@ void main() {
                   const Expanded(
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: 'Sök recept...',
+                        hintText: 'S\u00f6k recept...',
                       ),
                     ),
                   ),
@@ -677,7 +544,7 @@ void main() {
 
         // Now shown
         iconButton = tester.widget<IconButton>(find.byType(IconButton));
-        expect(iconButton.tooltip, 'Dölj filter');
+        expect(iconButton.tooltip, 'D\u00f6lj filter');
       });
     });
 
@@ -715,7 +582,7 @@ void main() {
         );
 
         iconButton = tester.widget<IconButton>(find.byType(IconButton));
-        expect(iconButton.tooltip, 'Dölj filter');
+        expect(iconButton.tooltip, 'D\u00f6lj filter');
       });
     });
 

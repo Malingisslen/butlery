@@ -34,8 +34,9 @@ class DiscoveryAppBar {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.primaryBlue,
-                AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryDark),
+                AppColors.forestGreen,
+                AppColors.forestGreen
+                    .withValues(alpha: AppDimensions.opacityVeryDark),
               ],
             ),
           ),
@@ -45,7 +46,8 @@ class DiscoveryAppBar {
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: AppDimensions.height40), // Space for back button
+                const SizedBox(
+                    height: AppDimensions.height40), // Space for back button
                 Row(
                   children: [
                     const Icon(
@@ -67,7 +69,8 @@ class DiscoveryAppBar {
                           Text(
                             'Hitta populära recept, menyer och listor',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.onPrimary.withValues(alpha: AppDimensions.opacityVeryDark),
+                              color: AppColors.onPrimary.withValues(
+                                  alpha: AppDimensions.opacityVeryDark),
                             ),
                           ),
                         ],
@@ -130,7 +133,8 @@ class DiscoveryAppBar {
         vertical: AppDimensions.spacingS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.onPrimary.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: AppColors.onPrimary
+            .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Column(
@@ -145,7 +149,8 @@ class DiscoveryAppBar {
           Text(
             'att upptäcka',
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.onPrimary.withValues(alpha: AppDimensions.opacityVeryDark),
+              color: AppColors.onPrimary
+                  .withValues(alpha: AppDimensions.opacityVeryDark),
             ),
           ),
         ],

@@ -73,7 +73,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor:
-                        AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                        AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingXl),
@@ -90,9 +90,12 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           return Container(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+              color: AppColors.error
+                  .withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
+              border: Border.all(
+                  color: AppColors.error
+                      .withValues(alpha: AppDimensions.opacityMediumLight)),
             ),
             child: Text(
               categoriesService.error ?? 'Kunde inte ladda kategorier',
@@ -107,9 +110,12 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           return Container(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+              color: AppColors.error
+                  .withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
+              border: Border.all(
+                  color: AppColors.error
+                      .withValues(alpha: AppDimensions.opacityMediumLight)),
             ),
             child: Text(
               friendsVM.error ?? 'Kunde inte ladda vänner',
@@ -235,26 +241,27 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                     ),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.neutralLight.withValues(alpha: AppDimensions.opacityVeryDark)
-                          : Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withValues(alpha: AppDimensions.opacityVeryLight),
+                          ? AppColors.neutralLight
+                              .withValues(alpha: AppDimensions.opacityVeryDark)
+                          : Theme.of(context).colorScheme.primary.withValues(
+                              alpha: AppDimensions.opacityVeryLight),
                       borderRadius:
                           BorderRadius.circular(AppDimensions.borderRadius8),
                     ),
                     child: Text(
                       '${category.friendCount}',
                       style: AppTextStyles.badge.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                   ),
                 ],
               ),
               onSelected: (selected) => _toggleCategory(category, service),
-              selectedColor:
-                  Theme.of(context).colorScheme.primary.withValues(alpha: AppDimensions.opacityLight),
+              selectedColor: Theme.of(context)
+                  .colorScheme
+                  .primary
+                  .withValues(alpha: AppDimensions.opacityLight),
               checkmarkColor: Theme.of(context).colorScheme.primary,
               backgroundColor: Theme.of(context).colorScheme.surface,
               side: BorderSide(
@@ -325,10 +332,8 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                         margin: const EdgeInsets.symmetric(
                             vertical: AppDimensions.spacingXs),
                         color: isSelected
-                            ? Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withValues(alpha: AppDimensions.opacityVeryLight)
+                            ? Theme.of(context).colorScheme.primary.withValues(
+                                alpha: AppDimensions.opacityVeryLight)
                             : null,
                         child: CheckboxListTile(
                           value: isSelected,
@@ -362,10 +367,16 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: Theme.of(context)
+            .colorScheme
+            .primary
+            .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: Theme.of(context)
+              .colorScheme
+              .primary
+              .withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(

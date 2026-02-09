@@ -17,7 +17,7 @@ void main() {
       return MaterialApp(
         theme: ThemeData(
           colorScheme: const ColorScheme.light(
-            primary: AppColors.primaryBlue,
+            primary: AppColors.forestGreen,
             surface: AppColors.cardWhite,
           ),
           textTheme: const TextTheme(
@@ -349,7 +349,7 @@ void main() {
             tester.widget<ElevatedButton>(find.byType(ElevatedButton));
         final buttonStyle = button.style!;
         expect(buttonStyle.backgroundColor?.resolve({}),
-            equals(AppColors.primaryBlue));
+            equals(AppColors.forestGreen));
         expect(buttonStyle.foregroundColor?.resolve({}),
             equals(AppColors.cardWhite));
       });
@@ -380,7 +380,7 @@ void main() {
             )));
 
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(AppColors.primaryBlue));
+        expect(decoration.color, equals(AppColors.forestGreen));
         expect(decoration.borderRadius,
             equals(BorderRadius.circular(AppDimensions.borderRadiusS)));
 

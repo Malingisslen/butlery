@@ -890,4 +890,249 @@ class AppLocalizationsEn extends AppLocalizations {
   String dialogConfirmDeleteMessage(String itemName, String itemType) {
     return 'Are you sure you want to remove $itemName from $itemType?';
   }
+
+  @override
+  String get recipePortionAbbreviation => 'srv';
+
+  @override
+  String get recipePortionSingular => 'serving';
+
+  @override
+  String get recipePortionsPlural => 'servings';
+
+  @override
+  String get recipeCookedToday => 'Cooked today';
+
+  @override
+  String get recipeCookedTodaySuccess => 'Recipe marked as cooked today!';
+
+  @override
+  String get recipeCookedTodayError => 'Could not mark as cooked';
+
+  @override
+  String get recipeNoInstructions => 'No instructions provided.';
+
+  @override
+  String get recipeTags => 'Tags';
+
+  @override
+  String get recipeImagesTitle => 'Images';
+
+  @override
+  String recipeImageCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count images',
+      one: '1 image',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recipePersonalTags => 'Personal tags';
+
+  @override
+  String recipeIngredientsForPortions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'servings',
+      one: 'serving',
+    );
+    return 'Ingredients for $count $_temp0:';
+  }
+
+  @override
+  String get recipeAnalysisFailed => 'Analysis failed';
+
+  @override
+  String get recipeAnalyzing => 'Analyzing...';
+
+  @override
+  String get recipeAnalysisFailedA11y => 'Ingredient analysis failed';
+
+  @override
+  String get recipeAnalyzingA11y => 'Ingredients being analyzed';
+
+  @override
+  String get recipeSearchHint => 'search recipes...';
+
+  @override
+  String get recipeShowMore => 'Show more recipes';
+
+  @override
+  String recipeCountBadge(int count) {
+    return '$count recipes';
+  }
+
+  @override
+  String get scalerPortionsLabel => 'Servings:';
+
+  @override
+  String get scalerUsingSwedishUnits => 'Using metric units';
+
+  @override
+  String get scalerConvertAmericanUnits => 'Convert American units';
+
+  @override
+  String scalerScaledFromTo(int from, int to) {
+    return 'Scaled from $from to $to servings';
+  }
+
+  @override
+  String get scalerAmericanConverted => 'American units converted to metric';
+
+  @override
+  String get menuPromptQuestion => 'What kind of menu do you want?';
+
+  @override
+  String get menuPromptHint => 'E.g. 3 dinners, 2 lunches and 1 breakfast';
+
+  @override
+  String get menuGenerating => 'Generating...';
+
+  @override
+  String get menuGenerateNew => 'Generate new menu';
+
+  @override
+  String get menuGenerate => 'Generate menu';
+
+  @override
+  String get menuYourWeeklyMenu => 'Your weekly menu';
+
+  @override
+  String menuRecipeCount(int recipes, int categories) {
+    return '$recipes recipes in $categories categories';
+  }
+
+  @override
+  String get menuChooseManually => 'Choose recipes manually';
+
+  @override
+  String get menuNoMoreRecipes => 'No more recipes available for swap';
+
+  @override
+  String get menuGenerateError => 'Could not generate menu';
+
+  @override
+  String menuWeekBadgeWithCount(int week, int count) {
+    return 'Week $week · $count dishes';
+  }
+
+  @override
+  String menuWeekBadge(int week) {
+    return 'Week $week';
+  }
+
+  @override
+  String get menuToShoppingList => 'To shopping list';
+
+  @override
+  String get menuLoadSaved => 'Load saved menu';
+
+  @override
+  String get menuClear => 'Clear menu';
+
+  @override
+  String get menuShared => 'Weekly menu shared!';
+
+  @override
+  String get menuGeneratingOverlay => 'Generating your weekly menu...';
+
+  @override
+  String get menuGeneratingSubtitle =>
+      'Finding recipes that match your preferences';
+
+  @override
+  String shoppingCountBadge(int items, int done) {
+    return '$items items · $done done';
+  }
+
+  @override
+  String get commonSort => 'Sort';
+
+  @override
+  String get commonHide => 'Hide';
+
+  @override
+  String commonShowAllCount(int count) {
+    return 'Show all ($count)';
+  }
+
+  @override
+  String commonMoreCount(int count) {
+    return '+$count more';
+  }
+
+  @override
+  String get commonDismiss => 'Dismiss';
+
+  @override
+  String get errorUnexpected => 'An unexpected error occurred';
+
+  @override
+  String get searchClearSearch => 'Clear search';
+
+  @override
+  String get searchClearFilters => 'Clear filters';
+
+  @override
+  String get syncComplete => 'Sync complete!';
+
+  @override
+  String syncFailed(String error) {
+    return 'Sync failed: $error';
+  }
+
+  @override
+  String get offlineShowingLocal => 'Offline mode - showing local recipes';
+
+  @override
+  String get recipeCreateCopy => 'Create copy';
+
+  @override
+  String get recipeCreateShoppingList => 'Create shopping list';
+
+  @override
+  String get recipeUpdateTags => 'Update tags';
+
+  @override
+  String get recipeViewSource => 'View source';
+
+  @override
+  String get recipeShareWithFriends => 'Share with friends';
+
+  @override
+  String get recipeShareExternal => 'Share externally';
+
+  @override
+  String recipeSourceFrom(String host) {
+    return 'From $host';
+  }
+
+  @override
+  String get errorCouldNotOpenLink => 'Could not open link';
+
+  @override
+  String get errorInvalidLink => 'Invalid link';
+
+  @override
+  String shoppingItemRemoved(String name) {
+    return '$name removed!';
+  }
+
+  @override
+  String shoppingItemRemoveError(String name) {
+    return 'Could not remove $name';
+  }
+
+  @override
+  String get shoppingAllUnchecked => 'All items unchecked!';
+
+  @override
+  String get shoppingNoListForRename => 'No list selected for renaming';
+
+  @override
+  String get shoppingNoListForDelete => 'No list selected for deletion';
 }

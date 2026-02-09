@@ -400,10 +400,10 @@ void main() {
             tester.widget<Container>(find.byType(Container).first);
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.color,
-            equals(AppColors.primaryBlue.withValues(alpha: 0.1)));
+            equals(AppColors.forestGreen.withValues(alpha: 0.1)));
 
         final textWidget = tester.widget<Text>(find.text('DC'));
-        expect(textWidget.style?.color, equals(AppColors.primaryBlue));
+        expect(textWidget.style?.color, equals(AppColors.forestGreen));
       });
     });
 

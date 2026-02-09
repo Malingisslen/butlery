@@ -1,4 +1,6 @@
 // lib/views/unified_shopping/widgets/shopping_item_tiles.dart
+//
+// UI Redesign: Square checkboxes (22px, 2px green border)
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -6,7 +8,10 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 
-/// Individual shopping item tile components
+/// Individual shopping item tile components.
+///
+/// **UI Redesign:** Uses square checkboxes (22px, 2px green border)
+/// instead of circular checkboxes.
 class ShoppingItemTiles {
   static Widget buildItemTile(
     BuildContext context,
@@ -42,26 +47,25 @@ class ShoppingItemTiles {
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 child: Row(
                   children: [
-                    // Checkbox
+                    // UI Redesign: Square checkbox (22px, 2px green border)
                     Container(
-                      width: AppDimensions.iconSizeL,
-                      height: AppDimensions.iconSizeL,
+                      width: 22,
+                      height: 22,
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.borderRadiusXs),
                         border: Border.all(
-                          color: isCompleted
-                              ? AppColors.primaryBlue
-                              : AppColors.textMedium.withValues(alpha: AppDimensions.opacityMediumDark),
-                          width: AppDimensions.borderWidthThick,
+                          color: AppColors.forestGreen,
+                          width: 2,
                         ),
                         color: isCompleted
-                            ? AppColors.primaryBlue
-                            : AppColors.transparent,
+                            ? AppColors.forestGreen
+                            : AppColors.cardWhite,
                       ),
                       child: isCompleted
                           ? const Icon(
                               Icons.check,
-                              size: AppDimensions.iconSizeS,
+                              size: 14,
                               color: AppColors.cardWhite,
                             )
                           : null,
@@ -93,8 +97,8 @@ class ShoppingItemTiles {
                               item.note!,
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: isCompleted
-                                    ? AppColors.textMedium
-                                        .withValues(alpha: AppDimensions.opacityVeryDark)
+                                    ? AppColors.textMedium.withValues(
+                                        alpha: AppDimensions.opacityVeryDark)
                                     : AppColors.textMedium,
                                 decoration: isCompleted
                                     ? TextDecoration.lineThrough
@@ -154,8 +158,8 @@ class ShoppingItemTiles {
                             icon: Icon(
                               Icons.delete,
                               size: AppDimensions.iconSizeS,
-                              color:
-                                  AppColors.textMedium.withValues(alpha: AppDimensions.opacityDark),
+                              color: AppColors.textMedium
+                                  .withValues(alpha: AppDimensions.opacityDark),
                             ),
                             onPressed: () => onDeleteItem(item),
                             tooltip: 'Ta bort',
@@ -181,9 +185,10 @@ class ShoppingItemTiles {
   static Color _getPriorityColor(int priority) {
     switch (priority) {
       case 5:
-        return AppColors.darkNavy; // Highest priority - strong brand color
+        return AppColors
+            .forestGreenDark; // Highest priority - strong brand color
       case 4:
-        return AppColors.primaryBlue; // High priority - main brand color
+        return AppColors.forestGreen; // High priority - main brand color
       default:
         return AppColors.textMedium; // Normal priority - subtle brand color
     }

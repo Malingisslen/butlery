@@ -30,7 +30,7 @@ class SocialBuilders {
           : Icon(icon, size: iconSize ?? AppDimensions.iconSizeS),
       label: Text(label),
       style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor ?? AppColors.primaryBlue,
+        backgroundColor: backgroundColor ?? AppColors.forestGreen,
         foregroundColor: foregroundColor ?? AppColors.cardWhite,
         padding: padding ?? AppDimensions.paddingSymmetric16x8,
       ),
@@ -56,8 +56,8 @@ class SocialBuilders {
             entry.value.toString(),
             style: valueStyle ??
                 AppTextStyles.bodyLargeBold.copyWith(
-                      color: textColor ?? AppColors.primaryBlue,
-                    ),
+                  color: textColor ?? AppColors.forestGreen,
+                ),
           ),
           if (showLabels) ...[
             const SizedBox(height: AppDimensions.spacingXs),

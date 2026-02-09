@@ -14,7 +14,7 @@ void main() {
       return MaterialApp(
         theme: ThemeData(
           colorScheme: const ColorScheme.light(
-            primary: AppColors.primaryBlue,
+            primary: AppColors.forestGreen,
             onPrimary: Colors.white,
           ),
         ),

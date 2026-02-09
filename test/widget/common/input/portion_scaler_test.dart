@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
 
 void main() {
@@ -27,13 +28,20 @@ void main() {
 
     Widget createTestWidget({
       int currentPortions = originalPortions,
-      List<String>? scaledIngredients,
       bool convertToSwedish = false,
       bool hasAmericanUnits = false,
       required Function(int) onUpdatePortions,
       required VoidCallback onToggleUnitConversion,
     }) {
       return MaterialApp(
+        locale: const Locale('sv'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         home: Scaffold(
           body: SingleChildScrollView(
             child: Padding(
@@ -44,8 +52,6 @@ void main() {
                     context: context,
                     currentPortions: currentPortions,
                     originalPortions: originalPortions,
-                    scaledIngredients: scaledIngredients ?? originalIngredients,
-                    originalIngredients: originalIngredients,
                     convertToSwedish: convertToSwedish,
                     hasAmericanUnits: hasAmericanUnits,
                     minPortions: minPortions,
@@ -74,14 +80,15 @@ void main() {
         );
 
         // Assert
-        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
-        expect(find.text('Portioner'), findsOneWidget);
+        // UI Redesign: restaurant_menu icon removed per mockup
+        expect(find.byIcon(Icons.restaurant_menu), findsNothing);
+        expect(find.text('Portioner:'), findsOneWidget);
         expect(find.text('$originalPortions'), findsOneWidget);
         expect(find.byIcon(Icons.remove), findsOneWidget);
         expect(find.byIcon(Icons.add), findsOneWidget);
       });
 
-      testWidgets('displays original ingredients when not scaled',
+      testWidgets('does not render ingredients (handled by caller)',
           (WidgetTester tester) async {
         // Act
         await tester.pumpWidget(
@@ -92,27 +99,19 @@ void main() {
           ),
         );
 
-        // Assert
+        // Assert - ingredients are NOT rendered by PortionScalerUI
+        // They are rendered by recipe_detail_content.dart
         for (String ingredient in originalIngredients) {
-          expect(find.text(ingredient), findsOneWidget);
+          expect(find.text(ingredient), findsNothing);
         }
       });
 
-      testWidgets('shows scaled ingredients when portions changed',
+      testWidgets('shows status info when portions changed',
           (WidgetTester tester) async {
-        // Setup
-        final scaledIngredients = [
-          '4 dl mjölk', // Doubled
-          '8 ägg', // Doubled
-          '6 dl mjöl', // Doubled
-          '2 tsk salt', // Doubled
-        ];
-
         // Act
         await tester.pumpWidget(
           createTestWidget(
             currentPortions: 8, // Double the original
-            scaledIngredients: scaledIngredients,
             onUpdatePortions: (_) {},
             onToggleUnitConversion: () {},
           ),
@@ -122,9 +121,6 @@ void main() {
         expect(find.text('8'), findsOneWidget); // Current portions number
         expect(find.text('Skalat från 4 till 8 portioner'),
             findsOneWidget); // Status text
-        for (String ingredient in scaledIngredients) {
-          expect(find.text(ingredient), findsOneWidget);
-        }
       });
 
       testWidgets('shows unit conversion toggle when has American units',
@@ -349,29 +345,23 @@ void main() {
             findsOneWidget);
       });
 
-      testWidgets('displays converted ingredients',
+      testWidgets('shows conversion status without rendering ingredients',
           (WidgetTester tester) async {
-        // Setup
-        final convertedIngredients = [
-          '2 dl mjölk',
-          '4 ägg',
-          '3 dl mjöl (från 1 cup)', // Shows conversion
-          '1 tsk salt',
-        ];
-
         // Act
         await tester.pumpWidget(
           createTestWidget(
             hasAmericanUnits: true,
             convertToSwedish: true,
-            scaledIngredients: convertedIngredients,
             onUpdatePortions: (_) {},
             onToggleUnitConversion: () {},
           ),
         );
 
-        // Assert
-        expect(find.text('3 dl mjöl (från 1 cup)'), findsOneWidget);
+        // Assert - conversion status is shown
+        expect(find.text('Amerikanska enheter konverterade till svenska'),
+            findsOneWidget);
+        // Ingredients are NOT rendered by PortionScalerUI
+        expect(find.text('3 dl mjöl (från 1 cup)'), findsNothing);
       });
     });
 
@@ -393,32 +383,19 @@ void main() {
             findsOneWidget);
       });
 
-      testWidgets('highlights changes in ingredients',
+      testWidgets('shows scaling status when portions changed',
           (WidgetTester tester) async {
-        // Setup
-        final scaledIngredients = [
-          '1 dl mjölk', // Halved
-          '2 ägg', // Halved
-          '1.5 dl mjöl', // Halved
-          '0.5 tsk salt', // Halved
-        ];
-
         // Act
         await tester.pumpWidget(
           createTestWidget(
             currentPortions: 2, // Half of original
-            scaledIngredients: scaledIngredients,
             onUpdatePortions: (_) {},
             onToggleUnitConversion: () {},
           ),
         );
 
-        // Assert
-        for (String ingredient in scaledIngredients) {
-          expect(find.text(ingredient), findsOneWidget);
-        }
-        // Production code uses Icons.refresh for changed indicator - expecting at least one
-        expect(find.byIcon(Icons.refresh), findsAtLeastNWidgets(1));
+        // Assert - status message shown
+        expect(find.text('Skalat från 4 till 2 portioner'), findsOneWidget);
       });
 
       testWidgets('shows animated scale changes', (WidgetTester tester) async {
@@ -437,7 +414,7 @@ void main() {
     });
 
     group('Layout and Styling', () {
-      testWidgets('applies correct container styling',
+      testWidgets('renders controls without card wrapper',
           (WidgetTester tester) async {
         // Act
         await tester.pumpWidget(
@@ -447,16 +424,10 @@ void main() {
           ),
         );
 
-        // Assert
-        final container = tester.widget<Container>(
-          find.byType(Container).first,
-        );
-        expect(container.padding,
-            equals(const EdgeInsets.all(AppDimensions.paddingL)));
-
-        final decoration = container.decoration as BoxDecoration;
-        expect(decoration.borderRadius,
-            equals(BorderRadius.circular(AppDimensions.borderRadiusL)));
+        // Assert - controls are rendered (Column with header)
+        expect(find.text('Portioner:'), findsOneWidget);
+        expect(find.byIcon(Icons.remove), findsOneWidget);
+        expect(find.byIcon(Icons.add), findsOneWidget);
       });
 
       testWidgets('maintains proper spacing between elements',
@@ -483,10 +454,10 @@ void main() {
           ),
         );
 
-        // Assert - Production code uses titleMedium with copyWith, not labelMedium
-        final portionText = tester.widget<Text>(find.text('Portioner'));
-        expect(portionText.style?.fontSize, equals(15.0)); // titleMedium size
-        expect(portionText.style?.fontWeight, equals(FontWeight.w600));
+        // Assert - UI Redesign: Uses bodySmall (13px) w400 per mockup
+        final portionText = tester.widget<Text>(find.text('Portioner:'));
+        expect(portionText.style?.fontSize, equals(13.0));
+        expect(portionText.style?.fontWeight, equals(FontWeight.w400));
       });
     });
 
@@ -496,14 +467,20 @@ void main() {
         // Act
         await tester.pumpWidget(
           MaterialApp(
+            locale: const Locale('sv'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             home: Scaffold(
               body: Builder(
                 builder: (context) => PortionScalerUI.buildScaler(
                   context: context,
                   currentPortions: 4,
                   originalPortions: 4,
-                  scaledIngredients: [],
-                  originalIngredients: [],
                   convertToSwedish: false,
                   hasAmericanUnits: false,
                   minPortions: 1,
@@ -518,7 +495,8 @@ void main() {
         );
 
         // Assert - Should not crash
-        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
+        // UI Redesign: restaurant_menu icon removed per mockup
+        expect(find.byIcon(Icons.restaurant_menu), findsNothing);
       });
 
       testWidgets('handles very large portion numbers',
@@ -554,29 +532,20 @@ void main() {
             findsOneWidget); // Status text
       });
 
-      testWidgets('handles ingredients with special characters',
+      testWidgets('renders controls correctly with various portions',
           (WidgetTester tester) async {
-        // Setup
-        final specialIngredients = [
-          '½ dl mjölk',
-          '1¼ tsk salt',
-          '50°C vatten',
-          '2-3 ägg',
-        ];
-
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            scaledIngredients: specialIngredients,
+            currentPortions: 6,
             onUpdatePortions: (_) {},
             onToggleUnitConversion: () {},
           ),
         );
 
-        // Assert
-        for (String ingredient in specialIngredients) {
-          expect(find.text(ingredient), findsOneWidget);
-        }
+        // Assert - controls render correctly
+        expect(find.text('6'), findsOneWidget);
+        expect(find.text('Portioner:'), findsOneWidget);
       });
 
       testWidgets('handles rapid portion changes', (WidgetTester tester) async {
@@ -587,6 +556,14 @@ void main() {
         // Act - Create stateful widget that can rebuild
         await tester.pumpWidget(
           MaterialApp(
+            locale: const Locale('sv'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             home: Scaffold(
               body: StatefulBuilder(
                 builder: (context, setStateCallback) {
@@ -600,8 +577,6 @@ void main() {
                             context: context,
                             currentPortions: currentPortions,
                             originalPortions: 4,
-                            scaledIngredients: const ['Test ingredient'],
-                            originalIngredients: const ['Test ingredient'],
                             convertToSwedish: false,
                             hasAmericanUnits: false,
                             minPortions: 1,

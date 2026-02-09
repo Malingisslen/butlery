@@ -308,9 +308,9 @@ void main() {
 
     group('variation generation', () {
       test('finds ingredient with space-removed variation', () async {
-        // "kyckling bröst" -> "kycklingbröst"
-        final chicken = _createIngredient('chicken-breast', 'kycklingbröst');
-        when(() => mockIngredientRepo.findByName('kycklingbröst'))
+        // "kyckling bröst" -> "kyckling brost" -> "kycklingbrost"
+        final chicken = _createIngredient('chicken-breast', 'kycklingbrost');
+        when(() => mockIngredientRepo.findByName('kycklingbrost'))
             .thenAnswer((_) async => chicken);
 
         final result = await service.lookupIngredients(['kyckling bröst']);
@@ -331,9 +331,9 @@ void main() {
       });
 
       test('finds ingredient with definite form removed', () async {
-        // "löken" -> "lök"
-        final onion = _createIngredient('onion', 'lök');
-        when(() => mockIngredientRepo.findByName('lök'))
+        // "löken" -> "loken" -> "lok"
+        final onion = _createIngredient('onion', 'lok');
+        when(() => mockIngredientRepo.findByName('lok'))
             .thenAnswer((_) async => onion);
 
         final result = await service.lookupIngredients(['löken']);

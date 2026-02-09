@@ -36,7 +36,7 @@ class DraftRecoveryDialog extends StatelessWidget {
     return AlertDialog(
       icon: const Icon(
         Icons.restore,
-        color: AppColors.primaryBlue,
+        color: AppColors.forestGreen,
         size: AppDimensions.iconSizeL,
       ),
       title: Text(
@@ -89,7 +89,7 @@ class DraftRecoveryDialog extends StatelessWidget {
           icon: const Icon(Icons.restore, size: AppDimensions.iconSizeS),
           label: const Text(AppStrings.restoreDraft),
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: AppColors.forestGreen,
           ),
         ),
       ],
@@ -111,13 +111,14 @@ class DraftRecoveryDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(AppDimensions.paddingS),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+                  color: AppColors.forestGreen
+                      .withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: const Icon(
                   Icons.article_outlined,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                   size: AppDimensions.iconSizeM,
                 ),
               ),

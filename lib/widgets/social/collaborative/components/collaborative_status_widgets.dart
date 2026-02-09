@@ -18,7 +18,7 @@ class CollaborativeStatusWidgets {
     Color? color,
     EdgeInsets? padding,
   }) {
-    final effectiveColor = color ?? AppColors.primaryBlue;
+    final effectiveColor = color ?? AppColors.forestGreen;
 
     return Container(
       padding: padding ??
@@ -30,7 +30,8 @@ class CollaborativeStatusWidgets {
         color: effectiveColor.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
         border: Border.all(
-          color: effectiveColor.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: effectiveColor.withValues(
+              alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
@@ -64,8 +65,8 @@ class CollaborativeStatusWidgets {
     Widget? trailing,
     BuildContext? context, // Needed to fetch real participants
   }) {
-    final bgColor =
-        backgroundColor ?? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight);
+    final bgColor = backgroundColor ??
+        AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight);
 
     return Container(
       width: double.infinity,
@@ -74,7 +75,8 @@ class CollaborativeStatusWidgets {
         color: bgColor,
         border: Border(
           bottom: BorderSide(
-            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+            color: AppColors.forestGreen
+                .withValues(alpha: AppDimensions.opacityMediumLight),
           ),
         ),
       ),
@@ -85,7 +87,7 @@ class CollaborativeStatusWidgets {
           children: [
             const Icon(
               Icons.people,
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
               size: AppDimensions.iconSizeAction,
             ),
             const SizedBox(width: AppDimensions.spacingS),
@@ -96,13 +98,13 @@ class CollaborativeStatusWidgets {
                   Text(
                     title,
                     style: AppTextStyles.bodyLargeBold.copyWith(
-                      color: AppColors.primaryBlue,
+                      color: AppColors.forestGreen,
                     ),
                   ),
                   Text(
                     subtitle,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.primaryBlue,
+                      color: AppColors.forestGreen,
                     ),
                   ),
                 ],
@@ -125,7 +127,7 @@ class CollaborativeStatusWidgets {
               const Icon(
                 Icons.people_outline,
                 size: AppDimensions.iconSizeL,
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
               ),
           ],
         ),
@@ -247,7 +249,8 @@ class _CollaborativeAppBar extends StatelessWidget
         return AppBar(
           title: Text(title ?? 'Innehåll'),
           backgroundColor: isCollaborative
-              ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
+              ? AppColors.forestGreen
+                  .withValues(alpha: AppDimensions.opacityVeryLight)
               : null,
           elevation: isCollaborative ? 2 : null,
           actions: [
@@ -266,7 +269,7 @@ class _CollaborativeAppBar extends StatelessWidget
                           ? '${participants.length}'
                           : 'Delat',
                       icon: Icons.people,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.forestGreen,
                     ),
                   ),
                 ),

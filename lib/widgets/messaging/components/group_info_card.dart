@@ -35,13 +35,14 @@ class GroupInfoCard extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+              color: AppColors.forestGreen
+                  .withValues(alpha: AppDimensions.opacityVeryLight),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.group,
               size: 40,
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
             ),
           ),
 

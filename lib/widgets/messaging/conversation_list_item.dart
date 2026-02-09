@@ -79,7 +79,7 @@ class ConversationListItem extends StatelessWidget {
                           conversation.formattedLastActivity,
                           style: _hasUnreadMessages
                               ? AppTextStyles.labelSmall.copyWith(
-                                  color: AppColors.primaryBlue,
+                                  color: AppColors.forestGreen,
                                 )
                               : AppTextStyles.labelSmall.copyWith(
                                   color: AppColors.textMedium,
@@ -132,7 +132,8 @@ class ConversationListItem extends StatelessWidget {
           height: 56,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.accent.withValues(alpha: AppDimensions.opacityLight),
+            color:
+                AppColors.accent.withValues(alpha: AppDimensions.opacityLight),
           ),
           child: conversation.isGroup
               ? _buildGroupAvatar()
@@ -165,11 +166,12 @@ class ConversationListItem extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: AppColors.forestGreen
+            .withValues(alpha: AppDimensions.opacityVeryLight),
       ),
       child: const Icon(
         Icons.group,
-        color: AppColors.primaryBlue,
+        color: AppColors.forestGreen,
         size: AppDimensions.iconSizeL,
       ),
     );
@@ -197,7 +199,7 @@ class ConversationListItem extends StatelessWidget {
       child: Text(
         displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
         style: AppTextStyles.sectionHeader.copyWith(
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         ),
       ),
     );
@@ -208,7 +210,7 @@ class ConversationListItem extends StatelessWidget {
       width: AppDimensions.spacingSm,
       height: AppDimensions.spacingSm,
       decoration: const BoxDecoration(
-        color: AppColors.primaryBlue,
+        color: AppColors.forestGreen,
         shape: BoxShape.circle,
       ),
     );

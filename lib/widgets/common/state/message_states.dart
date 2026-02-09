@@ -1,15 +1,22 @@
 // lib/widgets/common/state/message_states.dart
+//
+// UI Redesign: Error states now use red onion illustration
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
+import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 
 /// MessageStates - Error, Success, Info, and Warning state implementations
 /// Handles different message state variants with appropriate styling.
+///
+/// **UI Redesign:** Error states now use red onion (rodlok) illustration
+/// instead of generic error icons.
 class MessageStates {
-  /// Build error state
+  /// Build error state with red onion illustration.
+  /// UI Redesign: Uses VegetableType.onion illustration.
   static Widget buildErrorState(
     BuildContext context, {
     String? title,
@@ -28,19 +35,18 @@ class MessageStates {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Error ikon
-              Icon(
-                icon ?? Icons.error_outline,
-                size: iconSize ?? AppDimensions.iconSizeXl,
-                color: iconColor ?? AppColors.error,
+              // UI Redesign: Red onion illustration for errors
+              const VegetableIllustration(
+                type: VegetableType.redOnion,
+                size: 100,
               ),
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.spacingLg),
 
               // Error titel
               Text(
                 title ?? 'Ett fel uppstod',
-                style: AppTextStyles.headlineSmall.copyWith(
-                  color: AppColors.error,
+                style: AppTextStyles.emptyStateTitle.copyWith(
+                  color: AppColors.rust,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -48,28 +54,17 @@ class MessageStates {
               // Error meddelande
               if (message != null) ...[
                 const SizedBox(height: AppDimensions.spacingM),
-                Container(
-                  padding: const EdgeInsets.all(AppDimensions.paddingL),
-                  margin: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingL),
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusM),
-                    border: Border.all(color: AppColors.error),
-                  ),
-                  child: Text(
-                    message,
-                    style: AppTextStyles.bodyMediumError,
-                    textAlign: TextAlign.center,
-                  ),
+                Text(
+                  message,
+                  style: AppTextStyles.emptyStateBody,
+                  textAlign: TextAlign.center,
                 ),
               ],
 
-              // Retry knapp
+              // Retry knapp - rust outline style for errors
               if (actionLabel != null && onAction != null) ...[
                 const SizedBox(height: AppDimensions.spacingXl),
-                UtilityComponents.primaryButton(
+                UtilityComponents.outlinedButton(
                   context,
                   label: actionLabel,
                   onPressed: onAction,

@@ -8,15 +8,15 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/indicators/pea_loading_animation.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/share_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart';
 import 'package:butlery/widgets/menu/menu_content_widgets.dart';
+import 'package:butlery/widgets/common/main_view_header.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Weekly menu planning view with natural language input and social sharing.
 class VeckomenyView extends StatelessWidget {
@@ -44,7 +44,6 @@ class _VeckomenyViewContent extends StatefulWidget {
 
 class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   final TextEditingController _promptController = TextEditingController();
-  final ShareService _shareService = ServiceLocator.get<ShareService>();
   final UnifiedFriendsService _friendsService =
       ServiceLocator.get<UnifiedFriendsService>();
 
@@ -81,17 +80,19 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     _promptController.clear();
   }
 
-  Future<void> _shareMenu() async {
-    final viewModel = context.read<MenuViewModel>();
-    await _shareService.shareWeekMenuFromCategories(viewModel.menu);
-    if (mounted) {
-      SnackBarUtils.showSuccess(context, 'Veckomeny delad!');
-    }
+  /// Get current week number
+  int _getCurrentWeekNumber() {
+    final now = DateTime.now();
+    final firstDayOfYear = DateTime(now.year, 1, 1);
+    final daysSinceFirst = now.difference(firstDayOfYear).inDays;
+    return ((daysSinceFirst + firstDayOfYear.weekday - 1) / 7).ceil();
   }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<MenuViewModel>();
+    final weekNumber = _getCurrentWeekNumber();
+    final menuItemCount = viewModel.hasMenu ? viewModel.totalRecipeCount : 0;
 
     return PopScope(
       canPop: false,
@@ -99,14 +100,21 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         if (!didPop) VeckomenyDialogs.showExitDialog(context);
       },
       child: LayoutComponents.mainMenu(
-        currentIndex: 2,
-        title: 'Veckomeny',
-        actions: _buildActions(context, viewModel),
+        currentIndex:
+            1, // UI Redesign: nav order is recept(0), meny(1), inköp(2), lägg till(3)
+        // UI Redesign: Use MainViewHeader with week badge
+        appBar: MainViewHeader(
+          title: 'veckans\nmeny',
+          countBadge: viewModel.hasMenu
+              ? context.l10n.menuWeekBadgeWithCount(weekNumber, menuItemCount)
+              : context.l10n.menuWeekBadge(weekNumber),
+          actions: _buildHeaderActions(context, viewModel),
+        ),
         body: _buildBody(context, viewModel),
         floatingActionButton: viewModel.hasMenu
             ? ActionButtons.actionButton(
                 context,
-                label: 'Till inkopslista',
+                label: context.l10n.menuToShoppingList,
                 icon: Icons.shopping_cart,
                 onPressed: () => VeckomenyDialogs.showShoppingListSelector(
                   context,
@@ -119,89 +127,35 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     );
   }
 
-  List<Widget> _buildActions(BuildContext context, MenuViewModel viewModel) {
+  List<Widget> _buildHeaderActions(
+      BuildContext context, MenuViewModel viewModel) {
     return [
       // Load menu button
       IconButton(
-        icon: Icon(Icons.folder_open,
-            size: AppDimensions.iconSizeAction,
-            color:
-                Theme.of(context).colorScheme.onSurface.withValues(alpha: AppDimensions.opacityDark)),
+        icon: const Icon(Icons.folder_open, color: AppColors.headerForeground),
         onPressed: () => VeckomenyDialogs.showLoadMenuBottomSheet(
           context,
           viewModel: viewModel,
         ),
-        tooltip: 'Ladda sparad meny',
+        tooltip: context.l10n.menuLoadSaved,
       ),
-
       // Save menu button (only when menu exists)
       if (viewModel.hasMenu)
         IconButton(
-          icon: Icon(Icons.save,
-              size: AppDimensions.iconSizeAction,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: AppDimensions.opacityDark)),
+          icon: const Icon(Icons.save, color: AppColors.headerForeground),
           onPressed: () => VeckomenyDialogs.showSaveMenuDialog(
             context,
             viewModel: viewModel,
             availableFriends: _friendsService.friends,
           ),
-          tooltip: 'Spara meny',
+          tooltip: context.l10n.menuSave,
         ),
-
-      // Social share button
-      if (viewModel.hasMenu)
-        IconButton(
-          icon: Icon(Icons.people_outline,
-              size: AppDimensions.iconSizeAction,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: AppDimensions.opacityDark)),
-          onPressed: () => VeckomenyDialogs.showSocialMenuShareDialog(
-            context,
-            menuViewModel: viewModel,
-            friendsService: _friendsService,
-          ),
-          tooltip: _friendsService.friends.isEmpty
-              ? 'Lagg till vanner for att dela'
-              : 'Dela med vanner',
-        ),
-
-      // Regular share button
-      if (viewModel.hasMenu)
-        IconButton(
-          icon: Icon(Icons.share,
-              size: AppDimensions.iconSizeAction,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: AppDimensions.opacityDark)),
-          onPressed: _shareMenu,
-          tooltip: 'Dela veckomeny',
-        ),
-
       // Clear menu button
       if (viewModel.hasMenu)
         IconButton(
-          icon: Icon(Icons.clear,
-              size: AppDimensions.iconSizeAction,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: AppDimensions.opacityDark)),
+          icon: const Icon(Icons.clear, color: AppColors.headerForeground),
           onPressed: _clearMenu,
-          tooltip: 'Rensa meny',
-        ),
-
-      // Error indicator
-      if (viewModel.hasError)
-        IconButton(
-          icon: const Icon(Icons.error, color: AppColors.error),
-          onPressed: () => SnackBarUtils.showError(context, viewModel.error!),
-          tooltip: 'Visa fel',
+          tooltip: context.l10n.menuClear,
         ),
     ];
   }
@@ -263,9 +217,13 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                 Expanded(
                   child: Padding(
                     padding: AppDimensions.responsiveHorizontalPadding(context),
+                    // UI Redesign: Pass retry callback for inline error handling
                     child: MenuContentWidgets.buildMenuContent(
                       context,
                       viewModel: viewModel,
+                      onRetry: _promptController.text.isNotEmpty
+                          ? _generateMenu
+                          : null,
                     ),
                   ),
                 ),
@@ -279,48 +237,11 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     );
   }
 
+  /// UI Redesign: Uses PeaLoadingAnimation for branded loading experience
   Widget _buildLoadingOverlay(BuildContext context) {
-    return ColoredBox(
-      color: AppColors.neutralDark.withValues(alpha: AppDimensions.opacityMedium),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: LayoutComponents.valueFor(
-              context: context,
-              mobile: double.infinity,
-              tablet: 500,
-              desktop: 600,
-            ),
-          ),
-          child: Container(
-            padding: AppDimensions.responsiveContentPadding(context),
-            margin: AppDimensions.responsiveContentPadding(context),
-            decoration: BoxDecoration(
-              color: AppColors.cardWhite,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(color: AppColors.divider),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(),
-                SizedBox(
-                  height: LayoutComponents.valueFor(
-                    context: context,
-                    mobile: AppDimensions.spacingM,
-                    tablet: AppDimensions.spacingL,
-                    desktop: AppDimensions.spacingL,
-                  ),
-                ),
-                Text(
-                  'Genererar meny...',
-                  style: AppTextStyles.titleMedium,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return PeaLoadingOverlay(
+      message: context.l10n.menuGeneratingOverlay,
+      subtitle: context.l10n.menuGeneratingSubtitle,
     );
   }
 }

@@ -36,7 +36,7 @@ class SharedContentCard extends StatelessWidget {
   Color _getColorForType(String type) {
     switch (type) {
       case 'recipe':
-        return AppColors.primaryBlue;
+        return AppColors.forestGreen;
       case 'menu':
         return AppColors.success;
       case 'shopping_list':
@@ -82,7 +82,8 @@ class SharedContentCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(AppDimensions.paddingS),
                     decoration: BoxDecoration(
-                      color: iconColor.withValues(alpha: AppDimensions.opacityVeryLight),
+                      color: iconColor.withValues(
+                          alpha: AppDimensions.opacityVeryLight),
                       borderRadius:
                           BorderRadius.circular(AppDimensions.borderRadiusS),
                     ),
@@ -128,14 +129,14 @@ class SharedContentCard extends StatelessWidget {
                   else
                     CircleAvatar(
                       radius: 12,
-                      backgroundColor:
-                          AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
+                      backgroundColor: AppColors.forestGreen
+                          .withValues(alpha: AppDimensions.opacityLight),
                       child: Text(
                         item.sharedByDisplayName.isNotEmpty
                             ? item.sharedByDisplayName[0].toUpperCase()
                             : '?',
                         style: AppTextStyles.textXs.copyWith(
-                          color: AppColors.primaryBlue,
+                          color: AppColors.forestGreen,
                         ),
                       ),
                     ),
@@ -167,7 +168,8 @@ class SharedContentCard extends StatelessWidget {
                   if (onImport != null) ...[
                     TextButton.icon(
                       onPressed: onImport,
-                      icon: const Icon(Icons.download, size: AppDimensions.iconSize18),
+                      icon: const Icon(Icons.download,
+                          size: AppDimensions.iconSize18),
                       label: const Text('Importera'),
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
@@ -176,7 +178,8 @@ class SharedContentCard extends StatelessWidget {
                     Flexible(
                       child: FilledButton.icon(
                         onPressed: onView,
-                        icon: const Icon(Icons.visibility, size: AppDimensions.iconSize18),
+                        icon: const Icon(Icons.visibility,
+                            size: AppDimensions.iconSize18),
                         label: const Text('Visa'),
                       ),
                     ),

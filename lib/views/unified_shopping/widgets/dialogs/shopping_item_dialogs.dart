@@ -99,8 +99,21 @@ class _AddItemDialogState extends State<_AddItemDialog> {
   final _noteController = TextEditingController();
   final _priceController = TextEditingController();
 
+  // UI Redesign: Track if user has manually edited category
+  bool _categoryManuallyEdited = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // UI Redesign: Auto-suggest category based on item name
+    _nameController.addListener(_suggestCategory);
+    _categoryController.addListener(_onCategoryManualEdit);
+  }
+
   @override
   void dispose() {
+    _nameController.removeListener(_suggestCategory);
+    _categoryController.removeListener(_onCategoryManualEdit);
     _nameController.dispose();
     _amountController.dispose();
     _unitController.dispose();
@@ -108,6 +121,29 @@ class _AddItemDialogState extends State<_AddItemDialog> {
     _noteController.dispose();
     _priceController.dispose();
     super.dispose();
+  }
+
+  /// UI Redesign: Track when user manually edits category to avoid overwriting
+  void _onCategoryManualEdit() {
+    if (_categoryController.text.isNotEmpty) {
+      _categoryManuallyEdited = true;
+    }
+  }
+
+  /// UI Redesign: Suggest category based on item name (Swedish ingredients)
+  void _suggestCategory() {
+    if (_categoryManuallyEdited) return;
+
+    final name = _nameController.text.toLowerCase().trim();
+    if (name.isEmpty) return;
+
+    final suggestedCategory = _CategorySuggester.suggest(name);
+    if (suggestedCategory != null &&
+        _categoryController.text != suggestedCategory) {
+      _categoryManuallyEdited = false; // Reset flag for auto-suggestion
+      _categoryController.text = suggestedCategory;
+      _categoryManuallyEdited = false; // Reset again after setting
+    }
   }
 
   @override
@@ -327,5 +363,181 @@ class _EditItemDialogState extends State<_EditItemDialog> {
 
       Navigator.pop(context, item);
     }
+  }
+}
+
+/// UI Redesign: Category auto-suggestion based on Swedish ingredient names
+class _CategorySuggester {
+  static const Map<String, List<String>> _categoryKeywords = {
+    'Mejeri': [
+      'mjölk',
+      'grädde',
+      'ost',
+      'smör',
+      'yoghurt',
+      'fil',
+      'crème fraiche',
+      'kvarg',
+      'keso',
+      'parmesan',
+      'mozzarella',
+      'cheddar',
+      'brie',
+      'cream cheese',
+      'ricotta',
+      'mascarpone',
+      'feta',
+    ],
+    'Frukt & Grönt': [
+      'äpple',
+      'banan',
+      'apelsin',
+      'citron',
+      'lime',
+      'tomat',
+      'gurka',
+      'paprika',
+      'lök',
+      'vitlök',
+      'morot',
+      'potatis',
+      'sallad',
+      'spenat',
+      'broccoli',
+      'blomkål',
+      'zucchini',
+      'aubergine',
+      'avokado',
+      'mango',
+      'ananas',
+      'druvor',
+      'jordgubbar',
+      'blåbär',
+      'hallon',
+      'päron',
+      'persika',
+      'plommon',
+      'kiwi',
+      'champinjon',
+      'svamp',
+      'selleri',
+      'purjolök',
+      'rödbetor',
+      'kål',
+      'vitkål',
+      'rödkål',
+    ],
+    'Kött & Fisk': [
+      'kyckling',
+      'nötkött',
+      'fläsk',
+      'lamm',
+      'fisk',
+      'lax',
+      'torsk',
+      'räkor',
+      'bacon',
+      'korv',
+      'köttfärs',
+      'biff',
+      'entrecote',
+      'filé',
+      'kotlett',
+      'skinka',
+      'kalkon',
+      'anka',
+      'tonfisk',
+      'sill',
+      'makrill',
+      'musslor',
+      'krabba',
+      'hummer',
+    ],
+    'Bröd & Bakverk': [
+      'bröd',
+      'limpa',
+      'fralla',
+      'bulle',
+      'croissant',
+      'bagel',
+      'knäckebröd',
+      'tortilla',
+      'pitabröd',
+      'hamburger',
+      'korvbröd',
+    ],
+    'Skafferi': [
+      'ris',
+      'pasta',
+      'spaghetti',
+      'nudlar',
+      'mjöl',
+      'socker',
+      'salt',
+      'peppar',
+      'olja',
+      'olivolja',
+      'vinäger',
+      'soja',
+      'ketchup',
+      'senap',
+      'majonnäs',
+      'honung',
+      'sylt',
+      'müsli',
+      'flingor',
+      'havregryn',
+      'linser',
+      'bönor',
+      'kikärtor',
+      'kokosmjölk',
+      'tomatpuré',
+      'krossade tomater',
+      'buljong',
+      'fond',
+    ],
+    'Drycker': [
+      'juice',
+      'läsk',
+      'vatten',
+      'mineralvatten',
+      'kaffe',
+      'te',
+      'öl',
+      'vin',
+      'cider',
+      'smoothie',
+    ],
+    'Fryst': [
+      'glass',
+      'frysta',
+      'fryst',
+      'frysvaror',
+      'fryspizza',
+    ],
+    'Snacks': [
+      'chips',
+      'nötter',
+      'popcorn',
+      'godis',
+      'choklad',
+      'kex',
+      'kakor',
+    ],
+  };
+
+  /// Suggest a category based on the item name
+  static String? suggest(String itemName) {
+    final lowerName = itemName.toLowerCase();
+
+    for (final entry in _categoryKeywords.entries) {
+      for (final keyword in entry.value) {
+        if (lowerName.contains(keyword)) {
+          return entry.key;
+        }
+      }
+    }
+
+    return null;
   }
 }

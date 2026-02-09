@@ -247,7 +247,7 @@ class InvitationDisplays {
       case 'expired':
         return AppColors.warning;
       default:
-        return AppColors.primaryBlue;
+        return AppColors.forestGreen;
     }
   }
 

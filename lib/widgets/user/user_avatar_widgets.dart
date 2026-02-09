@@ -24,22 +24,21 @@ class UserAvatarWidgets {
     bool isOnline = false,
   }) {
     final avatarSize = _getAvatarSize(size);
-    final effectiveBackgroundColor =
-        backgroundColor ?? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight);
-    final effectiveTextColor = textColor ?? AppColors.primaryBlue;
+    // UI Redesign: Avatar uses rust color scheme
+    final effectiveBackgroundColor = backgroundColor ?? AppColors.rust;
+    final effectiveTextColor = textColor ?? AppColors.cardWhite;
 
     Widget avatar = Container(
       width: avatarSize,
       height: avatarSize,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
         color: effectiveBackgroundColor,
         border: borderWidth != null && borderColor != null
             ? Border.all(width: borderWidth, color: borderColor)
             : null,
       ),
       child: (imageUrl != null && imageUrl.isNotEmpty)
-          ? ClipOval(
+          ? ClipRect(
               child: CachedNetworkImage(
                 imageUrl: imageUrl,
                 width: avatarSize,
@@ -91,7 +90,7 @@ class UserAvatarWidgets {
             color: AppColors.transparent,
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(avatarSize / 2),
+              borderRadius: BorderRadius.zero,
               child: avatar,
             ),
           )
@@ -113,14 +112,14 @@ class UserAvatarWidgets {
           imageUrl: imageUrl,
           displayName: displayName,
           size: size,
-          borderColor: borderColor ?? AppColors.primaryBlue,
+          borderColor: borderColor ?? AppColors.forestGreen,
           borderWidth: borderWidth ?? AppDimensions.spacingXs,
         ),
         Positioned(
           right: 0,
           bottom: 0,
           child: Material(
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
             shape: const CircleBorder(),
             child: InkWell(
               onTap: onEditTap,
@@ -130,7 +129,7 @@ class UserAvatarWidgets {
                 height: AppDimensions.iconSizeXl,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                   border: Border.all(
                     color: AppColors.cardWhite,
                     width: AppDimensions.borderWidthThick,
@@ -181,7 +180,6 @@ class UserAvatarWidgets {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
         color: backgroundColor,
       ),
       child: Center(

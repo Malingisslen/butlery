@@ -33,7 +33,7 @@ class GroupShoppingListActions {
   ) async {
     final confirmed = await DialogFactory.showConfirmation(
       context,
-      title: 'Importera inkopslista',
+      title: 'Importera inköpslista',
       message:
           'Vill du importera "${shoppingList.name}" till dina egna listor?',
       confirmText: 'Importera',
@@ -92,7 +92,7 @@ class GroupShoppingListActions {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Inkopslista kopierad till urklipp!'),
+            content: Text('Inköpslista kopierad till urklipp!'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -127,7 +127,7 @@ class GroupShoppingListActions {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Dela inkopslista',
+                  'Dela inköpslista',
                   style: AppTextStyles.titleBold,
                 ),
                 const SizedBox(height: AppDimensions.spacingM),
@@ -140,8 +140,8 @@ class GroupShoppingListActions {
                 ),
                 ListTile(
                   leading: const Icon(Icons.people),
-                  title: const Text('Dela med vanner i Butlery'),
-                  subtitle: const Text('Skicka till dina vanner'),
+                  title: const Text('Dela med vänner i Butlery'),
+                  subtitle: const Text('Skicka till dina vänner'),
                   onTap: () {
                     Navigator.pop(context);
                     shareWithFriends(context, shoppingList);
@@ -173,7 +173,7 @@ class GroupShoppingListActions {
       final shareOptions = await showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Dela inkopslista'),
+          title: const Text('Dela inköpslista'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -181,7 +181,7 @@ class GroupShoppingListActions {
               const SizedBox(height: AppDimensions.spacingMd),
               ListTile(
                 leading: const Icon(Icons.people),
-                title: const Text('Vanner'),
+                title: const Text('Vänner'),
                 onTap: () => Navigator.pop(context, 'friends'),
               ),
               ListTile(
@@ -191,7 +191,7 @@ class GroupShoppingListActions {
               ),
               ListTile(
                 leading: const Icon(Icons.link),
-                title: const Text('Kopiera lank'),
+                title: const Text('Kopiera länk'),
                 onTap: () => Navigator.pop(context, 'link'),
               ),
             ],
@@ -217,7 +217,7 @@ class GroupShoppingListActions {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Kunde inte oppna delningsmenyn: $e'),
+            content: Text('Kunde inte öppna delningsmenyn: $e'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -241,7 +241,7 @@ class GroupShoppingListActions {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Rapport skickad. Tack for din feedback!'),
+            content: Text('Rapport skickad. Tack för din feedback!'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -264,12 +264,12 @@ class GroupShoppingListActions {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Rapportera innehall'),
+          title: const Text('Rapportera innehåll'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Varfor vill du rapportera denna inkopslista?'),
+              const Text('Varför vill du rapportera denna inköpslista?'),
               const SizedBox(height: AppDimensions.spacingMd),
               RadioGroup<String>(
                 groupValue: selectedReason,
@@ -277,10 +277,10 @@ class GroupShoppingListActions {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    'Olampligt innehall',
+                    'Olämpligt innehåll',
                     'Spam eller reklam',
                     'Felaktig information',
-                    'Upphovsrattsintrång',
+                    'Upphovsrättsintrång',
                     'Annat'
                   ]
                       .map((reason) => RadioListTile<String>(

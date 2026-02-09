@@ -141,16 +141,17 @@ class _CreateSharedShoppingListViewState
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+                  color: AppColors.error
+                      .withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusM),
-                  border:
-                      Border.all(color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
+                  border: Border.all(
+                      color: AppColors.error
+                          .withValues(alpha: AppDimensions.opacityMediumLight)),
                 ),
                 child: Text(
                   viewModel.error!,
-                  style:
-                      AppTextStyles.bodyMediumError,
+                  style: AppTextStyles.bodyMediumError,
                 ),
               ),
             ],
@@ -176,14 +177,14 @@ class _CreateSharedShoppingListViewState
             children: [
               const Icon(
                 Icons.group,
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Skapa delad inköpslista',
                 style: AppTextStyles.titleMedium.copyWith(
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                 ),
               ),
             ],
@@ -263,9 +264,12 @@ class _CreateSharedShoppingListViewState
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.success.withValues(alpha: AppDimensions.opacityMediumLight)),
+        border: Border.all(
+            color: AppColors.success
+                .withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

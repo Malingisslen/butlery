@@ -893,4 +893,250 @@ class AppLocalizationsSv extends AppLocalizations {
   String dialogConfirmDeleteMessage(String itemName, String itemType) {
     return 'Är du säker på att du vill ta bort $itemName från $itemType?';
   }
+
+  @override
+  String get recipePortionAbbreviation => 'port';
+
+  @override
+  String get recipePortionSingular => 'portion';
+
+  @override
+  String get recipePortionsPlural => 'portioner';
+
+  @override
+  String get recipeCookedToday => 'Lagat idag';
+
+  @override
+  String get recipeCookedTodaySuccess => 'Recept markerat som lagat idag!';
+
+  @override
+  String get recipeCookedTodayError => 'Kunde inte markera som lagat';
+
+  @override
+  String get recipeNoInstructions => 'Inga instruktioner angivna.';
+
+  @override
+  String get recipeTags => 'Taggar';
+
+  @override
+  String get recipeImagesTitle => 'Bilder';
+
+  @override
+  String recipeImageCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bilder',
+      one: '1 bild',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recipePersonalTags => 'Personliga taggar';
+
+  @override
+  String recipeIngredientsForPortions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'portioner',
+      one: 'portion',
+    );
+    return 'Ingredienser för $count $_temp0:';
+  }
+
+  @override
+  String get recipeAnalysisFailed => 'Analys misslyckades';
+
+  @override
+  String get recipeAnalyzing => 'Analyseras...';
+
+  @override
+  String get recipeAnalysisFailedA11y => 'Ingrediensanalys misslyckades';
+
+  @override
+  String get recipeAnalyzingA11y => 'Ingredienser analyseras';
+
+  @override
+  String get recipeSearchHint => 'sök bland recepten...';
+
+  @override
+  String get recipeShowMore => 'Visa fler recept';
+
+  @override
+  String recipeCountBadge(int count) {
+    return '$count recept';
+  }
+
+  @override
+  String get scalerPortionsLabel => 'Portioner:';
+
+  @override
+  String get scalerUsingSwedishUnits => 'Använder svenska enheter';
+
+  @override
+  String get scalerConvertAmericanUnits => 'Konvertera amerikanska enheter';
+
+  @override
+  String scalerScaledFromTo(int from, int to) {
+    return 'Skalat från $from till $to portioner';
+  }
+
+  @override
+  String get scalerAmericanConverted =>
+      'Amerikanska enheter konverterade till svenska';
+
+  @override
+  String get menuPromptQuestion => 'Vad vill du ha för meny?';
+
+  @override
+  String get menuPromptHint => 'Ex: 3 middagar, 2 luncher och 1 frukost';
+
+  @override
+  String get menuGenerating => 'Genererar...';
+
+  @override
+  String get menuGenerateNew => 'Generera ny meny';
+
+  @override
+  String get menuGenerate => 'Generera meny';
+
+  @override
+  String get menuYourWeeklyMenu => 'Din veckomeny';
+
+  @override
+  String menuRecipeCount(int recipes, int categories) {
+    return '$recipes recept i $categories kategorier';
+  }
+
+  @override
+  String get menuChooseManually => 'Välj recept manuellt';
+
+  @override
+  String get menuNoMoreRecipes => 'Inga fler recept tillgängliga för byte';
+
+  @override
+  String get menuGenerateError => 'Kunde inte generera meny';
+
+  @override
+  String menuWeekBadgeWithCount(int week, int count) {
+    return 'Vecka $week · $count rätter';
+  }
+
+  @override
+  String menuWeekBadge(int week) {
+    return 'Vecka $week';
+  }
+
+  @override
+  String get menuToShoppingList => 'Till inköpslista';
+
+  @override
+  String get menuLoadSaved => 'Ladda sparad meny';
+
+  @override
+  String get menuClear => 'Rensa meny';
+
+  @override
+  String get menuShared => 'Veckomeny delad!';
+
+  @override
+  String get menuGeneratingOverlay => 'Genererar din veckomeny...';
+
+  @override
+  String get menuGeneratingSubtitle =>
+      'Hittar recept som passar dina preferenser';
+
+  @override
+  String shoppingCountBadge(int items, int done) {
+    return '$items varor · $done klara';
+  }
+
+  @override
+  String get commonSort => 'Sortera';
+
+  @override
+  String get commonHide => 'Dölj';
+
+  @override
+  String commonShowAllCount(int count) {
+    return 'Visa alla ($count)';
+  }
+
+  @override
+  String commonMoreCount(int count) {
+    return '+$count till';
+  }
+
+  @override
+  String get commonDismiss => 'Avfärda';
+
+  @override
+  String get errorUnexpected => 'Ett oväntat fel uppstod';
+
+  @override
+  String get searchClearSearch => 'Rensa sökning';
+
+  @override
+  String get searchClearFilters => 'Rensa filter';
+
+  @override
+  String get syncComplete => 'Synkronisering klar!';
+
+  @override
+  String syncFailed(String error) {
+    return 'Synkronisering misslyckades: $error';
+  }
+
+  @override
+  String get offlineShowingLocal => 'Offline-läge - visar lokala recept';
+
+  @override
+  String get recipeCreateCopy => 'Skapa kopia';
+
+  @override
+  String get recipeCreateShoppingList => 'Skapa inköpslista';
+
+  @override
+  String get recipeUpdateTags => 'Uppdatera taggar';
+
+  @override
+  String get recipeViewSource => 'Visa källa';
+
+  @override
+  String get recipeShareWithFriends => 'Dela med vänner';
+
+  @override
+  String get recipeShareExternal => 'Dela externt';
+
+  @override
+  String recipeSourceFrom(String host) {
+    return 'Från $host';
+  }
+
+  @override
+  String get errorCouldNotOpenLink => 'Kunde inte öppna länk';
+
+  @override
+  String get errorInvalidLink => 'Ogiltig länk';
+
+  @override
+  String shoppingItemRemoved(String name) {
+    return '$name borttagen!';
+  }
+
+  @override
+  String shoppingItemRemoveError(String name) {
+    return 'Kunde inte ta bort $name';
+  }
+
+  @override
+  String get shoppingAllUnchecked => 'Alla artiklar avbockade!';
+
+  @override
+  String get shoppingNoListForRename => 'Ingen lista vald för att byta namn';
+
+  @override
+  String get shoppingNoListForDelete => 'Ingen lista vald för borttagning';
 }

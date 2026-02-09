@@ -373,7 +373,7 @@ void main() {
         expect(card.elevation, equals(AppDimensions.elevationMedium));
 
         final shape = card.shape as RoundedRectangleBorder;
-        expect(shape.side.color, equals(AppColors.primaryBlue));
+        expect(shape.side.color, equals(AppColors.forestGreen));
       });
 
       testWidgets('should show minimal elevation when not selected',

@@ -35,7 +35,7 @@ class RecipeTaggingHandler {
           'Analyserar ingredienser och uppdaterar allergen- och kosttaggar för "${viewModel.recipe.title}".',
       confirmText: 'Uppdatera',
       icon: Icons.local_offer,
-      confirmColor: AppColors.primaryBlue,
+      confirmColor: AppColors.forestGreen,
     );
 
     if (confirmed != true || !context.mounted) return;

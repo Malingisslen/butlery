@@ -45,10 +45,13 @@ class StateWidget extends StatelessWidget {
     this.centerContent = true,
   });
 
-  /// Loading state with spinner.
+  /// Loading state with pea pod animation.
+  ///
+  /// UI Redesign: Changed default from spinner to peaAnimation
+  /// for branded loading experience.
   factory StateWidget.loading({
     String? message,
-    LoadingVariant variant = LoadingVariant.spinner,
+    LoadingVariant variant = LoadingVariant.peaAnimation,
     int itemCount = 5,
   }) {
     return StateWidget(

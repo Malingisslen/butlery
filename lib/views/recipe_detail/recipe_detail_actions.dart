@@ -11,6 +11,7 @@ import 'package:butlery/views/recipe_detail/handlers/recipe_social_handler.dart'
 import 'package:butlery/views/recipe_detail/handlers/recipe_shopping_handler.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_tagging_handler.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_personal_tag_handler.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Recipe detail actions facade
 /// **SRP Compliance:** This facade coordinates action handlers and manages view state.
@@ -121,6 +122,16 @@ class RecipeDetailActions {
     );
   }
 
+  /// Show add to cart confirmation dialog (FAB action)
+  /// UI Redesign: Shows ingredient list before adding to shopping list
+  Future<void> showAddToCartConfirmation(BuildContext context) async {
+    await RecipeShoppingHandler.showAddToCartConfirmation(
+      context,
+      currentPortions: _currentPortions,
+      showSnackBar: _showSnackBar,
+    );
+  }
+
   /// Re-tag recipe with new allergen and dietary analysis
   Future<void> retagRecipe(BuildContext context) async {
     await RecipeTaggingHandler.retagRecipe(
@@ -165,12 +176,13 @@ class RecipeDetailActions {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         if (!context.mounted) return;
-        _showSnackBar('Kunde inte öppna länk',
+        _showSnackBar(context.l10n.errorCouldNotOpenLink,
             backgroundColor: AppColors.error);
       }
     } catch (e) {
       if (!context.mounted) return;
-      _showSnackBar('Ogiltig länk', backgroundColor: AppColors.error);
+      _showSnackBar(context.l10n.errorInvalidLink,
+          backgroundColor: AppColors.error);
     }
   }
 

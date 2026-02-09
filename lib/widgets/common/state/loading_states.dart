@@ -1,20 +1,30 @@
 // lib/widgets/common/state/loading_states.dart
+//
+// UI Redesign: Added pea pod animation variant for branded loading experience
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/widgets/common/state/skeleton_components.dart';
+import 'package:butlery/widgets/common/indicators/pea_loading_animation.dart';
 
-/// LoadingStates - Loading state implementations
-/// Handles different loading variants including spinners and skeleton loaders.
+/// LoadingStates - Loading state implementations.
+///
+/// **UI Redesign:** Added [LoadingVariant.peaAnimation] for branded loading.
+/// Handles different loading variants including spinners, skeleton loaders,
+/// and the animated pea pod.
 class LoadingStates {
-  /// Build loading state based on variant
+  /// Build loading state based on variant.
+  ///
+  /// Set [usePeaAnimation] to true to use the animated pea pod instead
+  /// of the standard spinner for the spinner variant.
   static Widget buildLoadingState(
     BuildContext context, {
     required LoadingVariant? variant,
     String? message,
     int? skeletonItemCount,
+    bool usePeaAnimation = false,
   }) {
     switch (variant) {
       case LoadingVariant.skeletonRecipeList:
@@ -25,8 +35,14 @@ class LoadingStates {
         return _buildGenericSkeleton();
       case LoadingVariant.shimmerBox:
         return _buildShimmerBox();
+      case LoadingVariant.peaAnimation:
+        return _buildPeaLoading(context, message);
       case LoadingVariant.spinner:
       default:
+        // Use pea animation if requested
+        if (usePeaAnimation) {
+          return _buildPeaLoading(context, message);
+        }
         return _buildSpinnerLoading(context, message);
     }
   }
@@ -45,6 +61,33 @@ class LoadingStates {
                 Text(
                   message,
                   style: AppTextStyles.titleMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Pea pod animation loading state.
+  static Widget _buildPeaLoading(BuildContext context, String? message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppDimensions.spacingXl),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const PeaLoadingAnimation(size: 80),
+              if (message != null) ...[
+                const SizedBox(height: AppDimensions.spacingMd),
+                Text(
+                  message,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],

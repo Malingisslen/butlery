@@ -1,6 +1,7 @@
 // lib/widgets/common/profile/profile_menu.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -172,87 +173,133 @@ class _ProfileMenuState extends State<ProfileMenu> {
     );
   }
 
-  /// Profile header with user info
+  /// Profile header with user info - UI Redesign
+  /// Green dark background, centered avatar, stats row
   Widget _buildProfileHeader(BuildContext context) {
     final profileViewModel = ServiceLocator.get<ProfileViewModel>();
     final user = profileViewModel.currentUser;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
-      decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .primaryContainer
-            .withValues(alpha: AppDimensions.opacityMediumLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      ),
-      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
-      child: Column(
-        children: [
-          Row(
+    return Stack(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(
+            AppDimensions.spacingL,
+            AppDimensions.spacingXl,
+            AppDimensions.spacingL,
+            AppDimensions.spacingL,
+          ),
+          decoration: const BoxDecoration(
+            color: AppColors.forestGreenDark,
+          ),
+          child: Column(
             children: [
+              // Large centered avatar
               _buildSimpleAvatar(context),
-              const SizedBox(width: AppDimensions.spacingM),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Min profil',
-                      style: AppTextStyles.titleBold.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    _buildUserBasicInfo(context),
-                  ],
+              const SizedBox(height: AppDimensions.spacingMd),
+              // Centered name
+              Text(
+                widget.displayName,
+                style: AppTextStyles.headlineSmall.copyWith(
+                  color: AppColors.cream,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              Semantics(
-                label: 'Stäng profilmeny',
-                button: true,
-                child: IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(
-                    Icons.close,
-                    size: AppDimensions.iconSizeAction,
+              // Email
+              if (widget.email != null) ...[
+                const SizedBox(height: AppDimensions.spacingXs),
+                Text(
+                  widget.email!,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.cream.withValues(alpha: 0.8),
                   ),
                 ),
-              ),
+              ],
+              // Stats row
+              const SizedBox(height: AppDimensions.spacingL),
+              if (user != null) _buildStatsRow(context, user),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingXl),
-          if (user != null) _buildUserMetadata(context, user),
-        ],
-      ),
+        ),
+        // Close button
+        Positioned(
+          top: AppDimensions.spacingSm,
+          right: AppDimensions.spacingSm,
+          child: Semantics(
+            label: 'Stäng profilmeny',
+            button: true,
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: Icon(
+                Icons.close,
+                color: AppColors.cream.withValues(alpha: 0.8),
+                size: AppDimensions.iconSizeAction,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  /// Simple avatar
+  /// Stats row showing recipe count, menu count, and friends count
+  Widget _buildStatsRow(BuildContext context, dynamic user) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildStatItem('48', 'Recept'),
+        const SizedBox(width: AppDimensions.spacingXl),
+        _buildStatItem('12', 'Menyer'),
+        const SizedBox(width: AppDimensions.spacingXl),
+        _buildStatItem('$_pendingRequestsCount', 'Vänner'),
+      ],
+    );
+  }
+
+  Widget _buildStatItem(String value, String label) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: AppTextStyles.headlineBold.copyWith(
+            color: AppColors.cream,
+          ),
+        ),
+        const SizedBox(height: AppDimensions.spacingXxs),
+        Text(
+          label.toUpperCase(),
+          style: AppTextStyles.labelSmall.copyWith(
+            color: AppColors.cream.withValues(alpha: 0.7),
+            letterSpacing: 1,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Large centered avatar for profile header - UI Redesign
+  /// Sharp corners (square) per interview decisions
   Widget _buildSimpleAvatar(BuildContext context) {
     final hasImage =
         widget.userImageUrl != null && widget.userImageUrl!.isNotEmpty;
-    const avatarSize = AppDimensions.thumbnailLargeSize;
+    const avatarSize = 100.0; // Larger avatar for profile header
 
     return Container(
       width: avatarSize,
       height: avatarSize,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Theme.of(context).colorScheme.primaryContainer,
-        border: Border.all(
-          width: 2,
-          color: Theme.of(context).colorScheme.primary,
-        ),
+      decoration: const BoxDecoration(
+        // UI Redesign: Square avatar with sharp corners
+        borderRadius: BorderRadius.zero,
+        color: AppColors.cream,
       ),
       child: hasImage
-          ? ClipOval(
+          ? ClipRRect(
+              borderRadius: BorderRadius.zero,
               child: Image.network(
                 widget.userImageUrl!,
                 width: avatarSize,
                 height: avatarSize,
-                fit: BoxFit.contain,
+                fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) =>
                     _buildInitialsAvatar(context, avatarSize),
               ),
@@ -261,22 +308,24 @@ class _ProfileMenuState extends State<ProfileMenu> {
     );
   }
 
-  /// Initials avatar
+  /// Initials avatar - UI Redesign: Cream bg, green dark text, sharp corners
   Widget _buildInitialsAvatar(BuildContext context, double size) {
     final initials = _getInitials(widget.displayName);
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Theme.of(context).colorScheme.primaryContainer,
+      decoration: const BoxDecoration(
+        // UI Redesign: Square with sharp corners
+        borderRadius: BorderRadius.zero,
+        color: AppColors.cream,
       ),
       child: Center(
         child: Text(
           initials,
-          style: AppTextStyles.titleBold.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-            fontSize: size * 0.35,
+          style: AppTextStyles.headerTitle.copyWith(
+            color: AppColors.forestGreenDark,
+            fontSize: size * 0.36,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -294,32 +343,6 @@ class _ProfileMenuState extends State<ProfileMenu> {
 
     return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'
         .toUpperCase();
-  }
-
-  /// User basic info
-  Widget _buildUserBasicInfo(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          widget.displayName,
-          style: AppTextStyles.bodyLargeBold,
-        ),
-        if (widget.email != null) ...[
-          const SizedBox(height: AppDimensions.spacingXs),
-          Text(
-            widget.email!,
-            style: AppTextStyles.bodySmall,
-          ),
-        ],
-      ],
-    );
-  }
-
-  /// User metadata
-  Widget _buildUserMetadata(BuildContext context, dynamic user) {
-    // Removed auth metadata for cleaner profile display
-    return const SizedBox.shrink();
   }
 
   /// Social section

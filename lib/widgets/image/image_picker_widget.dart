@@ -92,7 +92,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             child: Text(
               '${widget.selectedImages.length}/${widget.config.maxImages} images selected',
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textDark.withValues(alpha: AppDimensions.opacityDark),
+                color: AppColors.textDark
+                    .withValues(alpha: AppDimensions.opacityDark),
               ),
             ),
           ),
@@ -111,7 +112,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: AppColors.divider.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: AppColors.divider
+              .withValues(alpha: AppDimensions.opacityMediumLight),
           style: BorderStyle.solid,
         ),
         color: AppColors.cardWhite,
@@ -132,7 +134,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.primaryBlue,
+                        AppColors.forestGreen,
                       ),
                     ),
                   ),
@@ -142,7 +144,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                   Text(
                     'Selecting images...',
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textDark.withValues(alpha: AppDimensions.opacityDark),
+                      color: AppColors.textDark
+                          .withValues(alpha: AppDimensions.opacityDark),
                     ),
                   ),
                 ] else ...[
@@ -150,12 +153,13 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     padding: const EdgeInsets.all(AppDimensions.spacingMd),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+                      color: AppColors.forestGreen
+                          .withValues(alpha: AppDimensions.opacityVeryLight),
                     ),
                     child: const Icon(
                       Icons.add_photo_alternate_outlined,
                       size: AppDimensions.iconSizeXl,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.forestGreen,
                     ),
                   ),
                   const SizedBox(
@@ -171,7 +175,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                         ? 'Tap to select up to ${widget.config.maxImages} images'
                         : 'Tap to select an image',
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textDark.withValues(alpha: AppDimensions.opacityDark),
+                      color: AppColors.textDark
+                          .withValues(alpha: AppDimensions.opacityDark),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -225,7 +230,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
             border: Border.all(
-              color: AppColors.divider.withValues(alpha: AppDimensions.opacityLight),
+              color: AppColors.divider
+                  .withValues(alpha: AppDimensions.opacityLight),
             ),
           ),
           child: ClipRRect(
@@ -301,7 +307,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                 horizontal: AppDimensions.spacingTight,
                 vertical: AppDimensions.spacingXxs),
             decoration: BoxDecoration(
-              color: AppColors.cardWhite.withValues(alpha: AppDimensions.opacityExtraDark),
+              color: AppColors.cardWhite
+                  .withValues(alpha: AppDimensions.opacityExtraDark),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
             ),
             child: Text(

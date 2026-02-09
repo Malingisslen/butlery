@@ -28,10 +28,12 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
+import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
 import 'package:butlery/widgets/common/social_components/recipe_list_avatar_badge.dart';
+import 'package:butlery/widgets/common/main_view_header.dart';
 
 // Service integration for functionality and data management
 import 'package:butlery/services/search_service.dart';
@@ -41,6 +43,7 @@ import 'package:butlery/services/user_service.dart';
 // Theme system integration
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 // Core services and utilities
 import 'package:butlery/core/providers/application_provider.dart';
@@ -195,7 +198,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       try {
         // Visa loading indicator
         if (mounted) {
-          SnackBarUtils.showInfo(context, 'Synkroniserar...');
+          SnackBarUtils.showInfo(context, context.l10n.statusSyncing);
         }
 
         // Synka offline-ändringar
@@ -206,14 +209,89 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
         // Visa success
         if (mounted) {
-          SnackBarUtils.showSuccess(context, 'Synkronisering klar!');
+          SnackBarUtils.showSuccess(context, context.l10n.syncComplete);
         }
       } catch (e) {
         if (mounted) {
-          SnackBarUtils.showError(context, 'Synkronisering misslyckades: $e');
+          SnackBarUtils.showError(
+              context, context.l10n.syncFailed(e.toString()));
         }
       }
     }
+  }
+
+  /// Get active quick filter IDs from ViewModel state.
+  Set<String> _getQuickFilterIds(RecipeListViewModel viewModel) {
+    final ids = <String>{};
+    // 'quick' time filter maps to 'quick' chip
+    if (viewModel.activeTimeFilters.contains('quick')) {
+      ids.add('quick');
+    }
+    // 'vegetarian' dietary filter maps to 'vegetarian' chip
+    if (viewModel.activeDietaryFilters.contains('vegetarian')) {
+      ids.add('vegetarian');
+    }
+    // TODO: Add favorites filter when implemented in ViewModel
+    return ids;
+  }
+
+  /// Handle quick filter chip toggle.
+  void _onQuickFilterToggle(RecipeListViewModel viewModel, String filterId) {
+    switch (filterId) {
+      case 'quick':
+        viewModel.toggleTimeFilter('quick');
+        break;
+      case 'vegetarian':
+        viewModel.toggleDietaryFilter('vegetarian');
+        break;
+      case 'favorites':
+        // TODO: Implement favorites filter in ViewModel
+        break;
+    }
+  }
+
+  /// Chip-styled sort button for the filter chips row.
+  Widget _buildSortChip(RecipeListViewModel viewModel) {
+    return PopupMenuButton<SortCriteria>(
+      onSelected: _onSortChanged,
+      itemBuilder: (context) => SortMenuBuilder.buildItems(
+        context: context,
+        currentSort: viewModel.sortCriteria,
+        sortAscending: viewModel.sortAscending,
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingMd,
+          vertical: AppDimensions.spacingSm,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.cardWhite,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+          border: Border.all(
+            color: AppColors.divider,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.sort,
+              size: AppDimensions.iconSizeS,
+              color: AppColors.textMedium,
+            ),
+            const SizedBox(width: AppDimensions.spacingXs),
+            Text(
+              context.l10n.commonSort,
+              style: AppTextStyles.labelMedium.copyWith(
+                color: AppColors.textDark,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   /// Build recipe interface with filtering, search, sorting, and social integration.
@@ -223,6 +301,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     final viewModel = context.watch<RecipeListViewModel>();
     final offlineService = context.watch<offline_service.OfflineService>();
     final personalTagViewModel = context.watch<PersonalTagViewModel>();
+    final recipeCount = viewModel.recipes.length;
 
     return PopScope(
       canPop: false,
@@ -232,63 +311,27 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         }
       },
       child: LayoutComponents.mainMenu(
-        // ✅ UPPDATERAD WIDGET
         currentIndex: 0,
-        title: 'Mina recept',
-        actions: [
-          // OFFLINE STATUS ICON - ✅ UPPDATERAD
-          LayoutComponents.offlineStatusIcon(),
-
-          // ✅ UPPDATERAD: USER AVATAR med notification badge
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
-            child: RecipeListAvatarBadge(),
-          ),
-
-          // Error indicator
-          if (viewModel.hasError)
-            Semantics(
-              label: 'Visa felmeddelande',
-              button: true,
-              child: IconButton(
-                icon: const Icon(Icons.error, color: AppColors.error),
-                onPressed: () {
-                  SnackBarUtils.showError(context, viewModel.error!);
-                },
-                tooltip: 'Visa fel',
-              ),
-            ),
-
-          // Sort menu
-          Semantics(
-            label: 'Sortera recept',
-            button: true,
-            child: PopupMenuButton<SortCriteria>(
-              icon: Icon(
-                Icons.sort,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              tooltip: 'Sortera',
-              onSelected: _onSortChanged,
-              itemBuilder: (context) => SortMenuBuilder.buildItems(
-                context: context,
-                currentSort: viewModel.sortCriteria,
-                sortAscending: viewModel.sortAscending,
-              ),
-            ),
-          ),
-        ],
+        // UI Redesign: Use MainViewHeader with large title and count badge
+        appBar: MainViewHeader(
+          title: 'dina\nrecept',
+          countBadge: context.l10n.recipeCountBadge(recipeCount),
+          trailing: const RecipeListAvatarBadge(),
+          actions: [
+            // Offline status
+            LayoutComponents.offlineStatusIcon(),
+          ],
+        ),
         body: Column(
           children: [
-            // OFFLINE INDICATOR - ✅ UPPDATERAD
+            // OFFLINE INDICATOR
             LayoutComponents.offlineIndicator(),
 
-            // ✅ HELT NY: SearchFilterWidget ersätter ~50 rader kod!
+            // UI Redesign: Search box with new styling
             SearchFilterWidget(
-              // Search properties
               searchQuery: viewModel.searchQuery,
               onSearchChanged: viewModel.updateSearch,
-              searchHint: 'Sök recept...',
+              searchHint: context.l10n.recipeSearchHint,
 
               // Filter properties
               activeTimeFilters: viewModel.activeTimeFilters,
@@ -325,9 +368,18 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               hasActiveFilters: viewModel.hasActiveFilters,
               onClearAllFilters: viewModel.clearAllFilters,
 
-              // Results info
-              resultCount: viewModel.recipes.length,
-              showStats: true,
+              // Results info - hidden since we show count in header
+              resultCount: recipeCount,
+              showStats: false,
+            ),
+
+            // UI Redesign: Quick filter chips for fast filtering
+            QuickFilterChips(
+              options: QuickFilterChips.defaultRecipeFilters,
+              selectedIds: _getQuickFilterIds(viewModel),
+              onFilterToggle: (filterId) =>
+                  _onQuickFilterToggle(viewModel, filterId),
+              trailing: _buildSortChip(viewModel),
             ),
 
             // Huvudinnehåll
@@ -360,7 +412,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           viewModel.clearError();
           viewModel.refresh();
         },
-        actionLabel: 'Försök igen',
+        actionLabel: context.l10n.commonRetry,
       );
     }
 
@@ -380,8 +432,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                   ? () => viewModel.updateSearch('')
                   : viewModel.clearAllFilters,
               actionLabel: viewModel.searchQuery.isNotEmpty
-                  ? 'Rensa sökning'
-                  : 'Rensa filter',
+                  ? context.l10n.searchClearSearch
+                  : context.l10n.searchClearFilters,
             );
     }
 
@@ -396,7 +448,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           await viewModel.refresh();
           if (mounted) {
             SnackBarUtils.showWarning(
-                context, 'Offline-läge - visar lokala recept');
+                context, context.l10n.offlineShowingLocal);
           }
         }
       },
@@ -448,7 +500,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               padding: AppDimensions.responsiveContentPadding(context),
               child: ActionButtons.primaryButton(
                 context,
-                label: 'Visa fler recept',
+                label: context.l10n.recipeShowMore,
                 onPressed: () => viewModel.loadMore(),
               ),
             ),

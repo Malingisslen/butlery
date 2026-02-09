@@ -108,7 +108,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         const Icon(
           Icons.shopping_cart,
           size: AppDimensions.iconSizeAction,
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         ),
         const SizedBox(width: AppDimensions.spacingM),
         Expanded(
@@ -173,9 +173,12 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        border: Border.all(color: AppColors.success.withValues(alpha: AppDimensions.opacityMediumLight)),
+        border: Border.all(
+            color: AppColors.success
+                .withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
