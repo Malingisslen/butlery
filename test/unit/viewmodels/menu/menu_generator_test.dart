@@ -111,7 +111,10 @@ void main() {
 
     test('should handle recipe service with many recipes', () {
       final manyRecipes = createTestRecipes(count: 100);
-      mockRecipeService.setRecipeState(recipes: manyRecipes);
+      mockRecipeService.setRecipeState(
+        recipes: manyRecipes,
+        isInitialized: true,
+      );
 
       expect(menuGenerator.availableRecipes.length, equals(100));
       expect(menuGenerator.hasAvailableRecipes, isTrue);
@@ -134,7 +137,10 @@ void main() {
     });
 
     test('should throw error when no recipes available', () async {
-      mockRecipeService.setRecipeState(recipes: []);
+      mockRecipeService.setRecipeState(
+        recipes: [],
+        isInitialized: true,
+      );
 
       expect(
         () => menuGenerator.generateMenuFromPrompt('test prompt'),
@@ -502,7 +508,10 @@ void main() {
 
     test('should handle very large recipe collections', () {
       final manyRecipes = createTestRecipes(count: 1000);
-      mockRecipeService.setRecipeState(recipes: manyRecipes);
+      mockRecipeService.setRecipeState(
+        recipes: manyRecipes,
+        isInitialized: true,
+      );
 
       expect(menuGenerator.availableRecipes.length, equals(1000));
       expect(menuGenerator.hasAvailableRecipes, isTrue);

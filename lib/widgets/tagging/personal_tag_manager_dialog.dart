@@ -36,6 +36,7 @@ class PersonalTagManagerDialog extends StatefulWidget {
       _PersonalTagManagerDialogState();
 }
 
+// ignore: deprecated_member_use_from_same_package
 class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
