@@ -44,7 +44,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     super.initState();
     _viewModel = ServiceLocator.get<UnifiedShoppingViewModel>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _viewModel.initialize();
+      if (mounted) _viewModel.initialize();
     });
   }
 

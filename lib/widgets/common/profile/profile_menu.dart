@@ -345,32 +345,6 @@ class _ProfileMenuState extends State<ProfileMenu> {
         .toUpperCase();
   }
 
-  /// User basic info
-  Widget _buildUserBasicInfo(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          widget.displayName,
-          style: AppTextStyles.bodyLargeBold,
-        ),
-        if (widget.email != null) ...[
-          const SizedBox(height: AppDimensions.spacingXs),
-          Text(
-            widget.email!,
-            style: AppTextStyles.bodySmall,
-          ),
-        ],
-      ],
-    );
-  }
-
-  /// User metadata
-  Widget _buildUserMetadata(BuildContext context, dynamic user) {
-    // Removed auth metadata for cleaner profile display
-    return const SizedBox.shrink();
-  }
-
   /// Social section
   Widget _buildSocialSection(BuildContext context) {
     return Container(
