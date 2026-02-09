@@ -106,6 +106,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       if (mounted) {
         _safeLoadSocialData();
         _safeLoadRecipeData();
+        // Initialize personal tags now that user is authenticated
+        context.read<PersonalTagViewModel>().initialize();
       }
     });
   }

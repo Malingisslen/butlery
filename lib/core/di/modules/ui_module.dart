@@ -313,18 +313,8 @@ class UIModule implements DIModule {
 
   @override
   Future<void> initialize() async {
-    try {
-      // Initialize singleton ViewModels that maintain streams
-      final personalTagVm = GetIt.instance<PersonalTagViewModel>();
-      await personalTagVm.initialize();
-    } catch (e) {
-      throw DIModuleException(
-        name,
-        'initialization',
-        'Failed to initialize UI services',
-        e,
-      );
-    }
+    // PersonalTagViewModel initializes lazily after user login (not during bootstrap).
+    // Views call initialize() in their initState when auth context is available.
   }
 
   @override

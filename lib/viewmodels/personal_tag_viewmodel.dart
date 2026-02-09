@@ -129,11 +129,11 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
       _tags = await _service.getAllTags();
       _groups = await _service.getAllGroups();
 
-      // Reset retry counter on success
-      _retryAttempts = 0;
-
       // Start watching for real-time updates
       _watchTagsWithGroups();
+
+      // Reset retry counter only after everything succeeds
+      _retryAttempts = 0;
 
       AppLogger.info(
         'PersonalTagViewModel initialized with '

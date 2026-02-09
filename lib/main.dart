@@ -108,8 +108,13 @@ Future<void> main() async {
         ),
     ]);
 
-    // Set up Crashlytics error handlers (sync, after Crashlytics enabled)
-    if (!kIsWeb) {
+    // Set up error handlers (sync, after Crashlytics enabled)
+    if (kIsWeb) {
+      // Web: show Flutter error widget so errors are visible (not just console)
+      FlutterError.onError = (errorDetails) {
+        FlutterError.presentError(errorDetails);
+      };
+    } else {
       FlutterError.onError = (errorDetails) {
         FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
         if (kDebugMode) {
