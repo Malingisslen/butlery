@@ -4,6 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/recipe/recipe_factory.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tag_overrides.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 import '../helpers/model_test_base.dart';
 
 void main() {
@@ -700,6 +703,156 @@ void main() {
         );
 
         expect(copy.core.personalTagIds, isNull);
+      });
+
+      test(
+          'BUG-2: createPersonalCopy should preserve tagResult from source recipe',
+          () {
+        // Arrange: Create a recipe with tag result data
+        final tagResult = TagResult(
+          tags: {'vegetarisk', 'pasta-dish', 'mild'},
+          allergenStatus: {'gluten': TriState.contains, 'mjölk': TriState.free},
+          dietaryStatus: {'vegetarisk': TriState.free},
+          coverage: 0.95,
+          unknownIngredients: ['unknown-spice'],
+          generatedAt: DateTime(2025, 6, 1),
+          generatorVersion: '1.0.0',
+        );
+
+        final sourceRecipe = Recipe(
+          core: RecipeCore(
+            title: 'Pasta med grönsakssås',
+            description: 'Vegetarisk pasta',
+            ingredients: ['Pasta', 'Tomater', 'Basilika'],
+            instructions: ['Koka pasta', 'Gör sås'],
+            mealType: 'Middag',
+            tagResult: tagResult,
+          ),
+          type: RecipeType.shared,
+          socialData: const RecipeSocialData(
+            ownerId: 'owner_123',
+            ownerDisplayName: 'Anna',
+          ),
+        );
+
+        // Act
+        final copy = RecipeFactory.createPersonalCopy(
+          sourceRecipe,
+          newOwnerId: 'new_user',
+        );
+
+        // Assert
+        expect(copy.core.tagResult, isNotNull,
+            reason: 'tagResult should be preserved in personal copy');
+        expect(copy.core.tagResult!.tags, contains('vegetarisk'));
+        expect(copy.core.tagResult!.tags, contains('pasta-dish'));
+        expect(copy.core.tagResult!.coverage, 0.95);
+      });
+
+      test(
+          'BUG-2: createPersonalCopy should preserve tagOverrides from source recipe',
+          () {
+        // Arrange
+        final tagOverrides = TagOverrides(
+          allergenOverrides: {'gluten': TriState.free},
+          addedTags: {'hälsosam'},
+          removedTags: {'stark'},
+          lastEditedAt: DateTime(2025, 5, 15),
+          lastEditedBy: 'owner_123',
+        );
+
+        final sourceRecipe = Recipe(
+          core: RecipeCore(
+            title: 'Test recipe',
+            description: 'Test',
+            ingredients: ['A', 'B'],
+            instructions: ['Step 1'],
+            mealType: 'Lunch',
+            tagOverrides: tagOverrides,
+          ),
+          type: RecipeType.personal,
+        );
+
+        // Act
+        final copy = RecipeFactory.createPersonalCopy(
+          sourceRecipe,
+          newOwnerId: 'copier_456',
+        );
+
+        // Assert
+        expect(copy.core.tagOverrides, isNotNull,
+            reason: 'tagOverrides should be preserved in personal copy');
+        expect(
+            copy.core.tagOverrides!.allergenOverrides['gluten'], TriState.free);
+        expect(copy.core.tagOverrides!.addedTags, contains('hälsosam'));
+        expect(copy.core.tagOverrides!.removedTags, contains('stark'));
+      });
+
+      test(
+          'BUG-2: createPersonalCopy should preserve ingredientsNormalized from source recipe',
+          () {
+        // Arrange
+        final normalized = ['pasta', 'tomat', 'basilika', 'olivolja'];
+
+        final sourceRecipe = Recipe(
+          core: RecipeCore(
+            title: 'Pasta',
+            description: 'Test',
+            ingredients: [
+              '400g pasta',
+              '3 tomater',
+              'Basilika',
+              '2 msk olivolja'
+            ],
+            instructions: ['Koka'],
+            mealType: 'Middag',
+            ingredientsNormalized: normalized,
+          ),
+          type: RecipeType.shared,
+          socialData: const RecipeSocialData(
+            ownerId: 'owner_123',
+            ownerDisplayName: 'Anna',
+          ),
+        );
+
+        // Act
+        final copy = RecipeFactory.createPersonalCopy(
+          sourceRecipe,
+          newOwnerId: 'new_user',
+        );
+
+        // Assert
+        expect(copy.core.ingredientsNormalized, isNotNull,
+            reason: 'ingredientsNormalized should be preserved');
+        expect(copy.core.ingredientsNormalized, equals(normalized));
+      });
+
+      test(
+          'BUG-2: createPersonalCopy should handle null tagResult, tagOverrides, and ingredientsNormalized',
+          () {
+        // Arrange: Recipe with all tag fields null
+        final sourceRecipe = Recipe(
+          core: RecipeCore(
+            title: 'Legacy recipe',
+            description: 'No tagging data',
+            ingredients: ['A'],
+            instructions: ['B'],
+            mealType: 'Lunch',
+            // tagResult, tagOverrides, ingredientsNormalized are all null
+          ),
+          type: RecipeType.personal,
+        );
+
+        // Act
+        final copy = RecipeFactory.createPersonalCopy(
+          sourceRecipe,
+          newOwnerId: 'copier',
+        );
+
+        // Assert: null fields stay null
+        expect(copy.core.tagResult, isNull);
+        expect(copy.core.tagOverrides, isNull);
+        expect(copy.core.ingredientsNormalized, isNull);
       });
 
       test('should create valid timestamps for realtime recipes', () {

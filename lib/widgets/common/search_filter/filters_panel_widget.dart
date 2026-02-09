@@ -31,8 +31,14 @@ class FiltersPanelWidget extends StatelessWidget {
   /// Currently selected personal tag IDs.
   final Set<String>? activePersonalTagFilters;
 
+  /// Currently excluded personal tag IDs.
+  final Set<String>? excludedPersonalTagFilters;
+
   /// Callback when a personal tag is toggled.
   final Function(String)? onPersonalTagFilterToggle;
+
+  /// Callback when an exclude personal tag is toggled.
+  final Function(String)? onExcludedPersonalTagFilterToggle;
 
   /// Callback to navigate to personal tag management.
   final VoidCallback? onManagePersonalTags;
@@ -54,7 +60,9 @@ class FiltersPanelWidget extends StatelessWidget {
     this.onClearAllFilters,
     this.personalTagIds,
     this.activePersonalTagFilters,
+    this.excludedPersonalTagFilters,
     this.onPersonalTagFilterToggle,
+    this.onExcludedPersonalTagFilterToggle,
     this.onManagePersonalTags,
   });
 
@@ -126,7 +134,9 @@ class FiltersPanelWidget extends StatelessWidget {
                         PersonalTagFilterChipsWidget(
                           tags: personalTagIds ?? [],
                           selectedTagIds: activePersonalTagFilters ?? {},
+                          excludedTagIds: excludedPersonalTagFilters ?? {},
                           onToggle: onPersonalTagFilterToggle!,
+                          onExcludeToggle: onExcludedPersonalTagFilterToggle,
                           onManageTags: onManagePersonalTags,
                         ),
 

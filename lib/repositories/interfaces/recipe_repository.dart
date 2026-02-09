@@ -31,4 +31,31 @@ abstract class RecipeRepository extends Repository<Recipe>
 
   /// Fetch recipes for a specific user with optional limit.
   Future<List<Recipe>> fetchUserRecipes(String userId, {int limit = 50});
+
+  /// Fetch all recipes for a user using cursor-based pagination.
+  /// Unlike [fetchUserRecipes], this has no hard limit and will fetch
+  /// all recipes in batches. Use for batch operations like statistics.
+  Future<List<Recipe>> fetchAllUserRecipes(
+    String userId, {
+    int batchSize = 500,
+  });
+
+  /// Renames a personal tag's denormalized name across all user recipes.
+  /// Queries by tag ID in personalTagIds, updates name in personalTags array.
+  /// personalTagIds is unchanged since it stores UUIDs.
+  /// Returns the number of recipes updated.
+  Future<int> renamePersonalTagInRecipes(String tagId, String newName);
+
+  /// Removes a personal tag from all user recipes that contain it.
+  /// Removes from both personalTagIds and personalTags arrays.
+  /// Returns the number of recipes updated.
+  Future<int> removePersonalTagFromRecipes(String tagId);
+
+  /// Fetches recipes that have a specific personal tag ID.
+  /// Returns up to [limit] recipes ordered by update date.
+  Future<List<Recipe>> fetchRecipesByTagId(String tagId, {int limit = 100});
+
+  /// Counts recipes that have a specific personal tag ID.
+  /// Uses Firestore arrayContains query on personalTagIds.
+  Future<int> countRecipesByTagId(String tagId);
 }

@@ -206,7 +206,7 @@ class TagGenerator {
     };
 
     // MED-5: Resolve conflicting tags (e.g., stark vs mild)
-    final resolvedTags = _resolveTagConflicts(allTags);
+    final resolvedTags = _resolveTagConflicts(allTags, recipe);
 
     // C3: Mark as partial if timeout or if any phase was skipped
     // CRIT-7: Phase 5 partial result counts as having cuisine tags
@@ -245,7 +245,7 @@ class TagGenerator {
   /// - 'avancerad' wins over 'enkel' (safer to warn about difficulty)
   /// - 'varm-rätt' wins over 'kall-rätt' (mutually exclusive, warm is more common)
   /// - Season tags: only keep the first detected (recipes can't be multi-season)
-  Set<String> _resolveTagConflicts(Set<String> tags) {
+  Set<String> _resolveTagConflicts(Set<String> tags, Recipe recipe) {
     final resolved = Set<String>.from(tags);
 
     // Define conflicting pairs: key wins over value
@@ -271,11 +271,15 @@ class TagGenerator {
     const seasonTags = ['sommar', 'vinter', 'höst', 'vår'];
     final presentSeasons = seasonTags.where(resolved.contains).toList();
     if (presentSeasons.length > 1) {
-      // Pick the best season: prefer current season if present
-      final currentSeason = _getCurrentSeason();
-      final selectedSeason = presentSeasons.contains(currentSeason)
-          ? currentSeason
-          : presentSeasons.first; // Fallback to first in priority order
+      // Pick the best season: use recipe creation date for deterministic results
+      final currentSeason = _getSeasonForDate(recipe.core.createdAt);
+      final String selectedSeason;
+      if (currentSeason != null && presentSeasons.contains(currentSeason)) {
+        selectedSeason = currentSeason;
+      } else {
+        // Deterministic fallback: first in priority order
+        selectedSeason = presentSeasons.first;
+      }
 
       // Remove all other seasons
       for (final season in presentSeasons) {
@@ -292,10 +296,12 @@ class TagGenerator {
     return resolved;
   }
 
-  /// CRIT-16: Returns the current season in Swedish based on date.
-  /// Used to prefer current-season tags when multiple seasons are detected.
-  static String _getCurrentSeason() {
-    final month = DateTime.now().month;
+  /// CRIT-16: Returns the season in Swedish for a given date.
+  /// Uses recipe creation date for deterministic results across retagging runs.
+  /// Returns null if no date provided to skip season-based conflict resolution.
+  static String? _getSeasonForDate(DateTime? date) {
+    if (date == null) return null;
+    final month = date.month;
     if (month >= 6 && month <= 8) return 'sommar'; // Jun-Aug
     if (month >= 9 && month <= 11) return 'höst'; // Sep-Nov
     if (month >= 12 || month <= 2) return 'vinter'; // Dec-Feb

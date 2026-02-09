@@ -11,6 +11,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
+import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -24,19 +25,20 @@ class RecipePersonalTagHandler {
   /// Shows quick personal tag selector for a recipe.
   ///
   /// Opens a bottom sheet with available tags for quick selection/deselection.
+  /// Works with tag IDs internally, produces both personalTagIds and personalTags.
   static Future<void> showQuickTagSelector(BuildContext context) async {
     if (!context.mounted) return;
 
     final viewModel = context.read<RecipeDetailViewModel>();
     final recipe = viewModel.recipe;
-    final currentTags = recipe.core.personalTagIds ?? [];
+    final currentTagIds = recipe.core.personalTagIds ?? [];
 
     final result = await showModalBottomSheet<List<String>>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       builder: (context) => _PersonalTagQuickSelector(
-        selectedTagNames: currentTags,
+        selectedTagIds: currentTagIds,
       ),
     );
 
@@ -46,18 +48,35 @@ class RecipePersonalTagHandler {
   }
 
   /// Saves the updated personal tags to the recipe.
+  ///
+  /// [newTagIds] contains tag UUIDs from the quick selector.
+  /// Builds both personalTagIds (flat ID array) and personalTags (rich objects).
   static Future<void> _savePersonalTags(
     BuildContext context,
     RecipeDetailViewModel viewModel,
     Recipe recipe,
-    List<String> newTags,
+    List<String> newTagIds,
   ) async {
     try {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+      final tagVm = ServiceLocator.get<PersonalTagViewModel>();
 
-      // Update recipe with new personal tags
+      // Build rich personalTags from selected IDs
+      List<RecipePersonalTag>? newPersonalTags;
+      if (newTagIds.isNotEmpty) {
+        newPersonalTags = newTagIds.map((id) {
+          final tag = tagVm.getTagById(id);
+          return RecipePersonalTag.manual(
+            tagId: id,
+            name: tag?.name ?? id,
+          );
+        }).toList();
+      }
+
+      // Update recipe with both fields
       final updatedCore = recipe.core.copyWith(
-        personalTagIds: newTags.isEmpty ? null : newTags,
+        personalTagIds: newTagIds.isEmpty ? null : newTagIds,
+        personalTags: newPersonalTags,
       );
 
       final updatedRecipe = Recipe(
@@ -75,7 +94,7 @@ class RecipePersonalTagHandler {
       viewModel.updateRecipe(updatedRecipe);
 
       if (context.mounted) {
-        final tagCount = newTags.length;
+        final tagCount = newTagIds.length;
         SnackBarUtils.showSuccess(
           context,
           tagCount == 0
@@ -93,10 +112,10 @@ class RecipePersonalTagHandler {
 
 /// Bottom sheet for quick personal tag selection.
 class _PersonalTagQuickSelector extends StatefulWidget {
-  final List<String> selectedTagNames;
+  final List<String> selectedTagIds;
 
   const _PersonalTagQuickSelector({
-    required this.selectedTagNames,
+    required this.selectedTagIds,
   });
 
   @override
@@ -106,41 +125,33 @@ class _PersonalTagQuickSelector extends StatefulWidget {
 
 class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
   late PersonalTagViewModel _viewModel;
-  late List<String> _selectedTags;
+  late List<String> _selectedTagIds;
   bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
-    _selectedTags = List.from(widget.selectedTagNames);
-    _viewModel = PersonalTagViewModel();
-    _viewModel.initialize().then((_) {
-      if (mounted) setState(() => _initialized = true);
-    });
-  }
-
-  @override
-  void dispose() {
-    _viewModel.dispose();
-    super.dispose();
+    _selectedTagIds = List.from(widget.selectedTagIds);
+    _viewModel = ServiceLocator.get<PersonalTagViewModel>();
+    _initialized = true;
   }
 
   void _toggleTag(PersonalTag tag) {
     setState(() {
-      if (_selectedTags.contains(tag.name)) {
-        _selectedTags.remove(tag.name);
+      if (_selectedTagIds.contains(tag.id)) {
+        _selectedTagIds.remove(tag.id);
       } else {
-        _selectedTags.add(tag.name);
+        _selectedTagIds.add(tag.id);
       }
     });
   }
 
   bool _isTagSelected(PersonalTag tag) {
-    return _selectedTags.contains(tag.name);
+    return _selectedTagIds.contains(tag.id);
   }
 
   void _save() {
-    Navigator.of(context).pop(_selectedTags);
+    Navigator.of(context).pop(_selectedTagIds);
   }
 
   void _cancel() {
@@ -180,7 +191,8 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                 height: 4,
                 decoration: BoxDecoration(
                   color: colorScheme.onSurfaceVariant,
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadius2),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadius2),
                 ),
               ),
               // Header
@@ -243,7 +255,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
       padding: const EdgeInsets.all(AppDimensions.spacingLg),
       children: [
         // Selected count
-        if (_selectedTags.isNotEmpty) ...[
+        if (_selectedTagIds.isNotEmpty) ...[
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingMd,
@@ -261,14 +273,14 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
-                  '${_selectedTags.length} tagg${_selectedTags.length == 1 ? '' : 'ar'} vald${_selectedTags.length == 1 ? '' : 'a'}',
+                  '${_selectedTagIds.length} tagg${_selectedTagIds.length == 1 ? '' : 'ar'} vald${_selectedTagIds.length == 1 ? '' : 'a'}',
                   style: AppTextStyles.text14Medium.copyWith(
                     color: colorScheme.onPrimaryContainer,
                   ),
                 ),
                 const Spacer(),
                 TextButton(
-                  onPressed: () => setState(() => _selectedTags.clear()),
+                  onPressed: () => setState(() => _selectedTagIds.clear()),
                   style: TextButton.styleFrom(
                     foregroundColor: colorScheme.onPrimaryContainer,
                   ),
@@ -362,31 +374,40 @@ class _QuickTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FilterChip(
-      label: Text(tag.name),
-      avatar: isSelected
-          ? null
-          : const CircleAvatar(
-              radius: 6,
-              backgroundColor: AppColors.primaryBlue,
-            ),
+    return Semantics(
+      label: isSelected
+          ? '${tag.name}, vald. Dubbeltryck för att ta bort.'
+          : '${tag.name}. Dubbeltryck för att välja.',
       selected: isSelected,
-      onSelected: (_) => onTap(),
-      backgroundColor: AppColors.backgroundBeige,
-      selectedColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightMedium),
-      checkmarkColor: AppColors.primaryBlue,
-      side: BorderSide(
-        color: isSelected ? AppColors.primaryBlue : AppColors.divider,
-        width: isSelected ? 2 : 1,
-      ),
-      labelStyle: (isSelected ? AppTextStyles.bodyBold : AppTextStyles.bodyMedium)
-          .copyWith(
-        color: isSelected ? AppColors.primaryBlue : AppColors.textDark,
-      ),
-      showCheckmark: isSelected,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingSm,
-        vertical: AppDimensions.spacingXs,
+      button: true,
+      child: FilterChip(
+        label: Text(tag.name),
+        avatar: isSelected
+            ? null
+            : const CircleAvatar(
+                radius: 6,
+                backgroundColor: AppColors.primaryBlue,
+              ),
+        selected: isSelected,
+        onSelected: (_) => onTap(),
+        backgroundColor: AppColors.backgroundBeige,
+        selectedColor: AppColors.primaryBlue
+            .withValues(alpha: AppDimensions.opacityLightMedium),
+        checkmarkColor: AppColors.primaryBlue,
+        side: BorderSide(
+          color: isSelected ? AppColors.primaryBlue : AppColors.divider,
+          width: isSelected ? 2 : 1,
+        ),
+        labelStyle:
+            (isSelected ? AppTextStyles.bodyBold : AppTextStyles.bodyMedium)
+                .copyWith(
+          color: isSelected ? AppColors.primaryBlue : AppColors.textDark,
+        ),
+        showCheckmark: isSelected,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingSm,
+          vertical: AppDimensions.spacingXs,
+        ),
       ),
     );
   }

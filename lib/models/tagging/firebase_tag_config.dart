@@ -115,7 +115,7 @@ abstract class BaseConfigDocument {
 /// Allergen configuration document from Firebase.
 class AllergenConfigDocument extends BaseConfigDocument {
   final List<String> displayOrder;
-  final List<AllergenEntry> entries;
+  final List<FirebaseAllergenEntry> entries;
 
   const AllergenConfigDocument({
     required super.schemaVersion,
@@ -141,16 +141,16 @@ class AllergenConfigDocument extends BaseConfigDocument {
     );
   }
 
-  static List<AllergenEntry> _parseAllergenEntries(dynamic value) {
+  static List<FirebaseAllergenEntry> _parseAllergenEntries(dynamic value) {
     if (value == null || value is! List) return [];
     return value
         .whereType<Map<String, dynamic>>()
-        .map(AllergenEntry.fromMap)
+        .map(FirebaseAllergenEntry.fromMap)
         .toList();
   }
 
   /// Gets an allergen by key.
-  AllergenEntry? getByKey(String key) {
+  FirebaseAllergenEntry? getByKey(String key) {
     try {
       return entries.firstWhere((e) => e.key == key);
     } catch (_) {
@@ -159,27 +159,27 @@ class AllergenConfigDocument extends BaseConfigDocument {
   }
 
   /// Gets enabled allergens in display order.
-  List<AllergenEntry> get enabledEntries => displayOrder
+  List<FirebaseAllergenEntry> get enabledEntries => displayOrder
       .map((key) => getByKey(key))
-      .whereType<AllergenEntry>()
+      .whereType<FirebaseAllergenEntry>()
       .where((e) => e.enabled)
       .toList();
 
   /// Gets all single-property allergens (not combined).
-  List<AllergenEntry> get simpleAllergens =>
+  List<FirebaseAllergenEntry> get simpleAllergens =>
       enabledEntries.where((e) => !e.isCombined).toList();
 
   /// Gets all combined allergens (multiple trigger properties).
-  List<AllergenEntry> get combinedAllergens =>
+  List<FirebaseAllergenEntry> get combinedAllergens =>
       enabledEntries.where((e) => e.isCombined).toList();
 
   /// Gets all EU allergens.
-  List<AllergenEntry> get euAllergens =>
+  List<FirebaseAllergenEntry> get euAllergens =>
       enabledEntries.where((e) => e.isEuAllergen).toList();
 }
 
 /// Single allergen entry from Firebase config.
-class AllergenEntry {
+class FirebaseAllergenEntry {
   final String key;
   final List<String> triggerProperties;
   final Map<String, AllergenTags> tags;
@@ -189,7 +189,7 @@ class AllergenEntry {
   final bool enabled;
   final int priority;
 
-  const AllergenEntry({
+  const FirebaseAllergenEntry({
     required this.key,
     required this.triggerProperties,
     required this.tags,
@@ -200,8 +200,8 @@ class AllergenEntry {
     required this.priority,
   });
 
-  factory AllergenEntry.fromMap(Map<String, dynamic> data) {
-    return AllergenEntry(
+  factory FirebaseAllergenEntry.fromMap(Map<String, dynamic> data) {
+    return FirebaseAllergenEntry(
       key: SerializationUtils.safeString(data, 'key'),
       triggerProperties:
           SerializationUtils.safeStringList(data, 'triggerProperties'),
@@ -263,7 +263,7 @@ class AllergenTags {
 /// Dietary configuration document from Firebase.
 class DietaryConfigDocument extends BaseConfigDocument {
   final List<String> displayOrder;
-  final List<DietaryEntry> entries;
+  final List<FirebaseDietaryEntry> entries;
 
   const DietaryConfigDocument({
     required super.schemaVersion,
@@ -289,16 +289,16 @@ class DietaryConfigDocument extends BaseConfigDocument {
     );
   }
 
-  static List<DietaryEntry> _parseDietaryEntries(dynamic value) {
+  static List<FirebaseDietaryEntry> _parseDietaryEntries(dynamic value) {
     if (value == null || value is! List) return [];
     return value
         .whereType<Map<String, dynamic>>()
-        .map(DietaryEntry.fromMap)
+        .map(FirebaseDietaryEntry.fromMap)
         .toList();
   }
 
   /// Gets a dietary entry by key.
-  DietaryEntry? getByKey(String key) {
+  FirebaseDietaryEntry? getByKey(String key) {
     try {
       return entries.firstWhere((e) => e.key == key);
     } catch (_) {
@@ -307,15 +307,15 @@ class DietaryConfigDocument extends BaseConfigDocument {
   }
 
   /// Gets enabled dietary entries in display order.
-  List<DietaryEntry> get enabledEntries => displayOrder
+  List<FirebaseDietaryEntry> get enabledEntries => displayOrder
       .map((key) => getByKey(key))
-      .whereType<DietaryEntry>()
+      .whereType<FirebaseDietaryEntry>()
       .where((e) => e.enabled)
       .toList();
 }
 
 /// Single dietary entry from Firebase config.
-class DietaryEntry {
+class FirebaseDietaryEntry {
   final String key;
   final Map<String, String> tags;
   final List<String> excludedProperties;
@@ -325,7 +325,7 @@ class DietaryEntry {
   final bool enabled;
   final int priority;
 
-  const DietaryEntry({
+  const FirebaseDietaryEntry({
     required this.key,
     required this.tags,
     required this.excludedProperties,
@@ -336,8 +336,8 @@ class DietaryEntry {
     required this.priority,
   });
 
-  factory DietaryEntry.fromMap(Map<String, dynamic> data) {
-    return DietaryEntry(
+  factory FirebaseDietaryEntry.fromMap(Map<String, dynamic> data) {
+    return FirebaseDietaryEntry(
       key: SerializationUtils.safeString(data, 'key'),
       tags: _parseStringMap(data['tags']),
       excludedProperties:

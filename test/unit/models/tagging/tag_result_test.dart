@@ -63,12 +63,12 @@ void main() {
         // M15: Tags are sorted alphabetically before storage
         expect(map['tags'], ['gryta', 'kyckling']);
         expect(map['allergenStatus'], {
-          'gluten': 'FREE',
-          'mjölk': 'CONTAINS',
+          'gluten': 'free',
+          'mjölk': 'contains',
         });
         expect(map['dietaryStatus'], {
-          'vegetarisk': 'CONTAINS',
-          'vegansk': 'CONTAINS',
+          'vegetarisk': 'contains',
+          'vegansk': 'contains',
         });
         expect(map['coverage'], 1.0);
         expect(map['unknownIngredients'], []);

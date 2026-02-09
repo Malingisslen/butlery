@@ -11,9 +11,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
+import 'package:butlery/services/tagging/config/operator_registry.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -25,10 +27,9 @@ class TagDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => PersonalTagViewModel()
-        ..initialize()
-        ..selectTag(tagId),
+    final vm = ServiceLocator.get<PersonalTagViewModel>()..selectTag(tagId);
+    return ChangeNotifierProvider<PersonalTagViewModel>.value(
+      value: vm,
       child: _TagDetailViewContent(tagId: tagId),
     );
   }
@@ -1073,32 +1074,9 @@ class _ConditionCardState extends State<_ConditionCard> {
     super.dispose();
   }
 
-  List<ConditionOperator> _getOperatorsForType(ConditionType type) {
-    if (type.isNumeric) {
-      return [
-        ConditionOperator.lessThan,
-        ConditionOperator.lessThanOrEqual,
-        ConditionOperator.greaterThan,
-        ConditionOperator.greaterThanOrEqual,
-        ConditionOperator.equals,
-        if (type == ConditionType.recency) ConditionOperator.withinDays,
-      ];
-    }
-    if (type == ConditionType.property) {
-      return [ConditionOperator.has, ConditionOperator.notHas];
-    }
-    return [
-      ConditionOperator.contains,
-      ConditionOperator.equals,
-      ConditionOperator.startsWith,
-      ConditionOperator.notContains,
-      ConditionOperator.notEquals,
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
-    final operators = _getOperatorsForType(widget.condition.type);
+    final operators = OperatorRegistry.getValidOperators(widget.condition.type);
 
     return Card(
       child: Padding(
@@ -1129,7 +1107,8 @@ class _ConditionCardState extends State<_ConditionCard> {
                       if (value != null) {
                         widget.onTypeChanged(value);
                         // Reset operator if current one is invalid for new type
-                        final newOperators = _getOperatorsForType(value);
+                        final newOperators =
+                            OperatorRegistry.getValidOperators(value);
                         if (!newOperators.contains(widget.condition.operator)) {
                           widget.onOperatorChanged(newOperators.first);
                         }

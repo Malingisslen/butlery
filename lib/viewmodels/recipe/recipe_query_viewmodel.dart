@@ -89,8 +89,8 @@ class RecipeQueryViewModel extends ChangeNotifier
               ingredient.toLowerCase().contains(lowercaseQuery)) ||
           recipe.instructions.any((instruction) =>
               instruction.toLowerCase().contains(lowercaseQuery)) ||
-          (recipe.personalTagIds
-                  ?.any((tag) => tag.toLowerCase().contains(lowercaseQuery)))
+          (recipe.core.personalTags
+                  ?.any((t) => t.name.toLowerCase().contains(lowercaseQuery)))
               .orFalse();
     }).toList();
   }
@@ -172,6 +172,7 @@ class RecipeQueryViewModel extends ChangeNotifier
     notifyListeners();
   }
 
+  @Deprecated('Use RecipeListViewModel.togglePersonalTagFilter instead')
   void setTagFilter(String? tag) {
     _selectedTag = tag;
     _invalidateCache();
@@ -319,9 +320,9 @@ class RecipeQueryViewModel extends ChangeNotifier
     final Map<String, List<Recipe>> grouped = {};
 
     for (final recipe in filteredRecipes) {
-      if (recipe.personalTagIds != null) {
-        for (final tag in recipe.personalTagIds!) {
-          grouped.putIfAbsent(tag, () => []).add(recipe);
+      if (recipe.core.personalTags != null) {
+        for (final pt in recipe.core.personalTags!) {
+          grouped.putIfAbsent(pt.name, () => []).add(recipe);
         }
       }
     }
@@ -359,8 +360,8 @@ class RecipeQueryViewModel extends ChangeNotifier
   List<String> get usedTags {
     final allTags = <String>{};
     for (final recipe in allRecipes) {
-      if (recipe.personalTagIds != null) {
-        allTags.addAll(recipe.personalTagIds!);
+      if (recipe.core.personalTags != null) {
+        allTags.addAll(recipe.core.personalTags!.map((t) => t.name));
       }
     }
     final tagsList = allTags.toList();
@@ -408,9 +409,9 @@ class RecipeQueryViewModel extends ChangeNotifier
     final tagCounts = <String, int>{};
 
     for (final recipe in allRecipes) {
-      if (recipe.personalTagIds != null) {
-        for (final tag in recipe.personalTagIds!) {
-          tagCounts[tag] = (tagCounts[tag]).orZero() + 1;
+      if (recipe.core.personalTags != null) {
+        for (final pt in recipe.core.personalTags!) {
+          tagCounts[pt.name] = (tagCounts[pt.name]).orZero() + 1;
         }
       }
     }

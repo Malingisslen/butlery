@@ -28,6 +28,12 @@ class TagEditingService extends BaseService {
     required String editedBy,
     bool userConfirmed = false,
   }) {
+    if (recipe.tagResult == null) {
+      return TagEditResult.error(
+        'Recipe has no tag analysis — run auto-tagging first',
+      );
+    }
+
     final autoStatus = recipe.tagResult?.allergenStatus[allergenKey];
 
     // Safety check: removing CONTAINS status requires confirmation
@@ -68,6 +74,12 @@ class TagEditingService extends BaseService {
     required TriState newStatus,
     required String editedBy,
   }) {
+    if (recipe.tagResult == null) {
+      return TagEditResult.error(
+        'Recipe has no tag analysis — run auto-tagging first',
+      );
+    }
+
     final currentOverrides = recipe.tagOverrides ?? const TagOverrides();
     final updatedOverrides = currentOverrides.withDietaryOverride(
       dietaryKey,

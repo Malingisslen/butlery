@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/tagging/config/operator_registry.dart';
 import 'package:butlery/services/tagging/config/property_registry.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
@@ -54,11 +56,7 @@ class PersonalTagRuleDialog extends StatefulWidget {
     PersonalTagRule? existingRule,
     String? preselectedTagId,
   }) async {
-    // Load tags first
-    final viewModel = PersonalTagViewModel();
-    await viewModel.initialize();
-    final tags = viewModel.tags;
-    viewModel.dispose();
+    final tags = ServiceLocator.get<PersonalTagViewModel>().tags;
 
     if (!context.mounted) return null;
 
@@ -82,11 +80,7 @@ class PersonalTagRuleDialog extends StatefulWidget {
     String? preselectedTagId,
     required List<Recipe> recipesForPreview,
   }) async {
-    // Load tags first
-    final viewModel = PersonalTagViewModel();
-    await viewModel.initialize();
-    final tags = viewModel.tags;
-    viewModel.dispose();
+    final tags = ServiceLocator.get<PersonalTagViewModel>().tags;
 
     if (!context.mounted) return null;
 
@@ -176,11 +170,20 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
     String? value,
   }) {
     setState(() {
-      _conditions[index] = _conditions[index].copyWith(
+      var updated = _conditions[index].copyWith(
         type: type,
         operator: operator,
         value: value,
       );
+      // Reset operator if invalid for new type
+      if (type != null &&
+          !OperatorRegistry.isValidCombination(
+              updated.type, updated.operator)) {
+        updated = updated.copyWith(
+          operator: OperatorRegistry.getValidOperators(updated.type).first,
+        );
+      }
+      _conditions[index] = updated;
     });
   }
 
@@ -268,7 +271,9 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: AppDimensions.dialogMaxWidthMedium, maxHeight: AppDimensions.dialogMaxHeightLarge),
+        constraints: const BoxConstraints(
+            maxWidth: AppDimensions.dialogMaxWidthMedium,
+            maxHeight: AppDimensions.dialogMaxHeightLarge),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Form(
@@ -362,7 +367,8 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           value: tag.id,
           child: Row(
             children: [
-              const Icon(Icons.label, size: AppDimensions.iconSizeS, color: AppColors.primaryBlue),
+              const Icon(Icons.label,
+                  size: AppDimensions.iconSizeS, color: AppColors.primaryBlue),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(tag.name),
             ],
@@ -500,13 +506,17 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
+        border: Border.all(
+            color: AppColors.error
+                .withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.error, size: AppDimensions.iconSizeM),
+          const Icon(Icons.error_outline,
+              color: AppColors.error, size: AppDimensions.iconSizeM),
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
@@ -600,28 +610,10 @@ class _ConditionRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingSm),
-              // Operator dropdown
+              // Operator dropdown (filtered by condition type)
               Expanded(
                 flex: 2,
-                child: DropdownButtonFormField<ConditionOperator>(
-                  initialValue: condition.operator,
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: AppDimensions.paddingSymmetric12x8,
-                    border: OutlineInputBorder(),
-                  ),
-                  items: ConditionOperator.values.map((op) {
-                    return DropdownMenuItem(
-                      value: op,
-                      child: Text(op.label, style: AppTextStyles.text14),
-                    );
-                  }).toList(),
-                  onChanged: enabled
-                      ? (value) {
-                          if (value != null) onOperatorChanged(value);
-                        }
-                      : null,
-                ),
+                child: _buildOperatorDropdown(),
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               // Delete button
@@ -655,6 +647,33 @@ class _ConditionRow extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildOperatorDropdown() {
+    final validOperators = OperatorRegistry.getValidOperators(condition.type);
+    final currentOperator = validOperators.contains(condition.operator)
+        ? condition.operator
+        : validOperators.first;
+
+    return DropdownButtonFormField<ConditionOperator>(
+      initialValue: currentOperator,
+      decoration: const InputDecoration(
+        isDense: true,
+        contentPadding: AppDimensions.paddingSymmetric12x8,
+        border: OutlineInputBorder(),
+      ),
+      items: validOperators.map((op) {
+        return DropdownMenuItem(
+          value: op,
+          child: Text(op.label, style: AppTextStyles.text14),
+        );
+      }).toList(),
+      onChanged: enabled
+          ? (value) {
+              if (value != null) onOperatorChanged(value);
+            }
+          : null,
     );
   }
 

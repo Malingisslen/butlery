@@ -210,7 +210,7 @@ class AllergenConfig {
       key: 'nötkött',
       triggerProperty: 'beef',
       containsTag: 'innehåller-nötkött',
-      freeTag: 'nötköttssfri',
+      freeTag: 'nötkötsfri',
       uiGroup: 'meat',
     ),
 

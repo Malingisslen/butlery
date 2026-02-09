@@ -144,7 +144,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             // ✅ RESPONSIVE: Loading overlay also constrained
             if (viewModel.isSaving)
               ColoredBox(
-                color: AppColors.backgroundBeige.withValues(alpha: AppDimensions.opacityVeryDark),
+                color: AppColors.backgroundBeige
+                    .withValues(alpha: AppDimensions.opacityVeryDark),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -181,7 +182,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           return AppBar(
             title: const Text('Redigera recept'),
             backgroundColor: isCollaborative
-                ? AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight)
+                ? AppColors.primaryBlue
+                    .withValues(alpha: AppDimensions.opacityVeryLight)
                 : null,
             actions: [
               if (isCollaborative)
@@ -403,7 +405,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       // Personal tags selector (select from predefined tags)
       // Users can create new tags via the "Hantera" button
       PersonalTagSelector(
-        selectedTagNames: viewModel.tags.where((t) => t.isNotEmpty).toList(),
+        selectedTagIds: viewModel.tags.where((t) => t.isNotEmpty).toList(),
         onChanged: viewModel.setPersonalTagNames,
         title: 'Personliga taggar',
         showManageButton: true,

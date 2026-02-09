@@ -41,7 +41,7 @@ class TagPhase3Complex {
     if (_isHighProtein(p1, recipe)) tags.add('proteinrik');
     if (_isHighFiber(p1)) tags.add('fiberrik');
     if (_isVeggieRich(p1)) tags.add('grönsaksrik');
-    if (p1.hasProperty('plant-based')) tags.add('kryddrik');
+    if (_isSpiceRich(p1)) tags.add('kryddrik');
 
     // Practical tags
     if (_isKidFriendly(p1, p2)) tags.add('barnvänlig');
@@ -246,6 +246,11 @@ class TagPhase3Complex {
   bool _isVeggieRich(Phase1Result p1) {
     final veggieCount = p1.lookup.getIngredientsInGroup('vegetable').length;
     return veggieCount >= 3;
+  }
+
+  bool _isSpiceRich(Phase1Result p1) {
+    final spiceCount = p1.lookup.getIngredientsInGroup('spice').length;
+    return spiceCount >= 3;
   }
 
   bool _isKidFriendly(Phase1Result p1, Phase2Result p2) {

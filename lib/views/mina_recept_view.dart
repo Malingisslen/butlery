@@ -70,9 +70,9 @@ class MinaReceptView extends StatelessWidget {
         // Offline functionality and synchronization service
         ChangeNotifierProvider.value(
             value: ServiceLocator.get<offline_service.OfflineService>()),
-        // Personal tags for filtering
-        ChangeNotifierProvider<PersonalTagViewModel>(
-          create: (_) => PersonalTagViewModel()..initialize(),
+        // Personal tags for filtering (singleton from DI)
+        ChangeNotifierProvider<PersonalTagViewModel>.value(
+          value: ServiceLocator.get<PersonalTagViewModel>(),
         ),
       ],
       child: const _MinaReceptViewContent(),
@@ -305,7 +305,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               // Personal tag filters
               personalTagIds: personalTagViewModel.tags,
               activePersonalTagFilters: viewModel.activePersonalTagFilters,
+              excludedPersonalTagFilters: viewModel.excludedPersonalTagFilters,
               onPersonalTagFilterToggle: viewModel.togglePersonalTagFilter,
+              onExcludedPersonalTagFilterToggle:
+                  viewModel.toggleExcludedPersonalTagFilter,
               onManagePersonalTags: () {
                 Navigator.push(
                   context,

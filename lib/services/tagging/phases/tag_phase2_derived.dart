@@ -1,4 +1,5 @@
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/tagging/config/tagging_thresholds.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 
 /// Phase 2: Simple derived tags that depend on Phase 1 results.
@@ -30,16 +31,17 @@ class TagPhase2Derived {
     //   claim. At very low coverage (e.g., 20%), one spicy ingredient out of
     //   few identified doesn't reliably indicate the dish is spicy overall.
     //
-    // MILD ('mild'): Only added at 100% coverage AND no spicy ingredients.
-    //   Rationale: Can only claim "mild" when we've verified ALL ingredients.
-    //   A recipe with partial coverage should NOT claim to be mild - unknowns
-    //   might be spicy.
+    // MILD ('mild'): Added at 80%+ coverage AND no spicy ingredients.
+    //   At high coverage with no detected spicy ingredients, it's reasonable
+    //   to label as mild. Using 80% avoids making the tag unreachable while
+    //   still requiring strong evidence.
     //
     // At low coverage (<50%): No spicy/mild tag added - insufficient information.
     if (phase1.hasProperty('is-spicy') &&
         phase1.lookup.coverage >= _minCoverageForSpicy) {
       tags.add('stark');
-    } else if (phase1.lookup.hasFullCoverage) {
+    } else if (phase1.lookup.coverage >=
+        TaggingThresholds.mildCoverageThreshold) {
       tags.add('mild');
     }
 

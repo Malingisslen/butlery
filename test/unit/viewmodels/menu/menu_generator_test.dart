@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/mocks/service_mocks.dart';
@@ -16,6 +17,7 @@ void main() {
   late MenuGenerator menuGenerator;
   late MockMenuService mockMenuService;
   late MockUnifiedRecipeService mockRecipeService;
+  late MockUserService mockUserService;
 
   setUpAll(() async {
     await TestServiceLocator.initialize();
@@ -24,10 +26,20 @@ void main() {
   setUp(() async {
     mockMenuService = MockMenuService();
     mockRecipeService = MockUnifiedRecipeService();
+    mockUserService = MockUserService();
+
+    // Default: no tracked allergens = no filtering
+    when(() => mockUserService.allergenPreferences).thenReturn(
+      const UserAllergenPreferences(
+        trackedAllergens: {},
+        trackedDietary: {},
+      ),
+    );
 
     menuGenerator = MenuGenerator(
       menuService: mockMenuService,
       recipeService: mockRecipeService,
+      userService: mockUserService,
     );
 
     // Default setup: service initialized with some recipes

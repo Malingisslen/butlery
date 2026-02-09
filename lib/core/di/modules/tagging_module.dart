@@ -26,6 +26,8 @@ import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
+import 'package:butlery/services/tagging/tag_editing_service.dart';
+import 'package:butlery/services/tagging/tag_resolution_service.dart';
 
 // Re-export RetaggingScheduler for app-level integration
 // Note: RetaggingScheduler requires callback functions for recipes,
@@ -60,6 +62,8 @@ class TaggingModule implements DIModule {
         FirebasePersonalTagRepository,
         FirebasePersonalTagGroupRepository,
         PersonalTagService,
+        TagEditingService,
+        TagResolutionService,
       ];
 
   @override
@@ -116,12 +120,23 @@ class TaggingModule implements DIModule {
         ),
       );
 
+      // Tag editing service for user-driven tag overrides
+      container.registerLazySingleton<TagEditingService>(
+        () => TagEditingService(),
+      );
+
       // Personal tag service for tag management and rule evaluation
       container.registerLazySingleton<PersonalTagService>(
         () => PersonalTagService(
           tagRepository: container<FirebasePersonalTagRepository>(),
           groupRepository: container<FirebasePersonalTagGroupRepository>(),
           lookupService: container<IngredientLookupService>(),
+        ),
+      );
+      // Tag resolution service - unified tag data for recipes
+      container.registerLazySingleton<TagResolutionService>(
+        () => TagResolutionService(
+          tagEditingService: container<TagEditingService>(),
         ),
       );
     } catch (e) {
@@ -176,6 +191,8 @@ class TaggingModule implements DIModule {
         'FirebasePersonalTagGroupRepository':
             container<FirebasePersonalTagGroupRepository>(),
         'PersonalTagService': container<PersonalTagService>(),
+        'TagEditingService': container<TagEditingService>(),
+        'TagResolutionService': container<TagResolutionService>(),
       };
 
       for (final entry in services.entries) {

@@ -1,10 +1,9 @@
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
-import 'package:butlery/services/tagging/tagging_events_tracker.dart';
+import 'package:butlery/services/tagging/config/compound_suffixes.dart';
 import 'package:butlery/utils/text/ingredient_normalizer.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/swedish_character_normalizer.dart';
@@ -28,95 +27,11 @@ class IngredientLookupService extends BaseService {
   /// Null values are cached to avoid repeated failed lookups.
   static const int _cacheMaxSize = 500;
 
-  /// HIGH-11: Swedish compound word suffixes for space-insertion matching.
-  /// TODO: Move to Firebase config (tagging_config/compound_suffixes) for
-  /// dynamic updates without app release.
-  static const List<String> _compoundSuffixes = [
-    'bröst',
-    'filé',
-    'kött',
-    'fläsk',
-    'skinka',
-    'korv',
-    'färs',
-    'mjölk',
-    'grädde',
-    'ost',
-    'smör',
-    'olja',
-    'sås',
-    'soppa',
-    'bröd',
-    'pasta',
-    'ris',
-    'potatis',
-    'lök',
-    'vitlök',
-  ];
-
-  /// HIGH-11: Swedish compound word endings for base extraction.
-  /// Comprehensive list synced with IngredientNormalizer patterns.
-  /// TODO: Move to Firebase config for dynamic updates.
-  static const List<String> _compoundEndings = [
-    // Primary meat/protein suffixes
-    'sås',
-    'filé',
-    'kött',
-    'fläsk',
-    'skinka',
-    'korv',
-    'bröst',
-    'lår',
-    'ben',
-    'bog',
-    'rygg',
-    'färs',
-    'lever',
-    'njure',
-    'kotlett',
-    'kotletter',
-    'stek',
-    // Dairy and fats
-    'mjölk',
-    'grädde',
-    'smör',
-    'ost',
-    'olja',
-    'fett',
-    // Prepared foods and sauces
-    'soppa',
-    'bullar',
-    'bröd',
-    'kakor',
-    'pasta',
-    'puré',
-    'passata',
-    'buljong',
-    'fond',
-    // Vegetables
-    'lök',
-    'kål',
-    'rot',
-    'blad',
-    'stjälk',
-    'stjälkar',
-    // Preparation/cuts
-    'klyftor',
-    'klyft',
-    'skivor',
-    'skiva',
-    'bitar',
-    'bit',
-    'tärningar',
-    // Other common
-    'ris',
-    'mjöl',
-  ];
+  // HIGH-11: Compound suffix lists moved to CompoundSuffixes shared config
 
   /// CRIT-3: Cache version incremented on clear to detect stale operations.
   int _cacheVersion = 0;
   final Map<String, IngredientData?> _lookupCache = {};
-  final List<String> _lruOrder = []; // CRIT-4: Tracks access order for LRU
 
   IngredientLookupService({
     required IngredientRepository ingredientRepository,
@@ -132,7 +47,6 @@ class IngredientLookupService extends BaseService {
   void clearLookupCache() {
     _cacheVersion++; // CRIT-3: Invalidate in-flight lookups
     _lookupCache.clear();
-    _lruOrder.clear(); // CRIT-4: Also clear LRU order
     AppLogger.debug(
         'M3: Ingredient lookup cache cleared (version=$_cacheVersion)');
   }
@@ -217,11 +131,10 @@ class IngredientLookupService extends BaseService {
 
     // M3: Check cache first (null means "not found" was cached)
     if (_lookupCache.containsKey(cacheKey)) {
-      // CRIT-3: Defensive - verify key still exists after LRU update
-      _lruOrder.remove(cacheKey);
-      _lruOrder.add(cacheKey);
-      // Return cached value (may be null for "not found")
-      return _lookupCache[cacheKey];
+      // Move to end of insertion order for LRU (O(1) amortized)
+      final value = _lookupCache.remove(cacheKey);
+      _lookupCache[cacheKey] = value;
+      return value;
     }
 
     // CRIT-3: Capture cache version before async operation
@@ -282,64 +195,17 @@ class IngredientLookupService extends BaseService {
   /// M3/CRIT-4: Caches a lookup result with proper LRU eviction.
   ///
   /// CRIT-3: This method is synchronous and atomic within Dart's event loop.
-  /// Uses a separate list to track access order for true LRU behavior.
+  /// Uses LinkedHashMap insertion order for LRU tracking (no separate list).
   void _cacheResult(String key, IngredientData? result) {
-    // CRIT-4: If key already exists, remove from LRU order (will be re-added)
-    if (_lookupCache.containsKey(key)) {
-      _lruOrder.remove(key);
+    // Remove existing entry so re-insert moves it to end
+    _lookupCache.remove(key);
+
+    // Evict least-recently-used entries (first keys in insertion order)
+    while (_lookupCache.length >= _cacheMaxSize) {
+      _lookupCache.remove(_lookupCache.keys.first);
     }
 
-    // CRIT-4: Evict least-recently-used entries atomically
-    // CRIT-6: Check if key exists in cache before removing to handle edge cases
-    // where _lruOrder and _lookupCache could become desynchronized
-    while (_lookupCache.length >= _cacheMaxSize && _lruOrder.isNotEmpty) {
-      final lruKey = _lruOrder.removeAt(0); // Oldest = least recently used
-      if (_lookupCache.containsKey(lruKey)) {
-        _lookupCache.remove(lruKey);
-      }
-    }
-
-    // Add to cache and LRU order
     _lookupCache[key] = result;
-    _lruOrder.add(key);
-
-    // CRIT-3: Sanity check - cache and LRU list should stay in sync
-    assert(
-      _lookupCache.length == _lruOrder.length,
-      'CRIT-3: Cache/LRU desync: cache=${_lookupCache.length}, lru=${_lruOrder.length}',
-    );
-
-    // CRIT-3: Production validation - also check in release builds and auto-recover
-    if (_lookupCache.length != _lruOrder.length) {
-      AppLogger.error(
-        'CRIT-3: Cache/LRU desync detected: '
-            'cache=${_lookupCache.length}, lru=${_lruOrder.length}. '
-            'Auto-recovering by clearing cache.',
-        'IngredientLookupService',
-      );
-      _reportCacheDesync();
-      // CRIT-3: Auto-recover by clearing both to restore consistency
-      _lookupCache.clear();
-      _lruOrder.clear();
-      _cacheVersion++; // Invalidate any in-flight lookups
-      AppLogger.info(
-        'CRIT-3: Cache cleared and version incremented to $_cacheVersion',
-        'IngredientLookupService',
-      );
-    }
-  }
-
-  /// CRIT-3: Reports cache desync to analytics.
-  void _reportCacheDesync() {
-    try {
-      final tracker = ServiceLocator.get<TaggingEventsTracker>();
-      tracker.logCacheDesync(
-        cacheLength: _lookupCache.length,
-        lruLength: _lruOrder.length,
-      );
-    } catch (_) {
-      // Analytics not available
-    }
   }
 
   /// Cleans a normalized name for database lookup.
@@ -362,19 +228,19 @@ class IngredientLookupService extends BaseService {
   List<String> _generateLookupVariations(String name) {
     final variations = <String>[];
 
-    // M6: Add space-removed variation ("kyckling bröst" → "kycklingbröst")
+    // M6: Add space-removed variation ("kyckling brost" → "kycklingbrost")
     final noSpaces = name.replaceAll(' ', '');
     if (noSpaces != name && noSpaces.length > 2) {
       variations.add(noSpaces);
     }
 
     // M6: Add space-inserted variations for compound words
-    // HIGH-11: Use centralized compound suffixes list
+    // HIGH-11: Use centralized compound suffixes list (ASCII-normalized)
     // MED-6: Guard requires at least 3 chars before suffix (2 base + 1 for meaningful word)
     // Example: "ost" (3 chars) with suffix "ost" (3 chars) → 3 > 3+2 = false (no variation)
-    // Example: "smörgåsost" (10 chars) with suffix "ost" (3 chars) → 10 > 3+2 = true (creates "smörgås ost")
+    // Example: "smorgasost" (10 chars) with suffix "ost" (3 chars) → 10 > 3+2 = true (creates "smorgas ost")
     const minBaseLength = 2; // Minimum meaningful base word length
-    for (final suffix in _compoundSuffixes) {
+    for (final suffix in CompoundSuffixes.primarySuffixes) {
       if (name.endsWith(suffix) &&
           name.length > suffix.length + minBaseLength) {
         final base = name.substring(0, name.length - suffix.length);
@@ -413,10 +279,10 @@ class IngredientLookupService extends BaseService {
       variations.add(name.substring(0, name.length - 2));
     }
 
-    // Remove common adjectives
+    // Remove common adjectives (ASCII-normalized to match _cleanForLookup output)
     final adjectives = [
-      'färsk',
-      'färska',
+      'farsk',
+      'farska',
       'torkad',
       'torkade',
       'hackad',
@@ -429,18 +295,18 @@ class IngredientLookupService extends BaseService {
       'skivade',
       'mald',
       'malda',
-      'rökt',
-      'rökte',
+      'rokt',
+      'rokte',
       'stekt',
       'stekta',
       'kokt',
       'kokta',
-      'rå',
-      'råa',
-      'grön',
-      'gröna',
-      'röd',
-      'röda',
+      'ra',
+      'raa',
+      'gron',
+      'grona',
+      'rod',
+      'roda',
       'vit',
       'vita',
       'gul',
@@ -449,7 +315,7 @@ class IngredientLookupService extends BaseService {
       'stora',
       'liten',
       'lilla',
-      'små',
+      'sma',
     ];
 
     for (final adj in adjectives) {
@@ -467,7 +333,7 @@ class IngredientLookupService extends BaseService {
     // extracted base as a variation here, we can still match unknown compounds.
     // HIGH-11: Use centralized compound endings list
     if (name.length > 6) {
-      for (final ending in _compoundEndings) {
+      for (final ending in CompoundSuffixes.extendedEndings) {
         if (name.endsWith(ending) && name.length > ending.length + 2) {
           variations.add(name.substring(0, name.length - ending.length));
         }

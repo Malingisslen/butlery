@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
+import 'package:butlery/models/tagging/recipe_personal_tag.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/core/form/form_fields_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/contextual_error_handler.dart';
@@ -664,8 +667,28 @@ class RecipeFormState extends ChangeNotifier {
     final cleanInstructions = _instructionsManager.values
         .where((instruction) => instruction.trim().isNotEmpty)
         .toList();
-    final cleanTags =
+    final cleanTagIds =
         _tagsManager.values.where((tag) => tag.trim().isNotEmpty).toList();
+
+    // Build rich personalTags from IDs for dual-write
+    List<RecipePersonalTag>? personalTags;
+    if (cleanTagIds.isNotEmpty) {
+      try {
+        final tagVm = ServiceLocator.get<PersonalTagViewModel>();
+        personalTags = cleanTagIds.map((id) {
+          final tag = tagVm.getTagById(id);
+          return RecipePersonalTag.manual(
+            tagId: id,
+            name: tag?.name ?? id,
+          );
+        }).toList();
+      } catch (_) {
+        // Fallback: create with ID as name if VM unavailable
+        personalTags = cleanTagIds
+            .map((id) => RecipePersonalTag.manual(tagId: id, name: id))
+            .toList();
+      }
+    }
 
     return Recipe(
       core: RecipeCore(
@@ -678,7 +701,8 @@ class RecipeFormState extends ChangeNotifier {
         rating: _rating,
         ingredients: cleanIngredients,
         instructions: cleanInstructions,
-        personalTagIds: cleanTags,
+        personalTagIds: cleanTagIds,
+        personalTags: personalTags,
         imageUrls: imageUrls ?? _imageUrls,
         sourceUrl: _sourceUrl?.trim(),
         createdAt: (_originalRecipe?.createdAt).orNow(),

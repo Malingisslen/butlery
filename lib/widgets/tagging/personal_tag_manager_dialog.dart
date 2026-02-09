@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -15,6 +16,7 @@ import 'package:butlery/widgets/tagging/personal_tag_rule_dialog.dart';
 /// Two tabs:
 /// - Taggar: View, create, edit, delete personal tags
 /// - Regler: View, create, edit, delete automation rules
+@Deprecated('Use PersonalTagsView instead. Will be removed in next release.')
 class PersonalTagManagerDialog extends StatefulWidget {
   const PersonalTagManagerDialog({super.key});
 
@@ -22,8 +24,8 @@ class PersonalTagManagerDialog extends StatefulWidget {
   static Future<void> show(BuildContext context) {
     return showDialog(
       context: context,
-      builder: (context) => ChangeNotifierProvider(
-        create: (_) => PersonalTagViewModel()..initialize(),
+      builder: (context) => ChangeNotifierProvider<PersonalTagViewModel>.value(
+        value: ServiceLocator.get<PersonalTagViewModel>(),
         child: const PersonalTagManagerDialog(),
       ),
     );
@@ -193,7 +195,9 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
       ),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: AppDimensions.dialogMaxWidthMedium, maxHeight: AppDimensions.dialogMaxHeightMedium),
+        constraints: const BoxConstraints(
+            maxWidth: AppDimensions.dialogMaxWidthMedium,
+            maxHeight: AppDimensions.dialogMaxHeightMedium),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -305,7 +309,8 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           children: [
             Icon(
               Icons.label_outline,
-              color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityHalf),
+              color: AppColors.textMedium
+                  .withValues(alpha: AppDimensions.opacityHalf),
               size: AppDimensions.iconSizeXXXl,
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -360,11 +365,13 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
+          color: AppColors.primaryBlue
+              .withValues(alpha: AppDimensions.opacityLightSubtle),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
         child: const Center(
-          child: Icon(Icons.label, size: AppDimensions.iconSizeM, color: AppColors.primaryBlue),
+          child: Icon(Icons.label,
+              size: AppDimensions.iconSizeM, color: AppColors.primaryBlue),
         ),
       ),
       title: Row(
@@ -380,7 +387,8 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
               padding: AppDimensions.paddingSymmetric8x2,
               decoration: BoxDecoration(
                 color: AppColors.backgroundBeige,
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusL),
               ),
               child: Text(
                 '$usageCount recept',
@@ -528,7 +536,8 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           children: [
             Icon(
               Icons.auto_awesome_outlined,
-              color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityHalf),
+              color: AppColors.textMedium
+                  .withValues(alpha: AppDimensions.opacityHalf),
               size: AppDimensions.iconSizeXXXl,
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -567,7 +576,8 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           value: tag.id,
           child: Row(
             children: [
-              const Icon(Icons.label, size: AppDimensions.iconSizeXs, color: AppColors.primaryBlue),
+              const Icon(Icons.label,
+                  size: AppDimensions.iconSizeXs, color: AppColors.primaryBlue),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(tag.name),
             ],
@@ -607,13 +617,15 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
+                  color: AppColors.primaryBlue
+                      .withValues(alpha: AppDimensions.opacityLightSubtle),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: const Center(
-                  child:
-                      Icon(Icons.label, size: AppDimensions.iconSize14, color: AppColors.primaryBlue),
+                  child: Icon(Icons.label,
+                      size: AppDimensions.iconSize14,
+                      color: AppColors.primaryBlue),
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingS),
@@ -670,18 +682,21 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           Switch(
             value: rule.isEnabled,
             onChanged: (_) => viewModel.toggleRuleEnabled(tagId, rule.id),
-            activeTrackColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityHalf),
+            activeTrackColor: AppColors.primaryBlue
+                .withValues(alpha: AppDimensions.opacityHalf),
             activeThumbColor: AppColors.primaryBlue,
           ),
           IconButton(
-            icon: const Icon(Icons.edit_outlined, size: AppDimensions.iconSizeM),
+            icon:
+                const Icon(Icons.edit_outlined, size: AppDimensions.iconSizeM),
             color: AppColors.primaryBlue,
             onPressed: () => _editRule(tagId, rule),
             tooltip: 'Redigera',
             constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline, size: AppDimensions.iconSizeM),
+            icon:
+                const Icon(Icons.delete_outline, size: AppDimensions.iconSizeM),
             color: AppColors.error,
             onPressed: () => _deleteRule(tagId, rule),
             tooltip: 'Ta bort',
@@ -722,7 +737,8 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
                   padding: AppDimensions.paddingOnlyRight8,
                   child: OutlinedButton.icon(
                     onPressed: _applyRulesToRecipes,
-                    icon: const Icon(Icons.play_arrow, size: AppDimensions.iconSizeM),
+                    icon: const Icon(Icons.play_arrow,
+                        size: AppDimensions.iconSizeM),
                     label: const Text('Kör regler'),
                   ),
                 ),

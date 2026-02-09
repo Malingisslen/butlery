@@ -379,8 +379,16 @@ class IngredientProcessor {
     // If length mismatch, needs update
     if (ingredients.length != normalized.length) return true;
 
-    // Lengths match - assume already normalized
-    // (Could add deeper validation here if needed)
+    // Content check: re-normalize and compare to detect edits like
+    // "2 dl mjölk" -> "3 dl grädde" where count stays the same
+    final freshNormalized = normalizeIngredientsForRecipe(ingredients);
+    if (freshNormalized == null) return false;
+    for (int i = 0; i < normalized.length; i++) {
+      if (i >= freshNormalized.length || normalized[i] != freshNormalized[i]) {
+        return true;
+      }
+    }
+
     return false;
   }
 }

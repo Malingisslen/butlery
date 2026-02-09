@@ -55,4 +55,10 @@ class TaggingThresholds {
   /// Coverage threshold for "budgetvänlig" tag.
   /// At least 80% of ingredients with price data must NOT be 'premium'.
   static const double budgetvanligCoverage = 0.80;
+
+  /// Coverage threshold for "mild" tag.
+  /// At 80%+ coverage with no spicy ingredients, we can reasonably claim mild.
+  /// Lower than 100% to avoid making the tag effectively unreachable,
+  /// while still requiring strong evidence that no spicy ingredients exist.
+  static const double mildCoverageThreshold = 0.80;
 }

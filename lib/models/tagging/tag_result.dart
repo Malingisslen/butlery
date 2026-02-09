@@ -509,7 +509,11 @@ class TagResult {
   }
 
   /// HIGH-5: Valid TriState value strings for validation.
-  static const _validTriStateValues = {'FREE', 'CONTAINS', 'UNKNOWN'};
+  /// Accepts both lowercase (current) and uppercase (legacy) formats.
+  static const _validTriStateValues = {
+    'free', 'contains', 'unknown', // Current lowercase format
+    'FREE', 'CONTAINS', 'UNKNOWN', // Legacy uppercase format
+  };
 
   static Map<String, TriState> _parseTriStateMap(
     dynamic value, {

@@ -347,7 +347,7 @@ class TagConfigService extends BaseService {
     };
   }
 
-  Map<String, dynamic> _allergenEntryToMap(AllergenEntry entry) {
+  Map<String, dynamic> _allergenEntryToMap(FirebaseAllergenEntry entry) {
     return {
       'key': entry.key,
       'triggerProperties': entry.triggerProperties,
@@ -376,7 +376,7 @@ class TagConfigService extends BaseService {
     };
   }
 
-  Map<String, dynamic> _dietaryEntryToMap(DietaryEntry entry) {
+  Map<String, dynamic> _dietaryEntryToMap(FirebaseDietaryEntry entry) {
     return {
       'key': entry.key,
       'tags': entry.tags,

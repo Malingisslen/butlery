@@ -160,8 +160,8 @@ void main() {
             reason: 'kött should have köttfri tag for consistency');
         expect(flask.freeTag, equals('fläskfri'),
             reason: 'fläsk should have fläskfri tag');
-        expect(notkott.freeTag, equals('nötköttssfri'),
-            reason: 'nötkött should have nötköttssfri tag');
+        expect(notkott.freeTag, equals('nötkötsfri'),
+            reason: 'nötkött should have nötkötsfri tag');
       });
     });
   });

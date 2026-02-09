@@ -391,31 +391,26 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     );
   }
 
-  /// Counts recipes that have a specific personal tag.
-  ///
-  /// Uses Firestore's arrayContains query on core.personalTagIds field.
-  /// Returns 0 if user is not authenticated.
-  Future<int> countRecipesWithPersonalTag(String tagName) async {
+  @override
+  Future<int> countRecipesByTagId(String tagId) async {
     final userId = currentUserId;
     if (userId == null) return 0;
 
     try {
       final snap = await getCollectionForUser(userId)
-          .where('core.personalTagIds', arrayContains: tagName)
+          .where('core.personalTagIds', arrayContains: tagId)
           .count()
           .get();
       return snap.count ?? 0;
     } catch (e) {
-      AppLogger.warning('Failed to count recipes with tag "$tagName": $e');
+      AppLogger.warning('Failed to count recipes with tag "$tagId": $e');
       return 0;
     }
   }
 
-  /// Gets all recipes that have a specific personal tag.
-  ///
-  /// Returns up to [limit] recipes ordered by update date.
-  Future<List<Recipe>> getRecipesWithPersonalTag(
-    String tagName, {
+  @override
+  Future<List<Recipe>> fetchRecipesByTagId(
+    String tagId, {
     int limit = 100,
   }) async {
     final userId = currentUserId;
@@ -423,14 +418,129 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
     try {
       final snap = await getCollectionForUser(userId)
-          .where('core.personalTagIds', arrayContains: tagName)
+          .where('core.personalTagIds', arrayContains: tagId)
           .orderBy('core.updatedAt', descending: true)
           .limit(limit)
           .get();
       return snap.docs.map(fromFirestore).toList();
     } catch (e) {
-      AppLogger.warning('Failed to get recipes with tag "$tagName": $e');
+      AppLogger.warning('Failed to get recipes with tag "$tagId": $e');
       return [];
+    }
+  }
+
+  /// Renames a personal tag across all user recipes that contain it.
+  ///
+  /// Uses Firestore FieldValue.arrayRemove/arrayUnion for atomic per-document
+  /// updates the denormalized name in personalTags array.
+  /// personalTagIds (UUIDs) is unchanged since IDs don't change on rename.
+  /// Returns the number of recipes updated.
+  @override
+  Future<int> renamePersonalTagInRecipes(
+    String tagId,
+    String newName,
+  ) async {
+    if (tagId.isEmpty || newName.isEmpty) return 0;
+    final userId = currentUserId;
+    if (userId == null) return 0;
+
+    try {
+      final snap = await getCollectionForUser(userId)
+          .where('core.personalTagIds', arrayContains: tagId)
+          .get();
+
+      if (snap.docs.isEmpty) return 0;
+
+      // Read-modify-write for personalTags (array of maps)
+      const batchLimit = 500;
+      int updated = 0;
+
+      for (var i = 0; i < snap.docs.length; i += batchLimit) {
+        final batch = firestore.batch();
+        final chunk = snap.docs.skip(i).take(batchLimit);
+
+        for (final doc in chunk) {
+          final data = doc.data();
+          final coreData = data['core'] as Map<String, dynamic>? ?? {};
+          final personalTags = coreData['personalTags'] as List?;
+
+          if (personalTags != null) {
+            // Update the name field in the matching personalTags entry
+            final updatedTags = personalTags.map((entry) {
+              if (entry is Map && entry['tagId'] == tagId) {
+                return {...entry, 'name': newName};
+              }
+              return entry;
+            }).toList();
+
+            batch.update(doc.reference, {
+              'core.personalTags': updatedTags,
+            });
+          }
+        }
+
+        await batch.commit();
+        updated += chunk.length;
+      }
+
+      return updated;
+    } catch (e) {
+      AppLogger.warning('Failed to rename tag "$tagId" to "$newName": $e');
+      return 0;
+    }
+  }
+
+  /// Removes a personal tag from all user recipes that contain it.
+  ///
+  /// Removes from both personalTagIds (UUID array) and personalTags (rich objects).
+  /// Returns the number of recipes updated.
+  @override
+  Future<int> removePersonalTagFromRecipes(String tagId) async {
+    if (tagId.isEmpty) return 0;
+    final userId = currentUserId;
+    if (userId == null) return 0;
+
+    try {
+      final snap = await getCollectionForUser(userId)
+          .where('core.personalTagIds', arrayContains: tagId)
+          .get();
+
+      if (snap.docs.isEmpty) return 0;
+
+      const batchLimit = 500; // 1 op per doc (consolidated update)
+      int updated = 0;
+
+      for (var i = 0; i < snap.docs.length; i += batchLimit) {
+        final batch = firestore.batch();
+        final chunk = snap.docs.skip(i).take(batchLimit);
+
+        for (final doc in chunk) {
+          final data = doc.data();
+          final coreData = data['core'] as Map<String, dynamic>? ?? {};
+          final personalTags = coreData['personalTags'] as List?;
+
+          // Single update with both field changes
+          final updates = <String, dynamic>{
+            'core.personalTagIds': FieldValue.arrayRemove([tagId]),
+          };
+
+          if (personalTags != null) {
+            updates['core.personalTags'] = personalTags
+                .where((entry) => entry is Map && entry['tagId'] != tagId)
+                .toList();
+          }
+
+          batch.update(doc.reference, updates);
+        }
+
+        await batch.commit();
+        updated += chunk.length;
+      }
+
+      return updated;
+    } catch (e) {
+      AppLogger.warning('Failed to remove tag "$tagId" from recipes: $e');
+      return 0;
     }
   }
 
@@ -512,6 +622,36 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       collection: 'recipes',
       resultCount: null, // Will be set after query
     );
+  }
+
+  @override
+  Future<List<Recipe>> fetchAllUserRecipes(
+    String userId, {
+    int batchSize = 500,
+  }) async {
+    final allRecipes = <Recipe>[];
+    DocumentSnapshot? lastDoc;
+
+    while (true) {
+      var query = getCollectionForUser(userId)
+          .orderBy('core.updatedAt', descending: true)
+          .limit(batchSize);
+
+      if (lastDoc != null) {
+        query = query.startAfterDocument(lastDoc);
+      }
+
+      final snap = await query.get();
+      if (snap.docs.isEmpty) break;
+
+      allRecipes.addAll(snap.docs.map(fromFirestore));
+      lastDoc = snap.docs.last;
+
+      // If fewer docs than batch size, we've reached the end
+      if (snap.docs.length < batchSize) break;
+    }
+
+    return allRecipes;
   }
 
   /// Find recipes by meal type (e.g., 'Frukost', 'Lunch', 'Middag')

@@ -156,6 +156,8 @@ Output: TagResult {
 | AllergenConfig | `lib/services/tagging/config/allergen_config.dart` |
 | DietaryConfig | `lib/services/tagging/config/dietary_config.dart` |
 | CuisineConfig | `lib/services/tagging/config/cuisine_config.dart` |
+| CompoundSuffixes | `lib/services/tagging/config/compound_suffixes.dart` |
+| TaggingThresholds | `lib/services/tagging/config/tagging_thresholds.dart` |
 | TagResult | `lib/models/tagging/tag_result.dart` |
 | TriState | `lib/models/tagging/tri_state.dart` |
 | IngredientData | `lib/models/tagging/ingredient_data.dart` |
@@ -165,6 +167,8 @@ Output: TagResult {
 | PersonalTagRule | `lib/models/tagging/personal_tag_rule.dart` |
 | TaggingService | `lib/services/tagging/tagging_service.dart` |
 | TagEditingService | `lib/services/tagging/tag_editing_service.dart` |
+| TagResolutionService | `lib/services/tagging/tag_resolution_service.dart` |
+| PersonalTagService | `lib/services/tagging/personal_tag_service.dart` |
 | TagDisplayUtils | `lib/services/tagging/tag_display_utils.dart` |
 
 ---
@@ -832,31 +836,34 @@ other/
 
 ## Test Coverage
 
-### Unit Tests (252 tests)
+### Unit Tests (~416 in tagging directory)
 
 | File | Tests | Coverage |
 |------|-------|----------|
-| `tag_generator_test.dart` | 113 | All 4 phases, L1 trigger dedup |
-| `tag_result_test.dart` | 41 | Serialization, equality, helpers |
-| `ingredient_lookup_result_test.dart` | 37 | Group queries, TriState |
-| `ingredient_lookup_service_test.dart` | 57 | Cache, variations, L3/L4 fixes |
-| `ingredient_normalizer_test.dart` | 20 | Normalization, L2 color handling |
-| `tri_state_test.dart` | 28 | Combination logic |
-| `allergen_config_test.dart` | 13 | Config parsing |
-| `dietary_config_test.dart` | 15 | Dietary config |
-| `tagging_service_test.dart` | 15 | Service orchestration |
-| `timeout_handling_test.dart` | 16 | Phase timeout behavior |
-| `user_ingredient_merge_test.dart` | 10 | M2 user override priority |
+| `tag_generator_test.dart` | 141 | All 5 phases, sustainability, cuisine |
+| `tag_result_test.dart` | 49 | Serialization, equality, helpers, schema v2 |
+| `ingredient_lookup_service_test.dart` | 36 | LRU cache, variations, user merge |
+| `personal_tag_service_test.dart` | 36 | CRUD, rules, batch, exclusive groups, cascade |
+| `tag_editing_service_test.dart` | — | Override application, effective status |
+| `tag_resolution_service_test.dart` | — | Auto+override+personal resolution |
+| `tag_phase2_derived_test.dart` | — | Compound suffix handling |
+| `allergen_config_test.dart` | 13 | Config parsing, meat allergens |
+| `dietary_config_test.dart` | 16 | Dietary config, beef-free |
+| `tagging_service_test.dart` | — | Service orchestration |
+| `personal_tag_test.dart` | — | Model validation |
+| `personal_tag_rule_test.dart` | — | Rule conditions, match modes |
+| `personal_tag_group_test.dart` | — | Group model, exclusive mode |
 
-### Integration Tests (51 tests)
+### Integration Tests
 
 | File | Tests | Coverage |
 |------|-------|----------|
-| `tagging_integration_test.dart` | 9 | Save → tag → store → read |
-| `retagging_workflow_test.dart` | 13 | Version mismatch & retag |
-| `offline_tagging_sync_test.dart` | 11 | Offline queue & sync |
-| `batch_tagging_test.dart` | 7 | 100+ recipes |
-| `tagging_performance_test.dart` | 11 | < 500ms benchmarks |
+| `tagging_integration_test.dart` | — | Save → tag → store → read |
+| `retagging_workflow_test.dart` | — | Version mismatch & retag |
+| `offline_tagging_sync_test.dart` | — | Offline queue & sync |
+| `batch_tagging_test.dart` | — | 100+ recipes |
+| `tagging_performance_test.dart` | — | < 500ms benchmarks |
+| `import_tagging_integration_test.dart` | — | Import → tag verification |
 
 ---
 
@@ -1079,3 +1086,4 @@ class TagOverrides {
 | 2.4 | Dec 2025 | Tagging improvements: 5 new cuisines (22 total: etiopisk, marockansk, brasiliansk, peruansk, argentinsk), AIP dietary tag (aip-vänlig), nightshade property, TagOverrides for user manual corrections, ingredient suggestion queue (Cloud Function), Dart/TypeScript normalization parity tests |
 | 2.5 | Dec 2025 | Personal Tags system: PersonalTag model (user-defined tags with color/icon), PersonalTagRule model (rule-based auto-tagging with conditions), TagOverrides integration, batch apply rules to existing recipes, tag statistics, property dropdown in rule editor, 20 unit tests |
 | 3.0 | Jan 2026 | Personal Tags v3.0: Removed color/icon from PersonalTag, removed color from PersonalTagGroup, added isExclusive to PersonalTagGroup for radio/checkbox mode, embedded rules in PersonalTag (removed separate rule repository), renamed RecipeCore.personalTags → personalTagIds |
+| 3.1 | Feb 2026 | Phase 5 fixes: Added TagResolutionService, TagEditingService, CompoundSuffixes, TaggingThresholds to file table. Updated test counts (~416 unit tests). Fixed nötkötsfri typo in allergen config. List filtering now uses effective status (respects user overrides). Rule effectiveness stats use service-level evaluation. Exclusion count includes needsRetagging and low coverage |

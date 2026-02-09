@@ -12,6 +12,7 @@ import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 
@@ -125,13 +126,14 @@ class RecipeCore with JsonSerializableMixin {
   List<String> instructions;
 
   /// User-created personal tags for custom categorization.
-  /// Stores tag NAMES (e.g., 'pasta', 'middag', 'italienskt') for filtering.
-  /// Separate from auto-generated tagResult which handles allergens/dietary.
-  /// Applied via PersonalTagRuleEngine on save or manual selection.
-  ///
-  /// Note: Despite the name, this field stores tag NAMES (not IDs).
-  /// The naming is historical; all code consistently uses names for matching.
+  /// Stores tag UUIDs for efficient Firestore arrayContains queries.
+  /// Display names available via [personalTags] rich objects.
   List<String>? personalTagIds;
+
+  /// Rich personal tag data with source tracking.
+  /// Stores full [RecipePersonalTag] objects (tagId, name, sources).
+  /// Used for display and source tracking. Dual-written alongside personalTagIds.
+  List<RecipePersonalTag>? personalTags;
 
   /// User rating for this recipe (0.0 to 5.0).
   /// Represents the average user rating or personal rating depending
@@ -209,6 +211,12 @@ class RecipeCore with JsonSerializableMixin {
   /// Null for recipes that have never been manually edited.
   TagOverrides? tagOverrides;
 
+  /// Version of the personal tag rules when tags were last evaluated.
+  /// Stored as epoch milliseconds of the latest tag `updatedAt`.
+  /// If any tag's `updatedAt` is newer than this, the recipe is stale.
+  /// Null for recipes that haven't been evaluated by the rule engine.
+  int? personalTagVersion;
+
   /// In-memory status of data integrity verification.
   /// Set during deserialization based on checksum validation.
   /// Not persisted to Firestore - tracked silently for analytics.
@@ -263,6 +271,7 @@ class RecipeCore with JsonSerializableMixin {
     required this.ingredients,
     required this.instructions,
     this.personalTagIds,
+    this.personalTags,
     this.rating,
     required this.mealType,
     this.sourceUrl,
@@ -280,6 +289,7 @@ class RecipeCore with JsonSerializableMixin {
     this.dataChecksum,
     this.tagResult,
     this.tagOverrides,
+    this.personalTagVersion,
     this.dataIntegrityStatus = DataIntegrityStatus.unverified,
   })  : id = id ?? const Uuid().v4(),
         imageUrls = imageUrls ?? [],
@@ -297,6 +307,7 @@ class RecipeCore with JsonSerializableMixin {
     List<String>? ingredients,
     List<String>? instructions,
     List<String>? personalTagIds,
+    List<RecipePersonalTag>? personalTags,
     double? rating,
     String? mealType,
     String? sourceUrl,
@@ -313,6 +324,7 @@ class RecipeCore with JsonSerializableMixin {
     String? dataChecksum,
     TagResult? tagResult,
     TagOverrides? tagOverrides,
+    int? personalTagVersion,
     DataIntegrityStatus? dataIntegrityStatus,
   }) {
     final newTitle = title ?? this.title;
@@ -345,6 +357,7 @@ class RecipeCore with JsonSerializableMixin {
       ingredients: newIngredients,
       instructions: newInstructions,
       personalTagIds: personalTagIds ?? this.personalTagIds,
+      personalTags: personalTags ?? this.personalTags,
       rating: rating ?? this.rating,
       mealType: mealType ?? this.mealType,
       sourceUrl: sourceUrl ?? this.sourceUrl,
@@ -363,6 +376,7 @@ class RecipeCore with JsonSerializableMixin {
       dataChecksum: newChecksum,
       tagResult: tagResult ?? this.tagResult,
       tagOverrides: tagOverrides ?? this.tagOverrides,
+      personalTagVersion: personalTagVersion ?? this.personalTagVersion,
       dataIntegrityStatus: newIntegrityStatus,
     );
   }
@@ -392,6 +406,7 @@ class RecipeCore with JsonSerializableMixin {
         'ingredients': ingredients,
         'instructions': instructions,
         'personalTagIds': personalTagIds,
+        'personalTags': personalTags?.map((t) => t.toMap()).toList(),
         'rating': rating,
         'mealType': mealType,
         'sourceUrl': sourceUrl,
@@ -409,6 +424,7 @@ class RecipeCore with JsonSerializableMixin {
         'dataChecksum': dataChecksum,
         'tagResult': tagResult?.toJson(),
         'tagOverrides': tagOverrides?.toJson(),
+        'personalTagVersion': personalTagVersion,
       };
 
   Map<String, dynamic> toFirestore() => {
@@ -420,6 +436,7 @@ class RecipeCore with JsonSerializableMixin {
         'ingredients': ingredients,
         'instructions': instructions,
         'personalTagIds': personalTagIds,
+        'personalTags': personalTags?.map((t) => t.toMap()).toList(),
         'rating': rating,
         'mealType': mealType,
         'sourceUrl': sourceUrl,
@@ -439,6 +456,7 @@ class RecipeCore with JsonSerializableMixin {
         'dataChecksum': dataChecksum,
         'tagResult': tagResult?.toFirestore(),
         'tagOverrides': tagOverrides?.toJson(),
+        'personalTagVersion': personalTagVersion,
       };
 
   factory RecipeCore.fromJson(Map<String, dynamic> json) {
@@ -483,6 +501,10 @@ class RecipeCore with JsonSerializableMixin {
       personalTagIds: json['personalTagIds'] != null
           ? List<String>.from(json['personalTagIds'])
           : null,
+      personalTags: _parsePersonalTags(
+        json['personalTags'],
+        json['personalTagIds'],
+      ),
       rating: (json['rating'] as num?)?.toDouble(),
       mealType: json['mealType'] as String,
       sourceUrl: json['sourceUrl'] as String?,
@@ -508,8 +530,45 @@ class RecipeCore with JsonSerializableMixin {
       dataChecksum: storedChecksum,
       tagResult: _parseTagResult(json['tagResult']),
       tagOverrides: _parseTagOverrides(json['tagOverrides']),
+      personalTagVersion: json['personalTagVersion'] as int?,
       dataIntegrityStatus: integrityStatus,
     );
+  }
+
+  /// Parses personalTags from stored data with lazy migration.
+  /// If the new field exists, uses it. Otherwise, converts old names
+  /// to RecipePersonalTag objects with 'manual' source.
+  static List<RecipePersonalTag>? _parsePersonalTags(
+    dynamic personalTagsData,
+    dynamic personalTagIdsData,
+  ) {
+    // New field exists - use it
+    if (personalTagsData != null && personalTagsData is List) {
+      try {
+        return personalTagsData
+            .whereType<Map>()
+            .map((m) => RecipePersonalTag.fromMap(Map<String, dynamic>.from(m)))
+            .toList();
+      } catch (e) {
+        AppLogger.warning('Failed to parse personalTags: $e');
+      }
+    }
+
+    // Fallback: create RecipePersonalTag objects from personalTagIds UUIDs
+    if (personalTagIdsData != null && personalTagIdsData is List) {
+      final ids = personalTagIdsData
+          .map((e) => e?.toString())
+          .whereType<String>()
+          .where((s) => s.isNotEmpty)
+          .toList();
+      if (ids.isNotEmpty) {
+        return ids
+            .map((id) => RecipePersonalTag.manual(tagId: id, name: id))
+            .toList();
+      }
+    }
+
+    return null;
   }
 
   /// Safely parses tagResult from dynamic value.
@@ -594,6 +653,10 @@ class RecipeCore with JsonSerializableMixin {
                   .isNotEmpty
               ? utils.SerializationUtils.safeStringList(data, 'personalTagIds')
               : null,
+      personalTags: _parsePersonalTags(
+        data['personalTags'],
+        data['personalTagIds'],
+      ),
       rating: utils.SerializationUtils.safeNullableDouble(data, 'rating'),
       mealType: utils.SerializationUtils.safeString(data, 'mealType',
           defaultValue: 'Middag'),
@@ -624,6 +687,8 @@ class RecipeCore with JsonSerializableMixin {
       dataChecksum: storedChecksum,
       tagResult: _parseTagResult(data['tagResult']),
       tagOverrides: _parseTagOverrides(data['tagOverrides']),
+      personalTagVersion:
+          utils.SerializationUtils.safeNullableInt(data, 'personalTagVersion'),
       dataIntegrityStatus: integrityStatus,
     );
   }
@@ -1036,6 +1101,7 @@ class Recipe {
     List<String>? ingredients,
     List<String>? instructions,
     List<String>? personalTagIds,
+    List<RecipePersonalTag>? personalTags,
     double? rating,
     String? mealType,
     String? sourceUrl,
@@ -1051,6 +1117,8 @@ class Recipe {
     RecipeRealtimeData? realtimeData,
     RecipeOfflineData? offlineData,
     TagOverrides? tagOverrides,
+    TagResult? tagResult,
+    int? personalTagVersion,
   }) {
     return Recipe(
       core: core.copyWith(
@@ -1061,6 +1129,7 @@ class Recipe {
         ingredients: ingredients,
         instructions: instructions,
         personalTagIds: personalTagIds,
+        personalTags: personalTags,
         rating: rating,
         mealType: mealType,
         sourceUrl: sourceUrl,
@@ -1070,6 +1139,8 @@ class Recipe {
         lastCookedAt: lastCookedAt,
         ingredientsNormalized: ingredientsNormalized,
         tagOverrides: tagOverrides,
+        tagResult: tagResult,
+        personalTagVersion: personalTagVersion,
         updatedAt: DateTime.now(),
       ),
       type: type ?? this.type,

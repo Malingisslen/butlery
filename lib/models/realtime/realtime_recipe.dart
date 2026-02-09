@@ -2,6 +2,7 @@
 
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 
@@ -219,6 +220,7 @@ class RealtimeRecipe extends RealtimeResource {
   int? get timeMinutes => recipe.timeMinutes;
   double? get rating => recipe.rating;
   List<String>? get personalTagIds => recipe.personalTagIds;
+  List<RecipePersonalTag>? get personalTags => recipe.core.personalTags;
   String get mealType => recipe.mealType;
   bool get hasRating => recipe.rating != null;
   bool get isValidRecipe => RecipeOperations.isValidRecipe(recipe);
@@ -441,20 +443,29 @@ class RealtimeRecipe extends RealtimeResource {
         id: '', // Nytt ID genereras automatiskt
         title: 'Kopia av ${recipe.title}',
         description: recipe.description,
-        ingredients: recipe.ingredients,
-        instructions: recipe.instructions,
+        ingredients: [...recipe.ingredients],
+        instructions: [...recipe.instructions],
         mealType: recipe.mealType,
         portions: recipe.portions,
         timeMinutes: recipe.timeMinutes,
         rating: recipe.rating,
-        personalTagIds: recipe.personalTagIds,
+        personalTagIds:
+            recipe.personalTagIds != null ? [...recipe.personalTagIds!] : null,
+        personalTags: recipe.core.personalTags != null
+            ? [...recipe.core.personalTags!]
+            : null,
         sourceUrl: 'Delat från $ownerDisplayName',
-        imageUrls: recipe.imageUrls,
+        imageUrls: [...recipe.imageUrls],
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         createdBy: newOwnerId,
         isPublic: false,
         lastCookedAt: null,
+        tagResult: recipe.core.tagResult,
+        tagOverrides: recipe.core.tagOverrides,
+        ingredientsNormalized: recipe.core.ingredientsNormalized != null
+            ? [...recipe.core.ingredientsNormalized!]
+            : null,
       ),
       type: RecipeType.personal,
     );
@@ -496,9 +507,9 @@ class RealtimeRecipe extends RealtimeResource {
       if (instruction.toLowerCase().contains(lowerQuery)) return true;
     }
 
-    if (personalTagIds != null) {
-      for (final tag in personalTagIds!) {
-        if (tag.toLowerCase().contains(lowerQuery)) return true;
+    if (personalTags != null) {
+      for (final pt in personalTags!) {
+        if (pt.name.toLowerCase().contains(lowerQuery)) return true;
       }
     }
 

@@ -11,6 +11,7 @@ import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -30,6 +31,9 @@ class PersonalTagService extends BaseService {
 
   static const String _tagsCacheKey = 'personal_tags';
   static const String _groupsCacheKey = 'personal_groups';
+
+  StreamSubscription? _tagStreamSub;
+  StreamSubscription? _groupStreamSub;
 
   PersonalTagService({
     required FirebasePersonalTagRepository tagRepository,
@@ -97,6 +101,9 @@ class PersonalTagService extends BaseService {
   }
 
   /// Updates a personal tag.
+  ///
+  /// If the tag name changed, cascades the rename to all recipes
+  /// that contain this tag ID in their personalTagIds.
   Future<void> updateTag(PersonalTag tag) async {
     await executeServiceOperation(
       () async {
@@ -117,8 +124,29 @@ class PersonalTagService extends BaseService {
           }
         }
 
+        // Detect name change and cascade to recipes BEFORE updating tag
+        final existingTag = await _tagRepository.read(tag.id);
+        final oldName = existingTag?.name;
+        final nameChanged = oldName != null && oldName != tag.name;
+
+        if (nameChanged) {
+          final recipeRepo = _getRecipeRepository();
+          if (recipeRepo != null) {
+            final count = await recipeRepo.renamePersonalTagInRecipes(
+              tag.id,
+              tag.name,
+            );
+            if (count > 0) {
+              AppLogger.info(
+                'Cascaded tag rename "$oldName" -> "${tag.name}" to $count recipes',
+              );
+            }
+          }
+        }
+
         final updated = tag.copyWith(updatedAt: DateTime.now());
         await _tagRepository.update(updated);
+
         clearCache(_tagsCacheKey);
         AppLogger.info('Updated personal tag: ${tag.name}');
       },
@@ -129,10 +157,22 @@ class PersonalTagService extends BaseService {
 
   /// Deletes a personal tag.
   /// Embedded rules are automatically deleted with the tag document.
+  /// Cascades deletion to all recipes that contain this tag ID.
   Future<void> deleteTag(String tagId) async {
     await executeServiceOperation(
       () async {
+        final recipeRepo = _getRecipeRepository();
+        if (recipeRepo != null) {
+          final count = await recipeRepo.removePersonalTagFromRecipes(tagId);
+          if (count > 0) {
+            AppLogger.info(
+              'Cascaded tag deletion "$tagId" from $count recipes',
+            );
+          }
+        }
+
         await _tagRepository.delete(tagId);
+
         clearCache(_tagsCacheKey);
         AppLogger.info('Deleted personal tag: $tagId');
       },
@@ -567,6 +607,79 @@ class PersonalTagService extends BaseService {
     return result ?? {};
   }
 
+  /// Evaluates rules and returns a map of tag ID to matching rule IDs.
+  ///
+  /// Unlike [evaluateRulesForRecipe], this tracks which specific rules
+  /// caused each tag to match — used for source tracking in RecipePersonalTag.
+  Future<Map<String, List<String>>> evaluateRulesWithSources(
+    Recipe recipe,
+  ) async {
+    final result = await executeServiceOperation(
+      () async {
+        final tagRulePairs = await getEnabledRules();
+        if (tagRulePairs.isEmpty) return <String, List<String>>{};
+
+        final userId = _getCurrentUserId();
+        final sourcesMap = await _evaluateRulesWithSources(
+          recipe,
+          tagRulePairs,
+          userId: userId,
+        );
+
+        // Enforce exclusive groups on the tag IDs
+        final filteredIds =
+            await _enforceExclusiveGroups(sourcesMap.keys.toSet());
+
+        // Remove tags that were filtered out by exclusive group enforcement
+        sourcesMap.removeWhere((tagId, _) => !filteredIds.contains(tagId));
+
+        return sourcesMap;
+      },
+      operationName: 'Evaluate rules with sources',
+      requiresAuth: true,
+    );
+    return result ?? {};
+  }
+
+  /// Evaluates rules with source tracking for multiple recipes.
+  ///
+  /// Returns a map of recipeId → (tagId → list of ruleIds).
+  Future<Map<String, Map<String, List<String>>>>
+      evaluateRulesWithSourcesForRecipes(List<Recipe> recipes) async {
+    final result = await executeServiceOperation(
+      () async {
+        final tagRulePairs = await getEnabledRules();
+        if (tagRulePairs.isEmpty || recipes.isEmpty) {
+          return <String, Map<String, List<String>>>{};
+        }
+
+        final userId = _getCurrentUserId();
+        final results = <String, Map<String, List<String>>>{};
+
+        for (final recipe in recipes) {
+          final sourcesMap = await _evaluateRulesWithSources(
+            recipe,
+            tagRulePairs,
+            userId: userId,
+          );
+          if (sourcesMap.isNotEmpty) {
+            final filteredIds =
+                await _enforceExclusiveGroups(sourcesMap.keys.toSet());
+            sourcesMap.removeWhere((tagId, _) => !filteredIds.contains(tagId));
+            if (sourcesMap.isNotEmpty) {
+              results[recipe.id] = sourcesMap;
+            }
+          }
+        }
+
+        return results;
+      },
+      operationName: 'Evaluate rules with sources for recipes',
+      requiresAuth: true,
+    );
+    return result ?? {};
+  }
+
   /// Internal method to evaluate rules against a recipe.
   ///
   /// CRIT-5: Accepts userId to enable user-defined ingredient matching.
@@ -577,7 +690,23 @@ class PersonalTagService extends BaseService {
     List<TagRulePair> tagRulePairs, {
     String? userId,
   }) async {
-    final matchingTagIds = <String>{};
+    final sourcesMap = await _evaluateRulesWithSources(
+      recipe,
+      tagRulePairs,
+      userId: userId,
+    );
+    return sourcesMap.keys.toSet();
+  }
+
+  /// Internal method to evaluate rules and track which rules matched each tag.
+  ///
+  /// Returns a map of tagId → list of ruleIds that matched.
+  Future<Map<String, List<String>>> _evaluateRulesWithSources(
+    Recipe recipe,
+    List<TagRulePair> tagRulePairs, {
+    String? userId,
+  }) async {
+    final result = <String, List<String>>{};
 
     // Check if any rule requires ingredient lookup
     final requiresLookup = tagRulePairs.any((p) => p.rule.requiresLookup);
@@ -592,12 +721,12 @@ class PersonalTagService extends BaseService {
     }
 
     for (final pair in tagRulePairs) {
-      if (pair.rule.evaluate(recipe, lookup)) {
-        matchingTagIds.add(pair.tag.id);
+      if (pair.rule.evaluate(recipe, lookup, currentUserId: userId)) {
+        result.putIfAbsent(pair.tag.id, () => []).add(pair.rule.id);
       }
     }
 
-    return matchingTagIds;
+    return result;
   }
 
   /// Suggests tags for a recipe based on rule evaluation.
@@ -650,6 +779,40 @@ class PersonalTagService extends BaseService {
         );
       },
     );
+  }
+
+  // ============================================================
+  // TAG VERSIONING
+  // ============================================================
+
+  /// Gets the current tag version as epoch milliseconds.
+  ///
+  /// Derived from the latest `updatedAt` across all tags.
+  /// Returns 0 if no tags exist.
+  Future<int> getCurrentTagVersion() async {
+    final tags = await getAllTags();
+    if (tags.isEmpty) return 0;
+
+    DateTime latest = tags.first.updatedAt;
+    for (final tag in tags.skip(1)) {
+      if (tag.updatedAt.isAfter(latest)) {
+        latest = tag.updatedAt;
+      }
+    }
+    return latest.millisecondsSinceEpoch;
+  }
+
+  /// Checks if a recipe has stale personal tags.
+  ///
+  /// A recipe is stale if any tag has been updated since the recipe's
+  /// personalTagVersion was last set. Recipes without a version are
+  /// always considered stale.
+  Future<bool> isRecipeStale(Recipe recipe) async {
+    final recipeVersion = recipe.core.personalTagVersion;
+    if (recipeVersion == null) return true;
+
+    final currentVersion = await getCurrentTagVersion();
+    return currentVersion > recipeVersion;
   }
 
   // ============================================================
@@ -720,11 +883,19 @@ class PersonalTagService extends BaseService {
 
   @override
   Future<void> onInitialize() async {
+    _tagStreamSub = _tagRepository.watchAllSorted().listen((_) {
+      clearCache(_tagsCacheKey);
+    });
+    _groupStreamSub = _groupRepository.watchAllSorted().listen((_) {
+      clearCache(_groupsCacheKey);
+    });
     AppLogger.info('PersonalTagService ready');
   }
 
   @override
   Future<void> onDispose() async {
+    await _tagStreamSub?.cancel();
+    await _groupStreamSub?.cancel();
     clearAllCache();
   }
 
@@ -740,6 +911,16 @@ class PersonalTagService extends BaseService {
       return authRepository.currentUserId;
     } catch (e) {
       AppLogger.error('Failed to get current user ID: $e');
+      return null;
+    }
+  }
+
+  /// Gets recipe repository for tag cascade operations (rename/delete).
+  RecipeRepository? _getRecipeRepository() {
+    try {
+      return ServiceLocator.get<RecipeRepository>();
+    } catch (e) {
+      AppLogger.error('Failed to get recipe repository for tag cascade: $e');
       return null;
     }
   }
