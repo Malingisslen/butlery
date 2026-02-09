@@ -145,10 +145,16 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
           indicatorWeight: 3,
           labelColor: AppColors.forestGreenDark,
           unselectedLabelColor: AppColors.textMedium,
-          labelStyle: AppTextStyles.titleMedium.copyWith(
+          labelStyle: AppTextStyles.bodySmall.copyWith(
+            fontSize: 13,
             fontWeight: FontWeight.w600,
+            color: AppColors.forestGreenDark,
           ),
-          unselectedLabelStyle: AppTextStyles.titleMedium,
+          unselectedLabelStyle: AppTextStyles.bodySmall.copyWith(
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textMedium,
+          ),
           tabs: const [
             Tab(text: 'Ingredienser'),
             Tab(text: 'Instruktioner'),
@@ -224,8 +230,9 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
                           : parsed.quantity > 0
                               ? _formatQuantity(parsed.quantity)
                               : '',
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        color: AppColors.textMedium,
+                      style: AppTextStyles.text14.copyWith(
+                        color: AppColors.forestGreenDark,
+                        fontWeight: FontWeight.w600,
                       ),
                       textAlign: TextAlign.right,
                     ),
@@ -238,7 +245,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
                       ),
                       child: Text(
                         '|',
-                        style: AppTextStyles.bodyLarge.copyWith(
+                        style: AppTextStyles.text14.copyWith(
                           color: AppColors.divider,
                         ),
                       ),
@@ -263,7 +270,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
                         Expanded(
                           child: Text(
                             parsed.name,
-                            style: AppTextStyles.bodyLarge.copyWith(
+                            style: AppTextStyles.text14.copyWith(
                               color: isAllergen
                                   ? AppColors.error
                                   : AppColors.textDark,

@@ -74,10 +74,10 @@ void main() {
         expect(find.text('Köttbullar med potatismos'), findsOneWidget);
         expect(find.text('Klassisk svensk husmanskost'), findsOneWidget);
 
-        // Metadata (abbreviated format, showMealType/showTags default to false)
-        expect(find.text('4 port'), findsOneWidget);
-        expect(find.text('45 min'), findsOneWidget);
-        expect(find.text('4.5'), findsOneWidget);
+        // Metadata (dot-separated text format per UI redesign)
+        expect(find.text('45 min \u00B7 4 port'), findsOneWidget);
+        // Rating shown as green pill badge
+        expect(find.text('\u2605 4.5'), findsOneWidget);
       });
 
       testWidgets('should render recipe without image correctly',
@@ -120,7 +120,7 @@ void main() {
 
         // Should not show other elements
         expect(find.text('Middag'), findsNothing);
-        expect(find.text('4 port'), findsNothing);
+        expect(find.text('45 min \u00B7 4 port'), findsNothing);
         expect(find.text('svensk'), findsNothing);
         expect(find.byIcon(Icons.favorite_border), findsNothing);
       });
@@ -160,9 +160,8 @@ void main() {
         expect(find.text('Köttbullar med potatismos'), findsOneWidget);
         // Compact style should not show description
         expect(find.text('Klassisk svensk husmanskost'), findsNothing);
-        // But should show metadata (abbreviated format)
-        expect(find.text('4 port'), findsOneWidget);
-        expect(find.text('45 min'), findsOneWidget);
+        // But should show metadata (dot-separated text format)
+        expect(find.text('45 min \u00B7 4 port'), findsOneWidget);
       });
 
       testWidgets('should use smaller image in compact mode', (tester) async {
@@ -202,8 +201,8 @@ void main() {
         expect(find.text('Köttbullar med potatismos'), findsOneWidget);
         // Grid style should not show description
         expect(find.text('Klassisk svensk husmanskost'), findsNothing);
-        // Should show compact metadata (abbreviated format)
-        expect(find.text('4 port'), findsOneWidget);
+        // Should show compact metadata (dot-separated text format)
+        expect(find.text('45 min \u00B7 4 port'), findsOneWidget);
       });
 
       testWidgets('should position favorite button as overlay in grid mode',
@@ -531,9 +530,8 @@ void main() {
           ),
         );
 
-        // UI Redesign: abbreviated format
-        expect(find.text('4 port'), findsOneWidget);
-        expect(find.text('45 min'), findsOneWidget);
+        // UI Redesign: dot-separated text format
+        expect(find.text('45 min \u00B7 4 port'), findsOneWidget);
       });
     });
 

@@ -200,10 +200,10 @@ class AppTextStyles {
         fontWeight: FontWeight.w500,
       );
 
-  /// App bar title style (Josefin Sans, lowercase style)
+  /// App bar title style (Josefin Sans, 18px per mockup)
   static TextStyle get appBarTitle => TextStyle(
         fontFamily: _headerFontFamily,
-        fontSize: 22,
+        fontSize: 18,
         fontWeight: FontWeight.w600,
         color: AppColors.headerForeground,
         letterSpacing: 0.5,
@@ -407,13 +407,13 @@ class AppTextStyles {
         letterSpacing: 0.5,
       );
 
-  /// Main view header title - elegant style for main views (24px, Josefin Sans)
+  /// Main view header title - elegant style for main views (32px, Josefin Sans)
   /// Used for "dina recept", "veckans meny", "inkopslista" headers
-  /// UI Redesign: Lighter weight (w400) matching mockup proportions
+  /// UI Redesign: 32px/w600 matching mockup .header-title
   static TextStyle get mainViewTitle => TextStyle(
         fontFamily: _headerFontFamily,
-        fontSize: 24,
-        fontWeight: FontWeight.w400,
+        fontSize: 32,
+        fontWeight: FontWeight.w600,
         color: AppColors.headerForeground,
         letterSpacing: 2,
         height: 1.1,
@@ -444,21 +444,21 @@ class AppTextStyles {
         fontWeight: FontWeight.w600,
       );
 
-  /// Navigation item label (Josefin Sans)
+  /// Navigation item label (Josefin Sans, 10px per mockup)
   static TextStyle get navLabel => TextStyle(
         fontFamily: _headerFontFamily,
-        fontSize: 12,
+        fontSize: 10,
         fontWeight: FontWeight.w500,
         letterSpacing: 0.3,
       );
 
-  /// Empty state title (Josefin Sans)
+  /// Empty state title (Josefin Sans, green-dark per mockup)
   static TextStyle get emptyStateTitle => TextStyle(
         fontFamily: _headerFontFamily,
         fontSize: 20,
         fontWeight: FontWeight.w600,
-        color: AppColors.textDark,
-        letterSpacing: 0.5,
+        color: AppColors.forestGreenDark,
+        letterSpacing: 1.0,
       );
 
   /// Empty state body
@@ -466,9 +466,9 @@ class AppTextStyles {
         color: AppColors.textMedium,
       );
 
-  /// Recipe card title
+  /// Recipe card title (15px/w600 per mockup)
   static TextStyle get recipeCardTitle => titleMedium.copyWith(
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
       );
 
   /// Badge text style for unified badges

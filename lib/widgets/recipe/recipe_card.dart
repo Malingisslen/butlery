@@ -9,6 +9,7 @@ import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
+import 'package:butlery/core/utils/time_format_utils.dart';
 
 /// Recipe card widget for displaying recipe information with comprehensive functionality.
 ///
@@ -287,7 +288,7 @@ class RecipeCard extends StatelessWidget {
   Widget _buildTitle(BuildContext context, {TextStyle? style}) {
     return Text(
       recipe.title,
-      style: style ?? AppTextStyles.titleLarge,
+      style: style ?? AppTextStyles.recipeCardTitle,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
     );
@@ -296,8 +297,9 @@ class RecipeCard extends StatelessWidget {
   Widget _buildDescription(BuildContext context) {
     return Text(
       recipe.description,
-      style: AppTextStyles.bodyMedium.copyWith(
+      style: AppTextStyles.labelMedium.copyWith(
         color: AppColors.textMedium,
+        fontWeight: FontWeight.w400,
       ),
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
@@ -305,77 +307,63 @@ class RecipeCard extends StatelessWidget {
   }
 
   Widget _buildMetadataRow(BuildContext context, {bool compact = false}) {
-    final items = <Widget>[];
+    // UI Redesign: Text+dots format with optional rating pill
+    final parts = <String>[];
 
-    // Meal type badge - only if showMealType is true
+    // Meal type - only if showMealType is true
     if (showMealType && recipe.mealType.isNotEmpty) {
-      items.add(_buildMealTypeBadge());
+      parts.add(recipe.mealType);
+    }
+
+    // Time with smart formatting
+    if (recipe.timeMinutes != null && recipe.timeMinutes! > 0) {
+      parts.add(TimeFormatUtils.formatCookingTime(recipe.timeMinutes!));
     }
 
     // Portions
     if (recipe.portions != null && recipe.portions! > 0) {
-      items.add(_buildMetadataItem(
-        Icons.people,
-        '${recipe.portions} port',
-      ));
+      parts.add('${recipe.portions} port');
     }
 
-    // Time
-    if (recipe.timeMinutes != null && recipe.timeMinutes! > 0) {
-      items.add(_buildMetadataItem(
-        Icons.access_time,
-        '${recipe.timeMinutes} min',
-      ));
-    }
+    final hasRating = recipe.rating != null && recipe.rating! > 0;
 
-    // Rating
-    if (recipe.rating != null && recipe.rating! > 0) {
-      items.add(_buildMetadataItem(
-        Icons.star,
-        recipe.rating!.toStringAsFixed(1),
-      ));
-    }
-
-    return Wrap(
-      spacing: compact ? AppDimensions.spacingSm : AppDimensions.spacingMd,
-      runSpacing: AppDimensions.spacingXs,
-      children: items,
+    return Row(
+      children: [
+        if (parts.isNotEmpty)
+          Flexible(
+            child: Text(
+              parts.join(' \u00B7 '),
+              style: AppTextStyles.labelSmall.copyWith(
+                color: AppColors.textLight,
+                fontWeight: FontWeight.w400,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        if (hasRating) ...[
+          if (parts.isNotEmpty)
+            const SizedBox(width: AppDimensions.spacingSm),
+          _buildRatingPill(),
+        ],
+      ],
     );
   }
 
-  Widget _buildMealTypeBadge() {
+  Widget _buildRatingPill() {
     return Container(
-      padding: AppDimensions.paddingSymmetric4x8,
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        color: AppColors.forestGreen,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
       ),
       child: Text(
-        recipe.mealType,
+        '\u2605 ${recipe.rating!.toStringAsFixed(1)}',
         style: AppTextStyles.badge.copyWith(
-          color: AppColors.forestGreen,
+          color: AppColors.cardWhite,
+          fontWeight: FontWeight.w600,
         ),
       ),
-    );
-  }
-
-  Widget _buildMetadataItem(IconData icon, String text) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          size: AppDimensions.iconSizeS,
-          color: AppColors.textMedium,
-        ),
-        const SizedBox(width: AppDimensions.spacingXs),
-        Text(
-          text,
-          style: AppTextStyles.labelSmall.copyWith(
-            color: AppColors.textMedium,
-          ),
-        ),
-      ],
     );
   }
 

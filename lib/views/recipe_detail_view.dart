@@ -328,6 +328,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             style: AppTextStyles.titleLarge.copyWith(
                               fontSize: 24,
                               fontWeight: FontWeight.w600,
+                              color: AppColors.forestGreenDark,
                             ),
                           ),
                           if (recipe.sourceUrl != null &&

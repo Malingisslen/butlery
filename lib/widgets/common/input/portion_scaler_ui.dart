@@ -69,16 +69,11 @@ class PortionScalerUI {
   ) {
     return Row(
       children: [
-        Icon(
-          Icons.restaurant_menu,
-          color: Theme.of(context).colorScheme.primary,
-          size: AppDimensions.iconSizeS,
-        ),
-        const SizedBox(width: AppDimensions.spacingXs),
         Text(
-          'Portioner',
-          style: AppTextStyles.titleBold.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
+          'Portioner:',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textLight,
+            fontWeight: FontWeight.w400,
           ),
         ),
         const Spacer(),
