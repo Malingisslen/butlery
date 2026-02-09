@@ -58,7 +58,7 @@ class CommentItemWidgets {
               ),
               // Reply button
               Semantics(
-                label: 'Svara pa kommentar',
+                label: 'Svara på kommentar',
                 button: true,
                 child: IconButton(
                   onPressed: onReply,

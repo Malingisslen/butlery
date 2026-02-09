@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
 
@@ -32,6 +34,14 @@ void main() {
       required VoidCallback onToggleUnitConversion,
     }) {
       return MaterialApp(
+        locale: const Locale('sv'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         home: Scaffold(
           body: SingleChildScrollView(
             child: Padding(
@@ -457,6 +467,14 @@ void main() {
         // Act
         await tester.pumpWidget(
           MaterialApp(
+            locale: const Locale('sv'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             home: Scaffold(
               body: Builder(
                 builder: (context) => PortionScalerUI.buildScaler(
@@ -538,6 +556,14 @@ void main() {
         // Act - Create stateful widget that can rebuild
         await tester.pumpWidget(
           MaterialApp(
+            locale: const Locale('sv'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             home: Scaffold(
               body: StatefulBuilder(
                 builder: (context, setStateCallback) {

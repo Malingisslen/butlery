@@ -104,7 +104,6 @@ class ButleryHeader extends StatelessWidget implements PreferredSizeWidget {
                                 color: AppColors.headerForeground,
                               ),
                               onPressed: () => Navigator.of(context).pop(),
-                              tooltip: 'Tillbaka',
                             ),
                       ] else ...[
                         const SizedBox(width: AppDimensions.spacingMd),

@@ -198,7 +198,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       try {
         // Visa loading indicator
         if (mounted) {
-          SnackBarUtils.showInfo(context, 'Synkroniserar...');
+          SnackBarUtils.showInfo(context, context.l10n.statusSyncing);
         }
 
         // Synka offline-ändringar
@@ -209,11 +209,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
         // Visa success
         if (mounted) {
-          SnackBarUtils.showSuccess(context, 'Synkronisering klar!');
+          SnackBarUtils.showSuccess(context, context.l10n.syncComplete);
         }
       } catch (e) {
         if (mounted) {
-          SnackBarUtils.showError(context, 'Synkronisering misslyckades: $e');
+          SnackBarUtils.showError(context, context.l10n.syncFailed(e.toString()));
         }
       }
     }
@@ -281,7 +281,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             ),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
-              'Sortera',
+              context.l10n.commonSort,
               style: AppTextStyles.labelMedium.copyWith(
                 color: AppColors.textDark,
                 fontWeight: FontWeight.w500,
@@ -314,7 +314,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         // UI Redesign: Use MainViewHeader with large title and count badge
         appBar: MainViewHeader(
           title: 'dina\nrecept',
-          countBadge: '$recipeCount recept',
+          countBadge: context.l10n.recipeCountBadge(recipeCount),
           trailing: const RecipeListAvatarBadge(),
           actions: [
             // Offline status
@@ -330,7 +330,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             SearchFilterWidget(
               searchQuery: viewModel.searchQuery,
               onSearchChanged: viewModel.updateSearch,
-              searchHint: 'sök bland recepten...',
+              searchHint: context.l10n.recipeSearchHint,
 
               // Filter properties
               activeTimeFilters: viewModel.activeTimeFilters,
@@ -407,7 +407,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           viewModel.clearError();
           viewModel.refresh();
         },
-        actionLabel: 'Försök igen',
+        actionLabel: context.l10n.commonRetry,
       );
     }
 
@@ -427,8 +427,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                   ? () => viewModel.updateSearch('')
                   : viewModel.clearAllFilters,
               actionLabel: viewModel.searchQuery.isNotEmpty
-                  ? 'Rensa sökning'
-                  : 'Rensa filter',
+                  ? context.l10n.searchClearSearch
+                  : context.l10n.searchClearFilters,
             );
     }
 
@@ -443,7 +443,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           await viewModel.refresh();
           if (mounted) {
             SnackBarUtils.showWarning(
-                context, 'Offline-läge - visar lokala recept');
+                context, context.l10n.offlineShowingLocal);
           }
         }
       },
@@ -495,7 +495,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               padding: AppDimensions.responsiveContentPadding(context),
               child: ActionButtons.primaryButton(
                 context,
-                label: 'Visa fler recept',
+                label: context.l10n.recipeShowMore,
                 onPressed: () => viewModel.loadMore(),
               ),
             ),

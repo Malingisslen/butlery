@@ -18,6 +18,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Recipe Detail View - Complete recipe display with metadata, actions, and social features
@@ -90,7 +91,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         if (viewModel.isDeleting) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Tar bort recept...'),
+              title: Text(context.l10n.recipeDeleting),
               backgroundColor: AppColors.cream,
             ),
             backgroundColor: AppColors.cream,
@@ -139,7 +140,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   child: _HeroButton(
                     icon: Icons.arrow_back,
                     onPressed: () => Navigator.pop(context),
-                    tooltip: 'Tillbaka',
+                    tooltip: context.l10n.accessibilityBackButton,
                   ),
                 ),
                 // Show recipe title in collapsed app bar
@@ -206,7 +207,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     child: _HeroButton(
                       icon: Icons.people_outline,
                       onPressed: () => _actions.showSocialShareDialog(context),
-                      tooltip: 'Dela med vänner',
+                      tooltip: context.l10n.recipeShareWithFriends,
                     ),
                   ),
                   // External sharing
@@ -215,7 +216,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     child: _HeroButton(
                       icon: Icons.share_outlined,
                       onPressed: () => _actions.shareRecipe(context),
-                      tooltip: 'Dela externt',
+                      tooltip: context.l10n.recipeShareExternal,
                     ),
                   ),
                   // More actions menu
@@ -224,46 +225,46 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     child: _HeroMenuButton(
                       icon: Icons.more_horiz,
                       itemBuilder: (context) => [
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'edit',
                           child: Row(
                             children: [
-                              Icon(Icons.edit_outlined, size: AppDimensions.iconSizeM),
-                              SizedBox(width: AppDimensions.spacingM),
-                              Text('Redigera recept'),
+                              const Icon(Icons.edit_outlined, size: AppDimensions.iconSizeM),
+                              const SizedBox(width: AppDimensions.spacingM),
+                              Text(context.l10n.recipeEdit),
                             ],
                           ),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'fork',
                           child: Row(
                             children: [
-                              Icon(Icons.content_copy_outlined,
+                              const Icon(Icons.content_copy_outlined,
                                   size: AppDimensions.iconSizeM),
-                              SizedBox(width: AppDimensions.spacingM),
-                              Text('Skapa kopia'),
+                              const SizedBox(width: AppDimensions.spacingM),
+                              Text(context.l10n.recipeCreateCopy),
                             ],
                           ),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'generate_shopping_list',
                           child: Row(
                             children: [
-                              Icon(Icons.shopping_cart_outlined,
+                              const Icon(Icons.shopping_cart_outlined,
                                   size: AppDimensions.iconSizeM),
-                              SizedBox(width: AppDimensions.spacingM),
-                              Text('Skapa inköpslista'),
+                              const SizedBox(width: AppDimensions.spacingM),
+                              Text(context.l10n.recipeCreateShoppingList),
                             ],
                           ),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 're_tag',
                           child: Row(
                             children: [
-                              Icon(Icons.local_offer_outlined,
+                              const Icon(Icons.local_offer_outlined,
                                   size: AppDimensions.iconSizeM),
-                              SizedBox(width: AppDimensions.spacingM),
-                              Text('Uppdatera taggar'),
+                              const SizedBox(width: AppDimensions.spacingM),
+                              Text(context.l10n.recipeUpdateTags),
                             ],
                           ),
                         ),
@@ -275,7 +276,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   size: AppDimensions.iconSizeM,
                                   color: AppColors.error),
                               const SizedBox(width: AppDimensions.spacingM),
-                              Text('Delete Recipe',
+                              Text(context.l10n.recipeDelete,
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodyMedium
@@ -287,13 +288,13 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         ),
                         if (recipe.sourceUrl != null &&
                             recipe.sourceUrl!.isNotEmpty)
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'source',
                             child: Row(
                               children: [
-                                Icon(Icons.link_outlined, size: AppDimensions.iconSizeM),
-                                SizedBox(width: AppDimensions.spacingM),
-                                Text('View Source'),
+                                const Icon(Icons.link_outlined, size: AppDimensions.iconSizeM),
+                                const SizedBox(width: AppDimensions.spacingM),
+                                Text(context.l10n.recipeViewSource),
                               ],
                             ),
                           ),
@@ -337,7 +338,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             GestureDetector(
                               onTap: () => _launchSourceUrl(context, recipe.sourceUrl!),
                               child: Text(
-                                'Från ${Uri.tryParse(recipe.sourceUrl!)?.host ?? recipe.sourceUrl!}',
+                                context.l10n.recipeSourceFrom(Uri.tryParse(recipe.sourceUrl!)?.host ?? recipe.sourceUrl!),
                                 style: AppTextStyles.bodyMedium.copyWith(
                                   color: AppColors.textMedium,
                                   decoration: TextDecoration.underline,
@@ -482,25 +483,27 @@ class _HeroButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip ?? '',
-      child: Material(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.zero,
-        child: InkWell(
-          onTap: onPressed,
-          child: SizedBox(
-            width: 40,
-            height: 40,
-            child: Icon(
-              icon,
-              color: AppColors.forestGreen,
-              size: AppDimensions.iconSizeM,
-            ),
+    final button = Material(
+      color: AppColors.cream,
+      borderRadius: BorderRadius.zero,
+      child: InkWell(
+        onTap: onPressed,
+        child: SizedBox(
+          width: 40,
+          height: 40,
+          child: Icon(
+            icon,
+            color: AppColors.forestGreen,
+            size: AppDimensions.iconSizeM,
           ),
         ),
       ),
     );
+
+    if (tooltip != null && tooltip!.isNotEmpty) {
+      return Tooltip(message: tooltip!, child: button);
+    }
+    return button;
   }
 }
 

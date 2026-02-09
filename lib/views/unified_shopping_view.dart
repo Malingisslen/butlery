@@ -26,6 +26,7 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
 
 // UI Redesign header component
 import 'package:butlery/widgets/common/main_view_header.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Shopping list management view using facade pattern architecture.
 class UnifiedShoppingView extends StatefulWidget {
@@ -64,7 +65,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
             // UI Redesign: Use MainViewHeader with line break title
             appBar: MainViewHeader(
               title: 'inköps-\nlista', // UI Redesign: forced line break per mockup
-              countBadge: '$itemCount varor · $boughtCount klara', // UI Redesign: "X varor · X klara"
+              countBadge: context.l10n.shoppingCountBadge(itemCount, boughtCount), // UI Redesign: "X varor · X klara"
               actions: ShoppingAppBar.buildHeaderActions(
                 context,
                 viewModel,
@@ -156,11 +157,13 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   /// - Success and error feedback with Swedish localized messages and user guidance
   /// - Collaborative coordination with real-time synchronization and multi-user support
   Future<void> _onDeleteItem(UnifiedShoppingItem item) async {
+    final removedMsg = context.l10n.shoppingItemRemoved(item.name);
+    final errorMsg = context.l10n.shoppingItemRemoveError(item.name);
     final success = await _viewModel.removeItemFromActiveList(item.id);
     if (success) {
-      _showSuccessSnackBar('${item.name} borttagen!');
+      _showSuccessSnackBar(removedMsg);
     } else {
-      _showErrorSnackBar('Kunde inte ta bort ${item.name}');
+      _showErrorSnackBar(errorMsg);
     }
   }
 
@@ -265,15 +268,16 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   /// - Collaborative coordination with real-time synchronization and multi-user support
   /// - Success feedback with Swedish localized messaging and user experience optimization
   Future<void> _uncheckAllItems(UnifiedShoppingViewModel viewModel) async {
+    final msg = context.l10n.shoppingAllUnchecked;
     await viewModel.uncheckAllItems();
-    _showSuccessSnackBar('Alla artiklar avbockade!');
+    _showSuccessSnackBar(msg);
   }
 
   /// Show rename list dialog with text input and validation
   Future<void> _showRenameListDialog(UnifiedShoppingViewModel viewModel) async {
     final activeList = viewModel.activeList;
     if (activeList == null) {
-      _showErrorSnackBar('Ingen lista vald för att byta namn');
+      _showErrorSnackBar(context.l10n.shoppingNoListForRename);
       return;
     }
 
@@ -291,7 +295,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
       UnifiedShoppingViewModel viewModel) async {
     final activeList = viewModel.activeList;
     if (activeList == null) {
-      _showErrorSnackBar('Ingen lista vald för borttagning');
+      _showErrorSnackBar(context.l10n.shoppingNoListForDelete);
       return;
     }
 

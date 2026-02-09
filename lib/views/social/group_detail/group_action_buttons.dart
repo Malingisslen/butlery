@@ -81,7 +81,7 @@ class GroupActionButtons extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: onShareShoppingList,
             icon: const Icon(Icons.shopping_cart),
-            label: const Text('Dela inkopslista'),
+            label: const Text('Dela inköpslista'),
           ),
         ),
       ],
@@ -115,7 +115,7 @@ class GroupActionButtons extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: onLeaveGroup,
             icon: const Icon(Icons.exit_to_app),
-            label: const Text('Lamna grupp'),
+            label: const Text('Lämna grupp'),
             style: ComponentThemes.outlinedButtonStyle,
           ),
       ],

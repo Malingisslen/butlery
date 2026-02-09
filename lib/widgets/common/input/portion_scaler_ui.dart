@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// UI components for the portion scaler widget.
 ///
@@ -70,7 +71,7 @@ class PortionScalerUI {
     return Row(
       children: [
         Text(
-          'Portioner:',
+          context.l10n.scalerPortionsLabel,
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.textLight,
             fontWeight: FontWeight.w400,
@@ -215,7 +216,7 @@ class PortionScalerUI {
               Flexible(
                 child: Text(
                   _buildStatusText(
-                      currentPortions, originalPortions, convertToSwedish),
+                      context, currentPortions, originalPortions, convertToSwedish),
                   style: AppTextStyles.metadataEmphasized.copyWith(
                     color: Theme.of(context).colorScheme.onSecondaryContainer,
                   ),
@@ -248,8 +249,8 @@ class PortionScalerUI {
               ),
               label: Text(
                 convertToSwedish
-                    ? 'Använder svenska enheter'
-                    : 'Konvertera amerikanska enheter',
+                    ? context.l10n.scalerUsingSwedishUnits
+                    : context.l10n.scalerConvertAmericanUnits,
                 style: AppTextStyles.metadataEmphasized,
               ),
               style: OutlinedButton.styleFrom(
@@ -281,6 +282,7 @@ class PortionScalerUI {
 
   /// Builds the status text for the info banner
   static String _buildStatusText(
+    BuildContext context,
     int currentPortions,
     int originalPortions,
     bool convertToSwedish,
@@ -288,12 +290,11 @@ class PortionScalerUI {
     final List<String> status = [];
 
     if (currentPortions != originalPortions) {
-      status
-          .add('Skalat från $originalPortions till $currentPortions portioner');
+      status.add(context.l10n.scalerScaledFromTo(originalPortions, currentPortions));
     }
 
     if (convertToSwedish) {
-      status.add('Amerikanska enheter konverterade till svenska');
+      status.add(context.l10n.scalerAmericanConverted);
     }
 
     return status.join(' • ');

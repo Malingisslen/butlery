@@ -10,6 +10,7 @@ import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/core/utils/time_format_utils.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Recipe card widget for displaying recipe information with comprehensive functionality.
 ///
@@ -322,7 +323,7 @@ class RecipeCard extends StatelessWidget {
 
     // Portions
     if (recipe.portions != null && recipe.portions! > 0) {
-      parts.add('${recipe.portions} port');
+      parts.add('${recipe.portions} ${context.l10n.recipePortionAbbreviation}');
     }
 
     final hasRating = recipe.rating != null && recipe.rating! > 0;
@@ -519,8 +520,8 @@ class RecipeCard extends StatelessWidget {
 
     return Semantics(
       label: hasFailed
-          ? 'Ingrediensanalys misslyckades'
-          : 'Ingredienser analyseras',
+          ? context.l10n.recipeAnalysisFailedA11y
+          : context.l10n.recipeAnalyzingA11y,
       child: Container(
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
@@ -538,7 +539,7 @@ class RecipeCard extends StatelessWidget {
             ),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
-              hasFailed ? 'Analys misslyckades' : 'Analyseras...',
+              hasFailed ? context.l10n.recipeAnalysisFailed : context.l10n.recipeAnalyzing,
               style: AppTextStyles.labelSmall.copyWith(
                 color: hasFailed ? AppColors.error : AppColors.warning,
               ),
@@ -575,27 +576,27 @@ class RecipeCard extends StatelessWidget {
         }
       },
       itemBuilder: (context) => [
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'edit',
           child: ListTile(
-            leading: Icon(Icons.edit),
-            title: Text('Redigera'),
+            leading: const Icon(Icons.edit),
+            title: Text(context.l10n.commonEdit),
             contentPadding: EdgeInsets.zero,
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'share',
           child: ListTile(
-            leading: Icon(Icons.share),
-            title: Text('Dela'),
+            leading: const Icon(Icons.share),
+            title: Text(context.l10n.commonShare),
             contentPadding: EdgeInsets.zero,
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'delete',
           child: ListTile(
-            leading: Icon(Icons.delete),
-            title: Text('Ta bort'),
+            leading: const Icon(Icons.delete),
+            title: Text(context.l10n.commonDelete),
             contentPadding: EdgeInsets.zero,
           ),
         ),

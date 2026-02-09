@@ -73,7 +73,7 @@ class MessageContentBuilder {
     Message message,
     bool isFromCurrentUser,
   ) {
-    final recipeTitle = message.metadata?['recipeTitle'] ?? 'Okant recept';
+    final recipeTitle = message.metadata?['recipeTitle'] ?? 'Okänt recept';
     return _buildShareCard(
       context: context,
       isFromCurrentUser: isFromCurrentUser,
@@ -92,7 +92,7 @@ class MessageContentBuilder {
     Message message,
     bool isFromCurrentUser,
   ) {
-    final menuTitle = message.metadata?['menuTitle'] ?? 'Okand meny';
+    final menuTitle = message.metadata?['menuTitle'] ?? 'Okänd meny';
     return _buildShareCard(
       context: context,
       isFromCurrentUser: isFromCurrentUser,
@@ -107,12 +107,12 @@ class MessageContentBuilder {
     Message message,
     bool isFromCurrentUser,
   ) {
-    final listTitle = message.metadata?['listTitle'] ?? 'Okand inkopslista';
+    final listTitle = message.metadata?['listTitle'] ?? 'Okänd inköpslista';
     return _buildShareCard(
       context: context,
       isFromCurrentUser: isFromCurrentUser,
       icon: Icons.shopping_cart,
-      label: 'Inkopslista delad',
+      label: 'Inköpslista delad',
       title: listTitle,
     );
   }
@@ -210,7 +210,7 @@ class MessageContentBuilder {
         mainAxisSize: MainAxisSize.min,
         children: [
           Semantics(
-            label: 'Bildmeddelande, tryck for fullstorlek',
+            label: 'Bildmeddelande, tryck för fullstorlek',
             button: true,
             child: GestureDetector(
               onTap: () {
@@ -318,7 +318,7 @@ class MessageContentBuilder {
           ),
           const SizedBox(width: AppDimensions.paddingS),
           Text(
-            'Rostmeddelande',
+            'Röstmeddelande',
             style: AppTextStyles.bodyMedium.copyWith(
               color:
                   isFromCurrentUser ? AppColors.cardWhite : AppColors.textDark,

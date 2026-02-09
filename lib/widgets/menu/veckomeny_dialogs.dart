@@ -27,7 +27,7 @@ class VeckomenyDialogs {
   }) async {
     if (!viewModel.hasMenu) {
       SnackBarUtils.showWarning(
-          context, 'Skapa en meny forst innan du kan spara den');
+          context, 'Skapa en meny först innan du kan spara den');
       return;
     }
 
@@ -57,7 +57,7 @@ class VeckomenyDialogs {
   }) async {
     if (!menuViewModel.hasMenu) {
       SnackBarUtils.showWarning(
-          context, 'Skapa en meny forst innan du kan dela den');
+          context, 'Skapa en meny först innan du kan dela den');
       return;
     }
 
@@ -71,7 +71,7 @@ class VeckomenyDialogs {
     try {
       availableFriends = friendsService.friends;
     } catch (e) {
-      AppLogger.warning('Kunde inte hamta vanner: $e');
+      AppLogger.warning('Kunde inte hämta vänner: $e');
     }
 
     showDialog(
@@ -145,7 +145,7 @@ class VeckomenyDialogs {
   }) async {
     if (!viewModel.hasMenu || viewModel.menu.isEmpty) {
       SnackBarUtils.showWarning(
-          context, 'Skapa en meny forst innan du kan skapa inkopslista');
+          context, 'Skapa en meny först innan du kan skapa inköpslista');
       return;
     }
 
