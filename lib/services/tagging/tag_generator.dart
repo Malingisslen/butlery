@@ -244,7 +244,8 @@ class TagGenerator {
   /// - 'stark' wins over 'mild' (safer to warn about spiciness)
   /// - 'avancerad' wins over 'enkel' (safer to warn about difficulty)
   /// - 'varm-rätt' wins over 'kall-rätt' (mutually exclusive, warm is more common)
-  /// - Season tags: only keep the first detected (recipes can't be multi-season)
+  /// Season tags are NOT mutually exclusive: recipes can span multiple seasons
+  /// when ingredients have multi-season seasonAvailability data.
   Set<String> _resolveTagConflicts(Set<String> tags, Recipe recipe) {
     final resolved = Set<String>.from(tags);
 
@@ -266,46 +267,7 @@ class TagGenerator {
       }
     }
 
-    // CRIT-16: Handle season tag mutual exclusivity (recipe can have one season)
-    // Uses deterministic priority: current season > Swedish seasons order
-    const seasonTags = ['sommar', 'vinter', 'höst', 'vår'];
-    final presentSeasons = seasonTags.where(resolved.contains).toList();
-    if (presentSeasons.length > 1) {
-      // Pick the best season: use recipe creation date for deterministic results
-      final currentSeason = _getSeasonForDate(recipe.core.createdAt);
-      final String selectedSeason;
-      if (currentSeason != null && presentSeasons.contains(currentSeason)) {
-        selectedSeason = currentSeason;
-      } else {
-        // Deterministic fallback: first in priority order
-        selectedSeason = presentSeasons.first;
-      }
-
-      // Remove all other seasons
-      for (final season in presentSeasons) {
-        if (season != selectedSeason) {
-          resolved.remove(season);
-          AppLogger.debug(
-            'CRIT-16: Season conflict resolved: removed "$season" (keeping "$selectedSeason")',
-            'TagGenerator',
-          );
-        }
-      }
-    }
-
     return resolved;
-  }
-
-  /// CRIT-16: Returns the season in Swedish for a given date.
-  /// Uses recipe creation date for deterministic results across retagging runs.
-  /// Returns null if no date provided to skip season-based conflict resolution.
-  static String? _getSeasonForDate(DateTime? date) {
-    if (date == null) return null;
-    final month = date.month;
-    if (month >= 6 && month <= 8) return 'sommar'; // Jun-Aug
-    if (month >= 9 && month <= 11) return 'höst'; // Sep-Nov
-    if (month >= 12 || month <= 2) return 'vinter'; // Dec-Feb
-    return 'vår'; // Mar-May
   }
 
   /// Generates only Phase 1 tags (for quick preview).

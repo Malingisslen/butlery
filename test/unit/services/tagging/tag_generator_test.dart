@@ -399,9 +399,9 @@ void main() {
           expect(result.getDietaryStatus('pescetarian'), TriState.free);
         });
 
-        test('UNKNOWN when no fish AND no meat (vegetarian side dish)', () {
-          // CRITICAL: A vegetable dish is UNKNOWN for pescetarian, not CONTAINS
-          // It could be a side dish for a pescetarian meal
+        test('FREE when no fish AND no meat (vegetarian side dish)', () {
+          // HIGH-4: Vegetarian dishes ARE pescetarian-compatible.
+          // Pescetarian = no meat. Fish is allowed but not required.
           final recipe = RecipeBuilder()
               .withTitle('Garden Salad')
               .withIngredients(['sallad', 'tomat', 'gurka']).build();
@@ -414,8 +414,7 @@ void main() {
           final result =
               generator.generate(ingredients: lookup, recipe: recipe);
 
-          // Should be UNKNOWN, not CONTAINS - this was the bug we fixed
-          expect(result.getDietaryStatus('pescetarian'), TriState.unknown);
+          expect(result.getDietaryStatus('pescetarian'), TriState.free);
         });
 
         test('CONTAINS when has meat (even with fish)', () {
@@ -2285,25 +2284,20 @@ void main() {
       });
     });
 
-    group('BUG-5: season resolution uses recipe creation date', () {
-      // BUG-5: When multiple season tags are generated and need to be resolved
-      // to a single season, the generator should use the recipe's creation date
-      // instead of DateTime.now(). This ensures deterministic results across
-      // retagging runs - a recipe created in summer always favors 'sommar'.
+    group('BUG-5: multi-season tags from seasonAvailability data', () {
+      // Multi-season tags are allowed when ingredients have overlapping
+      // seasonAvailability data. Each season needs >= 2 qualifying ingredients.
 
-      test(
-          'should resolve season conflict using recipe creation date in summer',
+      test('should allow multiple season tags when ingredients span seasons',
           () {
-        // Arrange: Recipe created in July (sommar), with ingredients
-        // that could trigger multiple season tags
+        // Arrange: Recipe with ingredients spanning sommar and höst
         final recipe = RecipeBuilder()
             .withTitle('Grillad kyckling med jordgubbar')
-            .withCreatedAt(DateTime(2025, 7, 15)) // July = sommar
+            .withCreatedAt(DateTime(2025, 7, 15))
             .withTimeMinutes(40)
             .withIngredients(
                 ['kyckling', 'jordgubbar', 'kantareller', 'kål']).build();
 
-        // Lookup with season indicators for both summer and autumn
         final lookup = _createLookup([
           _ingredient(
             'kyckling',
@@ -2334,29 +2328,19 @@ void main() {
         // Act
         final result = generator.generate(ingredients: lookup, recipe: recipe);
 
-        // Assert: At most one season tag should exist
-        const seasonTags = ['sommar', 'vinter', 'höst', 'vår'];
-        final presentSeasons =
-            seasonTags.where((s) => result.tags.contains(s)).toList();
-        expect(presentSeasons.length, lessThanOrEqualTo(1),
-            reason: 'At most one season tag should be present');
-
-        // If the recipe gets a season tag and both sommar and höst were
-        // generated, sommar should win because the recipe was created in July
-        if (presentSeasons.isNotEmpty && presentSeasons.length == 1) {
-          // The season resolution should favor the creation date's season
-          // We can't guarantee which seasons get generated, but if sommar
-          // is present, it should be because the creation date is in July
-        }
+        // sommar has 2 ingredients (kyckling, jordgubbar) -> tag generated
+        expect(result.hasTag('sommar'), isTrue);
+        // höst has 2 ingredients (kantareller, kål) -> tag generated
+        expect(result.hasTag('höst'), isTrue);
+        // vinter has only 1 ingredient (kål) -> no tag
+        expect(result.hasTag('vinter'), isFalse);
       });
 
-      test(
-          'should resolve season conflict using recipe creation date in winter',
-          () {
+      test('should generate both höst and vinter when ingredients overlap', () {
         // Arrange: Recipe created in January (vinter)
         final recipe = RecipeBuilder()
             .withTitle('Vintervarm soppa')
-            .withCreatedAt(DateTime(2025, 1, 10)) // January = vinter
+            .withCreatedAt(DateTime(2025, 1, 10))
             .withTimeMinutes(60)
             .withIngredients(['kål', 'rotfrukter', 'potatis']).build();
 
@@ -2371,12 +2355,9 @@ void main() {
         // Act
         final result = generator.generate(ingredients: lookup, recipe: recipe);
 
-        // Assert: At most one season tag
-        const seasonTags = ['sommar', 'vinter', 'höst', 'vår'];
-        final presentSeasons =
-            seasonTags.where((s) => result.tags.contains(s)).toList();
-        expect(presentSeasons.length, lessThanOrEqualTo(1),
-            reason: 'At most one season tag should be present');
+        // Both höst and vinter have 2 ingredients each
+        expect(result.hasTag('höst'), isTrue);
+        expect(result.hasTag('vinter'), isTrue);
       });
 
       test('should produce deterministic season when retagging same recipe',
