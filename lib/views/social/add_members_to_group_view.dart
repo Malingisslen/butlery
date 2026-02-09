@@ -120,7 +120,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             ),
         ],
       ),
-      backgroundColor: AppColors.backgroundBeige,
+      backgroundColor: AppColors.cream,
       foregroundColor: AppColors.textDark,
       elevation: AppDimensions.elevationLow,
       actions: [
@@ -323,7 +323,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       onChanged: (value) {
         viewModel.toggleFriendSelection(friend.uid);
       },
-      activeColor: AppColors.primaryBlue,
+      activeColor: AppColors.forestGreen,
     );
   }
 
@@ -341,7 +341,8 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+                color: AppColors.error
+                    .withValues(alpha: AppDimensions.opacityVeryLight),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusM),
                 border: Border.all(color: AppColors.error),

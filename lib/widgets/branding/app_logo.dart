@@ -62,7 +62,7 @@ class AppLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final logoSize = size ?? AppDimensions.imageSizeLarge;
-    final bgColor = backgroundColor ?? AppColors.primaryBlue;
+    final bgColor = backgroundColor ?? AppColors.forestGreen;
     final iconCol = iconColor ?? AppColors.neutralLight;
     final logoIcon = icon ?? Icons.restaurant_menu;
 

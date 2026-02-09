@@ -93,19 +93,22 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
 
   @override
   Widget build(BuildContext context) {
-    final color = widget.color ?? AppColors.primaryBlue;
+    final color = widget.color ?? AppColors.forestGreen;
     return AnimatedBuilder(
       animation: _fadeAnimation,
       builder: (context, child) {
         return Opacity(
           opacity: _fadeAnimation.value,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingS, vertical: AppDimensions.spacingXs),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingS,
+                vertical: AppDimensions.spacingXs),
             decoration: BoxDecoration(
               color: color.withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
               border: Border.all(
-                color: color.withValues(alpha: AppDimensions.opacityMediumLight),
+                color:
+                    color.withValues(alpha: AppDimensions.opacityMediumLight),
                 width: 1,
               ),
             ),
@@ -145,8 +148,8 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
                 Text(
                   '${widget.editorName} redigerar ${widget.editingWhat}',
                   style: AppTextStyles.metadataEmphasized.copyWith(
-                        color: color,
-                      ),
+                    color: color,
+                  ),
                 ),
               ],
             ),

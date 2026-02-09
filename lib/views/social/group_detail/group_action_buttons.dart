@@ -52,8 +52,7 @@ class GroupActionButtons extends StatelessWidget {
       children: [
         Text(
           'Dela med gruppen',
-          style:
-              AppTextStyles.titleBold,
+          style: AppTextStyles.titleBold,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         Row(
@@ -81,7 +80,7 @@ class GroupActionButtons extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: onShareShoppingList,
             icon: const Icon(Icons.shopping_cart),
-            label: const Text('Dela inkopslista'),
+            label: const Text('Dela inköpslista'),
           ),
         ),
       ],
@@ -94,8 +93,7 @@ class GroupActionButtons extends StatelessWidget {
       children: [
         Text(
           'Hantera grupp',
-          style:
-              AppTextStyles.titleBold,
+          style: AppTextStyles.titleBold,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         if (_isAdmin) ...[
@@ -115,7 +113,7 @@ class GroupActionButtons extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: onLeaveGroup,
             icon: const Icon(Icons.exit_to_app),
-            label: const Text('Lamna grupp'),
+            label: const Text('Lämna grupp'),
             style: ComponentThemes.outlinedButtonStyle,
           ),
       ],

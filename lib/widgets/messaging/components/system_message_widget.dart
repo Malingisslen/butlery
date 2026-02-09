@@ -25,7 +25,8 @@ class SystemMessageWidget extends StatelessWidget {
             vertical: AppDimensions.paddingS,
           ),
           decoration: BoxDecoration(
-            color: AppColors.textTertiary.withValues(alpha: AppDimensions.opacityVeryLight),
+            color: AppColors.textTertiary
+                .withValues(alpha: AppDimensions.opacityVeryLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
           child: Text(
@@ -75,8 +76,9 @@ class ReplyPreviewWidget extends StatelessWidget {
             senderName,
             style: AppTextStyles.labelMedium.copyWith(
               color: isFromCurrentUser
-                  ? AppColors.cardWhite.withValues(alpha: AppDimensions.opacityVeryDark)
-                  : AppColors.primaryBlue,
+                  ? AppColors.cardWhite
+                      .withValues(alpha: AppDimensions.opacityVeryDark)
+                  : AppColors.forestGreen,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXxs),
@@ -84,7 +86,8 @@ class ReplyPreviewWidget extends StatelessWidget {
             content,
             style: AppTextStyles.labelSmall.copyWith(
               color: isFromCurrentUser
-                  ? AppColors.cardWhite.withValues(alpha: AppDimensions.opacityDark)
+                  ? AppColors.cardWhite
+                      .withValues(alpha: AppDimensions.opacityDark)
                   : AppColors.textMedium,
             ),
             maxLines: 2,
@@ -126,7 +129,7 @@ class MessageAvatarWidget extends StatelessWidget {
     return Center(
       child: Text(
         displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-        style: AppTextStyles.labelMedium.copyWith(color: AppColors.primaryBlue),
+        style: AppTextStyles.labelMedium.copyWith(color: AppColors.forestGreen),
       ),
     );
   }

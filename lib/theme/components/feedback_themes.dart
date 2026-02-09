@@ -1,4 +1,9 @@
 /// Feedback and interactive component themes.
+///
+/// **UI Redesign:**
+/// - All interactive elements use forest green
+/// - Snackbar: Forest green dark background
+/// - Progress indicators: Forest green
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -10,10 +15,10 @@ class FeedbackThemes {
   /// Private constructor
   FeedbackThemes._();
 
-  /// Snackbar theme
+  /// Snackbar theme - Forest green dark background
   static SnackBarThemeData get snackBarTheme {
     return SnackBarThemeData(
-      backgroundColor: AppColors.darkNavy,
+      backgroundColor: AppColors.forestGreenDark,
       contentTextStyle: AppTextStyles.snackbarText.copyWith(
         color: AppColors.cardWhite,
       ),
@@ -21,7 +26,7 @@ class FeedbackThemes {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       behavior: SnackBarBehavior.floating,
-      elevation: AppDimensions.elevationHigh,
+      elevation: AppDimensions.elevationMedium,
     );
   }
 
@@ -34,30 +39,31 @@ class FeedbackThemes {
     );
   }
 
-  /// Switch theme
+  /// Switch theme - Forest green when selected
   static SwitchThemeData get switchTheme {
     return SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryBlue;
+          return AppColors.forestGreen;
         }
         return AppColors.textLight;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityHalf);
+          return AppColors.forestGreen
+              .withValues(alpha: AppDimensions.opacityHalf);
         }
         return AppColors.divider;
       }),
     );
   }
 
-  /// Checkbox theme
+  /// Checkbox theme - Forest green when selected
   static CheckboxThemeData get checkboxTheme {
     return CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryBlue;
+          return AppColors.forestGreen;
         }
         return AppColors.cardWhite;
       }),
@@ -72,36 +78,37 @@ class FeedbackThemes {
     );
   }
 
-  /// Radio theme
+  /// Radio theme - Forest green when selected
   static RadioThemeData get radioTheme {
     return RadioThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryBlue;
+          return AppColors.forestGreen;
         }
         return AppColors.textMedium;
       }),
     );
   }
 
-  /// Slider theme
+  /// Slider theme - Forest green track and thumb
   static SliderThemeData get sliderTheme {
     return SliderThemeData(
-      activeTrackColor: AppColors.primaryBlue,
+      activeTrackColor: AppColors.forestGreen,
       inactiveTrackColor: AppColors.divider,
-      thumbColor: AppColors.primaryBlue,
-      overlayColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
-      valueIndicatorColor: AppColors.primaryBlue,
+      thumbColor: AppColors.forestGreen,
+      overlayColor:
+          AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLight),
+      valueIndicatorColor: AppColors.forestGreen,
       valueIndicatorTextStyle: AppTextStyles.labelSmall.copyWith(
         color: AppColors.cardWhite,
       ),
     );
   }
 
-  /// Progress indicator theme
+  /// Progress indicator theme - Forest green
   static ProgressIndicatorThemeData get progressIndicatorTheme {
     return const ProgressIndicatorThemeData(
-      color: AppColors.primaryBlue,
+      color: AppColors.forestGreen,
       linearTrackColor: AppColors.divider,
       circularTrackColor: AppColors.divider,
     );

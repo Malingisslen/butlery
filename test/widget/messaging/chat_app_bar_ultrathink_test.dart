@@ -30,7 +30,7 @@ void main() {
       return MaterialApp(
         locale: const Locale('sv', 'SE'),
         theme: ThemeData(
-          primaryColor: AppColors.primaryBlue,
+          primaryColor: AppColors.forestGreen,
           scaffoldBackgroundColor: Colors.white,
         ),
         home: Scaffold(
@@ -107,7 +107,7 @@ void main() {
 
         // Should have app bar with correct colors
         final appBar = tester.widget<AppBar>(find.byType(AppBar));
-        expect(appBar.backgroundColor, equals(AppColors.primaryBlue));
+        expect(appBar.backgroundColor, equals(AppColors.forestGreen));
         expect(appBar.foregroundColor, equals(AppColors.cardWhite));
       });
 

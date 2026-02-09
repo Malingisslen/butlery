@@ -438,5 +438,156 @@
       "itemName": {"type": "String"},
       "itemType": {"type": "String"}
     }
-  }
+  },
+
+  "recipePortionAbbreviation": "srv",
+  "recipePortionSingular": "serving",
+  "recipePortionsPlural": "servings",
+  "recipeCookedToday": "Cooked today",
+  "recipeCookedTodaySuccess": "Recipe marked as cooked today!",
+  "recipeCookedTodayError": "Could not mark as cooked",
+  "recipeNoInstructions": "No instructions provided.",
+  "recipeTags": "Tags",
+  "recipeImagesTitle": "Images",
+  "recipeImageCount": "{count, plural, =1{1 image} other{{count} images}}",
+  "@recipeImageCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "recipePersonalTags": "Personal tags",
+  "recipeIngredientsForPortions": "Ingredients for {count} {count, plural, =1{serving} other{servings}}:",
+  "@recipeIngredientsForPortions": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "recipeAnalysisFailed": "Analysis failed",
+  "recipeAnalyzing": "Analyzing...",
+  "recipeAnalysisFailedA11y": "Ingredient analysis failed",
+  "recipeAnalyzingA11y": "Ingredients being analyzed",
+  "recipeSearchHint": "search recipes...",
+  "recipeShowMore": "Show more recipes",
+  "recipeCountBadge": "{count} recipes",
+  "@recipeCountBadge": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "scalerPortionsLabel": "Servings:",
+  "scalerUsingSwedishUnits": "Using metric units",
+  "scalerConvertAmericanUnits": "Convert American units",
+  "scalerScaledFromTo": "Scaled from {from} to {to} servings",
+  "@scalerScaledFromTo": {
+    "placeholders": {
+      "from": {"type": "int"},
+      "to": {"type": "int"}
+    }
+  },
+  "scalerAmericanConverted": "American units converted to metric",
+
+  "menuPromptQuestion": "What kind of menu do you want?",
+  "menuPromptHint": "E.g. 3 dinners, 2 lunches and 1 breakfast",
+  "menuGenerating": "Generating...",
+  "menuGenerateNew": "Generate new menu",
+  "menuGenerate": "Generate menu",
+  "menuYourWeeklyMenu": "Your weekly menu",
+  "menuRecipeCount": "{recipes} recipes in {categories} categories",
+  "@menuRecipeCount": {
+    "placeholders": {
+      "recipes": {"type": "int"},
+      "categories": {"type": "int"}
+    }
+  },
+  "menuChooseManually": "Choose recipes manually",
+  "menuNoMoreRecipes": "No more recipes available for swap",
+  "menuGenerateError": "Could not generate menu",
+  "menuWeekBadgeWithCount": "Week {week} · {count} dishes",
+  "@menuWeekBadgeWithCount": {
+    "placeholders": {
+      "week": {"type": "int"},
+      "count": {"type": "int"}
+    }
+  },
+  "menuWeekBadge": "Week {week}",
+  "@menuWeekBadge": {
+    "placeholders": {
+      "week": {"type": "int"}
+    }
+  },
+  "menuToShoppingList": "To shopping list",
+  "menuLoadSaved": "Load saved menu",
+  "menuClear": "Clear menu",
+  "menuShared": "Weekly menu shared!",
+  "menuGeneratingOverlay": "Generating your weekly menu...",
+  "menuGeneratingSubtitle": "Finding recipes that match your preferences",
+
+  "shoppingCountBadge": "{items} items · {done} done",
+  "@shoppingCountBadge": {
+    "placeholders": {
+      "items": {"type": "int"},
+      "done": {"type": "int"}
+    }
+  },
+
+  "commonSort": "Sort",
+  "commonHide": "Hide",
+  "commonShowAllCount": "Show all ({count})",
+  "@commonShowAllCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "commonMoreCount": "+{count} more",
+  "@commonMoreCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "commonDismiss": "Dismiss",
+  "errorUnexpected": "An unexpected error occurred",
+
+  "searchClearSearch": "Clear search",
+  "searchClearFilters": "Clear filters",
+
+  "syncComplete": "Sync complete!",
+  "syncFailed": "Sync failed: {error}",
+  "@syncFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "offlineShowingLocal": "Offline mode - showing local recipes",
+
+  "recipeCreateCopy": "Create copy",
+  "recipeCreateShoppingList": "Create shopping list",
+  "recipeUpdateTags": "Update tags",
+  "recipeViewSource": "View source",
+  "recipeShareWithFriends": "Share with friends",
+  "recipeShareExternal": "Share externally",
+  "recipeSourceFrom": "From {host}",
+  "@recipeSourceFrom": {
+    "placeholders": {
+      "host": {"type": "String"}
+    }
+  },
+  "errorCouldNotOpenLink": "Could not open link",
+  "errorInvalidLink": "Invalid link",
+
+  "shoppingItemRemoved": "{name} removed!",
+  "@shoppingItemRemoved": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "shoppingItemRemoveError": "Could not remove {name}",
+  "@shoppingItemRemoveError": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "shoppingAllUnchecked": "All items unchecked!",
+  "shoppingNoListForRename": "No list selected for renaming",
+  "shoppingNoListForDelete": "No list selected for deletion"
 }

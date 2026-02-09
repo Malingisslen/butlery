@@ -92,7 +92,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
           horizontal: AppDimensions.paddingM,
           vertical: AppDimensions.paddingS,
         ),
-        color: AppColors.backgroundBeige,
+        color: AppColors.cream,
         child: Row(
           children: [
             // Avatar placeholder
@@ -100,13 +100,14 @@ class _TypingIndicatorState extends State<TypingIndicator>
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: AppDimensions.opacityLight),
+                color: AppColors.accent
+                    .withValues(alpha: AppDimensions.opacityLight),
                 shape: BoxShape.circle,
               ),
               child: const Center(
                 child: Icon(
                   Icons.more_horiz,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                   size: AppDimensions.iconSizeS,
                 ),
               ),

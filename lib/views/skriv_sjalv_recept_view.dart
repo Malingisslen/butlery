@@ -300,14 +300,14 @@ class _SkrivSjalvReceptViewContentState
           title: Text(
             viewModel.isEditMode ? 'Redigera recept' : 'Skriv nytt recept',
           ),
-          backgroundColor: AppColors.backgroundBeige,
+          backgroundColor: AppColors.cream,
           foregroundColor: AppColors.textDark,
           iconTheme: const IconThemeData(
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
             size: AppDimensions.iconSizeL,
           ),
           actionsIconTheme: const IconThemeData(
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
             size: AppDimensions.iconSizeL,
           ),
         ),
@@ -533,7 +533,8 @@ class _SkrivSjalvReceptViewContentState
             // ✅ RESPONSIVE: Constrained loading overlay
             if (_isSaving || viewModel.isSaving)
               ColoredBox(
-                color: AppColors.backgroundBeige.withValues(alpha: AppDimensions.opacityVeryDark),
+                color: AppColors.cream
+                    .withValues(alpha: AppDimensions.opacityVeryDark),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(

@@ -50,7 +50,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
           ? Icon(widget.titleIcon!,
               color: widget.isDangerous
                   ? AppColors.error
-                  : widget.primaryActionColor ?? AppColors.primaryBlue,
+                  : widget.primaryActionColor ?? AppColors.forestGreen,
               size: AppDimensions.iconSizeXxl)
           : null,
       title: Text(widget.title),
@@ -59,8 +59,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (widget.subtitle != null) ...[
-            Text(widget.subtitle!,
-                style: AppTextStyles.bodyMediumMuted),
+            Text(widget.subtitle!, style: AppTextStyles.bodyMediumMuted),
             const SizedBox(height: AppDimensions.spacingM),
           ],
           widget.buildContent(context),
@@ -87,7 +86,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
   Widget _buildPrimaryButton() {
     final buttonColor = widget.isDangerous
         ? AppColors.error
-        : (widget.primaryActionColor ?? AppColors.primaryBlue);
+        : (widget.primaryActionColor ?? AppColors.forestGreen);
     if (widget.isDangerous) {
       return FilledButton.icon(
         onPressed: _isLoading ? null : _onPrimaryAction,
@@ -157,7 +156,8 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(color: AppColors.error),
       ),
@@ -191,7 +191,7 @@ abstract class BaseFormDialog<T> extends BaseDialog<T> {
     super.primaryActionText = 'Spara',
     super.secondaryActionText = 'Avbryt',
     super.primaryActionIcon = Icons.save,
-    super.primaryActionColor = AppColors.primaryBlue,
+    super.primaryActionColor = AppColors.forestGreen,
   });
 
   List<Widget> buildFormFields(BuildContext context);
@@ -449,7 +449,8 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(color: AppColors.error),
       ),

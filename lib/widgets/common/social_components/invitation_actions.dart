@@ -45,9 +45,12 @@ class InvitationActions {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: AppColors.forestGreen
+            .withValues(alpha: AppDimensions.opacityVeryLight),
         border: Border(
-          top: BorderSide(color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight)),
+          top: BorderSide(
+              color: AppColors.forestGreen
+                  .withValues(alpha: AppDimensions.opacityMediumLight)),
         ),
       ),
       child: Row(
@@ -334,8 +337,7 @@ class InvitationActions {
             child: Builder(
               builder: (context) => ListTile(
                 leading: const Icon(Icons.delete, color: AppColors.error),
-                title: Text('Ta bort',
-                    style: AppTextStyles.bodyMediumError),
+                title: Text('Ta bort', style: AppTextStyles.bodyMediumError),
                 dense: true,
               ),
             ),
@@ -356,7 +358,7 @@ class InvitationActions {
     String? leftLabel = 'Ta bort',
     String? rightLabel = 'Inbjud',
     Color? leftColor = AppColors.error,
-    Color? rightColor = AppColors.primaryBlue,
+    Color? rightColor = AppColors.forestGreen,
   }) {
     return Dismissible(
       key: UniqueKey(),

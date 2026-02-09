@@ -1,8 +1,10 @@
 // lib/widgets/common/layout/layout_scaffolds.dart
+//
+// UI Redesign: Updated to use ButleryHeader and new navigation
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
+import 'package:butlery/widgets/common/butlery_header.dart';
 
 /// Layout scaffold components for main navigation and simple layouts
 /// This module provides the core layout structures including
@@ -10,12 +12,16 @@ import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 class LayoutScaffolds {
   /// Main layout with bottom navigation and app bar
   /// Exactly like original MainLayoutMenu with ALL functionality preserved
+  ///
+  /// Set [appBar] to provide a custom header (e.g., MainViewHeader).
+  /// If [appBar] is null, uses default title-based header.
   static Widget mainMenu({
     required Widget body,
     int? currentIndex,
     String? title,
     List<Widget>? actions,
     Widget? floatingActionButton,
+    PreferredSizeWidget? appBar,
   }) {
     return _MainMenuLayout(
       body: body,
@@ -23,6 +29,7 @@ class LayoutScaffolds {
       title: title,
       actions: actions,
       floatingActionButton: floatingActionButton,
+      appBar: appBar,
     );
   }
 
@@ -52,6 +59,7 @@ class _MainMenuLayout extends StatelessWidget {
   final String? title;
   final List<Widget>? actions;
   final Widget? floatingActionButton;
+  final PreferredSizeWidget? appBar;
 
   const _MainMenuLayout({
     required this.body,
@@ -59,23 +67,27 @@ class _MainMenuLayout extends StatelessWidget {
     this.title,
     this.actions,
     this.floatingActionButton,
+    this.appBar,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Use ButleryAdaptiveNavigation which automatically switches between
-    // BottomNavigationBar (mobile) and NavigationRail (tablet/desktop)
-    return ButleryAdaptiveNavigation(
+    // Use AdaptiveNavigationScaffold with Butlery's navigation items
+    return AdaptiveNavigationScaffold(
       currentIndex: currentIndex ?? 0,
+      items: ButleryAdaptiveNavigation.navigationItems,
       body: body,
-      title: title,
-      actions: actions,
+      title:
+          appBar == null ? title : null, // Only use title if no custom appBar
+      actions: appBar == null ? actions : null,
       floatingActionButton: floatingActionButton,
+      appBar: appBar,
     );
   }
 }
 
-/// Simple layout for views without bottom navigation
+/// Simple layout for views without bottom navigation.
+/// **UI Redesign:** Uses ButleryHeader for consistent styling.
 class _SimpleLayout extends StatelessWidget {
   final Widget body;
   final String? title;
@@ -96,12 +108,14 @@ class _SimpleLayout extends StatelessWidget {
     return Scaffold(
       appBar: appBar ??
           (title != null
-              ? AppBar(
-                  title: Text(
-                    title!,
-                    style: AppTextStyles.headlineSmall,
-                  ),
-                  actions: actions,
+              ? ButleryHeader(
+                  title: title!,
+                  trailing: actions != null && actions!.isNotEmpty
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: actions!,
+                        )
+                      : null,
                 )
               : null),
       body: body,

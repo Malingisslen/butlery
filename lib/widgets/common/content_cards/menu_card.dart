@@ -205,8 +205,7 @@ class MenuCard extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacingS),
             Text(
               'Inga recept i menyn',
-              style:
-                  AppTextStyles.metadataEmphasized,
+              style: AppTextStyles.metadataEmphasized,
             ),
           ],
         ),
@@ -220,8 +219,7 @@ class MenuCard extends StatelessWidget {
       children: [
         Text(
           'Recept i menyn:',
-          style:
-              AppTextStyles.labelMediumMuted,
+          style: AppTextStyles.labelMediumMuted,
         ),
         const SizedBox(height: AppDimensions.spacingS),
         ...recipesToShow.map((recipe) => Padding(
@@ -253,8 +251,7 @@ class MenuCard extends StatelessWidget {
             padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
             child: Text(
               '+ ${allRecipes.length - 3} fler recept',
-              style:
-                  AppTextStyles.metadataEmphasized,
+              style: AppTextStyles.metadataEmphasized,
             ),
           ),
       ],
@@ -275,10 +272,12 @@ class MenuCard extends StatelessWidget {
         vertical: AppDimensions.spacingS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: AppColors.forestGreen
+            .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: AppColors.forestGreen
+              .withValues(alpha: AppDimensions.opacityMediumLight),
           width: AppDimensions.borderWidthThin,
         ),
       ),
@@ -287,13 +286,12 @@ class MenuCard extends StatelessWidget {
           const Icon(
             Icons.people,
             size: AppDimensions.iconSizeS,
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Text(
             memberCount > 0 ? 'Delad med $memberCount personer' : 'Delad meny',
-            style:
-                AppTextStyles.linkSmall,
+            style: AppTextStyles.linkSmall,
           ),
         ],
       ),
@@ -310,7 +308,7 @@ class MenuCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingXs),
       decoration: const BoxDecoration(
-        color: AppColors.primaryBlue,
+        color: AppColors.forestGreen,
         shape: BoxShape.circle,
       ),
       child: const Icon(

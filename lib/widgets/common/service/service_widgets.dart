@@ -65,7 +65,7 @@ class ServiceWidgets {
             height: AppDimensions.iconSizeM,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXl),
@@ -85,9 +85,12 @@ class ServiceWidgets {
         child: Container(
           padding: const EdgeInsets.all(AppDimensions.paddingM),
           decoration: BoxDecoration(
-            color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+            color: AppColors.error
+                .withValues(alpha: AppDimensions.opacityVeryLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            border: Border.all(color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
+            border: Border.all(
+                color: AppColors.error
+                    .withValues(alpha: AppDimensions.opacityMediumLight)),
           ),
           child: Text(
             error,
@@ -100,7 +103,8 @@ class ServiceWidgets {
 
   static Widget _buildLoadingOverlay() {
     return ColoredBox(
-      color: AppColors.neutralDark.withValues(alpha: AppDimensions.opacityMediumLight),
+      color: AppColors.neutralDark
+          .withValues(alpha: AppDimensions.opacityMediumLight),
       child: Center(
         child: Container(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -113,7 +117,7 @@ class ServiceWidgets {
             height: AppDimensions.iconSizeM,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
             ),
           ),
         ),

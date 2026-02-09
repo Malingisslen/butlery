@@ -35,7 +35,7 @@ void main() {
 
         // Verify decoration
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(AppColors.primaryBlue));
+        expect(decoration.color, equals(AppColors.forestGreen));
         expect(decoration.borderRadius,
             equals(BorderRadius.circular(AppDimensions.borderRadius12)));
         expect(decoration.boxShadow, isNull); // No shadow by default
@@ -105,7 +105,7 @@ void main() {
 
         final shadow = decoration.boxShadow!.first;
         expect(
-            shadow.color, equals(AppColors.primaryBlue.withValues(alpha: 0.3)));
+            shadow.color, equals(AppColors.forestGreen.withValues(alpha: 0.3)));
         expect(shadow.blurRadius, equals(AppDimensions.elevationMedium * 2));
         expect(shadow.offset,
             equals(const Offset(0, AppDimensions.elevationMedium)));
@@ -215,7 +215,7 @@ void main() {
             bodyMedium: TextStyle(fontSize: 14),
           ),
           colorScheme: const ColorScheme.light(
-            primary: AppColors.primaryBlue,
+            primary: AppColors.forestGreen,
             onSurface: Colors.black,
           ),
         ),
@@ -368,7 +368,7 @@ void main() {
             .pumpWidget(createTestWidget(const AppBranding(tagline: 'Test')));
 
         final nameText = tester.widget<Text>(find.text('Butlery'));
-        expect(nameText.style?.color, equals(AppColors.primaryBlue));
+        expect(nameText.style?.color, equals(AppColors.forestGreen));
 
         final taglineText = tester.widget<Text>(find.text('Test'));
         expect(taglineText.style?.color?.a, lessThan(1.0)); // Has transparency

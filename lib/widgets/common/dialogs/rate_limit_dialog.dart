@@ -102,7 +102,8 @@ class RateLimitDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Row(
@@ -247,7 +248,7 @@ class _ActionTile extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
               size: AppDimensions.iconSizeL,
             ),
             const SizedBox(width: AppDimensions.spacingM),

@@ -21,7 +21,9 @@ class LoadingWidgets {
     }
 
     final overlay = ColoredBox(
-      color: overlayColor ?? AppColors.neutralDark.withValues(alpha: AppDimensions.opacityMediumLight),
+      color: overlayColor ??
+          AppColors.neutralDark
+              .withValues(alpha: AppDimensions.opacityMediumLight),
       child: Center(
         child: Container(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -38,7 +40,7 @@ class LoadingWidgets {
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                      AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
                 ),
               ),
               if (loadingMessage != null) ...[
@@ -81,11 +83,13 @@ class LoadingWidgets {
                   child: Container(
                     padding: const EdgeInsets.all(AppDimensions.paddingM),
                     decoration: BoxDecoration(
-                      color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+                      color: AppColors.error
+                          .withValues(alpha: AppDimensions.opacityVeryLight),
                       borderRadius:
                           BorderRadius.circular(AppDimensions.borderRadiusM),
                       border: Border.all(
-                          color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
+                          color: AppColors.error.withValues(
+                              alpha: AppDimensions.opacityMediumLight)),
                     ),
                     child: Text(
                       'Ett oväntat fel uppstod',

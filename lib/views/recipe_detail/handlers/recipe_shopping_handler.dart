@@ -16,6 +16,110 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 /// Recipe shopping list action handler
 /// Handles shopping list generation from recipe ingredients with portion scaling.
 class RecipeShoppingHandler {
+  /// Show confirmation dialog with ingredient preview before adding to shopping list.
+  /// UI Redesign: FAB triggers this dialog first to show what will be added.
+  static Future<void> showAddToCartConfirmation(
+    BuildContext context, {
+    required int currentPortions,
+    required void Function(String message, {Color? backgroundColor})
+        showSnackBar,
+  }) async {
+    if (!context.mounted) return;
+
+    final viewModel = context.read<RecipeDetailViewModel>();
+    final recipe = viewModel.recipe;
+
+    // Generate shopping items from recipe
+    final shoppingItems = ShoppingListGenerator.generateShoppingItemsFromRecipe(
+      recipe,
+      portions: currentPortions,
+    );
+
+    if (shoppingItems.isEmpty) {
+      showSnackBar(
+        'Receptet har inga ingredienser att lägga till',
+        backgroundColor: AppColors.warning,
+      );
+      return;
+    }
+
+    // Show confirmation dialog with ingredient list
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Lägg till i inköpslista'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${shoppingItems.length} ingredienser från "${recipe.title}":',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 12),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 300),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: shoppingItems.length,
+                  itemBuilder: (context, index) {
+                    final item = shoppingItems[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: AppColors.forestGreen,
+                              borderRadius: BorderRadius.circular(0),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              item.name,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Avbryt'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.forestGreen,
+            ),
+            child: const Text('Lägg till'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    // Proceed with shopping list selection
+    await generateShoppingListFromRecipe(
+      context,
+      currentPortions: currentPortions,
+      showSnackBar: showSnackBar,
+    );
+  }
+
   /// Generate shopping list from current recipe with portion scaling and Swedish categorization.
   /// This method creates a shopping list from the recipe's ingredients, allowing users to
   /// select an existing shopping list or create a new one. It leverages Swedish ingredient

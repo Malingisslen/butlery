@@ -103,7 +103,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           children: [
             const Icon(
               Icons.comment_outlined,
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
               size: AppDimensions.iconSizeAction,
             ),
             const SizedBox(width: AppDimensions.spacingM),

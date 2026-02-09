@@ -297,7 +297,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
       case content_detector.ContentType.socialMediaUrl:
         icon = Icons.link;
         title = 'URL från ${_getPlatformName()}';
-        color = AppColors.primaryBlue;
+        color = AppColors.forestGreen;
         break;
       case content_detector.ContentType.recipeText:
         icon = Icons.restaurant_menu;
@@ -307,7 +307,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
       case content_detector.ContentType.recipeUrl:
         icon = Icons.public;
         title = 'Receptlänk detekterad';
-        color = AppColors.primaryBlue;
+        color = AppColors.forestGreen;
         break;
       default:
         icon = Icons.text_fields;
@@ -369,7 +369,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+                  color: AppColors.error
+                      .withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius: BorderRadius.circular(
                     AppDimensions.borderRadiusM,
                   ),
@@ -441,7 +442,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
+                color: AppColors.success
+                    .withValues(alpha: AppDimensions.opacityVeryLight),
                 borderRadius: BorderRadius.circular(
                   AppDimensions.borderRadiusM,
                 ),

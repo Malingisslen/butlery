@@ -34,9 +34,9 @@ void main() {
       return MaterialApp(
         locale: const Locale('sv', 'SE'),
         theme: ThemeData(
-          primaryColor: AppColors.primaryBlue,
+          primaryColor: AppColors.forestGreen,
           colorScheme: const ColorScheme.light(
-            primary: AppColors.primaryBlue,
+            primary: AppColors.forestGreen,
             onSurface: Colors.black87,
           ),
           textTheme: const TextTheme(

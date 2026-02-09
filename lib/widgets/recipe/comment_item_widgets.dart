@@ -25,7 +25,8 @@ class CommentItemWidgets {
       padding: AppDimensions.paddingAll12,
       decoration: isReply
           ? BoxDecoration(
-              color: AppColors.surface.withValues(alpha: AppDimensions.opacityHalf),
+              color: AppColors.surface
+                  .withValues(alpha: AppDimensions.opacityHalf),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             )
           : null,
@@ -58,7 +59,7 @@ class CommentItemWidgets {
               ),
               // Reply button
               Semantics(
-                label: 'Svara pa kommentar',
+                label: 'Svara på kommentar',
                 button: true,
                 child: IconButton(
                   onPressed: onReply,
@@ -138,7 +139,8 @@ class CommentItemWidgets {
               decoration: BoxDecoration(
                 border: Border(
                   left: BorderSide(
-                    color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityMediumLight),
+                    color: AppColors.textMedium
+                        .withValues(alpha: AppDimensions.opacityMediumLight),
                     width: 2,
                   ),
                 ),

@@ -58,7 +58,8 @@ class MessageContentBuilder {
               'redigerad',
               style: AppTextStyles.labelSmall.copyWith(
                 color: isFromCurrentUser
-                    ? AppColors.cardWhite.withValues(alpha: AppDimensions.opacityDark)
+                    ? AppColors.cardWhite
+                        .withValues(alpha: AppDimensions.opacityDark)
                     : AppColors.textMedium,
                 fontStyle: FontStyle.italic,
               ),
@@ -73,7 +74,7 @@ class MessageContentBuilder {
     Message message,
     bool isFromCurrentUser,
   ) {
-    final recipeTitle = message.metadata?['recipeTitle'] ?? 'Okant recept';
+    final recipeTitle = message.metadata?['recipeTitle'] ?? 'Okänt recept';
     return _buildShareCard(
       context: context,
       isFromCurrentUser: isFromCurrentUser,
@@ -92,7 +93,7 @@ class MessageContentBuilder {
     Message message,
     bool isFromCurrentUser,
   ) {
-    final menuTitle = message.metadata?['menuTitle'] ?? 'Okand meny';
+    final menuTitle = message.metadata?['menuTitle'] ?? 'Okänd meny';
     return _buildShareCard(
       context: context,
       isFromCurrentUser: isFromCurrentUser,
@@ -107,12 +108,12 @@ class MessageContentBuilder {
     Message message,
     bool isFromCurrentUser,
   ) {
-    final listTitle = message.metadata?['listTitle'] ?? 'Okand inkopslista';
+    final listTitle = message.metadata?['listTitle'] ?? 'Okänd inköpslista';
     return _buildShareCard(
       context: context,
       isFromCurrentUser: isFromCurrentUser,
       icon: Icons.shopping_cart,
-      label: 'Inkopslista delad',
+      label: 'Inköpslista delad',
       title: listTitle,
     );
   }
@@ -137,14 +138,15 @@ class MessageContentBuilder {
           Container(
             padding: const EdgeInsets.all(AppDimensions.paddingS),
             decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: AppDimensions.opacityMediumLight),
+              color: AppColors.accent
+                  .withValues(alpha: AppDimensions.opacityMediumLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             ),
             child: Icon(
               icon,
               color: isFromCurrentUser
                   ? AppColors.cardWhite
-                  : AppColors.primaryBlue,
+                  : AppColors.forestGreen,
               size: AppDimensions.iconSizeM,
             ),
           ),
@@ -158,7 +160,7 @@ class MessageContentBuilder {
                   style: AppTextStyles.labelMedium.copyWith(
                     color: isFromCurrentUser
                         ? AppColors.cardWhite
-                        : AppColors.primaryBlue,
+                        : AppColors.forestGreen,
                   ),
                 ),
                 Text(
@@ -174,7 +176,8 @@ class MessageContentBuilder {
                     subtitle,
                     style: AppTextStyles.labelSmall.copyWith(
                       color: isFromCurrentUser
-                          ? AppColors.cardWhite.withValues(alpha: AppDimensions.opacityVeryDark)
+                          ? AppColors.cardWhite
+                              .withValues(alpha: AppDimensions.opacityVeryDark)
                           : AppColors.textMedium,
                     ),
                   ),
@@ -210,7 +213,7 @@ class MessageContentBuilder {
         mainAxisSize: MainAxisSize.min,
         children: [
           Semantics(
-            label: 'Bildmeddelande, tryck for fullstorlek',
+            label: 'Bildmeddelande, tryck för fullstorlek',
             button: true,
             child: GestureDetector(
               onTap: () {
@@ -274,7 +277,7 @@ class MessageContentBuilder {
             ? CircularProgressIndicator(
                 color: isFromCurrentUser
                     ? AppColors.cardWhite
-                    : AppColors.primaryBlue,
+                    : AppColors.forestGreen,
               )
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -283,7 +286,8 @@ class MessageContentBuilder {
                     Icons.broken_image,
                     size: 48,
                     color: isFromCurrentUser
-                        ? AppColors.cardWhite.withValues(alpha: AppDimensions.opacityDark)
+                        ? AppColors.cardWhite
+                            .withValues(alpha: AppDimensions.opacityDark)
                         : AppColors.textMedium,
                   ),
                   const SizedBox(height: AppDimensions.spacingS),
@@ -291,7 +295,8 @@ class MessageContentBuilder {
                     'Kunde inte ladda bild',
                     style: AppTextStyles.labelSmall.copyWith(
                       color: isFromCurrentUser
-                          ? AppColors.cardWhite.withValues(alpha: AppDimensions.opacityDark)
+                          ? AppColors.cardWhite
+                              .withValues(alpha: AppDimensions.opacityDark)
                           : AppColors.textMedium,
                     ),
                   ),
@@ -314,11 +319,11 @@ class MessageContentBuilder {
           Icon(
             Icons.play_arrow,
             color:
-                isFromCurrentUser ? AppColors.cardWhite : AppColors.primaryBlue,
+                isFromCurrentUser ? AppColors.cardWhite : AppColors.forestGreen,
           ),
           const SizedBox(width: AppDimensions.paddingS),
           Text(
-            'Rostmeddelande',
+            'Röstmeddelande',
             style: AppTextStyles.bodyMedium.copyWith(
               color:
                   isFromCurrentUser ? AppColors.cardWhite : AppColors.textDark,

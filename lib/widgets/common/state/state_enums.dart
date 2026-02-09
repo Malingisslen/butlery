@@ -29,9 +29,21 @@ enum EmptyStateVariant {
 
 /// Enum för olika loading varianter
 enum LoadingVariant {
+  /// Standard circular progress indicator
   spinner,
+
+  /// Animated pea pod (UI Redesign branded loading)
+  peaAnimation,
+
+  /// Skeleton card placeholder
   skeletonRecipeCard,
+
+  /// Skeleton list with multiple cards
   skeletonRecipeList,
+
+  /// Generic skeleton placeholder
   skeletonGeneric,
+
+  /// Simple shimmer box
   shimmerBox,
 }

@@ -95,7 +95,8 @@ class ShoppingShareStatusDialog extends StatelessWidget {
 
   Widget _buildListInfoSection(BuildContext context) {
     return Card(
-      color: _getListTypeColor().withValues(alpha: AppDimensions.opacityVeryLight),
+      color:
+          _getListTypeColor().withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -104,7 +105,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             Text(
               'Listinformation',
               style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -131,7 +132,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
       permissionDescription =
           'Du äger denna lista och kan hantera alla aspekter av den';
       permissionIcon = Icons.admin_panel_settings;
-      permissionColor = AppColors.primaryBlue;
+      permissionColor = AppColors.forestGreen;
     } else {
       switch (userPermission) {
         case SharedListPermission.view:
@@ -153,7 +154,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           permissionDescription =
               'Du kan redigera listan och hantera medlemmarnas behörigheter';
           permissionIcon = Icons.admin_panel_settings;
-          permissionColor = AppColors.primaryBlue;
+          permissionColor = AppColors.forestGreen;
           break;
         default:
           permissionLabel = 'Ej specificerad';
@@ -179,7 +180,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                 Text(
                   'Din behörighet',
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: AppColors.primaryBlue,
+                    color: AppColors.forestGreen,
                   ),
                 ),
               ],
@@ -210,7 +211,8 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     allMembers.addAll(list.memberPermissions);
 
     return Card(
-      color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: AppColors.forestGreen
+          .withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -219,13 +221,13 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             Row(
               children: [
                 const Icon(Icons.people,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.forestGreen,
                     size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
                   'Medlemmar (${allMembers.length})',
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: AppColors.primaryBlue,
+                    color: AppColors.forestGreen,
                   ),
                 ),
               ],
@@ -252,7 +254,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     if (isOwner) {
       permissionLabel = 'Ägare';
       permissionIcon = Icons.admin_panel_settings;
-      permissionColor = AppColors.primaryBlue;
+      permissionColor = AppColors.forestGreen;
     } else {
       switch (permission) {
         case SharedListPermission.view:
@@ -268,7 +270,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
         case SharedListPermission.admin:
           permissionLabel = 'Admin';
           permissionIcon = Icons.admin_panel_settings;
-          permissionColor = AppColors.primaryBlue;
+          permissionColor = AppColors.forestGreen;
           break;
       }
     }
@@ -279,11 +281,12 @@ class ShoppingShareStatusDialog extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+            backgroundColor: AppColors.forestGreen
+                .withValues(alpha: AppDimensions.opacityVeryLight),
             child: Text(
               displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
               style: AppTextStyles.labelLarge.copyWith(
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
               ),
             ),
           ),
@@ -320,7 +323,8 @@ class ShoppingShareStatusDialog extends StatelessWidget {
 
   Widget _buildActivitySection(BuildContext context) {
     return Card(
-      color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: AppColors.forestGreen
+          .withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -329,13 +333,13 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             Row(
               children: [
                 const Icon(Icons.history,
-                    color: AppColors.primaryBlue,
+                    color: AppColors.forestGreen,
                     size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
                   'Senaste aktivitet',
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: AppColors.primaryBlue,
+                    color: AppColors.forestGreen,
                   ),
                 ),
               ],
@@ -390,9 +394,9 @@ class ShoppingShareStatusDialog extends StatelessWidget {
   Color _getListTypeColor() {
     switch (list.type) {
       case ListType.personal:
-        return AppColors.primaryBlue;
+        return AppColors.forestGreen;
       case ListType.collaborative:
-        return AppColors.primaryBlue;
+        return AppColors.forestGreen;
       case ListType.template:
         return AppColors.textMedium;
     }

@@ -24,6 +24,10 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_list_header.dart
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
 
+// UI Redesign header component
+import 'package:butlery/widgets/common/main_view_header.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
+
 /// Shopping list management view using facade pattern architecture.
 class UnifiedShoppingView extends StatefulWidget {
   const UnifiedShoppingView({super.key});
@@ -39,47 +43,46 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   void initState() {
     super.initState();
     _viewModel = ServiceLocator.get<UnifiedShoppingViewModel>();
-    _initializeViewModel();
-  }
-
-  Future<void> _initializeViewModel() async {
-    await _viewModel.initialize();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _viewModel.initialize();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _viewModel,
-      child: LayoutComponents.mainMenu(
-        title: 'Inköpslistor',
-        currentIndex: 3,
-        actions: [
-          // Dynamic action bar with shopping operations
-          Consumer<UnifiedShoppingViewModel>(
-            builder: (context, viewModel, child) {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: ShoppingAppBar.buildActions(
-                  context,
-                  viewModel,
-                  _showCreateListDialog,
-                  _showShoppingShareDialog,
-                  _shareListExternally,
-                  () => _showSharingStatus(viewModel),
-                ),
-              );
-            },
-          ),
-        ],
-        // Floating action button for quick item addition
-        floatingActionButton: ShoppingAppBar.buildFloatingActionButton(
-          context,
-          _showAddItemDialog,
-        ),
-        body: Consumer<UnifiedShoppingViewModel>(
-          builder: (context, viewModel, child) {
-            // ✅ RESPONSIVE: Center and constrain content on large screens
-            return Center(
+      child: Consumer<UnifiedShoppingViewModel>(
+        builder: (context, viewModel, child) {
+          final itemCount = viewModel.activeList?.items.length ?? 0;
+          final boughtCount =
+              viewModel.activeList?.items.where((item) => item.bought).length ??
+                  0;
+
+          return LayoutComponents.mainMenu(
+            currentIndex:
+                2, // UI Redesign: nav order is recept(0), meny(1), inköp(2), lägg till(3)
+            // UI Redesign: Use MainViewHeader with line break title
+            appBar: MainViewHeader(
+              title:
+                  'inköps-\nlista', // UI Redesign: forced line break per mockup
+              countBadge: context.l10n.shoppingCountBadge(
+                  itemCount, boughtCount), // UI Redesign: "X varor · X klara"
+              actions: ShoppingAppBar.buildHeaderActions(
+                context,
+                viewModel,
+                _showCreateListDialog,
+                _showShoppingShareDialog,
+                _shareListExternally,
+                () => _showSharingStatus(viewModel),
+              ),
+            ),
+            // Floating action button for quick item addition
+            floatingActionButton: ShoppingAppBar.buildFloatingActionButton(
+              context,
+              _showAddItemDialog,
+            ),
+            body: Center(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: LayoutComponents.valueFor(
@@ -120,9 +123,9 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                   ],
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -157,11 +160,13 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   /// - Success and error feedback with Swedish localized messages and user guidance
   /// - Collaborative coordination with real-time synchronization and multi-user support
   Future<void> _onDeleteItem(UnifiedShoppingItem item) async {
+    final removedMsg = context.l10n.shoppingItemRemoved(item.name);
+    final errorMsg = context.l10n.shoppingItemRemoveError(item.name);
     final success = await _viewModel.removeItemFromActiveList(item.id);
     if (success) {
-      _showSuccessSnackBar('${item.name} borttagen!');
+      _showSuccessSnackBar(removedMsg);
     } else {
-      _showErrorSnackBar('Kunde inte ta bort ${item.name}');
+      _showErrorSnackBar(errorMsg);
     }
   }
 
@@ -266,15 +271,16 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   /// - Collaborative coordination with real-time synchronization and multi-user support
   /// - Success feedback with Swedish localized messaging and user experience optimization
   Future<void> _uncheckAllItems(UnifiedShoppingViewModel viewModel) async {
+    final msg = context.l10n.shoppingAllUnchecked;
     await viewModel.uncheckAllItems();
-    _showSuccessSnackBar('Alla artiklar avbockade!');
+    _showSuccessSnackBar(msg);
   }
 
   /// Show rename list dialog with text input and validation
   Future<void> _showRenameListDialog(UnifiedShoppingViewModel viewModel) async {
     final activeList = viewModel.activeList;
     if (activeList == null) {
-      _showErrorSnackBar('Ingen lista vald för att byta namn');
+      _showErrorSnackBar(context.l10n.shoppingNoListForRename);
       return;
     }
 
@@ -292,7 +298,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
       UnifiedShoppingViewModel viewModel) async {
     final activeList = viewModel.activeList;
     if (activeList == null) {
-      _showErrorSnackBar('Ingen lista vald för borttagning');
+      _showErrorSnackBar(context.l10n.shoppingNoListForDelete);
       return;
     }
 

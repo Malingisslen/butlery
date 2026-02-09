@@ -63,7 +63,7 @@ class FriendRequestsHeaderBuilder {
           PopupMenuButton<String>(
             icon: const Icon(
               Icons.checklist,
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
             ),
             onSelected: (value) {
               if (value == 'accept_all') {
@@ -119,10 +119,12 @@ class FriendRequestsHeaderBuilder {
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       margin: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: AppColors.error
+              .withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(

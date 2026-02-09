@@ -242,10 +242,12 @@ class ImageGridWidgets {
           decoration: BoxDecoration(
             borderRadius: config.effectiveBorderRadius,
             border: Border.all(
-              color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+              color: AppColors.forestGreen
+                  .withValues(alpha: AppDimensions.opacityMediumLight),
               width: AppDimensions.borderWidthThin,
             ),
-            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityExtraVeryLight),
+            color: AppColors.forestGreen
+                .withValues(alpha: AppDimensions.opacityExtraVeryLight),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -257,7 +259,7 @@ class ImageGridWidgets {
                   child: CircularProgressIndicator(
                     strokeWidth: AppDimensions.borderWidthThin,
                     valueColor:
-                        AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                        AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
                   ),
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
@@ -265,7 +267,7 @@ class ImageGridWidgets {
                   child: Text(
                     'Lägger till...',
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.primaryBlue,
+                      color: AppColors.forestGreen,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -273,7 +275,7 @@ class ImageGridWidgets {
               ] else ...[
                 const Icon(
                   Icons.add_photo_alternate_outlined,
-                  color: AppColors.primaryBlue,
+                  color: AppColors.forestGreen,
                   size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
@@ -281,7 +283,7 @@ class ImageGridWidgets {
                   child: Text(
                     'Lägg till ($remainingSlots)',
                     style: AppTextStyles.text14Medium.copyWith(
-                      color: AppColors.primaryBlue,
+                      color: AppColors.forestGreen,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),

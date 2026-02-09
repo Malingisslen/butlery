@@ -498,7 +498,7 @@ void main() {
           final decoration = decoratedBox.decoration as BoxDecoration;
           if (decoration.border != null) {
             final border = decoration.border as Border;
-            if (border.top.color == AppColors.primaryBlue &&
+            if (border.top.color == AppColors.forestGreen &&
                 border.top.width == 2) {
               hasSelectedBorder = true;
               break;

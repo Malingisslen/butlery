@@ -262,15 +262,15 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                               vertical: AppDimensions.spacingXs,
                             ),
                             decoration: BoxDecoration(
-                              color:
-                                  AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+                              color: AppColors.forestGreen.withValues(
+                                  alpha: AppDimensions.opacityVeryLight),
                               borderRadius: BorderRadius.circular(
                                   AppDimensions.borderRadiusS),
                             ),
                             child: Text(
                               totalItems.toString(),
                               style: AppTextStyles.labelLarge.copyWith(
-                                color: AppColors.primaryBlue,
+                                color: AppColors.forestGreen,
                               ),
                             ),
                           ),
@@ -288,20 +288,23 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                       ),
                       child: TabBar(
                         controller: _tabController,
-                        indicatorColor: AppColors.primaryBlue,
-                        labelColor: AppColors.primaryBlue,
+                        indicatorColor: AppColors.forestGreen,
+                        labelColor: AppColors.forestGreen,
                         unselectedLabelColor: AppColors.textSecondary,
                         tabs: [
                           Tab(
-                            icon: const Icon(Icons.restaurant_menu, size: AppDimensions.iconSizeM),
+                            icon: const Icon(Icons.restaurant_menu,
+                                size: AppDimensions.iconSizeM),
                             text: 'Recept (${recipes.length})',
                           ),
                           Tab(
-                            icon: const Icon(Icons.calendar_today, size: AppDimensions.iconSizeM),
+                            icon: const Icon(Icons.calendar_today,
+                                size: AppDimensions.iconSizeM),
                             text: 'Menyer (${menus.length})',
                           ),
                           Tab(
-                            icon: const Icon(Icons.shopping_cart, size: AppDimensions.iconSizeM),
+                            icon: const Icon(Icons.shopping_cart,
+                                size: AppDimensions.iconSizeM),
                             text: 'Listor (${shoppingLists.length})',
                           ),
                         ],

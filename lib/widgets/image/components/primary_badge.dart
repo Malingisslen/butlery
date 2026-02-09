@@ -18,7 +18,7 @@ class PrimaryBadge extends StatelessWidget {
           vertical: AppDimensions.spacingXs,
         ),
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
           borderRadius: BorderRadius.circular(AppDimensions.paddingM),
         ),
         child: Row(

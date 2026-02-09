@@ -567,7 +567,7 @@ void main() {
           // ULTRATHINK: Verify counter styling (lines 116-123)
           final counterText = tester.widget<Text>(find.text('+4'));
           expect(counterText.style?.fontSize, equals(size * 0.35)); // Line 119
-          expect(counterText.style?.color, equals(AppColors.primaryBlue));
+          expect(counterText.style?.color, equals(AppColors.forestGreen));
           expect(counterText.style?.fontWeight, equals(FontWeight.bold));
         });
 

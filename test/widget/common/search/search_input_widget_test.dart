@@ -414,5 +414,138 @@ void main() {
         expect(controller.text, equals('Test'));
       });
     });
+
+    group('Trailing Widget (UI Redesign)', () {
+      testWidgets('should render trailing widget when provided',
+          (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SearchInputWidget(
+                controller: controller,
+                focusNode: focusNode,
+                trailing: const Icon(Icons.filter_list, key: Key('trailing')),
+              ),
+            ),
+          ),
+        );
+
+        expect(find.byKey(const Key('trailing')), findsOneWidget);
+      });
+
+      testWidgets('should not render trailing when null', (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SearchInputWidget(
+                controller: controller,
+                focusNode: focusNode,
+                trailing: null,
+              ),
+            ),
+          ),
+        );
+
+        expect(find.byKey(const Key('trailing')), findsNothing);
+      });
+
+      testWidgets(
+          'should show both clear button and trailing when text entered',
+          (tester) async {
+        controller.text = 'test';
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SearchInputWidget(
+                controller: controller,
+                focusNode: focusNode,
+                trailing: const Icon(Icons.filter_list, key: Key('trailing')),
+                onClear: () {},
+              ),
+            ),
+          ),
+        );
+
+        // Both clear icon and trailing should be visible
+        expect(find.byIcon(Icons.clear), findsOneWidget);
+        expect(find.byKey(const Key('trailing')), findsOneWidget);
+      });
+
+      testWidgets('should show only trailing when text is empty',
+          (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SearchInputWidget(
+                controller: controller,
+                focusNode: focusNode,
+                trailing: const Icon(Icons.filter_list, key: Key('trailing')),
+              ),
+            ),
+          ),
+        );
+
+        expect(find.byIcon(Icons.clear), findsNothing);
+        expect(find.byKey(const Key('trailing')), findsOneWidget);
+      });
+    });
+
+    group('Classic Style (UI Redesign)', () {
+      testWidgets('should not add rust bottom border in classic style',
+          (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SearchInputWidget(
+                controller: controller,
+                focusNode: focusNode,
+                useClassicStyle: true,
+              ),
+            ),
+          ),
+        );
+
+        // In classic style, there should be no rust bottom border
+        // but it still uses DecoratedBox for the green border styling
+        expect(find.byType(TextField), findsOneWidget);
+        // Classic style uses DecoratedBox with green border on all sides (no rust accent)
+        expect(find.byType(DecoratedBox), findsWidgets);
+      });
+
+      testWidgets('should add rust bottom border in default style',
+          (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SearchInputWidget(
+                controller: controller,
+                focusNode: focusNode,
+                useClassicStyle: false,
+              ),
+            ),
+          ),
+        );
+
+        // Default style should have a DecoratedBox for the rust bottom accent
+        expect(find.byType(DecoratedBox), findsOneWidget);
+      });
+
+      testWidgets('should default to non-classic style', (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SearchInputWidget(
+                controller: controller,
+                focusNode: focusNode,
+              ),
+            ),
+          ),
+        );
+
+        // Default should include the rust bottom border accent
+        expect(find.byType(DecoratedBox), findsOneWidget);
+      });
+    });
   });
 }

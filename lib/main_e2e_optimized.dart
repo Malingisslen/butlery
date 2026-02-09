@@ -204,12 +204,12 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
         title: 'Butlery E2E Initializing',
         theme: AppTheme.lightTheme,
         home: const Scaffold(
-          backgroundColor: AppColors.backgroundBeige,
+          backgroundColor: AppColors.cream,
           body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(color: AppColors.primaryBlue),
+                CircularProgressIndicator(color: AppColors.forestGreen),
                 SizedBox(height: AppDimensions.spacingL),
                 Text(
                   'Initializing E2E Environment...',

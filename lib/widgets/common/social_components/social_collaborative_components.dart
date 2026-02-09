@@ -111,7 +111,8 @@ class SocialCollaborativeComponents {
           horizontal: AppDimensions.spacingSm,
           vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
-        color: (activeColor ?? AppColors.success).withValues(alpha: AppDimensions.opacityVeryLight),
+        color: (activeColor ?? AppColors.success)
+            .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         border: Border.all(color: activeColor ?? AppColors.success),
       ),
@@ -219,7 +220,8 @@ class SocialCollaborativeComponents {
           horizontal: AppDimensions.spacingSm,
           vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
-        color: color ?? AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: color ??
+            AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         border: Border.all(color: color ?? AppColors.success),
       ),
@@ -233,8 +235,8 @@ class SocialCollaborativeComponents {
           Text(
             text,
             style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: color ?? AppColors.success,
-                ),
+              color: color ?? AppColors.success,
+            ),
           ),
         ],
       ),
@@ -255,7 +257,8 @@ class SocialCollaborativeComponents {
           vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
         color: color?.withValues(alpha: AppDimensions.opacityVeryLight) ??
-            AppColors.textMedium.withValues(alpha: AppDimensions.opacityVeryLight),
+            AppColors.textMedium
+                .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         border: Border.all(color: color ?? AppColors.textMedium),
       ),
@@ -269,8 +272,8 @@ class SocialCollaborativeComponents {
           Text(
             text,
             style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: color ?? AppColors.textMedium,
-                ),
+              color: color ?? AppColors.textMedium,
+            ),
           ),
         ],
       ),
@@ -291,7 +294,9 @@ class SocialCollaborativeComponents {
       padding: const EdgeInsets.all(
           (AppDimensions.spacingSm + AppDimensions.spacingXs)),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityMediumLight)),
+        border: Border.all(
+            color: AppColors.textMedium
+                .withValues(alpha: AppDimensions.opacityMediumLight)),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
       ),
       child: Column(
@@ -402,7 +407,8 @@ class SocialCollaborativeComponents {
           horizontal: AppDimensions.spacingTight,
           vertical: AppDimensions.spacingXxs),
       decoration: BoxDecoration(
-        color: (color ?? config.color).withValues(alpha: AppDimensions.opacityVeryLight),
+        color: (color ?? config.color)
+            .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(color: color ?? config.color),
       ),
@@ -416,8 +422,8 @@ class SocialCollaborativeComponents {
             Text(
               config.label,
               style: AppTextStyles.metadataEmphasized.copyWith(
-                    color: color ?? config.color,
-                  ),
+                color: color ?? config.color,
+              ),
             ),
           ],
         ],
@@ -432,19 +438,19 @@ class SocialCollaborativeComponents {
         return const _PermissionConfig(
           icon: Icons.star,
           label: 'Ägare',
-          color: AppColors.darkNavy,
+          color: AppColors.forestGreenDark,
         );
       case 'admin':
         return const _PermissionConfig(
           icon: Icons.admin_panel_settings,
           label: 'Admin',
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         );
       case 'editor':
         return const _PermissionConfig(
           icon: Icons.edit,
           label: 'Redigera',
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         );
       case 'viewer':
         return const _PermissionConfig(

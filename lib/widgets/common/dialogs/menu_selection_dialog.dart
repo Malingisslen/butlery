@@ -197,12 +197,13 @@ class _MenuListItem extends StatelessWidget {
         width: AppDimensions.iconSizeXl,
         height: AppDimensions.iconSizeXl,
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+          color: AppColors.forestGreen
+              .withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
         child: const Icon(
           Icons.calendar_today,
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
           size: AppDimensions.iconSizeAction,
         ),
       ),
@@ -226,7 +227,7 @@ class _MenuListItem extends StatelessWidget {
           Text(
             '${menu.totalRecipeCount} recept',
             style: AppTextStyles.metadataEmphasized.copyWith(
-              color: AppColors.primaryBlue,
+              color: AppColors.forestGreen,
             ),
           ),
         ],

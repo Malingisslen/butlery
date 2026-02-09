@@ -36,7 +36,7 @@ class RecipeImagePicker {
       if (context.mounted) {
         UtilityComponents.showErrorSnackbar(
           context,
-          'Kunde inte valja bild. Kontrollera att appen har behorighet att anvanda kamera/galleri.',
+          'Kunde inte välja bild. Kontrollera att appen har behörighet att använda kamera/galleri.',
         );
       }
     }

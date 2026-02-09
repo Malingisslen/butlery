@@ -52,7 +52,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                 FilledButton.icon(
                   onPressed: () => _addSelectedRecipes(context, viewModel),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: AppColors.forestGreen,
                     foregroundColor: AppColors.neutralLight,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingL,
@@ -179,13 +179,14 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
               vertical: AppDimensions.spacingXxs,
             ),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+              color: AppColors.forestGreen
+                  .withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             ),
             child: Text(
               '${_selectedRecipeIds.length} valda',
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: AppColors.primaryBlue,
+                color: AppColors.forestGreen,
               ),
             ),
           ),
@@ -255,7 +256,7 @@ class MenuRecipeListItem extends StatelessWidget {
       trailing: Checkbox(
         value: isSelected,
         onChanged: (value) => onSelectionChanged(value ?? false),
-        activeColor: AppColors.primaryBlue,
+        activeColor: AppColors.forestGreen,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS)),
       ),
@@ -270,7 +271,7 @@ class MenuRecipeListItem extends StatelessWidget {
         Text(
           recipe.mealType,
           style: AppTextStyles.metadataEmphasized.copyWith(
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
           ),
         ),
         if (recipe.description.isNotEmpty) ...[
@@ -325,12 +326,13 @@ class MenuRecipeListItem extends StatelessWidget {
       width: AppDimensions.iconSizeDisplay,
       height: AppDimensions.iconSizeDisplay,
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: AppColors.forestGreen
+            .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: const Icon(
         Icons.restaurant_menu,
-        color: AppColors.primaryBlue,
+        color: AppColors.forestGreen,
         size: AppDimensions.iconSizeAction,
       ),
     );

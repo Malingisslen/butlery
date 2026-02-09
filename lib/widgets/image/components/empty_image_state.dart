@@ -24,7 +24,8 @@ class EmptyImageState extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: borderRadius,
         border: Border.all(
-          color: AppColors.divider.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: AppColors.divider
+              .withValues(alpha: AppDimensions.opacityMediumLight),
           style: BorderStyle.solid,
         ),
         color: AppColors.cardWhite,
@@ -55,14 +56,15 @@ class EmptyImageState extends StatelessWidget {
         height: AppDimensions.iconSizeXl,
         child: CircularProgressIndicator(
           strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
         ),
       ),
       const SizedBox(height: AppDimensions.spacingSm),
       Text(
         'Adding image...',
         style: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.textDark.withValues(alpha: AppDimensions.opacityDark),
+          color:
+              AppColors.textDark.withValues(alpha: AppDimensions.opacityDark),
         ),
       ),
     ];
@@ -74,12 +76,13 @@ class EmptyImageState extends StatelessWidget {
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+          color: AppColors.forestGreen
+              .withValues(alpha: AppDimensions.opacityVeryLight),
         ),
         child: const Icon(
           Icons.add_photo_alternate_outlined,
           size: AppDimensions.iconSizeXl,
-          color: AppColors.primaryBlue,
+          color: AppColors.forestGreen,
         ),
       ),
       const SizedBox(height: AppDimensions.spacingSm),
@@ -91,7 +94,8 @@ class EmptyImageState extends StatelessWidget {
       Text(
         'Tryck för att lägga till upp till $maxImages bilder',
         style: AppTextStyles.bodySmall.copyWith(
-          color: AppColors.textDark.withValues(alpha: AppDimensions.opacityDark),
+          color:
+              AppColors.textDark.withValues(alpha: AppDimensions.opacityDark),
         ),
         textAlign: TextAlign.center,
       ),

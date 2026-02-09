@@ -208,8 +208,7 @@ class ShoppingListCard extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacingS),
             Text(
               'Inga föremål i listan',
-              style:
-                  AppTextStyles.metadataEmphasized,
+              style: AppTextStyles.metadataEmphasized,
             ),
           ],
         ),
@@ -221,8 +220,7 @@ class ShoppingListCard extends StatelessWidget {
       children: [
         Text(
           'Föremål på listan:',
-          style:
-              AppTextStyles.labelMediumMuted,
+          style: AppTextStyles.labelMediumMuted,
         ),
         const SizedBox(height: AppDimensions.spacingS),
         ...items.take(4).map((item) => Padding(
@@ -262,8 +260,7 @@ class ShoppingListCard extends StatelessWidget {
             padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
             child: Text(
               '+ ${items.length - 4} fler föremål',
-              style:
-                  AppTextStyles.metadataEmphasized,
+              style: AppTextStyles.metadataEmphasized,
             ),
           ),
       ],
@@ -284,10 +281,12 @@ class ShoppingListCard extends StatelessWidget {
         vertical: AppDimensions.spacingS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: AppColors.forestGreen
+            .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: AppColors.forestGreen
+              .withValues(alpha: AppDimensions.opacityMediumLight),
           width: AppDimensions.borderWidthThin,
         ),
       ),
@@ -296,13 +295,12 @@ class ShoppingListCard extends StatelessWidget {
           const Icon(
             Icons.people,
             size: AppDimensions.iconSizeS,
-            color: AppColors.primaryBlue,
+            color: AppColors.forestGreen,
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Text(
             memberCount > 0 ? 'Delad med $memberCount personer' : 'Delad lista',
-            style:
-                AppTextStyles.linkSmall,
+            style: AppTextStyles.linkSmall,
           ),
         ],
       ),
@@ -319,7 +317,7 @@ class ShoppingListCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingXs),
       decoration: const BoxDecoration(
-        color: AppColors.primaryBlue,
+        color: AppColors.forestGreen,
         shape: BoxShape.circle,
       ),
       child: const Icon(
@@ -348,8 +346,10 @@ class ShoppingListCard extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: isComplete
-            ? AppColors.success.withValues(alpha: AppDimensions.opacityLightSubtle)
-            : AppColors.warning.withValues(alpha: AppDimensions.opacityLightSubtle),
+            ? AppColors.success
+                .withValues(alpha: AppDimensions.opacityLightSubtle)
+            : AppColors.warning
+                .withValues(alpha: AppDimensions.opacityLightSubtle),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Row(

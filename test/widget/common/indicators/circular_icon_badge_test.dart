@@ -40,7 +40,7 @@ void main() {
 
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(AppColors.primaryBlue));
+        expect(decoration.color, equals(AppColors.forestGreen));
       });
 
       testWidgets('should use default white icon color',
@@ -176,7 +176,7 @@ void main() {
 
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(AppColors.primaryBlue));
+        expect(decoration.color, equals(AppColors.forestGreen));
       });
 
       testWidgets('should use white icon color', (WidgetTester tester) async {

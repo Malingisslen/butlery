@@ -32,7 +32,7 @@ class PersonalTagColors {
 
   /// Converts hex string to Color.
   static Color fromHex(String? hex) {
-    if (hex == null || hex.isEmpty) return AppColors.primaryBlue;
+    if (hex == null || hex.isEmpty) return AppColors.forestGreen;
 
     String colorStr = hex.replaceAll('#', '');
     if (colorStr.length == 6) {
