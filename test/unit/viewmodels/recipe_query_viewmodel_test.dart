@@ -1,9 +1,12 @@
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/recipe/recipe_query_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -117,6 +120,10 @@ void main() {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(RecipeType.personal);
+
+      // Bridge production ServiceLocator to test GetIt instance
+      final testDIContainer = DIContainer();
+      production.ServiceLocator.initialize(testDIContainer);
     });
 
     setUp(() async {
@@ -260,8 +267,11 @@ void main() {
       });
 
       test('should update search query', () {
-        viewModel.updateSearchQuery('test query');
-        expect(viewModel.searchQuery, equals('test query'));
+        fakeAsync((async) {
+          viewModel.updateSearchQuery('test query');
+          async.elapse(const Duration(milliseconds: 300));
+          expect(viewModel.searchQuery, equals('test query'));
+        });
       });
 
       test('should clear search', () {
@@ -271,14 +281,18 @@ void main() {
       });
 
       test('should notify listeners on search update', () {
-        int notificationCount = 0;
-        viewModel.addListener(() => notificationCount++);
+        fakeAsync((async) {
+          int notificationCount = 0;
+          viewModel.addListener(() => notificationCount++);
 
-        viewModel.updateSearchQuery('test');
-        expect(notificationCount, equals(1));
+          viewModel.updateSearchQuery('test');
+          async.elapse(const Duration(milliseconds: 300));
+          // Debounced search triggers: setLoading(true), operation notifyListeners, setSuccess
+          expect(notificationCount, equals(3));
 
-        viewModel.clearSearch();
-        expect(notificationCount, equals(2));
+          viewModel.clearSearch(); // Immediate: +1
+          expect(notificationCount, equals(4));
+        });
       });
     });
 
@@ -291,6 +305,7 @@ void main() {
       });
 
       test('should filter by tag', () {
+        // ignore: deprecated_member_use_from_same_package
         viewModel.setTagFilter('Vegetarisk');
         final filtered = viewModel.filteredRecipes;
         expect(filtered.length, equals(2));
@@ -309,16 +324,21 @@ void main() {
       });
 
       test('should combine search and filters', () {
-        viewModel.updateSearchQuery('middag');
-        viewModel.setTagFilter('Vegetarisk');
+        fakeAsync((async) {
+          viewModel.updateSearchQuery('middag');
+          async.elapse(const Duration(milliseconds: 300));
+          // ignore: deprecated_member_use_from_same_package
+          viewModel.setTagFilter('Vegetarisk');
 
-        final filtered = viewModel.filteredRecipes;
-        expect(filtered.length,
-            equals(0)); // No vegetarian dinner recipes in search results
+          final filtered = viewModel.filteredRecipes;
+          expect(filtered.length,
+              equals(0)); // No vegetarian dinner recipes in search results
+        });
       });
 
       test('should clear individual filters', () {
         viewModel.setMealTypeFilter('Middag');
+        // ignore: deprecated_member_use_from_same_package
         viewModel.setTagFilter('Vegetarisk');
         viewModel.setTypeFilter(RecipeType.personal);
 
@@ -332,6 +352,7 @@ void main() {
       test('should clear all filters and search', () {
         viewModel.updateSearchQuery('test');
         viewModel.setMealTypeFilter('Middag');
+        // ignore: deprecated_member_use_from_same_package
         viewModel.setTagFilter('Vegetarisk');
 
         viewModel.clearAllFiltersAndSearch();
@@ -343,14 +364,17 @@ void main() {
       });
 
       test('should detect active filters', () {
-        expect(viewModel.hasActiveFilters, isFalse);
+        fakeAsync((async) {
+          expect(viewModel.hasActiveFilters, isFalse);
 
-        viewModel.updateSearchQuery('test');
-        expect(viewModel.hasActiveFilters, isTrue);
+          viewModel.updateSearchQuery('test');
+          async.elapse(const Duration(milliseconds: 300));
+          expect(viewModel.hasActiveFilters, isTrue);
 
-        viewModel.clearSearch();
-        viewModel.setMealTypeFilter('Middag');
-        expect(viewModel.hasActiveFilters, isTrue);
+          viewModel.clearSearch();
+          viewModel.setMealTypeFilter('Middag');
+          expect(viewModel.hasActiveFilters, isTrue);
+        });
       });
     });
 
