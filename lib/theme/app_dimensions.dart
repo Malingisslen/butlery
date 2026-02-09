@@ -74,30 +74,30 @@ class AppDimensions {
   /// Medium margin (8px)
   static const double marginM = 8.0;
 
-  /// Small border radius (4px)
-  static const double borderRadiusS = 4.0;
+  /// Small border radius - UI Redesign: sharp corners
+  static const double borderRadiusS = 0.0;
 
-  /// Medium border radius (8px)
-  static const double borderRadiusM = 8.0;
+  /// Medium border radius - UI Redesign: sharp corners
+  static const double borderRadiusM = 0.0;
 
-  /// Large border radius (12px) - max allowed per design spec
-  static const double borderRadiusL = 12.0;
+  /// Large border radius - UI Redesign: sharp corners
+  static const double borderRadiusL = 0.0;
 
-  /// Round border radius (50px) for fully rounded elements
+  /// Round border radius (50px) for fully rounded elements (avatars, pills)
   static const double borderRadiusRound = 50.0;
 
-  // Additional border radius constants for common hardcoded values
+  // All border radius constants set to 0 for sharp corners per UI redesign
   static const double borderRadius0 = 0.0;
-  static const double borderRadius2 = 2.0;
-  static const double borderRadius4 = 4.0;
-  static const double borderRadius6 = 6.0;
-  static const double borderRadius7 = 7.0;
-  static const double borderRadius8 = 8.0;
-  static const double borderRadius10 = 10.0;
-  static const double borderRadius12 = 12.0;
-  static const double borderRadius16 = 16.0;
-  static const double borderRadius20 = 20.0;
-  static const double borderRadius25 = 25.0;
+  static const double borderRadius2 = 0.0;
+  static const double borderRadius4 = 0.0;
+  static const double borderRadius6 = 0.0;
+  static const double borderRadius7 = 0.0;
+  static const double borderRadius8 = 0.0;
+  static const double borderRadius10 = 0.0;
+  static const double borderRadius12 = 0.0;
+  static const double borderRadius16 = 0.0;
+  static const double borderRadius20 = 0.0;
+  static const double borderRadius25 = 0.0;
   static const double borderRadius100 = 100.0;
 
   /// Low elevation (matching original AppTheme)
@@ -447,8 +447,8 @@ class AppDimensions {
   /// Button width (standard)
   static const double buttonWidth = 120.0;
 
-  /// Extra small border radius (2px)
-  static const double borderRadiusXs = 2.0;
+  /// Extra small border radius - UI Redesign: sharp corners
+  static const double borderRadiusXs = 0.0;
 
   /// Extra large buttons width
   static const double buttonWidthXLarge = 280.0;

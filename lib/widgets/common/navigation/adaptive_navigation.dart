@@ -239,35 +239,37 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
   });
 
   /// Navigation items for the bottom bar (4 items).
-  /// Note: "Upptäck" was moved to the avatar menu in the UI redesign.
+  /// UI Redesign: Order matches mockup (recept, meny, inköp, lägg till)
+  /// Uses outline icons for both states per mockup design.
+  /// UI Redesign: "recept" uses grid icon per mockup (not book)
   static List<AdaptiveNavigationItem> get navigationItems => [
         AdaptiveNavigationItem(
           label: 'recept',
-          icon: AdaptiveIcons.bookOutlined,
-          activeIcon: AdaptiveIcons.book,
+          icon: AdaptiveIcons.gridOutlined,
+          activeIcon: AdaptiveIcons.gridOutlined, // Outline for both states
           route: '/',
           semanticLabel: 'Navigera till mina recept',
         ),
         AdaptiveNavigationItem(
-          label: 'lägg till',
-          icon: AdaptiveIcons.addOutlined,
-          activeIcon: AdaptiveIcons.add,
-          route: '/laggTill',
-          semanticLabel: 'Lägg till nytt recept',
-        ),
-        AdaptiveNavigationItem(
           label: 'meny',
           icon: AdaptiveIcons.calendarOutlined,
-          activeIcon: AdaptiveIcons.calendar,
+          activeIcon: AdaptiveIcons.calendarOutlined, // Outline for both states
           route: '/veckomeny',
           semanticLabel: 'Navigera till veckomeny',
         ),
         AdaptiveNavigationItem(
           label: 'inköp',
           icon: AdaptiveIcons.cartOutlined,
-          activeIcon: AdaptiveIcons.cart,
+          activeIcon: AdaptiveIcons.cartOutlined, // Outline for both states
           route: '/inkopslista',
           semanticLabel: 'Navigera till inköpslista',
+        ),
+        AdaptiveNavigationItem(
+          label: 'lägg till',
+          icon: AdaptiveIcons.addOutlined,
+          activeIcon: AdaptiveIcons.addOutlined, // Outline for both states
+          route: '/laggTill',
+          semanticLabel: 'Lägg till nytt recept',
         ),
       ];
 
@@ -480,34 +482,54 @@ class _BottomNavItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Rust indicator bar at top when selected
-            AnimatedContainer(
-              duration: AppDimensions.animationDurationFast,
-              height: 3,
-              width: isSelected ? 24 : 0,
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.navSelectedIndicator : Colors.transparent,
-                borderRadius: BorderRadius.circular(1.5),
-              ),
-            ),
             const SizedBox(height: AppDimensions.spacingXs),
             // Icon with optional badge
             _buildIcon(color),
             const SizedBox(height: AppDimensions.spacingXxs),
-            // Label in Josefin Sans lowercase
-            Text(
-              item.label.toLowerCase(),
-              style: AppTextStyles.navLabel.copyWith(
-                color: color,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            // Label in Josefin Sans lowercase with underline indicator
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  item.label.toLowerCase(),
+                  style: AppTextStyles.navLabel.copyWith(
+                    color: color,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    letterSpacing: 1,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                // Rust indicator bar below text when selected (text width)
+                AnimatedContainer(
+                  duration: AppDimensions.animationDurationFast,
+                  height: 2,
+                  width: isSelected ? _getTextWidth(context) : 0,
+                  color: isSelected ? AppColors.navSelectedIndicator : Colors.transparent,
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  /// Calculate approximate text width for the underline.
+  double _getTextWidth(BuildContext context) {
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: item.label.toLowerCase(),
+        style: AppTextStyles.navLabel.copyWith(
+          fontWeight: FontWeight.w600,
+          letterSpacing: 1,
+        ),
+      ),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    )..layout();
+    return textPainter.width;
   }
 
   Widget _buildIcon(Color color) {

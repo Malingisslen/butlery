@@ -52,7 +52,7 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
   static const double accentBarHeight = 4.0;
 
   /// Total header height including safe area.
-  static const double headerHeight = 130.0;
+  static const double headerHeight = 140.0;
 
   @override
   Size get preferredSize => Size.fromHeight(

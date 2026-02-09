@@ -28,6 +28,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
+import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
@@ -42,6 +43,7 @@ import 'package:butlery/services/user_service.dart';
 // Theme system integration
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 // Core services and utilities
 import 'package:butlery/core/providers/application_provider.dart';
@@ -217,6 +219,80 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
+  /// Get active quick filter IDs from ViewModel state.
+  Set<String> _getQuickFilterIds(RecipeListViewModel viewModel) {
+    final ids = <String>{};
+    // 'quick' time filter maps to 'quick' chip
+    if (viewModel.activeTimeFilters.contains('quick')) {
+      ids.add('quick');
+    }
+    // 'vegetarian' dietary filter maps to 'vegetarian' chip
+    if (viewModel.activeDietaryFilters.contains('vegetarian')) {
+      ids.add('vegetarian');
+    }
+    // TODO: Add favorites filter when implemented in ViewModel
+    return ids;
+  }
+
+  /// Handle quick filter chip toggle.
+  void _onQuickFilterToggle(RecipeListViewModel viewModel, String filterId) {
+    switch (filterId) {
+      case 'quick':
+        viewModel.toggleTimeFilter('quick');
+        break;
+      case 'vegetarian':
+        viewModel.toggleDietaryFilter('vegetarian');
+        break;
+      case 'favorites':
+        // TODO: Implement favorites filter in ViewModel
+        break;
+    }
+  }
+
+  /// Chip-styled sort button for the filter chips row.
+  Widget _buildSortChip(RecipeListViewModel viewModel) {
+    return PopupMenuButton<SortCriteria>(
+      onSelected: _onSortChanged,
+      itemBuilder: (context) => SortMenuBuilder.buildItems(
+        context: context,
+        currentSort: viewModel.sortCriteria,
+        sortAscending: viewModel.sortAscending,
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingMd,
+          vertical: AppDimensions.spacingSm,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.cardWhite,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+          border: Border.all(
+            color: AppColors.divider,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.sort,
+              size: AppDimensions.iconSizeS,
+              color: AppColors.textMedium,
+            ),
+            const SizedBox(width: AppDimensions.spacingXs),
+            Text(
+              'Sortera',
+              style: AppTextStyles.labelMedium.copyWith(
+                color: AppColors.textDark,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// Build recipe interface with filtering, search, sorting, and social integration.
   @override
   Widget build(BuildContext context) {
@@ -243,20 +319,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           actions: [
             // Offline status
             LayoutComponents.offlineStatusIcon(),
-            // Sort menu
-            PopupMenuButton<SortCriteria>(
-              icon: const Icon(
-                Icons.sort,
-                color: AppColors.headerForeground,
-              ),
-              tooltip: 'Sortera',
-              onSelected: _onSortChanged,
-              itemBuilder: (context) => SortMenuBuilder.buildItems(
-                context: context,
-                currentSort: viewModel.sortCriteria,
-                sortAscending: viewModel.sortAscending,
-              ),
-            ),
           ],
         ),
         body: Column(
@@ -305,6 +367,14 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               // Results info - hidden since we show count in header
               resultCount: recipeCount,
               showStats: false,
+            ),
+
+            // UI Redesign: Quick filter chips for fast filtering
+            QuickFilterChips(
+              options: QuickFilterChips.defaultRecipeFilters,
+              selectedIds: _getQuickFilterIds(viewModel),
+              onFilterToggle: (filterId) => _onQuickFilterToggle(viewModel, filterId),
+              trailing: _buildSortChip(viewModel),
             ),
 
             // Huvudinnehåll

@@ -573,6 +573,11 @@ class AdaptiveIcons {
   static IconData get book => _isIOS ? CupertinoIcons.book : Icons.book;
   static IconData get bookOutlined =>
       _isIOS ? CupertinoIcons.book : Icons.book_outlined;
+  // UI Redesign: Grid icon for recipes navigation per mockup
+  static IconData get grid =>
+      _isIOS ? CupertinoIcons.square_grid_2x2 : Icons.grid_view;
+  static IconData get gridOutlined =>
+      _isIOS ? CupertinoIcons.square_grid_2x2 : Icons.grid_view_outlined;
   static IconData get add => _isIOS ? CupertinoIcons.add : Icons.add;
   static IconData get addOutlined =>
       _isIOS ? CupertinoIcons.add : Icons.add_outlined;

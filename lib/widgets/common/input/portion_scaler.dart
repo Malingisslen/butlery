@@ -121,8 +121,6 @@ class _PortionScalerState extends State<PortionScaler>
       context: context,
       currentPortions: _currentPortions,
       originalPortions: widget.originalPortions,
-      scaledIngredients: _scaledIngredients,
-      originalIngredients: widget.originalIngredients,
       convertToSwedish: _convertToSwedish,
       hasAmericanUnits: _hasAmericanUnits,
       minPortions: widget.minPortions,

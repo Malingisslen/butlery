@@ -31,6 +31,7 @@ class QuickFilterChips extends StatelessWidget {
     required this.onFilterToggle,
     this.showAllOption = true,
     this.allOptionLabel = 'Alla',
+    this.trailing,
     super.key,
   });
 
@@ -48,6 +49,9 @@ class QuickFilterChips extends StatelessWidget {
 
   /// Label for the "All" option.
   final String allOptionLabel;
+
+  /// Optional trailing widget at the end of the chips row (e.g. sort button).
+  final Widget? trailing;
 
   /// Default recipe quick filters for the recipe list view.
   static List<QuickFilterOption> get defaultRecipeFilters => const [
@@ -102,6 +106,13 @@ class QuickFilterChips extends StatelessWidget {
                   onTap: () => onFilterToggle(option.id),
                 ),
               )),
+
+          // Trailing widget (e.g. sort button)
+          if (trailing != null)
+            Padding(
+              padding: const EdgeInsets.only(left: AppDimensions.spacingSm),
+              child: trailing!,
+            ),
         ],
       ),
     );

@@ -1,19 +1,14 @@
 // lib/views/recipe_detail/recipe_detail_metadata.dart
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
-/// Recipe detail metadata widget
-/// This widget displays recipe metadata including:
-/// - Portions, cooking time, and rating
-/// - "Cooked today" button functionality
-/// - Source URL with archive detection
-/// - Proper styling and responsive layout
+/// Recipe detail metadata widget — inline row with time, portions, rating,
+/// and "Lagat idag" chip. Source URL is shown as subtitle in the parent view.
 class RecipeDetailMetadata extends StatelessWidget {
   final RecipeDetailViewModel viewModel;
   final int currentPortions;
@@ -28,306 +23,88 @@ class RecipeDetailMetadata extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Main metadata
-        _buildMetadata(context),
-
-        // Source URL (if available)
-        if (viewModel.recipe.sourceUrl != null &&
-            viewModel.recipe.sourceUrl!.isNotEmpty) ...[
-          const SizedBox(height: AppDimensions.spacingM),
-          _buildSourceUrl(context),
-        ],
-      ],
-    );
+    // UI Redesign: Simple inline metadata only (source URL shown as subtitle in parent)
+    return _buildMetadata(context);
   }
 
   Widget _buildMetadata(BuildContext context) {
     final recipe = viewModel.recipe;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    // UI Redesign: All metadata items + "Lagat idag" chip inline using Wrap
+    final metadataWidgets = <Widget>[];
+
+    if ((recipe.timeMinutes ?? 0) > 0) {
+      metadataWidgets.add(Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Header
-          Row(
-            children: [
-              const Icon(
-                Icons.info_outline,
-                color: AppColors.forestGreen,
-                size: AppDimensions.iconSizeAction,
-              ),
-              const SizedBox(width: AppDimensions.spacingM),
-              Text(
-                'Recept information',
-                style: AppTextStyles.titleMedium,
-              ),
-            ],
+          const Icon(Icons.access_time, size: AppDimensions.iconSizeS, color: AppColors.textMedium),
+          const SizedBox(width: AppDimensions.spacingXs),
+          Text(
+            _formatTime(recipe.timeMinutes!),
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
           ),
+        ],
+      ));
+    }
 
-          const SizedBox(height: AppDimensions.spacingXl),
-
-          // Metadata items
-          Row(
-            children: [
-              // Portions (only show if portions are specified)
-              if (currentPortions > 0)
-                Expanded(
-                  child: _buildMetadataItem(
-                    context,
-                    Icons.restaurant_menu,
-                    'Portioner',
-                    '$currentPortions ${currentPortions == 1 ? 'portion' : 'portioner'}',
-                    isHighlighted: isScaled,
-                  ),
-                ),
-
-              // Cooking time
-              if ((recipe.timeMinutes ?? 0) > 0) ...[
-                if (currentPortions > 0)
-                  const SizedBox(width: AppDimensions.spacingXs),
-                Expanded(
-                  child: _buildMetadataItem(
-                    context,
-                    Icons.schedule,
-                    'Tid',
-                    _formatTime(recipe.timeMinutes ?? 0),
-                  ),
-                ),
-              ],
-
-              // Rating
-              if ((recipe.rating ?? 0) > 0) ...[
-                if (currentPortions > 0 || (recipe.timeMinutes ?? 0) > 0)
-                  const SizedBox(width: AppDimensions.spacingXs),
-                Expanded(
-                  child: _buildMetadataItem(
-                    context,
-                    Icons.star,
-                    'Betyg',
-                    (recipe.rating ?? 0).toStringAsFixed(1),
-                  ),
-                ),
-              ],
-            ],
-          ),
-
-          // Rating stars (if rating exists)
-          if ((recipe.rating ?? 0) > 0) ...[
-            const SizedBox(height: AppDimensions.spacingM),
-            Row(
-              children: [
-                const SizedBox(
-                    width:
-                        AppDimensions.iconSizeAction + AppDimensions.spacingS),
-                _buildStarRating(recipe.rating ?? 0),
-              ],
-            ),
-          ],
-
-          const SizedBox(height: AppDimensions.spacingXl),
-
-          // "Cooked today" button
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.tonalIcon(
-              onPressed: () => _markAsCooked(context),
-              icon: const Icon(
-                Icons.check_circle_outline,
-                size: AppDimensions.iconSizeAction,
-              ),
-              label: Text(
-                'Lagat idag',
-                style: AppTextStyles.labelLarge,
-              ),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
-                foregroundColor: AppColors.success,
-                minimumSize:
-                    const Size(double.infinity, AppDimensions.buttonHeight),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingL,
-                    vertical: AppDimensions.paddingM),
-                shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusL),
-                ),
-              ),
+    if (currentPortions > 0) {
+      metadataWidgets.add(Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.people, size: AppDimensions.iconSizeS, color: AppColors.textMedium),
+          const SizedBox(width: AppDimensions.spacingXs),
+          Text(
+            '$currentPortions ${currentPortions == 1 ? 'portion' : 'port'}',
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: isScaled ? AppColors.forestGreen : AppColors.textMedium,
+              fontWeight: isScaled ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
         ],
-      ),
-    );
-  }
+      ));
+    }
 
-  Widget _buildMetadataItem(
-    BuildContext context,
-    IconData icon,
-    String label,
-    String value, {
-    bool isHighlighted = false,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: isHighlighted
-            ? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight)
-            : AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(
-          color: isHighlighted
-              ? AppColors.forestGreen.withValues(alpha: AppDimensions.opacityMediumLight)
-              : AppColors.divider,
+    if ((recipe.rating ?? 0) > 0) {
+      metadataWidgets.add(Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildStarRating(recipe.rating ?? 0),
+          const SizedBox(width: AppDimensions.spacingXs),
+          Text(
+            recipe.rating!.toStringAsFixed(1),
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
+          ),
+        ],
+      ));
+    }
+
+    // "Lagat idag" as small outlined chip
+    metadataWidgets.add(
+      OutlinedButton.icon(
+        onPressed: () => _markAsCooked(context),
+        icon: const Icon(Icons.check_circle_outline, size: 14),
+        label: Text('Lagat idag', style: AppTextStyles.labelSmall),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.success,
+          side: const BorderSide(color: AppColors.success, width: 1),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingSm,
+            vertical: AppDimensions.spacingXs,
+          ),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          ),
         ),
       ),
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            color: isHighlighted
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.onSurfaceVariant,
-            size: AppDimensions.iconSizeAction,
-          ),
-          const SizedBox(height: AppDimensions.spacingXs),
-          Text(
-            label,
-            style: (isHighlighted
-                    ? AppTextStyles.metadataEmphasized
-                    : AppTextStyles.bodySmall)
-                .copyWith(
-              color: isHighlighted
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: AppDimensions.spacingXs),
-          Text(
-            value,
-            style: (isHighlighted
-                    ? AppTextStyles.bodyLargeBold
-                    : AppTextStyles.text16Medium)
-                .copyWith(
-              color: isHighlighted ? AppColors.forestGreen : AppColors.textDark,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
     );
-  }
 
-  Widget _buildSourceUrl(BuildContext context) {
-    final sourceUrl = viewModel.recipe.sourceUrl!;
-    final isArchiveUrl = sourceUrl.contains('archive.today') ||
-        sourceUrl.contains('web.archive.org') ||
-        sourceUrl.contains('archive.org');
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            children: [
-              Icon(
-                isArchiveUrl ? Icons.archive : Icons.link,
-                color: AppColors.forestGreen,
-                size: AppDimensions.iconSizeAction,
-              ),
-              const SizedBox(width: AppDimensions.spacingM),
-              Text(
-                isArchiveUrl ? 'Arkiverad källa' : 'Källa',
-                style: AppTextStyles.titleMedium,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: AppDimensions.spacingM),
-
-          // URL
-          InkWell(
-            onTap: () => _launchUrl(context, sourceUrl),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
-              decoration: BoxDecoration(
-                color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight),
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusM),
-                border: Border.all(
-                  color: AppColors.forestGreen.withValues(alpha: AppDimensions.opacityMediumLight),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      sourceUrl,
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        color: AppColors.forestGreen,
-                        decoration: TextDecoration.underline,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingM),
-                  const Icon(
-                    Icons.open_in_new,
-                    color: AppColors.forestGreen,
-                    size: AppDimensions.iconSizeM,
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Archive notice
-          if (isArchiveUrl) ...[
-            const SizedBox(height: AppDimensions.spacingM),
-            Row(
-              children: [
-                const Icon(
-                  Icons.info_outline,
-                  color: AppColors.warning,
-                  size: AppDimensions.iconSizeM,
-                ),
-                const SizedBox(width: AppDimensions.spacingM),
-                Expanded(
-                  child: Text(
-                    'Denna länk leder till en arkiverad version av receptet',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.warning,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
+    return Wrap(
+      spacing: AppDimensions.spacingMd,
+      runSpacing: AppDimensions.spacingSm,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: metadataWidgets,
     );
   }
 
@@ -396,29 +173,6 @@ class RecipeDetailMetadata extends StatelessWidget {
       _showSnackBarSafely(
         context,
         'Kunde inte markera som lagat',
-        backgroundColor: AppColors.error,
-      );
-    }
-  }
-
-  Future<void> _launchUrl(BuildContext context, String url) async {
-    try {
-      final Uri uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        if (!context.mounted) return;
-        _showSnackBarSafely(
-          context,
-          'Kunde inte öppna länk',
-          backgroundColor: AppColors.error,
-        );
-      }
-    } catch (e) {
-      if (!context.mounted) return;
-      _showSnackBarSafely(
-        context,
-        'Ogiltig länk',
         backgroundColor: AppColors.error,
       );
     }

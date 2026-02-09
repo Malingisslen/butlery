@@ -74,7 +74,7 @@ class RecipeCard extends StatelessWidget {
       child: Semantics(
         label: 'Recipe: ${recipe.title}',
         child: Container(
-          margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
           // UI Redesign: Left green border + bottom rust border
           decoration: isSelected
               ? BoxDecoration(
@@ -119,46 +119,52 @@ class RecipeCard extends StatelessWidget {
   }
 
   Widget _buildDetailedLayout(BuildContext context) {
+    final hasDescription = recipe.description.isNotEmpty;
+    final hasMetadata = showMetadata && _hasAnyMetadata;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         // Header with image and action buttons
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Recipe image
-            if (showImage) ...[
-              _buildRecipeImage(),
-              const SizedBox(width: AppDimensions.spacingMd),
-            ],
-            // Content area
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title and action buttons row
-                  Row(
-                    children: [
-                      Expanded(child: _buildTitle(context)),
-                      if (showContextMenu) _buildContextMenuButton(context),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Recipe image
+              if (showImage) ...[
+                _buildRecipeImage(),
+                const SizedBox(width: AppDimensions.spacingMd),
+              ],
+              // Content area — compacts when no data
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Title and action buttons row
+                    Row(
+                      children: [
+                        Expanded(child: _buildTitle(context)),
+                        if (showContextMenu) _buildContextMenuButton(context),
+                      ],
+                    ),
+                    if (hasDescription || hasMetadata)
+                      const SizedBox(height: AppDimensions.spacingSm),
+                    // Description
+                    if (hasDescription) ...[
+                      _buildDescription(context),
+                      if (hasMetadata)
+                        const SizedBox(height: AppDimensions.spacingSm),
                     ],
-                  ),
-                  const SizedBox(height: AppDimensions.spacingSm),
-                  // Description
-                  if (recipe.description.isNotEmpty) ...[
-                    _buildDescription(context),
-                    const SizedBox(height: AppDimensions.spacingSm),
+                    // Metadata row inside text column per mockup
+                    if (hasMetadata) _buildMetadataRow(context),
                   ],
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        // Metadata row
-        if (showMetadata) ...[
-          const SizedBox(height: AppDimensions.spacingSm),
-          _buildMetadataRow(context),
-        ],
         // Allergen badges
         if (showAllergenBadges && recipe.tagResult != null) ...[
           const SizedBox(height: AppDimensions.spacingSm),
@@ -407,6 +413,15 @@ class RecipeCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Whether the recipe has any metadata to display.
+  bool get _hasAnyMetadata {
+    if (showMealType && recipe.mealType.isNotEmpty) return true;
+    if (recipe.portions != null && recipe.portions! > 0) return true;
+    if (recipe.timeMinutes != null && recipe.timeMinutes! > 0) return true;
+    if (recipe.rating != null && recipe.rating! > 0) return true;
+    return false;
   }
 
   /// Whether to show untagged indicator.

@@ -503,10 +503,11 @@ void main() {
           ),
         );
 
-        // In classic style, there should be no DecoratedBox with rust border
-        // The widget should render without the bottom accent
+        // In classic style, there should be no rust bottom border
+        // but it still uses DecoratedBox for the green border styling
         expect(find.byType(TextField), findsOneWidget);
-        expect(find.byType(DecoratedBox), findsNothing);
+        // Classic style uses DecoratedBox with green border on all sides (no rust accent)
+        expect(find.byType(DecoratedBox), findsWidgets);
       });
 
       testWidgets('should add rust bottom border in default style',

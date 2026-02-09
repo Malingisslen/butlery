@@ -167,6 +167,29 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     }
   }
 
+  /// UI Redesign: Swaps a single recipe with another matching the category.
+  /// Returns true if swap was successful, false if no suitable replacement found.
+  Future<bool> swapRecipe(Recipe recipe, String category) async {
+    if (!hasMenu) return false;
+
+    final newRecipe = _generator.swapSingleRecipe(recipe, category, menu);
+    if (newRecipe == null) {
+      _stateManager.setError('Inga fler recept tillgängliga för byte');
+      return false;
+    }
+
+    // Update the menu with the swapped recipe
+    final updatedRecipes = List<Recipe>.from(menu[category] ?? []);
+    final index = updatedRecipes.indexWhere((r) => r.id == recipe.id);
+    if (index != -1) {
+      updatedRecipes[index] = newRecipe;
+      _stateManager.updateMenuSection(category, updatedRecipes);
+      return true;
+    }
+
+    return false;
+  }
+
   /// Clears current menu state for new generation or menu reset operations.
   /// Delegates to MenuStateManager for complete menu state cleanup
   /// enabling fresh menu generation and state reset functionality.
