@@ -17,6 +17,7 @@ import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/views/tag_detail_view.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -37,8 +38,8 @@ class PersonalTagsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => PersonalTagViewModel()..initialize(),
+    return ChangeNotifierProvider<PersonalTagViewModel>.value(
+      value: ServiceLocator.get<PersonalTagViewModel>(),
       child: const _PersonalTagsViewContent(),
     );
   }
@@ -336,59 +337,65 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     final hasActiveRules = enabledRuleCount > 0;
     final isUnused = usageCount == 0;
 
-    return Opacity(
-      opacity: isUnused ? 0.6 : 1.0,
-      child: ListTile(
-        leading: Stack(
-          children: [
-            CircleAvatar(
-              backgroundColor: hasActiveRules
-                  ? AppColors.success
-                      .withValues(alpha: AppDimensions.opacityLight)
-                  : colorScheme.primary
-                      .withValues(alpha: AppDimensions.opacityLight),
-              child: Icon(
-                Icons.label,
-                color: hasActiveRules ? AppColors.success : colorScheme.primary,
-                size: AppDimensions.iconSizeM,
-              ),
-            ),
-            if (hasActiveRules)
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: AppColors.success,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: colorScheme.surface,
-                      width: 1.5,
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.auto_awesome,
-                    size: 10,
-                    color: AppColors.cardWhite,
-                  ),
+    return Semantics(
+      label:
+          '${tag.name}, $usageCount recept, $enabledRuleCount av $ruleCount regler aktiva',
+      button: true,
+      child: Opacity(
+        opacity: isUnused ? 0.6 : 1.0,
+        child: ListTile(
+          leading: Stack(
+            children: [
+              CircleAvatar(
+                backgroundColor: hasActiveRules
+                    ? AppColors.success
+                        .withValues(alpha: AppDimensions.opacityLight)
+                    : colorScheme.primary
+                        .withValues(alpha: AppDimensions.opacityLight),
+                child: Icon(
+                  Icons.label,
+                  color:
+                      hasActiveRules ? AppColors.success : colorScheme.primary,
+                  size: AppDimensions.iconSizeM,
                 ),
               ),
-          ],
-        ),
-        title: Text(tag.name),
-        subtitle: Text(
-          _buildSubtitle(usageCount, ruleCount, enabledRuleCount),
-          style: AppTextStyles.bodySmall.copyWith(
-            color: isUnused
-                ? colorScheme.onSurfaceVariant
-                    .withValues(alpha: AppDimensions.opacityDark)
-                : colorScheme.onSurfaceVariant,
+              if (hasActiveRules)
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: AppColors.success,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: colorScheme.surface,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.auto_awesome,
+                      size: 10,
+                      color: AppColors.cardWhite,
+                    ),
+                  ),
+                ),
+            ],
           ),
+          title: Text(tag.name),
+          subtitle: Text(
+            _buildSubtitle(usageCount, ruleCount, enabledRuleCount),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: isUnused
+                  ? colorScheme.onSurfaceVariant
+                      .withValues(alpha: AppDimensions.opacityDark)
+                  : colorScheme.onSurfaceVariant,
+            ),
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => _navigateToTagDetail(context, tag),
+          onLongPress: () => _showTagOptions(context, tag),
         ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => _navigateToTagDetail(context, tag),
-        onLongPress: () => _showTagOptions(context, tag),
       ),
     );
   }

@@ -11,12 +11,15 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/tagging/tag_editing_service.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 
 /// Recipe list ViewModel for search, filtering, sorting, and caching (MVVM).
 class RecipeListViewModel extends ChangeNotifier {
   final UnifiedRecipeService _recipeService;
   final SearchService _searchService;
+  final TagEditingService _tagEditingService;
 
   // State
   String _searchQuery = '';
@@ -41,10 +44,11 @@ class RecipeListViewModel extends ChangeNotifier {
   final Set<String> _activeDietaryFilters = {};
 
   /// Active personal tag filters for user-defined tag-based filtering.
-  /// Uses tag IDs for filtering, matched against recipe.core.personalTagIds.
+  /// Stores tag UUIDs matched against recipe.core.personalTagIds.
   final Set<String> _activePersonalTagFilters = {};
 
   /// Excluded personal tag filters - recipes with ANY of these are filtered out.
+  /// Stores tag UUIDs matched against recipe.core.personalTagIds.
   final Set<String> _excludedPersonalTagFilters = {};
 
   /// Cached filtered recipe results for performance optimization and responsiveness.
@@ -89,9 +93,12 @@ class RecipeListViewModel extends ChangeNotifier {
   RecipeListViewModel({
     UnifiedRecipeService? recipeService,
     SearchService? searchService,
+    TagEditingService? tagEditingService,
   })  : _recipeService =
             recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
-        _searchService = searchService ?? ServiceLocator.get<SearchService>() {
+        _searchService = searchService ?? ServiceLocator.get<SearchService>(),
+        _tagEditingService =
+            tagEditingService ?? ServiceLocator.get<TagEditingService>() {
     // Lyssna på ändringar från UnifiedRecipeService
     _recipeService.addListener(_onRecipesChanged);
     // Initialize service to ensure recipes are loaded
@@ -188,7 +195,11 @@ class RecipeListViewModel extends ChangeNotifier {
   int get untaggedRecipeCount {
     if (!hasTagBasedFilters) return 0;
     return _recipeService.recipes
-        .where((r) => r.tagResult == null || r.tagResult!.hasFailed)
+        .where((r) =>
+            r.tagResult == null ||
+            r.tagResult!.hasFailed ||
+            r.tagResult!.needsRetagging ||
+            r.tagResult!.coverage < 1.0)
         .length;
   }
 
@@ -308,6 +319,7 @@ class RecipeListViewModel extends ChangeNotifier {
 
   /// Toggles personal tag filter for user-defined tag-based filtering.
   /// Uses AND logic: recipes must have ALL selected personal tags.
+  /// [tagId] is the tag UUID (matching recipe.core.personalTagIds which stores UUIDs).
   void togglePersonalTagFilter(String tagId) {
     if (_activePersonalTagFilters.contains(tagId)) {
       _activePersonalTagFilters.remove(tagId);
@@ -320,6 +332,7 @@ class RecipeListViewModel extends ChangeNotifier {
 
   /// Toggles excluded personal tag filter for exclusion-based filtering.
   /// Uses OR logic: recipes with ANY excluded tag are filtered out.
+  /// [tagId] is the tag UUID (matching recipe.core.personalTagIds which stores UUIDs).
   void toggleExcludedPersonalTagFilter(String tagId) {
     if (_excludedPersonalTagFilters.contains(tagId)) {
       _excludedPersonalTagFilters.remove(tagId);
@@ -547,7 +560,7 @@ class RecipeListViewModel extends ChangeNotifier {
     }).toList();
   }
 
-  /// Applies allergen-free filters using recipe tag results.
+  /// Applies allergen-free filters using effective tag status (with user overrides).
   /// Returns recipes that are proven free from ALL selected allergens (AND logic).
   /// SAFETY: Excludes recipes with coverage < 100% because unknown ingredients
   /// could contain allergens. Only recipes with full coverage can be trusted.
@@ -557,14 +570,13 @@ class RecipeListViewModel extends ChangeNotifier {
       if (tagResult == null) return false;
 
       // CRIT-9: Don't trust allergen status if tagging needs to be redone
-      // This includes failed tags, pending tags, and coverage anomalies
       if (tagResult.needsRetagging) return false;
 
       // SAFETY: Don't trust allergen status if coverage < 100%
-      // Unknown ingredients could contain any allergen
       if (tagResult.coverage < 1.0) return false;
 
       // Recipe must be free from ALL selected allergens (AND logic)
+      // Uses effective status which respects user overrides
       for (final filterId in _activeAllergenFilters) {
         final filterOption = RecipeFilters.allergenFreeFilters.firstWhere(
           (f) => f.id == filterId,
@@ -572,7 +584,9 @@ class RecipeListViewModel extends ChangeNotifier {
         );
         if (filterOption.value is String &&
             (filterOption.value as String).isNotEmpty) {
-          if (!tagResult.isAllergenFree(filterOption.value as String)) {
+          final effectiveStatus = _tagEditingService.getEffectiveAllergenStatus(
+              recipe, filterOption.value as String);
+          if (effectiveStatus != TriState.free) {
             return false;
           }
         }
@@ -581,7 +595,7 @@ class RecipeListViewModel extends ChangeNotifier {
     }).toList();
   }
 
-  /// Applies dietary filters using recipe tag results.
+  /// Applies dietary filters using effective tag status (with user overrides).
   /// Returns recipes that are safe for ALL selected diets (AND logic).
   /// SAFETY: Excludes recipes with coverage < 100% because unknown ingredients
   /// could violate dietary restrictions. Only recipes with full coverage can be trusted.
@@ -591,14 +605,13 @@ class RecipeListViewModel extends ChangeNotifier {
       if (tagResult == null) return false;
 
       // CRIT-9: Don't trust dietary status if tagging needs to be redone
-      // This includes failed tags, pending tags, and coverage anomalies
       if (tagResult.needsRetagging) return false;
 
       // SAFETY: Don't trust dietary status if coverage < 100%
-      // Unknown ingredients could violate dietary restrictions
       if (tagResult.coverage < 1.0) return false;
 
       // Recipe must be safe for ALL selected diets (AND logic)
+      // Uses effective status which respects user overrides
       for (final filterId in _activeDietaryFilters) {
         final filterOption = RecipeFilters.dietaryFilters.firstWhere(
           (f) => f.id == filterId,
@@ -606,7 +619,9 @@ class RecipeListViewModel extends ChangeNotifier {
         );
         if (filterOption.value is String &&
             (filterOption.value as String).isNotEmpty) {
-          if (!tagResult.isDietarySafe(filterOption.value as String)) {
+          final effectiveStatus = _tagEditingService.getEffectiveDietaryStatus(
+              recipe, filterOption.value as String);
+          if (effectiveStatus != TriState.free) {
             return false;
           }
         }
@@ -616,7 +631,8 @@ class RecipeListViewModel extends ChangeNotifier {
   }
 
   /// Applies personal tag filters for user-defined tag-based filtering.
-  /// Uses AND logic: recipe must contain ALL selected personal tag names.
+  /// Uses AND logic: recipe must contain ALL selected personal tag IDs.
+  /// Both _activePersonalTagFilters and recipe.core.personalTagIds store tag UUIDs.
   List<Recipe> _applyPersonalTagFilters(List<Recipe> recipes) {
     return recipes.where((recipe) {
       final recipeTags = recipe.core.personalTagIds ?? [];

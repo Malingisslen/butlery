@@ -19,13 +19,13 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
   /// Currently selected tag IDs for inclusion (AND logic).
   final Set<String> selectedTagIds;
 
-  /// Callback when an include tag is toggled.
+  /// Callback when an include tag is toggled (passes tag ID).
   final Function(String tagId) onToggle;
 
   /// Currently selected tag IDs for exclusion (OR logic).
   final Set<String> excludedTagIds;
 
-  /// Callback when an exclude tag is toggled.
+  /// Callback when an exclude tag is toggled (passes tag ID).
   final Function(String tagId)? onExcludeToggle;
 
   /// Whether to show the exclude section.
@@ -72,7 +72,8 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
               ),
               if (onManageTags != null)
                 IconButton(
-                  icon: const Icon(Icons.settings, size: AppDimensions.iconSize18),
+                  icon: const Icon(Icons.settings,
+                      size: AppDimensions.iconSize18),
                   onPressed: onManageTags,
                   tooltip: 'Hantera taggar',
                   visualDensity: VisualDensity.compact,
@@ -167,27 +168,33 @@ class _PersonalTagFilterChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return FilterChip(
-      label: Text(tag.name),
-      avatar: isSelected
-          ? null
-          : CircleAvatar(
-              radius: 6,
-              backgroundColor: colorScheme.primary,
-            ),
+    return Semantics(
+      label: 'Filtrera på ${tag.name}, ${isSelected ? "aktiv" : "inaktiv"}',
       selected: isSelected,
-      onSelected: (_) => onSelected(),
-      backgroundColor: colorScheme.surface,
-      selectedColor: colorScheme.primary.withValues(alpha: AppDimensions.opacityLightMedium),
-      checkmarkColor: colorScheme.primary,
-      side: BorderSide(
-        color: isSelected ? colorScheme.primary : colorScheme.outline,
-        width: isSelected ? 2 : 1,
+      button: true,
+      child: FilterChip(
+        label: Text(tag.name),
+        avatar: isSelected
+            ? null
+            : CircleAvatar(
+                radius: 6,
+                backgroundColor: colorScheme.primary,
+              ),
+        selected: isSelected,
+        onSelected: (_) => onSelected(),
+        backgroundColor: colorScheme.surface,
+        selectedColor: colorScheme.primary
+            .withValues(alpha: AppDimensions.opacityLightMedium),
+        checkmarkColor: colorScheme.primary,
+        side: BorderSide(
+          color: isSelected ? colorScheme.primary : colorScheme.outline,
+          width: isSelected ? 2 : 1,
+        ),
+        labelStyle: isSelected
+            ? AppTextStyles.bodyBold.copyWith(color: colorScheme.primary)
+            : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
+        showCheckmark: isSelected,
       ),
-      labelStyle: isSelected
-          ? AppTextStyles.bodyBold.copyWith(color: colorScheme.primary)
-          : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
-      showCheckmark: isSelected,
     );
   }
 }
@@ -208,28 +215,35 @@ class _PersonalTagExcludeChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return FilterChip(
-      label: Text(tag.name),
-      avatar: isExcluded
-          ? null
-          : Icon(
-              Icons.remove_circle_outline,
-              size: AppDimensions.iconSizeS,
-              color: colorScheme.error.withValues(alpha: AppDimensions.opacityMediumDark),
-            ),
+    return Semantics(
+      label: 'Exkludera ${tag.name}, ${isExcluded ? "aktiv" : "inaktiv"}',
       selected: isExcluded,
-      onSelected: (_) => onSelected(),
-      backgroundColor: colorScheme.surface,
-      selectedColor: colorScheme.error.withValues(alpha: AppDimensions.opacityLightSubtle),
-      checkmarkColor: colorScheme.error,
-      side: BorderSide(
-        color: isExcluded ? colorScheme.error : colorScheme.outline,
-        width: isExcluded ? 2 : 1,
+      button: true,
+      child: FilterChip(
+        label: Text(tag.name),
+        avatar: isExcluded
+            ? null
+            : Icon(
+                Icons.remove_circle_outline,
+                size: AppDimensions.iconSizeS,
+                color: colorScheme.error
+                    .withValues(alpha: AppDimensions.opacityMediumDark),
+              ),
+        selected: isExcluded,
+        onSelected: (_) => onSelected(),
+        backgroundColor: colorScheme.surface,
+        selectedColor: colorScheme.error
+            .withValues(alpha: AppDimensions.opacityLightSubtle),
+        checkmarkColor: colorScheme.error,
+        side: BorderSide(
+          color: isExcluded ? colorScheme.error : colorScheme.outline,
+          width: isExcluded ? 2 : 1,
+        ),
+        labelStyle: isExcluded
+            ? AppTextStyles.bodyBold.copyWith(color: colorScheme.error)
+            : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
+        showCheckmark: isExcluded,
       ),
-      labelStyle: isExcluded
-          ? AppTextStyles.bodyBold.copyWith(color: colorScheme.error)
-          : AppTextStyles.bodyMedium.copyWith(color: colorScheme.onSurface),
-      showCheckmark: isExcluded,
     );
   }
 }

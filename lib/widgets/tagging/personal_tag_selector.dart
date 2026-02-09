@@ -11,19 +11,19 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
-import 'package:butlery/widgets/tagging/personal_tag_manager_dialog.dart';
+import 'package:butlery/views/personal_tags_view.dart';
 
 /// Widget for selecting personal tags to apply to a recipe.
 ///
 /// Displays available tags as chips and allows selection/deselection.
 /// Includes a button to manage tags (create, edit, delete).
 ///
-/// Works with tag NAMES (not IDs) to match how recipes store tags.
+/// Works with tag IDs (UUIDs) to match Phase 2 storage format.
 class PersonalTagSelector extends StatefulWidget {
-  /// Currently selected tag names.
-  final List<String> selectedTagNames;
+  /// Currently selected tag IDs (UUIDs).
+  final List<String> selectedTagIds;
 
-  /// Called when selection changes. Returns list of selected tag names.
+  /// Called when selection changes. Returns list of selected tag IDs.
   final ValueChanged<List<String>> onChanged;
 
   final String? title;
@@ -31,14 +31,11 @@ class PersonalTagSelector extends StatefulWidget {
 
   const PersonalTagSelector({
     super.key,
-    required this.selectedTagNames,
+    required this.selectedTagIds,
     required this.onChanged,
     this.title,
     this.showManageButton = true,
   });
-
-  @Deprecated('Use selectedTagNames instead')
-  List<String> get selectedTagIds => selectedTagNames;
 
   @override
   State<PersonalTagSelector> createState() => _PersonalTagSelectorState();
@@ -52,11 +49,17 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
   @override
   void initState() {
     super.initState();
-    _viewModel = PersonalTagViewModel();
-    _loadTags();
+    _viewModel = ServiceLocator.get<PersonalTagViewModel>();
+    // Singleton is already initialized by DI
+    _initialized = true;
   }
 
-  Future<void> _loadTags() async {
+  Future<void> _retryLoad() async {
+    setState(() {
+      _initialized = false;
+      _error = null;
+    });
+    // Re-initialize from the singleton
     try {
       await _viewModel.initialize();
       if (mounted) {
@@ -75,37 +78,31 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
     }
   }
 
-  Future<void> _retryLoad() async {
-    setState(() {
-      _initialized = false;
-      _error = null;
-    });
-    await _loadTags();
-  }
-
   @override
   void dispose() {
-    _viewModel.dispose();
     super.dispose();
   }
 
   void _toggleTag(PersonalTag tag) {
-    final current = List<String>.from(widget.selectedTagNames);
-    if (current.contains(tag.name)) {
-      current.remove(tag.name);
+    final current = List<String>.from(widget.selectedTagIds);
+    if (current.contains(tag.id)) {
+      current.remove(tag.id);
     } else {
-      current.add(tag.name);
+      current.add(tag.id);
     }
     widget.onChanged(current);
   }
 
   bool _isTagSelected(PersonalTag tag) {
-    return widget.selectedTagNames.contains(tag.name);
+    return widget.selectedTagIds.contains(tag.id);
   }
 
   Future<void> _openTagManager() async {
-    await PersonalTagManagerDialog.show(context);
-    // Refresh tags after manager closes
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PersonalTagsView()),
+    );
+    // Refresh tags after returning from tag management view
     await _viewModel.initialize();
     if (mounted) setState(() {});
   }
@@ -130,7 +127,8 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
               if (widget.showManageButton)
                 TextButton.icon(
                   onPressed: _openTagManager,
-                  icon: const Icon(Icons.settings, size: AppDimensions.iconSize18),
+                  icon: const Icon(Icons.settings,
+                      size: AppDimensions.iconSize18),
                   label: const Text('Hantera'),
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.primaryBlue,
@@ -188,7 +186,8 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
         children: [
           Icon(
             Icons.label_outline,
-            color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityHalf),
+            color: AppColors.textMedium
+                .withValues(alpha: AppDimensions.opacityHalf),
           ),
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
@@ -213,9 +212,12 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
+        border: Border.all(
+            color: AppColors.error
+                .withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Row(
         children: [
@@ -283,7 +285,8 @@ class _PersonalTagChip extends StatelessWidget {
         selected: isSelected,
         onSelected: (_) => onTap(),
         backgroundColor: AppColors.backgroundBeige,
-        selectedColor: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
+        selectedColor:
+            AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLight),
         checkmarkColor: AppColors.primaryBlue,
         side: BorderSide(
           color: isSelected ? AppColors.primaryBlue : AppColors.divider,
@@ -304,12 +307,12 @@ class _PersonalTagChip extends StatelessWidget {
 
 /// A compact display of personal tags (read-only, for recipe cards/detail views).
 ///
-/// Works with tag NAMES (not IDs) to match how recipes store tags.
+/// Works with tag IDs (UUIDs) to match how recipes store tags.
 class PersonalTagDisplay extends StatelessWidget {
-  /// Tag names to display (from recipe.personalTagIds).
-  final List<String> tagNames;
+  /// Tag IDs to display (from recipe.personalTagIds).
+  final List<String> tagIds;
 
-  /// Available PersonalTag objects for color/icon lookup.
+  /// Available PersonalTag objects for name/icon lookup.
   final List<PersonalTag> availableTags;
 
   /// Maximum number of tags to display before showing "+N".
@@ -317,17 +320,17 @@ class PersonalTagDisplay extends StatelessWidget {
 
   const PersonalTagDisplay({
     super.key,
-    required this.tagNames,
+    required this.tagIds,
     required this.availableTags,
     this.maxDisplay,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (tagNames.isEmpty) return const SizedBox.shrink();
+    if (tagIds.isEmpty) return const SizedBox.shrink();
 
-    final tags = tagNames
-        .map((name) => availableTags.where((t) => t.name == name).firstOrNull)
+    final tags = tagIds
+        .map((id) => availableTags.where((t) => t.id == id).firstOrNull)
         .whereType<PersonalTag>()
         .toList();
 
@@ -345,7 +348,9 @@ class PersonalTagDisplay extends StatelessWidget {
         ...displayTags.map((tag) => _MiniTagChip(tag: tag)),
         if (remainingCount > 0)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingS, vertical: AppDimensions.spacingXs),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingS,
+                vertical: AppDimensions.spacingXs),
             decoration: BoxDecoration(
               color: AppColors.backgroundBeige,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
@@ -371,18 +376,23 @@ class _MiniTagChip extends StatelessWidget {
     return Semantics(
       label: 'Tagg: ${tag.name}',
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingS, vertical: AppDimensions.spacingXs),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingS,
+            vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityLightSubtle),
+          color: AppColors.primaryBlue
+              .withValues(alpha: AppDimensions.opacityLightSubtle),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           border: Border.all(
-            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+            color: AppColors.primaryBlue
+                .withValues(alpha: AppDimensions.opacityMediumLight),
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.label, size: AppDimensions.iconSizeXs, color: AppColors.primaryBlue),
+            const Icon(Icons.label,
+                size: AppDimensions.iconSizeXs, color: AppColors.primaryBlue),
             const SizedBox(width: AppDimensions.spacingXxs),
             Text(
               tag.name,
@@ -411,12 +421,16 @@ class _SimpleTagChip extends StatelessWidget {
     return Semantics(
       label: 'Tagg: $name',
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingS, vertical: AppDimensions.spacingXs),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingS,
+            vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityVeryLight),
+          color: AppColors.primaryBlue
+              .withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           border: Border.all(
-            color: AppColors.primaryBlue.withValues(alpha: AppDimensions.opacityMediumLight),
+            color: AppColors.primaryBlue
+                .withValues(alpha: AppDimensions.opacityMediumLight),
           ),
         ),
         child: Row(
@@ -446,15 +460,15 @@ class _SimpleTagChip extends StatelessWidget {
 /// **Performance Note**: Uses a shared cache to avoid redundant Firebase queries
 /// when multiple instances are displayed (e.g., in recipe card lists).
 class AutoPersonalTagDisplay extends StatefulWidget {
-  /// Tag names to display (from recipe.personalTagIds).
-  final List<String> tagNames;
+  /// Tag IDs to display (from recipe.personalTagIds).
+  final List<String> tagIds;
 
   /// Maximum number of tags to display before showing "+N".
   final int? maxDisplay;
 
   const AutoPersonalTagDisplay({
     super.key,
-    required this.tagNames,
+    required this.tagIds,
     this.maxDisplay,
   });
 
@@ -549,7 +563,7 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.tagNames.isEmpty) return const SizedBox.shrink();
+    if (widget.tagIds.isEmpty) return const SizedBox.shrink();
 
     // Show simple chips while loading or if load failed
     if (!_loaded || _sharedTags.isEmpty) {
@@ -558,29 +572,31 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
 
     // Use full PersonalTagDisplay with streamed tags
     return PersonalTagDisplay(
-      tagNames: widget.tagNames,
+      tagIds: widget.tagIds,
       availableTags: _sharedTags,
       maxDisplay: widget.maxDisplay,
     );
   }
 
   Widget _buildSimpleChips() {
-    final displayNames =
-        widget.maxDisplay != null && widget.tagNames.length > widget.maxDisplay!
-            ? widget.tagNames.take(widget.maxDisplay!).toList()
-            : widget.tagNames;
+    final displayIds =
+        widget.maxDisplay != null && widget.tagIds.length > widget.maxDisplay!
+            ? widget.tagIds.take(widget.maxDisplay!).toList()
+            : widget.tagIds;
     final remainingCount = widget.maxDisplay != null
-        ? widget.tagNames.length - widget.maxDisplay!
+        ? widget.tagIds.length - widget.maxDisplay!
         : 0;
 
     return Wrap(
       spacing: AppDimensions.spacingXs,
       runSpacing: AppDimensions.spacingXs,
       children: [
-        ...displayNames.map((name) => _SimpleTagChip(name: name)),
+        ...displayIds.map((id) => _SimpleTagChip(name: id)),
         if (remainingCount > 0)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingS, vertical: AppDimensions.spacingXs),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingS,
+                vertical: AppDimensions.spacingXs),
             decoration: BoxDecoration(
               color: AppColors.backgroundBeige,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),

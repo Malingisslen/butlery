@@ -247,7 +247,7 @@ Future<void> _migrateAllergens(Directory outputDir) async {
       key: 'nötkött',
       triggerProperties: ['beef'],
       containsTagSv: 'innehåller-nötkött',
-      freeTagSv: 'nötköttssfri',
+      freeTagSv: 'nötkötsfri',
       containsTagEn: 'contains-beef',
       freeTagEn: 'beef-free',
       uiGroup: 'meat',

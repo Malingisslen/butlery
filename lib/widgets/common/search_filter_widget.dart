@@ -47,7 +47,9 @@ class SearchFilterWidget extends StatefulWidget {
   // Personal tag filter properties (OPTIONAL)
   final List<PersonalTag>? personalTagIds;
   final Set<String>? activePersonalTagFilters;
+  final Set<String>? excludedPersonalTagFilters;
   final Function(String)? onPersonalTagFilterToggle;
+  final Function(String)? onExcludedPersonalTagFilterToggle;
   final VoidCallback? onManagePersonalTags;
 
   // UI state (OPTIONAL - null means no filter toggle)
@@ -86,7 +88,9 @@ class SearchFilterWidget extends StatefulWidget {
     // Personal tag filters (optional)
     this.personalTagIds,
     this.activePersonalTagFilters,
+    this.excludedPersonalTagFilters,
     this.onPersonalTagFilterToggle,
+    this.onExcludedPersonalTagFilterToggle,
     this.onManagePersonalTags,
 
     // UI state (optional)
@@ -296,7 +300,10 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
       // Personal tag filters
       personalTagIds: widget.personalTagIds,
       activePersonalTagFilters: widget.activePersonalTagFilters,
+      excludedPersonalTagFilters: widget.excludedPersonalTagFilters,
       onPersonalTagFilterToggle: widget.onPersonalTagFilterToggle,
+      onExcludedPersonalTagFilterToggle:
+          widget.onExcludedPersonalTagFilterToggle,
       onManagePersonalTags: widget.onManagePersonalTags,
     );
   }
@@ -318,6 +325,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
         (widget.activeRatingFilters?.length ?? 0) +
         (widget.activeAllergenFilters?.length ?? 0) +
         (widget.activeDietaryFilters?.length ?? 0) +
-        (widget.activePersonalTagFilters?.length ?? 0);
+        (widget.activePersonalTagFilters?.length ?? 0) +
+        (widget.excludedPersonalTagFilters?.length ?? 0);
   }
 }

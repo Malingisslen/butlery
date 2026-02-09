@@ -5,6 +5,9 @@ import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tag_overrides.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 import 'helpers/model_test_base.dart';
 
 // Helper to create test recipe
@@ -698,6 +701,165 @@ void main() {
       test('should handle empty search query', () {
         // Empty query returns true (shows all results)
         expect(realtimeRecipe.matchesSearchQuery(''), isTrue);
+      });
+    });
+
+    group('BUG-2: createPersonalCopy preserves tagging data', () {
+      test('should preserve tagResult when creating personal copy', () {
+        // Arrange
+        final tagResult = TagResult(
+          tags: {'vegetarisk', 'mild', 'pasta-dish'},
+          allergenStatus: {'gluten': TriState.contains},
+          dietaryStatus: {'vegetarisk': TriState.free},
+          coverage: 0.9,
+          unknownIngredients: ['mystery-spice'],
+          generatedAt: DateTime(2025, 6, 1),
+          generatorVersion: '1.0.0',
+        );
+
+        final recipe = Recipe(
+          core: RecipeCore(
+            id: 'recipe_with_tags',
+            title: 'Vegetarisk Pasta',
+            description: 'Pasta med gronsaker',
+            ingredients: ['Pasta', 'Tomater'],
+            instructions: ['Koka', 'Servera'],
+            mealType: 'Middag',
+            tagResult: tagResult,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            createdBy: 'user_123',
+            isPublic: false,
+          ),
+          type: RecipeType.personal,
+        );
+
+        final realtimeRecipe = RealtimeRecipe.fromRecipe(
+          recipe: recipe,
+          ownerId: 'user_123',
+          ownerDisplayName: 'Anna Andersson',
+        );
+
+        // Act
+        final personalCopy = realtimeRecipe.createPersonalCopy(
+          newOwnerId: 'user_456',
+        );
+
+        // Assert
+        expect(personalCopy.core.tagResult, isNotNull,
+            reason: 'tagResult should be preserved in personal copy');
+        expect(personalCopy.core.tagResult!.tags, contains('vegetarisk'));
+        expect(personalCopy.core.tagResult!.tags, contains('pasta-dish'));
+        expect(personalCopy.core.tagResult!.coverage, 0.9);
+        expect(personalCopy.core.tagResult!.allergenStatus['gluten'],
+            TriState.contains);
+      });
+
+      test('should preserve tagOverrides when creating personal copy', () {
+        // Arrange
+        final tagOverrides = TagOverrides(
+          allergenOverrides: {'gluten': TriState.free},
+          addedTags: {'favorit'},
+          removedTags: {'stark'},
+          lastEditedAt: DateTime(2025, 5, 20),
+          lastEditedBy: 'user_123',
+        );
+
+        final recipe = Recipe(
+          core: RecipeCore(
+            id: 'recipe_with_overrides',
+            title: 'Test',
+            description: 'Test',
+            ingredients: ['A'],
+            instructions: ['B'],
+            mealType: 'Middag',
+            tagOverrides: tagOverrides,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            createdBy: 'user_123',
+            isPublic: false,
+          ),
+          type: RecipeType.personal,
+        );
+
+        final realtimeRecipe = RealtimeRecipe.fromRecipe(
+          recipe: recipe,
+          ownerId: 'user_123',
+          ownerDisplayName: 'Anna',
+        );
+
+        // Act
+        final personalCopy = realtimeRecipe.createPersonalCopy(
+          newOwnerId: 'user_456',
+        );
+
+        // Assert
+        expect(personalCopy.core.tagOverrides, isNotNull,
+            reason: 'tagOverrides should be preserved in personal copy');
+        expect(personalCopy.core.tagOverrides!.allergenOverrides['gluten'],
+            TriState.free);
+        expect(personalCopy.core.tagOverrides!.addedTags, contains('favorit'));
+      });
+
+      test('should preserve ingredientsNormalized when creating personal copy',
+          () {
+        // Arrange
+        final normalized = ['pasta', 'tomat', 'lok'];
+
+        final recipe = Recipe(
+          core: RecipeCore(
+            id: 'recipe_normalized',
+            title: 'Pasta med lok',
+            description: 'Test',
+            ingredients: ['400g Pasta', '2 Tomater', '1 Lok'],
+            instructions: ['Koka'],
+            mealType: 'Middag',
+            ingredientsNormalized: normalized,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            createdBy: 'user_123',
+            isPublic: false,
+          ),
+          type: RecipeType.personal,
+        );
+
+        final realtimeRecipe = RealtimeRecipe.fromRecipe(
+          recipe: recipe,
+          ownerId: 'user_123',
+          ownerDisplayName: 'Anna',
+        );
+
+        // Act
+        final personalCopy = realtimeRecipe.createPersonalCopy(
+          newOwnerId: 'user_456',
+        );
+
+        // Assert
+        expect(personalCopy.core.ingredientsNormalized, isNotNull,
+            reason:
+                'ingredientsNormalized should be preserved in personal copy');
+        expect(personalCopy.core.ingredientsNormalized, equals(normalized));
+      });
+
+      test('should handle null tagging fields gracefully', () {
+        // Arrange: recipe without any tagging data
+        final recipe = _createTestRecipe();
+
+        final realtimeRecipe = RealtimeRecipe.fromRecipe(
+          recipe: recipe,
+          ownerId: 'user_123',
+          ownerDisplayName: 'Anna',
+        );
+
+        // Act
+        final personalCopy = realtimeRecipe.createPersonalCopy(
+          newOwnerId: 'user_456',
+        );
+
+        // Assert: null fields remain null without errors
+        expect(personalCopy.core.tagResult, isNull);
+        expect(personalCopy.core.tagOverrides, isNull);
+        expect(personalCopy.core.ingredientsNormalized, isNull);
       });
     });
 

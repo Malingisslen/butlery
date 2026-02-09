@@ -38,8 +38,8 @@ class RealtimeMenuAnalytics {
         recipe.core.ingredients.any(
             (ingredient) => ingredient.toLowerCase().contains(lowerQuery)) ||
         recipe.core.mealType.toLowerCase().contains(lowerQuery) ||
-        (recipe.core.personalTagIds
-                ?.any((tag) => tag.toLowerCase().contains(lowerQuery)) ??
+        (recipe.core.personalTags
+                ?.any((pt) => pt.name.toLowerCase().contains(lowerQuery)) ??
             false);
   }
 
@@ -232,8 +232,8 @@ class RealtimeMenuAnalytics {
     final allTags = <String>{};
 
     for (final recipe in data.allUniqueRecipes) {
-      final tags = recipe.core.personalTagIds ?? [];
-      allTags.addAll(tags);
+      final tags = recipe.core.personalTags ?? [];
+      allTags.addAll(tags.map((t) => t.name));
     }
 
     return allTags.toList()..sort();
@@ -244,9 +244,9 @@ class RealtimeMenuAnalytics {
     final frequency = <String, int>{};
 
     for (final recipe in data.allUniqueRecipes) {
-      final tags = recipe.core.personalTagIds ?? [];
-      for (final tag in tags) {
-        frequency[tag] = (frequency[tag] ?? 0) + 1;
+      final tags = recipe.core.personalTags ?? [];
+      for (final t in tags) {
+        frequency[t.name] = (frequency[t.name] ?? 0) + 1;
       }
     }
 

@@ -248,6 +248,26 @@ void main() {
                 'Matching lengths assumes already normalized (optimization)');
       });
 
+      test('returns true when content changed but count is same', () {
+        final recipe = Recipe.personal(
+          title: 'Test Recipe',
+          description: 'Test',
+          ingredients: ['2 dl grädde', '3 st ägg'],
+          instructions: ['Mix', 'Cook'],
+          mealType: 'Middag',
+          createdBy: 'user123',
+        );
+
+        // Stale normalized: mjölk was edited to grädde but count stayed same
+        final staleRecipe = recipe.copyWith(
+          ingredientsNormalized: ['mjölk', 'ägg'],
+        );
+
+        expect(IngredientProcessor.needsNormalization(staleRecipe), true,
+            reason:
+                'Content change (mjölk->grädde) should trigger re-normalization');
+      });
+
       test('handles recipe with no ingredients', () {
         final recipe = Recipe.personal(
           title: 'Test Recipe',

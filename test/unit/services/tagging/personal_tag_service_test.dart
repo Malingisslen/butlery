@@ -9,6 +9,7 @@ import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/core/di/di_container.dart';
@@ -29,6 +30,8 @@ class MockIngredientLookupService extends Mock
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
+class MockRecipeRepository extends Mock implements RecipeRepository {}
+
 class MockWriteBatch extends Mock implements WriteBatch {}
 
 void main() {
@@ -37,6 +40,7 @@ void main() {
   late MockFirebasePersonalTagGroupRepository mockGroupRepository;
   late MockIngredientLookupService mockLookupService;
   late MockAuthRepository mockAuthRepository;
+  late MockRecipeRepository mockRecipeRepository;
 
   setUpAll(() async {
     // Register fallback values for mocktail
@@ -51,11 +55,13 @@ void main() {
     mockGroupRepository = MockFirebasePersonalTagGroupRepository();
     mockLookupService = MockIngredientLookupService();
     mockAuthRepository = MockAuthRepository();
+    mockRecipeRepository = MockRecipeRepository();
 
-    // Reset and reinitialize GetIt with mock AuthRepository
+    // Reset and reinitialize GetIt with mock repositories
     final getIt = GetIt.instance;
     await getIt.reset();
     getIt.registerSingleton<AuthRepository>(mockAuthRepository);
+    getIt.registerSingleton<RecipeRepository>(mockRecipeRepository);
 
     // Initialize production ServiceLocator with DIContainer
     final container = DIContainer();
@@ -717,6 +723,294 @@ void main() {
         expect(result['recipe-1'], contains('easy-tag'));
         expect(result['recipe-2']?.length, 1);
         expect(result['recipe-2'], contains('medium-tag'));
+      });
+    });
+
+    group('updateTag - rename cascade', () {
+      test('should cascade rename to recipes when tag name changes', () async {
+        // Arrange
+        final existingTag =
+            PersonalTagBuilder().withId('tag-1').withName('Old Name').build();
+
+        final updatedTag =
+            PersonalTagBuilder().withId('tag-1').withName('New Name').build();
+
+        when(() => mockTagRepository.nameExists('New Name', excludeId: 'tag-1'))
+            .thenAnswer((_) async => false);
+        when(() => mockTagRepository.read('tag-1'))
+            .thenAnswer((_) async => existingTag);
+        when(() => mockTagRepository.update(any())).thenAnswer((_) async {});
+        when(() => mockRecipeRepository.renamePersonalTagInRecipes(
+              'tag-1',
+              'New Name',
+            )).thenAnswer((_) async => 3);
+
+        // Act
+        await service.updateTag(updatedTag);
+
+        // Assert: Verify rename was cascaded to recipes using tag ID
+        verify(() => mockRecipeRepository.renamePersonalTagInRecipes(
+              'tag-1',
+              'New Name',
+            )).called(1);
+      });
+
+      test('should not cascade when tag name has not changed', () async {
+        // Arrange
+        final existingTag =
+            PersonalTagBuilder().withId('tag-1').withName('Same Name').build();
+
+        final updatedTag =
+            PersonalTagBuilder().withId('tag-1').withName('Same Name').build();
+
+        when(() =>
+                mockTagRepository.nameExists('Same Name', excludeId: 'tag-1'))
+            .thenAnswer((_) async => false);
+        when(() => mockTagRepository.read('tag-1'))
+            .thenAnswer((_) async => existingTag);
+        when(() => mockTagRepository.update(any())).thenAnswer((_) async {});
+
+        // Act
+        await service.updateTag(updatedTag);
+
+        // Assert: No rename cascade should occur
+        verifyNever(() => mockRecipeRepository.renamePersonalTagInRecipes(
+              any(),
+              any(),
+            ));
+      });
+
+      test('should still update tag even when rename affects zero recipes',
+          () async {
+        // Arrange
+        final existingTag =
+            PersonalTagBuilder().withId('tag-1').withName('Old Name').build();
+
+        final updatedTag =
+            PersonalTagBuilder().withId('tag-1').withName('New Name').build();
+
+        when(() => mockTagRepository.nameExists('New Name', excludeId: 'tag-1'))
+            .thenAnswer((_) async => false);
+        when(() => mockTagRepository.read('tag-1'))
+            .thenAnswer((_) async => existingTag);
+        when(() => mockTagRepository.update(any())).thenAnswer((_) async {});
+        when(() => mockRecipeRepository.renamePersonalTagInRecipes(
+              'tag-1',
+              'New Name',
+            )).thenAnswer((_) async => 0);
+
+        // Act
+        await service.updateTag(updatedTag);
+
+        // Assert: Tag was updated in repository
+        verify(() => mockTagRepository.update(any())).called(1);
+        // Rename was still called using tag ID (returned 0 affected recipes)
+        verify(() => mockRecipeRepository.renamePersonalTagInRecipes(
+              'tag-1',
+              'New Name',
+            )).called(1);
+      });
+
+      test('should validate name before attempting rename cascade', () async {
+        // Arrange: Tag with invalid name (contains comma)
+        final updatedTag =
+            PersonalTagBuilder().withId('tag-1').withName('Bad,Name').build();
+
+        // Act: Should fail validation before reaching rename logic
+        await service.updateTag(updatedTag);
+
+        // Assert: Neither repository update nor rename should occur
+        verifyNever(() => mockTagRepository.update(any()));
+        verifyNever(() => mockRecipeRepository.renamePersonalTagInRecipes(
+              any(),
+              any(),
+            ));
+      });
+
+      test('should reject update when new name already exists', () async {
+        // Arrange
+        final updatedTag = PersonalTagBuilder()
+            .withId('tag-1')
+            .withName('Duplicate Name')
+            .build();
+
+        when(() => mockTagRepository.nameExists('Duplicate Name',
+            excludeId: 'tag-1')).thenAnswer((_) async => true);
+
+        // Act
+        await service.updateTag(updatedTag);
+
+        // Assert: No update or rename should occur
+        verifyNever(() => mockTagRepository.update(any()));
+        verifyNever(() => mockRecipeRepository.renamePersonalTagInRecipes(
+              any(),
+              any(),
+            ));
+      });
+
+      test('should validate group exists when groupId is specified', () async {
+        // Arrange
+        final updatedTag = PersonalTagBuilder()
+            .withId('tag-1')
+            .withName('Valid Name')
+            .withGroupId('nonexistent-group')
+            .build();
+
+        when(() =>
+                mockTagRepository.nameExists('Valid Name', excludeId: 'tag-1'))
+            .thenAnswer((_) async => false);
+        when(() => mockGroupRepository.read('nonexistent-group'))
+            .thenAnswer((_) async => null);
+
+        // Act
+        await service.updateTag(updatedTag);
+
+        // Assert: No update or rename should occur
+        verifyNever(() => mockTagRepository.update(any()));
+        verifyNever(() => mockRecipeRepository.renamePersonalTagInRecipes(
+              any(),
+              any(),
+            ));
+      });
+
+      test(
+          'should handle existing tag not found gracefully during rename check',
+          () async {
+        // Arrange: _tagRepository.read returns null for the existing tag
+        final updatedTag =
+            PersonalTagBuilder().withId('tag-1').withName('New Name').build();
+
+        when(() => mockTagRepository.nameExists('New Name', excludeId: 'tag-1'))
+            .thenAnswer((_) async => false);
+        when(() => mockTagRepository.read('tag-1'))
+            .thenAnswer((_) async => null);
+        when(() => mockTagRepository.update(any())).thenAnswer((_) async {});
+
+        // Act
+        await service.updateTag(updatedTag);
+
+        // Assert: Tag is updated but no rename cascade (oldName is null)
+        verify(() => mockTagRepository.update(any())).called(1);
+        verifyNever(() => mockRecipeRepository.renamePersonalTagInRecipes(
+              any(),
+              any(),
+            ));
+      });
+    });
+
+    group('deleteTag - cascade to recipes', () {
+      test('should cascade delete to recipes using tag ID', () async {
+        // Arrange
+        when(() => mockTagRepository.delete('tag-1')).thenAnswer((_) async {});
+        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
+            .thenAnswer((_) async => 5);
+
+        // Act
+        await service.deleteTag('tag-1');
+
+        // Assert: Tag was deleted and cascade used tag ID
+        verify(() => mockTagRepository.delete('tag-1')).called(1);
+        verify(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
+            .called(1);
+      });
+
+      test('should not cascade when tag is not found before deletion',
+          () async {
+        // Arrange: Tag not found (read returns null)
+        when(() => mockTagRepository.read('tag-1'))
+            .thenAnswer((_) async => null);
+        when(() => mockTagRepository.delete('tag-1')).thenAnswer((_) async {});
+        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
+            .thenAnswer((_) async => 0);
+
+        // Act
+        await service.deleteTag('tag-1');
+
+        // Assert: Delete proceeds and cascade uses tag ID
+        verify(() => mockTagRepository.delete('tag-1')).called(1);
+        verify(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
+            .called(1);
+      });
+
+      test('should handle cascade affecting zero recipes', () async {
+        // Arrange
+        when(() => mockTagRepository.delete('tag-1')).thenAnswer((_) async {});
+        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
+            .thenAnswer((_) async => 0);
+
+        // Act
+        await service.deleteTag('tag-1');
+
+        // Assert: Both operations were called using tag ID
+        verify(() => mockTagRepository.delete('tag-1')).called(1);
+        verify(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
+            .called(1);
+      });
+
+      test('should cascade delete before removing tag from repository',
+          () async {
+        // Arrange: Verifies cascade happens then delete proceeds
+        when(() => mockTagRepository.delete('tag-1')).thenAnswer((_) async {});
+        when(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
+            .thenAnswer((_) async => 1);
+
+        // Act
+        await service.deleteTag('tag-1');
+
+        // Assert: Cascade and delete both called using tag ID
+        verify(() => mockTagRepository.delete('tag-1')).called(1);
+        verify(() => mockRecipeRepository.removePersonalTagFromRecipes('tag-1'))
+            .called(1);
+      });
+    });
+
+    group('createTag', () {
+      test('should create a valid tag', () async {
+        // Arrange
+        final tag = PersonalTagBuilder()
+            .withId('new-tag')
+            .withName('Valid Tag')
+            .build();
+
+        when(() => mockTagRepository.nameExists('Valid Tag'))
+            .thenAnswer((_) async => false);
+        when(() => mockTagRepository.create(any()))
+            .thenAnswer((_) async => tag);
+
+        // Act
+        final result = await service.createTag(tag);
+
+        // Assert
+        expect(result, isNotNull);
+        expect(result!.name, 'Valid Tag');
+        verify(() => mockTagRepository.create(tag)).called(1);
+      });
+
+      test('should reject tag with duplicate name', () async {
+        // Arrange
+        final tag = PersonalTagBuilder().withName('Duplicate').build();
+
+        when(() => mockTagRepository.nameExists('Duplicate'))
+            .thenAnswer((_) async => true);
+
+        // Act
+        final result = await service.createTag(tag);
+
+        // Assert: Returns null (error handled by executeServiceOperation)
+        expect(result, isNull);
+        verifyNever(() => mockTagRepository.create(any()));
+      });
+
+      test('should reject tag with invalid name', () async {
+        // Arrange: Name with comma is invalid
+        final tag = PersonalTagBuilder().withName('Bad,Tag').build();
+
+        // Act
+        final result = await service.createTag(tag);
+
+        // Assert
+        expect(result, isNull);
+        verifyNever(() => mockTagRepository.create(any()));
       });
     });
 

@@ -5,6 +5,7 @@
 library;
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 
 /// Factory for creating test Recipe instances
@@ -36,6 +37,7 @@ class RecipeFactory {
     RecipeRealtimeData? realtimeData,
     RecipeOfflineData? offlineData,
   }) {
+    final effectiveTagIds = personalTagIds ?? ['test', 'recipe'];
     final core = RecipeCore(
       id: id ?? 'recipe_${DateTime.now().millisecondsSinceEpoch}',
       title: title,
@@ -47,7 +49,10 @@ class RecipeFactory {
       portions: portions,
       timeMinutes: timeMinutes,
       rating: rating,
-      personalTagIds: personalTagIds ?? ['test', 'recipe'],
+      personalTagIds: effectiveTagIds,
+      personalTags: effectiveTagIds
+          .map((id) => RecipePersonalTag.manual(tagId: id, name: id))
+          .toList(),
       sourceUrl: sourceUrl,
       createdBy: createdBy ?? 'test_user',
       createdAt: createdAt ?? DateTime.now(),

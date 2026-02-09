@@ -14,6 +14,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tag_overrides.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 
 import 'helpers/model_test_base.dart';
 import 'helpers/serialization_helper.dart';
@@ -349,11 +352,16 @@ void main() {
         final deserialized = RecipeCore.fromJson(json);
         final json2 = deserialized.toJson();
 
-        // Assert
+        // Assert - core fields preserved
         expect(deserialized.id, equals(original.id));
         expect(deserialized.title, equals(original.title));
         expect(deserialized.ingredients, equals(original.ingredients));
-        expect(json2, equals(json));
+
+        // After first round-trip, personalTags is lazy-migrated from
+        // personalTagIds. A second round-trip should be stable.
+        final deserialized2 = RecipeCore.fromJson(json2);
+        final json3 = deserialized2.toJson();
+        expect(json3, equals(json2));
       });
     });
 
@@ -500,6 +508,165 @@ void main() {
         final realtime = RecipeFactory.buildRealtime();
         expect(realtime.realtimeData, isNotNull);
         expect(realtime.realtimeData!.isActive, isTrue);
+      });
+    });
+
+    group('BUG-3: Recipe.copyWith tagResult parameter', () {
+      test('should update tagResult via Recipe.copyWith', () {
+        // Arrange: Recipe without tagResult
+        final original = Recipe(
+          core: RecipeCore(
+            title: 'Test Recipe',
+            description: 'Test',
+            ingredients: ['Pasta', 'Tomat'],
+            instructions: ['Koka'],
+            mealType: 'Middag',
+          ),
+          type: RecipeType.personal,
+        );
+        expect(original.core.tagResult, isNull);
+
+        // Act: Set tagResult via copyWith
+        final tagResult = TagResult(
+          tags: {'vegetarisk', 'pasta-dish', 'mild'},
+          allergenStatus: {'gluten': TriState.contains, 'mjölk': TriState.free},
+          dietaryStatus: {'vegetarisk': TriState.free},
+          coverage: 0.95,
+          unknownIngredients: [],
+          generatedAt: DateTime(2025, 6, 1),
+          generatorVersion: '1.0.0',
+        );
+
+        final updated = original.copyWith(tagResult: tagResult);
+
+        // Assert
+        expect(updated.core.tagResult, isNotNull,
+            reason: 'tagResult should be set via Recipe.copyWith');
+        expect(updated.core.tagResult!.tags, contains('vegetarisk'));
+        expect(updated.core.tagResult!.tags, contains('pasta-dish'));
+        expect(updated.core.tagResult!.coverage, 0.95);
+        expect(updated.core.tagResult!.allergenStatus['gluten'],
+            TriState.contains);
+      });
+
+      test('should replace existing tagResult via Recipe.copyWith', () {
+        // Arrange: Recipe with existing tagResult
+        final oldTagResult = TagResult(
+          tags: {'gammal-tag'},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 0.5,
+          unknownIngredients: ['unknown1'],
+          generatedAt: DateTime(2025, 1, 1),
+          generatorVersion: '0.9.0',
+        );
+
+        final original = Recipe(
+          core: RecipeCore(
+            title: 'Test',
+            description: 'Test',
+            ingredients: ['A'],
+            instructions: ['B'],
+            mealType: 'Middag',
+            tagResult: oldTagResult,
+          ),
+          type: RecipeType.personal,
+        );
+
+        // Act: Replace with new tagResult
+        final newTagResult = TagResult(
+          tags: {'ny-tag', 'vegetarisk'},
+          allergenStatus: {'gluten': TriState.free},
+          dietaryStatus: {'vegetarisk': TriState.free},
+          coverage: 1.0,
+          unknownIngredients: [],
+          generatedAt: DateTime(2025, 6, 15),
+          generatorVersion: '1.0.0',
+        );
+
+        final updated = original.copyWith(tagResult: newTagResult);
+
+        // Assert
+        expect(updated.core.tagResult, isNotNull);
+        expect(updated.core.tagResult!.tags, contains('ny-tag'));
+        expect(updated.core.tagResult!.tags, contains('vegetarisk'));
+        expect(updated.core.tagResult!.tags, isNot(contains('gammal-tag')),
+            reason: 'Old tagResult should be fully replaced');
+        expect(updated.core.tagResult!.coverage, 1.0);
+      });
+
+      test('should preserve tagResult when not specified in copyWith', () {
+        // Arrange
+        final tagResult = TagResult(
+          tags: {'bevarad-tag'},
+          allergenStatus: {'mjölk': TriState.contains},
+          dietaryStatus: {},
+          coverage: 0.8,
+          unknownIngredients: [],
+          generatedAt: DateTime(2025, 6, 1),
+          generatorVersion: '1.0.0',
+        );
+
+        final original = Recipe(
+          core: RecipeCore(
+            title: 'Original',
+            description: 'Test',
+            ingredients: ['A'],
+            instructions: ['B'],
+            mealType: 'Middag',
+            tagResult: tagResult,
+          ),
+          type: RecipeType.personal,
+        );
+
+        // Act: copyWith without tagResult
+        final updated = original.copyWith(title: 'Updated Title');
+
+        // Assert: tagResult should be preserved
+        expect(updated.core.tagResult, isNotNull);
+        expect(updated.core.tagResult!.tags, contains('bevarad-tag'));
+        expect(updated.core.tagResult!.coverage, 0.8);
+      });
+
+      test('should update both tagResult and tagOverrides via copyWith', () {
+        // Arrange
+        final original = Recipe(
+          core: RecipeCore(
+            title: 'Test',
+            description: 'Test',
+            ingredients: ['A'],
+            instructions: ['B'],
+            mealType: 'Middag',
+          ),
+          type: RecipeType.personal,
+        );
+
+        final tagResult = TagResult(
+          tags: {'ny-tag'},
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 1.0,
+          unknownIngredients: [],
+          generatedAt: DateTime.now(),
+          generatorVersion: '1.0.0',
+        );
+
+        final tagOverrides = TagOverrides(
+          allergenOverrides: {'gluten': TriState.free},
+          addedTags: {'manuell-tag'},
+        );
+
+        // Act
+        final updated = original.copyWith(
+          tagResult: tagResult,
+          tagOverrides: tagOverrides,
+        );
+
+        // Assert
+        expect(updated.core.tagResult, isNotNull);
+        expect(updated.core.tagResult!.tags, contains('ny-tag'));
+        expect(updated.core.tagOverrides, isNotNull);
+        expect(updated.core.tagOverrides!.addedTags, contains('manuell-tag'));
       });
     });
 

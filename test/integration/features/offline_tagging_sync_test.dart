@@ -198,8 +198,8 @@ void main() {
         final json = tagResult.toFirestore();
 
         expect(json['tags'], contains('test-tag'));
-        expect(json['allergenStatus']['gluten'], 'CONTAINS');
-        expect(json['dietaryStatus']['vegetarisk'], 'FREE');
+        expect(json['allergenStatus']['gluten'], 'contains');
+        expect(json['dietaryStatus']['vegetarisk'], 'free');
         expect(json['coverage'], 0.85);
         expect(json['generatorVersion'], '1.0.0');
       });

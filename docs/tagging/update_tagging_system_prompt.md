@@ -9,7 +9,7 @@ Use this prompt when you need to update the Butlery recipe tagging system.
 The tagging system automatically generates tags for recipes based on their ingredients. It uses:
 
 - **Ingredient Database**: 2230+ ingredients with properties, groups, and aliases
-- **Tag Generator**: 4-phase tag generation (base → derived → complex → mood)
+- **Tag Generator**: 5-phase tag generation (base → derived → complex → mood → cuisine)
 - **Tri-valued Logic**: CONTAINS / FREE / UNKNOWN for allergens and dietary status
 
 ### Key Files
@@ -83,6 +83,7 @@ Modify how tags are generated in each phase.
 - Phase 2: Derived tags (pasta-dish, spicy, pescetarian, halal-friendly)
 - Phase 3: Complex tags (easy/medium/advanced, creamy, kid-friendly)
 - Phase 4: Mood/occasion tags (weeknight, comfort-food, christmas)
+- Phase 5: Cuisine tags (svensk, italiensk, asiatisk, etc.)
 
 **To update:** Describe the new tag rule or modification
 

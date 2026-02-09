@@ -1,8 +1,10 @@
 // lib/viewmodels/menu/menu_generator.dart
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for menu generation
@@ -11,21 +13,52 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Menu section regeneration
 /// - Recipe availability validation
 /// - Generation error handling
+/// - Allergen-safe recipe filtering
 /// ❌ DOES NOT CONTAIN: State management, persistence, social features
 class MenuGenerator {
   final MenuService _menuService;
   final UnifiedRecipeService _recipeService;
+  final UserService _userService;
+
+  /// Whether to filter out recipes containing user's tracked allergens.
+  bool filterByAllergens;
 
   MenuGenerator({
     required MenuService menuService,
     required UnifiedRecipeService recipeService,
+    required UserService userService,
+    this.filterByAllergens = true,
   })  : _menuService = menuService,
-        _recipeService = recipeService;
+        _recipeService = recipeService,
+        _userService = userService;
+
   List<Recipe> get availableRecipes {
     if (!_recipeService.isInitialized) {
       return [];
     }
-    return _recipeService.recipes;
+    final recipes = _recipeService.recipes;
+    if (!filterByAllergens) return recipes;
+    return _filterByAllergenPreferences(recipes);
+  }
+
+  /// Filters out recipes that CONTAIN any of the user's tracked allergens.
+  /// Recipes with UNKNOWN status are kept (may be safe, user can verify).
+  List<Recipe> _filterByAllergenPreferences(List<Recipe> recipes) {
+    final prefs = _userService.allergenPreferences;
+    if (!prefs.hasTrackedAllergens) return recipes;
+
+    final tracked = prefs.trackedAllergens;
+    return recipes.where((recipe) {
+      final tagResult = recipe.tagResult;
+      if (tagResult == null) return true; // No tag data = keep
+
+      for (final allergen in tracked) {
+        if (tagResult.getAllergenStatus(allergen) == TriState.contains) {
+          return false; // Exclude recipes that CONTAIN tracked allergens
+        }
+      }
+      return true;
+    }).toList();
   }
 
   bool get hasAvailableRecipes => availableRecipes.isNotEmpty;

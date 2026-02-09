@@ -10,6 +10,7 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -46,6 +47,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     _generator = MenuGenerator(
       menuService: _menuService,
       recipeService: _recipeService,
+      userService: ServiceLocator.get<UserService>(),
     );
     _storage = MenuStorage();
     _socialManager = MenuSocialManager(

@@ -15,6 +15,7 @@ import 'package:butlery/core/rate_limiting/rate_limiter.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
@@ -883,7 +884,8 @@ class PersonalRecipeModule {
   /// Applies personal tag automation rules to a recipe.
   ///
   /// Evaluates user-defined rules against the recipe and adds matching
-  /// tag IDs to the recipe's personalTagIds list.
+  /// tags. Writes both personalTagIds (UUIDs for queries) and personalTags
+  /// (rich objects for display/source tracking).
   /// Non-blocking: failures return the original recipe unchanged.
   Future<Recipe> _applyPersonalTagRules(Recipe recipe) async {
     if (_personalTagService == null) return recipe;
@@ -895,24 +897,39 @@ class PersonalRecipeModule {
 
       if (matchingTagIds.isEmpty) return recipe;
 
-      // Get the actual tag objects to get their names
+      // Get the actual tag objects for ID and name
       final allTags = await _personalTagService.getAllTags();
-      final ruleTagNames = allTags
-          .where((t) => matchingTagIds.contains(t.id))
-          .map((t) => t.name)
-          .toSet();
+      final matchingTags =
+          allTags.where((t) => matchingTagIds.contains(t.id)).toList();
 
-      if (ruleTagNames.isEmpty) return recipe;
+      if (matchingTags.isEmpty) return recipe;
 
-      // Merge with existing personalTagIds (preserving user-entered tags)
-      final existingTags = recipe.personalTagIds?.toSet() ?? <String>{};
-      final mergedTags = existingTags.union(ruleTagNames).toList();
+      // Merge IDs into personalTagIds (UUIDs for Firestore queries)
+      final existingIds = recipe.personalTagIds?.toSet() ?? <String>{};
+      final newIds = matchingTags.map((t) => t.id).toSet();
+      final mergedIds = existingIds.union(newIds).toList();
+
+      // Merge into personalTags (rich objects with source tracking)
+      var mergedPersonalTags = recipe.core.personalTags != null
+          ? List<RecipePersonalTag>.from(recipe.core.personalTags!)
+          : <RecipePersonalTag>[];
+      for (final tag in matchingTags) {
+        final ruleTag = RecipePersonalTag.fromRule(
+          tagId: tag.id,
+          name: tag.name,
+          ruleId: 'auto', // Generic source for rule-applied tags
+        );
+        mergedPersonalTags = mergedPersonalTags.addOrUpdate(ruleTag);
+      }
 
       AppLogger.info(
-        '🏷️ Personal tag rules: added ${ruleTagNames.length} tags to "${recipe.title}"',
+        '🏷️ Personal tag rules: added ${matchingTags.length} tags to "${recipe.title}"',
       );
 
-      return recipe.copyWith(personalTagIds: mergedTags);
+      return recipe.copyWith(
+        personalTagIds: mergedIds,
+        personalTags: mergedPersonalTags,
+      );
     } catch (e, stackTrace) {
       // HIGH-8: Log as error and notify UI about personal tag failure
       AppLogger.error(

@@ -58,16 +58,9 @@ extension TriStateExtension on TriState {
   bool get isUnknown => this == TriState.unknown;
 
   /// Converts to Firestore string representation.
-  String toFirestore() {
-    switch (this) {
-      case TriState.contains:
-        return 'CONTAINS';
-      case TriState.free:
-        return 'FREE';
-      case TriState.unknown:
-        return 'UNKNOWN';
-    }
-  }
+  /// Uses lowercase format (Dart enum .name convention).
+  /// The fromFirestore parser handles both lowercase and legacy uppercase.
+  String toFirestore() => name;
 
   /// Creates from Firestore string representation.
   ///

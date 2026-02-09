@@ -315,9 +315,17 @@ class RecipeFactory {
         personalTagIds: sourceRecipe.core.personalTagIds != null
             ? [...sourceRecipe.core.personalTagIds!]
             : null,
+        personalTags: sourceRecipe.core.personalTags != null
+            ? [...sourceRecipe.core.personalTags!]
+            : null,
         sourceUrl: 'Kopierat från: ${sourceRecipe.core.title}',
         imageUrls: [...sourceRecipe.core.imageUrls],
         isPublic: false, // Personal copies are private by default
+        tagResult: sourceRecipe.core.tagResult,
+        tagOverrides: sourceRecipe.core.tagOverrides,
+        ingredientsNormalized: sourceRecipe.core.ingredientsNormalized != null
+            ? [...sourceRecipe.core.ingredientsNormalized!]
+            : null,
       ),
       type: RecipeType.personal,
     );

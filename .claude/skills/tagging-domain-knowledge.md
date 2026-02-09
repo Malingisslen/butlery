@@ -6,7 +6,7 @@
 
 1. **Tri-State, INTE Boolean** - Allergen/dietary-status är ALLTID `TriState.contains | free | unknown`
 2. **Coverage avgör säkerhet** - `coverage < 1.0` → alla allergens/dietary = `unknown`
-3. **4-fas pipeline** - Phase1 → Phase2 → Phase3 → Phase4 (strikt ordning)
+3. **5-fas pipeline** - Phase1 → Phase2 → Phase3 → Phase4 → Phase5 (strikt ordning)
 4. **FREE kräver bevis** - En allergen är `free` ENDAST om 100% coverage OCH ingen ingrediens har egenskapen
 5. **UNKNOWN är default** - Saknad data = `unknown` (säkert för allergiker)
 
@@ -75,6 +75,7 @@ TagResult {
 | 2 | Phase1 + Recept | Simple derived | pasta-dish, pescetarian, few-ingredients |
 | 3 | Phase1 + Phase2 + Recept | Complex | one-pot, no-bake, quick-meal |
 | 4 | Phase1-3 + Recept | Mood/occasion | weeknight, comfort-food |
+| 5 | Phase1-4 + Ingredienser | Cuisine | svensk, italiensk, asiatisk |
 
 ## Allergen-nycklar (Svenska)
 
@@ -95,10 +96,15 @@ barnvänlig, halalanpassad, kosheranpassad, nötkötsfri
 
 - `lib/models/tagging/tri_state.dart` - TriState enum + combine-logik
 - `lib/models/tagging/tag_result.dart` - TagResult modell
-- `lib/services/tagging/tag_generator.dart` - 4-fas orchestrator
+- `lib/models/tagging/tag_overrides.dart` - User overrides till auto-tags
+- `lib/services/tagging/tag_generator.dart` - 5-fas orchestrator
 - `lib/services/tagging/phases/tag_phase1_base.dart` - Allergen/dietary beräkning
+- `lib/services/tagging/phases/tag_phase5_cuisine.dart` - Cuisine-tagging (17 kök)
 - `lib/services/tagging/config/allergen_config.dart` - 22 allergener
 - `lib/services/tagging/config/dietary_config.dart` - 8 dieter
+- `lib/services/tagging/tag_editing_service.dart` - Effective status med overrides
+- `lib/services/tagging/tag_resolution_service.dart` - Resolves auto+override+personal tags
+- `lib/services/tagging/personal_tag_service.dart` - Personal tags + automation rules
 
 ## När triggas denna skill?
 

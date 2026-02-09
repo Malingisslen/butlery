@@ -58,7 +58,7 @@ void main() {
 
         expect(json['type'], 'allergen');
         expect(json['key'], 'ägg');
-        expect(json['result'], 'CONTAINS');
+        expect(json['result'], 'contains');
         expect(json['reason'], 'Ingredient with property "egg" found');
         expect(json['triggeringIngredients'], ['ägg']);
       });

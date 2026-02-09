@@ -122,10 +122,10 @@ void main() {
     });
 
     group('Firestore serialization', () {
-      test('toFirestore returns uppercase string', () {
-        expect(TriState.contains.toFirestore(), 'CONTAINS');
-        expect(TriState.free.toFirestore(), 'FREE');
-        expect(TriState.unknown.toFirestore(), 'UNKNOWN');
+      test('toFirestore returns lowercase string matching enum name', () {
+        expect(TriState.contains.toFirestore(), 'contains');
+        expect(TriState.free.toFirestore(), 'free');
+        expect(TriState.unknown.toFirestore(), 'unknown');
       });
 
       test('fromFirestore parses valid strings case-insensitively', () {

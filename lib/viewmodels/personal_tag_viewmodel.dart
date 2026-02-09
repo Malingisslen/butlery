@@ -9,6 +9,7 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
@@ -519,15 +520,11 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   /// Loads rule effectiveness statistics.
   ///
-  /// Calculates how many recipes each rule would match if applied.
+  /// Uses service-level evaluation to get proper ingredient lookup and userId,
+  /// ensuring property-based and ownership rules are evaluated correctly.
   Future<void> loadRuleEffectiveness() async {
-    // Collect all rules from all tags
-    final allRules = <PersonalTagRule>[];
-    for (final tag in _tags) {
-      allRules.addAll(tag.rules);
-    }
-
-    if (allRules.isEmpty) return;
+    final hasRules = _tags.any((tag) => tag.rules.isNotEmpty);
+    if (!hasRules) return;
 
     _isLoadingRuleStats = true;
     _safeNotifyListeners();
@@ -541,21 +538,26 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
         return;
       }
 
-      final counts = <String, int>{};
+      // Use service-level evaluation for proper lookup + userId
+      final sourcesMap =
+          await _service.evaluateRulesWithSourcesForRecipes(recipes);
 
-      // For each rule, count how many recipes match
-      for (final rule in allRules) {
-        int matchCount = 0;
-        for (final recipe in recipes) {
-          if (rule.evaluate(recipe, null)) {
-            matchCount++;
-          }
+      // Build per-rule match counts from the sources map
+      // sourcesMap: recipeId → (tagId → [ruleId, ...])
+      final counts = <String, int>{};
+      for (final tagSourcesMap in sourcesMap.values) {
+        // Collect unique ruleIds matched for this recipe
+        final matchedRuleIds = <String>{};
+        for (final ruleIds in tagSourcesMap.values) {
+          matchedRuleIds.addAll(ruleIds);
         }
-        counts[rule.id] = matchCount;
+        for (final ruleId in matchedRuleIds) {
+          counts[ruleId] = (counts[ruleId] ?? 0) + 1;
+        }
       }
 
       _ruleMatchCounts = counts;
-      AppLogger.info('Loaded effectiveness stats for ${allRules.length} rules');
+      AppLogger.info('Loaded effectiveness stats for ${counts.length} rules');
     } catch (e, stack) {
       AppLogger.error('Failed to load rule effectiveness', stack);
     } finally {
@@ -587,9 +589,13 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
         );
       }
 
-      // Evaluate rules for all recipes
-      final matchingTags = await _service.evaluateRulesForRecipes(recipes);
-      if (matchingTags.isEmpty) {
+      // Get current tag version for staleness tracking
+      final tagVersion = await _service.getCurrentTagVersion();
+
+      // Evaluate rules with source tracking for all recipes
+      final matchingSources =
+          await _service.evaluateRulesWithSourcesForRecipes(recipes);
+      if (matchingSources.isEmpty) {
         onProgress?.call(recipes.length, recipes.length);
         return BatchApplyResult(
           recipesProcessed: recipes.length,
@@ -607,30 +613,54 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
         processed++;
         onProgress?.call(processed, recipes.length);
 
-        final newTagIds = matchingTags[recipe.id];
-        if (newTagIds == null || newTagIds.isEmpty) continue;
+        final tagSourcesMap = matchingSources[recipe.id];
+        if (tagSourcesMap == null || tagSourcesMap.isEmpty) continue;
 
-        // Convert tag IDs to names
-        final newTagNames = newTagIds
-            .map((id) => getTagById(id)?.name)
-            .whereType<String>()
+        // Get matching tag objects for ID and name
+        final matchingTagObjects = tagSourcesMap.keys
+            .map((id) => getTagById(id))
+            .whereType<PersonalTag>()
+            .toList();
+
+        if (matchingTagObjects.isEmpty) continue;
+
+        // Merge IDs into personalTagIds (UUIDs for Firestore queries)
+        final existingIds = recipe.personalTagIds?.toSet() ?? <String>{};
+        final idsToAdd = matchingTagObjects
+            .map((t) => t.id)
+            .where((id) => !existingIds.contains(id))
             .toSet();
 
-        if (newTagNames.isEmpty) continue;
+        if (idsToAdd.isEmpty) continue;
 
-        // Merge with existing tags
-        final existingTags = recipe.personalTagIds?.toSet() ?? <String>{};
-        final tagsToAdd = newTagNames.difference(existingTags);
+        final mergedIds = [...existingIds, ...idsToAdd];
 
-        if (tagsToAdd.isEmpty) continue;
+        // Merge into personalTags (rich objects with actual rule source tracking)
+        var mergedPersonalTags = recipe.core.personalTags != null
+            ? List<RecipePersonalTag>.from(recipe.core.personalTags!)
+            : <RecipePersonalTag>[];
+        for (final tag in matchingTagObjects) {
+          if (idsToAdd.contains(tag.id)) {
+            final ruleIds = tagSourcesMap[tag.id] ?? [];
+            final sources = ruleIds.map((id) => 'rule-$id').toList();
+            final ruleTag = RecipePersonalTag(
+              tagId: tag.id,
+              name: tag.name,
+              sources: sources.isNotEmpty ? sources : ['rule-unknown'],
+            );
+            mergedPersonalTags = mergedPersonalTags.addOrUpdate(ruleTag);
+          }
+        }
 
-        // Update recipe with new tags
-        final updatedTags = [...existingTags, ...tagsToAdd];
-        final updatedRecipe = recipe.copyWith(personalTagIds: updatedTags);
+        final updatedRecipe = recipe.copyWith(
+          personalTagIds: mergedIds,
+          personalTags: mergedPersonalTags,
+          personalTagVersion: tagVersion,
+        );
 
         await recipeRepo.update(updatedRecipe);
         recipesModified++;
-        totalTagsApplied += tagsToAdd.length;
+        totalTagsApplied += idsToAdd.length;
       }
 
       AppLogger.success(
@@ -652,13 +682,13 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     }
   }
 
-  /// Gets all user recipes from the repository.
+  /// Gets all user recipes using cursor-based pagination.
+  /// No hard limit - fetches all recipes in batches of 500.
   Future<List<Recipe>> _getAllUserRecipes(RecipeRepository recipeRepo) async {
     final userId = ServiceLocator.get<PermissionService>().currentUserId;
     if (userId == null) return [];
 
-    // Use interface method with higher limit for batch operations
-    return await recipeRepo.fetchUserRecipes(userId, limit: 500);
+    return await recipeRepo.fetchAllUserRecipes(userId);
   }
 
   // ============================================================
