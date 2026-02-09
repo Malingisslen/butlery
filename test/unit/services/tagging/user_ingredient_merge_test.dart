@@ -128,9 +128,10 @@ void main() {
         status: 'user-defined',
       );
 
-      when(() => mockIngredientRepo.findByName('ägg'))
+      // Note: _cleanForLookup normalizes ä→a, so 'ägg' becomes 'agg'
+      when(() => mockIngredientRepo.findByName('agg'))
           .thenAnswer((_) async => globalEgg);
-      when(() => mockUserIngredientRepo.findByName('user1', 'ägg'))
+      when(() => mockUserIngredientRepo.findByName('user1', 'agg'))
           .thenAnswer((_) async => userVeganEgg);
 
       // Lookup with user context
@@ -162,7 +163,8 @@ void main() {
       // Setup: tofu only in user, ris and lök only in global
       when(() => mockIngredientRepo.findByName('ris'))
           .thenAnswer((_) async => globalRis);
-      when(() => mockIngredientRepo.findByName('lök'))
+      // Note: _cleanForLookup normalizes ö→o, so 'lök' becomes 'lok'
+      when(() => mockIngredientRepo.findByName('lok'))
           .thenAnswer((_) async => globalLok);
       when(() => mockUserIngredientRepo.findByName('user1', 'tofu'))
           .thenAnswer((_) async => userTofu);

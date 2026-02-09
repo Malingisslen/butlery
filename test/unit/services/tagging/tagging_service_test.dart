@@ -98,7 +98,8 @@ void main() {
             userId: any(named: 'userId')));
       });
 
-      test('returns failed result on lookup timeout', () async {
+      test('returns partial result with safe defaults on lookup timeout',
+          () async {
         final recipe = RecipeBuilder()
             .withTitle('Timeout Recipe')
             .withIngredients(['tomat']).build();
@@ -111,7 +112,12 @@ void main() {
         final result = await service.generateTags(recipe);
 
         expect(result, isNotNull);
-        expect(result!.tags, isEmpty);
+        // CRIT-4: Timeout returns partial result with visible indicator
+        expect(result!.tags, contains('timeout-warning'));
+        expect(result.isPartial, isTrue);
+        expect(result.generatorVersion, 'lookup_timeout');
+        expect(result.coverage, 0.0);
+        expect(result.unknownIngredients, ['tomat']);
         // TagGenerator should not be called on lookup timeout
         verifyNever(() => mockTagGenerator.generate(
               ingredients: any(named: 'ingredients'),
