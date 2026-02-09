@@ -65,6 +65,18 @@ See ADRs in `/docs/adr/` for complete architectural decisions.
 - Always run `git status` first; `git stash` if uncommitted work exists
 - Ask user before any operation that could lose work
 
+**Terse Prompt Signals** (user prompts are bimodal: detailed plans OR ultra-short commands):
+| Signal | Meaning | Response |
+|--------|---------|----------|
+| `"continue"` | Resume at next step in current task | Don't ask "continue what?" - check plan/context and proceed |
+| `"try it out"` / `"test it"` | Run the app and verify | Execute `flutter run -d chrome`, test, report result |
+| Bare screenshot path | "Look at this" | Analyze proactively - describe what you see, don't ask what to look for |
+| `"The issue remains"` | Previous fix failed | Try a DIFFERENT approach. Don't retry the same thing. |
+| `"But..."` at start | Your previous claim was wrong | Stop and verify your claim before responding |
+| `"are you really?"` | User doubts your statement | Actually verify (run command, check file) before confirming |
+| `"what about X?"` | You missed/skipped something | Go check X immediately |
+| `"Implement the following plan:"` | Complete spec, execute it | Don't ask clarifying questions. Parse and execute. |
+
 **UI Mockup Comparison**:
 - Be EXHAUSTIVE: check search box accents, avatar initials/images, icon colors, spacing, border radius, opacity, typography weight, and all small details
 - List ALL differences, not just obvious ones
