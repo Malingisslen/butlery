@@ -34,6 +34,7 @@ class PersonalTagService extends BaseService {
 
   StreamSubscription? _tagStreamSub;
   StreamSubscription? _groupStreamSub;
+  bool _streamsInitialized = false;
 
   PersonalTagService({
     required FirebasePersonalTagRepository tagRepository,
@@ -92,6 +93,7 @@ class PersonalTagService extends BaseService {
 
   /// Gets all personal tags sorted by sortOrder.
   Future<List<PersonalTag>> getAllTags() async {
+    _ensureStreams();
     return await getCachedOrExecute(
           _tagsCacheKey,
           () => _tagRepository.getAllSorted(),
@@ -295,6 +297,7 @@ class PersonalTagService extends BaseService {
 
   /// Gets all personal tag groups sorted by sortOrder.
   Future<List<PersonalTagGroup>> getAllGroups() async {
+    _ensureStreams();
     return await getCachedOrExecute(
           _groupsCacheKey,
           () => _groupRepository.getAllSorted(),
@@ -883,19 +886,34 @@ class PersonalTagService extends BaseService {
 
   @override
   Future<void> onInitialize() async {
-    _tagStreamSub = _tagRepository.watchAllSorted().listen((_) {
-      clearCache(_tagsCacheKey);
-    });
-    _groupStreamSub = _groupRepository.watchAllSorted().listen((_) {
-      clearCache(_groupsCacheKey);
-    });
-    AppLogger.info('PersonalTagService ready');
+    // Stream setup deferred until user is authenticated.
+    // watchAllSorted() requires a user-scoped collection path which
+    // is unavailable at DI initialization time (before login).
+    AppLogger.info('PersonalTagService ready (streams deferred until auth)');
+  }
+
+  /// Sets up cache-invalidation streams for the authenticated user.
+  /// Called lazily on first service operation that needs live data.
+  void _ensureStreams() {
+    if (_streamsInitialized) return;
+    try {
+      _tagStreamSub = _tagRepository.watchAllSorted().listen((_) {
+        clearCache(_tagsCacheKey);
+      });
+      _groupStreamSub = _groupRepository.watchAllSorted().listen((_) {
+        clearCache(_groupsCacheKey);
+      });
+      _streamsInitialized = true;
+    } catch (e) {
+      AppLogger.warning('PersonalTagService stream setup deferred: $e');
+    }
   }
 
   @override
   Future<void> onDispose() async {
     await _tagStreamSub?.cancel();
     await _groupStreamSub?.cancel();
+    _streamsInitialized = false;
     clearAllCache();
   }
 
