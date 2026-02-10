@@ -18,14 +18,45 @@ STAGED_FILES=$(git diff --cached --name-only 2>/dev/null | head -20)
 UNTRACKED_FILES=$(git ls-files --others --exclude-standard 2>/dev/null | head -10)
 RECENT_COMMITS=$(git log --oneline -10 2>/dev/null || echo "none")
 
-# Gather todo/plan state
-TODO_STATE=""
+# Gather task state from Claude Code's persistent todos (~/.claude/todos/)
+# and from /tasks/todo.md (plan-mode plans).
+TASK_STATE=""
+
+# Read Claude Code's persistent task files
+TASK_STATE=$(python3 -c "
+import json, os, glob
+
+todo_dir = os.path.expanduser('~/.claude/todos')
+if not os.path.isdir(todo_dir):
+    exit(0)
+
+# Find the most recently modified file with actual content
+files = sorted(glob.glob(os.path.join(todo_dir, '*.json')), key=os.path.getmtime, reverse=True)
+for f in files:
+    try:
+        with open(f) as fh:
+            todos = json.load(fh)
+        if not todos:
+            continue
+        icons = {'completed': '[x]', 'in_progress': '[>]', 'pending': '[ ]'}
+        for t in todos:
+            icon = icons.get(t.get('status', 'pending'), '[ ]')
+            print(f\"{icon} {t.get('content', 'unknown')}\")
+        break  # Only use the most recent non-empty file
+    except (json.JSONDecodeError, IOError):
+        continue
+" 2>/dev/null || true)
+
+# Also check /tasks/todo.md for plan-mode plans
 if [ -f "$PROJECT_DIR/tasks/todo.md" ]; then
-  TODO_STATE=$(head -100 "$PROJECT_DIR/tasks/todo.md")
-else
-  # No todo.md means either no plan mode was active, or TodoWrite was used
-  # without syncing to disk. Git state below will provide context.
-  TODO_STATE="No /tasks/todo.md found. Check git diff and modified files for active work context."
+  PLAN_STATE=$(head -100 "$PROJECT_DIR/tasks/todo.md")
+  TASK_STATE="${TASK_STATE:+$TASK_STATE
+}### Plan (/tasks/todo.md)
+${PLAN_STATE}"
+fi
+
+if [ -z "$TASK_STATE" ]; then
+  TASK_STATE="No active tasks found. Check git diff and modified files for work context."
 fi
 
 # Gather lessons if they exist
@@ -64,8 +95,8 @@ ${UNTRACKED_FILES:-none}
 $RECENT_COMMITS
 \`\`\`
 
-## Todo State
-${TODO_STATE:-No active todo.md found.}
+## Active Tasks
+${TASK_STATE}
 
 ## Recent Lessons
 ${RECENT_LESSONS:-No recent lessons.}
