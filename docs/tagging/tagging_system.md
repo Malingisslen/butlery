@@ -1,9 +1,9 @@
 # Butlery Tagging System — Complete Specification
 
-**Version:** 3.0
+**Version:** 3.2
 **Generator Version:** 1.0.0
 **Schema Version:** 2
-**Date:** January 2026
+**Date:** February 2026
 **Status:** Single Source of Truth for tagging and menu generation
 
 ---
@@ -15,9 +15,7 @@ Butlery uses **two separate tag systems** that serve different purposes:
 | System | Field | Purpose | Storage | User Control |
 |--------|-------|---------|---------|--------------|
 | **Auto-generated** | `recipe.tagResult` | Allergens, dietary, proteins, cuisines | `TagResult` object | Override via `TagOverrides` |
-| **Personal Tags** | `recipe.personalTagIds` | User-defined categories | List of tag names* | Full control |
-
-*Note: Despite the field name `personalTagIds`, it stores tag **names** (not IDs). This is historical naming.
+| **Personal Tags** | `recipe.personalTagIds` | User-defined categories | List of tag UUIDs | Full control |
 
 ### When to Use Which
 
@@ -31,7 +29,9 @@ Butlery uses **two separate tag systems** that serve different purposes:
 | `TagGenerator` (5-phase) | `PersonalTagService` |
 | `TaggingService` | `PersonalTagViewModel` |
 | `TagResult` model | `PersonalTag` model |
-| `lib/services/tagging/` | `lib/widgets/tagging/` |
+| `lib/services/tagging/` | `lib/views/personal_tags_view.dart` |
+| — | `lib/widgets/tagging/` (dialogs) |
+| — | `lib/widgets/common/search_filter/` (filter chips) |
 
 ---
 
@@ -120,7 +120,7 @@ MODULE2: TagGenerator (5 calculation phases)
     ├── Phase 2: Simple derived (dish type, spicy/mild, meal type)
     ├── Phase 3: Complex derived (difficulty, texture, nutritional, practical)
     ├── Phase 4: Mood/occasion (time-based, holidays, seasons)
-    └── Phase 5: Cuisine tags (17 world cuisines)
+    └── Phase 5: Cuisine tags (22 world cuisines)
     │
     ▼
 Output: TagResult {
@@ -158,6 +158,7 @@ Output: TagResult {
 | CuisineConfig | `lib/services/tagging/config/cuisine_config.dart` |
 | CompoundSuffixes | `lib/services/tagging/config/compound_suffixes.dart` |
 | TaggingThresholds | `lib/services/tagging/config/tagging_thresholds.dart` |
+| OperatorRegistry | `lib/services/tagging/config/operator_registry.dart` |
 | TagResult | `lib/models/tagging/tag_result.dart` |
 | TriState | `lib/models/tagging/tri_state.dart` |
 | IngredientData | `lib/models/tagging/ingredient_data.dart` |
@@ -248,6 +249,7 @@ All require 100% coverage (`requiresFullCoverage = true`):
 | `halalanpassad` | pork, contains-alcohol | — |
 | `kosheranpassad` | pork, shellfish, crustacean, mollusc | — |
 | `nötkötsfri` | beef | — |
+| `aip-vänlig` | nightshade, contains-gluten, dairy, egg | — |
 
 ### Protein Tags
 
@@ -419,6 +421,7 @@ Depends on Phase 1 + Phase 2 results.
 | `proteinrik` | ≥ 2 protein ingredients AND protein ratio > 25% of matched |
 | `fiberrik` | Phase 1 has `baljväxter`/`fullkorn` OR has group `vegetable/legume` |
 | `grönsaksrik` | ≥ 3 vegetable ingredients |
+| `kryddrik` | ≥ 3 ingredients in `spice` group |
 
 ### Practical Tags
 
@@ -504,27 +507,32 @@ Depends on Phase 1-4 results and ingredient analysis.
 
 Cuisine tags are assigned when a recipe meets the threshold (typically 2-3 key ingredients) for a specific cuisine. Uses `CuisineConfig` for declarative configuration.
 
-### Supported Cuisines (17)
+### Supported Cuisines (22)
 
 | Tag | Key Indicators | Threshold |
 |-----|---------------|-----------|
 | `svensk` | lingon, dill, potatis, sill | 2 ingredients |
+| `nordisk` | lingon, dill, råg, gravad | 2 ingredients |
 | `italiensk` | pasta, basilika, tomat, olivolja, parmesan | 2 ingredients |
-| `asiatisk` | soja, ingefära, sesamolja, risnudlar | 2 ingredients |
-| `japansk` | miso, wasabi, nori, sake | 2 ingredients |
-| `kinesisk` | hoisin, szechuan, five-spice | 2 ingredients |
-| `thailändsk` | kokosmjölk + lime, fiskås, thai-basilika | 2 ingredients |
-| `vietnamesisk` | fiskås, lime, mynta, risnudlar | 2 ingredients |
-| `indisk` | garam masala, curry, koriander, gurkmeja | 2 ingredients |
-| `mexikansk` | jalapeño, koriander, lime, tortilla | 2 ingredients |
-| `mellanöstern` | tahini, sumak, za'atar, granatäpple | 2 ingredients |
 | `grekisk` | fetaost, oregano, tzatziki, oliver | 2 ingredients |
-| `fransk` | dijon, grädde, vin, timjan | 2 ingredients |
 | `spansk` | saffran, chorizo, paprika, sherry | 2 ingredients |
-| `amerikansk` | bbq-sås, cheddar, jalapeño, majsirap | 2 ingredients |
+| `fransk` | dijon, grädde, vin, timjan | 2 ingredients |
+| `medelhavsmat` | olivolja, tomat, vitlök, basilika | 2 ingredients |
+| `thailändsk` | kokosmjölk + lime, fiskås, thai-basilika | 2 ingredients |
+| `indisk` | garam masala, curry, koriander, gurkmeja | 2 ingredients |
+| `kinesisk` | hoisin, szechuan, five-spice | 2 ingredients |
+| `japansk` | miso, wasabi, nori, sake | 2 ingredients |
 | `koreansk` | gochujang, kimchi, sesamolja | 2 ingredients |
-| `nordafrikansk` | harissa, ras el hanout, bevarade citroner | 2 ingredients |
-| `karibisk` | jerk, allspice, kokosmjölk, lime | 2 ingredients |
+| `vietnamesisk` | fiskås, lime, mynta, risnudlar | 2 ingredients |
+| `asiatisk` | soja, ingefära, sesamolja, risnudlar | 2 ingredients |
+| `mexikansk` | jalapeño, koriander, lime, tortilla | 2 ingredients |
+| `amerikansk` | bbq-sås, cheddar, jalapeño, majsirap | 2 ingredients |
+| `mellanöstern` | tahini, sumak, za'atar, granatäpple | 2 ingredients |
+| `etiopisk` | berbere, injera, niter kibbeh | 2 ingredients |
+| `marockansk` | harissa, ras el hanout, bevarade citroner | 2 ingredients |
+| `brasiliansk` | farofa, palmhjärta, guaraná | 2 ingredients |
+| `peruansk` | aji, quinoa, lime, koriander | 2 ingredients |
+| `argentinsk` | chimichurri, empanada, dulce de leche | 2 ingredients |
 
 ### Configuration
 
@@ -569,17 +577,19 @@ class TagResult {
 
 ### Firestore Serialization
 
+TriState values are serialized as **lowercase** (`free`, `contains`, `unknown`). The `fromFirestore` parser handles both lowercase (current) and legacy uppercase for backward compatibility.
+
 ```json
 {
   "tags": ["kyckling", "under-30-min", "stekt"],
   "allergenStatus": {
-    "gluten": "FREE",
-    "mjölk": "CONTAINS",
-    "ägg": "UNKNOWN"
+    "gluten": "free",
+    "mjölk": "contains",
+    "ägg": "unknown"
   },
   "dietaryStatus": {
-    "vegetarisk": "CONTAINS",
-    "vegansk": "CONTAINS"
+    "vegetarisk": "contains",
+    "vegansk": "contains"
   },
   "coverage": 1.0,
   "unknownIngredients": [],
@@ -948,7 +958,8 @@ class PersonalTagRule {
 }
 
 class RuleCondition {
-  ConditionType type;        // ingredient, property, keyword, sourceUrl, cuisine, dietary, time, rating, recency
+  ConditionType type;        // ingredient, property, keyword, sourceUrl, cuisine, dietary,
+                              // time, rating, recency, ownership, hasImage, completeness
   ConditionOperator operator; // Text: contains, equals, startsWith, notContains, notEquals
                               // Numeric: lessThan, lessThanOrEqual, greaterThan, greaterThanOrEqual, withinDays
   dynamic value;             // String for text types, num for numeric types
@@ -972,6 +983,9 @@ This simplifies the data model and ensures atomic updates.
 | `time` | Cooking time in minutes | `< 30` matches quick recipes |
 | `rating` | User rating (1-5) | `>= 4` matches highly rated recipes |
 | `recency` | Days since recipe added | `<= 7` matches recently added recipes |
+| `ownership` | Recipe ownership/collaboration status | `'mine'`, `'shared'`, `'collaborative'`, `'public'` |
+| `hasImage` | Whether recipe has an image | Boolean: true = has image |
+| `completeness` | Recipe completeness status | `'missing_image'`, `'missing_description'`, `'incomplete'` |
 
 ### PersonalTagGroup Model
 
@@ -1038,10 +1052,13 @@ class TagOverrides {
 | PersonalTagService | `lib/services/tagging/personal_tag_service.dart` |
 | PersonalTagViewModel | `lib/viewmodels/personal_tag_viewmodel.dart` |
 | Tag repository | `lib/repositories/firebase/firebase_personal_tag_repository.dart` |
-| Manager dialog | `lib/widgets/tagging/personal_tag_manager_dialog.dart` |
+| Personal tags view | `lib/views/personal_tags_view.dart` |
+| Personal tag handler | `lib/views/recipe_detail/handlers/recipe_personal_tag_handler.dart` |
+| Filter chips | `lib/widgets/common/search_filter/personal_tag_filter_chips.dart` |
 | Rule editor | `lib/widgets/tagging/personal_tag_rule_dialog.dart` |
 | Tag selector | `lib/widgets/tagging/personal_tag_selector.dart` |
 | Tag editor | `lib/widgets/tagging/tag_editor_dialog.dart` |
+| Manager dialog (deprecated) | `lib/widgets/tagging/personal_tag_manager_dialog.dart` |
 
 ### Features
 
@@ -1087,3 +1104,4 @@ class TagOverrides {
 | 2.5 | Dec 2025 | Personal Tags system: PersonalTag model (user-defined tags with color/icon), PersonalTagRule model (rule-based auto-tagging with conditions), TagOverrides integration, batch apply rules to existing recipes, tag statistics, property dropdown in rule editor, 20 unit tests |
 | 3.0 | Jan 2026 | Personal Tags v3.0: Removed color/icon from PersonalTag, removed color from PersonalTagGroup, added isExclusive to PersonalTagGroup for radio/checkbox mode, embedded rules in PersonalTag (removed separate rule repository), renamed RecipeCore.personalTags → personalTagIds |
 | 3.1 | Feb 2026 | Phase 5 fixes: Added TagResolutionService, TagEditingService, CompoundSuffixes, TaggingThresholds to file table. Updated test counts (~416 unit tests). Fixed nötkötsfri typo in allergen config. List filtering now uses effective status (respects user overrides). Rule effectiveness stats use service-level evaluation. Exclusion count includes needsRetagging and low coverage |
+| 3.2 | Feb 2026 | Documentation accuracy audit: Fixed personalTagIds to document UUID storage (was incorrectly stated as names). Updated cuisine count 17→22 (added nordisk, medelhavsmat, etiopisk, marockansk, brasiliansk, peruansk, argentinsk). Fixed TriState Firestore serialization to show lowercase format. Added aip-vänlig dietary config. Added kryddrik nutritional tag. Added 3 new ConditionTypes (ownership, hasImage, completeness). Added OperatorRegistry to implementation files. Updated personal tags file table: added PersonalTagsView, PersonalTagFilterChips, RecipePersonalTagHandler; marked PersonalTagManagerDialog as deprecated. Updated key files table with personal tags view locations. |
