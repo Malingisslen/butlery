@@ -18,10 +18,14 @@ STAGED_FILES=$(git diff --cached --name-only 2>/dev/null | head -20)
 UNTRACKED_FILES=$(git ls-files --others --exclude-standard 2>/dev/null | head -10)
 RECENT_COMMITS=$(git log --oneline -10 2>/dev/null || echo "none")
 
-# Gather todo state if it exists
+# Gather todo/plan state
 TODO_STATE=""
 if [ -f "$PROJECT_DIR/tasks/todo.md" ]; then
   TODO_STATE=$(head -100 "$PROJECT_DIR/tasks/todo.md")
+else
+  # No todo.md means either no plan mode was active, or TodoWrite was used
+  # without syncing to disk. Git state below will provide context.
+  TODO_STATE="No /tasks/todo.md found. Check git diff and modified files for active work context."
 fi
 
 # Gather lessons if they exist

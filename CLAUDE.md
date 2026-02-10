@@ -154,6 +154,7 @@ See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 - Triggers: 3+ files, new services/viewmodels, architectural changes, "refactor"/"migrate" requests
 - Enter plan mode automatically (no user action needed)
 - Write plan to `/tasks/todo.md`, get approval, then implement
+- Keep `/tasks/todo.md` in sync with TodoWrite state (PreCompact hook reads the file, not in-memory todos)
 - If going sideways → STOP and re-plan immediately
 
 **Verification Before Done:**
