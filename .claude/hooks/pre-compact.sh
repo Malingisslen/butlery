@@ -23,28 +23,32 @@ RECENT_COMMITS=$(git log --oneline -10 2>/dev/null || echo "none")
 TASK_STATE=""
 
 # Read Claude Code's persistent task files
+# Check all known locations: ~/.claude/todos/ (v2.1.x), .claude/tasks/ (newer)
 TASK_STATE=$(python3 -c "
 import json, os, glob
 
-todo_dir = os.path.expanduser('~/.claude/todos')
-if not os.path.isdir(todo_dir):
-    exit(0)
+search_dirs = [
+    os.path.expanduser('~/.claude/todos'),
+    os.path.join('$PROJECT_DIR', '.claude', 'tasks'),
+]
 
-# Find the most recently modified file with actual content
-files = sorted(glob.glob(os.path.join(todo_dir, '*.json')), key=os.path.getmtime, reverse=True)
-for f in files:
-    try:
-        with open(f) as fh:
-            todos = json.load(fh)
-        if not todos:
-            continue
-        icons = {'completed': '[x]', 'in_progress': '[>]', 'pending': '[ ]'}
-        for t in todos:
-            icon = icons.get(t.get('status', 'pending'), '[ ]')
-            print(f\"{icon} {t.get('content', 'unknown')}\")
-        break  # Only use the most recent non-empty file
-    except (json.JSONDecodeError, IOError):
+for todo_dir in search_dirs:
+    if not os.path.isdir(todo_dir):
         continue
+    files = sorted(glob.glob(os.path.join(todo_dir, '*.json')), key=os.path.getmtime, reverse=True)
+    for f in files:
+        try:
+            with open(f) as fh:
+                todos = json.load(fh)
+            if not todos:
+                continue
+            icons = {'completed': '[x]', 'in_progress': '[>]', 'pending': '[ ]'}
+            for t in todos:
+                icon = icons.get(t.get('status', 'pending'), '[ ]')
+                print(f\"{icon} {t.get('content', 'unknown')}\")
+            exit(0)  # Found active tasks, done
+        except (json.JSONDecodeError, IOError):
+            continue
 " 2>/dev/null || true)
 
 # Also check /tasks/todo.md for plan-mode plans
