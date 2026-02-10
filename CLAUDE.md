@@ -171,6 +171,16 @@ See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 - At session start → read last 5 lessons for context
 - If lesson should become CLAUDE.md rule → propose update
 
+**Memory Management (automatic):**
+- Auto memory dir: `/root/.claude/projects/-home-user-butlery/memory/`
+- `MEMORY.md` = curated index (under 150 lines), auto-injected every session
+- Topic files: `interview-decisions.md`, `patterns.md`, `current-state.md`
+- **When to update**: After completing significant work, after /interview, after key decisions
+- **How to update**: Merge with existing entries, never just append. Prune outdated entries.
+- **Prescriptive, not descriptive**: "User wants X" not "We discussed X"
+- **PreCompact hook** auto-captures git state → `current-state.md`
+- **SessionStart hook** auto-injects checkpoint after compaction
+
 **Autonomous Problem Solving:**
 - Bug report → just fix it (spawn debugger agent)
 - Failing CI → go fix without being told how
@@ -182,33 +192,6 @@ See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 - Process files in small chunks (50-100 items), never entire large files at once
 - Define explicit chunk boundaries before launching agents
 - Each agent must checkpoint progress and report completion status
-
-## Workflow Discipline
-
-**Plan Mode (automatic for complex tasks):**
-- Triggers: 3+ files, new services/viewmodels, architectural changes, "refactor"/"migrate" requests
-- Enter plan mode automatically (no user action needed)
-- Write plan to `/tasks/todo.md`, get approval, then implement
-- If going sideways → STOP and re-plan immediately
-
-**Verification Before Done:**
-- `flutter analyze` passes
-- Relevant tests pass
-- Diff behavior vs main if relevant
-- Ask: "Would a staff engineer approve this?"
-
-**Self-Improvement Loop (automatic):**
-- After ANY user correction → add entry to `/tasks/lessons.md`
-- Format: `### [Category] Title` + Date, Trigger, Rule, Example
-- Categories: Architecture, Code Quality, Testing, Workflow, Firebase, UI/UX
-- At session start → read last 5 lessons for context
-- If lesson should become CLAUDE.md rule → propose update
-
-**Autonomous Problem Solving:**
-- Bug report → just fix it (spawn debugger agent)
-- Failing CI → go fix without being told how
-- Point at logs/errors → resolve them
-- Don't ask for hand-holding on standard debugging
 
 ## Stop Hook Response
 
