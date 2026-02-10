@@ -140,7 +140,7 @@ See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 2. **500-line limit** - use facade pattern for complex files
 3. **Security validation** - PermissionValidationMixin on all repositories
 4. **Single data source** - don't mix UserService/PermissionService
-5. **Ask before deviating** - from planned todos
+5. **Ask before deviating** - from planned tasks
 6. **Existing plan = execute** - if a plan/spec file exists, START implementing. Don't re-explore or re-plan.
 7. **Run when asked to run** - `flutter run -d chrome` when asked to test/run. Don't create planning docs instead.
 8. **Plan = plan + verify** - when a plan includes verification steps, "implement this" means execute ALL steps including testing. Never claim done until verification is run.
@@ -154,7 +154,7 @@ See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 - Triggers: 3+ files, new services/viewmodels, architectural changes, "refactor"/"migrate" requests
 - Enter plan mode automatically (no user action needed)
 - Write plan to `/tasks/todo.md`, get approval, then implement
-- Task state persists in `~/.claude/todos/` - PreCompact hook reads both this and `/tasks/todo.md`
+- Task state persists on disk - PreCompact hook reads both Claude Code tasks and `/tasks/todo.md`
 - If going sideways → STOP and re-plan immediately
 
 **Verification Before Done:**
@@ -169,18 +169,23 @@ See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 - After ANY user correction → add entry to `/tasks/lessons.md`
 - Format: `### [Category] Title` + Date, Trigger, Rule, Example
 - Categories: Architecture, Code Quality, Testing, Workflow, Firebase, UI/UX
-- At session start → read last 5 lessons for context
+- If a lesson is a recurring pattern → also add to `memory/patterns.md` (persists across sessions)
 - If lesson should become CLAUDE.md rule → propose update
 
 **Memory Management (automatic):**
 - Auto memory dir: `/root/.claude/projects/-home-user-butlery/memory/`
 - `MEMORY.md` = curated index (under 150 lines), auto-injected every session
-- Topic files: `interview-decisions.md`, `patterns.md`, `current-state.md`
-- **When to update**: After completing significant work, after /interview, after key decisions
+- Topic files:
+  - `interview-decisions.md` - user preferences from `/interview` (auto-persisted)
+  - `patterns.md` - what works/fails across sessions
+  - `current-state.md` - session checkpoint (auto-overwritten by PreCompact hook)
+- **When to update**: After completing significant work, after key decisions
 - **How to update**: Merge with existing entries, never just append. Prune outdated entries.
 - **Prescriptive, not descriptive**: "User wants X" not "We discussed X"
-- **PreCompact hook** auto-captures git state → `current-state.md`
-- **SessionStart hook** auto-injects checkpoint after compaction
+- **Hooks** (fully automatic, no manual trigger):
+  - PreCompact → captures git state + tasks → `current-state.md`
+  - SessionStart (compact) → injects checkpoint as context after compaction
+  - `/interview` → persists answers to `interview-decisions.md` + `MEMORY.md`
 
 **Autonomous Problem Solving:**
 - Bug report → just fix it (spawn debugger agent)
