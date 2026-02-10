@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # SessionStart hook (compact): Injects the session checkpoint as additionalContext
-# so the post-compaction session has the full state from before compaction.
+# so the post-compaction session can pick up where it left off.
+#
+# Token budget: keep total injection under ~200 lines to avoid wasting
+# the space that compaction just freed.
 
 set -euo pipefail
 
@@ -12,39 +15,36 @@ if [ ! -f "$CHECKPOINT_FILE" ]; then
   exit 0
 fi
 
-# Check if file was modified in the last 30 minutes
 FILE_AGE=$(( $(date +%s) - $(stat -c %Y "$CHECKPOINT_FILE" 2>/dev/null || echo 0) ))
 if [ "$FILE_AGE" -gt 1800 ]; then
   exit 0
 fi
 
-# Read checkpoint content
+# Read checkpoint (core session state - always include)
 CHECKPOINT_CONTENT=$(cat "$CHECKPOINT_FILE")
 
-# Read topic files for richer context
-PATTERNS=""
-if [ -f "$MEMORY_DIR/patterns.md" ]; then
-  PATTERNS=$(cat "$MEMORY_DIR/patterns.md")
-fi
+# Topic files: only include if they have real content (not just headers/templates).
+# Truncate to keep total payload reasonable. MEMORY.md is already injected
+# separately by Claude Code, so don't duplicate it here.
+EXTRAS=""
 
-INTERVIEW=""
-if [ -f "$MEMORY_DIR/interview-decisions.md" ]; then
-  INTERVIEW=$(cat "$MEMORY_DIR/interview-decisions.md")
-fi
+for topic_file in "patterns.md" "interview-decisions.md"; do
+  filepath="$MEMORY_DIR/$topic_file"
+  [ -f "$filepath" ] || continue
+  # Count non-empty, non-comment lines
+  real_lines=$(grep -cvE '^\s*$|^\s*#|^\s*>|^\s*<!--' "$filepath" 2>/dev/null || true)
+  if [ -n "$real_lines" ] && [ "$real_lines" -gt 0 ]; then
+    EXTRAS="${EXTRAS}
+---
+$(head -50 "$filepath")"
+  fi
+done
 
-# Output as JSON with additionalContext
-# Escape for JSON: replace newlines, backslashes, quotes, tabs
 CONTEXT="SESSION RECOVERED AFTER COMPACTION - Read this carefully before continuing.
 
-$CHECKPOINT_CONTENT
+${CHECKPOINT_CONTENT}${EXTRAS}"
 
----
-$PATTERNS
-
----
-$INTERVIEW"
-
-# Use python for reliable JSON escaping
+# Output as JSON with additionalContext
 python3 -c "
 import json, sys
 context = sys.stdin.read()
