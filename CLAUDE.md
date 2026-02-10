@@ -124,7 +124,6 @@ See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 
 ## Testing
 
-- **Dashboard**: `/docs/testing/TESTING_DASHBOARD.md`
 - **Strategy**: Bottom-up (repositories → services → viewmodels → integration)
 - **Templates**: `/test/templates/` for test file templates
 

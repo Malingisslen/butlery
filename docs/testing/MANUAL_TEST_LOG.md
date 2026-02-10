@@ -1027,8 +1027,6 @@ See full test case details in:
 
 ## Phase 18: Tag & Allergen System (129 tests)
 
-**Comprehensive testing document:** See [TAG_ALLERGEN_MANUAL_TESTS.md](TAG_ALLERGEN_MANUAL_TESTS.md)
-
 This phase covers:
 - Personal Tags CRUD (create, edit, delete)
 - Tag Groups management

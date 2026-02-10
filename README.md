@@ -4,7 +4,7 @@
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.24+-blue.svg)](https://flutter.dev/)
 [![Firebase](https://img.shields.io/badge/Firebase-Powered-orange.svg)](https://firebase.google.com/)
-[![Test Coverage](https://img.shields.io/badge/Coverage-67.4%25-green.svg)](docs/testing/TESTING_DASHBOARD.md)
+[![Test Coverage](https://img.shields.io/badge/Coverage-67.4%25-green.svg)](docs/testing/TESTING_COMPLETE_GUIDE.md)
 [![Architecture](https://img.shields.io/badge/Architecture-A+-brightgreen.svg)](docs/architecture/ARCHITECTURE_OVERVIEW.md)
 
 ---
@@ -214,7 +214,6 @@ open coverage/html/index.html
 ```
 
 **📊 For detailed test metrics and patterns, see:**
-- [docs/testing/TESTING_DASHBOARD.md](docs/testing/TESTING_DASHBOARD.md)
 - [docs/testing/TESTING_COMPLETE_GUIDE.md](docs/testing/TESTING_COMPLETE_GUIDE.md)
 
 ---
@@ -228,7 +227,7 @@ open coverage/html/index.html
 - **[MVVM Pattern](docs/architecture/MVVM_PATTERN.md)** - Layer responsibilities and patterns
 - **[Dependency Injection](docs/architecture/DI_SYSTEM.md)** - DI module structure and service access
 - **[Firebase Integration](docs/architecture/FIREBASE_INTEGRATION.md)** - Firebase setup and security
-- **[Testing Guide](docs/testing/TESTING_DASHBOARD.md)** - Test coverage and patterns
+- **[Testing Guide](docs/testing/TESTING_COMPLETE_GUIDE.md)** - Test coverage and patterns
 - **[Secrets Management](docs/security/SECRETS_MANAGEMENT.md)** - Environment variable setup
 
 ### Quick References

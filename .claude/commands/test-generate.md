@@ -589,8 +589,7 @@ After generating tests, verify:
 1. **Run Tests**: Verify all pass
 2. **Review Coverage**: Check for gaps
 3. **Add Feature Tests**: Add repository-specific scenarios
-4. **Update Dashboard**: Mark repository as tested in `docs/testing/TESTING_DASHBOARD.md`
-5. **Commit**: Create commit with generated tests
+4. **Commit**: Create commit with generated tests
 
 ---
 
