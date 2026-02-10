@@ -409,7 +409,7 @@ Your **ONLY** task is to:
 
 1. **Testing Strategy Documentation**
    - Check: docs/testing/TESTING_COMPLETE_GUIDE.md (exists? comprehensive?)
-   - Verify: docs/testing/TESTING_DASHBOARD.md (up to date?)
+   - Verify: docs/testing/MANUAL_TEST_LOG.md (up to date?)
    - Identify: Missing testing documentation
 
 2. **Testing Standards**
