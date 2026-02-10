@@ -1,8 +1,8 @@
 # Manual Testing Log - Butlery App
 
 **Created**: 2026-01-07
-**Last Updated**: 2026-01-30 (Added Phase 18: Tag & Allergen System - 129 new tests)
-**Status**: In Progress (1 open bug - BUG-014)
+**Last Updated**: 2026-02-10 (Phase 18 browser automation testing - 28 tests executed)
+**Status**: In Progress (2 open bugs - BUG-014, BUG-022)
 
 ---
 
@@ -19,7 +19,7 @@
 | 7. Social Features | 40 | 19 | 18 | 0 | 1 |
 | 8. Messaging | 23 | 3 | 3 | 0 | 0 |
 | 9. Personal Tags | 21 | 8 | 8 | 0 | 0 |
-| **18. Tag & Allergen System** | **129** | **0** | **0** | **0** | **0** |
+| **18. Tag & Allergen System** | **129** | **28** | **22** | **0** | **1** |
 | 10. Settings & Account | 23 | 14 | 12 | 0 | 0 |
 | 11. Dialogs & Modals | 11 | 8 | 8 | 0 | 0 |
 | 12. Widgets & Components | 44 | 6 | 6 | 0 | 0 |
@@ -103,6 +103,14 @@
 | Bug ID | Title | Phase | Test ID | Severity | Status |
 |--------|-------|-------|---------|----------|--------|
 | BUG-014 | Group edit dialog bottom overflow by 17 pixels | 16 | GROUP-E2E-05 | Low | OPEN |
+| BUG-022 | Tag group creation dialog crashes app on web | 18 | TAG-SYS-06 | High | OPEN |
+
+**BUG-022 Details:**
+- **Error**: Flutter assertion failed: `_dependents.isEmpty is not true` (framework.dart:6171:14)
+- **Platform**: Web (Chrome) - web-specific Provider lifecycle issue
+- **Trigger**: Creating a new tag group via "Ny grupp" dialog in Personal Tags settings
+- **Behavior**: Data saves to Firestore successfully before crash. App shows red error screen. Same root cause pattern as BUG-004 (Provider lifecycle collision during dialog dispose).
+- **Workaround**: Data is saved - refreshing the page shows the created group
 
 **BUG-013 Details (FIXED 2026-01-11):**
 - **Issue**: Clicking "Spara ändringar" (Save changes) in group edit dialog throws TypeError
@@ -1035,6 +1043,72 @@ This phase covers:
 - Tri-state badge display (FREE/CONTAINS/UNKNOWN)
 - Recipe integration (display, filtering, search)
 - Edge cases and performance testing
+
+**Testing Method**: Chrome MCP browser automation (hover+tap JS pattern for Flutter Web CanvasKit)
+**Known Limitations**: Flutter Web CanvasKit text input not automatable; PopupMenuButton not automatable
+
+### 18.1 Personal Tags CRUD (5 tests)
+
+| Test ID | Action | Expected Result | Status | Result | Notes |
+|---------|--------|----------------|--------|--------|-------|
+| TAG-SYS-01 | Navigate to Settings > Personal Tags | Personal tags list loads | Completed | PASS | Route /settings/personal-tags. Shows existing tags: Snabblagat, Testtagg, Veggo, Fisk & skaldjur. Groups visible: Middagar, E2E Testgrupp. |
+| TAG-SYS-02 | Click on tag to view detail | Tag detail page opens with rules | Completed | PASS | Navigated to Testtagg detail - shows 2 rules, tag info, edit options. |
+| TAG-SYS-03 | Create new tag via "+" button | New tag created | Completed | PASS | Created "E2E Tag" via floating action button. Snackbar: "Tagg skapad". Tag appears in list. |
+| TAG-SYS-04 | Edit tag name | Tag renamed | Blocked | N/A | Text input not possible in Flutter Web CanvasKit via browser automation. Dialog opens but text fields don't accept input. |
+| TAG-SYS-05 | Delete tag | Tag removed from list | Completed | PASS | Deleted "E2E Tag" via bottom sheet > "Ta bort tagg" > confirmation dialog. Snackbar: "Tagg borttagen". Tag no longer in list. |
+
+### 18.2 Tag Groups Management (3 tests)
+
+| Test ID | Action | Expected Result | Status | Result | Notes |
+|---------|--------|----------------|--------|--------|-------|
+| TAG-SYS-06 | Create new group | Group created | Completed | PARTIAL | **BUG-022**: Dialog crashes with `_dependents.isEmpty` assertion. Data saves to Firestore before crash. Group appears after refresh. |
+| TAG-SYS-07 | Rename group | Group renamed | Blocked | N/A | PopupMenuButton overflow menu not automatable on Flutter Web. |
+| TAG-SYS-08 | Delete group | Group removed | Completed | PASS | Deleted "E2E Testgrupp" via overflow menu > "Ta bort grupp?" confirmation > "Ta bort". Snackbar: "Grupp borttagen". |
+
+### 18.3 Automation Rules (2 tests)
+
+| Test ID | Action | Expected Result | Status | Result | Notes |
+|---------|--------|----------------|--------|--------|-------|
+| TAG-SYS-09 | View existing rules on tag | Rules displayed | Completed | PASS | Testtagg detail shows 2 rules with condition details. |
+| TAG-SYS-10 | Open create rule dialog | Rule dialog opens with fields | Completed | PASS | Dialog shows: Regelnamn, Matchningsläge (AND/OR), Villkor section with Ingrediens dropdown + "innehåller" operator, Regel aktiverad toggle. |
+
+### 18.4 Allergen/Dietary Preferences (6 tests)
+
+| Test ID | Action | Expected Result | Status | Result | Notes |
+|---------|--------|----------------|--------|--------|-------|
+| TAG-SYS-20 | Navigate to allergen settings | Settings page loads | Completed | PASS | Route /settings/allergens. Shows tracked: Gluten, Mjölk, Nötter, Jordnötter. Dietary: Vegetarisk, Vegansk. Display: Receptkort ON, Receptdetaljer ON. |
+| TAG-SYS-21 | Toggle allergen on (Laktos) | Laktos added to tracked | Completed | PASS | Chip changes to selected (filled) state. |
+| TAG-SYS-22 | Toggle allergen off (Laktos) | Laktos removed from tracked | Completed | PASS | Chip returns to unselected state. |
+| TAG-SYS-23 | Toggle dietary on (Pescetarian) | Pescetarian added | Completed | PASS | Chip toggles to selected state. |
+| TAG-SYS-24 | Toggle dietary off (Pescetarian) | Pescetarian removed | Completed | PASS | Chip toggles back to unselected. |
+| TAG-SYS-25 | Toggle display setting off (Receptkort) | Display toggled | Completed | PASS | Switch changes from ON to OFF state. Toggled back ON after test. |
+
+### 18.5 Tri-state Badge Display (3 tests)
+
+| Test ID | Action | Expected Result | Status | Result | Notes |
+|---------|--------|----------------|--------|--------|-------|
+| TAG-SYS-30 | View UNKNOWN badges on recipe | "? tag?" badges shown | Completed | PASS | "1111" and "A test Malin" recipes show "? vegetarisk?" and "? vegansk?" badges with ? icon on recipe detail page. |
+| TAG-SYS-31 | View FREE badges on recipe | "✓ tag" badges shown | Completed | N/A | No test recipes have FREE-tagged allergen/dietary status. Test data limitation. |
+| TAG-SYS-32 | View CONTAINS badges on recipe | "⚠ tag" badges shown | Completed | N/A | No test recipes have CONTAINS-tagged allergen/dietary status. Test data limitation. |
+
+### 18.6 Recipe Integration - Filtering (6 tests)
+
+| Test ID | Action | Expected Result | Status | Result | Notes |
+|---------|--------|----------------|--------|--------|-------|
+| TAG-SYS-40 | Click Vegetariskt filter chip | Filters to vegetarian recipes | Completed | PASS | Filter activates (dark green filled chip). Shows "0 recept" - correct since no recipes tagged as vegetarian. "Rensa filter" button shown. |
+| TAG-SYS-41 | Open advanced filter panel | Filter panel opens | Completed | PASS | Filter icon opens panel with: Tillagningstid, Måltidstyp, Betyg, Allergenfri, Specialkost, Personliga taggar, Exkludera taggar sections. |
+| TAG-SYS-42 | Verify allergen-free filters | Allergenfri chips visible | Completed | PASS | Shows: Glutenfri, Mjölkfri, Laktosfri, Nötfri, Äggfri, Sojafri. |
+| TAG-SYS-43 | Verify special diet filters | Specialkost chips visible | Completed | PASS | Shows: Vegetarisk, Vegansk, Pescetarian, Halalanpassad, Barnvänlig. |
+| TAG-SYS-44 | Verify personal tag include filters | Personal tags section visible | Completed | PASS | Shows: Testtagg, Veggo, Fisk & skaldjur, Snabblagat with ⚙ settings icon. |
+| TAG-SYS-45 | Verify personal tag exclude filters | Exkludera taggar section visible | Completed | PASS | Shows same tags in red/orange: Testtagg, Veggo, Fisk & skaldjur, Snabblagat with ⊘ icons. |
+
+### 18.6b Recipe Integration - Filter Interaction (3 tests)
+
+| Test ID | Action | Expected Result | Status | Result | Notes |
+|---------|--------|----------------|--------|--------|-------|
+| TAG-SYS-46 | All personal tags in both sections | Include and exclude have same tags | Completed | PASS | Both sections show identical set of 4 personal tags. |
+| TAG-SYS-47 | Select personal tag include filter | Filter activates, count updates | Completed | PASS | Testtagg shows ✓ checkmark + filled green background. Recipe count changes to "0 recept". Deselecting restores 24 recept. |
+| TAG-SYS-48 | Select personal tag exclude filter | Exclude filter activates | Completed | PASS | Testtagg in Exkludera section shows ✓ + red/orange outline. Count stays 24 (no recipes have tag to exclude). |
 
 ---
 
