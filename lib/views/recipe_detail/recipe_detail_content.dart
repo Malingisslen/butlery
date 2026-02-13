@@ -7,11 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
-import 'package:butlery/widgets/common/dialogs/unknown_ingredient_dialog.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/common/input_components.dart';
-import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -95,11 +93,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Description
-        if (recipe.description.isNotEmpty) ...[
-          _buildDescription(context),
-          const SizedBox(height: AppDimensions.spacingSm),
-        ],
+        // Description moved to title section (recipe_detail_view.dart)
 
         // Tags (effective tags: auto-generated + user overrides)
         if (_hasEffectiveTags) ...[
@@ -116,11 +110,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
           const SizedBox(height: AppDimensions.spacingSm),
         ],
 
-        // Allergen and dietary information from tagging system
-        if (recipe.tagResult != null) ...[
-          _buildTaggingInfo(context),
-          const SizedBox(height: AppDimensions.spacingS),
-        ],
+        // Allergen badges now rendered in title section (recipe_detail_view.dart)
 
         // Images
         if (recipe.imageUrls.isNotEmpty) ...[
@@ -136,10 +126,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
 
   /// Builds the tabbed section with Ingredienser and Instruktioner tabs.
   Widget _buildTabbedContent(BuildContext context) {
-    // UI Redesign: No card border — tabs sit directly on cream background
     return Column(
       children: [
-        // Tab bar
         TabBar(
           controller: _tabController,
           indicatorColor: AppColors.forestGreen,
@@ -147,12 +135,12 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
           labelColor: AppColors.forestGreenDark,
           unselectedLabelColor: AppColors.textMedium,
           labelStyle: AppTextStyles.bodySmall.copyWith(
-            fontSize: 13,
+            fontSize: 15,
             fontWeight: FontWeight.w600,
             color: AppColors.forestGreenDark,
           ),
           unselectedLabelStyle: AppTextStyles.bodySmall.copyWith(
-            fontSize: 13,
+            fontSize: 15,
             fontWeight: FontWeight.w400,
             color: AppColors.textMedium,
           ),
@@ -161,9 +149,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
             Tab(text: context.l10n.recipeInstructions),
           ],
         ),
-        const Divider(height: 1, color: AppColors.divider),
-
-        // Tab content - using AnimatedSize for smooth transitions
+        const Divider(height: 1, color: AppColors.creamDarker),
         AnimatedSize(
           duration: AppDimensions.animationDurationMedium,
           child: _buildTabContent(),
@@ -195,92 +181,91 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Portion scaler controls (no ingredient list)
-          _buildPortionScaler(context),
-          const SizedBox(height: AppDimensions.spacingMd),
-
-          // Section label
-          Text(
-            context.l10n.recipeIngredientsForPortions(currentPortions),
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textMedium,
+          // Portion scaler controls with background band
+          Container(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppDimensions.spacingSm,
             ),
+            decoration: const BoxDecoration(
+              color: AppColors.creamDarker,
+              border: Border(
+                bottom: BorderSide(
+                  color: AppColors.divider,
+                ),
+              ),
+            ),
+            child: _buildPortionScaler(context),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
 
-          // Structured ingredient table
-          ...scaledIngredients.map((ingredient) {
+          // Ingredient rows with dividers
+          ...scaledIngredients.asMap().entries.map((entry) {
+            final index = entry.key;
+            final ingredient = entry.value;
             final parsed = IngredientParser.parseIngredient(ingredient);
             final isAllergen = _isAllergenIngredient(parsed.name);
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.spacingXs,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Quantity + unit column (fixed width, right-aligned)
-                  SizedBox(
-                    width: 80,
-                    child: Text(
-                      parsed.unit.isNotEmpty
-                          ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
-                          : parsed.quantity > 0
-                              ? _formatQuantity(parsed.quantity)
-                              : '',
-                      style: AppTextStyles.text14.copyWith(
-                        color: AppColors.forestGreenDark,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.right,
-                    ),
+            return Column(
+              children: [
+                if (index > 0)
+                  const Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: AppColors.creamDarker,
                   ),
-                  // Separator
-                  if (parsed.unit.isNotEmpty || parsed.quantity > 0)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingSm,
-                      ),
-                      child: Text(
-                        '|',
-                        style: AppTextStyles.text14.copyWith(
-                          color: AppColors.divider,
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Quantity + unit column
+                      SizedBox(
+                        width: 70,
+                        child: Text(
+                          parsed.unit.isNotEmpty
+                              ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
+                              : parsed.quantity > 0
+                                  ? _formatQuantity(parsed.quantity)
+                                  : '',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: AppColors.forestGreenDark,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textAlign: TextAlign.right,
                         ),
                       ),
-                    )
-                  else
-                    const SizedBox(width: AppDimensions.spacingMd),
-                  // Ingredient name
-                  Expanded(
-                    child: Row(
-                      children: [
-                        if (isAllergen)
-                          const Padding(
-                            padding: EdgeInsets.only(
-                              right: AppDimensions.spacingXs,
+                      const SizedBox(width: AppDimensions.spacingXl),
+                      // Ingredient name
+                      Expanded(
+                        child: Row(
+                          children: [
+                            if (isAllergen)
+                              const Padding(
+                                padding: EdgeInsets.only(
+                                  right: AppDimensions.spacingXs,
+                                ),
+                                child: Icon(
+                                  Icons.warning_amber,
+                                  size: AppDimensions.iconSizeS,
+                                  color: AppColors.error,
+                                ),
+                              ),
+                            Expanded(
+                              child: Text(
+                                parsed.name,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: isAllergen
+                                      ? AppColors.error
+                                      : AppColors.textDark,
+                                ),
+                              ),
                             ),
-                            child: Icon(
-                              Icons.warning_amber,
-                              size: AppDimensions.iconSizeS,
-                              color: AppColors.error,
-                            ),
-                          ),
-                        Expanded(
-                          child: Text(
-                            parsed.name,
-                            style: AppTextStyles.text14.copyWith(
-                              color: isAllergen
-                                  ? AppColors.error
-                                  : AppColors.textDark,
-                            ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             );
           }),
         ],
@@ -320,7 +305,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
             ),
             child: InkWell(
               onTap: () => _toggleStepCompletion(index),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              borderRadius: BorderRadius.zero,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   vertical: AppDimensions.spacingXs,
@@ -449,16 +434,6 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
     return TagDisplayUtils.getTopTags(effectiveTags, userAddedTags, limit: 5);
   }
 
-  Widget _buildDescription(BuildContext context) {
-    // UI Redesign: Plain text, no card wrapper
-    return Text(
-      viewModel.recipe.description,
-      style: AppTextStyles.bodyMedium.copyWith(
-        color: AppColors.textMedium,
-      ),
-    );
-  }
-
   Widget _buildTags(BuildContext context) {
     final recipe = viewModel.recipe;
     final userAddedTags = recipe.tagOverrides?.addedTags ?? <String>{};
@@ -468,7 +443,6 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         border: Border.all(color: AppColors.divider),
       ),
       child: Column(
@@ -506,8 +480,6 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
                           .withValues(alpha: AppDimensions.opacityLightSubtle)
                       : AppColors.forestGreen
                           .withValues(alpha: AppDimensions.opacityVeryLight),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusRound),
                   border: Border.all(
                     color: isUserAdded
                         ? AppColors.forestGreen
@@ -531,37 +503,11 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
     );
   }
 
-  Widget _buildTaggingInfo(BuildContext context) {
-    final tagResult = viewModel.recipe.tagResult;
-    if (tagResult == null) return const SizedBox.shrink();
-
-    // UI Redesign: No coverage section shown
-    return TagResultDisplay(
-      tagResult: tagResult,
-      userAllergenPrefs: userAllergenPrefs,
-      userDietaryPrefs: userDietaryPrefs,
-      showCoverage: false,
-      onUnknownIngredientsTap: tagResult.hasUnknowns
-          ? () => _showUnknownIngredientsDialog(context, tagResult)
-          : null,
-    );
-  }
-
-  void _showUnknownIngredientsDialog(BuildContext context, dynamic tagResult) {
-    showDialog(
-      context: context,
-      builder: (context) => UnknownIngredientDialog(
-        unknownIngredients: tagResult.unknownIngredients,
-      ),
-    );
-  }
-
   Widget _buildImageCarousel(BuildContext context) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         border: Border.all(color: AppColors.divider),
       ),
       child: Column(
@@ -593,20 +539,21 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
           ),
 
           // Image carousel
-          GestureDetector(
-            onTap: () => onImageTap(viewModel.recipe.imageUrls, 0),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(AppDimensions.borderRadiusM),
-                bottomRight: Radius.circular(AppDimensions.borderRadiusM),
-              ),
-              child: img.UniversalImageManager.recipeDetail(
-                imageUrls: viewModel.recipe.imageUrls,
-                size: ImageSize.large,
-                showNavigationDots: true,
-                showImageCounter: true,
-                onImageTap: (index) =>
-                    onImageTap(viewModel.recipe.imageUrls, index),
+          Semantics(
+            label: 'Visa bild',
+            button: true,
+            child: GestureDetector(
+              onTap: () => onImageTap(viewModel.recipe.imageUrls, 0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.zero,
+                child: img.UniversalImageManager.recipeDetail(
+                  imageUrls: viewModel.recipe.imageUrls,
+                  size: ImageSize.large,
+                  showNavigationDots: true,
+                  showImageCounter: true,
+                  onImageTap: (index) =>
+                      onImageTap(viewModel.recipe.imageUrls, index),
+                ),
               ),
             ),
           ),
@@ -665,7 +612,6 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         border: Border.all(color: AppColors.divider),
       ),
       child: Column(
@@ -729,7 +675,6 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
       decoration: BoxDecoration(
         color: AppColors.forestGreen
             .withValues(alpha: AppDimensions.opacityLightSubtle),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
         border: Border.all(
           color: AppColors.forestGreen
               .withValues(alpha: AppDimensions.opacityMediumLight),
@@ -745,27 +690,30 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
   }
 
   Widget _buildOverflowIndicator(int count) {
-    return GestureDetector(
-      onTap: () => setState(() => _isExpanded = true),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingS,
-          vertical: AppDimensions.spacingXs,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
-          border: Border.all(
-            color: AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityLight),
+    return Semantics(
+      label: 'Visa $count till',
+      button: true,
+      child: GestureDetector(
+        onTap: () => setState(() => _isExpanded = true),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingS,
+            vertical: AppDimensions.spacingXs,
           ),
-        ),
-        child: Text(
-          context.l10n.commonMoreCount(count),
-          style: AppTextStyles.metadataEmphasized.copyWith(
+          decoration: BoxDecoration(
             color: AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityDark),
+                .withValues(alpha: AppDimensions.opacityVeryLight),
+            border: Border.all(
+              color: AppColors.forestGreen
+                  .withValues(alpha: AppDimensions.opacityLight),
+            ),
+          ),
+          child: Text(
+            context.l10n.commonMoreCount(count),
+            style: AppTextStyles.metadataEmphasized.copyWith(
+              color: AppColors.forestGreen
+                  .withValues(alpha: AppDimensions.opacityDark),
+            ),
           ),
         ),
       ),

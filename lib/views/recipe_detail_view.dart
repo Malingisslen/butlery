@@ -17,8 +17,10 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Recipe Detail View - Complete recipe display with metadata, actions, and social features
@@ -77,8 +79,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     // Initialize scaled ingredients with original recipe portions
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _actions.onPortionChanged(
-            widget.recipe.portions ?? 1, widget.recipe.ingredients);
+        setState(() {
+          _actions.onPortionChanged(
+              widget.recipe.portions ?? 1, widget.recipe.ingredients);
+        });
       }
     });
   }
@@ -106,19 +110,32 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
         return Scaffold(
           backgroundColor: AppColors.cream,
+          bottomNavigationBar: ButleryBottomNavigation(
+            currentIndex: 0,
+            items: ButleryAdaptiveNavigation.navigationItems,
+            backgroundColor: AppColors.creamDarker,
+            selectedItemColor: AppColors.forestGreenDark,
+            unselectedItemColor: AppColors.greenMuted,
+            onTap: (index) {
+              final route =
+                  ButleryAdaptiveNavigation.navigationItems[index].route;
+              Navigator.pushNamed(context, route);
+            },
+          ),
           // UI Redesign: FAB cart button for quick add to shopping list
           floatingActionButton: SizedBox(
             width: 48,
             height: 48,
             child: FloatingActionButton(
               onPressed: () => _actions.showAddToCartConfirmation(context),
+              tooltip: context.l10n.shoppingAddToList,
               backgroundColor: AppColors.forestGreen,
               elevation: 2,
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.zero,
               ),
               child: const Icon(
-                Icons.shopping_cart,
+                Icons.shopping_cart_outlined,
                 color: AppColors.cardWhite,
                 size: AppDimensions.iconSizeM,
               ),
@@ -143,13 +160,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     tooltip: context.l10n.accessibilityBackButton,
                   ),
                 ),
-                // Show recipe title in collapsed app bar
-                title: Text(
-                  recipe.title,
-                  style: AppTextStyles.bodyLargeBold,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                title: const SizedBox.shrink(),
                 flexibleSpace: FlexibleSpaceBar(
                   background: recipe.imageUrls.isNotEmpty
                       ? GestureDetector(
@@ -190,13 +201,13 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           ),
                         )
                       : ColoredBox(
-                          color: AppColors.cream,
+                          color: AppColors.greenPale,
                           child: Center(
                             child: VegetableIllustration(
                               type: VegetableIllustration.randomForRecipe(
                                   recipe.id),
                               size: 120,
-                              opacity: 0.6,
+                              opacity: 0.85,
                             ),
                           ),
                         ),
@@ -322,93 +333,149 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         desktop: 900,
                       ),
                     ),
-                    child: Padding(
-                      padding: AppDimensions.responsiveContentPadding(context),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Recipe title below hero image
-                          Text(
-                            recipe.title,
-                            style: AppTextStyles.titleLarge.copyWith(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.forestGreenDark,
-                            ),
-                          ),
-                          if (recipe.sourceUrl != null &&
-                              recipe.sourceUrl!.isNotEmpty) ...[
-                            const SizedBox(height: AppDimensions.spacingXs),
-                            GestureDetector(
-                              onTap: () =>
-                                  _launchSourceUrl(context, recipe.sourceUrl!),
-                              child: Text(
-                                context.l10n.recipeSourceFrom(
-                                    Uri.tryParse(recipe.sourceUrl!)?.host ??
-                                        recipe.sourceUrl!),
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.textMedium,
-                                  decoration: TextDecoration.underline,
-                                ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Title section: white bg + green border-bottom per mockup
+                        Container(
+                          width: double.infinity,
+                          padding:
+                              AppDimensions.responsiveContentPadding(context),
+                          decoration: const BoxDecoration(
+                            color: AppColors.cardWhite,
+                            border: Border(
+                              bottom: BorderSide(
+                                color: AppColors.forestGreen,
+                                width: 3,
                               ),
                             ),
-                          ],
-                          const SizedBox(height: AppDimensions.spacingSm),
-
-                          // Recipe metadata
-                          RecipeDetailMetadata(
-                            viewModel: viewModel,
-                            currentPortions: _actions.currentPortions,
-                            isScaled: _actions.currentPortions !=
-                                (recipe.portions ?? 1),
                           ),
-                          const SizedBox(height: AppDimensions.spacingMd),
-
-                          // Recipe main content
-                          Builder(
-                            builder: (context) {
-                              final userService = context.watch<UserService>();
-                              final allergenPrefs =
-                                  userService.allergenPreferences;
-                              return RecipeDetailContent(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Recipe title (lowercase per mockup)
+                              Text(
+                                recipe.title.toLowerCase(),
+                                style: AppTextStyles.titleLarge.copyWith(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.forestGreenDark,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                              if (recipe.sourceUrl != null &&
+                                  recipe.sourceUrl!.isNotEmpty) ...[
+                                const SizedBox(height: AppDimensions.spacingXs),
+                                GestureDetector(
+                                  onTap: () => _launchSourceUrl(
+                                      context, recipe.sourceUrl!),
+                                  child: Text(
+                                    context.l10n.recipeSourceFrom(
+                                        Uri.tryParse(recipe.sourceUrl!)?.host ??
+                                            recipe.sourceUrl!),
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: AppColors.textMedium,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: AppDimensions.spacingSm),
+                              // Recipe metadata
+                              RecipeDetailMetadata(
                                 viewModel: viewModel,
-                                scaledIngredients: _actions.scaledIngredients,
                                 currentPortions: _actions.currentPortions,
-                                onPortionChanged: (portions, ingredients) {
-                                  setState(() {
-                                    _actions.onPortionChanged(
-                                        portions, ingredients);
-                                  });
+                                isScaled: _actions.currentPortions !=
+                                    (recipe.portions ?? 1),
+                              ),
+                              // Dietary/allergen badges (inside title section per mockup)
+                              Builder(
+                                builder: (context) {
+                                  final userService =
+                                      context.watch<UserService>();
+                                  final allergenPrefs =
+                                      userService.allergenPreferences;
+                                  final tagResult = recipe.tagResult;
+                                  if (tagResult == null ||
+                                      !allergenPrefs.showOnDetail) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: AppDimensions.spacingSm),
+                                    child: TagResultDisplay(
+                                      tagResult: tagResult,
+                                      userAllergenPrefs:
+                                          allergenPrefs.trackedAllergens,
+                                      userDietaryPrefs:
+                                          allergenPrefs.trackedDietary,
+                                      showCoverage: false,
+                                    ),
+                                  );
                                 },
-                                onImageTap: (imageUrls, index) =>
-                                    _showFullscreenImage(
-                                        context, imageUrls, index),
-                                userAllergenPrefs: allergenPrefs.showOnDetail
-                                    ? allergenPrefs.trackedAllergens
-                                    : null,
-                                userDietaryPrefs: allergenPrefs.showOnDetail
-                                    ? allergenPrefs.trackedDietary
-                                    : null,
-                                showCoverage: allergenPrefs.showCoverage,
-                              );
-                            },
-                          ),
-                          const SizedBox(height: AppDimensions.spacingMd),
+                              ),
 
-                          // Recipe comments
-                          RecipeDetailComments(
-                            recipe: recipe,
-                            onCommentPosted: () {
-                              // Refresh recipe data after comment posted
-                              setState(() {});
-                            },
+                              // Description (inside title section, above green divider)
+                              if (recipe.description.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: AppDimensions.spacingSm),
+                                  child: Text(
+                                    recipe.description,
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: AppColors.textMedium,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
+                        ),
 
-                          // Bottom padding for safe area (Android gesture navigation)
-                          SizedBox(
-                              height: bottomPadding + AppDimensions.spacingXl),
-                        ],
-                      ),
+                        const SizedBox(height: AppDimensions.spacingMd),
+
+                        // Recipe main content
+                        Builder(
+                          builder: (context) {
+                            final userService = context.watch<UserService>();
+                            final allergenPrefs =
+                                userService.allergenPreferences;
+                            return RecipeDetailContent(
+                              viewModel: viewModel,
+                              scaledIngredients: _actions.scaledIngredients,
+                              currentPortions: _actions.currentPortions,
+                              onPortionChanged: (portions, ingredients) {
+                                setState(() {
+                                  _actions.onPortionChanged(
+                                      portions, ingredients);
+                                });
+                              },
+                              onImageTap: (imageUrls, index) =>
+                                  _showFullscreenImage(
+                                      context, imageUrls, index),
+                              userAllergenPrefs: allergenPrefs.showOnDetail
+                                  ? allergenPrefs.trackedAllergens
+                                  : null,
+                              userDietaryPrefs: allergenPrefs.showOnDetail
+                                  ? allergenPrefs.trackedDietary
+                                  : null,
+                              showCoverage: allergenPrefs.showCoverage,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: AppDimensions.spacingMd),
+
+                        // Recipe comments
+                        RecipeDetailComments(
+                          recipe: recipe,
+                          onCommentPosted: () {
+                            setState(() {});
+                          },
+                        ),
+
+                        // Bottom padding for safe area
+                        SizedBox(
+                            height: bottomPadding + AppDimensions.spacingXl),
+                      ],
                     ),
                   ),
                 ),
