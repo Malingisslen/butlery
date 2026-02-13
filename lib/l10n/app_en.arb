@@ -589,5 +589,2777 @@
   },
   "shoppingAllUnchecked": "All items unchecked!",
   "shoppingNoListForRename": "No list selected for renaming",
-  "shoppingNoListForDelete": "No list selected for deletion"
+  "shoppingNoListForDelete": "No list selected for deletion",
+
+  "commonBack": "Back",
+  "commonEnable": "Enable",
+  "commonDisable": "Disable",
+  "commonName": "Name",
+  "commonShowDetails": "Show details",
+  "commonEditName": "Edit name",
+  "commonErrorOccurred": "An error occurred",
+  "commonContinue": "Continue",
+  "commonNext": "Next",
+  "commonPrevious": "Previous",
+  "commonSkip": "Skip",
+  "commonSkipAll": "Skip all",
+  "commonSaveAndClose": "Save and close",
+  "commonSaveAndNext": "Save and next",
+  "commonSaveChanges": "Save changes",
+  "commonSaveMyCopy": "Save my copy",
+  "commonSaveAsNew": "Save as new",
+  "commonSelectAll": "Select all",
+  "commonDeselectAll": "Deselect all",
+  "commonClearAll": "Clear all",
+  "commonClear": "Clear",
+  "commonImage": "Image",
+  "commonSettings": "Settings",
+  "commonLogout": "Log out",
+  "commonLogoutNow": "Log out now",
+  "commonNoAccess": "No access",
+  "commonCreatingCopy": "Creating copy...",
+  "commonToHome": "To home",
+  "commonTakePhoto": "Take photo",
+  "commonSelectFromGallery": "Select from gallery",
+  "commonSelectFriends": "Select friends",
+  "commonNoContent": "No content",
+  "commonRemoveLabel": "Remove {label}",
+  "@commonRemoveLabel": {
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+
+  "personalTagsViewTitle": "Personal Tags",
+  "personalTagCreateTag": "Create tag",
+  "personalTagCreateGroup": "Create group",
+  "personalTagEmptyTitle": "No personal tags",
+  "personalTagEmptySubtitle": "Create tags to organize your recipes",
+  "personalTagSectionTags": "Tags",
+  "personalTagDeleteGroup": "Delete group",
+  "personalTagGroupEmpty": "No tags in this group",
+  "personalTagRecipeCount": "{count, plural, =1{1 recipe} other{{count} recipes}}",
+  "@personalTagRecipeCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "personalTagRuleCount": "{count} rules",
+  "@personalTagRuleCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "personalTagRuleCountActive": "{enabled}/{total} rules active",
+  "@personalTagRuleCountActive": {
+    "placeholders": {
+      "enabled": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "personalTagNoUsage": "Not used",
+  "personalTagEnableAllRules": "Enable all rules",
+  "personalTagDisableAllRules": "Disable all rules",
+  "personalTagRulesDisabled": "{count} rules disabled",
+  "@personalTagRulesDisabled": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "personalTagRulesActive": "{count} rules active",
+  "@personalTagRulesActive": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "personalTagMoveToGroup": "Move to group",
+  "personalTagDeleteTag": "Delete tag",
+  "personalTagEnableAllRulesConfirm": "Enable all rules?",
+  "personalTagDisableAllRulesConfirm": "Disable all rules?",
+  "personalTagEnableAllRulesMessage": "All {count} rules for \"{name}\" will be enabled.",
+  "@personalTagEnableAllRulesMessage": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "name": {"type": "String"}
+    }
+  },
+  "personalTagDisableAllRulesMessage": "All {count} rules for \"{name}\" will be disabled.",
+  "@personalTagDisableAllRulesMessage": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "name": {"type": "String"}
+    }
+  },
+  "personalTagAllRulesEnabled": "All rules enabled",
+  "personalTagAllRulesDisabled": "All rules disabled",
+  "personalTagCouldNotChangeRules": "Could not change rules",
+  "personalTagNameLabel": "Tag name",
+  "personalTagNameHint": "E.g. Favorites",
+  "personalTagCreated": "Tag created",
+  "personalTagCouldNotCreate": "Could not create tag",
+  "personalTagGroupNameLabel": "Group name",
+  "personalTagGroupNameHint": "E.g. Dinners",
+  "personalTagGroupCreated": "Group created",
+  "personalTagCouldNotCreateGroup": "Could not create group",
+  "personalTagEditTag": "Edit tag",
+  "personalTagUpdated": "Tag updated",
+  "personalTagDeleteTagConfirm": "Delete tag?",
+  "personalTagDeleteTagMessage": "Are you sure you want to delete \"{name}\"? The tag will be removed from all recipes.",
+  "@personalTagDeleteTagMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "personalTagDeleted": "Tag deleted",
+  "personalTagNoGroup": "No group",
+  "personalTagCreateNewGroup": "Create new group",
+  "personalTagMoved": "Tag moved",
+  "personalTagGroupCreatedAndTagMoved": "Group created and tag moved",
+  "personalTagRenameGroup": "Rename group",
+  "personalTagGroupUpdated": "Group updated",
+  "personalTagDeleteGroupConfirm": "Delete group?",
+  "personalTagDeleteGroupMessage": "Are you sure you want to delete \"{name}\"? Tags in the group will be ungrouped.",
+  "@personalTagDeleteGroupMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "personalTagGroupDeleted": "Group deleted",
+  "personalTagSortByName": "Name",
+  "personalTagSortByUsage": "Usage",
+  "personalTagSortByRuleCount": "Rule count",
+  "personalTagTileSemantics": "{name}, {count} recipes, {enabled} of {total} rules active",
+  "@personalTagTileSemantics": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "count": {"type": "int"},
+      "enabled": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+
+  "tagDetailDefaultTitle": "Tag",
+  "tagDetailNotFound": "Tag could not be found",
+  "tagDetailEditTitle": "Edit tag",
+  "tagDetailApplyRules": "Apply rules",
+  "tagDetailApplyRulesSubtitle": "Apply to existing recipes",
+  "tagDetailNameHint": "Tag name",
+  "tagDetailNameRequired": "Tag name required",
+  "tagDetailUpdated": "Tag updated",
+  "tagDetailCouldNotUpdate": "Could not update tag",
+  "tagDetailRuleCreated": "Rule created",
+  "tagDetailCouldNotCreateRule": "Could not create rule",
+  "tagDetailRuleUpdated": "Rule updated",
+  "tagDetailCouldNotUpdateRule": "Could not update rule",
+  "tagDetailCouldNotChangeRuleStatus": "Could not change rule status",
+  "tagDetailDeleteRuleConfirm": "Delete rule?",
+  "tagDetailDeleteRuleMessage": "Are you sure you want to delete \"{name}\"?",
+  "@tagDetailDeleteRuleMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "tagDetailRuleDeleted": "Rule deleted",
+  "tagDetailCouldNotDeleteRule": "Could not delete rule",
+  "tagDetailApplyingRules": "Applying rules to recipes...",
+  "tagDetailRulesAppliedSuccess": "{tagsApplied} tags applied to {recipesModified} recipes",
+  "@tagDetailRulesAppliedSuccess": {
+    "placeholders": {
+      "tagsApplied": {"type": "int"},
+      "recipesModified": {"type": "int"}
+    }
+  },
+  "tagDetailNoRecipesMatched": "No recipes matched the rules",
+  "tagDetailCouldNotApplyRules": "Could not apply rules",
+  "tagDetailDeleteTagConfirm": "Delete tag?",
+  "tagDetailDeleteTagMessage": "Are you sure you want to delete \"{name}\"? The tag will be removed from all recipes.",
+  "@tagDetailDeleteTagMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "tagDetailDeleted": "Tag deleted",
+  "tagDetailCouldNotDelete": "Could not delete tag",
+  "tagDetailRecipeCount": "{count, plural, =1{1 recipe} other{{count} recipes}}",
+  "@tagDetailRecipeCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "tagDetailRulesActive": "{enabled}/{total} rules active",
+  "@tagDetailRulesActive": {
+    "placeholders": {
+      "enabled": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "tagDetailRuleCalculating": "Calculating...",
+  "tagDetailRuleMatches": "{count, plural, =1{1 recipe matches} other{{count} recipes match}}",
+  "@tagDetailRuleMatches": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "tagDetailRuleNoConditions": "No conditions",
+  "tagDetailRuleOperatorAnd": " AND ",
+  "tagDetailRuleOperatorOr": " OR ",
+  "tagDetailRuleMoreConditions": "(+{count} more)",
+  "@tagDetailRuleMoreConditions": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "tagDetailRulesDescription": "Rules automatically apply the tag to recipes that match the conditions.",
+  "tagDetailRulesTitle": "Automation Rules",
+  "tagDetailRulesEmptyTitle": "No rules yet",
+  "tagDetailRulesEmptySubtitle": "Create rules to automatically tag recipes",
+  "tagDetailRulesCreateFirst": "Create first rule",
+
+  "tagAlreadyExists": "Tag already exists",
+  "tagManageTags": "Manage tags",
+  "tagActiveTags": "Active tags",
+  "tagRemovedTags": "Removed tags",
+  "tagAddNewTag": "Add new tag",
+  "tagWriteTagHint": "Write a tag...",
+  "tagEnterTag": "Enter a tag",
+  "tagMinTwoChars": "At least 2 characters",
+  "tagAddTag": "Add tag",
+  "tagManuallyAdded": "Manually added",
+  "tagAutoGenerated": "Auto-generated",
+  "tagClickToRestore": "Click to restore",
+
+  "allergenSettingsTitle": "Allergen Settings",
+  "allergenTrackAllergensTitle": "Track Allergens",
+  "allergenTrackAllergensSubtitle": "Select which allergens you want to see status for on recipes.",
+  "allergenTrackDietaryTitle": "Track Dietary Preferences",
+  "allergenTrackDietarySubtitle": "Select which dietary preferences you want to see status for.",
+  "allergenDisplayTitle": "Display on",
+  "allergenDisplayOnCardsTitle": "Recipe Cards",
+  "allergenDisplayOnCardsSubtitle": "Show allergen status on recipe cards in lists",
+  "allergenDisplayOnDetailTitle": "Recipe Details",
+  "allergenDisplayOnDetailSubtitle": "Show complete allergen status on recipe page",
+  "allergenDisplayCoverageTitle": "Coverage Indicator",
+  "allergenDisplayCoverageSubtitle": "Show what proportion of ingredients are known",
+  "allergenSaveSettings": "Save Settings",
+  "allergenResetToDefaults": "Reset to Defaults",
+  "allergenSettingsSaved": "Settings saved",
+  "allergenResetConfirm": "Reset settings?",
+  "allergenResetMessage": "This will reset all allergen and dietary preferences to default values.",
+  "allergenReset": "Reset",
+
+  "personalTagWizardAddRule": "Add a rule?",
+  "personalTagWizardAddRuleMessage": "Do you want to create an automation rule for \"{name}\"?\n\nRules can automatically add this tag to recipes based on ingredients, source, time, and more.",
+  "@personalTagWizardAddRuleMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "personalTagWizardLater": "Later",
+  "personalTagWizardYesCreateRule": "Yes, create rule",
+  "personalTagPreview": "Preview",
+  "personalTagCouldNotLoad": "Could not load tags",
+  "personalTagManage": "Manage",
+  "personalTagChipSelectedA11y": "{name}, selected. Double tap to remove.",
+  "@personalTagChipSelectedA11y": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "personalTagChipUnselectedA11y": "{name}. Double tap to select.",
+  "@personalTagChipUnselectedA11y": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "personalTagA11yLabel": "Tag: {name}",
+  "@personalTagA11yLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "personalTagManagerTitle": "My tags",
+  "personalTagManagerRulesTab": "Rules",
+  "personalTagNewTag": "New tag",
+  "personalTagCreateTagFirst": "Create a tag first",
+  "personalTagNeedTagForRules": "You need at least one tag to create automation rules.",
+  "personalTagCreatedDate": "Created {date}",
+  "@personalTagCreatedDate": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "personalTagCreateRuleForTag": "Create rule for tag",
+  "personalTagAddRule": "Add rule",
+  "personalTagApplyRulesTitle": "Apply rules to existing recipes",
+  "personalTagApplyRulesMessage": "This will review all your recipes and add tags according to your enabled rules.\n\nTags already on recipes will not be affected.",
+  "personalTagApplyRulesRun": "Run",
+  "personalTagApplyRulesProgress": "Processing recipe {progress} of {total}...",
+  "@personalTagApplyRulesProgress": {
+    "placeholders": {
+      "progress": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "personalTagApplyRulesFetching": "Fetching recipes...",
+  "personalTagSelectColor": "Select color",
+
+  "ruleEditTitle": "Edit rule",
+  "ruleCreateTitle": "Create rule",
+  "ruleNewTitle": "New rule",
+  "ruleNameLabel": "Rule name",
+  "ruleNameHint": "E.g. \"Fish recipes\"",
+  "ruleNameRequired": "Enter a rule name",
+  "ruleApplyToTag": "Apply to tag",
+  "ruleSelectTag": "Select a tag",
+  "ruleMatchModeLabel": "Match mode",
+  "ruleMatchModeAllConditions": "All conditions (AND)",
+  "ruleMatchModeAnyCondition": "Any condition (OR)",
+  "ruleMatchModeAllShort": "All (AND)",
+  "ruleMatchModeAnyShort": "Any (OR)",
+  "ruleMatchModeAll": "all",
+  "ruleMatchModeAny": "any",
+  "ruleConditionsLabel": "Conditions",
+  "ruleConditionCountSingular": "1 condition",
+  "ruleConditionCountWithMode": "{count} conditions, {mode} must match",
+  "@ruleConditionCountWithMode": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "mode": {"type": "String"}
+    }
+  },
+  "ruleEnabledTitle": "Rule enabled",
+  "ruleEnabledSubtitle": "Rule is applied to recipes",
+  "ruleEnabledNewRecipes": "Rule is applied to new recipes",
+  "rulePausedSubtitle": "Rule is paused",
+  "ruleApplyToExisting": "Apply to existing recipes",
+  "ruleTagMatchingImmediately": "Tag matching recipes immediately",
+  "ruleRemoveCondition": "Remove condition",
+  "ruleSelectProperty": "Select property...",
+  "ruleAllConditionsNeedValue": "All conditions must have a value",
+
+  "ruleHintIngredient": "E.g. \"chicken\", \"salmon\"",
+  "ruleHintProperty": "E.g. \"seafood\", \"meat\", \"dairy\"",
+  "ruleHintKeyword": "E.g. \"quick\", \"vegetarian\"",
+  "ruleHintSourceUrl": "E.g. \"bbc.com\", \"reddit.com\"",
+  "ruleHintCuisine": "E.g. \"italian\", \"asian\"",
+  "ruleHintDietary": "E.g. \"vegetarian\", \"vegan\"",
+  "ruleHintTime": "Cooking time in minutes",
+  "ruleHintTimeShort": "Time in minutes",
+  "ruleHintRating": "Rating (1-5)",
+  "ruleHintRecency": "Days since recipe was added",
+  "ruleHintRecencyShort": "Number of days",
+  "ruleHintOwnership": "E.g. \"personal\", \"shared\", \"collaborative\"",
+  "ruleHintHasImage": "true or false",
+  "ruleHintCompleteness": "E.g. \"description\", \"ingredients\"",
+
+  "ruleCategoryAllergens": "Allergens",
+  "ruleCategoryLactose": "Lactose",
+  "ruleCategoryMeat": "Meat",
+  "ruleCategorySeafood": "Fish & seafood",
+  "ruleCategoryAnimal": "Animal",
+  "ruleCategoryDiet": "Diet",
+  "ruleCategoryOther": "Other",
+
+  "tagResultNoAllergens": "No allergens to display",
+  "tagResultOutdated": "Tags can be updated",
+  "tagResultCoverage": "Coverage",
+  "tagResultUnknownIngredients": "{count} unknown ingredients",
+  "@tagResultUnknownIngredients": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "tagResultUnknownIngredientsA11y": "{count} unknown ingredients",
+  "@tagResultUnknownIngredientsA11y": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "dietaryStatusFreeA11y": "Suitable for {name} diet",
+  "@dietaryStatusFreeA11y": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "dietaryStatusContainsA11y": "Not suitable for {name} diet",
+  "@dietaryStatusContainsA11y": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "dietaryStatusUnknownA11y": "{name} status unknown",
+  "@dietaryStatusUnknownA11y": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "dietaryStatusNotLabel": "Not {name}",
+  "@dietaryStatusNotLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+
+  "allergenStatusFreeA11y": "Free from {name}",
+  "@allergenStatusFreeA11y": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "allergenStatusContainsA11y": "Contains {name}",
+  "@allergenStatusContainsA11y": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "allergenStatusUnknownA11y": "{name} status unknown",
+  "@allergenStatusUnknownA11y": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "allergenFreeLabel": "{name}-free",
+  "@allergenFreeLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "allergenContainsLabel": "contains {name}",
+  "@allergenContainsLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "allergenUnknownLabel": "{name} unknown",
+  "@allergenUnknownLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+
+  "friendMemberCount": "{count, plural, =1{1 member} other{{count} members}}",
+  "@friendMemberCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "friendCategoryLabel": "Category",
+  "friendCategoryStatistics": "Category statistics",
+  "friendCategories": "Categories",
+  "friendTotalMembers": "Total members",
+  "friendAverage": "Average",
+  "friendLargestCategory": "Largest category: {name} ({count} members)",
+  "@friendLargestCategory": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "friendCategoryCount": "{count, plural, =1{1 category} other{{count} categories}}",
+  "@friendCategoryCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "friendTotalMembersCount": "{count} total members",
+  "@friendTotalMembersCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "friendCreateFirstCategory": "Create your first friend category",
+  "friendCreateCategory": "Create category",
+  "friendSelectCategories": "Select categories",
+  "friendCreateNewCategory": "Create new category",
+  "friendSelectedCategories": "Selected categories",
+  "friendSelectedCategoriesSummary": "{count, plural, =1{1 category} other{{count} categories}} ({friends} friends)",
+  "@friendSelectedCategoriesSummary": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "friends": {"type": "int"}
+    }
+  },
+  "friendCategoriesSelected": "{count} categories selected",
+  "@friendCategoriesSelected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "friendFriendsCount": "{count} friends",
+  "@friendFriendsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "friendFriendsLabel": "friends",
+  "friendLoadingFriendsAndCategories": "Loading friends and categories...",
+  "friendNoFriendsOrCategories": "No friends or categories",
+  "friendAddFriendsAndCategoriesFirst": "Add friends and create categories first",
+  "friendManageFriends": "Manage friends",
+  "friendSelectCategoriesOrFriends": "Select categories or individual friends",
+  "friendSelectCategoriesForQuickShare": "Select entire categories for quick sharing",
+  "friendIndividualSelection": "Individual selection",
+  "friendSelectSpecificFriends": "Select specific friends from your friend list",
+  "friendNoFriendsToShow": "No friends to show",
+  "friendAddFriendsFirst": "Add friends first",
+  "friendSelectedFriends": "Selected friends",
+  "friendSelectedCount": "{count, plural, =1{1 friend selected} other{{count} friends selected}}",
+  "@friendSelectedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "shoppingItemsWillBeRemoved": "{count} items will be removed.",
+  "@shoppingItemsWillBeRemoved": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "shoppingItemsFromMenuIn": "{count} items from the menu in \"{name}\"",
+  "@shoppingItemsFromMenuIn": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "name": {"type": "String"}
+    }
+  },
+  "shoppingItemHint": "E.g. Milk",
+  "shoppingItems": "items",
+  "shoppingPersonal": "Personal",
+  "shoppingShared": "Shared",
+  "shoppingTemplate": "Template",
+  "shoppingActive": "Active",
+  "shoppingRecentItems": "Recent items:",
+  "shoppingAndMore": "... and {count} more",
+  "@shoppingAndMore": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "shoppingOwner": "Owner",
+  "shoppingCanView": "Can view",
+  "shoppingCanEdit": "Can edit",
+  "shoppingAdmin": "Admin",
+  "shoppingCreateFirstList": "Create your first shopping list...",
+  "shoppingCreateListButton": "Create list",
+  "shoppingPreviewAndEditItems": "Preview and edit items",
+  "shoppingNoItemsSelected": "No items selected",
+  "shoppingAllItemsRemovedFromMenu": "You have removed all items from the menu",
+  "shoppingRemoveItem": "Remove item",
+  "shoppingRemoveAll": "Remove all",
+  "shoppingToListWithCount": "To \"{name}\" ({count})",
+  "@shoppingToListWithCount": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "shoppingLoadingLists": "Loading lists...",
+  "shoppingErrorLoading": "Error loading",
+  "shoppingLists": "Shopping lists",
+  "shoppingNewList": "New list",
+  "shoppingAddFromMenu": "Add from menu",
+  "shoppingNoItemsFromMenu": "No items selected from menu",
+  "shoppingAddItemsCount": "Add {count} items...",
+  "@shoppingAddItemsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "shoppingPreview": "Preview",
+  "shoppingAdding": "Adding...",
+  "shoppingNoItemsToAdd": "No items to add",
+  "shoppingListCreated": "List \"{name}\" created",
+  "@shoppingListCreated": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "shoppingCouldNotCreateList": "Could not create list: {error}",
+  "@shoppingCouldNotCreateList": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "shoppingItemsAddedToList": "{count} items added to \"{name}\"",
+  "@shoppingItemsAddedToList": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "name": {"type": "String"}
+    }
+  },
+  "shoppingCouldNotAddItems": "Could not add items: {error}",
+  "@shoppingCouldNotAddItems": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "profileSocialFeatures": "Social features",
+  "profileEditProfile": "Edit profile",
+  "profileEditProfileSubtitle": "Update your name and profile picture",
+  "profileFriendsAndGroups": "Friends and groups",
+  "profileFriendsAndGroupsSubtitle": "Manage your friends and groups",
+  "profileSharedWithMe": "Shared with me",
+  "profileSharedWithMeSubtitle": "Recipes and menus shared with you",
+  "profileMessages": "Messages",
+  "profileMessagesSubtitle": "Your conversations and messages",
+  "profileAllergenSettings": "Allergen settings",
+  "profileAllergenSettingsSubtitle": "Select which allergens you want to track",
+  "profileMyTags": "My tags",
+  "profileMyTagsSubtitle": "Manage your personal tags",
+  "profileCloseMenu": "Close profile menu",
+  "profileRecipes": "Recipes",
+  "profileMenus": "Menus",
+  "profileFriends": "Friends",
+  "profileDataAndBackup": "Data & Backup",
+  "profileDownloadBackup": "Download backup",
+  "profileDownloadBackupSubtitle": "Save all recipes as JSON",
+  "profileRestoreFromBackup": "Restore from backup",
+  "profileRestoreFromBackupSubtitle": "Import recipes from JSON",
+  "profileAccountManagement": "Account management",
+  "profilePrivacyPolicy": "Privacy policy",
+  "profilePrivacyPolicySubtitle": "Read about how we handle your personal data (GDPR)",
+  "profileManageConsents": "Manage consents",
+  "profileManageConsentsSubtitle": "Choose how we may process your personal data (GDPR)",
+  "profileExportMyData": "Export my data",
+  "profileExportMyDataSubtitle": "Download all your data in JSON format (GDPR)",
+  "profileDeleteAccountSubtitle": "Delete your account and all data permanently",
+  "profileLogoutFailed": "Logout failed: {error}",
+  "@profileLogoutFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "profileAccountDeletedPermanently": "Your account has been permanently deleted",
+  "profileAccountCouldNotBeFullyDeleted": "Account could not be fully deleted. Contact support.",
+  "profileAuthenticationFailed": "Authentication failed",
+  "profileBackupFailed": "Backup failed: {error}",
+  "@profileBackupFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "profileRestoreCompleted": "Restore completed!",
+  "profileRestoreFailed": "Restore failed: {error}",
+  "@profileRestoreFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "profileCouldNotOpenPrivacyPolicy": "Could not open privacy policy: {error}",
+  "@profileCouldNotOpenPrivacyPolicy": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "profileCouldNotOpenConsentManager": "Could not open consent manager: {error}",
+  "@profileCouldNotOpenConsentManager": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "profileCouldNotOpenDataExport": "Could not open data export: {error}",
+  "@profileCouldNotOpenDataExport": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "shareRecipeTitle": "Share recipe",
+  "shareMenuTitle": "Share menu",
+  "shareShoppingListTitle": "Share shopping list",
+  "shareCreateAndShare": "Create & Share",
+  "shareRecipeWithFriends": "Share recipe with friends",
+  "shareMenuWithFriends": "Share weekly menu with friends",
+  "shareShoppingList": "Share shopping list",
+  "shareCheckOutRecipe": "Check out this recipe:",
+  "shareCheckOutMenu": "Check out this weekly menu:",
+  "shareCheckOutShoppingList": "Check out this shopping list:",
+  "shareRealtime": "realtime sharing",
+  "shareCopy": "copy",
+  "shareSelectAtLeastOneFriend": "Select at least one friend to share",
+  "shareSelected": "selected",
+  "shareRecipesInCategories": "{recipes} recipes in {categories} categories",
+  "@shareRecipesInCategories": {
+    "placeholders": {
+      "recipes": {"type": "int"},
+      "categories": {"type": "int"}
+    }
+  },
+  "shareNoFriendsToShareWith": "No friends to share with",
+  "shareAddFriendsToShare": "You need to add friends to be able to share content. Go to your profile and add friends.",
+  "shareAddFriends": "Add friends",
+  "shareErrorOccurred": "An error occurred",
+  "shareSucceeded": "Sharing succeeded!",
+  "shareRecipes": "recipes",
+  "shareMenus": "menus",
+  "shareShoppingLists": "shopping lists",
+  "shareMessageOptional": "Message (optional)",
+  "shareWriteMessage": "Write a message...",
+  "shareMethod": "Sharing method",
+  "shareStaticCopy": "Static copy",
+  "shareStaticCopyDescription": "Send a copy that the recipient can modify freely",
+  "shareRealtimeSharing": "Realtime sharing",
+  "shareRealtimeSharingDescription": "Everyone can edit together in realtime",
+  "shareRealtimeShoppingDescription": "Everyone can add and check off items in realtime",
+  "shareSelectRecipients": "Select recipients",
+  "shareSearchFriends": "Search friends...",
+  "shareSearchGroups": "Search groups...",
+  "shareNoFriendsAvailable": "No friends available",
+  "shareNoFriendsMatchedSearch": "No friends matched your search",
+  "shareNoGroupsAvailable": "No groups available",
+  "shareNoGroupsMatchedSearch": "No groups matched your search",
+  "shareAlreadySharingList": "Already sharing list",
+
+  "menuSavedMenus": "Saved menus",
+  "menuNoSavedMenus": "No saved menus",
+  "menuSavedMenusSavedEarlier": "Saved earlier",
+  "menuLoadMenu": "Load",
+  "menuRemoveMenu": "Remove",
+  "menuRemoveMenuTitle": "Remove menu",
+  "menuMenuNameRequired": "Menu name required",
+  "menuMenuToSave": "Menu to save",
+  "menuCommentOptional": "Comment (optional)",
+  "menuCommentHint": "Description or notes about the menu",
+  "menuShareWithFriends": "Share with friends",
+  "menuShareThisMenu": "Share this menu with selected friends",
+  "menuSelectFriendsToShare": "Select friends to share with",
+  "menuNoFriendsAvailable": "No friends available",
+  "menuDefaultShareMessage": "Check out my new weekly menu!",
+  "menuShareMessageLabel": "Share message",
+  "menuShareMessageHint": "Message sent with the menu",
+  "menuMenuNameHint": "E.g. Week 45 or Weekend menu",
+  "menuUnnamedMenu": "Unnamed menu",
+
+  "socialUnknownUser": "Unknown user",
+  "socialShared": "Shared",
+  "socialEditRecipe": "Edit recipe",
+  "socialEditingTogether": "You are editing together with others",
+  "socialChangesSyncAutomatically": "Changes sync automatically with other participants",
+  "socialActive": "Active",
+  "socialParticipants": "Participants",
+  "socialViewAll": "View all",
+  "socialSharedRecipeMembers": "Shared recipe \u2022 {count} members",
+  "@socialSharedRecipeMembers": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "socialSharedMenuMembers": "Shared menu \u2022 {count} members",
+  "@socialSharedMenuMembers": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "socialActiveCollaboration": "Active collaboration",
+  "socialInactive": "Not active",
+  "socialCollaborationStatistics": "Collaboration statistics",
+  "socialMembers": "Members",
+  "socialActiveEditors": "Active",
+  "socialChanges": "Changes",
+  "socialLastActive": "Last active: {time}",
+  "@socialLastActive": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "socialJustNow": "just now",
+  "socialMinutesAgo": "{count} min ago",
+  "@socialMinutesAgo": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "socialHoursAgo": "{count} hours ago",
+  "@socialHoursAgo": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "socialDaysAgo": "{count} days ago",
+  "@socialDaysAgo": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "socialPermissionOwner": "Owner",
+  "socialPermissionAdmin": "Admin",
+  "socialPermissionEditor": "Edit",
+  "socialPermissionViewer": "View",
+  "socialPermissionUnknown": "Unknown",
+  "socialAddCategory": "Add category",
+  "socialNewCategory": "New category",
+  "socialFilterCategories": "Filter categories",
+  "socialSortCategories": "Sort categories",
+  "socialAveragePerCategory": "Average/category",
+  "socialLargestCategory": "Largest category",
+  "socialCreateFirstCategory": "Create your first friend category to get started",
+  "socialLoadingCategories": "Loading categories...",
+  "socialSelectAllLabel": "Select all",
+  "socialDeselectAllLabel": "Deselect all",
+  "socialInvertLabel": "Invert",
+
+  "invitationNoTargetsAvailable": "No targets available",
+  "invitationSearchTargets": "Search targets...",
+  "invitationSelectedTargets": "Selected targets",
+  "invitationTargetsSelected": "{count} targets selected",
+  "@invitationTargetsSelected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "invitationSortLabel": "Sort:",
+  "invitationSortByName": "Name",
+  "invitationSortByType": "Type",
+  "invitationSortByMembers": "Members",
+  "invitationAll": "All",
+  "invitationNone": "None",
+  "invitationGroups": "Groups",
+  "invitationIndividuals": "Individuals",
+  "invitationAddTarget": "Add target",
+  "invitationSendInvitations": "Send invitations",
+  "invitationCreateGroup": "Create group",
+  "invitationAffectedTargets": "Affected targets:",
+  "invitationView": "View",
+  "invitationSendInvitation": "Send invitation",
+  "invitationInvite": "Invite",
+  "invitationViewMembers": "View members",
+  "invitationLoadingTargets": "Loading targets...",
+  "invitationNetworkError": "Network error",
+  "invitationCheckConnection": "Check your internet connection.",
+  "invitationNoAccessTitle": "No access",
+  "invitationNoAccessSubtitle": "You don't have permission to view this information.",
+  "invitationTargetsLoaded": "Targets loaded!",
+  "invitationNoSearchResults": "No search results",
+  "invitationNoResultsFor": "No results for \"{query}\"",
+  "@invitationNoResultsFor": {
+    "placeholders": {
+      "query": {"type": "String"}
+    }
+  },
+  "invitationTargetsSelectedCount": "{count} targets selected",
+  "@invitationTargetsSelectedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "invitationNoSelectionsMade": "No selections made",
+
+  "socialSharedRecipes": "Shared recipes",
+  "socialSharedMenus": "Shared menus",
+  "socialActiveCollaborations": "Active collaborations",
+  "socialSent": "Sent",
+  "socialReceived": "Received",
+  "socialAccepted": "Accepted",
+  "socialPending": "Pending",
+
+  "commonUser": "User",
+  "commonDone": "Done",
+  "commonBack": "Back",
+  "commonClearError": "Clear error",
+  "commonClearSearch": "Clear search",
+  "commonComingSoon": "Coming soon...",
+  "commonDiscard": "Discard",
+  "commonFailed": "Failed",
+  "commonHide": "Hide",
+  "commonImporting": "Importing...",
+  "commonLater": "Later",
+  "commonLoading": "Loading...",
+  "commonMessage": "Message:",
+  "commonPending": "Pending",
+  "commonRefresh": "Refresh",
+  "commonRemove": "Remove",
+  "commonSaving": "Saving...",
+  "commonSending": "Sending...",
+  "commonUndo": "Undo",
+  "commonUploading": "Uploading...",
+
+  "authLogIn": "Log in",
+
+  "collaborativeListNoAccess": "The list may have been deleted or you no longer have access",
+  "collaborativeListNotFound": "List not found",
+  "collaborativeLoadingSharedList": "Loading shared list...",
+
+  "discoveryActivity": "Activity",
+  "discoveryByAuthor": "By {name}",
+  "@discoveryByAuthor": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "discoveryCategories": "Categories",
+  "discoveryContentType": "Content type",
+  "discoveryCustomizeExperience": "Customize your discovery experience",
+  "discoveryDiscover": "Discover",
+  "discoveryDiscoverNewContent": "Discover new content",
+  "discoveryFeedbackHint": "Help us improve Butlery! Describe your feedback here...",
+  "discoveryFeedbackThanks": "Thank you for your feedback! We will review it.",
+  "discoveryFilterContent": "Filter content",
+  "discoveryFindPopularContent": "Find popular recipes, menus and lists",
+  "discoveryForYou": "For you",
+  "discoveryGiveFeedback": "Give feedback",
+  "discoveryItemCount": "{count} items",
+  "@discoveryItemCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "discoveryLoading": "Loading discovery content...",
+  "discoveryMenus": "Menus",
+  "discoveryNotifications": "Notifications",
+  "discoveryPopularNow": "Popular right now",
+  "discoveryPushNotifications": "Push notifications",
+  "discoveryPushNotificationsDescription": "Get notifications about new content",
+  "discoveryRecipes": "Recipes",
+  "discoverySeeAll": "See all",
+  "discoverySendFeedback": "Send feedback",
+  "discoverySettings": "Discovery settings",
+  "discoverySettingsSaved": "Settings saved!",
+  "discoveryShoppingLists": "Shopping lists",
+  "discoveryShowFriendActivity": "Show friend activity",
+  "discoveryShowFriendActivityDescription": "Show what your friends are doing",
+  "discoveryShowMenuResults": "Show menu results",
+  "discoveryShowRecipeResults": "Show recipe results",
+  "discoveryShowRecommendations": "Show recommendations",
+  "discoveryShowRecommendationsDescription": "Show personal recommendations",
+  "discoveryShowShoppingLists": "Show shopping lists",
+  "discoveryShowTrends": "Show trends",
+  "discoveryShowTrendsDescription": "Show popular content from the community",
+  "discoveryToDiscover": "to discover",
+
+  "allergenCrustacean": "Crustacean",
+  "allergenDairy": "Dairy",
+  "allergenEgg": "Egg",
+  "allergenFish": "Fish",
+  "allergenGluten": "Gluten",
+  "allergenPeanut": "Peanut",
+  "allergenSoy": "Soy",
+  "allergenTreeNut": "Tree nut",
+
+  "commentCouldNotPost": "Could not post comment",
+  "commentPosted": "Comment posted",
+  "commentReply": "Reply",
+  "commentReplyingTo": "Replying to",
+  "commentWriteComment": "Write a comment",
+  "commentWriteReply": "Write a reply",
+  "commentYou": "You",
+
+  "dialogAddRecipesToCategory": "Add recipes to {categoryName}",
+  "@dialogAddRecipesToCategory": {
+    "placeholders": {
+      "categoryName": {"type": "String"}
+    }
+  },
+  "dialogAlreadyShared": "Shared",
+  "dialogAlternatives": "Alternatives:",
+  "dialogClearSelection": "Clear selection",
+  "dialogContainsAllergens": "Contains allergens:",
+  "dialogCouldNotSave": "Could not save: {error}",
+  "@dialogCouldNotSave": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "dialogCreateList": "Create list",
+  "dialogCreateNewListForIngredients": "Create a new list for these ingredients",
+  "dialogDietaryProperties": "Dietary properties:",
+  "dialogEnterListName": "Enter a name for the list",
+  "dialogFilteredRecipeCount": "{filtered} of {total} recipes",
+  "@dialogFilteredRecipeCount": {
+    "placeholders": {
+      "filtered": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "dialogImportWithoutAi": "Import without AI",
+  "dialogItems": "items",
+  "dialogItemsProgress": "{completed}/{total} done",
+  "@dialogItemsProgress": {
+    "placeholders": {
+      "completed": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "dialogLoadingMenus": "Loading menus...",
+  "dialogLoadingRecipes": "Loading recipes...",
+  "dialogManualImport": "Manual import",
+  "dialogMarkIngredientsYourself": "Mark ingredients yourself",
+  "dialogMayTakeAWhile": "This may take a while...",
+  "dialogNameMinTwoChars": "Name must be at least 2 characters",
+  "dialogNoEditableShoppingLists": "You have no editable shopping lists. Only lists you can edit are shown here. Create a new list above.",
+  "dialogNoMenus": "No menus",
+  "dialogNoMenusToShare": "You have no menus to share yet",
+  "dialogNoRecipes": "No recipes",
+  "dialogNoRecipesToShare": "You have no recipes to share yet",
+  "dialogNoShoppingLists": "No shopping lists",
+  "dialogNoShoppingListsToShare": "You have no shopping lists to share yet",
+  "dialogOrSelectExistingList": "Or select an existing list:",
+  "dialogPrivate": "Private",
+  "dialogRetryInHours": "Try again in {hours} hour(s)",
+  "@dialogRetryInHours": {
+    "placeholders": {
+      "hours": {"type": "int"}
+    }
+  },
+  "dialogRetryInMinutes": "Try again in {minutes} minute(s)",
+  "@dialogRetryInMinutes": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "dialogRetryInSeconds": "Try again in {seconds} second(s)",
+  "@dialogRetryInSeconds": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "dialogRetryLater": "Try later",
+  "dialogRetryTomorrow": "Try again tomorrow",
+  "dialogSearchRecipes": "Search recipes...",
+  "dialogSearchRecipesToAdd": "Search recipes to add...",
+  "dialogSelectedCount": "Selected ({count})",
+  "@dialogSelectedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "dialogShared": "Shared",
+  "dialogShareMenuWith": "Share menu with {groupName}",
+  "@dialogShareMenuWith": {
+    "placeholders": {
+      "groupName": {"type": "String"}
+    }
+  },
+  "dialogShareRecipesWith": "Share recipes with {name}",
+  "@dialogShareRecipesWith": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "dialogShareShoppingListWith": "Share shopping list with {groupName}",
+  "@dialogShareShoppingListWith": {
+    "placeholders": {
+      "groupName": {"type": "String"}
+    }
+  },
+  "dialogSharing": "Sharing...",
+  "dialogShoppingListNameHint": "E.g. \"Pancakes - Ingredients\"",
+  "dialogUnknownIngredientDescription": "This ingredient is not in the database. You can define its properties for better tagging.",
+  "dialogUnknownIngredientProgress": "Unknown ingredient {current}/{total}",
+  "@dialogUnknownIngredientProgress": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "dialogUsesSimpleExtraction": "Uses simpler extraction",
+
+  "dietaryAlcohol": "Alcohol",
+  "dietaryAnimalProduct": "Animal product",
+  "dietaryBeef": "Beef",
+  "dietaryMeat": "Meat",
+  "dietaryPork": "Pork",
+  "dietaryPoultry": "Poultry",
+  "dietarySeafood": "Seafood",
+  "dietarySpicy": "Spicy",
+
+  "draftContinueEditing": "Continue editing",
+  "draftDiscardAll": "Discard all",
+  "draftUnsavedFound": "Unsaved drafts found",
+
+  "groupContentTypeContent": "Content",
+  "groupContentTypeMenu": "Menu",
+  "groupContentTypeRecipe": "Recipe",
+  "groupContentTypeShoppingList": "Shopping list",
+  "groupCopiedToClipboard": "Copied to clipboard",
+  "groupCouldNotCopyList": "Could not copy list: {error}",
+  "@groupCouldNotCopyList": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "groupCouldNotFetchMenu": "Could not fetch menu from server",
+  "groupCouldNotImportList": "Could not import list: {error}",
+  "@groupCouldNotImportList": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "groupCreateNew": "Create new group",
+  "groupDeleteConfirmPrefix": "Are you sure you want to delete the group ",
+  "groupDeleteTheGroup": "Delete the group",
+  "groupDeleteWarning": "This cannot be undone. All members will be removed from the group.",
+  "groupDeleteWhenLeaving": "Do you want to delete the group when you leave?",
+  "groupDescriptionHint": "What is this group about?",
+  "groupDescriptionLabel": "Description (optional)",
+  "groupErrorOpeningMenu": "Error opening menu: {error}",
+  "@groupErrorOpeningMenu": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "groupImport": "Import",
+  "groupImportingMenuComingSoon": "Importing menu: {title} (coming soon)",
+  "@groupImportingMenuComingSoon": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "groupImportingRecipeComingSoon": "Importing recipe: {title} (coming soon)",
+  "@groupImportingRecipeComingSoon": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "groupImportingShoppingListComingSoon": "Importing shopping list: {title} (coming soon)",
+  "@groupImportingShoppingListComingSoon": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "groupImportNotImplemented": "Import {title} (not yet implemented)",
+  "@groupImportNotImplemented": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "groupImportShoppingList": "Import shopping list",
+  "groupImportShoppingListConfirm": "Do you want to import \"{name}\" to your shopping lists?",
+  "@groupImportShoppingListConfirm": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "groupInvitationNote": "These friends will receive an invitation to the group.",
+  "groupIsEmpty": "The group is empty",
+  "groupListCopiedToClipboard": "List copied to clipboard",
+  "groupListCopyName": "Copy of {name}",
+  "@groupListCopyName": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "groupListImported": "\"{name}\" has been imported",
+  "@groupListImported": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "groupNameHint": "E.g. \"Family\", \"Work\", \"Book club\"",
+  "groupNoFriendsToAdd": "You have no friends to add yet. Add friends first to create groups with them.",
+  "groupNoMenusShared": "No menus shared",
+  "groupNoMenusSharedSubtitle": "Share menus with the group to plan together",
+  "groupNoRecipesShared": "No recipes shared",
+  "groupNoRecipesSharedSubtitle": "Share recipes with the group to inspire each other",
+  "groupNoShoppingListsShared": "No shopping lists shared",
+  "groupNoShoppingListsSharedSubtitle": "Share shopping lists with the group to collaborate",
+  "groupOnlyMember": "You are the only member in \"{name}\".",
+  "@groupOnlyMember": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "groupPasteInAnyApp": "Paste in any app",
+  "groupRecipeViewComingSoon": "Recipe view: {title} (coming soon)",
+  "@groupRecipeViewComingSoon": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "groupRemoveMemberConfirmPrefix": "Are you sure you want to remove ",
+  "groupRemoveMemberFromGroup": " from the group ",
+  "groupRemoveMemberWarning": "The member will lose access to the group's content.",
+  "groupSelectedMembers": "Selected members ({count})",
+  "@groupSelectedMembers": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "groupSelectFriendsToInvite": "Select friends you want to invite to the group:",
+  "groupSelectIcon": "Select icon",
+  "groupSelectMembers": "Select members",
+  "groupSelectNewOwner": "Select new owner:",
+  "groupSelectShareTarget": "Select who to share with",
+  "groupSendToFriends": "Send to friends in Butlery",
+  "groupSharedBy": "Shared by {name}",
+  "@groupSharedBy": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "groupSharedContent": "Shared content",
+  "groupShareShoppingList": "Share shopping list",
+  "groupShareWithFriendsInButlery": "Share with friends in Butlery",
+  "groupShoppingListViewComingSoon": "Shopping list view: {title} (coming soon)",
+  "@groupShoppingListViewComingSoon": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "groupTabLists": "Lists",
+  "groupTabMenus": "Menus",
+  "groupTransferOwnership": "Transfer group ownership",
+  "groupTransferOwnershipMessage": "You are the owner of \"{name}\". You must select a new owner before you can leave the group.",
+  "@groupTransferOwnershipMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "groupView": "View",
+  "groupViewNotImplemented": "View {title} (not yet implemented)",
+  "@groupViewNotImplemented": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+
+  "profileCouldNotOpenConsentManagement": "Could not open consent management: {error}",
+  "@profileCouldNotOpenConsentManagement": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "profileDataBackup": "Data & Backup",
+  "profileExportData": "Export my data",
+  "profileExportDataSubtitle": "Download all your data in JSON format (GDPR)",
+  "profileManageConsent": "Manage consents",
+  "profileManageConsentSubtitle": "Choose how we may process your personal data (GDPR)",
+
+  "rateLimitAiBudget": "AI budget exhausted",
+  "rateLimitAiLimit": "AI limit reached",
+  "rateLimitDailyQuota": "Daily quota reached",
+  "rateLimitSlowDown": "Slow down a bit",
+
+  "sessionContinue": "Continue session",
+  "sessionContinueOrLogout": "Do you want to continue your session or log out now?",
+  "sessionExpiringMessage": "Your session will expire in:",
+  "sessionExpiringTitle": "Session expiring soon",
+
+  "shareContentTypeMenu": "menus",
+  "shareContentTypeRecipe": "recipes",
+  "shareContentTypeShoppingList": "shopping lists",
+  "shareDefaultMessageMenu": "Check out this weekly menu: {name}",
+  "@shareDefaultMessageMenu": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "shareDefaultMessageRecipe": "Check out this recipe: {name}",
+  "@shareDefaultMessageRecipe": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "shareDefaultMessageShoppingList": "Check out this shopping list: {name}",
+  "@shareDefaultMessageShoppingList": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "shareFriendsSelected": "{count} friend(s) selected",
+  "@shareFriendsSelected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "shareMenu": "Share menu",
+  "shareRecipe": "Share recipe",
+  "shareSelectAtLeastOne": "Select at least one friend to share {contentType}",
+  "@shareSelectAtLeastOne": {
+    "placeholders": {
+      "contentType": {"type": "String"}
+    }
+  },
+  "shareSuccessMessage": "{name} has been shared as {mode} with {count} recipients.",
+  "@shareSuccessMessage": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "mode": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+
+  "uploadFailed": "Image upload failed",
+  "uploadFailedCount": "{count} images could not be uploaded.\n\nWhat do you want to do?",
+  "@uploadFailedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "uploadInProgress": "Image upload in progress",
+  "uploadMixedStatus": "Some images could not be uploaded ({failedCount}) and others are still uploading ({pendingCount}).\n\nWhat do you want to do?",
+  "@uploadMixedStatus": {
+    "placeholders": {
+      "failedCount": {"type": "int"},
+      "pendingCount": {"type": "int"}
+    }
+  },
+  "uploadPendingCount": "{count} images are still uploading.\n\nWhat do you want to do?",
+  "@uploadPendingCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "uploadSaveWithoutFailed": "Save without failed images",
+  "uploadSaveWithoutPending": "Save without pending images",
+  "uploadWait": "Wait for upload",
+  "uploadClearFailed": "Clear failed",
+  "uploadRetryAllCount": "Retry all ({count})",
+  "@uploadRetryAllCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "uploadStopAllCount": "Stop all ({count})",
+  "@uploadStopAllCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "uploadTimeRemaining": "{time} remaining",
+  "@uploadTimeRemaining": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+
+  "consentManageTitle": "Manage consents",
+  "consentYourConsents": "Your consents",
+  "consentGdprDescription": "Under GDPR you have full control over how we process your personal data. You can change or revoke your consents at any time.",
+  "consentLastUpdated": "Last updated",
+  "consentRequiredTitle": "Required consents",
+  "consentRequiredDescription": "These consents are required for the app to function and cannot be disabled.",
+  "consentBasicServices": "Basic services",
+  "consentBasicServicesDescription": "Authentication, security and basic functionality.",
+  "consentDataProcessing": "Data processing",
+  "consentDataProcessingDescription": "Storage and processing of recipes, menus and shopping lists.",
+  "consentOptionalTitle": "Optional consents",
+  "consentOptionalDescription": "You can enable or disable these consents at any time.",
+  "consentRejectAll": "Reject all",
+  "consentAnalytics": "Analytics",
+  "consentAnalyticsDescription": "Help us improve the app by sharing usage statistics. We collect information about how you use the app to identify bugs and improve the user experience.",
+  "consentMarketing": "Marketing",
+  "consentMarketingDescription": "Receive newsletters and offers about new features, recipes and updates via email.",
+  "consentSocialFeatures": "Social features",
+  "consentSocialFeaturesDescription": "Share your recipes with friends, see others' creations and participate in the community.",
+  "consentPushNotifications": "Push notifications",
+  "consentPushNotificationsDescription": "Get notifications about comments on your recipes, when friends share with you and other activities.",
+  "consentGoodToKnow": "Good to know",
+  "consentInfoImmediate": "Your changes take effect immediately",
+  "consentInfoChangeAnytime": "You can change your consents at any time",
+  "consentInfoHistory": "We keep a history of your consents to comply with GDPR",
+  "consentInfoRevoke": "Revoking consents does not affect previous processing",
+  "consentSaved": "Consents have been saved",
+  "consentRevokeAllTitle": "Revoke all optional consents?",
+  "consentRevokeAllMessage": "This will disable all optional features such as analytics, marketing, social features and push notifications. You can enable them again at any time.",
+  "consentRevokeAll": "Revoke all",
+  "consentAllRevoked": "All optional consents have been revoked",
+
+  "dataExportTitle": "Export my data",
+  "dataExportDownloadTitle": "Download your data",
+  "dataExportGdprDescription": "Under GDPR Article 20 you have the right to obtain a copy of all your personal data stored in Butlery. Data is exported in JSON format that you can save or transfer to another service.",
+  "dataExportExporting": "Exporting your data...",
+  "dataExportMayTakeSeconds": "This may take a few seconds",
+  "dataExportFailed": "Export failed",
+  "dataExportSuccess": "Data exported",
+  "dataExportExportedAt": "Exported",
+  "dataExportFileSize": "File size",
+  "dataExportSaveFile": "Save file",
+  "dataExportClear": "Clear export",
+  "dataExportWhatsIncluded": "What's included in the export?",
+  "dataExportIncludesProfile": "Profile and settings",
+  "dataExportIncludesRecipes": "All your recipes",
+  "dataExportIncludesFriends": "Friends and social contacts",
+  "dataExportIncludesMessages": "Messages and conversations",
+  "dataExportIncludesLists": "Shopping lists and menus",
+  "dataExportIncludesComments": "Comments and ratings",
+  "dataExportIncludesActivity": "Activity history",
+  "dataExportOnlyYourData": "Note: The export only contains your own data. No data from other users is included.",
+
+  "dateToday": "Today",
+  "dateYesterday": "Yesterday",
+  "dateDaysAgo": "{days} days ago",
+  "@dateDaysAgo": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "dateWeeksAgo": "{weeks} weeks ago",
+  "@dateWeeksAgo": {
+    "placeholders": {
+      "weeks": {"type": "int"}
+    }
+  },
+  "dateMonthsAgo": "{months} months ago",
+  "@dateMonthsAgo": {
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+
+  "friendAccept": "Accept",
+  "friendDecline": "Decline",
+  "friendRequestTitle": "Friend request",
+  "friendWantsToBeFriend": "Wants to be your friend",
+
+  "imageAddCount": "Add ({count})",
+  "@imageAddCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "imageAddImage": "Add image",
+  "imageAddImages": "Add images",
+  "imageAdding": "Adding...",
+  "imageAddingImage": "Adding image...",
+  "imageFromGallery": "Choose from gallery",
+  "imagePermissionMessage": "Butlery needs access to your {permission} to add images to recipes. Go to settings to grant permission.",
+  "@imagePermissionMessage": {
+    "placeholders": {
+      "permission": {"type": "String"}
+    }
+  },
+  "imagePermissionRequired": "Permission required",
+  "imagePrimary": "Primary",
+  "imageSelectExistingFromGallery": "Select an existing image from your gallery",
+  "imageSelectFromGallery": "Select from gallery",
+  "imageSelectSource": "Select image source",
+  "imageSelectUpTo": "Select up to {count} images",
+  "@imageSelectUpTo": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "imageTakePhoto": "Take photo",
+  "imageTapToAddUpTo": "Tap to add up to {count} images",
+  "@imageTapToAddUpTo": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "imageTapToLoad": "Tap to load",
+  "imageUploadingImages": "Uploading images",
+  "imageUploadPreparing": "Preparing...",
+  "imageUseCamera": "Use camera",
+  "imageUseCameraForNewPhoto": "Use the camera to take a new photo",
+
+  "importAddIngredient": "Add ingredient",
+  "importAddStep": "Add step",
+  "importCancelConfirm": "Cancel import",
+  "importCancelMessage": "Are you sure you want to cancel? All selections will be lost.",
+  "importCancelTitle": "Cancel import?",
+  "importDescriptionHint": "Short description (optional)",
+  "importManualTitle": "Manual import",
+  "importMealBreakfast": "Breakfast",
+  "importMealDessert": "Dessert",
+  "importMealDinner": "Dinner",
+  "importMealLunch": "Lunch",
+  "importMealSnack": "Snack",
+  "importMealType": "Meal type",
+  "importRecipeNameHint": "Enter recipe name",
+  "importRecipeNameRequired": "Recipe name *",
+  "importSaveRecipe": "Save recipe",
+  "importSelectIngredients": "Select ingredients",
+  "importSelectInstructions": "Select instructions",
+  "importStep1SelectIngredients": "Step 1: Select ingredients",
+  "importStep2SelectInstructions": "Step 2: Select instructions",
+  "importStep3ReviewEdit": "Step 3: Review and edit",
+
+  "menuCardMoreRecipes": "+ {count} more recipes",
+  "@menuCardMoreRecipes": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "menuCardNoRecipes": "No recipes in menu",
+  "menuCardRecipeCount": "{count} recipes",
+  "@menuCardRecipeCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "menuCardRecipesInMenu": "Recipes in menu:",
+  "menuCardSharedMenu": "Shared menu",
+  "menuCardSharedWithCount": "Shared with {count} people",
+  "@menuCardSharedWithCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "searchHint": "search...",
+
+  "shareFriendsSelectedCount": "{count} friend(s) selected",
+  "@shareFriendsSelectedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "shareGroupMembersCount": "{count} members",
+  "@shareGroupMembersCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "shareTabFriends": "Friends",
+  "shareTabGroups": "Groups",
+
+  "shoppingCardComplete": "Complete",
+  "shoppingCardCompleted": "{count} completed",
+  "@shoppingCardCompleted": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "shoppingCardItemsOnList": "Items on list:",
+  "shoppingCardMoreItems": "+ {count} more items",
+  "@shoppingCardMoreItems": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "shoppingCardNoItems": "No items on list",
+  "shoppingCardSharedList": "Shared list",
+  "shoppingCardSharedWithCount": "Shared with {count} people",
+  "@shoppingCardSharedWithCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "adminYouAreAdmin": "You are an administrator",
+
+  "chatConversationInfo": "Conversation info",
+  "chatCouldNotShareRecipe": "Could not share recipe",
+  "chatCreatedDate": "Created: {date}",
+  "@chatCreatedDate": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "chatLeaveConversation": "Leave conversation",
+  "chatLeaveConversationConfirm": "Are you sure you want to leave this conversation?",
+  "chatMemberCount": "{count} members",
+  "@chatMemberCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "chatMute": "Mute",
+  "chatParticipantCount": "{count} participants",
+  "@chatParticipantCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "chatTitle": "Chat",
+
+  "commonSearch": "Search",
+  "commonUnknown": "Unknown",
+
+  "dataExportClearConfirmMessage": "Are you sure you want to clear the exported data? You can export again at any time.",
+  "dataExportClearConfirmTitle": "Clear export?",
+  "dataExportCleared": "Export cleared",
+  "dataExportCouldNotSaveFile": "Could not save file: {error}",
+  "@dataExportCouldNotSaveFile": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "dataExportCouldNotShare": "Could not share: {error}",
+  "@dataExportCouldNotShare": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "dataExportExportedSuccessfully": "Data exported successfully",
+  "dataExportFileSaved": "File saved: {fileName}",
+  "@dataExportFileSaved": {
+    "placeholders": {
+      "fileName": {"type": "String"}
+    }
+  },
+  "dataExportShareSubject": "Butlery Data Export",
+  "dataExportShareText": "My exported data from the Butlery app",
+
+  "dialogAmountHint": "Enter amount...",
+  "dialogAmountInvalid": "Invalid amount",
+  "dialogAmountLabel": "Amount",
+  "dialogAmountMax": "Maximum {max} allowed",
+  "@dialogAmountMax": {
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "dialogAmountMin": "Minimum {min} required",
+  "@dialogAmountMin": {
+    "placeholders": {
+      "min": {"type": "int"}
+    }
+  },
+  "dialogAmountRequired": "Amount is required",
+  "dialogDescriptionHint": "Optional description...",
+  "dialogDescriptionLabel": "Description",
+  "dialogFieldRequired": "{field} is required",
+  "@dialogFieldRequired": {
+    "placeholders": {
+      "field": {"type": "String"}
+    }
+  },
+  "dialogInvalidUrl": "Invalid URL",
+  "dialogPhoneInvalid": "Invalid phone number",
+  "dialogPhoneLabel": "Phone number",
+  "dialogSearchHint": "Type to search...",
+
+  "importLikely": "Likely",
+  "importNoLinesToShow": "No lines to show",
+  "importSelectAllHighlighted": "Select all highlighted ({count})",
+  "@importSelectAllHighlighted": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importSelectedCount": "{count} selected",
+  "@importSelectedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importStep": "Step",
+  "importStepAnalyzing": "Analyzing",
+  "importStepCreating": "Creating",
+  "importStepFetching": "Fetching",
+
+  "invitationClearSearch": "Clear search",
+  "invitationCouldNotLoadTargets": "Could not load targets",
+
+  "menuCreateBeforeSave": "Create a menu first before you can save it",
+  "menuCreateBeforeShare": "Create a menu first before you can share it",
+  "menuCreateBeforeShoppingList": "Create a menu first before you can create a shopping list",
+  "menuDefaultName": "Weekly menu ({count} recipes)",
+  "@menuDefaultName": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "menuExitConfirm": "Exit",
+  "menuExitMessage": "Do you really want to exit the app?",
+  "menuExitTitle": "Exit Butlery?",
+  "menuNameBeforeShare": "Name your menu before sharing it:",
+  "menuNameHint": "E.g. \"My weekly menu w.45\"",
+  "menuNameYourMenu": "Name your menu",
+  "menuShareDefaultMessage": "Check out my weekly menu!",
+
+  "messagingEdited": "edited",
+  "messagingImageLoadError": "Image could not be loaded",
+  "messagingImageLoadFailed": "Could not load image",
+  "messagingMenuShared": "Menu shared",
+  "messagingRecipeShared": "Recipe shared",
+  "messagingShoppingListShared": "Shopping list shared",
+  "messagingUnknownMenu": "Unknown menu",
+  "messagingUnknownRecipe": "Unknown recipe",
+  "messagingUnknownShoppingList": "Unknown shopping list",
+  "messagingVoiceMessage": "Voice message",
+  "messagingAddFriendsToCreateGroups": "Add friends to create group conversations",
+  "messagingAllFriendsAlreadyInGroup": "All your friends are already in the group",
+  "messagingCouldNotAddMembers": "Could not add members",
+  "messagingCouldNotLoadFriends": "Could not load friends: {error}",
+  "@messagingCouldNotLoadFriends": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "messagingCouldNotLoadGroupInfo": "Could not load group info: {error}",
+  "@messagingCouldNotLoadGroupInfo": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "messagingCouldNotRemoveMember": "Could not remove member",
+  "messagingCouldNotUpdateGroupName": "Could not update group name",
+  "messagingCreateGroup": "Create group conversation",
+  "messagingEditGroupName": "Edit group name",
+  "messagingEnterNewGroupName": "Enter new group name",
+  "messagingFriendsCount": "Friends ({count})",
+  "@messagingFriendsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "messagingFromGroup": "from the group",
+  "messagingGroupCreated": "Group conversation created!",
+  "messagingGroupName": "Group name",
+  "messagingGroupNameHint": "E.g. My family, Work, Best friends...",
+  "messagingGroupNameUpdated": "Group name updated",
+  "messagingGroupNoLongerExists": "This group no longer exists",
+  "messagingGroupNotFound": "Group not found",
+  "messagingLeaveGroupConfirm": "Are you sure you want to leave this group? You will no longer be able to see messages in the group.",
+  "messagingLoadingFriends": "Loading friends...",
+  "messagingLoadingGroupInfo": "Loading group info...",
+  "messagingMembersAdded": "{count} member(s) added",
+  "@messagingMembersAdded": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "messagingMembersCount": "Members ({count})",
+  "@messagingMembersCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "messagingMemberRemoved": "{name} removed from the group",
+  "@messagingMemberRemoved": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "messagingNoFriendsAvailable": "No friends available",
+  "messagingNoFriendsFound": "No friends found",
+  "messagingSearchFriends": "Search friends...",
+  "messagingSelectAtLeastTwoMembers": "Select at least 2 members below",
+  "messagingSelectedMembers": "Selected members ({count})",
+  "@messagingSelectedMembers": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "messagingTryAnotherKeyword": "Try another keyword",
+
+  "mfaCodeSentTo": "A verification code has been sent to {phone}.",
+  "@mfaCodeSentTo": {
+    "placeholders": {
+      "phone": {"type": "String"}
+    }
+  },
+  "mfaEnterCode": "Enter the verification code",
+  "mfaInvalidCode": "Invalid code. Try again.",
+  "mfaNoPhoneFactor": "No phone verification configured.",
+  "mfaQuotaExceeded": "Too many attempts. Try again later.",
+  "mfaResend": "Resend",
+  "mfaSendingCode": "Sending verification code...",
+  "mfaSendingTo": "To: {phone}",
+  "@mfaSendingTo": {
+    "placeholders": {
+      "phone": {"type": "String"}
+    }
+  },
+  "mfaSessionExpired": "Session has expired. Try logging in again.",
+  "mfaSixDigitCode": "6-digit code",
+  "mfaTitle": "Two-factor authentication",
+  "mfaVerificationFailed": "Verification failed",
+  "mfaVerify": "Verify",
+  "mfaYourPhone": "your phone number",
+  "mfaAccountProtected": "Your account is protected with two-factor authentication.",
+  "mfaActivated": "MFA activated!",
+  "mfaAddPhoneNumber": "Add phone number",
+  "mfaCouldNotRemove": "Could not remove MFA",
+  "mfaDeactivated": "MFA deactivated",
+  "mfaDisabled": "MFA disabled",
+  "mfaEnabled": "MFA enabled",
+  "mfaEnableForSecurity": "Enable MFA for extra security.",
+  "mfaEnterPhoneNumber": "Enter a phone number",
+  "mfaEnterVerificationCode": "Enter verification code",
+  "mfaInvalidPhoneNumber": "Invalid phone number. Enter with country code (+46).",
+  "mfaPhone": "Phone",
+  "mfaPhoneNumber": "Phone number",
+  "mfaRegistered": "Registered: {time}",
+  "@mfaRegistered": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "mfaRegisteredMethods": "Registered methods",
+  "mfaRemoveConfirm": "Are you sure you want to disable two-factor authentication? This makes your account less secure.",
+  "mfaRemoveTitle": "Remove MFA?",
+  "mfaSendCode": "Send code",
+  "mfaSmsDescription": "We will send a verification code via SMS when you log in.",
+
+  "realtimeOffline": "Offline",
+
+  "recipeMealType": "Meal type",
+  "recipeTitle": "Title",
+  "recipeUpdating": "Updating recipe...",
+
+  "chatAddCount": "Add ({count})",
+  "@chatAddCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "chatAddMembers": "Add members",
+  "chatSearchFriends": "Search friends...",
+
+  "collaborativeContent": "Content",
+  "collaborativeEditingTogether": "You are editing together with others",
+  "collaborativeOffline": "Offline",
+  "collaborativeOnline": "Online",
+  "collaborativeShared": "Shared",
+  "collaborativeSharedContent": "Shared content",
+  "collaborativeSharedWithCount": "Shared with {count} people",
+  "@collaborativeSharedWithCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "collaborativeSyncAutomatic": "Changes sync automatically with other participants",
+
+  "conversationAddFriendsFirst": "Add friends first to start conversations.",
+  "conversationCreateError": "Could not create conversation: {error}",
+  "@conversationCreateError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "conversationCreateGroup": "Create group conversation",
+  "conversationGroupChatWith": "Group chat with {names}",
+  "@conversationGroupChatWith": {
+    "placeholders": {
+      "names": {"type": "String"}
+    }
+  },
+  "conversationGroupCreated": "Group created",
+  "conversationNew": "New conversation",
+  "conversationNoFriendsMatch": "No friends match your search",
+  "conversationNoFriendsYet": "No friends yet",
+  "conversationSayHi": "Say hi!",
+  "conversationSelectFriendForDM": "Or select a friend for direct message:",
+  "conversationYouPrefix": "You:",
+
+  "errorDeletingWithDetails": "Error deleting: {error}",
+  "@errorDeletingWithDetails": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "errorLoadingFailed": "Loading failed",
+  "errorLoadingWithDetails": "Error loading: {error}",
+  "@errorLoadingWithDetails": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "errorUnknown": "Unknown error",
+
+  "imageSelectImage": "Select image",
+  "imageTitle": "Image",
+
+  "importAllCount": "Import all ({count})",
+  "@importAllCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importColumnCategory": "Category (category/kategori)",
+  "importColumnCookingTime": "Cooking time (cookingtime/tid)",
+  "importColumnIngredients": "Ingredients (ingredients/ingredienser)",
+  "importColumnInstructions": "Instructions (instructions/instruktioner)",
+  "importColumnServings": "Servings (servings/portioner)",
+  "importColumnTags": "Tags (tags/taggar)",
+  "importColumnTitle": "Title (title/namn)",
+  "importComplete": "Import complete: {succeeded} succeeded, {failed} failed",
+  "@importComplete": {
+    "placeholders": {
+      "succeeded": {"type": "int"},
+      "failed": {"type": "int"}
+    }
+  },
+  "importEditTextBeforeImport": "Edit text before import",
+  "importEditTextHint": "You can edit the extracted text here...",
+  "importExtractedText": "Extracted text:",
+  "importFailed": "Import failed: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "importFailedCount": "{count} failed",
+  "@importFailedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importFetching": "Fetching...",
+  "importFetchText": "Fetch text",
+  "importFileColumnsOptional": "Optional columns:",
+  "importFileColumnsRequired": "Your file should contain columns for:",
+  "importFilterAll": "All",
+  "importFilterAllTimes": "All times",
+  "importFromArchive": "Import from Butlery's archive",
+  "importFromFile": "Import from file",
+  "importFromFileTitle": "Import recipes from CSV or Excel",
+  "importFromSocialMedia": "From social media",
+  "importImporting": "Importing...",
+  "importImportingRecipes": "Importing {count} recipes...",
+  "@importImportingRecipes": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importImportingRecipesProgress": "Importing recipes...",
+  "importNoFileOrNoRecipes": "No file selected or the file contains no recipes",
+  "importNoRecipesMatchedFilters": "No recipes matched the filters",
+  "importParsingText": "Parsing text...",
+  "importPasteRecipeHint": "Paste recipe text here...",
+  "importPasteRecipeUrl": "Paste recipe URL",
+  "importPreviewAndEdit": "Preview and edit",
+  "importProceedToPaste": "Proceed to paste",
+  "importRecipesImported": "Recipes imported!",
+  "importSearchArchive": "Search archive...",
+  "importSelectFileAndImport": "Select file and import",
+  "importSelectingFile": "Selecting file...",
+  "importShowError": "Show error",
+  "importSucceededCount": "{count} succeeded",
+  "@importSucceededCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importTagsCount": "{count} tags",
+  "@importTagsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importTipsContent": "Paste the full recipe including ingredients. Make sure ingredients come before instructions. Text can come from Instagram, TikTok, Facebook etc.",
+  "importTipsTitle": "Tips for best results",
+  "importTryAdjustFilters": "Try adjusting search or filters",
+  "importViaUrl": "Import via URL",
+
+  "indicatorOfflineMode": "Offline mode - Changes saved locally",
+
+  "invitationCheckConnectionAndRetry": "Check your internet connection and try again.",
+  "invitationCurrentItem": "Current: {item}",
+  "@invitationCurrentItem": {
+    "placeholders": {
+      "item": {"type": "String"}
+    }
+  },
+  "invitationDone": "Done",
+  "invitationNoFriendsOrGroupsYet": "You haven't added any friends or groups yet.",
+  "invitationNoSelectedTargets": "No selected targets",
+  "invitationProcessing": "Processing",
+  "invitationRequestAccess": "Request access",
+  "invitationSearchQuery": "Search: \"{query}\"",
+  "@invitationSearchQuery": {
+    "placeholders": {
+      "query": {"type": "String"}
+    }
+  },
+  "invitationSelectTargetsToContinue": "Select targets from the list above to continue.",
+  "invitationSendingInvitations": "Sending invitations...",
+  "invitationsSentMessage": "Invitations have been sent to {count} targets.",
+  "@invitationsSentMessage": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "invitationsSentTitle": "Invitations sent",
+  "invitationTargetsSelectedForInvitation": "You have selected {count} targets for invitation.",
+  "@invitationTargetsSelectedForInvitation": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "invitationTryDifferentSearch": "Try searching with different words or check the spelling.",
+
+  "loadingNoContent": "No content",
+
+  "menuCommentLabel": "Comment (optional)",
+  "menuDeleteConfirmation": "Are you sure you want to delete this menu?",
+  "menuDeletedSuccess": "Menu \"{name}\" deleted",
+  "@menuDeletedSuccess": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "menuDeleteFailed": "Could not delete menu",
+  "menuDeleteTitle": "Delete menu",
+  "menuLoadedSuccess": "Menu \"{name}\" loaded!",
+  "@menuLoadedSuccess": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "menuLoadFailed": "Could not load menu",
+  "menuNameLabel": "Menu name",
+  "menuNameRequired": "Menu name is required",
+  "menuNoSavedMenusDescription": "You have no saved menus yet. Generate and save a menu first!",
+  "menuRecipesInCategories": "{recipeCount} recipes in {categoryCount} categories",
+  "@menuRecipesInCategories": {
+    "placeholders": {
+      "recipeCount": {"type": "int"},
+      "categoryCount": {"type": "int"}
+    }
+  },
+  "menuSavedEarlier": "Saved earlier",
+  "menuSaveTitle": "Save menu",
+  "menuShareWithFriendsDescription": "Share this menu with selected friends",
+  "menuToSave": "Menu to save",
+  "menuUnnamed": "Unnamed menu",
+
+  "privacyCouldNotLoad": "Could not load the privacy policy. Try again later.",
+  "privacyTitle": "Privacy policy",
+
+  "recipeAddTags": "Add tags",
+  "recipeChangesSaved": "Changes saved!",
+  "recipeContinueEditing": "Continue editing",
+  "recipeCopySaved": "Your copy of the recipe was saved!",
+  "recipeCouldNotSaveChanges": "Could not save changes",
+  "recipeCouldNotSaveCopy": "Could not save your copy",
+  "recipeFromArchive": "From archive",
+  "recipeFromImage": "From image",
+  "recipeImportedFromShare": "Imported from sharing",
+  "recipeImportLink": "Import link",
+  "recipeIngredient": "Ingredient",
+  "recipeInstruction": "Instruction",
+  "recipeLeaveWithoutSaving": "Leave without saving",
+  "recipeManageAllTags": "Manage all tags",
+  "recipeRating": "Rating (0\u20135)",
+  "recipeSourceUrl": "Source (URL)",
+  "recipeSourceUrlHelper": "Link to the original recipe",
+  "recipeSourceUrlHint": "Optional: link to the original recipe",
+  "recipeTagsUpdated": "Tags updated",
+  "recipeTimeMinutes": "Time (min)",
+  "recipeUnsavedChangesTitle": "Unsaved changes",
+  "recipeWriteManually": "Write manually",
+
+  "searchRecipesHint": "search recipes...",
+
+  "shoppingAddItems": "Add",
+  "shoppingAddItemsFromMenu": "Add {count} items from menu to \"{listName}\"",
+  "@shoppingAddItemsFromMenu": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "listName": {"type": "String"}
+    }
+  },
+  "shoppingCreateFirstListDescription": "Create your first shopping list to get started",
+  "shoppingItemsAdded": "{count} items added to \"{listName}\"",
+  "@shoppingItemsAdded": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "listName": {"type": "String"}
+    }
+  },
+  "shoppingItemsAddFailed": "Could not add items: {error}",
+  "@shoppingItemsAddFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "shoppingListCreateFailed": "Could not create list: {error}",
+  "@shoppingListCreateFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "socialTotalMembers": "Total members",
+
+  "userNoUsers": "No users",
+  "userNoUsersToShow": "No users to show",
+
+  "chatAttachments": "Attachments",
+  "chatAttachmentTypes": "Attachments: Recipe, Menu, Shopping list, Photo",
+  "chatCouldNotSendMessage": "Could not send the message. Try again.",
+  "chatLoadingMessages": "Loading messages...",
+  "chatNoMessages": "No messages yet",
+  "chatSend": "Send",
+  "chatSendImage": "Send image",
+  "chatSendToStartConversation": "Send a message to start the conversation",
+  "chatWriteMessage": "Write a message...",
+
+  "commonOr": "or",
+
+  "errorCouldNotLoadPage": "Could not load the page",
+  "errorLoadingRetryOrGoBack": "An error occurred while loading. Try again or go back.",
+  "errorSavingWithDetails": "Could not save: {error}",
+  "@errorSavingWithDetails": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "errorTitle": "Error",
+  "errorOccurredWithDetails": "An error occurred: {error}",
+  "@errorOccurredWithDetails": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "filterAllergenFree": "Allergen free",
+  "filterClearAll": "Clear all filters",
+  "filterCookingTime": "Cooking time",
+  "filterCreatePersonalTags": "Create personal tags",
+  "filterDietary": "Dietary",
+  "filterExcludeTags": "Exclude tags",
+  "filterHide": "Hide filters",
+  "filterManageTags": "Manage tags",
+  "filterMealType": "Meal type",
+  "filterPersonalTags": "Personal tags",
+  "filterRating": "Rating",
+  "filterShow": "Show filters",
+
+  "importAnalyzingContent": "Analyzing content...",
+  "importChooseFromGallery": "Choose from gallery",
+  "importChooseFromGallerySubtitle": "Choose an existing image from your phone",
+  "importChooseImage": "Choose image",
+  "importChooseImageSource": "Choose image source",
+  "importChooseNewImage": "Choose new image",
+  "importConfidenceTooltip": "{label}: {percentage}% confidence",
+  "@importConfidenceTooltip": {
+    "placeholders": {
+      "label": {"type": "String"},
+      "percentage": {"type": "int"}
+    }
+  },
+  "importContinueWithImport": "Continue with import",
+  "importContinueWithoutOcr": "Continue without OCR",
+  "importCopyManually": "Copy manually",
+  "importCouldNotExtractText": "Could not extract text",
+  "importExtraction": "Extraction",
+  "importFetchAutomatically": "Fetch recipe automatically",
+  "importFetchFromWebsite": "Fetch recipe from website",
+  "importFetchingFromPlatform": "Fetching recipe from {platform}...",
+  "@importFetchingFromPlatform": {
+    "placeholders": {
+      "platform": {"type": "String"}
+    }
+  },
+  "importFromPhoto": "Import from photo",
+  "importGoodQuality": "Good quality",
+  "importHighQuality": "High quality",
+  "importImageQualityLow": "Image quality is low ({percentage}%)",
+  "@importImageQualityLow": {
+    "placeholders": {
+      "percentage": {"type": "int"}
+    }
+  },
+  "importImport": "Import",
+  "importImportedFrom": "Imported from {source}",
+  "@importImportedFrom": {
+    "placeholders": {
+      "source": {"type": "String"}
+    }
+  },
+  "importImprovementSuggestions": "Improvement suggestions:",
+  "importInterpretedText": "Interpreted text:",
+  "importLowQuality": "Low quality",
+  "importManualCopy": "Manual copy",
+  "importManualCopyInstructions": "1. Go back to {platform}\n2. Copy the recipe text from the post\n3. Come back here and choose \"Paste text\"",
+  "@importManualCopyInstructions": {
+    "placeholders": {
+      "platform": {"type": "String"}
+    }
+  },
+  "importManually": "Import manually",
+  "importNoImageSelected": "No image selected",
+  "importNoRecipeInfoFound": "No recipe information found in the text.",
+  "importOcrMayFail": "OCR may fail or give poor results.",
+  "importOtherApp": "another app",
+  "importPasteFromClipboard": "Paste from clipboard",
+  "importPasteLinkOrText": "Paste link or text here...",
+  "importPasteText": "Paste text",
+  "importPhotoDescription": "Take a picture of a recipe or choose from gallery to import text automatically",
+  "importPhotoImport": "Photo import",
+  "importProceedToEdit": "Proceed to edit",
+  "importProcessingImage": "Processing image...",
+  "importRecipeLinkDetected": "Recipe link detected",
+  "importRecipeTextCanImport": "Recipe text detected! We can import this.",
+  "importRecipeTextDetected": "Recipe text detected!",
+  "importRecipeTitle": "Import recipe",
+  "importRemoveImage": "Remove image",
+  "importSharedText": "shared text",
+  "importTakePhoto": "Take a photo",
+  "importTakePhotoSubtitle": "Use the camera to photograph the recipe",
+  "importTapButtonToSelect": "Tap the button above to select",
+  "importTextContent": "Text content",
+  "importTryAnyway": "Try anyway",
+  "importUnknownSource": "Unknown source",
+  "importUrlFromPlatform": "URL from {platform}",
+  "@importUrlFromPlatform": {
+    "placeholders": {
+      "platform": {"type": "String"}
+    }
+  },
+  "importVideoNoText": "Video has no text",
+  "importVideoNoTextDescription": "This video has no subtitles we can read.\n\nYou can take a screenshot of the recipe in the video and import it instead.",
+  "importWebRecipeLinkDetected": "Recipe link from website detected!",
+  "importWebsite": "Website",
+
+  "groupAddMembers": "Add members",
+  "groupAllFriendsAlreadyMembers": "All your friends are already members of this group, or you have already sent invitations to them.",
+  "groupCouldNotLoadMembers": "Could not load group members",
+  "groupCouldNotTransferOwnership": "Could not transfer ownership. Try again.",
+  "groupDeleted": "Group \"{name}\" has been deleted",
+  "@groupDeleted": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "groupInvitationSent": "Sent",
+  "groupInvitationsSent": "{count} invitations sent",
+  "@groupInvitationsSent": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "groupInvitationsSentSuccess": "Invitations have been sent!",
+  "groupLoadingInfo": "Loading group information...",
+  "groupNoFriendsAvailable": "No friends available",
+  "groupNoMembersToShare": "The group has no members to share with",
+  "groupNotFound": "Group not found",
+  "groupNotFoundDescription": "This group may have been deleted or you do not have permission.",
+  "groupOwnershipTransferredAndLeft": "Ownership transferred and you have left the group",
+  "groupSelectFriendsToInvite": "Select friends to invite to the group",
+  "groupSelectedOfTotal": "{selected} of {total} selected",
+  "@groupSelectedOfTotal": {
+    "placeholders": {
+      "selected": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "groupSendInvitations": "Send {count} invitations",
+  "@groupSendInvitations": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "groupSharedFromGroup": "Shared from group {name}",
+  "@groupSharedFromGroup": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "groupUpdated": "Group updated!",
+  "groupYouLeftGroup": "You have left the group",
+
+  "loadingGeneric": "Loading...",
+  "loadingRecipes": "Loading recipes...",
+
+  "menuCategoryCount": "{count} categories",
+  "@menuCategoryCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "menuConnectingCollaborative": "Connecting to \"{title}\" for collaborative editing...",
+  "@menuConnectingCollaborative": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "menuCouldNotHide": "Could not hide menu",
+  "menuHiddenFromList": "\"{title}\" hidden from your list",
+  "@menuHiddenFromList": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "menuHideConfirm": "Would you like to hide \"{title}\" from your list?\n\nYou can still access the menu by asking {sharedBy} to share it again.",
+  "@menuHideConfirm": {
+    "placeholders": {
+      "title": {"type": "String"},
+      "sharedBy": {"type": "String"}
+    }
+  },
+  "menuHideMenu": "Hide menu",
+  "menuImportAll": "Import entire menu",
+  "menuImportDescription": "When you import the menu, all {count} recipes will be added to your collection.",
+  "@menuImportDescription": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "menuImported": "Menu imported",
+  "menuImportedSuccess": "Menu \"{title}\" imported!",
+  "@menuImportedSuccess": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "menuImportFailed": "Import failed",
+  "menuNoRecipesInMenu": "No recipes in the menu",
+  "menuRecipeCount": "{count} recipes",
+  "@menuRecipeCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "menuSharedMenu": "SHARED MENU",
+  "menuShareMenu": "Share menu",
+  "menuSharingComingSoon": "Sharing of \"{title}\" coming soon!",
+  "@menuSharingComingSoon": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "menuSavedSuccess": "Menu \"{name}\" saved!",
+  "@menuSavedSuccess": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "menuSaveFailed": "Could not save the menu",
+
+  "navigationGoHome": "Go home",
+  "navigationSubtitle": "Your digital cookbook",
+
+  "permissionCopy": "Copy",
+  "permissionCreatingCopy": "Creating copy...",
+  "permissionNoAccess": "No access",
+  "permissionSaveAsNew": "Save as new",
+  "permissionSaveChanges": "Save changes",
+  "permissionSaveMyCopy": "Save my copy",
+  "permissionSaving": "Saving...",
+
+  "privacyContactUs": "Contact us",
+  "privacyCouldNotOpenEmail": "Could not open email client",
+  "privacyGdprCompliant": "This privacy policy complies with GDPR requirements",
+  "privacyLoading": "Loading privacy policy...",
+  "privacyNotAvailable": "Privacy policy is not available",
+  "privacyQuestionsTitle": "Questions about privacy?",
+  "privacyReload": "Reload",
+
+  "profileAddAvatar": "Add avatar",
+  "profileAvatarRemoved": "Avatar removed",
+  "profileAvatarUploaded": "Avatar uploaded!",
+  "profileChangeAvatar": "Change avatar",
+  "profileCouldNotSave": "Could not save profile",
+  "profileCouldNotUploadAvatar": "Could not upload avatar",
+  "profileDisplayName": "Display name",
+  "profileDisplayNameHint": "Your name as others see it",
+  "profileEditProfile": "Edit profile",
+  "profileFormReset": "Form reset",
+  "profileLanguage": "Language",
+  "profileLanguageChangedTo": "Language changed to {language}",
+  "@profileLanguageChangedTo": {
+    "placeholders": {
+      "language": {"type": "String"}
+    }
+  },
+  "profileLoading": "Loading profile...",
+  "profileNewUser": "New user",
+  "profilePrivacySettings": "Privacy settings",
+  "profileResetChanges": "Reset changes",
+  "profileSaved": "Profile saved!",
+  "profileSaveProfile": "Save profile",
+  "profileSearchableByEmail": "Searchable by email",
+  "profileSearchableByEmailDescription": "Others can find you through your email address",
+  "profileTheme": "Theme",
+  "profileThemeChangedTo": "Theme changed to {theme}",
+  "@profileThemeChangedTo": {
+    "placeholders": {
+      "theme": {"type": "String"}
+    }
+  },
+  "profileThemeDark": "Dark mode",
+  "profileThemeLight": "Light mode",
+  "profileThemeSystem": "System setting",
+  "profileUnsavedChanges": "Unsaved changes",
+  "profileUnsavedChangesMessage": "You have unsaved changes. Would you like to save before leaving?",
+  "profileUploadingAvatar": "Uploading avatar...",
+  "profileVisibleInSearch": "Visible in searches",
+  "profileVisibleInSearchDescription": "Other users can find you when they search",
+  "profileYouHaveUnsavedChanges": "You have unsaved changes",
+
+  "recipeCouldNotSave": "Could not save recipe",
+  "recipeCouldNotDelete": "Could not delete recipe",
+  "recipeCouldNotMarkAsCooked": "Could not mark as cooked",
+  "recipeCouldNotOpenEditor": "Could not open editor",
+  "recipeCouldNotShare": "Could not share recipe",
+  "recipeDeleted": "Recipe deleted",
+  "recipeMarkedAsCooked": "Recipe marked as cooked today!",
+  "recipeShared": "Recipe shared",
+  "recipeImportedFrom": "Imported from: {sourceUrl}",
+  "@recipeImportedFrom": {
+    "placeholders": {
+      "sourceUrl": {"type": "String"}
+    }
+  },
+  "recipeSaved": "Recipe saved!",
+  "recipeSavedTaggingFailed": "Recipe saved, but tagging failed. Allergen information may be incomplete.",
+  "recipeSavedWithTags": "Recipe saved! {tagCount} tags ({coverage}%)",
+  "@recipeSavedWithTags": {
+    "placeholders": {
+      "tagCount": {"type": "int"},
+      "coverage": {"type": "int"}
+    }
+  },
+  "recipeSaveStartedDuringDialog": "A save started during the dialog. Please wait while the recipe is saved...",
+  "recipeWaitWhileSaving": "Please wait while the recipe is saved...",
+  "recipeWriteNew": "Write new recipe",
+  "recipeAddItem": "Add {label}",
+  "@recipeAddItem": {
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "recipeSave": "Save recipe",
+  "recipeSaving": "Saving recipe...",
+  "recipeTag": "Tag",
+
+  "searchFiltersActive": "{count} filters active",
+  "@searchFiltersActive": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "searchQuery": "Search",
+  "searchResults": "{count} results",
+  "@searchResults": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "shareFailed": "Sharing failed: {error}",
+  "@shareFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "socialCategories": "Categories",
+  "socialCategoryStatistics": "Category statistics",
+  "socialCreateCategory": "Create category",
+  "socialMembersCount": "{count} members",
+  "@socialMembersCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "socialNoCategories": "No categories",
+  "socialBeFirstToComment": "Be the first to comment on this recipe!",
+  "socialCommentPosted": "Comment posted",
+  "socialComments": "Comments",
+  "socialCommentsCount": "{count} comments",
+  "@socialCommentsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "socialCouldNotCreateProfile": "Could not create user profile",
+  "socialCouldNotFetchUserData": "Could not fetch user data",
+  "socialCouldNotPostComment": "Could not post comment",
+  "socialCouldNotStartConversation": "Could not start conversation: {error}",
+  "@socialCouldNotStartConversation": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "socialCouldNotUpdateLike": "Could not update like",
+  "socialFriendFromList": "friend from your friend list",
+  "socialFriendRemoved": "{name} removed from friend list",
+  "@socialFriendRemoved": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "socialFriends": "Friends",
+  "socialLoadingComments": "Loading comments...",
+  "socialMustBeLoggedInToComment": "You must be logged in to comment",
+  "socialMustBeLoggedInToLike": "You must be logged in to like",
+  "socialNoCommentsYet": "No comments yet",
+  "socialRecipes": "Recipes",
+  "socialSendMessage": "Send message",
+  "socialShareRecipe": "Share recipe",
+  "socialStartingConversation": "Starting conversation...",
+  "socialStatistics": "Statistics",
+  "socialUserProfileCreated": "User profile created",
+
+  "shoppingAddIngredientsFrom": "Add ingredients from \"{title}\"",
+  "@shoppingAddIngredientsFrom": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "shoppingAddToShoppingList": "Add to shopping list",
+  "shoppingCouldNotAddIngredients": "Could not add ingredients to the shopping list",
+  "shoppingCouldNotCreateOrSelectList": "Could not create or select shopping list",
+  "shoppingIngredientsAddedToList": "{count} ingredients have been added to \"{listName}\".\n\nWould you like to go to the shopping list now?",
+  "@shoppingIngredientsAddedToList": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "listName": {"type": "String"}
+    }
+  },
+  "shoppingIngredientsFromRecipe": "{count} ingredients from \"{title}\":",
+  "@shoppingIngredientsFromRecipe": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "title": {"type": "String"}
+    }
+  },
+  "shoppingNoEditPermission": "You do not have permission to edit this shopping list",
+  "shoppingNoEditPermissionShared": "You do not have permission to edit this shared shopping list",
+  "shoppingNoIngredientsToAdd": "The recipe has no ingredients to add",
+  "shoppingSelectList": "Select shopping list",
+  "shoppingViewList": "View list",
+  "shoppingYourList": "your shopping list",
+  "shoppingSharedLists": "Shared shopping lists",
+
+  "sharedByUser": "Shared by {name}",
+  "@sharedByUser": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "sharedContentWillAppearHere": "When friends share recipes or menus with you, they will appear here.",
+  "sharedHideFromList": "Hide from my list",
+  "sharedLoadingContent": "Loading shared content...",
+  "sharedNoContentYet": "No shared recipes yet",
+
+  "socialAddFriends": "Add friends",
+
+  "taggingAnalyzingIngredients": "Analyzing ingredients...",
+  "taggingCouldNotAnalyze": "Could not analyze recipe",
+  "taggingCouldNotSaveTags": "Could not save tags",
+  "taggingCreateTag": "Create tag",
+  "taggingCreateTagsToOrganize": "Create tags to organize your recipes",
+  "taggingError": "Tagging error: {error}",
+  "@taggingError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "taggingManageTags": "Manage tags",
+  "taggingNoPersonalTags": "No personal tags",
+  "taggingPersonalTags": "Personal tags",
+  "taggingPersonalTagsRemoved": "Personal tags removed",
+  "taggingPersonalTagsSaved": "{count} personal tags saved",
+  "@taggingPersonalTagsSaved": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "taggingTagsGenerated": "{count} tags generated ({coverage}% coverage)",
+  "@taggingTagsGenerated": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "coverage": {"type": "int"}
+    }
+  },
+  "taggingTagsSelected": "{count} tags selected",
+  "@taggingTagsSelected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "taggingUpdateTagsMessage": "Analyzing ingredients and updating allergen and dietary tags for \"{title}\".",
+  "@taggingUpdateTagsMessage": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "taggingUpdateTagsTitle": "Update tags?",
+
+  "sortMealType": "Meal type",
+  "sortRating": "Rating",
+  "sortTime": "Time",
+  "sortTitle": "Title",
+
+  "stateAddRecipes": "Add recipes",
+  "stateCreateWeeklyMenu": "Create weekly menu",
+  "stateGenerateMenu": "Generate menu",
+
+  "commonStart": "Start",
+
+  "discoveryAllRecommendationsComingSoon": "Show all recommendations coming soon!",
+  "discoveryBuildingRecommendations": "Building recommendations",
+  "discoveryCouldNotHideRecommendation": "Could not hide recommendation right now.",
+  "discoveryCouldNotRestoreRecommendation": "Could not restore recommendation.",
+  "discoveryCouldNotSendFeedback": "Could not send feedback right now.",
+  "discoveryFeedbackThanksImproving": "Thanks for your feedback! We are improving recommendations.",
+  "discoveryFriendActivity": "Friend activity",
+  "discoveryFriendActivityDescription": "When your friends share recipes, menus or shopping lists they will appear here.",
+  "discoveryFriendActivityWillAppearHere": "Activity from your friends will appear here",
+  "discoveryFriendsChoice": "Friends' choice",
+  "discoveryLearningPreferences": "We are learning your preferences to give better recommendations.",
+  "discoveryLike": "Like",
+  "discoveryListening": "Listening...",
+  "discoveryLists": "Lists",
+  "discoveryLoadingPopularContent": "Loading popular content...",
+  "discoveryNoFriendActivityYet": "No friend activity yet",
+  "discoveryNoPopularRecipesYet": "No popular recipes yet",
+  "discoveryPerformedAction": "Performed an action",
+  "discoveryPopular": "Popular",
+  "discoveryPopularContent": "Popular content",
+  "discoveryPopularMenus": "Popular menus",
+  "discoveryPopularRecipes": "Popular recipes",
+  "discoveryPopularShoppingLists": "Popular shopping lists",
+  "discoveryPopularWithFriends": "Popular with friends",
+  "discoveryPopularWithFriendsDescription": "Content that your friends like and share",
+  "discoveryPortions": "{count} portions",
+  "@discoveryPortions": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "discoveryRecently": "Recently",
+  "discoveryRecentlyShared": "Recently shared",
+  "discoveryRecentlySharedDescription": "Latest shared content in your network",
+  "discoveryRecommendationHidden": "Recommendation hidden. We won't show similar content.",
+  "discoveryRecommendationRestored": "Recommendation restored.",
+  "discoveryRecommended": "Recommended",
+  "discoveryRecommendedForYou": "Recommended for you",
+  "discoverySearchFilters": "Search filters",
+  "discoverySearchHint": "Search recipes, menus, shopping lists...",
+  "discoverySearchResultsFor": "{count} results for \"{query}\"",
+  "@discoverySearchResultsFor": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "query": {"type": "String"}
+    }
+  },
+  "discoverySeasonal": "Seasonal",
+  "discoverySharedBy": "Shared by {name}",
+  "@discoverySharedBy": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "discoverySharing": "sharing",
+  "discoverySimilarToShared": "Similar to shared",
+  "discoveryTimeAgoDays": "{count}d ago",
+  "@discoveryTimeAgoDays": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "discoveryTimeAgoHours": "{count}h ago",
+  "@discoveryTimeAgoHours": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "discoveryTimeAgoMinutes": "{count}m ago",
+  "@discoveryTimeAgoMinutes": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "discoveryTimeAgoNow": "Now",
+  "discoveryUnknownContent": "Unknown content",
+  "discoveryUnknownUser": "Unknown user",
+  "discoveryUserSharedType": "{user} shared {type}",
+  "@discoveryUserSharedType": {
+    "placeholders": {
+      "user": {"type": "String"},
+      "type": {"type": "String"}
+    }
+  },
+  "discoveryVoiceSearch": "Voice search",
+  "discoveryVoiceSearchInstruction": "Press the microphone and start speaking",
+  "discoveryVoiceSearchPreview": "Search started! (Voice search is a preview)",
+  "discoveryVoiceSearchPrompt": "Say what you want to search for...",
+  "discoveryVoiceSearchResult": "Voice search: \"pasta recipe\"",
+
+  "groupInvitationsCount": "Group invitations ({count})",
+  "@groupInvitationsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "groupInvitationsDescription": "You have received invitations to join groups",
+  "groupLoadingGroups": "Loading groups...",
+  "groupMyGroupsCount": "My groups ({count})",
+  "@groupMyGroupsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "groupNoGroupsDescription": "Create your first group or wait for invitations from friends.",
+  "groupNoGroupsYet": "No groups yet",
+  "groupSearchGroups": "Search your groups",
+  "groupSearchGroupsDescription": "Type a group name in the search field above to filter your groups.",
+  "groupCouldNotAcceptInvitation": "Could not accept invitation. Please try again.",
+  "groupCreated": "Created",
+  "groupDaysActive": "Days active",
+  "groupDeleteGroup": "Delete group",
+  "groupEditGroup": "Edit group",
+  "groupInformation": "Group information",
+  "groupInvitationAccepted": "Invitation accepted! Welcome to the group!",
+  "groupInvitationDeclined": "Invitation declined",
+  "groupInvitationFrom": "Invitation from {name}",
+  "@groupInvitationFrom": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "groupLeaveGroup": "Leave group",
+  "groupMemberCount": "{count} people",
+  "@groupMemberCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "groupMembers": "Members",
+  "groupMembersAndInvitations": "Members & Invitations",
+  "groupMembersCount": "Members ({count})",
+  "@groupMembersCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "groupNoDescription": "No description",
+  "groupNoMembersDescription": "Add friends to this group to get started.",
+  "groupNoMembersYet": "No members yet",
+  "groupPendingInvitationsCount": "Pending invitations ({count})",
+  "@groupPendingInvitationsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "groupSent": "Sent",
+  "groupUpdatedDate": "Updated",
+  "groupYesterday": "Yesterday",
+
+  "commonAccept": "Accept",
+  "commonDecline": "Decline",
+
+  "shoppingItemCount": "{count} items",
+  "@shoppingItemCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "socialAddFriendsToGetStarted": "Add friends to get started with social features.",
+  "socialLoadingFriends": "Loading friends...",
+  "socialNoFriendsYet": "No friends yet",
+  "socialSearchForNewFriends": "Search for new friends",
+  "socialSearchForNewFriendsDescription": "Type a name or username in the search field above to find new friends.",
+  "socialSearchingUsers": "Searching users...",
+  "socialBlocked": "Blocked",
+  "socialCouldNotAcceptFriendRequest": "Could not accept friend request",
+  "socialCouldNotFindFriendRequest": "Could not find friend request",
+  "socialCouldNotSendFriendRequest": "Could not send friend request",
+  "socialDefaultFriendMessage": "Hi! Would you like to be friends?",
+  "socialFindNewFriends": "Find new friends",
+  "socialFindNewFriendsDescription": "Use the search field above to find people you want to be friends with. Search by name or username.",
+  "socialFriendRequestAccepted": "Friend request accepted!",
+  "socialFriendRequestAcceptedFrom": "Friend request from {name} accepted!",
+  "@socialFriendRequestAcceptedFrom": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "socialFriendRequestDeclined": "Friend request declined",
+  "socialFriendRequestSent": "Friend request sent to {name}!",
+  "@socialFriendRequestSent": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "socialIncomingRequests": "Incoming requests",
+  "socialNoFriendRequests": "No friend requests",
+  "socialNoFriendRequestsDescription": "Start searching for friends above to expand your network!",
+  "socialRequestSent": "Sent",
+  "socialSendFriendRequest": "Send friend request",
+  "socialSentRequests": "Sent requests",
+  "socialWaitingForResponse": "Waiting for response..."
 }

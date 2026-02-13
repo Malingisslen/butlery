@@ -72,12 +72,12 @@ class PortionScalerUI {
       children: [
         Text(
           context.l10n.scalerPortionsLabel,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textLight,
-            fontWeight: FontWeight.w400,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.forestGreenDark,
+            fontWeight: FontWeight.w500,
           ),
         ),
-        const Spacer(),
+        const SizedBox(width: 16),
         _buildPortionControls(
           context,
           currentPortions,
@@ -104,49 +104,41 @@ class PortionScalerUI {
       builder: (context, child) {
         return Transform.scale(
           scale: scaleAnimation.value,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(color: Theme.of(context).colorScheme.outline),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Minus button
-                _buildControlButton(
-                  context,
-                  icon: Icons.remove,
-                  onPressed: currentPortions > minPortions
-                      ? () => onUpdatePortions(currentPortions - 1)
-                      : null,
-                ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Minus button
+              _buildControlButton(
+                context,
+                icon: Icons.remove,
+                onPressed: currentPortions > minPortions
+                    ? () => onUpdatePortions(currentPortions - 1)
+                    : null,
+              ),
 
-                // Current portions
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingS,
-                    vertical: AppDimensions.spacingXs,
+              // Current portions
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  '$currentPortions',
+                  style: AppTextStyles.bodyBold.copyWith(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.forestGreenDark,
                   ),
-                  child: Text(
-                    '$currentPortions',
-                    style: AppTextStyles.bodyBold.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  textAlign: TextAlign.center,
                 ),
+              ),
 
-                // Plus button
-                _buildControlButton(
-                  context,
-                  icon: Icons.add,
-                  onPressed: currentPortions < maxPortions
-                      ? () => onUpdatePortions(currentPortions + 1)
-                      : null,
-                ),
-              ],
-            ),
+              // Plus button
+              _buildControlButton(
+                context,
+                icon: Icons.add,
+                onPressed: currentPortions < maxPortions
+                    ? () => onUpdatePortions(currentPortions + 1)
+                    : null,
+              ),
+            ],
           ),
         );
       },
@@ -165,12 +157,15 @@ class PortionScalerUI {
         onTap: onPressed,
         borderRadius: BorderRadius.zero,
         child: Container(
-          padding: const EdgeInsets.all(AppDimensions.spacingSm),
+          width: 36,
+          height: 36,
+          alignment: Alignment.center,
           decoration: BoxDecoration(
+            color: AppColors.cardWhite,
             border: Border.all(
               color:
                   onPressed != null ? AppColors.forestGreen : AppColors.divider,
-              width: 1.5,
+              width: 2.0,
             ),
           ),
           child: Icon(
