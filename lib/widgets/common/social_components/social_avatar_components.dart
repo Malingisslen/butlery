@@ -304,7 +304,7 @@ class SocialAvatarComponents {
       height: _getSizeValue(size),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: backgroundColor ?? AppColors.textMedium200,
+        color: backgroundColor ?? AppColors.divider,
       ),
       child: const CircularProgressIndicator(),
     );
@@ -343,12 +343,12 @@ class SocialAvatarComponents {
       height: _getSizeValue(size),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: backgroundColor ?? AppColors.textMedium300,
+        color: backgroundColor ?? AppColors.textTertiary,
       ),
       child: Icon(
         icon,
         size: _getSizeValue(size) * 0.6,
-        color: iconColor ?? AppColors.textMedium600,
+        color: iconColor ?? AppColors.placeholderIcon,
       ),
     );
   }

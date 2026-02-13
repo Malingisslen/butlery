@@ -114,47 +114,4 @@ class ThemeConstants {
 
   /// Page transition duration (350ms)
   static const Duration durationPageTransition = Duration(milliseconds: 350);
-
-  /// No elevation shadow
-  static const List<BoxShadow> elevationNone = [];
-
-  /// Low elevation shadow (2dp)
-  static const List<BoxShadow> elevationLow = [
-    BoxShadow(
-      color: Color(0x0A000000),
-      blurRadius: 4,
-      offset: Offset(0, 2),
-      spreadRadius: 0,
-    ),
-  ];
-
-  /// Medium elevation shadow (4dp)
-  static const List<BoxShadow> elevationMedium = [
-    BoxShadow(
-      color: Color(0x0F000000),
-      blurRadius: 8,
-      offset: Offset(0, 4),
-      spreadRadius: 0,
-    ),
-  ];
-
-  /// High elevation shadow (8dp)
-  static const List<BoxShadow> elevationHigh = [
-    BoxShadow(
-      color: Color(0x14000000),
-      blurRadius: 16,
-      offset: Offset(0, 8),
-      spreadRadius: 0,
-    ),
-  ];
-
-  /// Extra high elevation shadow (12dp)
-  static const List<BoxShadow> elevationXHigh = [
-    BoxShadow(
-      color: Color(0x19000000),
-      blurRadius: 24,
-      offset: Offset(0, 12),
-      spreadRadius: 0,
-    ),
-  ];
 }

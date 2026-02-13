@@ -19,6 +19,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/views/personal_tags_view.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Handler for personal tag operations from recipe detail view.
 class RecipePersonalTagHandler {
@@ -98,13 +99,13 @@ class RecipePersonalTagHandler {
         SnackBarUtils.showSuccess(
           context,
           tagCount == 0
-              ? 'Personliga taggar borttagna'
-              : '$tagCount personliga taggar sparade',
+              ? context.l10n.taggingPersonalTagsRemoved
+              : context.l10n.taggingPersonalTagsSaved(tagCount),
         );
       }
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(context, 'Kunde inte spara taggar');
+        SnackBarUtils.showError(context, context.l10n.taggingCouldNotSaveTags);
       }
     }
   }
@@ -204,18 +205,18 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       child: Text(
-                        'Personliga taggar',
+                        context.l10n.taggingPersonalTags,
                         style: AppTextStyles.titleLarge,
                       ),
                     ),
                     TextButton(
                       onPressed: _cancel,
-                      child: const Text('Avbryt'),
+                      child: Text(context.l10n.commonCancel),
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     FilledButton(
                       onPressed: _save,
-                      child: const Text('Spara'),
+                      child: Text(context.l10n.commonSave),
                     ),
                   ],
                 ),
@@ -273,8 +274,8 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
-                  '${_selectedTagIds.length} tagg${_selectedTagIds.length == 1 ? '' : 'ar'} vald${_selectedTagIds.length == 1 ? '' : 'a'}',
-                  style: AppTextStyles.text14Medium.copyWith(
+                  context.l10n.taggingTagsSelected(_selectedTagIds.length),
+                  style: AppTextStyles.contentLabel.copyWith(
                     color: colorScheme.onPrimaryContainer,
                   ),
                 ),
@@ -284,7 +285,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
                   style: TextButton.styleFrom(
                     foregroundColor: colorScheme.onPrimaryContainer,
                   ),
-                  child: const Text('Rensa'),
+                  child: Text(context.l10n.commonClear),
                 ),
               ],
             ),
@@ -311,7 +312,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
           child: TextButton.icon(
             onPressed: _navigateToManageTags,
             icon: const Icon(Icons.settings, size: AppDimensions.iconSize18),
-            label: const Text('Hantera taggar'),
+            label: Text(context.l10n.taggingManageTags),
           ),
         ),
         const SizedBox(height: AppDimensions.spacingLg),
@@ -334,14 +335,14 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
-              'Inga personliga taggar',
+              context.l10n.taggingNoPersonalTags,
               style: AppTextStyles.titleMedium.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
-              'Skapa taggar för att organisera dina recept',
+              context.l10n.taggingCreateTagsToOrganize,
               style: AppTextStyles.bodySmall.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -351,7 +352,7 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
             FilledButton.icon(
               onPressed: _navigateToManageTags,
               icon: const Icon(Icons.add),
-              label: const Text('Skapa tagg'),
+              label: Text(context.l10n.taggingCreateTag),
             ),
           ],
         ),

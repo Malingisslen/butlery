@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/shared/group_dialog_components.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -39,13 +40,13 @@ class GroupEmojiConstants {
 class EmojiSelector extends StatelessWidget {
   final String selectedEmoji;
   final Function(String) onEmojiSelected;
-  final String title;
+  final String? title;
 
   const EmojiSelector({
     super.key,
     required this.selectedEmoji,
     required this.onEmojiSelected,
-    this.title = 'Välj ikon',
+    this.title,
   });
 
   @override
@@ -54,7 +55,7 @@ class EmojiSelector extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          title,
+          title ?? context.l10n.groupSelectIcon,
           style: AppTextStyles.titleMedium,
         ),
         const SizedBox(height: AppDimensions.spacingS),
@@ -98,7 +99,7 @@ class EmojiSelector extends StatelessWidget {
                   child: Center(
                     child: Text(
                       emoji,
-                      style: AppTextStyles.text20SemiBold,
+                      style: AppTextStyles.groupTitle,
                     ),
                   ),
                 ),
@@ -125,7 +126,8 @@ class ErrorDisplayWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(color: AppColors.error),
       ),
@@ -165,10 +167,12 @@ class WarningDisplayWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(
-          color: AppColors.warning.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: AppColors.warning
+              .withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(

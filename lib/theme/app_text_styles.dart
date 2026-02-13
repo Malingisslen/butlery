@@ -232,10 +232,6 @@ class AppTextStyles {
         color: AppColors.textLight,
       );
 
-  // ============================================================
-  // ADDITIONAL SEMANTIC TEXT STYLES (ACTUALLY USED)
-  // ============================================================
-
   /// Metadata emphasized - for timestamps, counts with emphasis (56 usages)
   static TextStyle get metadataEmphasized => bodySmall.copyWith(
         color: AppColors.textMedium,
@@ -297,32 +293,32 @@ class AppTextStyles {
         color: AppColors.textMedium,
       );
 
-  /// 14px regular text (5 usages)
-  static TextStyle get text14 => TextStyle(
+  /// 14px regular text - for form options and rule conditions (5 usages)
+  static TextStyle get formOption => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 14,
         fontWeight: FontWeight.normal,
         color: AppColors.textDark,
       );
 
-  /// 14px medium weight text (19 usages)
-  static TextStyle get text14Medium => TextStyle(
+  /// 14px medium weight text - for content labels (19 usages)
+  static TextStyle get contentLabel => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: AppColors.textDark,
       );
 
-  /// 16px medium weight text (24 usages)
-  static TextStyle get text16Medium => TextStyle(
+  /// 16px medium weight text - for content titles (24 usages)
+  static TextStyle get contentTitle => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: AppColors.textDark,
       );
 
-  /// 20px semibold text (2 usages)
-  static TextStyle get text20SemiBold => TextStyle(
+  /// 20px semibold text - for group titles (2 usages)
+  static TextStyle get groupTitle => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 20,
         fontWeight: FontWeight.w600,
@@ -393,10 +389,6 @@ class AppTextStyles {
   static TextStyle get infoText => bodySmall.copyWith(
         color: AppColors.info,
       );
-
-  // ============================================================
-  // UI REDESIGN SPECIFIC STYLES
-  // ============================================================
 
   /// Header title style - for ButleryHeader (Josefin Sans, lowercase)
   static TextStyle get headerTitle => TextStyle(

@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Discovery App Bar - Styled app bar for discovery dashboard
 class DiscoveryAppBar {
@@ -23,7 +24,7 @@ class DiscoveryAppBar {
       foregroundColor: AppColors.onPrimary,
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
-          'Upptäck',
+          context.l10n.discoveryDiscover,
           style: AppTextStyles.titleMedium.copyWith(
             color: AppColors.onPrimary,
           ),
@@ -61,13 +62,13 @@ class DiscoveryAppBar {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Upptäck nytt innehåll',
+                            context.l10n.discoveryDiscoverNewContent,
                             style: AppTextStyles.titleBold.copyWith(
                               color: AppColors.onPrimary,
                             ),
                           ),
                           Text(
-                            'Hitta populära recept, menyer och listor',
+                            context.l10n.discoveryFindPopularContent,
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.onPrimary.withValues(
                                   alpha: AppDimensions.opacityVeryDark),
@@ -88,32 +89,32 @@ class DiscoveryAppBar {
         IconButton(
           icon: const Icon(Icons.refresh),
           onPressed: viewModel.refresh,
-          tooltip: 'Uppdatera',
+          tooltip: context.l10n.commonRefresh,
         ),
         PopupMenuButton<String>(
           onSelected: (value) => _handleMenuAction(context, value, viewModel),
           itemBuilder: (context) => [
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'filter',
               child: ListTile(
-                leading: Icon(Icons.filter_list),
-                title: Text('Filtrera innehåll'),
+                leading: const Icon(Icons.tune),
+                title: Text(context.l10n.discoveryFilterContent),
                 contentPadding: EdgeInsets.zero,
               ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'settings',
               child: ListTile(
-                leading: Icon(Icons.settings),
-                title: Text('Upptäcktsinställningar'),
+                leading: const Icon(Icons.settings),
+                title: Text(context.l10n.discoverySettings),
                 contentPadding: EdgeInsets.zero,
               ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'feedback',
               child: ListTile(
-                leading: Icon(Icons.feedback),
-                title: Text('Ge feedback'),
+                leading: const Icon(Icons.feedback),
+                title: Text(context.l10n.discoveryGiveFeedback),
                 contentPadding: EdgeInsets.zero,
               ),
             ),
@@ -147,7 +148,7 @@ class DiscoveryAppBar {
             ),
           ),
           Text(
-            'att upptäcka',
+            context.l10n.discoveryToDiscover,
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.onPrimary
                   .withValues(alpha: AppDimensions.opacityVeryDark),
@@ -195,12 +196,12 @@ class DiscoveryAppBar {
               Row(
                 children: [
                   const Icon(
-                    Icons.filter_list,
+                    Icons.tune,
                     color: AppColors.primary,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
                   Text(
-                    'Filtrera innehåll',
+                    context.l10n.discoveryFilterContent,
                     style: AppTextStyles.titleMedium,
                   ),
                   const Spacer(),
@@ -216,30 +217,30 @@ class DiscoveryAppBar {
                   controller: scrollController,
                   children: [
                     Text(
-                      'Innehållstyp',
+                      context.l10n.discoveryContentType,
                       style: AppTextStyles.titleSmall,
                     ),
                     const SizedBox(height: AppDimensions.spacingM),
                     // Content type filters
                     CheckboxListTile(
-                      title: const Text('Recept'),
-                      subtitle: const Text('Visa receptresultat'),
+                      title: Text(context.l10n.discoveryRecipes),
+                      subtitle: Text(context.l10n.discoveryShowRecipeResults),
                       value: viewModel.recipesFilterEnabled,
                       onChanged: (value) {
                         viewModel.toggleContentTypeFilter('recipes');
                       },
                     ),
                     CheckboxListTile(
-                      title: const Text('Menyer'),
-                      subtitle: const Text('Visa menyresultat'),
+                      title: Text(context.l10n.discoveryMenus),
+                      subtitle: Text(context.l10n.discoveryShowMenuResults),
                       value: viewModel.menusFilterEnabled,
                       onChanged: (value) {
                         viewModel.toggleContentTypeFilter('menus');
                       },
                     ),
                     CheckboxListTile(
-                      title: const Text('Inköpslistor'),
-                      subtitle: const Text('Visa inköpslistor'),
+                      title: Text(context.l10n.discoveryShoppingLists),
+                      subtitle: Text(context.l10n.discoveryShowShoppingLists),
                       value: viewModel.shoppingListsFilterEnabled,
                       onChanged: (value) {
                         viewModel.toggleContentTypeFilter('shopping_lists');
@@ -247,14 +248,15 @@ class DiscoveryAppBar {
                     ),
                     const SizedBox(height: AppDimensions.spacingL),
                     Text(
-                      'Kategorier',
+                      context.l10n.discoveryCategories,
                       style: AppTextStyles.titleSmall,
                     ),
                     const SizedBox(height: AppDimensions.spacingM),
                     ...viewModel.discoveryCategories.map((category) {
                       return CheckboxListTile(
                         title: Text(category['name']),
-                        subtitle: Text('${category['count']} objekt'),
+                        subtitle: Text(
+                            context.l10n.discoveryItemCount(category['count'])),
                         value: viewModel.selectedCategory == category['id'] ||
                             viewModel.selectedCategory == 'all',
                         onChanged: (value) {
@@ -279,25 +281,25 @@ class DiscoveryAppBar {
   ) {
     DialogFactory.showInteractive(
       context,
-      title: 'Upptäcktsinställningar',
+      title: context.l10n.discoverySettings,
       content: _buildSettingsContent(viewModel),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Stäng'),
+          child: Text(context.l10n.commonClose),
         ),
         ElevatedButton(
           onPressed: () {
             viewModel.saveDiscoverySettings();
             Navigator.of(context).pop();
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Inställningar sparade!'),
+              SnackBar(
+                content: Text(context.l10n.discoverySettingsSaved),
                 backgroundColor: AppColors.success,
               ),
             );
           },
-          child: const Text('Spara'),
+          child: Text(context.l10n.commonSave),
         ),
       ],
     );
@@ -311,13 +313,13 @@ class DiscoveryAppBar {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Anpassa din upptäcktsupplevelse',
-              style: AppTextStyles.text16Medium,
+              context.l10n.discoveryCustomizeExperience,
+              style: AppTextStyles.contentTitle,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             SwitchListTile(
-              title: const Text('Visa trender'),
-              subtitle: const Text('Visa populärt innehåll från communityn'),
+              title: Text(context.l10n.discoveryShowTrends),
+              subtitle: Text(context.l10n.discoveryShowTrendsDescription),
               value: viewModel.showTrendingContent,
               onChanged: (value) {
                 setState(() => viewModel.setShowTrendingContent(value));
@@ -325,8 +327,9 @@ class DiscoveryAppBar {
               activeThumbColor: AppColors.primary,
             ),
             SwitchListTile(
-              title: const Text('Visa vänaktivitet'),
-              subtitle: const Text('Visa vad dina vänner gör'),
+              title: Text(context.l10n.discoveryShowFriendActivity),
+              subtitle:
+                  Text(context.l10n.discoveryShowFriendActivityDescription),
               value: viewModel.showFriendActivity,
               onChanged: (value) {
                 setState(() => viewModel.setShowFriendActivity(value));
@@ -334,8 +337,9 @@ class DiscoveryAppBar {
               activeThumbColor: AppColors.primary,
             ),
             SwitchListTile(
-              title: const Text('Visa rekommendationer'),
-              subtitle: const Text('Visa personliga rekommendationer'),
+              title: Text(context.l10n.discoveryShowRecommendations),
+              subtitle:
+                  Text(context.l10n.discoveryShowRecommendationsDescription),
               value: viewModel.showRecommendations,
               onChanged: (value) {
                 setState(() => viewModel.setShowRecommendations(value));
@@ -346,13 +350,14 @@ class DiscoveryAppBar {
             const Divider(),
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
-              'Aviseringar',
-              style: AppTextStyles.text16Medium,
+              context.l10n.discoveryNotifications,
+              style: AppTextStyles.contentTitle,
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             SwitchListTile(
-              title: const Text('Push-aviseringar'),
-              subtitle: const Text('Få aviseringar om nytt innehåll'),
+              title: Text(context.l10n.discoveryPushNotifications),
+              subtitle:
+                  Text(context.l10n.discoveryPushNotificationsDescription),
               value: viewModel.enablePushNotifications,
               onChanged: (value) {
                 setState(() => viewModel.setEnablePushNotifications(value));
@@ -368,8 +373,8 @@ class DiscoveryAppBar {
   static Future<void> _showFeedbackDialog(BuildContext context) async {
     final feedback = await DialogFactory.showFeedback(
       context,
-      title: 'Skicka feedback',
-      hint: 'Hjälp oss att förbättra Butlery! Beskriv din feedback här...',
+      title: context.l10n.discoverySendFeedback,
+      hint: context.l10n.discoveryFeedbackHint,
     );
 
     if (feedback != null && feedback.trim().isNotEmpty && context.mounted) {
@@ -385,8 +390,8 @@ class DiscoveryAppBar {
     // For now, we log it properly for monitoring and future integration
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tack för din feedback! Vi kommer att granska den.'),
+      SnackBar(
+        content: Text(context.l10n.discoveryFeedbackThanks),
         backgroundColor: AppColors.success,
         duration: Duration(seconds: 3),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
@@ -109,22 +110,21 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Ta bort tagg?'),
+        title: Text(context.l10n.personalTagDeleteTagConfirm),
         content: Text(
-          'Är du säker på att du vill ta bort "${tag.name}"? '
-          'Alla regler kopplade till denna tagg kommer också att tas bort.',
+          context.l10n.personalTagDeleteTagMessage(tag.name),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,
             ),
-            child: const Text('Ta bort'),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ),
@@ -163,21 +163,21 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Ta bort regel?'),
+        title: Text(context.l10n.tagDetailDeleteRuleConfirm),
         content: Text(
-          'Är du säker på att du vill ta bort regeln "${rule.name}"?',
+          context.l10n.tagDetailDeleteRuleMessage(rule.name),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,
             ),
-            child: const Text('Ta bort'),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ),
@@ -223,9 +223,9 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
                 labelColor: AppColors.forestGreen,
                 unselectedLabelColor: AppColors.textMedium,
                 indicatorColor: AppColors.forestGreen,
-                tabs: const [
-                  Tab(text: 'Taggar'),
-                  Tab(text: 'Regler'),
+                tabs: [
+                  Tab(text: context.l10n.personalTagSectionTags),
+                  Tab(text: context.l10n.personalTagManagerRulesTab),
                 ],
               ),
             ),
@@ -259,7 +259,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
         const SizedBox(width: AppDimensions.spacingM),
         Expanded(
           child: Text(
-            'Mina taggar',
+            context.l10n.personalTagManagerTitle,
             style: AppTextStyles.titleLarge,
           ),
         ),
@@ -270,10 +270,6 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
       ],
     );
   }
-
-  // ============================================================
-  // TAGS TAB
-  // ============================================================
 
   Widget _buildTagsTab() {
     return Consumer<PersonalTagViewModel>(
@@ -316,14 +312,14 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'Inga taggar ännu',
+              context.l10n.personalTagEmptyTitle,
               style: AppTextStyles.titleMedium.copyWith(
                 color: AppColors.textMedium,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'Skapa din första tagg för att organisera dina recept.',
+              context.l10n.personalTagEmptySubtitle,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textMedium,
               ),
@@ -333,7 +329,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             FilledButton.icon(
               onPressed: _createTag,
               icon: const Icon(Icons.add),
-              label: const Text('Skapa tagg'),
+              label: Text(context.l10n.personalTagCreateTag),
             ),
           ],
         ),
@@ -380,7 +376,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           Expanded(
             child: Text(
               tag.name,
-              style: AppTextStyles.text14Medium,
+              style: AppTextStyles.contentLabel,
             ),
           ),
           if (!viewModel.isLoadingStats && usageCount > 0)
@@ -392,7 +388,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
                     BorderRadius.circular(AppDimensions.borderRadiusL),
               ),
               child: Text(
-                '$usageCount recept',
+                context.l10n.personalTagRecipeCount(usageCount),
                 style: AppTextStyles.labelSmall.copyWith(
                   color: AppColors.textMedium,
                 ),
@@ -401,7 +397,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
         ],
       ),
       subtitle: Text(
-        'Skapad ${_formatDate(tag.createdAt)}',
+        context.l10n.personalTagCreatedDate(_formatDate(tag.createdAt)),
         style: AppTextStyles.metadataEmphasized,
       ),
       trailing: Row(
@@ -411,13 +407,13 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             icon: const Icon(Icons.edit_outlined),
             color: AppColors.forestGreen,
             onPressed: () => _editTag(tag),
-            tooltip: 'Redigera',
+            tooltip: context.l10n.commonEdit,
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline),
             color: AppColors.error,
             onPressed: () => _deleteTag(tag),
-            tooltip: 'Ta bort',
+            tooltip: context.l10n.commonDelete,
           ),
         ],
       ),
@@ -432,21 +428,17 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
         children: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Stäng'),
+            child: Text(context.l10n.commonClose),
           ),
           FilledButton.icon(
             onPressed: _createTag,
             icon: const Icon(Icons.add, size: AppDimensions.iconSizeM),
-            label: const Text('Ny tagg'),
+            label: Text(context.l10n.personalTagNewTag),
           ),
         ],
       ),
     );
   }
-
-  // ============================================================
-  // RULES TAB
-  // ============================================================
 
   Widget _buildRulesTab() {
     return Consumer<PersonalTagViewModel>(
@@ -498,14 +490,14 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'Skapa en tagg först',
+              context.l10n.personalTagCreateTagFirst,
               style: AppTextStyles.titleMedium.copyWith(
                 color: AppColors.textMedium,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'Du behöver minst en tagg för att kunna skapa automationsregler.',
+              context.l10n.personalTagNeedTagForRules,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textMedium,
               ),
@@ -518,7 +510,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
                 _createTag();
               },
               icon: const Icon(Icons.add),
-              label: const Text('Skapa tagg'),
+              label: Text(context.l10n.personalTagCreateTag),
             ),
           ],
         ),
@@ -543,14 +535,14 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'Inga regler ännu',
+              context.l10n.tagDetailRulesEmptyTitle,
               style: AppTextStyles.titleMedium.copyWith(
                 color: AppColors.textMedium,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'Skapa regler för att automatiskt lägga till taggar baserat på ingredienser eller nyckelord.',
+              context.l10n.tagDetailRulesEmptySubtitle,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textMedium,
               ),
@@ -570,7 +562,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
       child: FilledButton.icon(
         onPressed: null, // PopupMenuButton handles the tap
         icon: const Icon(Icons.add),
-        label: const Text('Skapa regel för tagg'),
+        label: Text(context.l10n.personalTagCreateRuleForTag),
       ),
       itemBuilder: (context) => tags.map((tag) {
         return PopupMenuItem<String>(
@@ -641,7 +633,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
                 icon: const Icon(Icons.add, size: AppDimensions.iconSizeM),
                 color: AppColors.forestGreen,
                 onPressed: () => _createRule(tag.id),
-                tooltip: 'Lägg till regel',
+                tooltip: context.l10n.personalTagAddRule,
               ),
             ],
           ),
@@ -692,7 +684,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
                 const Icon(Icons.edit_outlined, size: AppDimensions.iconSizeM),
             color: AppColors.forestGreen,
             onPressed: () => _editRule(tagId, rule),
-            tooltip: 'Redigera',
+            tooltip: context.l10n.commonEdit,
             constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
           ),
           IconButton(
@@ -700,7 +692,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
                 const Icon(Icons.delete_outline, size: AppDimensions.iconSizeM),
             color: AppColors.error,
             onPressed: () => _deleteRule(tagId, rule),
-            tooltip: 'Ta bort',
+            tooltip: context.l10n.commonDelete,
             constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
           ),
         ],
@@ -710,11 +702,13 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
 
   String _buildRuleSummary(PersonalTagRule rule) {
     final conditionCount = rule.conditions.length;
-    final modeText = rule.matchMode == MatchMode.all ? 'alla' : 'något';
     if (conditionCount == 1) {
-      return '1 villkor';
+      return context.l10n.ruleConditionCountSingular;
     }
-    return '$conditionCount villkor, $modeText måste matcha';
+    final modeText = rule.matchMode == MatchMode.all
+        ? context.l10n.ruleMatchModeAll
+        : context.l10n.ruleMatchModeAny;
+    return context.l10n.ruleConditionCountWithMode(conditionCount, modeText);
   }
 
   Widget _buildRulesFooter() {
@@ -728,7 +722,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
         children: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Stäng'),
+            child: Text(context.l10n.commonClose),
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -740,7 +734,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
                     onPressed: _applyRulesToRecipes,
                     icon: const Icon(Icons.play_arrow,
                         size: AppDimensions.iconSizeM),
-                    label: const Text('Kör regler'),
+                    label: Text(context.l10n.tagDetailApplyRules),
                   ),
                 ),
               // Show dropdown to select tag for new rule
@@ -760,20 +754,18 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Kör regler på befintliga recept'),
-        content: const Text(
-          'Detta kommer att granska alla dina recept och lägga till '
-          'taggar enligt dina aktiverade regler.\n\n'
-          'Taggar som redan finns på recept påverkas inte.',
+        title: Text(context.l10n.personalTagApplyRulesTitle),
+        content: Text(
+          context.l10n.personalTagApplyRulesMessage,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Kör'),
+            child: Text(context.l10n.personalTagApplyRulesRun),
           ),
         ],
       ),
@@ -797,8 +789,9 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
               const SizedBox(height: AppDimensions.spacingM),
               Text(
                 total > 0
-                    ? 'Bearbetar recept $progress av $total...'
-                    : 'Hämtar recept...',
+                    ? context.l10n
+                        .personalTagApplyRulesProgress(progress, total)
+                    : context.l10n.personalTagApplyRulesFetching,
                 style: AppTextStyles.bodyMedium,
               ),
             ],
@@ -825,9 +818,9 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           SnackBar(
             content: Text(
               result.hasChanges
-                  ? '${result.recipesModified} recept uppdaterades med '
-                      '${result.tagsApplied} nya taggar'
-                  : 'Inga recept behövde uppdateras',
+                  ? context.l10n.tagDetailRulesAppliedSuccess(
+                      result.tagsApplied, result.recipesModified)
+                  : context.l10n.tagDetailNoRecipesMatched,
             ),
             backgroundColor: result.hasChanges ? AppColors.success : null,
           ),
@@ -841,17 +834,13 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fel vid regelkörning: $e'),
+            content: Text(context.l10n.tagDetailCouldNotApplyRules),
             backgroundColor: AppColors.error,
           ),
         );
       }
     }
   }
-
-  // ============================================================
-  // SHARED WIDGETS
-  // ============================================================
 
   Widget _buildError(String error, VoidCallback onRetry) {
     return Center(
@@ -874,7 +863,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             const SizedBox(height: AppDimensions.spacingM),
             TextButton(
               onPressed: onRetry,
-              child: const Text('Försök igen'),
+              child: Text(context.l10n.commonRetry),
             ),
           ],
         ),

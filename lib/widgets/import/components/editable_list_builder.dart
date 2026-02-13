@@ -44,7 +44,7 @@ class EditableListBuilder extends StatelessWidget {
                     width: 28,
                     child: Text(
                       '${index + 1}.',
-                      style: AppTextStyles.text14Medium,
+                      style: AppTextStyles.contentLabel,
                     ),
                   ),
                 ],

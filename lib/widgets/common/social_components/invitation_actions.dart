@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
@@ -13,10 +14,10 @@ class InvitationActions {
     VoidCallback? onSelectNone,
     VoidCallback? onSelectFriends,
     VoidCallback? onSelectGroups,
-    String? selectAllText = 'Alla',
-    String? selectNoneText = 'Inga',
-    String? selectFriendsText = 'Vänner',
-    String? selectGroupsText = 'Grupper',
+    String? selectAllText,
+    String? selectNoneText,
+    String? selectFriendsText,
+    String? selectGroupsText,
     EdgeInsets? padding,
     MainAxisAlignment alignment = MainAxisAlignment.spaceEvenly,
   }) {
@@ -56,29 +57,29 @@ class InvitationActions {
       child: Row(
         children: [
           Text(
-            '$selectedCount valda',
-            style: AppTextStyles.text14Medium,
+            context.l10n.invitationTargetsSelectedCount(selectedCount),
+            style: AppTextStyles.contentLabel,
           ),
           const Spacer(),
           if (showSelectAll && onSelectAll != null)
             TextButton(
               onPressed: onSelectAll,
-              child: const Text('Alla'),
+              child: Text(context.l10n.commonSelectAll),
             ),
           if (showDeselectAll && onDeselectAll != null)
             TextButton(
               onPressed: onDeselectAll,
-              child: const Text('Inga'),
+              child: Text(context.l10n.commonDeselectAll),
             ),
           if (showInvert && onInvertSelection != null)
             TextButton(
               onPressed: onInvertSelection,
-              child: const Text('Invertera'),
+              child: Text(context.l10n.socialInvertLabel),
             ),
           if (showSend && onSendInvitations != null)
             ElevatedButton(
               onPressed: selectedCount > 0 ? onSendInvitations : null,
-              child: const Text('Skicka'),
+              child: Text(context.l10n.commonSend),
             ),
         ],
       ),
@@ -94,9 +95,9 @@ class InvitationActions {
     bool showAdd = true,
     bool showSend = true,
     bool showCreate = false,
-    String? addTooltip = 'Lägg till målgrupp',
-    String? sendTooltip = 'Skicka inbjudningar',
-    String? createTooltip = 'Skapa grupp',
+    String? addTooltip,
+    String? sendTooltip,
+    String? createTooltip,
   }) {
     final buttons = <Widget>[];
 
@@ -129,7 +130,7 @@ class InvitationActions {
           tooltip: sendTooltip,
           heroTag: 'send_invitations',
           icon: const Icon(Icons.send),
-          label: const Text('Skicka'),
+          label: Text(sendTooltip ?? 'Skicka'),
         ),
       );
     }
@@ -158,9 +159,9 @@ class InvitationActions {
     bool showInvite = true,
     bool showRemove = true,
     bool showExport = false,
-    String? inviteText = 'Skicka inbjudningar',
-    String? removeText = 'Ta bort',
-    String? exportText = 'Exportera',
+    String? inviteText,
+    String? removeText,
+    String? exportText,
     EdgeInsets? padding,
   }) {
     if (selectedTargets.isEmpty) {
@@ -172,28 +173,28 @@ class InvitationActions {
       child: Row(
         children: [
           Text(
-            '${selectedTargets.length} valda',
-            style: AppTextStyles.text14Medium,
+            context.l10n.invitationTargetsSelectedCount(selectedTargets.length),
+            style: AppTextStyles.contentLabel,
           ),
           const Spacer(),
           if (showRemove && onBulkRemove != null)
             TextButton.icon(
               onPressed: onBulkRemove,
               icon: const Icon(Icons.delete, color: AppColors.error),
-              label: Text(removeText ?? 'Ta bort'),
+              label: Text(removeText ?? context.l10n.commonDelete),
               style: TextButton.styleFrom(foregroundColor: AppColors.error),
             ),
           if (showExport && onBulkExport != null)
             TextButton.icon(
               onPressed: onBulkExport,
               icon: const Icon(Icons.download),
-              label: Text(exportText ?? 'Exportera'),
+              label: Text(exportText ?? context.l10n.commonExport),
             ),
           if (showInvite && onBulkInvite != null)
             ElevatedButton.icon(
               onPressed: onBulkInvite,
               icon: const Icon(Icons.send),
-              label: Text(inviteText ?? 'Skicka inbjudningar'),
+              label: Text(inviteText ?? context.l10n.invitationSendInvitations),
             ),
         ],
       ),
@@ -209,8 +210,8 @@ class InvitationActions {
     required List<InvitationTarget> targets,
     required VoidCallback onConfirm,
     VoidCallback? onCancel,
-    String? confirmText = 'Fortsätt',
-    String? cancelText = 'Avbryt',
+    String? confirmText,
+    String? cancelText,
     bool isDangerous = false,
   }) {
     return AlertDialog(
@@ -222,8 +223,8 @@ class InvitationActions {
           Text(message),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
-            'Berörda målgrupper:',
-            style: AppTextStyles.text14Medium,
+            context.l10n.invitationAffectedTargets,
+            style: AppTextStyles.contentLabel,
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           Container(
@@ -246,7 +247,8 @@ class InvitationActions {
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   subtitle: Text(
-                    '${target.memberCount ?? 0} medlemmar',
+                    context.l10n
+                        .shareGroupMembersCount(target.memberCount ?? 0),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 );
@@ -258,7 +260,7 @@ class InvitationActions {
       actions: [
         TextButton(
           onPressed: onCancel ?? () => Navigator.of(context).pop(),
-          child: Text(cancelText ?? 'Avbryt'),
+          child: Text(cancelText ?? context.l10n.commonCancel),
         ),
         ElevatedButton(
           onPressed: () {
@@ -268,7 +270,7 @@ class InvitationActions {
           style: isDangerous
               ? ElevatedButton.styleFrom(backgroundColor: AppColors.error)
               : null,
-          child: Text(confirmText ?? 'Fortsätt'),
+          child: Text(confirmText ?? context.l10n.commonContinue),
         ),
       ],
     );
@@ -305,29 +307,29 @@ class InvitationActions {
       },
       itemBuilder: (context) => [
         if (showView && onView != null)
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'view',
             child: ListTile(
-              leading: Icon(Icons.visibility),
-              title: Text('Visa'),
+              leading: const Icon(Icons.visibility),
+              title: Text(context.l10n.invitationView),
               dense: true,
             ),
           ),
         if (showEdit && onEdit != null)
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'edit',
             child: ListTile(
-              leading: Icon(Icons.edit),
-              title: Text('Redigera'),
+              leading: const Icon(Icons.edit),
+              title: Text(context.l10n.commonEdit),
               dense: true,
             ),
           ),
         if (showInvite && onInvite != null)
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'invite',
             child: ListTile(
-              leading: Icon(Icons.send),
-              title: Text('Skicka inbjudan'),
+              leading: const Icon(Icons.send),
+              title: Text(context.l10n.invitationSendInvitation),
               dense: true,
             ),
           ),
@@ -337,7 +339,8 @@ class InvitationActions {
             child: Builder(
               builder: (context) => ListTile(
                 leading: const Icon(Icons.delete, color: AppColors.error),
-                title: Text('Ta bort', style: AppTextStyles.bodyMediumError),
+                title: Text(context.l10n.commonDelete,
+                    style: AppTextStyles.bodyMediumError),
                 dense: true,
               ),
             ),
@@ -355,11 +358,14 @@ class InvitationActions {
     VoidCallback? onSwipeRight,
     Widget? leftAction,
     Widget? rightAction,
-    String? leftLabel = 'Ta bort',
-    String? rightLabel = 'Inbjud',
+    String? leftLabel,
+    String? rightLabel,
     Color? leftColor = AppColors.error,
     Color? rightColor = AppColors.forestGreen,
   }) {
+    final resolvedLeftLabel = leftLabel ?? context.l10n.commonDelete;
+    final resolvedRightLabel = rightLabel ?? context.l10n.invitationInvite;
+
     return Dismissible(
       key: UniqueKey(),
       background: leftAction ??
@@ -371,11 +377,10 @@ class InvitationActions {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(Icons.delete, color: AppColors.cardWhite),
-                if (leftLabel != null)
-                  Text(
-                    leftLabel,
-                    style: AppTextStyles.buttonTextLight,
-                  ),
+                Text(
+                  resolvedLeftLabel,
+                  style: AppTextStyles.buttonTextLight,
+                ),
               ],
             ),
           ),
@@ -388,11 +393,10 @@ class InvitationActions {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(Icons.send, color: AppColors.cardWhite),
-                if (rightLabel != null)
-                  Text(
-                    rightLabel,
-                    style: AppTextStyles.buttonTextLight,
-                  ),
+                Text(
+                  resolvedRightLabel,
+                  style: AppTextStyles.buttonTextLight,
+                ),
               ],
             ),
           ),

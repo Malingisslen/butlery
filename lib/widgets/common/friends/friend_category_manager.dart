@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Friend Category Manager
@@ -18,16 +19,16 @@ class FriendCategoryManager extends StatefulWidget {
   final List<String> selectedFriendIds;
   final Function(List<String>) onSelectionChanged;
   final bool allowMultipleCategories;
-  final String title;
-  final String subtitle;
+  final String? title;
+  final String? subtitle;
 
   const FriendCategoryManager({
     super.key,
     required this.selectedFriendIds,
     required this.onSelectionChanged,
     this.allowMultipleCategories = true,
-    this.title = 'Välj vänner',
-    this.subtitle = 'Välj kategorier eller individuella vänner',
+    this.title,
+    this.subtitle,
   });
 
   @override
@@ -78,8 +79,8 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                 ),
                 const SizedBox(height: AppDimensions.spacingXl),
                 Text(
-                  'Laddar vänner och kategorier...',
-                  style: AppTextStyles.text16Medium,
+                  context.l10n.friendLoadingFriendsAndCategories,
+                  style: AppTextStyles.contentTitle,
                 ),
               ],
             ),
@@ -98,7 +99,8 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                       .withValues(alpha: AppDimensions.opacityMediumLight)),
             ),
             child: Text(
-              categoriesService.error ?? 'Kunde inte ladda kategorier',
+              categoriesService.error ??
+                  context.l10n.errorCouldNotLoad(context.l10n.friendCategories),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.error,
                   ),
@@ -118,7 +120,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                       .withValues(alpha: AppDimensions.opacityMediumLight)),
             ),
             child: Text(
-              friendsVM.error ?? 'Kunde inte ladda vänner',
+              friendsVM.error ??
+                  context.l10n
+                      .errorCouldNotLoad(context.l10n.friendFriendsLabel),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.error,
                   ),
@@ -131,10 +135,10 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
 
         if (categories.isEmpty && friends.isEmpty) {
           return StateWidget.empty(
-            title: 'Inga vänner eller kategorier',
-            subtitle: 'Lägg till vänner och skapa kategorier först',
+            title: context.l10n.friendNoFriendsOrCategories,
+            subtitle: context.l10n.friendAddFriendsAndCategoriesFirst,
             icon: Icons.people_outline,
-            actionLabel: 'Hantera vänner',
+            actionLabel: context.l10n.friendManageFriends,
             onAction: () => Navigator.pushNamed(context, '/friends'),
           );
         }
@@ -163,17 +167,20 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final displayTitle = widget.title ?? context.l10n.commonSelectFriends;
+    final displaySubtitle =
+        widget.subtitle ?? context.l10n.friendSelectCategoriesOrFriends;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          widget.title,
+          displayTitle,
           style: AppTextStyles.headlineBold,
         ),
-        if (widget.subtitle.isNotEmpty) ...[
+        if (displaySubtitle.isNotEmpty) ...[
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            widget.subtitle,
+            displaySubtitle,
             style: AppTextStyles.bodyMedium.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -197,7 +204,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             ),
             const SizedBox(width: AppDimensions.spacingM),
             Text(
-              'Kategorier',
+              context.l10n.friendCategories,
               style: AppTextStyles.titleBold.copyWith(
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -206,7 +213,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
         ),
         const SizedBox(height: AppDimensions.spacingM),
         Text(
-          'Välj hela kategorier för snabb delning',
+          context.l10n.friendSelectCategoriesForQuickShare,
           style: AppTextStyles.bodySmall.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
@@ -289,7 +296,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             ),
             const SizedBox(width: AppDimensions.spacingM),
             Text(
-              'Individuellt val',
+              context.l10n.friendIndividualSelection,
               style: AppTextStyles.titleBold.copyWith(
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -298,7 +305,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
         ),
         const SizedBox(height: AppDimensions.spacingM),
         Text(
-          'Välj specifika vänner från din vänlista',
+          context.l10n.friendSelectSpecificFriends,
           style: AppTextStyles.bodySmall.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
@@ -306,7 +313,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
         const SizedBox(height: AppDimensions.spacingM),
         SizedBox(
           height:
-              320, // Increased from 240 to accommodate 5 friends (5 × ~64px)
+              320, // Increased from 240 to accommodate 5 friends (5 x ~64px)
           child: DecoratedBox(
             decoration: BoxDecoration(
               border: Border.all(
@@ -316,8 +323,8 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             ),
             child: friends.isEmpty
                 ? StateWidget.empty(
-                    title: 'Inga vänner att visa',
-                    subtitle: 'Lägg till vänner först',
+                    title: context.l10n.friendNoFriendsToShow,
+                    subtitle: context.l10n.friendAddFriendsFirst,
                     icon: Icons.people_outline,
                   )
                 : ListView.builder(
@@ -399,14 +406,14 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Valda vänner',
+                  context.l10n.friendSelectedFriends,
                   style: AppTextStyles.labelLarge.copyWith(
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 Text(
-                  '${_selectedFriends.length} ${_selectedFriends.length == 1 ? 'vän vald' : 'vänner valda'}',
-                  style: AppTextStyles.text14Medium.copyWith(
+                  context.l10n.friendSelectedCount(_selectedFriends.length),
+                  style: AppTextStyles.contentLabel.copyWith(
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
@@ -417,7 +424,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             TextButton.icon(
               onPressed: _clearAllSelections,
               icon: const Icon(Icons.clear, size: AppDimensions.iconSizeS),
-              label: const Text('Rensa'),
+              label: Text(context.l10n.commonClear),
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.primary,
                 padding: const EdgeInsets.symmetric(
@@ -439,20 +446,20 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           for (final friendId in category.friendUserIds) {
             _selectedFriends.remove(friendId);
           }
-          AppLogger.info('🏷️ Kategori "${category.name}" avmarkerad');
+          AppLogger.info('Category "${category.name}" deselected');
         } else {
           if (widget.allowMultipleCategories || _selectedCategories.isEmpty) {
             _selectedCategories.add(category.id);
             _selectedFriends.addAll(category.friendUserIds);
             AppLogger.info(
-                '🏷️ Kategori "${category.name}" vald (${category.friendCount} vänner)');
+                'Category "${category.name}" selected (${category.friendCount} friends)');
           } else {
             _selectedCategories.clear();
             _selectedFriends.clear();
             _selectedCategories.add(category.id);
             _selectedFriends.addAll(category.friendUserIds);
             AppLogger.info(
-                '🏷️ Kategori "${category.name}" vald (ersatt tidigare val)');
+                'Category "${category.name}" selected (replaced previous selection)');
           }
         }
       });
@@ -465,10 +472,10 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
       setState(() {
         if (_selectedFriends.contains(friendId)) {
           _selectedFriends.remove(friendId);
-          AppLogger.info('👤 Vän avmarkerad');
+          AppLogger.info('Friend deselected');
         } else {
           _selectedFriends.add(friendId);
-          AppLogger.info('👤 Vän vald');
+          AppLogger.info('Friend selected');
         }
       });
     }
@@ -483,7 +490,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
       });
     }
     widget.onSelectionChanged([]);
-    AppLogger.info('🗑️ Alla val rensade');
+    AppLogger.info('All selections cleared');
   }
 
   @override

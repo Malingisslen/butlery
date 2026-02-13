@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -77,19 +78,18 @@ class PersonalTagEditDialog extends StatefulWidget {
     final shouldCreateRule = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Lägg till regel?'),
+        title: Text(context.l10n.personalTagWizardAddRule),
         content: Text(
-          'Vill du skapa en automatiseringsregel för "${tag.name}"?\n\n'
-          'Regler kan automatiskt lägga till denna tagg på recept baserat på ingredienser, källa, tid, med mera.',
+          context.l10n.personalTagWizardAddRuleMessage(tag.name),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Senare'),
+            child: Text(context.l10n.personalTagWizardLater),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Ja, skapa regel'),
+            child: Text(context.l10n.personalTagWizardYesCreateRule),
           ),
         ],
       ),
@@ -131,7 +131,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
 
   Future<void> _validateName(String? value) async {
     if (value == null || value.trim().isEmpty) {
-      setState(() => _nameError = 'Ange ett taggnamn');
+      setState(() => _nameError = context.l10n.tagDetailNameRequired);
       return;
     }
 
@@ -149,7 +149,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
     );
     setState(() {
       _isChecking = false;
-      _nameError = exists ? 'En tagg med detta namn finns redan' : null;
+      _nameError = exists ? context.l10n.tagAlreadyExists : null;
     });
   }
 
@@ -237,7 +237,9 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
         const SizedBox(width: AppDimensions.spacingM),
         Expanded(
           child: Text(
-            _isEditing ? 'Redigera tagg' : 'Skapa ny tagg',
+            _isEditing
+                ? context.l10n.personalTagEditTag
+                : context.l10n.personalTagCreateTag,
             style: AppTextStyles.titleLarge,
           ),
         ),
@@ -253,14 +255,14 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Namn', style: AppTextStyles.labelMedium),
+        Text(context.l10n.commonName, style: AppTextStyles.labelMedium),
         const SizedBox(height: AppDimensions.spacingXs),
         TextFormField(
           controller: _nameController,
           autofocus: !_isEditing,
           textCapitalization: TextCapitalization.sentences,
           decoration: InputDecoration(
-            hintText: 'T.ex. "Mammas recept"',
+            hintText: context.l10n.personalTagNameHint,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             ),
@@ -295,7 +297,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Förhandsgranskning', style: AppTextStyles.labelMedium),
+        Text(context.l10n.personalTagPreview, style: AppTextStyles.labelMedium),
         const SizedBox(height: AppDimensions.spacingS),
         Container(
           padding: const EdgeInsets.symmetric(
@@ -322,7 +324,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
               const SizedBox(width: AppDimensions.spacingS),
               Text(
                 name,
-                style: AppTextStyles.text14Medium,
+                style: AppTextStyles.contentLabel,
               ),
             ],
           ),
@@ -337,7 +339,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
       children: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-          child: const Text('Avbryt'),
+          child: Text(context.l10n.commonCancel),
         ),
         const SizedBox(width: AppDimensions.spacingM),
         FilledButton(
@@ -351,7 +353,9 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
                     color: AppColors.cardWhite,
                   ),
                 )
-              : Text(_isEditing ? 'Spara' : 'Skapa'),
+              : Text(_isEditing
+                  ? context.l10n.commonSave
+                  : context.l10n.commonCreate),
         ),
       ],
     );

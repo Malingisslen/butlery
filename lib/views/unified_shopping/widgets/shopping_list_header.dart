@@ -9,6 +9,7 @@ import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Header section with list selector and actions
 class ShoppingListHeader {
@@ -63,7 +64,7 @@ class ShoppingListHeader {
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: viewModel.activeList?.id,
-                hint: const Text('Välj lista'),
+                hint: Text(context.l10n.shoppingSelectList),
                 isExpanded: true,
                 icon: const Icon(Icons.arrow_drop_down,
                     color: AppColors.textMedium),
@@ -75,7 +76,7 @@ class ShoppingListHeader {
                 items: viewModel.lists.map((list) {
                   return DropdownMenuItem<String>(
                     value: list.id,
-                    child: _buildListDropdownItem(list),
+                    child: _buildListDropdownItem(context, list),
                   );
                 }).toList(),
               ),
@@ -104,7 +105,7 @@ class ShoppingListHeader {
                     .withValues(alpha: AppDimensions.opacityDark),
                 size: AppDimensions.iconSizeAction,
               ),
-              tooltip: 'Byt namn på lista',
+              tooltip: context.l10n.shoppingRenameList,
               padding: const EdgeInsets.all(AppDimensions.spacingS),
               constraints: const BoxConstraints(
                 minWidth: AppDimensions.minTouchTarget,
@@ -132,7 +133,7 @@ class ShoppingListHeader {
                     .withValues(alpha: AppDimensions.opacityDark),
                 size: AppDimensions.iconSizeAction,
               ),
-              tooltip: 'Ta bort lista',
+              tooltip: context.l10n.shoppingDeleteList,
               padding: const EdgeInsets.all(AppDimensions.spacingS),
               constraints: const BoxConstraints(
                 minWidth: AppDimensions.minTouchTarget,
@@ -169,7 +170,7 @@ class ShoppingListHeader {
               icon: const Icon(Icons.clear,
                   size: AppDimensions.iconSizeS, color: AppColors.textMedium),
               label: Text(
-                'Rensa (${viewModel.boughtItems})',
+                context.l10n.shoppingClearCount(viewModel.boughtItems),
                 style: AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.textMedium,
                 ),
@@ -195,7 +196,7 @@ class ShoppingListHeader {
               icon: const Icon(Icons.check_box_outline_blank,
                   size: AppDimensions.iconSizeS, color: AppColors.forestGreen),
               label: Text(
-                'Avbocka alla',
+                context.l10n.shoppingUncheckAll,
                 style: AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.forestGreen,
                 ),
@@ -207,7 +208,8 @@ class ShoppingListHeader {
   }
 
   /// Build enhanced dropdown item with sharing status indicators
-  static Widget _buildListDropdownItem(UnifiedShoppingList list) {
+  static Widget _buildListDropdownItem(
+      BuildContext context, UnifiedShoppingList list) {
     final permissionService = ServiceLocator.get<PermissionService>();
     final currentUserId = permissionService.currentUser?.uid;
 
@@ -229,40 +231,40 @@ class ShoppingListHeader {
           if (isOwner) {
             sharingIcon = Icons.admin_panel_settings;
             sharingColor = AppColors.forestGreen;
-            permissionText = 'Ägare';
+            permissionText = context.l10n.shoppingPermissionOwner;
           } else {
             switch (userPermission) {
               case SharedListPermission.view:
                 sharingIcon = Icons.visibility;
                 sharingColor = AppColors.textMedium;
-                permissionText = 'Kan se';
+                permissionText = context.l10n.shoppingPermissionView;
                 break;
               case SharedListPermission.edit:
                 sharingIcon = Icons.edit;
                 sharingColor = AppColors.accent;
-                permissionText = 'Kan redigera';
+                permissionText = context.l10n.shoppingPermissionEdit;
                 break;
               case SharedListPermission.admin:
                 sharingIcon = Icons.admin_panel_settings;
                 sharingColor = AppColors.forestGreen;
-                permissionText = 'Admin';
+                permissionText = context.l10n.shoppingPermissionAdmin;
                 break;
               default:
                 sharingIcon = Icons.people;
                 sharingColor = AppColors.forestGreen;
-                permissionText = 'Delad';
+                permissionText = context.l10n.shoppingPermissionShared;
             }
           }
         } else {
           sharingIcon = Icons.people;
           sharingColor = AppColors.secondaryPurple;
-          permissionText = 'Delad';
+          permissionText = context.l10n.shoppingPermissionShared;
         }
         break;
       case ListType.template:
         sharingIcon = Icons.bookmark;
         sharingColor = AppColors.textMedium;
-        permissionText = 'Mall';
+        permissionText = context.l10n.shoppingPermissionTemplate;
         break;
     }
 
@@ -281,14 +283,14 @@ class ShoppingListHeader {
             children: [
               Text(
                 list.name,
-                style: AppTextStyles.text14Medium,
+                style: AppTextStyles.contentLabel,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               Row(
                 children: [
                   Text(
-                    '${list.items.length} varor',
+                    context.l10n.shoppingItemCount(list.items.length),
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textMedium,
                     ),

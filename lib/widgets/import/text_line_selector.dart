@@ -5,6 +5,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -94,7 +95,7 @@ class TextLineSelector extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '${selectedIndices.length} valda',
+                  context.l10n.importSelectedCount(selectedIndices.length),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -144,10 +145,12 @@ class TextLineSelector extends StatelessWidget {
                   .withValues(alpha: AppDimensions.opacityHalf),
             ),
             const SizedBox(height: AppDimensions.spacingMd),
-            Text(
-              'Inga rader att visa',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+            Builder(
+              builder: (context) => Text(
+                context.l10n.importNoLinesToShow,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ],
@@ -169,7 +172,8 @@ class TextLineSelector extends StatelessWidget {
           onSelectionChanged(newSelection);
         },
         icon: const Icon(Icons.select_all),
-        label: Text('Välj alla markerade (${highlightedIndices.length})'),
+        label: Text(
+            context.l10n.importSelectAllHighlighted(highlightedIndices.length)),
         style: OutlinedButton.styleFrom(
           foregroundColor: _getModeColor(colorScheme),
           side: BorderSide(color: _getModeColor(colorScheme)),
@@ -253,92 +257,99 @@ class _LineItem extends StatelessWidget {
       child: Material(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingM,
-              vertical: AppDimensions.paddingMs,
-            ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(
-                color: borderColor,
-                width: isSelected ? 2 : 1,
-                style: borderStyle,
+        child: Semantics(
+          label: '${text.trim()}, ${isSelected ? "vald" : "ej vald"}',
+          button: true,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingM,
+                vertical: AppDimensions.paddingMs,
               ),
-            ),
-            child: Row(
-              children: [
-                // Selection indicator
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isSelected ? modeColor : AppColors.transparent,
-                    border: Border.all(
-                      color: isSelected
-                          ? modeColor
-                          : colorScheme.outline
-                              .withValues(alpha: AppDimensions.opacityHalf),
-                      width: 2,
-                    ),
-                  ),
-                  child: isSelected
-                      ? Icon(
-                          Icons.check,
-                          size: AppDimensions.iconSizeS,
-                          color: colorScheme.onPrimary,
-                        )
-                      : null,
+              decoration: BoxDecoration(
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusM),
+                border: Border.all(
+                  color: borderColor,
+                  width: isSelected ? 2 : 1,
+                  style: borderStyle,
                 ),
-                const SizedBox(width: AppDimensions.width12),
-                // Line number (optional)
-                if (showLineNumber) ...[
-                  SizedBox(
-                    width: 32,
-                    child: Text(
-                      '${lineIndex + 1}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                  ),
-                ],
-                // Line text
-                Expanded(
-                  child: Text(
-                    text.trim(),
-                    style: isSelected
-                        ? AppTextStyles.text14Medium
-                        : AppTextStyles.bodyMedium,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                // Highlighted indicator
-                if (isHighlighted && !isSelected) ...[
-                  const SizedBox(width: AppDimensions.spacingSm),
+              ),
+              child: Row(
+                children: [
+                  // Selection indicator
                   Container(
-                    padding: AppDimensions.paddingSymmetric6x2,
+                    width: 24,
+                    height: 24,
                     decoration: BoxDecoration(
-                      color: modeColor.withValues(
-                          alpha: AppDimensions.opacityVeryLight),
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.borderRadiusS),
-                    ),
-                    child: Text(
-                      mode == SelectionMode.ingredients ? 'Trolig' : 'Steg',
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: modeColor,
+                      shape: BoxShape.circle,
+                      color: isSelected ? modeColor : AppColors.transparent,
+                      border: Border.all(
+                        color: isSelected
+                            ? modeColor
+                            : colorScheme.outline
+                                .withValues(alpha: AppDimensions.opacityHalf),
+                        width: 2,
                       ),
                     ),
+                    child: isSelected
+                        ? Icon(
+                            Icons.check,
+                            size: AppDimensions.iconSizeS,
+                            color: colorScheme.onPrimary,
+                          )
+                        : null,
                   ),
+                  const SizedBox(width: AppDimensions.width12),
+                  // Line number (optional)
+                  if (showLineNumber) ...[
+                    SizedBox(
+                      width: 32,
+                      child: Text(
+                        '${lineIndex + 1}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ),
+                  ],
+                  // Line text
+                  Expanded(
+                    child: Text(
+                      text.trim(),
+                      style: isSelected
+                          ? AppTextStyles.contentLabel
+                          : AppTextStyles.bodyMedium,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  // Highlighted indicator
+                  if (isHighlighted && !isSelected) ...[
+                    const SizedBox(width: AppDimensions.spacingSm),
+                    Container(
+                      padding: AppDimensions.paddingSymmetric6x2,
+                      decoration: BoxDecoration(
+                        color: modeColor.withValues(
+                            alpha: AppDimensions.opacityVeryLight),
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.borderRadiusS),
+                      ),
+                      child: Text(
+                        mode == SelectionMode.ingredients
+                            ? context.l10n.importLikely
+                            : context.l10n.importStep,
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: modeColor,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// SharedContentSearchBar - Search bar for shared content
 /// Handles search functionality for shared recipes and menus.
@@ -25,7 +26,7 @@ class SharedContentSearchBar {
             TextField(
               controller: searchController,
               decoration: InputDecoration(
-                hintText: 'Sök i dina delade recept och menyer...',
+                hintText: context.l10n.sharedSearchHint,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -34,15 +35,15 @@ class SharedContentSearchBar {
                     IconButton(
                       icon: Icon(
                         viewModel.showImported
-                            ? Icons.filter_alt
-                            : Icons.filter_alt_outlined,
+                            ? Icons.tune
+                            : Icons.tune_outlined,
                         color: viewModel.showImported
                             ? Theme.of(context).colorScheme.primary
                             : null,
                       ),
                       tooltip: viewModel.showImported
-                          ? 'Dölj importerade'
-                          : 'Visa importerade',
+                          ? context.l10n.sharedHideImported
+                          : context.l10n.sharedShowImported,
                       onPressed: () => viewModel.toggleShowImported(),
                     ),
                     // Clear search button
@@ -68,8 +69,9 @@ class SharedContentSearchBar {
               Padding(
                 padding: const EdgeInsets.only(top: AppDimensions.spacingS),
                 child: Chip(
-                  label: const Text('Visar importerade'),
-                  deleteIcon: const Icon(Icons.close, size: AppDimensions.iconSize18),
+                  label: Text(context.l10n.sharedShowingImported),
+                  deleteIcon:
+                      const Icon(Icons.close, size: AppDimensions.iconSize18),
                   onDeleted: () => viewModel.toggleShowImported(),
                   backgroundColor:
                       Theme.of(context).colorScheme.primaryContainer,

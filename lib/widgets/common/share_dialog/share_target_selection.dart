@@ -1,6 +1,7 @@
 // lib/widgets/common/share_dialog/share_target_selection.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -19,7 +20,7 @@ class ShareTargetSelection {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Välj mottagare',
+          context.l10n.shareSelectRecipients,
           style: AppTextStyles.titleBold,
         ),
         const SizedBox(height: AppDimensions.spacingM),
@@ -28,7 +29,7 @@ class ShareTargetSelection {
         TextField(
           onChanged: onSearchChanged,
           decoration: InputDecoration(
-            hintText: 'Sök bland vänner...',
+            hintText: context.l10n.shareSearchFriends,
             hintStyle: AppTextStyles.bodySmall.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -92,8 +93,8 @@ class ShareTargetSelection {
             const SizedBox(height: AppDimensions.spacingM),
             Text(
               searchQuery.isEmpty
-                  ? 'Inga vänner tillgängliga'
-                  : 'Inga vänner matchade din sökning',
+                  ? context.l10n.shareNoFriendsAvailable
+                  : context.l10n.shareNoFriendsMatchedSearch,
               style: AppTextStyles.bodySmall.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -107,7 +108,10 @@ class ShareTargetSelection {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: filteredFriends.length,
       separatorBuilder: (context, index) => Divider(
-        color: Theme.of(context).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
+        color: Theme.of(context)
+            .colorScheme
+            .outline
+            .withValues(alpha: AppDimensions.opacityHalf),
         height: 1,
       ),
       itemBuilder: (context, index) {
@@ -123,7 +127,7 @@ class ShareTargetSelection {
           ),
           title: Text(
             friend.displayName,
-            style: AppTextStyles.text16Medium,
+            style: AppTextStyles.contentTitle,
           ),
           subtitle: Text(
             friend.email,

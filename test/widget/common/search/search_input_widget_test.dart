@@ -424,7 +424,7 @@ void main() {
               body: SearchInputWidget(
                 controller: controller,
                 focusNode: focusNode,
-                trailing: const Icon(Icons.filter_list, key: Key('trailing')),
+                trailing: const Icon(Icons.tune, key: Key('trailing')),
               ),
             ),
           ),
@@ -460,7 +460,7 @@ void main() {
               body: SearchInputWidget(
                 controller: controller,
                 focusNode: focusNode,
-                trailing: const Icon(Icons.filter_list, key: Key('trailing')),
+                trailing: const Icon(Icons.tune, key: Key('trailing')),
                 onClear: () {},
               ),
             ),
@@ -480,7 +480,7 @@ void main() {
               body: SearchInputWidget(
                 controller: controller,
                 focusNode: focusNode,
-                trailing: const Icon(Icons.filter_list, key: Key('trailing')),
+                trailing: const Icon(Icons.tune, key: Key('trailing')),
               ),
             ),
           ),

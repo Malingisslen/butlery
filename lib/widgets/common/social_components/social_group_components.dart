@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
@@ -170,8 +171,8 @@ class SocialGroupComponents {
         return ListTile(
           title: Text(category.name),
           subtitle: showMemberCount
-              ? const Text(
-                  '${0} medlemmar') // FriendCategory doesn't have memberIds
+              ? Text(context.l10n.socialMembersCount(
+                  0)) // FriendCategory doesn't have memberIds
               : null,
           leading: const Icon(Icons.group),
           trailing: isSelected
@@ -240,7 +241,7 @@ class SocialGroupComponents {
   /// Build add category button.
   static Widget addCategoryButton({
     VoidCallback? onPressed,
-    String text = 'Lägg till kategori',
+    String? text,
     IconData icon = Icons.add,
     bool outlined = false,
   }) {
@@ -248,13 +249,15 @@ class SocialGroupComponents {
       return OutlinedButton.icon(
         onPressed: onPressed,
         icon: Icon(icon),
-        label: Text(text),
+        label: Builder(
+            builder: (context) => Text(text ?? context.l10n.socialAddCategory)),
       );
     } else {
       return ElevatedButton.icon(
         onPressed: onPressed,
         icon: Icon(icon),
-        label: Text(text),
+        label: Builder(
+            builder: (context) => Text(text ?? context.l10n.socialAddCategory)),
       );
     }
   }
@@ -270,23 +273,29 @@ class SocialGroupComponents {
   }) {
     return Row(
       children: [
-        addCategoryButton(
-          onPressed: onAddCategory,
-          text: 'Ny kategori',
-          outlined: true,
+        Builder(
+          builder: (context) => addCategoryButton(
+            onPressed: onAddCategory,
+            text: context.l10n.socialNewCategory,
+            outlined: true,
+          ),
         ),
         const Spacer(),
         if (showFilter)
-          IconButton(
-            onPressed: onFilterCategories,
-            icon: const Icon(Icons.filter_list),
-            tooltip: 'Filtrera kategorier',
+          Builder(
+            builder: (context) => IconButton(
+              onPressed: onFilterCategories,
+              icon: const Icon(Icons.tune),
+              tooltip: context.l10n.socialFilterCategories,
+            ),
           ),
         if (showSort)
-          IconButton(
-            onPressed: onSortCategories,
-            icon: const Icon(Icons.sort),
-            tooltip: 'Sortera kategorier',
+          Builder(
+            builder: (context) => IconButton(
+              onPressed: onSortCategories,
+              icon: const Icon(Icons.sort),
+              tooltip: context.l10n.socialSortCategories,
+            ),
           ),
       ],
     );
@@ -313,7 +322,7 @@ class SocialGroupComponents {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Kategoristatistik',
+              context.l10n.socialCategoryStatistics,
               style: AppTextStyles.titleBold,
             ),
             const SizedBox(
@@ -325,7 +334,7 @@ class SocialGroupComponents {
                     context,
                     icon: Icons.category,
                     value: totalCategories.toString(),
-                    label: 'Kategorier',
+                    label: context.l10n.socialCategories,
                   ),
                 ),
                 if (showTotalMembers)
@@ -334,7 +343,7 @@ class SocialGroupComponents {
                       context,
                       icon: Icons.people,
                       value: totalMembers.toString(),
-                      label: 'Totalt medlemmar',
+                      label: context.l10n.socialTotalMembers,
                     ),
                   ),
               ],
@@ -350,7 +359,7 @@ class SocialGroupComponents {
                         context,
                         icon: Icons.analytics,
                         value: averageSize.toStringAsFixed(1),
-                        label: 'Genomsnitt/kategori',
+                        label: context.l10n.socialAveragePerCategory,
                       ),
                     ),
                   if (showLargestCategory && largestCategory != null)
@@ -359,7 +368,7 @@ class SocialGroupComponents {
                         context,
                         icon: Icons.star,
                         value: largestCategory.name,
-                        label: 'Största kategorin',
+                        label: context.l10n.socialLargestCategory,
                       ),
                     ),
                 ],
@@ -400,11 +409,11 @@ class SocialGroupComponents {
   /// Build empty categories state.
   static Widget emptyCategoriesState(
     BuildContext context, {
-    String title = 'Inga kategorier',
-    String subtitle = 'Skapa din första vänkategori för att komma igång',
+    String? title,
+    String? subtitle,
     IconData icon = Icons.category_outlined,
     VoidCallback? onCreateFirst,
-    String? createButtonText = 'Skapa kategori',
+    String? createButtonText,
   }) {
     return Center(
       child: Column(
@@ -414,22 +423,23 @@ class SocialGroupComponents {
               size: AppDimensions.iconSizeXxl, color: AppColors.textMedium),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
-            title,
+            title ?? context.l10n.socialNoCategories,
             style: AppTextStyles.titleBold,
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
-            subtitle,
+            subtitle ?? context.l10n.socialCreateFirstCategory,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textMedium,
                 ),
             textAlign: TextAlign.center,
           ),
-          if (onCreateFirst != null && createButtonText != null) ...[
+          if (onCreateFirst != null) ...[
             const SizedBox(height: AppDimensions.spacingLg),
             ElevatedButton(
               onPressed: onCreateFirst,
-              child: Text(createButtonText),
+              child:
+                  Text(createButtonText ?? context.l10n.socialCreateCategory),
             ),
           ],
         ],
@@ -440,16 +450,18 @@ class SocialGroupComponents {
   /// Build categories loading state
   /// Shows loading indicator for categories
   static Widget categoriesLoading({
-    String text = 'Laddar kategorier...',
+    String? text,
   }) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(),
-          SizedBox(height: AppDimensions.spacingMd),
-          Text('Laddar kategorier...'),
-        ],
+    return Builder(
+      builder: (context) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: AppDimensions.spacingMd),
+            Text(text ?? context.l10n.socialLoadingCategories),
+          ],
+        ),
       ),
     );
   }

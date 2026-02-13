@@ -4,7 +4,7 @@
 // ULTRATHINK ANALYSIS: FilterStatusChip widget (65 lines)
 // - StatelessWidget with two required parameters: List<String> filterParts, int selectedCount
 // - Container with full width styling: themed secondaryContainer color with alpha, border, borderRadius
-// - Row structure: Icon (Icons.filter_list) + SizedBox + Expanded Text + Text (count)
+// - Row structure: Icon (Icons.tune) + SizedBox + Expanded Text + Text (count)
 // - Complex text logic: 'Filter: ${filterParts.join(' • ')}' - joins parts with bullet separator
 // - Swedish localization: '$selectedCount valda' (line 55) for selected count display
 // - Theme integration: secondaryContainer colors, onSecondaryContainer text, primary color for count
@@ -114,7 +114,7 @@ void main() {
         expect(row.children[3], isA<Text>());
 
         // Should display filter list icon (line 40)
-        expect(find.byIcon(Icons.filter_list), findsOneWidget);
+        expect(find.byIcon(Icons.tune), findsOneWidget);
 
         // Should display both filter text and count text
         expect(find.text('Filter: Layout • Test'), findsOneWidget);
@@ -358,9 +358,9 @@ void main() {
 
         expect(tester.takeException(), isNull);
 
-        // Should use Icons.filter_list (line 40)
-        final icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
-        expect(icon.icon, equals(Icons.filter_list));
+        // Should use Icons.tune (line 40)
+        final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
+        expect(icon.icon, equals(Icons.tune));
 
         // Should use AppColors.textMedium (line 41)
         expect(icon.color, equals(AppColors.textMedium));
@@ -389,11 +389,11 @@ void main() {
             tester.widget<Text>(find.text('Filter: Style • Test'));
         expect(filterText.style, isNotNull);
 
-        // Should use AppTextStyles.bodySmall as base (line 48)
+        // Should use AppTextStyles.metadataEmphasized as base (line 48)
         expect(filterText.style!.fontSize,
-            equals(AppTextStyles.bodySmall.fontSize));
+            equals(AppTextStyles.metadataEmphasized.fontSize));
 
-        // Should use FontWeight.w500 (line 50)
+        // metadataEmphasized has FontWeight.w500
         expect(filterText.style!.fontWeight, equals(FontWeight.w500));
 
         // Should use theme onSecondaryContainer color (line 49)
@@ -420,12 +420,12 @@ void main() {
         final countText = tester.widget<Text>(find.text('8 valda'));
         expect(countText.style, isNotNull);
 
-        // Should use AppTextStyles.bodySmall as base (line 56)
+        // Should use AppTextStyles.metadataEmphasized as base (line 55)
         expect(countText.style!.fontSize,
-            equals(AppTextStyles.bodySmall.fontSize));
+            equals(AppTextStyles.metadataEmphasized.fontSize));
 
-        // Should use FontWeight.w600 (line 58) - heavier than filter text
-        expect(countText.style!.fontWeight, equals(FontWeight.w600));
+        // metadataEmphasized has FontWeight.w500 (both texts use same base style)
+        expect(countText.style!.fontWeight, equals(FontWeight.w500));
 
         // Should use theme primary color (line 57)
         expect(countText.style!.color, equals(Colors.green)); // From test theme
@@ -471,7 +471,7 @@ void main() {
             equals(Colors.yellow)); // Dark theme primary
 
         // Icon color should remain AppColors.textMedium (not theme dependent)
-        final icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
+        final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
         expect(icon.color, equals(AppColors.textMedium));
       });
 
@@ -703,10 +703,10 @@ void main() {
         // First build
         var filterText = tester.widget<Text>(find.text('Filter: Consistency'));
         var countText = tester.widget<Text>(find.text('7 valda'));
-        var icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
+        var icon = tester.widget<Icon>(find.byIcon(Icons.tune));
         expect(filterText.data, equals('Filter: Consistency'));
         expect(countText.data, equals('7 valda'));
-        expect(icon.icon, equals(Icons.filter_list));
+        expect(icon.icon, equals(Icons.tune));
 
         // Rebuild with same parameters should produce identical results
         await tester.pumpWidget(createTestWidget(createSameWidget()));
@@ -714,10 +714,10 @@ void main() {
 
         filterText = tester.widget<Text>(find.text('Filter: Consistency'));
         countText = tester.widget<Text>(find.text('7 valda'));
-        icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
+        icon = tester.widget<Icon>(find.byIcon(Icons.tune));
         expect(filterText.data, equals('Filter: Consistency'));
         expect(countText.data, equals('7 valda'));
-        expect(icon.icon, equals(Icons.filter_list));
+        expect(icon.icon, equals(Icons.tune));
       });
 
       testWidgets('should work with key parameter',
@@ -769,15 +769,15 @@ void main() {
             isNotNull); // Should have border for visual separation
 
         // Should include filter icon for immediate recognition
-        expect(find.byIcon(Icons.filter_list), findsOneWidget);
+        expect(find.byIcon(Icons.tune), findsOneWidget);
 
-        // Should separate filter description from count with different styling
+        // Should separate filter description from count with different color styling
         final filterText =
             tester.widget<Text>(find.text('Filter: Kategori • Status • Typ'));
         final countText = tester.widget<Text>(find.text('12 valda'));
         expect(filterText.style!.fontWeight, equals(FontWeight.w500));
         expect(countText.style!.fontWeight,
-            equals(FontWeight.w600)); // Heavier weight
+            equals(FontWeight.w500)); // Both use metadataEmphasized
         expect(filterText.style!.color,
             isNot(equals(countText.style!.color))); // Different colors
       });

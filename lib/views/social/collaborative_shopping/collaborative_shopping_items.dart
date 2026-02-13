@@ -5,6 +5,7 @@ import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Focused widget for collaborative shopping items list
 /// This widget handles ONLY items list display responsibilities:
@@ -51,10 +52,10 @@ class CollaborativeShoppingItems extends StatelessWidget {
 
   Widget _buildEmptyState(BuildContext context) {
     return StateWidget.empty(
-      title: 'Inga artiklar än',
+      title: context.l10n.collaborativeNoItemsYet,
       subtitle: viewModel.canEdit
-          ? 'Lägg till den första artikeln ovan'
-          : 'Väntar på att andra lägger till artiklar',
+          ? context.l10n.collaborativeAddFirstItem
+          : context.l10n.collaborativeWaitingForOthers,
       icon: Icons.shopping_cart_outlined,
     );
   }
@@ -74,7 +75,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: AppDimensions.spacingS),
             child: Text(
-              'KLARA (${viewModel.completedItemsCount})',
+              '${context.l10n.collaborativeCompleted} (${viewModel.completedItemsCount})',
               style: AppTextStyles.bodyBold,
             ),
           ),
@@ -133,7 +134,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
               decoration: TextDecoration.lineThrough,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             )
-          : AppTextStyles.text14Medium,
+          : AppTextStyles.contentLabel,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
     );

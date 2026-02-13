@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Discovery Search Section - Enhanced search for discovery dashboard
 class DiscoverySearchSection {
@@ -42,7 +43,8 @@ class DiscoverySearchSection {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         border: Border.all(
-          color: AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
+          color:
+              AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
         ),
         boxShadow: AppShadows.card,
       ),
@@ -51,9 +53,10 @@ class DiscoverySearchSection {
         onChanged: viewModel.updateSearchQuery,
         style: AppTextStyles.bodyMedium,
         decoration: InputDecoration(
-          hintText: 'Sök recept, menyer, inköpslistor...',
+          hintText: context.l10n.discoverySearchHint,
           hintStyle: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark),
+            color: AppColors.onSurface
+                .withValues(alpha: AppDimensions.opacityMediumDark),
           ),
           prefixIcon: const Icon(
             Icons.search,
@@ -66,32 +69,35 @@ class DiscoverySearchSection {
                   children: [
                     IconButton(
                       icon: Icon(
-                        Icons.filter_list,
-                        color: AppColors.primary.withValues(alpha: AppDimensions.opacityDark),
+                        Icons.tune,
+                        color: AppColors.primary
+                            .withValues(alpha: AppDimensions.opacityDark),
                       ),
                       onPressed: () => _showSearchFilters(context, viewModel),
-                      tooltip: 'Sökfilter',
+                      tooltip: context.l10n.discoverySearchFilters,
                     ),
                     IconButton(
                       icon: Icon(
                         Icons.clear,
-                        color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark),
+                        color: AppColors.onSurface
+                            .withValues(alpha: AppDimensions.opacityMediumDark),
                       ),
                       onPressed: () {
                         searchController.clear();
                         viewModel.clearSearch();
                       },
-                      tooltip: 'Rensa sökning',
+                      tooltip: context.l10n.commonClearSearch,
                     ),
                   ],
                 )
               : IconButton(
                   icon: Icon(
                     Icons.mic,
-                    color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMedium),
+                    color: AppColors.onSurface
+                        .withValues(alpha: AppDimensions.opacityMedium),
                   ),
                   onPressed: () => _startVoiceSearch(context),
-                  tooltip: 'Röstsökning',
+                  tooltip: context.l10n.discoveryVoiceSearch,
                 ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
@@ -116,10 +122,12 @@ class DiscoverySearchSection {
         vertical: AppDimensions.spacingS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primaryContainer.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: AppColors.primaryContainer
+            .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: AppDimensions.opacityLight),
+          color:
+              AppColors.primary.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: Row(
@@ -132,21 +140,22 @@ class DiscoverySearchSection {
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
-              '${searchResults.length} resultat för "$query"',
+              context.l10n
+                  .discoverySearchResultsFor(searchResults.length, query),
               style: AppTextStyles.metadataEmphasized.copyWith(
                 color: AppColors.primary,
               ),
             ),
           ),
           if (searchResults.isNotEmpty) ...[
-            _buildSearchResultTypeChip('Recept',
+            _buildSearchResultTypeChip(context.l10n.discoveryRecipes,
                 searchResults.where((r) => r['type'] == 'recipe').length),
             const SizedBox(width: AppDimensions.spacingXs),
-            _buildSearchResultTypeChip('Menyer',
+            _buildSearchResultTypeChip(context.l10n.discoveryMenus,
                 searchResults.where((r) => r['type'] == 'menu').length),
             const SizedBox(width: AppDimensions.spacingXs),
             _buildSearchResultTypeChip(
-                'Listor',
+                context.l10n.discoveryLists,
                 searchResults
                     .where((r) => r['type'] == 'shopping_list')
                     .length),
@@ -165,7 +174,8 @@ class DiscoverySearchSection {
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            AppColors.primary.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Text(
@@ -192,25 +202,25 @@ class DiscoverySearchSection {
             Row(
               children: [
                 const Icon(
-                  Icons.filter_list,
+                  Icons.tune,
                   color: AppColors.primary,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
-                  'Sökfilter',
+                  context.l10n.discoverySearchFilters,
                   style: AppTextStyles.titleMedium,
                 ),
                 const Spacer(),
                 ActionButtons.textButton(
                   context,
-                  label: 'Stäng',
+                  label: context.l10n.commonClose,
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'Innehållstyp',
+              context.l10n.discoveryContentType,
               style: AppTextStyles.titleSmall,
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -218,21 +228,21 @@ class DiscoverySearchSection {
               spacing: AppDimensions.spacingS,
               children: [
                 FilterChip(
-                  label: const Text('Recept'),
+                  label: Text(context.l10n.discoveryRecipes),
                   selected: viewModel.recipesFilterEnabled,
                   onSelected: (selected) {
                     viewModel.toggleContentTypeFilter('recipes');
                   },
                 ),
                 FilterChip(
-                  label: const Text('Menyer'),
+                  label: Text(context.l10n.discoveryMenus),
                   selected: viewModel.menusFilterEnabled,
                   onSelected: (selected) {
                     viewModel.toggleContentTypeFilter('menus');
                   },
                 ),
                 FilterChip(
-                  label: const Text('Inköpslistor'),
+                  label: Text(context.l10n.discoveryShoppingLists),
                   selected: viewModel.shoppingListsFilterEnabled,
                   onSelected: (selected) {
                     viewModel.toggleContentTypeFilter('shopping_lists');
@@ -260,7 +270,8 @@ class DiscoverySearchSection {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+                color: AppColors.primary
+                    .withValues(alpha: AppDimensions.opacityVeryLight),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -271,13 +282,13 @@ class DiscoverySearchSection {
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'Säg vad du vill söka efter...',
+              context.l10n.discoveryVoiceSearchPrompt,
               style: AppTextStyles.titleMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'Tryck på mikrofonen och börja prata',
+              context.l10n.discoveryVoiceSearchInstruction,
               style: AppTextStyles.bodySmall,
               textAlign: TextAlign.center,
             ),
@@ -287,12 +298,12 @@ class DiscoverySearchSection {
         actions: [
           ActionButtons.secondaryButton(
             context,
-            label: 'Avbryt',
+            label: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context),
           ),
           ActionButtons.primaryButton(
             context,
-            label: 'Starta',
+            label: context.l10n.commonStart,
             icon: Icons.mic,
             onPressed: () {
               Navigator.pop(context);
@@ -318,7 +329,7 @@ class DiscoverySearchSection {
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
             SizedBox(width: AppDimensions.spacingM),
-            Text('Lyssnar...'),
+            Text(context.l10n.discoveryListening),
           ],
         ),
         backgroundColor: AppColors.info,
@@ -332,17 +343,16 @@ class DiscoverySearchSection {
         // Simulate detected speech and trigger search
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Röstsökning: "pasta recept"'),
+            content: Text(context.l10n.discoveryVoiceSearchResult),
             backgroundColor: AppColors.success,
             action: SnackBarAction(
-              label: 'Sök',
+              label: context.l10n.commonSearch,
               onPressed: () {
                 // This would trigger the actual search with the detected text
                 // For now, just show the search was initiated
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                        'Sökning startad! (Röstsökning är en förhandsversion)'),
+                  SnackBar(
+                    content: Text(context.l10n.discoveryVoiceSearchPreview),
                     backgroundColor: AppColors.info,
                   ),
                 );
