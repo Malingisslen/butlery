@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 
 /// Dialog for recovering auto-saved recipe drafts with Swedish localization
@@ -40,7 +40,7 @@ class DraftRecoveryDialog extends StatelessWidget {
         size: AppDimensions.iconSizeL,
       ),
       title: Text(
-        AppStrings.draftRecovery,
+        context.l10n.draftRecovery,
         style: AppTextStyles.headlineSmall,
       ),
       content: Column(
@@ -48,7 +48,7 @@ class DraftRecoveryDialog extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppStrings.draftRecoverySubtitle,
+            context.l10n.draftRecoverySubtitle,
             style: AppTextStyles.bodyMedium.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -78,7 +78,7 @@ class DraftRecoveryDialog extends StatelessWidget {
           style: TextButton.styleFrom(
             foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          child: const Text(AppStrings.startFresh),
+          child: Text(context.l10n.draftStartFresh),
         ),
 
         // Primary action - Restore most recent
@@ -87,7 +87,7 @@ class DraftRecoveryDialog extends StatelessWidget {
               ? () => Navigator.of(context).pop(availableDrafts.first.draftId)
               : null,
           icon: const Icon(Icons.restore, size: AppDimensions.iconSizeS),
-          label: const Text(AppStrings.restoreDraft),
+          label: Text(context.l10n.draftRestore),
           style: FilledButton.styleFrom(
             backgroundColor: AppColors.forestGreen,
           ),
@@ -133,9 +133,9 @@ class DraftRecoveryDialog extends StatelessWidget {
                     // Title
                     Text(
                       draft.title.isEmpty
-                          ? AppStrings.unnamedRecipe
+                          ? context.l10n.draftUnnamedRecipe
                           : draft.title,
-                      style: AppTextStyles.text16Medium,
+                      style: AppTextStyles.contentTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -144,7 +144,7 @@ class DraftRecoveryDialog extends StatelessWidget {
 
                     // Metadata (time and field count)
                     Text(
-                      '${draft.timeAgo} • ${AppStrings.fieldsFilledCount(draft.fieldCount)}',
+                      '${draft.timeAgo} • ${context.l10n.draftFieldsFilledCount(draft.fieldCount)}',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),

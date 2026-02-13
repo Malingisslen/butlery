@@ -1,6 +1,7 @@
 // lib/widgets/recipe/draft_recovery_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -60,8 +61,8 @@ class DraftRecoveryDialog extends StatelessWidget {
             color: theme.colorScheme.primary,
           ),
           const SizedBox(width: AppDimensions.width12),
-          const Expanded(
-            child: Text('Osparade utkast hittades'),
+          Expanded(
+            child: Text(context.l10n.draftUnsavedFound),
           ),
         ],
       ),
@@ -72,7 +73,7 @@ class DraftRecoveryDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Du har osparade utkast. Vill du fortsätta redigera något av dem?',
+              context.l10n.draftContinueEditing,
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
@@ -98,13 +99,13 @@ class DraftRecoveryDialog extends StatelessWidget {
         TextButton(
           onPressed: onDiscardAll,
           child: Text(
-            'Kasta alla',
+            context.l10n.draftDiscardAll,
             style: TextStyle(color: theme.colorScheme.error),
           ),
         ),
         TextButton(
           onPressed: onCancel,
-          child: const Text('Börja om'),
+          child: Text(context.l10n.draftStartFresh),
         ),
       ],
     );
@@ -141,14 +142,16 @@ class _DraftListTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    draft.title.isNotEmpty ? draft.title : 'Namnlöst recept',
-                    style: AppTextStyles.text14Medium,
+                    draft.title.isNotEmpty
+                        ? draft.title
+                        : context.l10n.draftUnnamedRecipe,
+                    style: AppTextStyles.contentLabel,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: AppDimensions.spacingXxs),
                   Text(
-                    '${draft.fieldCount} fält ifyllda • ${draft.timeAgo}',
+                    '${context.l10n.draftFieldsFilledCount(draft.fieldCount)} • ${draft.timeAgo}',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),

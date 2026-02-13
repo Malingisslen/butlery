@@ -167,7 +167,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                           (AppDimensions.spacingSm + AppDimensions.spacingXs)),
                   Text(
                     widget.allowMultiple ? 'Select images' : 'Select image',
-                    style: AppTextStyles.text16Medium,
+                    style: AppTextStyles.contentTitle,
                   ),
                   const SizedBox(height: AppDimensions.spacingXs),
                   Text(
@@ -198,7 +198,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       children: [
         Text(
           'Selected Images',
-          style: AppTextStyles.text16Medium,
+          style: AppTextStyles.contentTitle,
         ),
         const SizedBox(height: AppDimensions.spacingSm),
         GridView.builder(

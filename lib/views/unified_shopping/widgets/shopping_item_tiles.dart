@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Individual shopping item tile components.
 ///
@@ -80,7 +81,7 @@ class ShoppingItemTiles {
                         children: [
                           Text(
                             item.displayText,
-                            style: AppTextStyles.text16Medium.copyWith(
+                            style: AppTextStyles.contentTitle.copyWith(
                               color: isCompleted
                                   ? AppColors.textMedium
                                   : AppColors.textDark,
@@ -140,7 +141,7 @@ class ShoppingItemTiles {
                               color: AppColors.textMedium,
                             ),
                             onPressed: () => onEditItem(item),
-                            tooltip: 'Redigera',
+                            tooltip: context.l10n.commonEdit,
                             padding:
                                 const EdgeInsets.all(AppDimensions.spacingM),
                             constraints: const BoxConstraints(
@@ -162,7 +163,7 @@ class ShoppingItemTiles {
                                   .withValues(alpha: AppDimensions.opacityDark),
                             ),
                             onPressed: () => onDeleteItem(item),
-                            tooltip: 'Ta bort',
+                            tooltip: context.l10n.commonDelete,
                             padding:
                                 const EdgeInsets.all(AppDimensions.spacingM),
                             constraints: const BoxConstraints(

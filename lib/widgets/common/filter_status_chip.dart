@@ -31,13 +31,16 @@ class FilterStatusChip extends StatelessWidget {
             .withValues(alpha: AppDimensions.opacityMediumLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: Theme.of(context).colorScheme.secondary.withValues(alpha: AppDimensions.opacityLight),
+          color: Theme.of(context)
+              .colorScheme
+              .secondary
+              .withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: Row(
         children: [
           const Icon(
-            Icons.filter_list,
+            Icons.tune,
             color: AppColors.textMedium,
             size: AppDimensions.iconSizeM,
           ),

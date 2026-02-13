@@ -271,7 +271,7 @@ class SnackBarUtils {
   }) {
     Widget content = Text(
       message,
-      style: AppTextStyles.text14Medium.copyWith(
+      style: AppTextStyles.contentLabel.copyWith(
         color: textColor,
       ),
     );

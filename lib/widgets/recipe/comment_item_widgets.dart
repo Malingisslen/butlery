@@ -1,6 +1,7 @@
 // lib/widgets/recipe/comment_item_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -198,7 +199,7 @@ class CommentItemWidgets {
                   ),
                   title: Text(
                     displayName,
-                    style: AppTextStyles.text16Medium,
+                    style: AppTextStyles.contentTitle,
                   ),
                 );
               },

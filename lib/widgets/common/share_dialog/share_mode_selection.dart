@@ -1,6 +1,7 @@
 // lib/widgets/common/share_dialog/share_mode_selection.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
@@ -21,7 +22,7 @@ class ShareModeSelection {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Delningssätt',
+          context.l10n.shareMethod,
           style: AppTextStyles.titleBold,
         ),
         const SizedBox(height: AppDimensions.spacingM),
@@ -67,12 +68,12 @@ class ShareModeSelection {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Statisk kopia',
-                              style: AppTextStyles.text16Medium,
+                              context.l10n.shareStaticCopy,
+                              style: AppTextStyles.contentTitle,
                             ),
                             const SizedBox(height: AppDimensions.spacingXs),
                             Text(
-                              'Skicka en kopia som mottagaren kan ändra fritt',
+                              context.l10n.shareStaticCopyDescription,
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: Theme.of(context)
                                     .colorScheme
@@ -125,14 +126,14 @@ class ShareModeSelection {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Realtidsdelning',
-                            style: AppTextStyles.text16Medium,
+                            context.l10n.shareRealtimeSharing,
+                            style: AppTextStyles.contentTitle,
                           ),
                           const SizedBox(height: AppDimensions.spacingXs),
                           Text(
                             contentType == ShareContentType.shoppingList
-                                ? 'Alla kan lägga till och checka av varor i realtid'
-                                : 'Alla kan redigera tillsammans i realtid',
+                                ? context.l10n.shareRealtimeShoppingDescription
+                                : context.l10n.shareRealtimeSharingDescription,
                             style: AppTextStyles.bodySmall.copyWith(
                               color: Theme.of(context)
                                   .colorScheme

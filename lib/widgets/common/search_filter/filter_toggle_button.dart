@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Toggle button for showing/hiding filters
 class FilterToggleButton extends StatelessWidget {
@@ -24,11 +25,12 @@ class FilterToggleButton extends StatelessWidget {
         IconButton(
           onPressed: onToggle,
           icon: Icon(
-            Icons.filter_list,
+            Icons.tune,
             size: AppDimensions.iconSizeAction,
             color: showFilters ? AppColors.forestGreen : AppColors.textMedium,
           ),
-          tooltip: showFilters ? 'Dölj filter' : 'Visa filter',
+          tooltip:
+              showFilters ? context.l10n.filterHide : context.l10n.filterShow,
         ),
         // Active filters indicator
         if (hasActiveFilters && !showFilters)

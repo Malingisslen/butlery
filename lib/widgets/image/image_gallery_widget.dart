@@ -186,7 +186,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
           const SizedBox(width: AppDimensions.spacingSm),
           Text(
             '${_selectedImages.length} selected',
-            style: AppTextStyles.text16Medium.copyWith(
+            style: AppTextStyles.contentTitle.copyWith(
               color: AppColors.cardWhite,
             ),
           ),
@@ -269,32 +269,36 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
           ),
           child: ClipRRect(
             borderRadius: widget.config.effectiveBorderRadius,
-            child: GestureDetector(
-              onTap: () => _handleImageTap(imageUrl, index),
-              onLongPress: () => _handleImageLongPress(imageUrl, index),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // Image
-                  ImageComponents.buildOptimizedCachedImage(
-                    imageUrl: imageUrl,
-                    config: widget.config,
-                    fit: BoxFit.cover,
-                    placeholder: ImageComponents.buildLoadingPlaceholder(
+            child: Semantics(
+              label: 'Visa bild',
+              button: true,
+              child: GestureDetector(
+                onTap: () => _handleImageTap(imageUrl, index),
+                onLongPress: () => _handleImageLongPress(imageUrl, index),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Image
+                    ImageComponents.buildOptimizedCachedImage(
+                      imageUrl: imageUrl,
                       config: widget.config,
+                      fit: BoxFit.cover,
+                      placeholder: ImageComponents.buildLoadingPlaceholder(
+                        config: widget.config,
+                      ),
+                      errorWidget: ImageComponents.buildErrorPlaceholder(
+                        config: widget.config,
+                      ),
                     ),
-                    errorWidget: ImageComponents.buildErrorPlaceholder(
-                      config: widget.config,
-                    ),
-                  ),
 
-                  // Selection overlay
-                  if (isSelected)
-                    Container(
-                      color: AppColors.forestGreen
-                          .withValues(alpha: AppDimensions.opacityLight),
-                    ),
-                ],
+                    // Selection overlay
+                    if (isSelected)
+                      Container(
+                        color: AppColors.forestGreen
+                            .withValues(alpha: AppDimensions.opacityLight),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -468,30 +472,34 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
       itemBuilder: (context, index) {
         final imageUrl = imageUrls[index];
 
-        return GestureDetector(
-          onTap: () {
-            if (config.enableHapticFeedback) {
-              HapticFeedback.lightImpact();
-            }
-            onImageTap?.call(index);
-          },
-          onLongPress: () {
-            if (config.enableHapticFeedback) {
-              HapticFeedback.mediumImpact();
-            }
-            onImageLongPress?.call(imageUrl);
-          },
-          child: ClipRRect(
-            borderRadius: config.effectiveBorderRadius,
-            child: ImageComponents.buildOptimizedCachedImage(
-              imageUrl: imageUrl,
-              config: config,
-              fit: BoxFit.cover,
-              placeholder: ImageComponents.buildLoadingPlaceholder(
+        return Semantics(
+          label: 'Visa bild',
+          button: true,
+          child: GestureDetector(
+            onTap: () {
+              if (config.enableHapticFeedback) {
+                HapticFeedback.lightImpact();
+              }
+              onImageTap?.call(index);
+            },
+            onLongPress: () {
+              if (config.enableHapticFeedback) {
+                HapticFeedback.mediumImpact();
+              }
+              onImageLongPress?.call(imageUrl);
+            },
+            child: ClipRRect(
+              borderRadius: config.effectiveBorderRadius,
+              child: ImageComponents.buildOptimizedCachedImage(
+                imageUrl: imageUrl,
                 config: config,
-              ),
-              errorWidget: ImageComponents.buildErrorPlaceholder(
-                config: config,
+                fit: BoxFit.cover,
+                placeholder: ImageComponents.buildLoadingPlaceholder(
+                  config: config,
+                ),
+                errorWidget: ImageComponents.buildErrorPlaceholder(
+                  config: config,
+                ),
               ),
             ),
           ),

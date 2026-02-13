@@ -1,6 +1,7 @@
 // lib/widgets/common/input/editable_menu_items_preview_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -42,7 +43,7 @@ class _EditableMenuItemsPreviewDialogState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Förhandsgranska och redigera artiklar'),
+      title: Text(context.l10n.shoppingPreviewAndEditItems),
       content: SizedBox(
         width: double.maxFinite,
         height: 400,
@@ -58,13 +59,13 @@ class _EditableMenuItemsPreviewDialogState
                     ),
                     const SizedBox(height: AppDimensions.spacingM),
                     Text(
-                      'Inga artiklar valda',
+                      context.l10n.shoppingNoItemsSelected,
                       style: AppTextStyles.bodyLarge,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppDimensions.spacingS),
                     Text(
-                      'Du har tagit bort alla artiklar från menyn',
+                      context.l10n.shoppingAllItemsRemovedFromMenu,
                       style: AppTextStyles.bodyMedium,
                       textAlign: TextAlign.center,
                     ),
@@ -88,7 +89,7 @@ class _EditableMenuItemsPreviewDialogState
                       ),
                       title: Text(
                         item.name,
-                        style: AppTextStyles.text16Medium,
+                        style: AppTextStyles.contentTitle,
                       ),
                       subtitle: item.amount > 0
                           ? Text(
@@ -103,7 +104,7 @@ class _EditableMenuItemsPreviewDialogState
                           size: AppDimensions.iconSizeAction,
                         ),
                         onPressed: () => _removeItem(index),
-                        tooltip: 'Ta bort artikel',
+                        tooltip: context.l10n.shoppingRemoveItem,
                       ),
                     ),
                   );
@@ -120,7 +121,7 @@ class _EditableMenuItemsPreviewDialogState
             },
             icon: const Icon(Icons.clear_all, color: AppColors.error),
             label: Text(
-              'Ta bort alla',
+              context.l10n.shoppingRemoveAll,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: AppColors.error,
                   ),
@@ -131,7 +132,7 @@ class _EditableMenuItemsPreviewDialogState
             'items': _editableItems,
             'addToList': false,
           }), // Cancel - save changes but don't add to list
-          child: const Text('Avbryt'),
+          child: Text(context.l10n.commonCancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, {
@@ -139,8 +140,9 @@ class _EditableMenuItemsPreviewDialogState
             'addToList': _editableItems.isNotEmpty,
           }),
           child: Text(_editableItems.isEmpty
-              ? 'Stäng'
-              : 'Till "${widget.selectedListName}" (${_editableItems.length})'),
+              ? context.l10n.commonClose
+              : context.l10n.shoppingToListWithCount(
+                  widget.selectedListName, _editableItems.length)),
         ),
       ],
     );

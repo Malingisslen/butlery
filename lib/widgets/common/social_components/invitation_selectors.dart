@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -29,7 +30,7 @@ class InvitationSelectors {
             child: Padding(
               padding: const EdgeInsets.all(AppDimensions.spacingLg),
               child: Text(
-                'Inga målgrupper tillgängliga',
+                context.l10n.invitationNoTargetsAvailable,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textMedium,
                     ),
@@ -103,8 +104,8 @@ class InvitationSelectors {
     List<InvitationTarget>? selectedTargets,
     Function(List<InvitationTarget>)? onSelectionChanged,
     bool showSelectAll = true,
-    String? selectAllText = 'Välj alla',
-    String? selectNoneText = 'Avmarkera alla',
+    String? selectAllText,
+    String? selectNoneText,
     ScrollPhysics? physics,
     EdgeInsets? padding,
   }) {
@@ -156,23 +157,25 @@ class InvitationSelectors {
   /// Build target search field.
   static Widget targetSearchField({
     Function(String)? onSearchChanged,
-    String? hint = 'Sök målgrupper...',
+    String? hint,
     IconData prefixIcon = Icons.search,
     bool autofocus = false,
     TextEditingController? controller,
     EdgeInsets? margin,
   }) {
-    return Container(
-      margin: margin,
-      child: TextField(
-        controller: controller,
-        autofocus: autofocus,
-        decoration: InputDecoration(
-          hintText: hint,
-          prefixIcon: Icon(prefixIcon),
-          border: const OutlineInputBorder(),
+    return Builder(
+      builder: (context) => Container(
+        margin: margin,
+        child: TextField(
+          controller: controller,
+          autofocus: autofocus,
+          decoration: InputDecoration(
+            hintText: hint ?? context.l10n.invitationSearchTargets,
+            prefixIcon: Icon(prefixIcon),
+            border: const OutlineInputBorder(),
+          ),
+          onChanged: onSearchChanged,
         ),
-        onChanged: onSearchChanged,
       ),
     );
   }
@@ -267,17 +270,22 @@ class InvitationSelectors {
               builder: (context) => Row(
                 children: [
                   Text(
-                    'Sortera:',
-                    style: AppTextStyles.text14Medium,
+                    context.l10n.invitationSortLabel,
+                    style: AppTextStyles.contentLabel,
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
                   DropdownButton<String>(
                     value: 'name',
-                    items: const [
-                      DropdownMenuItem(value: 'name', child: Text('Namn')),
-                      DropdownMenuItem(value: 'type', child: Text('Typ')),
+                    items: [
                       DropdownMenuItem(
-                          value: 'members', child: Text('Medlemmar')),
+                          value: 'name',
+                          child: Text(context.l10n.invitationSortByName)),
+                      DropdownMenuItem(
+                          value: 'type',
+                          child: Text(context.l10n.invitationSortByType)),
+                      DropdownMenuItem(
+                          value: 'members',
+                          child: Text(context.l10n.invitationSortByMembers)),
                     ],
                     onChanged: (sortBy) {
                       if (onFilterChanged != null && sortBy != null) {
@@ -315,7 +323,7 @@ class InvitationSelectors {
     required List<InvitationTarget> selectedTargets,
     VoidCallback? onClearAll,
     Function(InvitationTarget)? onRemoveTarget,
-    String? title = 'Valda målgrupper',
+    String? title,
     bool showClearAll = true,
     bool compact = false,
     EdgeInsets? padding,
@@ -340,21 +348,21 @@ class InvitationSelectors {
           Row(
             children: [
               Text(
-                title ?? 'Valda målgrupper',
+                title ?? context.l10n.invitationSelectedTargets,
                 style: AppTextStyles.titleBold,
               ),
               const Spacer(),
               if (showClearAll && onClearAll != null)
                 TextButton(
                   onPressed: onClearAll,
-                  child: const Text('Rensa alla'),
+                  child: Text(context.l10n.commonClearAll),
                 ),
             ],
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           if (compact)
             Text(
-              '${selectedTargets.length} målgrupper valda',
+              context.l10n.invitationTargetsSelected(selectedTargets.length),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textMedium,
                   ),

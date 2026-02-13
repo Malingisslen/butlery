@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// GDPR Article 20 - Right to Data Portability UI
 /// User interface for exporting personal data in compliance with GDPR.
@@ -27,7 +28,7 @@ class DataExportView extends StatelessWidget {
       create: (_) => context.read<DataExportViewModel>(),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Exportera mina data'),
+          title: Text(context.l10n.dataExportTitle),
           centerTitle: true,
         ),
         body: SafeArea(
@@ -89,7 +90,7 @@ class DataExportView extends StatelessWidget {
                 const SizedBox(width: AppDimensions.spacingL),
                 Expanded(
                   child: Text(
-                    'Ladda ner dina data',
+                    context.l10n.dataExportDownloadTitle,
                     style: AppTextStyles.titleBold,
                   ),
                 ),
@@ -97,7 +98,7 @@ class DataExportView extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
-              'Enligt GDPR Artikel 20 har du rätt att få en kopia av all din personliga data som lagras i Butlery. Data exporteras i JSON-format som du kan spara eller överföra till en annan tjänst.',
+              context.l10n.dataExportGdprDescription,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textMedium,
                     height: 1.5,
@@ -120,7 +121,7 @@ class DataExportView extends StatelessWidget {
           ? null
           : () => _handleExport(context, viewModel),
       icon: const Icon(Icons.cloud_download_rounded),
-      label: const Text('Exportera mina data'),
+      label: Text(context.l10n.dataExportTitle),
       style: ElevatedButton.styleFrom(
         padding: AppDimensions.paddingVertical16,
         textStyle: AppTextStyles.titleMedium,
@@ -137,12 +138,12 @@ class DataExportView extends StatelessWidget {
             const CircularProgressIndicator(),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
-              'Exporterar dina data...',
-              style: AppTextStyles.text16Medium,
+              context.l10n.dataExportExporting,
+              style: AppTextStyles.contentTitle,
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
-              'Detta kan ta några sekunder',
+              context.l10n.dataExportMayTakeSeconds,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textMedium,
                   ),
@@ -167,12 +168,12 @@ class DataExportView extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
-              'Export misslyckades',
+              context.l10n.dataExportFailed,
               style: AppTextStyles.titleBold,
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
-              viewModel.errorMessage ?? 'Ett okänt fel uppstod',
+              viewModel.errorMessage ?? context.l10n.errorUnexpected,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
@@ -180,7 +181,7 @@ class DataExportView extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: () => viewModel.retryExport(),
               icon: const Icon(Icons.refresh),
-              label: const Text('Försök igen'),
+              label: Text(context.l10n.commonRetry),
             ),
           ],
         ),
@@ -191,7 +192,8 @@ class DataExportView extends StatelessWidget {
   Widget _buildSuccessState(
       BuildContext context, DataExportViewModel viewModel) {
     return Card(
-      color: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
+      color:
+          AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingXl),
         child: Column(
@@ -203,19 +205,19 @@ class DataExportView extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
-              'Data exporterad',
+              context.l10n.dataExportSuccess,
               style: AppTextStyles.titleBold,
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
-              'Exporterad ${viewModel.exportTimestampText}',
+              '${context.l10n.dataExportExportedAt} ${viewModel.exportTimestampText}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textMedium,
                   ),
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
-              'Filstorlek: ${viewModel.exportSizeText}',
+              '${context.l10n.dataExportFileSize}: ${viewModel.exportSizeText}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textMedium,
                   ),
@@ -228,7 +230,7 @@ class DataExportView extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: () => _handleDownload(context, viewModel),
                     icon: const Icon(Icons.save_alt),
-                    label: const Text('Spara fil'),
+                    label: Text(context.l10n.dataExportSaveFile),
                   ),
                 ),
                 const SizedBox(width: AppDimensions.spacingL),
@@ -236,7 +238,7 @@ class DataExportView extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: () => _handleShare(context, viewModel),
                     icon: const Icon(Icons.share),
-                    label: const Text('Dela'),
+                    label: Text(context.l10n.commonShare),
                   ),
                 ),
               ],
@@ -245,7 +247,7 @@ class DataExportView extends StatelessWidget {
             TextButton.icon(
               onPressed: () => _handleClear(context, viewModel),
               icon: const Icon(Icons.delete_outline),
-              label: const Text('Rensa export'),
+              label: Text(context.l10n.dataExportClear),
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.textMedium,
               ),
@@ -273,22 +275,22 @@ class DataExportView extends StatelessWidget {
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
-                  'Vad ingår i exporten?',
+                  context.l10n.dataExportWhatsIncluded,
                   style: AppTextStyles.titleBold,
                 ),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            _buildInfoItem(context, 'Profil och inställningar'),
-            _buildInfoItem(context, 'Alla dina recept'),
-            _buildInfoItem(context, 'Vänner och sociala kontakter'),
-            _buildInfoItem(context, 'Meddelanden och konversationer'),
-            _buildInfoItem(context, 'Inköpslistor och menyer'),
-            _buildInfoItem(context, 'Kommentarer och betyg'),
-            _buildInfoItem(context, 'Aktivitetshistorik'),
+            _buildInfoItem(context, context.l10n.dataExportIncludesProfile),
+            _buildInfoItem(context, context.l10n.dataExportIncludesRecipes),
+            _buildInfoItem(context, context.l10n.dataExportIncludesFriends),
+            _buildInfoItem(context, context.l10n.dataExportIncludesMessages),
+            _buildInfoItem(context, context.l10n.dataExportIncludesLists),
+            _buildInfoItem(context, context.l10n.dataExportIncludesComments),
+            _buildInfoItem(context, context.l10n.dataExportIncludesActivity),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'OBS: Exporten innehåller endast din egen data. Ingen data från andra användare inkluderas.',
+              context.l10n.dataExportOnlyYourData,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textMedium,
                     fontStyle: FontStyle.italic,
@@ -325,8 +327,8 @@ class DataExportView extends StatelessWidget {
 
     if (success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('✓ Data exporterad framgångsrikt'),
+        SnackBar(
+          content: Text(context.l10n.dataExportExportedSuccessfully),
           backgroundColor: AppColors.success,
         ),
       );
@@ -355,7 +357,7 @@ class DataExportView extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✓ Fil sparad: $fileName'),
+            content: Text(context.l10n.dataExportFileSaved(fileName)),
             backgroundColor: AppColors.success,
             duration: const Duration(seconds: 4),
             action: SnackBarAction(
@@ -370,7 +372,8 @@ class DataExportView extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✗ Kunde inte spara fil: $e'),
+            content:
+                Text(context.l10n.dataExportCouldNotSaveFile(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -399,14 +402,14 @@ class DataExportView extends StatelessWidget {
       // Share file
       await SharePlus.instance.share(ShareParams(
         files: [XFile(filePath)],
-        subject: 'Butlery Data Export',
-        text: 'Min exporterade data från Butlery app',
+        subject: context.l10n.dataExportShareSubject,
+        text: context.l10n.dataExportShareText,
       ));
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✗ Kunde inte dela: $e'),
+            content: Text(context.l10n.dataExportCouldNotShare(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -419,22 +422,19 @@ class DataExportView extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Rensa export?'),
-        content: const Text(
-          'Är du säker på att du vill rensa den exporterade datan? '
-          'Du kan när som helst exportera igen.',
-        ),
+        title: Text(context.l10n.dataExportClearConfirmTitle),
+        content: Text(context.l10n.dataExportClearConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: AppColors.error,
             ),
-            child: const Text('Rensa'),
+            child: Text(context.l10n.commonClear),
           ),
         ],
       ),
@@ -444,8 +444,8 @@ class DataExportView extends StatelessWidget {
       viewModel.clearExportedData();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✓ Export rensad'),
+          SnackBar(
+            content: Text(context.l10n.dataExportCleared),
           ),
         );
       }

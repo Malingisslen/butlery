@@ -189,7 +189,7 @@ void main() {
 
         await tester.pumpWidget(
           createTestWidget(
-            child: const ImagePreviewCard.loading(
+            child: ImagePreviewCard.loading(
               height: 150.0,
               child: loadingChild,
             ),
@@ -221,7 +221,7 @@ void main() {
 
         await tester.pumpWidget(
           createTestWidget(
-            child: const ImagePreviewCard.loading(
+            child: ImagePreviewCard.loading(
               child: loadingChild,
             ),
           ),

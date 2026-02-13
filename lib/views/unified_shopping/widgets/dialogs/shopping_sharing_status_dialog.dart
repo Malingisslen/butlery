@@ -12,6 +12,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Comprehensive sharing status dialog showing detailed information about list collaboration
 class ShoppingShareStatusDialog extends StatelessWidget {
@@ -41,7 +42,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
             child: Text(
-              _getDialogTitle(),
+              _getDialogTitle(context),
               style: AppTextStyles.titleLarge,
             ),
           ),
@@ -77,7 +78,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             _canManageSharing(currentUserId))
           ActionButtons.secondaryButton(
             context,
-            label: 'Hantera delning',
+            label: context.l10n.shoppingManageSharing,
             icon: Icons.manage_accounts,
             onPressed: () {
               Navigator.pop(context);
@@ -86,7 +87,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           ),
         ActionButtons.primaryButton(
           context,
-          label: 'Stäng',
+          label: context.l10n.commonClose,
           onPressed: () => Navigator.pop(context),
         ),
       ],
@@ -103,15 +104,15 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Listinformation',
+              context.l10n.shoppingListInfo,
               style: AppTextStyles.titleMedium.copyWith(
                 color: AppColors.forestGreen,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            _buildInfoRow('Namn', list.name),
-            _buildInfoRow('Typ', _getListTypeLabel()),
-            _buildInfoRow('Skapare', list.ownerDisplayName),
+            _buildInfoRow(context.l10n.commonName, list.name),
+            _buildInfoRow(context.l10n.commonType, _getListTypeLabel(context)),
+            _buildInfoRow(context.l10n.shoppingCreator, list.ownerDisplayName),
           ],
         ),
       ),
@@ -128,38 +129,37 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     Color permissionColor;
 
     if (isOwner) {
-      permissionLabel = 'Administratör (Ägare)';
-      permissionDescription =
-          'Du äger denna lista och kan hantera alla aspekter av den';
+      permissionLabel = context.l10n.shoppingAdminOwner;
+      permissionDescription = context.l10n.shoppingAdminOwnerDescription;
       permissionIcon = Icons.admin_panel_settings;
       permissionColor = AppColors.forestGreen;
     } else {
       switch (userPermission) {
         case SharedListPermission.view:
-          permissionLabel = 'Kan bara se';
+          permissionLabel = context.l10n.shoppingPermissionViewOnly;
           permissionDescription =
-              'Du kan se listan och alla artiklar men inte redigera';
+              context.l10n.shoppingPermissionViewDescription;
           permissionIcon = Icons.visibility;
           permissionColor = AppColors.textMedium;
           break;
         case SharedListPermission.edit:
-          permissionLabel = 'Kan redigera';
+          permissionLabel = context.l10n.shoppingPermissionEdit;
           permissionDescription =
-              'Du kan lägga till, ta bort och ändra artiklar i listan';
+              context.l10n.shoppingPermissionEditDescription;
           permissionIcon = Icons.edit;
           permissionColor = AppColors.accent;
           break;
         case SharedListPermission.admin:
-          permissionLabel = 'Administratör';
+          permissionLabel = context.l10n.shoppingPermissionAdministrator;
           permissionDescription =
-              'Du kan redigera listan och hantera medlemmarnas behörigheter';
+              context.l10n.shoppingPermissionAdminDescription;
           permissionIcon = Icons.admin_panel_settings;
           permissionColor = AppColors.forestGreen;
           break;
         default:
-          permissionLabel = 'Ej specificerad';
+          permissionLabel = context.l10n.shoppingPermissionUnspecified;
           permissionDescription =
-              'Din behörighetsnivå är inte tydligt definierad';
+              context.l10n.shoppingPermissionUnspecifiedDescription;
           permissionIcon = Icons.help;
           permissionColor = AppColors.textMedium;
       }
@@ -178,7 +178,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                     color: permissionColor, size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
-                  'Din behörighet',
+                  context.l10n.shoppingYourPermission,
                   style: AppTextStyles.titleMedium.copyWith(
                     color: AppColors.forestGreen,
                   ),
@@ -225,7 +225,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                     size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
-                  'Medlemmar (${allMembers.length})',
+                  context.l10n.shoppingMembersCount(allMembers.length),
                   style: AppTextStyles.titleMedium.copyWith(
                     color: AppColors.forestGreen,
                   ),
@@ -235,7 +235,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingM),
             ...allMembers.entries.map((entry) {
               final isOwner = entry.key == list.ownerId;
-              return _buildMemberRow(entry.key, entry.value, isOwner);
+              return _buildMemberRow(context, entry.key, entry.value, isOwner);
             }),
           ],
         ),
@@ -243,32 +243,33 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildMemberRow(
-      String userId, SharedListPermission permission, bool isOwner) {
-    final String displayName = userDisplayNames[userId] ?? 'Okänd användare';
+  Widget _buildMemberRow(BuildContext context, String userId,
+      SharedListPermission permission, bool isOwner) {
+    final String displayName =
+        userDisplayNames[userId] ?? context.l10n.shoppingUnknownUser;
 
     String permissionLabel;
     IconData permissionIcon;
     Color permissionColor;
 
     if (isOwner) {
-      permissionLabel = 'Ägare';
+      permissionLabel = context.l10n.shoppingPermissionOwner;
       permissionIcon = Icons.admin_panel_settings;
       permissionColor = AppColors.forestGreen;
     } else {
       switch (permission) {
         case SharedListPermission.view:
-          permissionLabel = 'Kan se';
+          permissionLabel = context.l10n.shoppingPermissionView;
           permissionIcon = Icons.visibility;
           permissionColor = AppColors.textMedium;
           break;
         case SharedListPermission.edit:
-          permissionLabel = 'Kan redigera';
+          permissionLabel = context.l10n.shoppingPermissionEdit;
           permissionIcon = Icons.edit;
           permissionColor = AppColors.accent;
           break;
         case SharedListPermission.admin:
-          permissionLabel = 'Admin';
+          permissionLabel = context.l10n.shoppingPermissionAdmin;
           permissionIcon = Icons.admin_panel_settings;
           permissionColor = AppColors.forestGreen;
           break;
@@ -297,7 +298,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
               children: [
                 Text(
                   displayName,
-                  style: AppTextStyles.text16Medium,
+                  style: AppTextStyles.contentTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -337,7 +338,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                     size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
-                  'Senaste aktivitet',
+                  context.l10n.shoppingRecentActivity,
                   style: AppTextStyles.titleMedium.copyWith(
                     color: AppColors.forestGreen,
                   ),
@@ -346,9 +347,11 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingM),
             if (list.lastActivityByDisplayName != null)
-              _buildInfoRow('Av', list.lastActivityByDisplayName!),
+              _buildInfoRow(
+                  context.l10n.shoppingBy, list.lastActivityByDisplayName!),
             if (list.lastActivityAt != null)
-              _buildInfoRow('När', _formatDateTime(list.lastActivityAt!)),
+              _buildInfoRow(context.l10n.shoppingWhen,
+                  _formatDateTime(context, list.lastActivityAt!)),
           ],
         ),
       ),
@@ -402,19 +405,19 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     }
   }
 
-  String _getListTypeLabel() {
+  String _getListTypeLabel(BuildContext context) {
     switch (list.type) {
       case ListType.personal:
-        return 'Personlig lista';
+        return context.l10n.shoppingPersonalList;
       case ListType.collaborative:
-        return 'Delad lista';
+        return context.l10n.shoppingSharedList;
       case ListType.template:
-        return 'Mall-lista';
+        return context.l10n.shoppingTemplateList;
     }
   }
 
-  String _getDialogTitle() {
-    return 'Lista: ${list.name}';
+  String _getDialogTitle(BuildContext context) {
+    return context.l10n.shoppingListName(list.name);
   }
 
   bool _canManageSharing(String currentUserId) {
@@ -444,7 +447,8 @@ class ShoppingShareStatusDialog extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Kunde inte ladda vänner: $e'),
+            content:
+                Text(context.l10n.shoppingCouldNotLoadFriends(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -452,18 +456,18 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     }
   }
 
-  String _formatDateTime(DateTime dateTime) {
+  String _formatDateTime(BuildContext context, DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
     if (difference.inMinutes < 1) {
-      return 'Nyss';
+      return context.l10n.shoppingJustNow;
     } else if (difference.inHours < 1) {
-      return '${difference.inMinutes} min sedan';
+      return context.l10n.shoppingMinutesAgo(difference.inMinutes);
     } else if (difference.inDays < 1) {
-      return '${difference.inHours} tim sedan';
+      return context.l10n.shoppingHoursAgo(difference.inHours);
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} dagar sedan';
+      return context.l10n.shoppingDaysAgo(difference.inDays);
     } else {
       return '${dateTime.day}/${dateTime.month} ${dateTime.year}';
     }

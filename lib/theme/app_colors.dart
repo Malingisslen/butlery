@@ -19,10 +19,6 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // ============================================================
-  // PRIMARY BRAND COLORS (UI Redesign)
-  // ============================================================
-
   /// Forest green - primary brand color for headers, buttons, primary actions
   static const Color forestGreen = Color(0xFF4A7C59);
 
@@ -45,26 +41,29 @@ class AppColors {
   /// Slightly darker cream - for cards, elevated surfaces
   static const Color creamDark = Color(0xFFF0EAD6);
 
+  /// Darker cream - for nav bars, portion scalers (mockup --cream-dark)
+  static const Color creamDarker = Color(0xFFE8E2D6);
+
+  /// Pale green - for hero image backgrounds (mockup --green-pale)
+  static const Color greenPale = Color(0xFFE8F0EA);
+
+  /// Muted green - for navigation unselected items (mockup --green-muted)
+  static const Color greenMuted = Color(0xFF7A9A80);
+
   /// Card white - for elevated cards and surfaces
   static const Color cardWhite = Color(0xFFFFFFFF);
   static const Color cardWhite54 = Color(0x8AFFFFFF); // 54% opacity white
 
-  // ============================================================
-  // TEXT COLORS
-  // ============================================================
-
   /// Dark text - primary text color (on light backgrounds)
   static const Color textDark = Color(0xFF2C3E50);
 
-  /// Medium text - secondary text, descriptions
-  static const Color textMedium = Color(0xFF6B7280);
-  static const Color textMedium200 =
-      Color(0xFFE5E7EB); // Lighter variant for backgrounds
-  static const Color textMedium300 = Color(0xFFD1D5DB); // Medium-light variant
-  static const Color textMedium600 =
-      Color(0xFF4B5563); // Darker variant for text
+  /// Medium text - secondary text, descriptions (WCAG AA 4.5:1 on cream)
+  static const Color textMedium = Color(0xFF636A72);
 
-  /// Light text - tertiary text, placeholders
+  /// Placeholder icon color - for avatar/icon placeholders
+  static const Color placeholderIcon = Color(0xFF4B5563);
+
+  /// Light text - tertiary text, placeholders (large text / decorative only — below AA normal)
   static const Color textLight = Color(0xFF9CA3AF);
   static const Color textTertiary = Color(0xFFD1D5DB);
   static const Color textSecondary = textMedium;
@@ -75,18 +74,14 @@ class AppColors {
   /// Text on cream backgrounds - slightly warmer dark
   static const Color textOnCream = Color(0xFF3D3D3D);
 
-  // ============================================================
-  // SEMANTIC COLORS
-  // ============================================================
-
   /// Accent - rust for decorative purposes only
   static const Color accent = rust;
 
-  /// Success green
-  static const Color success = Color(0xFF10B981);
+  /// Success green (WCAG AA 4.5:1 on successContainer)
+  static const Color success = Color(0xFF0D9166);
 
-  /// Warning gold/amber - updated to match new palette
-  static const Color warning = Color(0xFFD4A03C);
+  /// Warning gold/amber (WCAG AA 4.5:1 on warningContainer)
+  static const Color warning = Color(0xFF9D7920);
 
   /// Error red - DISTINCT from rust, only for errors
   static const Color error = Color(0xFFC44536);
@@ -106,14 +101,12 @@ class AppColors {
   /// Info container
   static const Color infoContainer = Color(0xFFF0F9FF);
   static const Color onInfoContainer = Color(0xFF1E40AF);
-  static const Color info = Color(0xFF3B82F6);
+
+  /// Info blue (WCAG AA 4.5:1 on infoContainer)
+  static const Color info = Color(0xFF2563CA);
 
   /// Divider color
   static const Color divider = Color(0xFFE5E7EB);
-
-  // ============================================================
-  // SPECIALIZED COLORS
-  // ============================================================
 
   /// Recipe metadata text
   static const Color recipeMeta = Color(0xFF757575);
@@ -123,10 +116,6 @@ class AppColors {
 
   /// Star/rating gold
   static const Color starGold = Color(0xFFFBBF24);
-
-  // ============================================================
-  // SHOPPING LIST CATEGORY COLORS
-  // ============================================================
 
   /// Meat & Fish category
   static const Color categoryMeatFish = rust;
@@ -152,10 +141,6 @@ class AppColors {
   /// Other category
   static const Color categoryOther = Color(0xFF9CA3AF);
 
-  // ============================================================
-  // UTILITY COLORS
-  // ============================================================
-
   /// Background tint for subtle elevation
   static const Color backgroundTint = Color(0xFFFAF8F3);
 
@@ -179,10 +164,6 @@ class AppColors {
   static const Color sharedRecipeIconColor = sharedRecipeIcon;
   static const Color sharedRecipeBackgroundColor = sharedRecipeBackground;
 
-  // ============================================================
-  // CHAT BUBBLE COLORS (UI Redesign)
-  // ============================================================
-
   /// Outgoing message bubble (user's messages)
   static const Color chatBubbleOutgoing = forestGreenLight;
 
@@ -194,10 +175,6 @@ class AppColors {
 
   /// Text on incoming bubble
   static const Color chatTextIncoming = textDark;
-
-  // ============================================================
-  // MATERIAL 3 COLOR SCHEME
-  // ============================================================
 
   static const ColorScheme lightColorScheme = ColorScheme(
     brightness: Brightness.light,
@@ -273,10 +250,7 @@ class AppColors {
     surfaceTint: forestGreenLight,
   );
 
-  // ============================================================
-  // LEGACY COMPATIBILITY (use new names in new code)
-  // ============================================================
-
+  // Legacy compatibility (use new names in new code)
   static const Color shadowColor = Color(0x1A000000);
   static const Color backgroundLight = cream;
   static const Color secondaryPurple = Color(0xFF9C27B0);
@@ -300,19 +274,11 @@ class AppColors {
   static const Color onWarning = textDark;
   static const Color onInfo = cardWhite;
 
-  // ============================================================
-  // RECIPE CARD BORDER COLORS (UI Redesign)
-  // ============================================================
-
   /// Left border color for recipe cards
   static const Color recipeCardLeftBorder = forestGreen;
 
   /// Bottom border color for recipe cards
   static const Color recipeCardBottomBorder = rust;
-
-  // ============================================================
-  // HEADER COLORS (UI Redesign)
-  // ============================================================
 
   /// Header background
   static const Color headerBackground = forestGreen;
@@ -322,10 +288,6 @@ class AppColors {
 
   /// Text/icons on header
   static const Color headerForeground = cardWhite;
-
-  // ============================================================
-  // NAVIGATION COLORS (UI Redesign)
-  // ============================================================
 
   /// Navigation background
   static const Color navBackground = forestGreen;

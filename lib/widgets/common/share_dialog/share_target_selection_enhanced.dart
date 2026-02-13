@@ -1,6 +1,7 @@
 // lib/widgets/common/share_dialog/share_target_selection_enhanced.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -30,7 +31,7 @@ class ShareTargetSelectionEnhanced {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Välj mottagare',
+          context.l10n.shareSelectRecipients,
           style: AppTextStyles.titleBold,
         ),
         const SizedBox(height: AppDimensions.spacingM),
@@ -48,8 +49,8 @@ class ShareTargetSelectionEnhanced {
           onChanged: onSearchChanged,
           decoration: InputDecoration(
             hintText: selectedTab == ShareTargetType.friends
-                ? 'Sök bland vänner...'
-                : 'Sök bland grupper...',
+                ? context.l10n.shareSearchFriends
+                : context.l10n.shareSearchGroups,
             hintStyle: AppTextStyles.bodySmall.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -113,7 +114,7 @@ class ShareTargetSelectionEnhanced {
           Expanded(
             child: _buildTabButton(
               context,
-              'Vänner',
+              context.l10n.shareTabFriends,
               Icons.people,
               ShareTargetType.friends,
               selectedTab,
@@ -123,7 +124,7 @@ class ShareTargetSelectionEnhanced {
           Expanded(
             child: _buildTabButton(
               context,
-              'Grupper',
+              context.l10n.shareTabGroups,
               Icons.group,
               ShareTargetType.groups,
               selectedTab,
@@ -175,7 +176,7 @@ class ShareTargetSelectionEnhanced {
                   ? AppTextStyles.bodyBold.copyWith(
                       color: Theme.of(context).colorScheme.onPrimary,
                     )
-                  : AppTextStyles.text14Medium.copyWith(
+                  : AppTextStyles.contentLabel.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
             ),
@@ -207,8 +208,8 @@ class ShareTargetSelectionEnhanced {
         context,
         searchQuery.isEmpty ? Icons.people_outline : Icons.search_off,
         searchQuery.isEmpty
-            ? 'Inga vänner tillgängliga'
-            : 'Inga vänner matchade din sökning',
+            ? context.l10n.shareNoFriendsAvailable
+            : context.l10n.shareNoFriendsMatchedSearch,
       );
     }
 
@@ -218,7 +219,10 @@ class ShareTargetSelectionEnhanced {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: filteredFriends.length,
       separatorBuilder: (context, index) => Divider(
-        color: Theme.of(context).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
+        color: Theme.of(context)
+            .colorScheme
+            .outline
+            .withValues(alpha: AppDimensions.opacityHalf),
         height: 1,
       ),
       itemBuilder: (context, index) {
@@ -242,7 +246,7 @@ class ShareTargetSelectionEnhanced {
             ),
             title: Text(
               friend.displayName,
-              style: AppTextStyles.text16Medium.copyWith(
+              style: AppTextStyles.contentTitle.copyWith(
                 color: isExistingCollaborator
                     ? Theme.of(context)
                         .colorScheme
@@ -263,7 +267,8 @@ class ShareTargetSelectionEnhanced {
                 if (isExistingCollaborator) ...[
                   const SizedBox(height: AppDimensions.spacingXs),
                   Text(
-                    'Delar redan listan', // PHASE 2: Status text for existing collaborators
+                    context.l10n
+                        .shareAlreadySharingList, // PHASE 2: Status text for existing collaborators
                     style: AppTextStyles.metadataEmphasized.copyWith(
                       color: Theme.of(context).colorScheme.primary,
                     ),
@@ -306,8 +311,8 @@ class ShareTargetSelectionEnhanced {
         context,
         searchQuery.isEmpty ? Icons.group_outlined : Icons.search_off,
         searchQuery.isEmpty
-            ? 'Inga grupper tillgängliga'
-            : 'Inga grupper matchade din sökning',
+            ? context.l10n.shareNoGroupsAvailable
+            : context.l10n.shareNoGroupsMatchedSearch,
       );
     }
 
@@ -317,7 +322,10 @@ class ShareTargetSelectionEnhanced {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: filteredGroups.length,
       separatorBuilder: (context, index) => Divider(
-        color: Theme.of(context).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
+        color: Theme.of(context)
+            .colorScheme
+            .outline
+            .withValues(alpha: AppDimensions.opacityHalf),
         height: 1,
       ),
       itemBuilder: (context, index) {
@@ -337,17 +345,17 @@ class ShareTargetSelectionEnhanced {
               child: Center(
                 child: Text(
                   group.emoji ?? '👥',
-                  style: AppTextStyles.text20SemiBold,
+                  style: AppTextStyles.groupTitle,
                 ),
               ),
             ),
           ),
           title: Text(
             group.name,
-            style: AppTextStyles.text16Medium,
+            style: AppTextStyles.contentTitle,
           ),
           subtitle: Text(
-            '${group.friendUserIds.length} medlemmar',
+            context.l10n.shareGroupMembersCount(group.friendUserIds.length),
             style: AppTextStyles.bodySmall.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),

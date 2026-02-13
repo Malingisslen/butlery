@@ -1,11 +1,33 @@
 // test/widget/common/search_filter/filter_toggle_button_test.dart
-// Tests for FilterToggleButton - updated for UI Redesign (simplified styling)
+// Tests for FilterToggleButton - updated for UI Redesign (Icons.tune, l10n tooltips)
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:butlery/widgets/common/search_filter/filter_toggle_button.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/l10n/app_localizations.dart';
+
+/// Helper to create a localized MaterialApp for FilterToggleButton tests.
+/// Production code uses context.l10n for tooltips, so localization is required.
+Widget _buildApp({
+  required Widget home,
+  ThemeData? theme,
+}) {
+  return MaterialApp(
+    locale: const Locale('sv'),
+    supportedLocales: AppLocalizations.supportedLocales,
+    localizationsDelegates: const [
+      AppLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    theme: theme,
+    home: home,
+  );
+}
 
 void main() {
   group('FilterToggleButton Widget Tests', () {
@@ -17,7 +39,7 @@ void main() {
       testWidgets('should render with required properties',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: false,
@@ -27,16 +49,17 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         expect(find.byType(FilterToggleButton), findsOneWidget);
         expect(find.byType(Stack), findsAtLeastNWidgets(1));
         expect(find.byType(IconButton), findsOneWidget);
-        expect(find.byIcon(Icons.filter_list), findsOneWidget);
+        expect(find.byIcon(Icons.tune), findsOneWidget);
       });
 
       testWidgets('should use correct icon size', (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: false,
@@ -46,8 +69,9 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
+        final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
         expect(icon.size, equals(AppDimensions.iconSizeAction));
       });
     });
@@ -56,7 +80,7 @@ void main() {
       testWidgets('should display textMedium color when filters hidden',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: false,
@@ -66,15 +90,16 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
+        final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
         expect(icon.color, AppColors.textMedium);
       });
 
       testWidgets('should show Swedish tooltip for hidden state',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: false,
@@ -84,6 +109,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         final iconButton = tester.widget<IconButton>(find.byType(IconButton));
         expect(iconButton.tooltip, 'Visa filter');
@@ -94,7 +120,7 @@ void main() {
       testWidgets('should display forestGreen color when filters shown',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: true,
@@ -104,15 +130,16 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
-        final icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
+        final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
         expect(icon.color, AppColors.forestGreen);
       });
 
       testWidgets('should show Swedish tooltip for shown state',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: true,
@@ -122,6 +149,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         final iconButton = tester.widget<IconButton>(find.byType(IconButton));
         expect(iconButton.tooltip, 'D\u00f6lj filter');
@@ -132,7 +160,7 @@ void main() {
       testWidgets('should not show indicator when no active filters',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: false,
@@ -142,6 +170,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         expect(find.byType(Positioned), findsNothing);
       });
@@ -150,7 +179,7 @@ void main() {
           'should show indicator when has active filters and filters hidden',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: false,
@@ -160,6 +189,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         expect(find.byType(Positioned), findsOneWidget);
 
@@ -180,7 +210,7 @@ void main() {
           'should not show indicator when has active filters but filters shown',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: true,
@@ -190,6 +220,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         expect(find.byType(Positioned), findsNothing);
       });
@@ -197,7 +228,7 @@ void main() {
       testWidgets('should position indicator correctly',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: false,
@@ -207,6 +238,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         final positioned = tester.widget<Positioned>(find.byType(Positioned));
         expect(positioned.right, 8);
@@ -220,7 +252,7 @@ void main() {
         bool toggled = false;
 
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: false,
@@ -232,6 +264,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         await tester.tap(find.byType(IconButton));
         expect(toggled, true);
@@ -242,7 +275,7 @@ void main() {
         int tapCount = 0;
 
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: false,
@@ -254,6 +287,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         await tester.tap(find.byType(IconButton));
         expect(tapCount, 1);
@@ -269,7 +303,7 @@ void main() {
         int tapCount = 0;
 
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: false,
@@ -281,6 +315,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         await tester.tap(find.byType(IconButton));
         await tester.tap(find.byType(IconButton));
@@ -293,7 +328,7 @@ void main() {
       testWidgets('should show ripple effect on tap',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: false,
@@ -303,6 +338,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         final gesture = await tester.startGesture(
           tester.getCenter(find.byType(IconButton)),
@@ -318,7 +354,7 @@ void main() {
     group('Theme Integration', () {
       testWidgets('should work with light theme', (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             theme: ThemeData.light(),
             home: Scaffold(
               body: FilterToggleButton(
@@ -329,13 +365,14 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         expect(find.byType(FilterToggleButton), findsOneWidget);
       });
 
       testWidgets('should work with dark theme', (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             theme: ThemeData.dark(),
             home: Scaffold(
               body: FilterToggleButton(
@@ -346,6 +383,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         expect(find.byType(FilterToggleButton), findsOneWidget);
       });
@@ -354,7 +392,7 @@ void main() {
           'should use AppColors.forestGreen when shown regardless of theme',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             theme: ThemeData(
               colorScheme: const ColorScheme.light().copyWith(
                 primary: Colors.purple,
@@ -369,9 +407,10 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         // UI Redesign: uses AppColors directly, not theme colors
-        final icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
+        final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
         expect(icon.color, AppColors.forestGreen);
       });
 
@@ -379,7 +418,7 @@ void main() {
           'should use AppColors.textMedium when hidden regardless of theme',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             theme: ThemeData(
               colorScheme: const ColorScheme.light().copyWith(
                 onSurfaceVariant: Colors.grey,
@@ -394,9 +433,10 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         // UI Redesign: uses AppColors directly, not theme colors
-        final icon = tester.widget<Icon>(find.byIcon(Icons.filter_list));
+        final icon = tester.widget<Icon>(find.byIcon(Icons.tune));
         expect(icon.color, AppColors.textMedium);
       });
     });
@@ -404,7 +444,7 @@ void main() {
     group('Layout Integration', () {
       testWidgets('should work in Row layout', (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: Row(
                 children: [
@@ -424,13 +464,14 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         expect(find.byType(FilterToggleButton), findsNWidgets(2));
       });
 
       testWidgets('should work in AppBar actions', (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               appBar: AppBar(
                 title: const Text('Test'),
@@ -445,6 +486,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         expect(find.byType(FilterToggleButton), findsOneWidget);
         expect(find.byType(Positioned),
@@ -453,7 +495,7 @@ void main() {
 
       testWidgets('should work with padding', (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: Padding(
                 padding: const EdgeInsets.all(16),
@@ -466,6 +508,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         expect(find.byType(FilterToggleButton), findsOneWidget);
         expect(find.byType(Padding), findsAtLeastNWidgets(1));
@@ -478,7 +521,7 @@ void main() {
         final bool hasActiveFilters = true;
 
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: Row(
                 children: [
@@ -502,6 +545,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         expect(find.byType(TextField), findsOneWidget);
         expect(find.byType(FilterToggleButton), findsOneWidget);
@@ -514,7 +558,7 @@ void main() {
         bool showFilters = false;
 
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: StatefulBuilder(
                 builder: (context, setState) {
@@ -532,6 +576,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         // Initially hidden
         IconButton iconButton =
@@ -540,7 +585,7 @@ void main() {
 
         // Tap to show
         await tester.tap(find.byType(IconButton));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         // Now shown
         iconButton = tester.widget<IconButton>(find.byType(IconButton));
@@ -553,7 +598,7 @@ void main() {
           (WidgetTester tester) async {
         // Test hidden state
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: false,
@@ -563,6 +608,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         IconButton iconButton =
             tester.widget<IconButton>(find.byType(IconButton));
@@ -570,7 +616,7 @@ void main() {
 
         // Test shown state
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: true,
@@ -580,6 +626,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         iconButton = tester.widget<IconButton>(find.byType(IconButton));
         expect(iconButton.tooltip, 'D\u00f6lj filter');
@@ -590,7 +637,7 @@ void main() {
       testWidgets('should be accessible with tooltips',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: false,
@@ -600,6 +647,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         final iconButton = tester.widget<IconButton>(find.byType(IconButton));
         expect(iconButton.tooltip, isNotNull);
@@ -609,7 +657,7 @@ void main() {
       testWidgets('should support semantic labels',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: Semantics(
                 label: 'Filter toggle',
@@ -622,6 +670,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         expect(find.byType(Semantics), findsWidgets);
         expect(find.byType(FilterToggleButton), findsOneWidget);
@@ -635,7 +684,7 @@ void main() {
         bool hasActiveFilters = false;
 
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: StatefulBuilder(
                 builder: (context, setState) {
@@ -654,6 +703,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         // Multiple rapid state changes
         for (int i = 0; i < 5; i++) {
@@ -667,7 +717,7 @@ void main() {
       testWidgets('should work with null-safe operations',
           (WidgetTester tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          _buildApp(
             home: Scaffold(
               body: FilterToggleButton(
                 showFilters: false,
@@ -677,6 +727,7 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
 
         await tester.tap(find.byType(IconButton));
         await tester.pump();

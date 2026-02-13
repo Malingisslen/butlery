@@ -279,7 +279,7 @@ void main() {
         expect(find.text('Mina recept'), findsOneWidget);
 
         // Verify action buttons presence
-        expect(find.byIcon(Icons.filter_list), findsOneWidget);
+        expect(find.byIcon(Icons.tune), findsOneWidget);
         expect(find.byIcon(Icons.sort), findsOneWidget);
       });
 
@@ -439,7 +439,7 @@ void main() {
         await ViewTestHelpers.waitForViewInitialization(tester);
 
         // Act: Tap filter button
-        await tester.tap(find.byIcon(Icons.filter_list));
+        await tester.tap(find.byIcon(Icons.tune));
         await tester.pump();
 
         // Assert: Should show filter panel
@@ -472,7 +472,7 @@ void main() {
         await ViewTestHelpers.waitForViewInitialization(tester);
 
         // Show filters first
-        await tester.tap(find.byIcon(Icons.filter_list));
+        await tester.tap(find.byIcon(Icons.tune));
         await tester.pump();
 
         // Act: Find and tap clear filters button
@@ -724,12 +724,12 @@ void main() {
 
         // Act: Rapidly toggle filters
         for (int i = 0; i < 5; i++) {
-          await tester.tap(find.byIcon(Icons.filter_list));
+          await tester.tap(find.byIcon(Icons.tune));
           await tester.pump(const Duration(milliseconds: 50));
         }
 
         // Assert: Should handle rapid changes gracefully
-        expect(find.byIcon(Icons.filter_list), findsOneWidget);
+        expect(find.byIcon(Icons.tune), findsOneWidget);
       });
 
       testWidgets('should handle network errors gracefully', (tester) async {

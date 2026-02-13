@@ -10,6 +10,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Comprehensive member management dialog for collaborative shopping list administration
 class ShoppingMemberManagementDialog extends StatefulWidget {
@@ -98,8 +99,9 @@ class _ShoppingMemberManagementDialogState
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                  'Behörighet uppdaterad för ${widget.userDisplayNames[userId] ?? 'användare'}'),
+              content: Text(context.l10n.shoppingPermissionUpdated(
+                  widget.userDisplayNames[userId] ??
+                      context.l10n.shoppingUnknownUser)),
               backgroundColor: AppColors.forestGreen,
               duration: const Duration(seconds: 2),
             ),
@@ -107,12 +109,12 @@ class _ShoppingMemberManagementDialogState
         }
       } else {
         setState(() {
-          _error = 'Kunde inte uppdatera behörighet';
+          _error = context.l10n.shoppingCouldNotUpdatePermission;
         });
       }
     } catch (e) {
       setState(() {
-        _error = 'Fel vid uppdatering: $e';
+        _error = context.l10n.shoppingErrorUpdating(e.toString());
       });
     } finally {
       setState(() {
@@ -125,18 +127,17 @@ class _ShoppingMemberManagementDialogState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Ta bort medlem'),
-        content:
-            Text('Är du säker på att du vill ta bort $userName från listan?'),
+        title: Text(context.l10n.shoppingRemoveMember),
+        content: Text(context.l10n.shoppingRemoveMemberConfirm(userName)),
         actions: [
           ActionButtons.secondaryButton(
             context,
-            label: 'Avbryt',
+            label: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context, false),
           ),
           ActionButtons.primaryButton(
             context,
-            label: 'Ta bort',
+            label: context.l10n.commonRemove,
             onPressed: () => Navigator.pop(context, true),
           ),
         ],
@@ -167,7 +168,7 @@ class _ShoppingMemberManagementDialogState
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('$userName borttagen från listan'),
+              content: Text(context.l10n.shoppingMemberRemoved(userName)),
               backgroundColor: AppColors.forestGreen,
               duration: const Duration(seconds: 2),
             ),
@@ -175,12 +176,12 @@ class _ShoppingMemberManagementDialogState
         }
       } else {
         setState(() {
-          _error = 'Kunde inte ta bort medlem';
+          _error = context.l10n.shoppingCouldNotRemoveMember;
         });
       }
     } catch (e) {
       setState(() {
-        _error = 'Fel vid borttagning: $e';
+        _error = context.l10n.shoppingErrorRemoving(e.toString());
       });
     } finally {
       setState(() {
@@ -231,21 +232,21 @@ class _ShoppingMemberManagementDialogState
         if (addedMembers.isNotEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                  '${addedMembers.length} ${addedMembers.length == 1 ? 'medlem' : 'medlemmar'} tillagda'),
+              content:
+                  Text(context.l10n.shoppingMembersAdded(addedMembers.length)),
               backgroundColor: AppColors.forestGreen,
               duration: const Duration(seconds: 2),
             ),
           );
         } else {
           setState(() {
-            _error = 'Kunde inte lägga till några medlemmar';
+            _error = context.l10n.shoppingCouldNotAddMembers;
           });
         }
       }
     } catch (e) {
       setState(() {
-        _error = 'Fel vid tillägg: $e';
+        _error = context.l10n.shoppingErrorAdding(e.toString());
       });
     } finally {
       setState(() {
@@ -266,7 +267,7 @@ class _ShoppingMemberManagementDialogState
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
             child: Text(
-              'Hantera delning',
+              context.l10n.shoppingManageSharing,
               style: AppTextStyles.titleLarge,
             ),
           ),
@@ -295,7 +296,7 @@ class _ShoppingMemberManagementDialogState
               const SizedBox(height: AppDimensions.spacingM),
             ],
             Text(
-              'Nuvarande medlemmar (${allMembers.length})',
+              context.l10n.shoppingCurrentMembers(allMembers.length),
               style: AppTextStyles.titleMedium,
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -314,8 +315,8 @@ class _ShoppingMemberManagementDialogState
                     final userId = entry.key;
                     final permission = entry.value;
                     final isOwner = userId == widget.list.ownerId;
-                    final userName =
-                        widget.userDisplayNames[userId] ?? 'Okänd användare';
+                    final userName = widget.userDisplayNames[userId] ??
+                        context.l10n.shoppingUnknownUser;
 
                     return _buildMemberListTile(
                         userId, userName, permission, isOwner);
@@ -327,13 +328,13 @@ class _ShoppingMemberManagementDialogState
             const Divider(),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'Lägg till vänner',
+              context.l10n.shoppingAddFriends,
               style: AppTextStyles.titleMedium,
             ),
             const SizedBox(height: AppDimensions.spacingM),
             StyledInput(
               controller: _searchController,
-              hint: 'Sök vänner...',
+              hint: context.l10n.shoppingSearchFriends,
               prefixIcon: const Icon(Icons.search),
               onChanged: (_) => _updateFilteredFriends(),
             ),
@@ -350,8 +351,8 @@ class _ShoppingMemberManagementDialogState
                     ? Center(
                         child: Text(
                           _searchController.text.isNotEmpty
-                              ? 'Inga vänner hittades'
-                              : 'Alla vänner är redan medlemmar',
+                              ? context.l10n.shoppingNoFriendsFound
+                              : context.l10n.shoppingAllFriendsAreMembers,
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.textMedium,
                           ),
@@ -372,8 +373,8 @@ class _ShoppingMemberManagementDialogState
                 width: double.infinity,
                 child: ActionButtons.primaryButton(
                   context,
-                  label:
-                      'Lägg till ${_selectedFriends.length} vän${_selectedFriends.length == 1 ? '' : 'ner'}',
+                  label: context.l10n
+                      .shoppingAddFriendsCount(_selectedFriends.length),
                   icon: Icons.person_add,
                   isLoading: _isLoading,
                   onPressed: _isLoading ? null : _addSelectedMembers,
@@ -387,7 +388,7 @@ class _ShoppingMemberManagementDialogState
       actions: [
         ActionButtons.secondaryButton(
           context,
-          label: 'Stäng',
+          label: context.l10n.commonClose,
           onPressed: _isLoading ? null : () => Navigator.pop(context, false),
         ),
       ],
@@ -410,10 +411,11 @@ class _ShoppingMemberManagementDialogState
       ),
       title: Text(
         userName,
-        style: AppTextStyles.text16Medium,
+        style: AppTextStyles.contentTitle,
       ),
       subtitle: isOwner
-          ? Text('Ägare', style: AppTextStyles.linkSmall)
+          ? Text(context.l10n.shoppingPermissionOwner,
+              style: AppTextStyles.linkSmall)
           : DropdownButton<SharedListPermission>(
               value: permission,
               onChanged: _isLoading
@@ -423,16 +425,16 @@ class _ShoppingMemberManagementDialogState
                         _updateMemberPermission(userId, newPermission);
                       }
                     },
-              items: const [
+              items: [
                 DropdownMenuItem(
                   value: SharedListPermission.view,
                   child: Row(
                     children: [
-                      Icon(Icons.visibility,
+                      const Icon(Icons.visibility,
                           size: AppDimensions.iconSizeS,
                           color: AppColors.textMedium),
-                      SizedBox(width: AppDimensions.spacingXs),
-                      Text('Kan se'),
+                      const SizedBox(width: AppDimensions.spacingXs),
+                      Text(context.l10n.shoppingPermissionView),
                     ],
                   ),
                 ),
@@ -440,11 +442,11 @@ class _ShoppingMemberManagementDialogState
                   value: SharedListPermission.edit,
                   child: Row(
                     children: [
-                      Icon(Icons.edit,
+                      const Icon(Icons.edit,
                           size: AppDimensions.iconSizeS,
                           color: AppColors.accent),
-                      SizedBox(width: AppDimensions.spacingXs),
-                      Text('Kan redigera'),
+                      const SizedBox(width: AppDimensions.spacingXs),
+                      Text(context.l10n.shoppingPermissionEdit),
                     ],
                   ),
                 ),
@@ -452,11 +454,11 @@ class _ShoppingMemberManagementDialogState
                   value: SharedListPermission.admin,
                   child: Row(
                     children: [
-                      Icon(Icons.admin_panel_settings,
+                      const Icon(Icons.admin_panel_settings,
                           size: AppDimensions.iconSizeS,
                           color: AppColors.forestGreen),
-                      SizedBox(width: AppDimensions.spacingXs),
-                      Text('Admin'),
+                      const SizedBox(width: AppDimensions.spacingXs),
+                      Text(context.l10n.shoppingPermissionAdmin),
                     ],
                   ),
                 ),
@@ -467,7 +469,7 @@ class _ShoppingMemberManagementDialogState
               onPressed:
                   _isLoading ? null : () => _removeMember(userId, userName),
               icon: const Icon(Icons.person_remove, color: AppColors.error),
-              tooltip: 'Ta bort medlem',
+              tooltip: context.l10n.shoppingRemoveMember,
             )
           : null,
     );
@@ -492,10 +494,10 @@ class _ShoppingMemberManagementDialogState
       ),
       title: Text(
         friend.displayName,
-        style: AppTextStyles.text16Medium,
+        style: AppTextStyles.contentTitle,
       ),
       subtitle: Text(
-        'Läggs till med redigeringsbehörighet',
+        context.l10n.shoppingAddedWithEditPermission,
         style: AppTextStyles.bodySmall.copyWith(
           color: AppColors.textMedium,
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -325,13 +326,16 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
       children: [
         Expanded(
           child: Text(
-            _isEditing ? 'Redigera regel' : 'Skapa regel',
+            _isEditing
+                ? context.l10n.ruleEditTitle
+                : context.l10n.ruleCreateTitle,
             style: AppTextStyles.titleLarge,
           ),
         ),
         IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.of(context).pop(),
+          tooltip: context.l10n.commonClose,
         ),
       ],
     );
@@ -340,15 +344,15 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
   Widget _buildNameField() {
     return TextFormField(
       controller: _nameController,
-      decoration: const InputDecoration(
-        labelText: 'Regelnamn',
-        hintText: 'T.ex. "Fiskrecept"',
-        border: OutlineInputBorder(),
+      decoration: InputDecoration(
+        labelText: context.l10n.ruleNameLabel,
+        hintText: context.l10n.ruleNameHint,
+        border: const OutlineInputBorder(),
       ),
       enabled: !_isSaving,
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
-          return 'Ange ett regelnamn';
+          return context.l10n.ruleNameRequired;
         }
         return null;
       },
@@ -358,9 +362,9 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
   Widget _buildTagSelector() {
     return DropdownButtonFormField<String>(
       initialValue: _selectedTagId,
-      decoration: const InputDecoration(
-        labelText: 'Tillämpa på tagg',
-        border: OutlineInputBorder(),
+      decoration: InputDecoration(
+        labelText: context.l10n.ruleApplyToTag,
+        border: const OutlineInputBorder(),
       ),
       items: widget.availableTags.map((tag) {
         return DropdownMenuItem(
@@ -382,7 +386,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             },
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Välj en tagg';
+          return context.l10n.ruleSelectTag;
         }
         return null;
       },
@@ -394,23 +398,25 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Matchningsläge',
+          context.l10n.ruleMatchModeLabel,
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textMedium,
           ),
         ),
         const SizedBox(height: AppDimensions.spacingS),
         SegmentedButton<MatchMode>(
-          segments: const [
+          segments: [
             ButtonSegment(
               value: MatchMode.all,
-              label: Text('Alla villkor (AND)'),
-              icon: Icon(Icons.all_inclusive, size: AppDimensions.iconSize18),
+              label: Text(context.l10n.ruleMatchModeAllConditions),
+              icon: const Icon(Icons.all_inclusive,
+                  size: AppDimensions.iconSize18),
             ),
             ButtonSegment(
               value: MatchMode.any,
-              label: Text('Något villkor (OR)'),
-              icon: Icon(Icons.call_split, size: AppDimensions.iconSize18),
+              label: Text(context.l10n.ruleMatchModeAnyCondition),
+              icon:
+                  const Icon(Icons.call_split, size: AppDimensions.iconSize18),
             ),
           ],
           selected: {_matchMode},
@@ -431,7 +437,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
         Row(
           children: [
             Text(
-              'Villkor',
+              context.l10n.ruleConditionsLabel,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textMedium,
               ),
@@ -440,7 +446,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             TextButton.icon(
               onPressed: _isSaving ? null : _addCondition,
               icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
-              label: const Text('Lägg till'),
+              label: Text(context.l10n.commonAdd),
             ),
           ],
         ),
@@ -471,9 +477,11 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           : (value) {
               setState(() => _isEnabled = value);
             },
-      title: const Text('Regel aktiverad'),
+      title: Text(context.l10n.ruleEnabledTitle),
       subtitle: Text(
-        _isEnabled ? 'Regeln tillämpas på recept' : 'Regeln är pausad',
+        _isEnabled
+            ? context.l10n.ruleEnabledSubtitle
+            : context.l10n.rulePausedSubtitle,
         style: AppTextStyles.bodySmall,
       ),
       contentPadding: EdgeInsets.zero,
@@ -491,12 +499,12 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
                 await _calculateAffectedCount();
               }
             },
-      title: const Text('Applicera på befintliga recept'),
+      title: Text(context.l10n.ruleApplyToExisting),
       subtitle: _isCalculatingCount
-          ? const Text('Beräknar...')
+          ? Text(context.l10n.tagDetailRuleCalculating)
           : _affectedRecipeCount != null
-              ? Text('$_affectedRecipeCount recept matchar')
-              : const Text('Tagga matchande recept omedelbart'),
+              ? Text(context.l10n.tagDetailRuleMatches(_affectedRecipeCount!))
+              : Text(context.l10n.ruleTagMatchingImmediately),
       contentPadding: EdgeInsets.zero,
       controlAffinity: ListTileControlAffinity.leading,
     );
@@ -535,7 +543,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
       children: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-          child: const Text('Avbryt'),
+          child: Text(context.l10n.commonCancel),
         ),
         const SizedBox(width: AppDimensions.spacingM),
         FilledButton(
@@ -546,7 +554,9 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(_isEditing ? 'Spara' : 'Skapa'),
+              : Text(_isEditing
+                  ? context.l10n.commonSave
+                  : context.l10n.commonCreate),
         ),
       ],
     );
@@ -599,7 +609,7 @@ class _ConditionRow extends StatelessWidget {
                   items: ConditionType.values.map((type) {
                     return DropdownMenuItem(
                       value: type,
-                      child: Text(type.label, style: AppTextStyles.text14),
+                      child: Text(type.label, style: AppTextStyles.formOption),
                     );
                   }).toList(),
                   onChanged: enabled
@@ -621,7 +631,7 @@ class _ConditionRow extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.close, size: AppDimensions.iconSizeM),
                   onPressed: enabled ? onDelete : null,
-                  tooltip: 'Ta bort villkor',
+                  tooltip: context.l10n.ruleRemoveCondition,
                   constraints: const BoxConstraints(
                     minWidth: 36,
                     minHeight: 36,
@@ -666,7 +676,7 @@ class _ConditionRow extends StatelessWidget {
       items: validOperators.map((op) {
         return DropdownMenuItem(
           value: op,
-          child: Text(op.label, style: AppTextStyles.text14),
+          child: Text(op.label, style: AppTextStyles.formOption),
         );
       }).toList(),
       onChanged: enabled
@@ -680,36 +690,36 @@ class _ConditionRow extends StatelessWidget {
   String _getHintText() {
     switch (condition.type) {
       case ConditionType.ingredient:
-        return 'T.ex. "kyckling", "lax"';
+        return context.l10n.ruleHintIngredient;
       case ConditionType.property:
-        return 'T.ex. "seafood", "meat", "dairy"';
+        return context.l10n.ruleHintProperty;
       case ConditionType.keyword:
-        return 'T.ex. "snabb", "vegetarisk"';
+        return context.l10n.ruleHintKeyword;
       case ConditionType.sourceUrl:
-        return 'T.ex. "bbc.com", "reddit.com"';
+        return context.l10n.ruleHintSourceUrl;
       case ConditionType.cuisine:
-        return 'T.ex. "italian", "asian"';
+        return context.l10n.ruleHintCuisine;
       case ConditionType.dietary:
-        return 'T.ex. "vegetarian", "vegan"';
+        return context.l10n.ruleHintDietary;
       case ConditionType.time:
-        return 'Tillagningstid i minuter';
+        return context.l10n.ruleHintTime;
       case ConditionType.rating:
-        return 'Betyg (1-5)';
+        return context.l10n.ruleHintRating;
       case ConditionType.recency:
-        return 'Antal dagar sedan receptet lades till';
+        return context.l10n.ruleHintRecency;
       case ConditionType.ownership:
-        return 'T.ex. "personal", "shared", "collaborative"';
+        return context.l10n.ruleHintOwnership;
       case ConditionType.hasImage:
-        return 'true eller false';
+        return context.l10n.ruleHintHasImage;
       case ConditionType.completeness:
-        return 'T.ex. "description", "ingredients"';
+        return context.l10n.ruleHintCompleteness;
     }
   }
 
   Widget _buildPropertyDropdown() {
     // Organize properties by category for better UX
     final categories = <String, List<String>>{
-      'Allergener': [
+      context.l10n.ruleCategoryAllergens: [
         'dairy',
         'egg',
         'fish',
@@ -726,18 +736,30 @@ class _ConditionRow extends StatelessWidget {
         'lupin',
         'sulfites'
       ],
-      'Laktos': ['contains-lactose'],
-      'Kött': ['meat', 'pork', 'beef', 'poultry', 'lamb', 'game'],
-      'Fisk & skaldjur': [
+      context.l10n.ruleCategoryLactose: ['contains-lactose'],
+      context.l10n.ruleCategoryMeat: [
+        'meat',
+        'pork',
+        'beef',
+        'poultry',
+        'lamb',
+        'game'
+      ],
+      context.l10n.ruleCategorySeafood: [
         'seafood',
         'fish',
         'crustacean',
         'mollusc',
         'high-mercury'
       ],
-      'Animaliskt': ['animal-product'],
-      'Kost': ['contains-alcohol', 'is-spicy', 'plant-based', 'nightshade'],
-      'Övrigt': ['doesnt-freeze-well', 'raw-safe'],
+      context.l10n.ruleCategoryAnimal: ['animal-product'],
+      context.l10n.ruleCategoryDiet: [
+        'contains-alcohol',
+        'is-spicy',
+        'plant-based',
+        'nightshade'
+      ],
+      context.l10n.ruleCategoryOther: ['doesnt-freeze-well', 'raw-safe'],
     };
 
     // Build grouped dropdown items
@@ -761,7 +783,7 @@ class _ConditionRow extends StatelessWidget {
             value: prop,
             child: Padding(
               padding: AppDimensions.paddingOnlyLeft8,
-              child: Text(prop, style: AppTextStyles.text14),
+              child: Text(prop, style: AppTextStyles.formOption),
             ),
           ));
         }
@@ -776,7 +798,7 @@ class _ConditionRow extends StatelessWidget {
       decoration: const InputDecoration(
         isDense: true,
         contentPadding: AppDimensions.paddingAll12,
-        hintText: 'Välj egenskap...',
+        hintText: context.l10n.ruleSelectProperty,
         border: OutlineInputBorder(),
       ),
       isExpanded: true,

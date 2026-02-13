@@ -340,10 +340,6 @@ class AppDimensions {
   /// Section padding
   static const EdgeInsets sectionPadding = EdgeInsets.all(paddingL);
 
-  // ============================================================
-  // SEMANTIC EDGEINSETS CONSTANTS (ACTUALLY USED)
-  // ============================================================
-
   /// All-around padding variants (used)
   static const EdgeInsets paddingAll2 = EdgeInsets.all(2.0);
   static const EdgeInsets paddingAll3 = EdgeInsets.all(spacingS);
@@ -422,10 +418,6 @@ class AppDimensions {
   static const EdgeInsetsDirectional marginDirectionalOnlyEnd8 =
       EdgeInsetsDirectional.only(end: spacingSm);
 
-  // ============================================================
-  // DIMENSION CONSTANTS (ACTUALLY USED)
-  // ============================================================
-
   /// Height 40px (1 usage)
   static const double height40 = 40.0;
 
@@ -462,22 +454,6 @@ class AppDimensions {
 
   /// Spacing between grid rows
   static const double gridRowSpacing = 20.0;
-
-  /// Card shadow definition
-  static const List<BoxShadow> cardShadow = [
-    BoxShadow(
-      color: Color(0x0A000000), // Subtle shadow like in Figma
-      blurRadius: 12,
-      offset: Offset(0, 4),
-      spreadRadius: 0,
-    ),
-    BoxShadow(
-      color: Color(0x05000000), // Extra subtle shadow for depth
-      blurRadius: 4,
-      offset: Offset(0, 2),
-      spreadRadius: 0,
-    ),
-  ];
 
   /// Get responsive spacing based on screen size
   /// Automatically scales spacing:
