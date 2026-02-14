@@ -677,6 +677,15 @@
   "commonSaveAsNew": "Spara som ny",
   "commonSelectAll": "Välj alla",
   "commonDeselectAll": "Avmarkera alla",
+  "commonInvertSelection": "Invertera",
+  "commonAddWithLabel": "Lägg till {label}",
+  "@commonAddWithLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "commonClearAll": "Rensa alla",
   "commonClear": "Rensa",
   "commonImage": "Bild",
@@ -5162,8 +5171,6 @@
     }
   },
   "unshareFailed": "Kunde inte sluta dela. Försök igen.",
-  "commonCancel": "Avbryt",
-
   "menuCommentsTitle": "Kommentarer",
   "menuCommentsCount": "{count} kommentarer",
   "@menuCommentsCount": {
@@ -5268,5 +5275,107 @@
   "menuTemplateDeletedSuccess": "Mall borttagen",
   "menuTemplateDeleteFailed": "Kunde inte ta bort mall",
   "menuTemplateSavedMenus": "Sparade menyer",
-  "menuTemplateTemplates": "Mallar"
+  "menuTemplateTemplates": "Mallar",
+  "personalTagApplyRulesToAll": "Tillämpa regler på alla recept",
+  "messagingPinned": "FÄSTA",
+  "messagingUnpin": "Ta bort fäst",
+  "messagingPin": "Fäst",
+  "messagingArchive": "Arkivera",
+  "messagingUnarchive": "Avarkivera",
+  "messagingArchivedCount": "Arkiverade ({count})",
+  "@messagingArchivedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allergenRetagAllRecipesTitle": "Omtagga alla recept",
+  "allergenAnalyzeAllRecipes": "Analysera alla recept med uppdaterade inställningar",
+  "allergenUpdateAllRecipes": "Uppdatera alla recept",
+  "notificationSaveError": "Kunde inte spara inställningar",
+  "notificationTitle": "Aviseringar",
+  "notificationEnableTitle": "Aktivera aviseringar",
+  "notificationEnableSubtitle": "Aktivera eller inaktivera alla aviseringar",
+  "notificationCategoriesTitle": "Aviseringskategorier",
+  "notificationQuietHoursTitle": "Tysta timmar",
+  "notificationQuietHoursEnable": "Aktivera tysta timmar",
+  "notificationQuietHoursSubtitle": "Inga aviseringar under vald tidsperiod",
+  "commonFrom": "Från",
+  "commonTo": "Till",
+  "notificationSound": "Ljud",
+  "notificationVibration": "Vibration",
+  "notificationCategoryFriends": "Vänner",
+  "notificationCategoryRecipes": "Recept",
+  "notificationCategoryCollaboration": "Samarbete",
+  "notificationCategoryShopping": "Inköp",
+  "notificationCategorySocial": "Social aktivitet",
+  "notificationCategorySystem": "System",
+  "collaborationNoFriends": "Du har inga vänner att samarbeta med",
+  "collaborationEnableTitle": "Aktivera samarbete",
+  "collaborationEnabled": "Samarbete aktiverat",
+  "collaborationCouldNotEnable": "Kunde inte aktivera samarbete",
+  "collaborationDeactivateTitle": "Avaktivera samarbete?",
+  "collaborationDeactivateMessage": "Alla samarbetspartners förlorar åtkomst till receptet.",
+  "commonDeactivate": "Avaktivera",
+  "collaborationDeactivated": "Samarbete avaktiverat",
+  "collaborationCouldNotDeactivate": "Kunde inte avaktivera samarbete",
+  "ratingRemoveTitle": "Ta bort betyg?",
+  "ratingRemoveMessage": "Vill du ta bort ditt betyg för detta recept?",
+  "ratingRemoved": "Betyg borttaget",
+  "ratingRemoveError": "Kunde inte ta bort betyg",
+  "messagingSending": "Skickar",
+  "messagingSent": "Skickat",
+  "messagingDelivered": "Levererat",
+  "messagingRead": "Läst",
+  "messagingFailed": "Misslyckades",
+  "a11ySelected": "vald",
+  "a11yNotSelected": "ej vald",
+  "blockedUsersUnblockTitle": "Avblockera användare?",
+  "blockedUsersUnblockMessage": "Vill du avblockera {name}? Användaren kommer kunna se ditt innehåll igen.",
+  "blockedUsersUnblock": "Avblockera",
+  "blockedUsersTitle": "Blockerade användare",
+  "blockedUsersEmpty": "Inga blockerade användare",
+  "retagFetchingRecipes": "Hämtar recept...",
+  "retagRetaggingRecipes": "Omtaggar recept",
+  "retagRetaggingProgress": "Omtaggar {current} av {total} recept...",
+  "@retagRetaggingProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "retagRecipesRetagged": "{count} recept omtaggade",
+  "@retagRecipesRetagged": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileNotifications": "Aviseringar",
+  "profileNotificationsSubtitle": "Kategorier och tysta timmar",
+  "filterFavorites": "Favoriter",
+  "filterUnder30Min": "Under 30 min",
+  "filterVegetarianQuick": "Vegetariskt",
+  "filterAll": "Alla",
+  "instructionLabel": "Instruktion {number}",
+  "@instructionLabel": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "@blockedUsersUnblockMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

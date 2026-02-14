@@ -117,7 +117,7 @@ class StyledButton extends StatelessWidget {
 
     if (isLoading) {
       return Semantics(
-        label: '$effectiveLabel, laddar',
+        label: '$effectiveLabel, ${context.l10n.commonLoading}',
         button: true,
         enabled: false,
         child: SizedBox(

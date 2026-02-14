@@ -252,7 +252,8 @@ class SocialInvitationComponents {
   }
 
   /// Build quick selection buttons.
-  static Widget quickSelectionButtons({
+  static Widget quickSelectionButtons(
+    BuildContext context, {
     VoidCallback? onSelectAll,
     VoidCallback? onSelectNone,
     VoidCallback? onSelectFriends,
@@ -265,6 +266,7 @@ class SocialInvitationComponents {
     MainAxisAlignment alignment = MainAxisAlignment.spaceEvenly,
   }) {
     return InvitationActions.quickSelectionButtons(
+      context,
       onSelectAll: onSelectAll,
       onSelectNone: onSelectNone,
       onSelectFriends: onSelectFriends,

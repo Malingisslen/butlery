@@ -3,6 +3,7 @@
 // UI Redesign: Quick filter chips for fast recipe filtering
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -30,7 +31,7 @@ class QuickFilterChips extends StatelessWidget {
     required this.selectedIds,
     required this.onFilterToggle,
     this.showAllOption = true,
-    this.allOptionLabel = 'Alla',
+    this.allOptionLabel,
     this.trailing,
     super.key,
   });
@@ -47,31 +48,34 @@ class QuickFilterChips extends StatelessWidget {
   /// Whether to show the "Alla" (All) option.
   final bool showAllOption;
 
-  /// Label for the "All" option.
-  final String allOptionLabel;
+  /// Label for the "All" option. Defaults to localized "All" if not provided.
+  final String? allOptionLabel;
 
   /// Optional trailing widget at the end of the chips row (e.g. sort button).
   final Widget? trailing;
 
   /// Default recipe quick filters for the recipe list view.
-  static List<QuickFilterOption> get defaultRecipeFilters => const [
+  static List<QuickFilterOption> getDefaultRecipeFilters(
+          BuildContext context) =>
+      [
         QuickFilterOption(
           id: 'favorites',
-          label: 'Favoriter',
+          label: context.l10n.filterFavorites,
         ),
         QuickFilterOption(
           id: 'quick',
-          label: 'Under 30 min',
+          label: context.l10n.filterUnder30Min,
         ),
         QuickFilterOption(
           id: 'vegetarian',
-          label: 'Vegetariskt',
+          label: context.l10n.filterVegetarianQuick,
         ),
       ];
 
   @override
   Widget build(BuildContext context) {
     final isAllSelected = selectedIds.isEmpty;
+    final resolvedAllLabel = allOptionLabel ?? context.l10n.filterAll;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -84,7 +88,7 @@ class QuickFilterChips extends StatelessWidget {
           // "Alla" chip (selected when no filters active)
           if (showAllOption)
             _QuickChip(
-              label: allOptionLabel,
+              label: resolvedAllLabel,
               isSelected: isAllSelected,
               onTap: isAllSelected
                   ? null

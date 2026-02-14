@@ -106,7 +106,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         actions: [
           IconButton(
             icon: const Icon(Icons.sync),
-            tooltip: 'Tillämpa regler på alla recept',
+            tooltip: context.l10n.personalTagApplyRulesToAll,
             onPressed: () => _showRetagDialog(context),
           ),
           PopupMenuButton<TagSortOrder>(

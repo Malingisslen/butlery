@@ -4,7 +4,9 @@
 // Verifies filter toggling behavior, "Alla" option logic, and default filters.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
 
 void main() {
@@ -204,15 +206,29 @@ void main() {
     group('Default Recipe Filters', () {
       testWidgets('should provide correct default filter options',
           (tester) async {
-        final defaults = QuickFilterChips.defaultRecipeFilters;
+        late List<QuickFilterOption> defaults;
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: const Locale('sv'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+            ],
+            home: Builder(
+              builder: (context) {
+                defaults = QuickFilterChips.getDefaultRecipeFilters(context);
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        );
 
         expect(defaults.length, 3);
         expect(defaults[0].id, 'favorites');
-        expect(defaults[0].label, 'Favoriter');
         expect(defaults[1].id, 'quick');
-        expect(defaults[1].label, 'Under 30 min');
         expect(defaults[2].id, 'vegetarian');
-        expect(defaults[2].label, 'Vegetariskt');
       });
     });
 

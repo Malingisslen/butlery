@@ -324,14 +324,14 @@ class _AllergenPreferencesContent extends StatelessWidget {
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
                 Text(
-                  'Omtagga alla recept',
+                  context.l10n.allergenRetagAllRecipesTitle,
                   style: AppTextStyles.titleMedium,
                 ),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'Analysera alla recept med uppdaterade inställningar',
+              context.l10n.allergenAnalyzeAllRecipes,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textMedium,
               ),
@@ -340,7 +340,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: StyledButton.secondary(
-                text: 'Uppdatera alla recept',
+                text: context.l10n.allergenUpdateAllRecipes,
                 icon: const Icon(Icons.sync, size: AppDimensions.iconSizeM),
                 onPressed: () => _showRetagDialog(context),
               ),

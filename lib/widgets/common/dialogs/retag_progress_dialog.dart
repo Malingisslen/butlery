@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -50,7 +51,7 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$count recept omtaggade'),
+          content: Text(context.l10n.retagRecipesRetagged(count)),
           backgroundColor: AppColors.success,
         ),
       );
@@ -67,16 +68,16 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: const RoundedRectangleBorder(),
-      title: const Row(
+      title: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.sync,
             color: AppColors.forestGreen,
             size: AppDimensions.iconSizeL,
           ),
-          SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
-            child: Text('Omtaggar recept'),
+            child: Text(context.l10n.retagRetaggingRecipes),
           ),
         ],
       ),
@@ -93,12 +94,12 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
           ] else ...[
             if (_total > 0)
               Text(
-                'Omtaggar $_current av $_total recept...',
+                context.l10n.retagRetaggingProgress(_current, _total),
                 style: AppTextStyles.bodyMedium,
               )
             else
               Text(
-                'Hämtar recept...',
+                context.l10n.retagFetchingRecipes,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textMedium,
                 ),
@@ -118,7 +119,7 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
         if (_error != null)
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Stäng'),
+            child: Text(context.l10n.commonClose),
           )
         else
           TextButton(
@@ -128,7 +129,7 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
                     Navigator.of(context).pop();
                   }
                 : null,
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
       ],
     );

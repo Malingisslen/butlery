@@ -258,7 +258,8 @@ class _LineItem extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         child: Semantics(
-          label: '${text.trim()}, ${isSelected ? "vald" : "ej vald"}',
+          label:
+              '${text.trim()}, ${isSelected ? context.l10n.a11ySelected : context.l10n.a11yNotSelected}',
           button: true,
           child: InkWell(
             onTap: onTap,

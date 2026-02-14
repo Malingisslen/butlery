@@ -260,7 +260,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           if (pinned.isNotEmpty) ...[
             _buildSectionHeader(
               icon: Icons.push_pin,
-              label: 'FÄSTA',
+              label: context.l10n.messagingPinned,
             ),
             ...pinned.map((c) => _buildConversationItem(c)),
             const Divider(height: 1, color: AppColors.divider),
@@ -327,7 +327,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                 const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
                   child: Text(
-                    'Arkiverade (${archived.length})',
+                    context.l10n.messagingArchivedCount(archived.length),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.textMedium,
                     ),
@@ -396,7 +396,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             leading: Icon(
               conversation.isPinned ? Icons.push_pin_outlined : Icons.push_pin,
             ),
-            title: Text(conversation.isPinned ? 'Ta bort fäst' : 'Fäst'),
+            title: Text(conversation.isPinned
+                ? context.l10n.messagingUnpin
+                : context.l10n.messagingPin),
             onTap: () {
               Navigator.pop(context);
               _togglePin(conversation);
@@ -407,7 +409,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
               conversation.isArchived ? Icons.unarchive : Icons.archive,
             ),
             title: Text(
-              conversation.isArchived ? 'Avarkivera' : 'Arkivera',
+              conversation.isArchived
+                  ? context.l10n.messagingUnarchive
+                  : context.l10n.messagingArchive,
             ),
             onTap: () {
               Navigator.pop(context);

@@ -149,7 +149,7 @@ class RecipeManagementHandler {
 
     if (friends.isEmpty) {
       showSnackBar(
-        'Du har inga vänner att samarbeta med',
+        context.l10n.collaborationNoFriends,
         backgroundColor: AppColors.error,
       );
       return;
@@ -163,7 +163,7 @@ class RecipeManagementHandler {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           shape: const RoundedRectangleBorder(),
-          title: const Text('Aktivera samarbete'),
+          title: Text(context.l10n.collaborationEnableTitle),
           content: SizedBox(
             width: double.maxFinite,
             height: 300,
@@ -191,12 +191,12 @@ class RecipeManagementHandler {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Avbryt'),
+              child: Text(context.l10n.commonCancel),
             ),
             TextButton(
               onPressed:
                   selectedIds.isEmpty ? null : () => Navigator.pop(ctx, true),
-              child: const Text('Aktivera'),
+              child: Text(context.l10n.commonEnable),
             ),
           ],
         ),
@@ -211,12 +211,12 @@ class RecipeManagementHandler {
       if (!context.mounted) return;
       if (success) {
         showSnackBar(
-          'Samarbete aktiverat',
+          context.l10n.collaborationEnabled,
           backgroundColor: AppColors.success,
         );
       } else {
         showSnackBar(
-          'Kunde inte aktivera samarbete',
+          context.l10n.collaborationCouldNotEnable,
           backgroundColor: AppColors.error,
         );
       }
@@ -234,17 +234,16 @@ class RecipeManagementHandler {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: const RoundedRectangleBorder(),
-        title: const Text('Avaktivera samarbete?'),
-        content: const Text(
-            'Alla samarbetspartners förlorar åtkomst till receptet.'),
+        title: Text(context.l10n.collaborationDeactivateTitle),
+        content: Text(context.l10n.collaborationDeactivateMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Avaktivera'),
+            child: Text(context.l10n.commonDeactivate),
           ),
         ],
       ),
@@ -258,12 +257,12 @@ class RecipeManagementHandler {
       if (!context.mounted) return;
       if (success) {
         showSnackBar(
-          'Samarbete avaktiverat',
+          context.l10n.collaborationDeactivated,
           backgroundColor: AppColors.success,
         );
       } else {
         showSnackBar(
-          'Kunde inte avaktivera samarbete',
+          context.l10n.collaborationCouldNotDeactivate,
           backgroundColor: AppColors.error,
         );
       }

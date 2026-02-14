@@ -399,8 +399,8 @@ class _ProfileMenuState extends State<ProfileMenu> {
           ),
           ProfileActions.buildMenuItem(
             context,
-            title: 'Aviseringar',
-            subtitle: 'Kategorier och tysta timmar',
+            title: context.l10n.profileNotifications,
+            subtitle: context.l10n.profileNotificationsSubtitle,
             icon: Icons.notifications_outlined,
             onTap: () =>
                 Navigator.pushNamed(context, Routes.settingsNotifications),

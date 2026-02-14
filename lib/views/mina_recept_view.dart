@@ -381,7 +381,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
             // UI Redesign: Quick filter chips for fast filtering
             QuickFilterChips(
-              options: QuickFilterChips.defaultRecipeFilters,
+              options: QuickFilterChips.getDefaultRecipeFilters(context),
               selectedIds: _getQuickFilterIds(viewModel),
               onFilterToggle: (filterId) =>
                   _onQuickFilterToggle(viewModel, filterId),
