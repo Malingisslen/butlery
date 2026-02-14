@@ -156,6 +156,12 @@ See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 - Task state persists on disk - PreCompact hook reads both Claude Code tasks and `/tasks/todo.md`
 - If going sideways → STOP and re-plan immediately
 
+**Fit Check (when 2+ approaches exist):**
+- Requirements as rows, approaches as columns
+- Cells are strictly pass (Y) or fail (N) — no "maybe"
+- Include ALL requirements, even ones that seem obvious
+- Pick the approach with fewest fails; ties broken by simplicity
+
 **Verification Before Done:**
 - `flutter analyze` passes
 - Relevant tests pass

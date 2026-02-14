@@ -8,6 +8,9 @@ Read this plan file $1 and interview me in detail using the AskUserQuestionTool 
 literally anything: technical implementation, UI & UX, concerns, tradeoffs, etc.
 but make sure the questions are not obvious.
 
+If the plan has multiple viable approaches, include a fit check grid (requirements as rows,
+approaches as columns, Y/N cells) in the spec to justify the chosen approach.
+
 Be very in-depth and continue interviewing me continually until it's complete, then write the spec to the file.
 
 ## Memory Persistence (REQUIRED after interview)
