@@ -25,6 +25,8 @@ You are a UI/UX designer specializing in Flutter applications with Material Desi
 5. Swedish localization - friendly tone, action-oriented labels
 6. Progressive disclosure for complex features
 7. Consistent spacing (4px/8px grid), never hardcode theme values
+8. Blocking test for new UI surfaces — "Can the user interact with what's behind?"
+   If no → new View (separate route). If yes → Dialog/BottomSheet/Overlay within current View.
 
 ## Output
 
