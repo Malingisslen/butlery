@@ -38,7 +38,6 @@
 /// ```
 
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/constants/app_strings.dart';
 
 /// Error classification enum for intelligent error handling strategies.
 /// This enumeration provides detailed error classification to enable appropriate
@@ -202,7 +201,7 @@ mixin ErrorHandlingMixin {
       createOperation,
       operationName: 'Create $itemType',
       defaultValue: defaultValue,
-      customErrorMessage: AppStrings.couldNotCreate(itemType),
+      customErrorMessage: 'Kunde inte skapa $itemType. Försök igen.',
     );
   }
 
@@ -216,7 +215,7 @@ mixin ErrorHandlingMixin {
       updateOperation,
       operationName: 'Update $itemType',
       defaultValue: defaultValue,
-      customErrorMessage: AppStrings.couldNotUpdate(itemType),
+      customErrorMessage: 'Kunde inte uppdatera $itemType. Försök igen.',
     );
   }
 
@@ -232,7 +231,7 @@ mixin ErrorHandlingMixin {
       },
       operationName: 'Delete $itemType',
       defaultValue: false,
-      customErrorMessage: AppStrings.couldNotDelete(itemType),
+      customErrorMessage: 'Kunde inte ta bort $itemType. Försök igen.',
     );
 
     return result ?? false;
@@ -248,7 +247,7 @@ mixin ErrorHandlingMixin {
       loadOperation,
       operationName: 'Load $itemType',
       defaultValue: defaultValue,
-      customErrorMessage: AppStrings.couldNotLoad(itemType),
+      customErrorMessage: 'Kunde inte ladda $itemType. Försök igen.',
     );
   }
 
@@ -261,7 +260,7 @@ mixin ErrorHandlingMixin {
       loadOperation,
       operationName: 'Load $itemType list',
       defaultValue: <T>[],
-      customErrorMessage: AppStrings.couldNotLoad(itemType),
+      customErrorMessage: 'Kunde inte ladda $itemType. Försök igen.',
     );
 
     return result ?? <T>[];
@@ -276,7 +275,7 @@ mixin ErrorHandlingMixin {
     final result = await safeLoadList(loadOperation, itemType);
 
     if (result.isEmpty && showEmptyMessage) {
-      handleUserInfo(AppStrings.noItemsFound);
+      handleUserInfo('Inga objekt hittades.');
     }
 
     return result;
@@ -302,8 +301,7 @@ mixin ErrorHandlingMixin {
           final opName = operationName ?? 'Network operation';
           AppLogger.error(
               '$opName failed after $maxRetries attempts: $e', stackTrace);
-          // ignore: deprecated_member_use_from_same_package
-          handleUserError(AppStrings.networkError);
+          handleUserError('Nätverksfel. Kontrollera din internetanslutning.');
           return defaultValue;
         }
 
@@ -328,12 +326,11 @@ mixin ErrorHandlingMixin {
       AppLogger.error('$operationName failed: $e', stackTrace);
 
       if (e.toString().toLowerCase().contains('permission')) {
-        handleUserError(AppStrings.permissionDenied);
+        handleUserError('Du har inte behörighet för denna åtgärd.');
       } else if (e.toString().toLowerCase().contains('auth')) {
-        handleUserError(AppStrings.authenticationError);
+        handleUserError('Autentiseringsfel. Logga in igen.');
       } else {
-        // ignore: deprecated_member_use_from_same_package
-        handleUserError(AppStrings.genericError);
+        handleUserError('Ett fel uppstod. Försök igen.');
       }
 
       return defaultValue;
@@ -532,17 +529,15 @@ mixin ErrorHandlingMixin {
       case ErrorType.dnsResolution:
         return 'Anslutningsproblem upptäckts. Försöker återansluta...';
       case ErrorType.networkConnectivity:
-        // ignore: deprecated_member_use_from_same_package
-        return AppStrings.networkError;
+        return 'Nätverksfel. Kontrollera din internetanslutning.';
       case ErrorType.authentication:
-        return AppStrings.authenticationError;
+        return 'Autentiseringsfel. Logga in igen.';
       case ErrorType.notFound:
-        return AppStrings.notFound;
+        return 'Kunde inte hittas.';
       case ErrorType.serviceUnavailable:
         return 'Tjänsten är tillfälligt otillgänglig. Försök igen senare.';
       case ErrorType.unknown:
-        // ignore: deprecated_member_use_from_same_package
-        return AppStrings.genericError;
+        return 'Ett fel uppstod. Försök igen.';
     }
   }
 

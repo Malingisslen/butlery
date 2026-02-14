@@ -9,7 +9,6 @@
 
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
-import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 
@@ -120,19 +119,18 @@ abstract class BaseService with ErrorHandlingMixin {
 
     // Pre-flight checks
     if (requiresAuth && !await _isAuthenticated()) {
-      _handleUserError(AppStrings.authenticationError);
+      _handleUserError('Autentiseringsfel. Logga in igen.');
       return defaultValue;
     }
 
     if (requiresNetwork && !await _isNetworkAvailable()) {
-      // ignore: deprecated_member_use_from_same_package
-      _handleUserError(AppStrings.networkError);
+      _handleUserError('Nätverksfel. Kontrollera din internetanslutning.');
       return defaultValue;
     }
 
     if (requiresPermission && requiredPermission != null) {
       if (!await _hasPermission(requiredPermission)) {
-        _handleUserError(AppStrings.permissionDenied);
+        _handleUserError('Du har inte behörighet för denna åtgärd.');
         return defaultValue;
       }
     }
@@ -158,13 +156,12 @@ abstract class BaseService with ErrorHandlingMixin {
 
     // Pre-flight checks
     if (requiresAuth && !await _isAuthenticated()) {
-      _handleUserError(AppStrings.authenticationError);
+      _handleUserError('Autentiseringsfel. Logga in igen.');
       return [];
     }
 
     if (requiresNetwork && !await _isNetworkAvailable()) {
-      // ignore: deprecated_member_use_from_same_package
-      _handleUserError(AppStrings.networkError);
+      _handleUserError('Nätverksfel. Kontrollera din internetanslutning.');
       return [];
     }
 
@@ -239,7 +236,7 @@ abstract class BaseService with ErrorHandlingMixin {
     T? defaultValue,
   }) async {
     if (!await checkPermission(permission)) {
-      _handleUserError(AppStrings.permissionDenied);
+      _handleUserError('Du har inte behörighet för denna åtgärd.');
       return defaultValue;
     }
 
@@ -364,7 +361,7 @@ mixin UserContextMixin on BaseService {
   }) async {
     final userId = await getCurrentUserId();
     if (userId == null) {
-      _handleUserError(AppStrings.authenticationError);
+      _handleUserError('Autentiseringsfel. Logga in igen.');
       return defaultValue;
     }
 

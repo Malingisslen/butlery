@@ -73,9 +73,8 @@ class SslPinningService {
       return false;
     } catch (e) {
       AppLogger.error('Certificate pinning error: $e');
-      // On error, allow connection to prevent blocking legitimate traffic
-      // but log for investigation
-      return true;
+      // Fail closed: reject connection on error to prevent MITM attacks
+      return false;
     }
   }
 

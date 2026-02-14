@@ -1,7 +1,6 @@
 /// Biometric authentication service for Face ID, Touch ID, and fingerprint authentication.
 /// Provides secure local authentication on iOS and Android.
 
-import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -101,7 +100,6 @@ class BiometricService {
   /// Returns true if authentication was successful.
   Future<bool> authenticate({
     required String reason,
-    bool useErrorDialogs = true,
     bool stickyAuth = true,
   }) async {
     if (!_isAvailable) {
@@ -114,19 +112,16 @@ class BiometricService {
     try {
       final authenticated = await _localAuth.authenticate(
         localizedReason: reason,
-        options: AuthenticationOptions(
-          useErrorDialogs: useErrorDialogs,
-          stickyAuth: stickyAuth,
-          biometricOnly: true,
-        ),
+        biometricOnly: true,
+        persistAcrossBackgrounding: stickyAuth,
       );
 
       AppLogger.info(
         'BiometricService: Authentication ${authenticated ? 'successful' : 'failed'}',
       );
       return authenticated;
-    } on PlatformException catch (e) {
-      AppLogger.warning('BiometricService: Authentication error: ${e.message}');
+    } on LocalAuthException catch (e) {
+      AppLogger.warning('BiometricService: Authentication error: ${e.code}');
       return false;
     }
   }

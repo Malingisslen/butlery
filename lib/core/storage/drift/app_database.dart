@@ -117,7 +117,7 @@ class AppDatabase extends _$AppDatabase {
 
 /// Secure storage instance for database encryption key
 const _secureStorage = FlutterSecureStorage(
-  aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  aOptions: AndroidOptions(),
   iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
 );
 

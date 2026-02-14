@@ -17,6 +17,8 @@ import 'package:butlery/widgets/common/indicators/status_badge.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/menu/menu_rating_section.dart';
+import 'package:butlery/widgets/menu/menu_comments_section.dart';
 import 'package:butlery/core/router/app_router.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -54,6 +56,8 @@ class MenuPreviewView extends StatelessWidget {
                 _buildAppBar(context),
                 _buildMenuHeader(context),
                 _buildMenuContent(context),
+                _buildRatingSection(context),
+                _buildCommentsSection(context),
                 _buildActionButtons(context),
               ],
             ),
@@ -272,6 +276,29 @@ class MenuPreviewView extends StatelessWidget {
           );
         },
         childCount: menuContent.keys.length,
+      ),
+    );
+  }
+
+  Widget _buildRatingSection(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppDimensions.paddingL,
+          AppDimensions.paddingL,
+          AppDimensions.paddingL,
+          0,
+        ),
+        child: MenuRatingSection(menuId: sharedMenu.id),
+      ),
+    );
+  }
+
+  Widget _buildCommentsSection(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        child: MenuCommentsSection(menuId: sharedMenu.id),
       ),
     );
   }

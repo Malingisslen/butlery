@@ -1,7 +1,7 @@
 // lib/core/errors/contextual_error_engine.dart
 
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
-import 'package:butlery/core/constants/app_strings.dart';
+
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/connectivity_check.dart';
 
@@ -335,8 +335,7 @@ class ContextualErrorEngine {
 
   /// Get fallback message when error generation fails
   static String _getFallbackMessage(UserActionContext context) {
-    // ignore: deprecated_member_use_from_same_package
-    return 'Ett fel uppstod medan ${context.swedishDescription}. ${AppStrings.retry}.';
+    return 'Ett fel uppstod medan ${context.swedishDescription}. Försök igen.';
   }
 
   /// Check if current time is during maintenance window (simple heuristic)

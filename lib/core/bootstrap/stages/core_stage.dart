@@ -57,8 +57,7 @@ class CoreStage implements BootstrapStage {
         );
       }
 
-      // Basic validation that we can proceed
-      await Future.delayed(const Duration(milliseconds: 100));
+      // Core services initialized - proceed to next stage
     } catch (e) {
       throw BootstrapException(
         name,

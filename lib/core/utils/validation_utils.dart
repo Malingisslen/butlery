@@ -47,7 +47,7 @@
 /// }
 /// ```
 
-import 'package:butlery/core/constants/app_strings.dart';
+// AppStrings import removed — validation messages inlined for service-layer l10n compatibility
 
 /// Comprehensive validation utility class providing centralized validation patterns and business rule enforcement.
 /// This utility class serves as the centralized validation hub for the entire application, consolidating validation
@@ -143,9 +143,7 @@ class ValidationUtils {
   /// Replaces duplicate validation patterns across form fields
   static String? validateRequired(String? value, {String? fieldName}) {
     if (isNullOrWhitespace(value)) {
-      return fieldName != null
-          ? AppStrings.fieldRequired(fieldName)
-          : AppStrings.genericRequired;
+      return fieldName != null ? '$fieldName krävs' : 'Detta fält krävs';
     }
     return null;
   }
@@ -162,13 +160,13 @@ class ValidationUtils {
 
     if (minLength != null && value.length < minLength) {
       return fieldName != null
-          ? AppStrings.fieldTooShort(fieldName, minLength)
+          ? '$fieldName måste vara minst $minLength tecken'
           : 'Minimum length is $minLength characters';
     }
 
     if (maxLength != null && value.length > maxLength) {
       return fieldName != null
-          ? AppStrings.fieldTooLong(fieldName, maxLength)
+          ? '$fieldName får vara max $maxLength tecken'
           : 'Maximum length is $maxLength characters';
     }
 
@@ -178,13 +176,12 @@ class ValidationUtils {
   /// Email validation - consolidates patterns from 23+ files
   static String? validateEmail(String? email, {bool required = true}) {
     if (isNullOrWhitespace(email)) {
-      // ignore: deprecated_member_use_from_same_package
-      return required ? AppStrings.emailRequired : null;
+      return required ? 'E-post krävs' : null;
     }
 
     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
     if (!emailRegex.hasMatch(email!)) {
-      return AppStrings.emailInvalid;
+      return 'Ogiltig e-postadress';
     }
 
     return null;
@@ -220,7 +217,7 @@ class ValidationUtils {
   /// Amount validation - consolidates numeric validation patterns
   static String? validateAmount(String? amount) {
     if (isNullOrWhitespace(amount)) {
-      return AppStrings.fieldRequired('Antal');
+      return 'Antal krävs';
     }
 
     final numericValue = double.tryParse(amount!);

@@ -77,7 +77,7 @@ class NavigationThemes {
     return DialogThemeData(
       backgroundColor: AppColors.cardWhite,
       elevation: 8,
-      shadowColor: Colors.black26,
+      shadowColor: AppColors.lightColorScheme.shadow,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
       ),
@@ -90,11 +90,11 @@ class NavigationThemes {
 
   /// Bottom sheet theme - Cream background
   static BottomSheetThemeData get bottomSheetTheme {
-    return const BottomSheetThemeData(
+    return BottomSheetThemeData(
       backgroundColor: AppColors.cream,
       elevation: 16,
-      shadowColor: Colors.black26,
-      shape: RoundedRectangleBorder(
+      shadowColor: AppColors.lightColorScheme.shadow,
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppDimensions.borderRadius16),
         ),

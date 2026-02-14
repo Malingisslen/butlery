@@ -175,7 +175,7 @@ class FCMService {
       const initializationSettings =
           InitializationSettings(android: initializationSettingsAndroid);
 
-      await _localNotifications.initialize(initializationSettings);
+      await _localNotifications.initialize(settings: initializationSettings);
     } catch (e) {
       AppLogger.warning('⚠️ Failed to initialize notification channels: $e');
       // Non-critical - FCM will still work with default channel

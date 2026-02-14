@@ -98,6 +98,30 @@ class RecipeSocialStats {
     return result;
   }
 
+  /// Remove the current user's rating for a recipe
+  Future<bool> removeRating(String recipeId) async {
+    final userId = currentUserId;
+    if (userId == null) {
+      AppLogger.error('User must be logged in to remove rating');
+      return false;
+    }
+
+    final result = await _ratingSystem.deleteRating(
+      recipeId: recipeId,
+      userId: userId,
+    );
+
+    if (result) {
+      // Re-aggregate after removal
+      await RatingStatistics.updateRecipeRatingAggregate(
+        firestore: _firestoreRepository.firestore,
+        recipeId: recipeId,
+      );
+    }
+
+    return result;
+  }
+
   /// Get user's rating for a specific recipe
   Future<Map<String, dynamic>?> getUserRating(String recipeId) async {
     final userId = currentUserId;

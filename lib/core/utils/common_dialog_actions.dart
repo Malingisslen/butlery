@@ -10,7 +10,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
-import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Dialog factory for delete, action, and info dialogs with Swedish localization and BaseDialog foundation.
@@ -25,11 +24,13 @@ class CommonDialogActions {
   }) async {
     return await showDialog<bool>(
       context: context,
-      builder: (context) => _DeleteConfirmationDialog(
+      builder: (dialogContext) => _DeleteConfirmationDialog(
         itemName: itemName,
         itemType: itemType,
         warningMessage: warningMessage,
         icon: icon,
+        deleteText: dialogContext.l10n.commonDelete,
+        cancelText: dialogContext.l10n.commonCancel,
       ),
     );
   }
@@ -211,23 +212,23 @@ class CommonDialogActions {
 }
 
 /// Private delete confirmation dialog
-// ignore_for_file: deprecated_member_use_from_same_package
 class _DeleteConfirmationDialog extends BaseDialog<bool> {
   final String itemName;
   final String itemType;
   final String? warningMessage;
   final IconData? icon;
-
-  const _DeleteConfirmationDialog({
+  _DeleteConfirmationDialog({
     required this.itemName,
     required this.itemType,
     this.warningMessage,
     this.icon,
+    required String deleteText,
+    required String cancelText,
   }) : super(
-          title: '${AppStrings.delete} $itemType?',
-          titleIcon: Icons.delete, // Kept as const for super constructor
-          primaryActionText: AppStrings.delete,
-          secondaryActionText: AppStrings.cancel,
+          title: '$deleteText $itemType?',
+          titleIcon: Icons.delete,
+          primaryActionText: deleteText,
+          secondaryActionText: cancelText,
           isDangerous: true,
         );
 
@@ -325,7 +326,7 @@ class _ActionConfirmationDialog extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(true),
           style: FilledButton.styleFrom(
             backgroundColor: buttonColor,
-            foregroundColor: Colors.white,
+            foregroundColor: AppColors.textOnPrimary,
           ),
           child: Text(primaryActionText),
         ),
@@ -368,7 +369,7 @@ class _InfoDialog extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
           style: FilledButton.styleFrom(
             backgroundColor: color,
-            foregroundColor: Colors.white,
+            foregroundColor: AppColors.textOnPrimary,
           ),
           child: Text(buttonText),
         ),

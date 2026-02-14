@@ -125,39 +125,59 @@ class SharedShoppingListCard {
             ],
           ),
         ),
-        // Dismiss button
-        Material(
-          color: Theme.of(context)
-              .colorScheme
-              .errorContainer
-              .withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-          child: Semantics(
-            label: context.l10n.a11yDeclineSharedShoppingList,
-            button: true,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-              onTap: () => SharedContentActions.dismissShoppingList(
-                context,
-                viewModel,
-                sharedShoppingList,
-              ),
-              child: Container(
-                padding: const EdgeInsets.all(AppDimensions.spacingXs),
-                constraints: const BoxConstraints(
-                  minWidth:
-                      AppDimensions.iconSizeAction + AppDimensions.spacingS,
-                  minHeight:
-                      AppDimensions.iconSizeAction + AppDimensions.spacingS,
-                ),
-                child: Icon(
-                  Icons.close,
-                  size: AppDimensions.iconSizeM,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+        // Overflow menu with dismiss and unshare actions
+        PopupMenuButton<String>(
+          icon: Icon(
+            Icons.more_vert,
+            size: AppDimensions.iconSizeM,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          shape: const RoundedRectangleBorder(),
+          onSelected: (value) {
+            switch (value) {
+              case 'dismiss':
+                SharedContentActions.dismissShoppingList(
+                  context,
+                  viewModel,
+                  sharedShoppingList,
+                );
+              case 'unshare':
+                SharedContentActions.unshareShoppingList(
+                  context,
+                  sharedShoppingList,
+                );
+            }
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem<String>(
+              value: 'dismiss',
+              child: Row(
+                children: [
+                  Icon(Icons.close,
+                      size: AppDimensions.iconSizeM,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  const SizedBox(width: AppDimensions.spacingS),
+                  Text(context.l10n.commonHide),
+                ],
               ),
             ),
-          ),
+            PopupMenuItem<String>(
+              value: 'unshare',
+              child: Row(
+                children: [
+                  Icon(Icons.link_off,
+                      size: AppDimensions.iconSizeM,
+                      color: Theme.of(context).colorScheme.error),
+                  const SizedBox(width: AppDimensions.spacingS),
+                  Text(
+                    context.l10n.unshareButton,
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         if (!isRead)
           Container(

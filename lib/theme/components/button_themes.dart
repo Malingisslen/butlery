@@ -199,7 +199,7 @@ class ButtonThemes {
         backgroundColor: AppColors.forestGreen,
         foregroundColor: AppColors.cardWhite,
         elevation: AppDimensions.elevationMedium,
-        shadowColor: Colors.black26,
+        shadowColor: AppColors.lightColorScheme.shadow,
         padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingXl,
             vertical: AppDimensions.paddingM),

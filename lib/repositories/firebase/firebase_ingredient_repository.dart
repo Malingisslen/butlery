@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
@@ -31,9 +29,6 @@ class FirebaseIngredientRepository
 
   /// Whether the cache has been loaded.
   bool _cacheLoaded = false;
-
-  /// Subscription to Firestore updates for cache invalidation.
-  StreamSubscription<QuerySnapshot>? _subscription;
 
   /// Callbacks to notify when cache is invalidated.
   final List<void Function()> _onCacheInvalidatedListeners = [];
@@ -73,98 +68,22 @@ class FirebaseIngredientRepository
     }
   }
 
-  /// M7: Pending changes collected during initialization.
-  final List<DocumentChange<Map<String, dynamic>>> _pendingChanges = [];
-
-  /// Initializes the repository with automatic cache updates.
+  /// Initializes the repository with a one-time cache load.
   ///
-  /// M7: Sets up the listener BEFORE loading cache to avoid race condition.
-  /// Any changes that occur during cache loading are collected and applied after.
+  /// Uses a single fetch instead of a permanent Firestore listener.
+  /// The ingredients collection is admin-managed and changes rarely,
+  /// so a one-time load per app session is sufficient. Call [forceRefresh]
+  /// if a mid-session reload is needed.
   Future<void> initialize() async {
-    // M7: Set up listener FIRST to capture any changes during cache load
-    _subscription = _collection.snapshots().listen((snapshot) {
-      if (snapshot.docChanges.isNotEmpty) {
-        // Check if this is actual data change, not just initial load
-        final hasRealChanges = snapshot.docChanges.any((change) =>
-            change.type == DocumentChangeType.added ||
-            change.type == DocumentChangeType.modified ||
-            change.type == DocumentChangeType.removed);
-
-        if (hasRealChanges) {
-          if (!_cacheLoaded) {
-            // M7: Collect changes during initialization
-            _pendingChanges.addAll(snapshot.docChanges);
-            AppLogger.debug(
-              '📦 Collecting ${snapshot.docChanges.length} changes during init',
-            );
-          } else {
-            // Normal processing after load
-            AppLogger.info(
-              '🔄 Ingredient collection changed, invalidating cache (${snapshot.docChanges.length} changes)',
-            );
-            _invalidateAndReload(snapshot);
-          }
-        }
-      }
-    });
-
-    // Load initial cache
     await loadCache();
-
-    // M7: Apply any changes that occurred during load
-    if (_pendingChanges.isNotEmpty) {
-      AppLogger.info(
-        '🔄 Applying ${_pendingChanges.length} changes collected during init',
-      );
-      _applyPendingChanges();
-    }
   }
 
-  /// M7: Applies changes collected during initialization.
-  void _applyPendingChanges() {
-    for (final change in _pendingChanges) {
-      switch (change.type) {
-        case DocumentChangeType.added:
-        case DocumentChangeType.modified:
-          final ingredient = IngredientData.fromFirestore(change.doc);
-          _addToCache(ingredient);
-          break;
-        case DocumentChangeType.removed:
-          final id = change.doc.id;
-          _removeFromCache(id);
-          break;
-      }
-    }
-    _pendingChanges.clear();
-    _notifyCacheInvalidated();
-  }
-
-  /// Removes an ingredient from all cache indexes.
-  void _removeFromCache(String id) {
-    final ingredient = _cache[id];
-    if (ingredient == null) return;
-
-    _cache.remove(id);
-
-    // Remove from Swedish index
-    _swedishNameIndex.removeWhere((_, v) => v == id);
-    _englishNameIndex.removeWhere((_, v) => v == id);
-    _aliasIndex.removeWhere((_, v) => v == id);
-  }
-
-  /// Invalidates cache and reloads from snapshot.
-  void _invalidateAndReload(QuerySnapshot snapshot) {
-    _cache.clear();
-    _swedishNameIndex.clear();
-    _englishNameIndex.clear();
-    _aliasIndex.clear();
-
-    for (final doc in snapshot.docs) {
-      final ingredient = IngredientData.fromFirestore(doc);
-      _addToCache(ingredient);
-    }
-
-    AppLogger.info('✅ Cache reloaded with ${_cache.length} ingredients');
+  /// Forces a full cache reload from Firestore.
+  ///
+  /// Use when admin has updated the ingredients collection mid-session.
+  Future<void> forceRefresh() async {
+    _cacheLoaded = false;
+    await loadCache();
     _notifyCacheInvalidated();
   }
 
@@ -573,9 +492,8 @@ class FirebaseIngredientRepository
     _cacheLoaded = false;
   }
 
-  /// Disposes subscriptions.
+  /// Disposes resources.
   void dispose() {
-    _subscription?.cancel();
-    _subscription = null;
+    _onCacheInvalidatedListeners.clear();
   }
 }

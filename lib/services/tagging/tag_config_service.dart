@@ -63,8 +63,8 @@ class TagConfigService extends BaseService {
   bool _taggingAvailable = false;
 
   TagConfigService({
-    FirebaseFirestore? firestore,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance;
+    required FirebaseFirestore firestore,
+  }) : _firestore = firestore;
 
   @override
   String get serviceName => 'TagConfigService';

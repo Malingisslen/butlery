@@ -564,6 +564,60 @@ class FirebaseMenuCollaborationRepository
   }
 
   @override
+  Future<List<Map<String, dynamic>>> getUserMenuTemplates() async {
+    try {
+      final userId = requireCurrentUserId();
+
+      final snapshot = await firestore
+          .collection('menu_templates')
+          .where('ownerId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'id': doc.id,
+          'templateName': data['templateName'] ?? '',
+          'description': data['description'] ?? '',
+          'categories': List<String>.from(data['categories'] ?? []),
+          'totalRecipeCount': data['totalRecipeCount'] ?? 0,
+          'useCount': data['useCount'] ?? 0,
+          'createdAt': data['createdAt'],
+        };
+      }).toList();
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to get user menu templates: $e', stackTrace);
+      return [];
+    }
+  }
+
+  @override
+  Future<bool> deleteMenuTemplate(String templateId) async {
+    try {
+      final userId = requireCurrentUserId();
+
+      // Verify ownership before deletion
+      final doc =
+          await firestore.collection('menu_templates').doc(templateId).get();
+      if (!doc.exists) return false;
+
+      final data = doc.data();
+      if (data?['ownerId'] != userId) {
+        AppLogger.warning('Cannot delete template - not owned by current user');
+        return false;
+      }
+
+      await firestore.collection('menu_templates').doc(templateId).delete();
+      AppLogger.success('Deleted menu template: $templateId');
+      return true;
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to delete menu template: $e', stackTrace);
+      return false;
+    }
+  }
+
+  @override
   Future<String?> createMenuFromTemplate({
     required String templateId,
     required String menuTitle,

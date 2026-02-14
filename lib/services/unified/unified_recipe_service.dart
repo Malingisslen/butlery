@@ -434,7 +434,7 @@ class UnifiedRecipeService extends ChangeNotifier
       try {
         _firestore.settings = const Settings(
           persistenceEnabled: true,
-          cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+          cacheSizeBytes: 100 * 1024 * 1024, // 100 MB
         );
       } catch (e) {
         AppLogger.debug('Firestore settings already configured');
@@ -697,6 +697,15 @@ class UnifiedRecipeService extends ChangeNotifier
 
   Future<bool> markRecipeAsCooked(String recipeId) async {
     return await _personalModule.markRecipeAsCooked(recipeId);
+  }
+
+  /// Toggle favorite status for a recipe.
+  /// Performs optimistic update via copyWith + updateRecipe.
+  Future<bool> toggleFavorite(String recipeId, bool isFavorite) async {
+    final recipe = getRecipeById(recipeId);
+    if (recipe == null) return false;
+    final updated = recipe.copyWith(isFavorite: isFavorite);
+    return await updateRecipe(updated);
   }
 
   /// Legacy createRecipe method

@@ -13622,6 +13622,210 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ta bort favorit'**
   String get favoritesRemove;
+
+  /// No description provided for @shoppingConvertToCollaborative.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gör samarbetslista'**
+  String get shoppingConvertToCollaborative;
+
+  /// No description provided for @shoppingConvertToPersonal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gör personlig lista'**
+  String get shoppingConvertToPersonal;
+
+  /// No description provided for @shoppingConvertToCollaborativeTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gör till samarbetslista'**
+  String get shoppingConvertToCollaborativeTitle;
+
+  /// No description provided for @shoppingConvertToCollaborativeDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj vänner att dela listan med. De kan lägga till och bocka av varor i realtid.'**
+  String get shoppingConvertToCollaborativeDescription;
+
+  /// No description provided for @shoppingConvertToPersonalTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gör till personlig lista'**
+  String get shoppingConvertToPersonalTitle;
+
+  /// No description provided for @shoppingConvertToPersonalWarning.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla samarbetspartners förlorar åtkomst till listan. Varor behålls.'**
+  String get shoppingConvertToPersonalWarning;
+
+  /// No description provided for @shoppingConvertedToCollaborative.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan omvandlad till samarbetslista'**
+  String get shoppingConvertedToCollaborative;
+
+  /// No description provided for @shoppingConvertedToPersonal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan omvandlad till personlig'**
+  String get shoppingConvertedToPersonal;
+
+  /// No description provided for @shoppingConvertError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte omvandla listan'**
+  String get shoppingConvertError;
+
+  /// No description provided for @shoppingConvertSelectFriends.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj minst en vän'**
+  String get shoppingConvertSelectFriends;
+
+  /// No description provided for @shoppingDescriptionLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beskrivning (valfritt)'**
+  String get shoppingDescriptionLabel;
+
+  /// No description provided for @menuTemplateSaveAsTemplate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara som mall'**
+  String get menuTemplateSaveAsTemplate;
+
+  /// No description provided for @menuTemplateSaveAsTemplateDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparar menyns kategoristruktur som en återanvändbar mall'**
+  String get menuTemplateSaveAsTemplateDescription;
+
+  /// No description provided for @menuTemplateName.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mallnamn'**
+  String get menuTemplateName;
+
+  /// No description provided for @menuTemplateNameHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'T.ex. Vardagsmeny familj'**
+  String get menuTemplateNameHint;
+
+  /// No description provided for @menuTemplateNameRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mallnamn krävs'**
+  String get menuTemplateNameRequired;
+
+  /// No description provided for @menuTemplateDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beskrivning (valfritt)'**
+  String get menuTemplateDescription;
+
+  /// No description provided for @menuTemplateDescriptionHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'T.ex. Perfekt för vardagar med barn'**
+  String get menuTemplateDescriptionHint;
+
+  /// No description provided for @menuTemplateSavedSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mall \"{name}\" sparad!'**
+  String menuTemplateSavedSuccess(String name);
+
+  /// No description provided for @menuTemplateSaveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara mall'**
+  String get menuTemplateSaveFailed;
+
+  /// No description provided for @menuTemplateLoadTemplate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ladda mall'**
+  String get menuTemplateLoadTemplate;
+
+  /// No description provided for @menuTemplateNoTemplates.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga mallar'**
+  String get menuTemplateNoTemplates;
+
+  /// No description provided for @menuTemplateNoTemplatesDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inga sparade menymmallar. Spara en meny som mall för att återanvända kategoristrukturen.'**
+  String get menuTemplateNoTemplatesDescription;
+
+  /// No description provided for @menuTemplateBrowseTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Menymmallar'**
+  String get menuTemplateBrowseTitle;
+
+  /// No description provided for @menuTemplateCategories.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} kategorier'**
+  String menuTemplateCategories(int count);
+
+  /// No description provided for @menuTemplateRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept'**
+  String menuTemplateRecipes(int count);
+
+  /// No description provided for @menuTemplateUsedCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd {count} gånger'**
+  String menuTemplateUsedCount(int count);
+
+  /// No description provided for @menuTemplateUseTemplate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd mall'**
+  String get menuTemplateUseTemplate;
+
+  /// No description provided for @menuTemplateDeleteTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort mall'**
+  String get menuTemplateDeleteTitle;
+
+  /// No description provided for @menuTemplateDeleteConfirmation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Är du säker på att du vill ta bort denna mall?'**
+  String get menuTemplateDeleteConfirmation;
+
+  /// No description provided for @menuTemplateDeletedSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mall borttagen'**
+  String get menuTemplateDeletedSuccess;
+
+  /// No description provided for @menuTemplateDeleteFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort mall'**
+  String get menuTemplateDeleteFailed;
+
+  /// No description provided for @menuTemplateSavedMenus.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparade menyer'**
+  String get menuTemplateSavedMenus;
+
+  /// No description provided for @menuTemplateTemplates.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mallar'**
+  String get menuTemplateTemplates;
 }
 
 class _AppLocalizationsDelegate

@@ -38,14 +38,16 @@ class VeckomenyDialogs {
     );
   }
 
-  /// Shows load menu bottom sheet.
+  /// Shows load menu bottom sheet with saved menus and templates tabs.
   static Future<void> showLoadMenuBottomSheet(
     BuildContext context, {
     required MenuViewModel viewModel,
+    ValueChanged<String>? onTemplateSelected,
   }) async {
     await LayoutComponents.showLoadMenuDialog(
       context,
       viewModel: viewModel,
+      onTemplateSelected: onTemplateSelected,
     );
   }
 

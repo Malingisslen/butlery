@@ -84,6 +84,11 @@ Future<void> main() async {
   // CRITICAL: Initialize Flutter bindings first - required for any Flutter services
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Limit image cache to prevent unbounded memory growth
+  PaintingBinding.instance.imageCache.maximumSize = 100;
+  PaintingBinding.instance.imageCache.maximumSizeBytes =
+      50 * 1024 * 1024; // 50 MB
+
   try {
     // Load environment variables first - required for Firebase configuration
     await dotenv.load(fileName: '.env');
@@ -382,7 +387,20 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     _localeProvider.removeListener(_onLocaleChanged);
     _themeService?.removeListener(_onThemeChanged);
     _sessionTimeoutService?.dispose();
+    _disposeCacheManager();
     super.dispose();
+  }
+
+  void _disposeCacheManager() {
+    try {
+      final bootstrap = ApplicationBootstrap();
+      if (bootstrap.isInitialized) {
+        final cacheManager = bootstrap.container.get<IntelligentCacheManager>();
+        cacheManager.dispose();
+      }
+    } catch (e) {
+      // Silently ignore - cache manager may not be available
+    }
   }
 
   @override

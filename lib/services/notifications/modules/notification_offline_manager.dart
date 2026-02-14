@@ -66,6 +66,7 @@ class NotificationOfflineManager {
   // Queue processing state
   bool _isProcessingQueue = false;
   Timer? _retryTimer;
+  Timer? _connectivityRestoreTimer;
 
   NotificationOfflineManager({
     required String userId,
@@ -144,7 +145,8 @@ class NotificationOfflineManager {
         AppLogger.info(
             '🌐 Coming back online with ${_offlineQueue.length} queued notifications');
         // Use a small delay to ensure network is stable
-        Timer(const Duration(seconds: 2), () {
+        _connectivityRestoreTimer?.cancel();
+        _connectivityRestoreTimer = Timer(const Duration(seconds: 2), () {
           processOfflineQueue();
         });
       } else if (!isOnline) {
@@ -348,6 +350,7 @@ class NotificationOfflineManager {
   void dispose() {
     AppLogger.info('🔔 Disposing NotificationOfflineManager for user $_userId');
 
+    _connectivityRestoreTimer?.cancel();
     _cancelRetryTimer();
     clearQueue();
     _sendNotificationCallback = null;

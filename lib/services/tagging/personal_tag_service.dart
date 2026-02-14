@@ -47,10 +47,6 @@ class PersonalTagService extends BaseService {
   @override
   String get serviceName => 'PersonalTagService';
 
-  // ============================================================
-  // TAG CRUD OPERATIONS
-  // ============================================================
-
   /// Creates a new personal tag.
   Future<PersonalTag?> createTag(PersonalTag tag) async {
     return await executeServiceOperation(
@@ -257,10 +253,6 @@ class PersonalTagService extends BaseService {
     return _tagRepository.watchByGroupId(groupId);
   }
 
-  // ============================================================
-  // GROUP CRUD OPERATIONS
-  // ============================================================
-
   /// Creates a new personal tag group.
   Future<PersonalTagGroup?> createGroup(PersonalTagGroup group) async {
     return await executeServiceOperation(
@@ -394,10 +386,6 @@ class PersonalTagService extends BaseService {
       requiresAuth: true,
     );
   }
-
-  // ============================================================
-  // EMBEDDED RULE OPERATIONS
-  // ============================================================
 
   /// Adds a rule to a tag.
   Future<void> addRuleToTag(String tagId, PersonalTagRule rule) async {
@@ -539,10 +527,6 @@ class PersonalTagService extends BaseService {
       return rules;
     });
   }
-
-  // ============================================================
-  // RULE EVALUATION ENGINE
-  // ============================================================
 
   /// Evaluates all enabled rules against a recipe.
   ///
@@ -743,10 +727,6 @@ class PersonalTagService extends BaseService {
     return tags.where((tag) => matchingTagIds.contains(tag.id)).toList();
   }
 
-  // ============================================================
-  // COMBINED STREAMS FOR UI
-  // ============================================================
-
   /// Watches tags and groups together for hierarchical UI display.
   /// Returns groups with their tags, plus ungrouped tags.
   Stream<PersonalTagsWithGroups> watchTagsWithGroups() {
@@ -784,10 +764,6 @@ class PersonalTagService extends BaseService {
     );
   }
 
-  // ============================================================
-  // TAG VERSIONING
-  // ============================================================
-
   /// Gets the current tag version as epoch milliseconds.
   ///
   /// Derived from the latest `updatedAt` across all tags.
@@ -817,10 +793,6 @@ class PersonalTagService extends BaseService {
     final currentVersion = await getCurrentTagVersion();
     return currentVersion > recipeVersion;
   }
-
-  // ============================================================
-  // ANALYTICS
-  // ============================================================
 
   /// Gets usage count for each tag based on the provided recipes.
   ///
@@ -880,10 +852,6 @@ class PersonalTagService extends BaseService {
         [];
   }
 
-  // ============================================================
-  // LIFECYCLE
-  // ============================================================
-
   @override
   Future<void> onInitialize() async {
     // Stream setup deferred until user is authenticated.
@@ -916,10 +884,6 @@ class PersonalTagService extends BaseService {
     _streamsInitialized = false;
     clearAllCache();
   }
-
-  // ============================================================
-  // PRIVATE HELPERS
-  // ============================================================
 
   /// CRIT-5: Gets current user ID for ingredient lookup context.
   /// Used to find user-defined ingredients with custom properties during rule evaluation.

@@ -135,6 +135,14 @@ abstract class MenuCollaborationRepository extends Repository<SharedMenu> {
     List<String>? tags,
   });
 
+  /// Get user's menu templates
+  /// Returns templates owned by the current user from Firestore.
+  Future<List<Map<String, dynamic>>> getUserMenuTemplates();
+
+  /// Delete a menu template by ID
+  /// Only the owner can delete their template.
+  Future<bool> deleteMenuTemplate(String templateId);
+
   /// Create menu from template with usage increment
   /// Abstracts template retrieval, menu creation, and Firebase
   /// increment operations for template usage statistics.

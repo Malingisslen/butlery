@@ -5206,5 +5206,67 @@
   "menuRemoveRating": "Ta bort betyg",
   "menuMustBeLoggedInToRate": "Du måste vara inloggad för att betygsätta",
   "favoritesAdd": "Lägg till favorit",
-  "favoritesRemove": "Ta bort favorit"
+  "favoritesRemove": "Ta bort favorit",
+  "shoppingConvertToCollaborative": "Gör samarbetslista",
+  "shoppingConvertToPersonal": "Gör personlig lista",
+  "shoppingConvertToCollaborativeTitle": "Gör till samarbetslista",
+  "shoppingConvertToCollaborativeDescription": "Välj vänner att dela listan med. De kan lägga till och bocka av varor i realtid.",
+  "shoppingConvertToPersonalTitle": "Gör till personlig lista",
+  "shoppingConvertToPersonalWarning": "Alla samarbetspartners förlorar åtkomst till listan. Varor behålls.",
+  "shoppingConvertedToCollaborative": "Listan omvandlad till samarbetslista",
+  "shoppingConvertedToPersonal": "Listan omvandlad till personlig",
+  "shoppingConvertError": "Kunde inte omvandla listan",
+  "shoppingConvertSelectFriends": "Välj minst en vän",
+  "shoppingDescriptionLabel": "Beskrivning (valfritt)",
+  "menuTemplateSaveAsTemplate": "Spara som mall",
+  "menuTemplateSaveAsTemplateDescription": "Sparar menyns kategoristruktur som en återanvändbar mall",
+  "menuTemplateName": "Mallnamn",
+  "menuTemplateNameHint": "T.ex. Vardagsmeny familj",
+  "menuTemplateNameRequired": "Mallnamn krävs",
+  "menuTemplateDescription": "Beskrivning (valfritt)",
+  "menuTemplateDescriptionHint": "T.ex. Perfekt för vardagar med barn",
+  "menuTemplateSavedSuccess": "Mall \"{name}\" sparad!",
+  "@menuTemplateSavedSuccess": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "menuTemplateSaveFailed": "Kunde inte spara mall",
+  "menuTemplateLoadTemplate": "Ladda mall",
+  "menuTemplateNoTemplates": "Inga mallar",
+  "menuTemplateNoTemplatesDescription": "Du har inga sparade menymmallar. Spara en meny som mall för att återanvända kategoristrukturen.",
+  "menuTemplateBrowseTitle": "Menymmallar",
+  "menuTemplateCategories": "{count} kategorier",
+  "@menuTemplateCategories": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuTemplateRecipes": "{count} recept",
+  "@menuTemplateRecipes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuTemplateUsedCount": "Använd {count} gånger",
+  "@menuTemplateUsedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuTemplateUseTemplate": "Använd mall",
+  "menuTemplateDeleteTitle": "Ta bort mall",
+  "menuTemplateDeleteConfirmation": "Är du säker på att du vill ta bort denna mall?",
+  "menuTemplateDeletedSuccess": "Mall borttagen",
+  "menuTemplateDeleteFailed": "Kunde inte ta bort mall",
+  "menuTemplateSavedMenus": "Sparade menyer",
+  "menuTemplateTemplates": "Mallar"
 }

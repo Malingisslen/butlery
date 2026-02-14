@@ -107,6 +107,35 @@ class ShoppingDialogs {
     );
   }
 
+  // List conversion dialogs - delegate to ShoppingListOperations
+  static Future<void> showConvertToCollaborativeDialog(
+    BuildContext context,
+    UnifiedShoppingList list,
+    Function(String) onSuccess,
+    Function(String) onError,
+  ) async {
+    return ShoppingListOperations.showConvertToCollaborativeDialog(
+      context,
+      list,
+      onSuccess,
+      onError,
+    );
+  }
+
+  static Future<void> showConvertToPersonalDialog(
+    BuildContext context,
+    UnifiedShoppingList list,
+    Function(String) onSuccess,
+    Function(String) onError,
+  ) async {
+    return ShoppingListOperations.showConvertToPersonalDialog(
+      context,
+      list,
+      onSuccess,
+      onError,
+    );
+  }
+
   // Sharing dialogs - coordinated here
   static Future<void> showShareDialog(
     BuildContext context,

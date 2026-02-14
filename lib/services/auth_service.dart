@@ -233,8 +233,6 @@ class AuthService extends ChangeNotifier
     });
   }
 
-  // ============== MFA Methods ==============
-
   /// Check if the current user has MFA enabled.
   Future<bool> hasMfaEnabled() async {
     final user = FirebaseAuth.instance.currentUser;

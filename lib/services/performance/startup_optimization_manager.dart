@@ -14,6 +14,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Service initialization priority levels
@@ -386,7 +387,7 @@ class StartupOptimizationManager {
       final canvas = Canvas(recorder);
 
       final paint = Paint()
-        ..color = Colors.blue
+        ..color = AppColors.info
         ..style = PaintingStyle.fill;
 
       // Warm up rounded rectangle shader (cards, buttons, chips)
@@ -401,20 +402,20 @@ class StartupOptimizationManager {
       // Warm up shadow shader (elevation, Material surfaces)
       canvas.drawShadow(
         Path()..addRect(const Rect.fromLTWH(0, 0, 100, 100)),
-        Colors.black,
+        AppColors.textDark,
         4.0,
         false,
       );
 
       // Warm up gradient shader (app bar, buttons, decorations)
       paint.shader = const LinearGradient(
-        colors: [Colors.blue, Colors.purple],
+        colors: [AppColors.info, AppColors.secondaryPurple],
       ).createShader(const Rect.fromLTWH(0, 0, 100, 100));
       canvas.drawRect(const Rect.fromLTWH(0, 0, 100, 100), paint);
 
       // Warm up circle shader (avatars, FAB, icons)
       paint.shader = null;
-      paint.color = Colors.green;
+      paint.color = AppColors.success;
       canvas.drawCircle(const Offset(50, 50), 25, paint);
 
       // Warm up border shader (outlined buttons, text fields)
