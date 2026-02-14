@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Bottom sheet for loading a saved menu
 /// This bottom sheet allows users to browse and load their saved menus,
@@ -100,13 +101,13 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
-                  'Sparade menyer',
+                  context.l10n.menuSavedMenus,
                   style: AppTextStyles.headlineSmall,
                 ),
                 const Spacer(),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Stäng'),
+                  child: Text(context.l10n.commonClose),
                 ),
               ],
             ),
@@ -133,12 +134,11 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingXl),
       child: StateWidget.empty(
-        title: 'Inga sparade menyer',
-        subtitle:
-            'Du har inga sparade menyer än. Generera och spara en meny först!',
+        title: context.l10n.menuNoSavedMenus,
+        subtitle: context.l10n.menuNoSavedMenusDescription,
         icon: Icons.folder_outlined,
         onAction: () => Navigator.pop(context),
-        actionLabel: 'Stäng',
+        actionLabel: context.l10n.commonClose,
       ),
     );
   }
@@ -174,24 +174,26 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           ),
         ),
         title: Text(
-          menu.name ?? 'Namnlös meny',
+          menu.name ?? context.l10n.menuUnnamed,
           style: AppTextStyles.titleMedium,
         ),
         subtitle: Text(
-          'Sparad tidigare',
+          context.l10n.menuSavedEarlier,
           style: AppTextStyles.bodySmall,
         ),
         trailing: PopupMenuButton<String>(
           onSelected: (value) => _handleMenuAction(menu, value),
           itemBuilder: (context) => [
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'load',
-              child: Row(
-                children: [
-                  Icon(Icons.download),
-                  SizedBox(width: AppDimensions.spacingSm),
-                  Text('Ladda'),
-                ],
+              child: Builder(
+                builder: (context) => Row(
+                  children: [
+                    const Icon(Icons.download),
+                    const SizedBox(width: AppDimensions.spacingSm),
+                    Text(context.l10n.menuLoad),
+                  ],
+                ),
               ),
             ),
             PopupMenuItem(
@@ -202,7 +204,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
                     const Icon(Icons.delete, color: AppColors.error),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Text(
-                      'Ta bort',
+                      context.l10n.commonDelete,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: AppColors.error,
                           ),
@@ -239,14 +241,15 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Meny "${menu.name}" laddad!'),
+              content: Text(context.l10n.menuLoadedSuccess(menu.name ?? '')),
               backgroundColor: AppColors.success,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(widget.viewModel.error ?? 'Kunde inte ladda meny'),
+              content:
+                  Text(widget.viewModel.error ?? context.l10n.menuLoadFailed),
               backgroundColor: AppColors.error,
             ),
           );
@@ -256,7 +259,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fel vid laddning: $e'),
+            content: Text(context.l10n.errorLoadingWithDetails(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -268,19 +271,19 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Ta bort meny'),
-        content: const Text('Är du säker på att du vill ta bort denna meny?'),
+        title: Text(context.l10n.menuDeleteTitle),
+        content: Text(context.l10n.menuDeleteConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,
             ),
-            child: const Text('Ta bort'),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ),
@@ -298,15 +301,15 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
             });
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Meny "${menu.name}" borttagen'),
+                content: Text(context.l10n.menuDeletedSuccess(menu.name ?? '')),
                 backgroundColor: AppColors.success,
               ),
             );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content:
-                    Text(widget.viewModel.error ?? 'Kunde inte ta bort meny'),
+                content: Text(
+                    widget.viewModel.error ?? context.l10n.menuDeleteFailed),
                 backgroundColor: AppColors.error,
               ),
             );
@@ -316,7 +319,8 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Fel vid borttagning: $e'),
+              content:
+                  Text(context.l10n.errorDeletingWithDetails(e.toString())),
               backgroundColor: AppColors.error,
             ),
           );

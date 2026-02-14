@@ -7,6 +7,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipe_card.dart';
 import 'package:butlery/views/social/shared_with_me/shared_menu_card.dart';
 import 'package:butlery/views/social/shared_with_me/shared_shopping_list_card.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// SharedContentLists - List builders for shared content
 /// Handles building lists of shared recipes, menus, and shared shopping lists.
@@ -21,10 +22,10 @@ class SharedContentLists {
 
     if (recipes.isEmpty) {
       return StateWidget.empty(
-        title: 'Inga recept',
-        subtitle: 'Inga recept har delats med dig än.',
+        title: context.l10n.sharedNoRecipes,
+        subtitle: context.l10n.sharedNoRecipesDescription,
         icon: Icons.restaurant_outlined,
-        actionLabel: 'Hitta vänner',
+        actionLabel: context.l10n.socialFindFriends,
         onAction: () => Navigator.pushNamed(context, '/friends'),
       );
     }
@@ -71,10 +72,10 @@ class SharedContentLists {
 
     if (menus.isEmpty) {
       return StateWidget.empty(
-        title: 'Inga menyer',
-        subtitle: 'Inga menyer har delats med dig än.',
+        title: context.l10n.sharedNoMenus,
+        subtitle: context.l10n.sharedNoMenusDescription,
         icon: Icons.calendar_month_outlined,
-        actionLabel: 'Hitta vänner',
+        actionLabel: context.l10n.socialFindFriends,
         onAction: () => Navigator.pushNamed(context, '/friends'),
       );
     }
@@ -121,10 +122,10 @@ class SharedContentLists {
 
     if (sharedShoppingLists.isEmpty) {
       return StateWidget.empty(
-        title: 'Inga delade inköpslistor',
-        subtitle: 'Inga inköpslistor har delats med dig än.',
+        title: context.l10n.sharedNoShoppingLists,
+        subtitle: context.l10n.sharedNoShoppingListsDescription,
         icon: Icons.shopping_cart_outlined,
-        actionLabel: 'Hitta vänner',
+        actionLabel: context.l10n.socialFindFriends,
         onAction: () => Navigator.pushNamed(context, '/friends'),
       );
     }
@@ -175,7 +176,7 @@ class SharedContentLists {
             : ElevatedButton.icon(
                 onPressed: onPressed,
                 icon: const Icon(Icons.expand_more),
-                label: const Text('Visa fler'),
+                label: Text(context.l10n.commonShowMore),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.spacingL,

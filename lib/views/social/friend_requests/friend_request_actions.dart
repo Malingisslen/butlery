@@ -7,6 +7,7 @@ import 'package:butlery/core/base/base_action_handler.dart';
 
 // Theme
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Refactored FriendRequestActions using BaseActionHandler
 /// This class provides standardized friend request operations with:
@@ -33,8 +34,9 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
           selectedIncoming.toList(),
           onBatchAccept,
         ),
+        tooltip: context.l10n.socialAcceptSelected,
         icon: const Icon(Icons.check_circle),
-        label: Text('Acceptera ${selectedIncoming.length}'),
+        label: Text(context.l10n.socialAcceptCount(selectedIncoming.length)),
         backgroundColor: AppColors.success,
       );
     }
@@ -60,8 +62,8 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         onSuccess?.call();
         return true;
       },
-      successMessage: 'Vänskapsförfrågan från $senderName accepterad',
-      errorMessage: 'Kunde inte acceptera vänskapsförfrågan',
+      successMessage: context.l10n.socialFriendRequestAcceptedFrom(senderName),
+      errorMessage: context.l10n.socialCouldNotAcceptFriendRequest,
       metadata: {
         'request_id': requestId,
         'sender_name': senderName,
@@ -90,13 +92,14 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         onSuccess?.call();
         return true;
       },
-      confirmationTitle: 'Avböj vänskapsförfrågan?',
-      confirmationMessage: 'Vill du avböja vänskapsförfrågan från $senderName?',
-      confirmActionText: 'Avböj',
+      confirmationTitle: context.l10n.socialRejectFriendRequestConfirm,
+      confirmationMessage:
+          context.l10n.socialRejectFriendRequestMessage(senderName),
+      confirmActionText: context.l10n.socialReject,
       confirmationIcon: Icons.person_remove,
       isDangerous: true,
-      successMessage: 'Vänskapsförfrågan från $senderName avböjd',
-      errorMessage: 'Kunde inte avböja vänskapsförfrågan',
+      successMessage: context.l10n.socialFriendRequestRejected(senderName),
+      errorMessage: context.l10n.socialCouldNotRejectFriendRequest,
       metadata: {
         'request_id': requestId,
         'sender_name': senderName,
@@ -125,13 +128,13 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         onSuccess?.call();
         return true;
       },
-      confirmationTitle: 'Avbryt vänskapsförfrågan?',
+      confirmationTitle: context.l10n.socialCancelFriendRequestConfirm,
       confirmationMessage:
-          'Vill du avbryta vänskapsförfrågan till $recipientName?',
-      confirmActionText: 'Avbryt förfrågan',
+          context.l10n.socialCancelFriendRequestMessage(recipientName),
+      confirmActionText: context.l10n.socialCancelRequest,
       confirmationIcon: Icons.cancel,
-      successMessage: 'Vänskapsförfrågan till $recipientName avbruten',
-      errorMessage: 'Kunde inte avbryta vänskapsförfrågan',
+      successMessage: context.l10n.socialFriendRequestCancelled(recipientName),
+      errorMessage: context.l10n.socialCouldNotCancelFriendRequest,
       metadata: {
         'request_id': requestId,
         'recipient_name': recipientName,
@@ -146,7 +149,7 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     VoidCallback? onSuccess,
   ) async {
     if (!validateContext(context) || requestIds.isEmpty) {
-      showErrorMessage(context, 'Inga förfrågningar valda');
+      showErrorMessage(context, context.l10n.socialNoRequestsSelected);
       return;
     }
 
@@ -155,19 +158,19 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
       action: () async {
         // Simulate batch accept
         showLoadingDialog(
-            context, 'Accepterar ${requestIds.length} förfrågningar...');
+            context, context.l10n.socialAcceptingRequests(requestIds.length));
 
         await Future.delayed(const Duration(milliseconds: 1000));
         onSuccess?.call();
         return true;
       },
-      confirmationTitle: 'Acceptera alla valda?',
+      confirmationTitle: context.l10n.socialAcceptAllSelectedConfirm,
       confirmationMessage:
-          'Vill du acceptera ${requestIds.length} vänskapsförfrågningar?',
-      confirmActionText: 'Acceptera alla',
+          context.l10n.socialAcceptAllSelectedMessage(requestIds.length),
+      confirmActionText: context.l10n.socialAcceptAll,
       confirmationIcon: Icons.check_circle,
-      successMessage: '${requestIds.length} vänskapsförfrågningar accepterade',
-      errorMessage: 'Kunde inte acceptera alla förfrågningar',
+      successMessage: context.l10n.socialRequestsAccepted(requestIds.length),
+      errorMessage: context.l10n.socialCouldNotAcceptAllRequests,
       metadata: {
         'request_count': requestIds.length,
         'request_ids': requestIds,
@@ -183,7 +186,7 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     VoidCallback? onSuccess,
   ) async {
     if (!validateContext(context) || requestIds.isEmpty) {
-      showErrorMessage(context, 'Inga förfrågningar valda');
+      showErrorMessage(context, context.l10n.socialNoRequestsSelected);
       return;
     }
 
@@ -192,20 +195,20 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
       action: () async {
         // Simulate batch reject
         showLoadingDialog(
-            context, 'Avböjer ${requestIds.length} förfrågningar...');
+            context, context.l10n.socialRejectingRequests(requestIds.length));
 
         await Future.delayed(const Duration(milliseconds: 1000));
         onSuccess?.call();
         return true;
       },
-      confirmationTitle: 'Avböj alla valda?',
+      confirmationTitle: context.l10n.socialRejectAllSelectedConfirm,
       confirmationMessage:
-          'Vill du avböja ${requestIds.length} vänskapsförfrågningar?',
-      confirmActionText: 'Avböj alla',
+          context.l10n.socialRejectAllSelectedMessage(requestIds.length),
+      confirmActionText: context.l10n.socialRejectAll,
       confirmationIcon: Icons.person_remove,
       isDangerous: true,
-      successMessage: '${requestIds.length} vänskapsförfrågningar avböjda',
-      errorMessage: 'Kunde inte avböja alla förfrågningar',
+      successMessage: context.l10n.socialRequestsRejected(requestIds.length),
+      errorMessage: context.l10n.socialCouldNotRejectAllRequests,
       metadata: {
         'request_count': requestIds.length,
         'request_ids': requestIds,
@@ -221,7 +224,7 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     VoidCallback? onSuccess,
   ) async {
     if (!validateContext(context) || requestIds.isEmpty) {
-      showErrorMessage(context, 'Inga förfrågningar valda');
+      showErrorMessage(context, context.l10n.socialNoRequestsSelected);
       return;
     }
 
@@ -230,20 +233,20 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
       action: () async {
         // Simulate batch cancel
         showLoadingDialog(
-            context, 'Avbryter ${requestIds.length} förfrågningar...');
+            context, context.l10n.socialCancellingRequests(requestIds.length));
 
         await Future.delayed(const Duration(milliseconds: 1000));
         onSuccess?.call();
         return true;
       },
-      confirmationTitle: 'Avbryt valda förfrågningar?',
+      confirmationTitle: context.l10n.socialCancelSelectedRequestsConfirm,
       confirmationMessage:
-          'Vill du avbryta ${requestIds.length} skickade förfrågningar?',
-      confirmActionText: 'Avbryt alla',
+          context.l10n.socialCancelSelectedRequestsMessage(requestIds.length),
+      confirmActionText: context.l10n.socialCancelAll,
       confirmationIcon: Icons.cancel,
       isDangerous: true,
-      successMessage: '${requestIds.length} förfrågningar avbrutna',
-      errorMessage: 'Kunde inte avbryta alla förfrågningar',
+      successMessage: context.l10n.socialRequestsCancelled(requestIds.length),
+      errorMessage: context.l10n.socialCouldNotCancelAllRequests,
       metadata: {
         'request_count': requestIds.length,
         'request_ids': requestIds,
@@ -271,8 +274,8 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         onSuccess?.call();
         return true;
       },
-      successMessage: 'Vänskapsförfrågan skickad till $userName',
-      errorMessage: 'Kunde inte skicka vänskapsförfrågan',
+      successMessage: context.l10n.socialFriendRequestSent(userName),
+      errorMessage: context.l10n.socialCouldNotSendFriendRequest,
       metadata: {
         'user_id': userId,
         'user_name': userName,
@@ -301,13 +304,13 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         onSuccess?.call();
         return true;
       },
-      confirmationTitle: 'Ta bort vän?',
-      confirmationMessage: 'Vill du ta bort $friendName från dina vänner?',
-      confirmActionText: 'Ta bort',
+      confirmationTitle: context.l10n.socialRemoveFriendConfirm,
+      confirmationMessage: context.l10n.socialRemoveFriendMessage(friendName),
+      confirmActionText: context.l10n.commonRemove,
       confirmationIcon: Icons.person_remove,
       isDangerous: true,
-      successMessage: '$friendName har tagits bort från dina vänner',
-      errorMessage: 'Kunde inte ta bort vän',
+      successMessage: context.l10n.socialFriendRemoved(friendName),
+      errorMessage: context.l10n.socialCouldNotRemoveFriend,
       metadata: {
         'friend_id': friendId,
         'friend_name': friendName,
@@ -336,14 +339,13 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         onSuccess?.call();
         return true;
       },
-      confirmationTitle: 'Blockera användare?',
-      confirmationMessage: 'Vill du blockera $userName?\n\n'
-          'Blockerade användare kan inte skicka vänskapsförfrågningar eller meddelanden till dig.',
-      confirmActionText: 'Blockera',
+      confirmationTitle: context.l10n.socialBlockUserConfirm,
+      confirmationMessage: context.l10n.socialBlockUserMessage(userName),
+      confirmActionText: context.l10n.socialBlock,
       confirmationIcon: Icons.block,
       isDangerous: true,
-      successMessage: '$userName har blockerats',
-      errorMessage: 'Kunde inte blockera användare',
+      successMessage: context.l10n.socialUserBlocked(userName),
+      errorMessage: context.l10n.socialCouldNotBlockUser,
       metadata: {
         'user_id': userId,
         'user_name': userName,
@@ -372,8 +374,8 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         onSuccess?.call();
         return true;
       },
-      successMessage: '$userName har avblockerats',
-      errorMessage: 'Kunde inte avblockera användare',
+      successMessage: context.l10n.socialUserUnblocked(userName),
+      errorMessage: context.l10n.socialCouldNotUnblockUser,
       metadata: {
         'user_id': userId,
         'user_name': userName,
@@ -392,8 +394,8 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         await Future.delayed(const Duration(milliseconds: 800));
         return true;
       },
-      successMessage: 'Vänskapsförfrågningar uppdaterade',
-      errorMessage: 'Kunde inte uppdatera förfrågningar',
+      successMessage: context.l10n.socialFriendRequestsUpdated,
+      errorMessage: context.l10n.socialCouldNotUpdateRequests,
       metadata: {
         'action': 'refresh_friend_requests',
       },
@@ -407,7 +409,7 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     Function(List<dynamic>) onResults,
   ) async {
     if (!validateContext(context) || query.trim().isEmpty) {
-      showErrorMessage(context, 'Ange en sökterm');
+      showErrorMessage(context, context.l10n.socialEnterSearchTerm);
       return;
     }
 
@@ -426,7 +428,7 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         onResults(results);
         return true;
       },
-      errorMessage: 'Kunde inte söka efter användare',
+      errorMessage: context.l10n.socialCouldNotSearchUsers,
       metadata: {
         'search_query': query,
         'action': 'search_users',

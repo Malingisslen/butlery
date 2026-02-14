@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/shared_content_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -46,16 +47,16 @@ class SharedContentCard extends StatelessWidget {
     }
   }
 
-  String _getTypeLabel(String type) {
+  String _getTypeLabel(BuildContext context, String type) {
     switch (type) {
       case 'recipe':
-        return 'Recept';
+        return context.l10n.groupContentTypeRecipe;
       case 'menu':
-        return 'Meny';
+        return context.l10n.groupContentTypeMenu;
       case 'shopping_list':
-        return 'Inköpslista';
+        return context.l10n.groupContentTypeShoppingList;
       default:
-        return 'Innehåll';
+        return context.l10n.groupContentTypeContent;
     }
   }
 
@@ -68,124 +69,128 @@ class SharedContentCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
-      child: InkWell(
-        onTap: onView,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingM),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header row with icon and type
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(AppDimensions.paddingS),
-                    decoration: BoxDecoration(
-                      color: iconColor.withValues(
-                          alpha: AppDimensions.opacityVeryLight),
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.borderRadiusS),
-                    ),
-                    child: Icon(
-                      _getIconForType(item.type),
-                      color: iconColor,
-                      size: AppDimensions.iconSizeM,
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingM),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.title,
-                          style: AppTextStyles.titleMedium,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: AppDimensions.spacingXs),
-                        Text(
-                          _getTypeLabel(item.type),
-                          style: AppTextStyles.labelLarge.copyWith(
-                            color: iconColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppDimensions.spacingM),
-
-              // Shared by info
-              Row(
-                children: [
-                  if (item.sharedByAvatarUrl != null)
-                    CircleAvatar(
-                      radius: 12,
-                      backgroundImage: NetworkImage(item.sharedByAvatarUrl!),
-                    )
-                  else
-                    CircleAvatar(
-                      radius: 12,
-                      backgroundColor: AppColors.forestGreen
-                          .withValues(alpha: AppDimensions.opacityLight),
-                      child: Text(
-                        item.sharedByDisplayName.isNotEmpty
-                            ? item.sharedByDisplayName[0].toUpperCase()
-                            : '?',
-                        style: AppTextStyles.textXs.copyWith(
-                          color: AppColors.forestGreen,
-                        ),
+      child: Semantics(
+        label: '${context.l10n.groupSharedContent}: ${item.title}',
+        button: true,
+        child: InkWell(
+          onTap: onView,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.paddingM),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header row with icon and type
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(AppDimensions.paddingS),
+                      decoration: BoxDecoration(
+                        color: iconColor.withValues(
+                            alpha: AppDimensions.opacityVeryLight),
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.borderRadiusS),
+                      ),
+                      child: Icon(
+                        _getIconForType(item.type),
+                        color: iconColor,
+                        size: AppDimensions.iconSizeM,
                       ),
                     ),
-                  const SizedBox(width: AppDimensions.spacingS),
-                  Expanded(
-                    child: Text(
-                      'Delad av ${item.sharedByDisplayName}',
+                    const SizedBox(width: AppDimensions.spacingM),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.title,
+                            style: AppTextStyles.titleMedium,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: AppDimensions.spacingXs),
+                          Text(
+                            _getTypeLabel(context, item.type),
+                            style: AppTextStyles.labelLarge.copyWith(
+                              color: iconColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppDimensions.spacingM),
+
+                // Shared by info
+                Row(
+                  children: [
+                    if (item.sharedByAvatarUrl != null)
+                      CircleAvatar(
+                        radius: 12,
+                        backgroundImage: NetworkImage(item.sharedByAvatarUrl!),
+                      )
+                    else
+                      CircleAvatar(
+                        radius: 12,
+                        backgroundColor: AppColors.forestGreen
+                            .withValues(alpha: AppDimensions.opacityLight),
+                        child: Text(
+                          item.sharedByDisplayName.isNotEmpty
+                              ? item.sharedByDisplayName[0].toUpperCase()
+                              : '?',
+                          style: AppTextStyles.textXs.copyWith(
+                            color: AppColors.forestGreen,
+                          ),
+                        ),
+                      ),
+                    const SizedBox(width: AppDimensions.spacingS),
+                    Expanded(
+                      child: Text(
+                        context.l10n.groupSharedBy(item.sharedByDisplayName),
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      timeago.format(item.sharedAt, locale: 'sv'),
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textSecondary,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  Text(
-                    timeago.format(item.sharedAt, locale: 'sv'),
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppDimensions.spacingM),
-
-              // Action buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  if (onImport != null) ...[
-                    TextButton.icon(
-                      onPressed: onImport,
-                      icon: const Icon(Icons.download,
-                          size: AppDimensions.iconSize18),
-                      label: const Text('Importera'),
-                    ),
-                    const SizedBox(width: AppDimensions.spacingS),
                   ],
-                  if (onView != null)
-                    Flexible(
-                      child: FilledButton.icon(
-                        onPressed: onView,
-                        icon: const Icon(Icons.visibility,
+                ),
+                const SizedBox(height: AppDimensions.spacingM),
+
+                // Action buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (onImport != null) ...[
+                      TextButton.icon(
+                        onPressed: onImport,
+                        icon: const Icon(Icons.download,
                             size: AppDimensions.iconSize18),
-                        label: const Text('Visa'),
+                        label: Text(context.l10n.groupImport),
                       ),
-                    ),
-                ],
-              ),
-            ],
+                      const SizedBox(width: AppDimensions.spacingS),
+                    ],
+                    if (onView != null)
+                      Flexible(
+                        child: FilledButton.icon(
+                          onPressed: onView,
+                          icon: const Icon(Icons.visibility,
+                              size: AppDimensions.iconSize18),
+                          label: Text(context.l10n.groupView),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

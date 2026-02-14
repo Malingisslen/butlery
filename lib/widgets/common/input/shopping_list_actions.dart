@@ -7,7 +7,6 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
-import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 
@@ -26,23 +25,23 @@ class ShoppingListActions {
       onSelected: (action) =>
           _handleListAction(context, action, list, viewModel),
       itemBuilder: (context) => [
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'rename',
           child: Row(
             children: [
-              Icon(Icons.edit, size: AppDimensions.iconSizeAction),
-              SizedBox(width: AppDimensions.spacingM),
-              Text(AppStrings.rename),
+              const Icon(Icons.edit, size: AppDimensions.iconSizeAction),
+              const SizedBox(width: AppDimensions.spacingM),
+              Text(context.l10n.commonRename),
             ],
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'export',
           child: Row(
             children: [
-              Icon(Icons.share, size: AppDimensions.iconSizeAction),
-              SizedBox(width: AppDimensions.spacingM),
-              Text(AppStrings.export),
+              const Icon(Icons.share, size: AppDimensions.iconSizeAction),
+              const SizedBox(width: AppDimensions.spacingM),
+              Text(context.l10n.commonExport),
             ],
           ),
         ),
@@ -102,13 +101,13 @@ class ShoppingListActions {
     final newName = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(AppStrings.renameList),
+        title: Text(context.l10n.shoppingRenameList),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             StyledInput(
               controller: controller,
-              label: AppStrings.newName,
+              label: context.l10n.shoppingNewName,
               autofocus: true,
             ),
           ],
@@ -134,8 +133,8 @@ class ShoppingListActions {
           SnackBar(
             content: Text(
               success
-                  ? 'Lista döpt om till "$newName"'
-                  : 'Kunde inte byta namn: ${viewModel.error ?? "Okänt fel"}',
+                  ? '${context.l10n.shoppingRenameList} "$newName"'
+                  : '${context.l10n.errorCouldNotUpdate(context.l10n.shoppingList)}: ${viewModel.error ?? context.l10n.errorUnexpected}',
             ),
             backgroundColor: success ? AppColors.success : AppColors.error,
           ),
@@ -158,8 +157,8 @@ class ShoppingListActions {
           SnackBar(
             content: Text(
               exportText.isNotEmpty
-                  ? 'Lista "${list.name}" exporterad'
-                  : 'Kunde inte exportera lista: ${viewModel.error ?? "Okänt fel"}',
+                  ? '${context.l10n.shoppingList} "${list.name}" ${context.l10n.commonExport}'
+                  : '${context.l10n.errorCouldNotUpdate(context.l10n.shoppingList)}: ${viewModel.error ?? context.l10n.errorUnexpected}',
             ),
             backgroundColor:
                 exportText.isNotEmpty ? AppColors.success : AppColors.error,
@@ -170,8 +169,9 @@ class ShoppingListActions {
       AppLogger.error('Export list failed', e);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kunde inte exportera lista'),
+          SnackBar(
+            content: Text(
+                context.l10n.errorCouldNotUpdate(context.l10n.shoppingList)),
             backgroundColor: AppColors.error,
           ),
         );
@@ -188,9 +188,9 @@ class ShoppingListActions {
     final confirmed = await CommonDialogActions.showDeleteConfirmation(
       context: context,
       itemName: list.name,
-      itemType: 'inköpslista',
+      itemType: context.l10n.shoppingList,
       warningMessage:
-          'Denna åtgärd kan inte ångras och alla ${list.totalItems} artiklar försvinner.',
+          '${context.l10n.confirmIrreversibleAction} ${context.l10n.shoppingItemsWillBeRemoved(list.totalItems)}',
       icon: Icons.list,
     );
 
@@ -202,8 +202,8 @@ class ShoppingListActions {
           SnackBar(
             content: Text(
               success
-                  ? 'Lista "${list.name}" borttagen'
-                  : 'Kunde inte ta bort lista: ${viewModel.error ?? "Okänt fel"}',
+                  ? '${context.l10n.shoppingList} "${list.name}" ${context.l10n.successItemDeleted(context.l10n.shoppingList).split(' ')[1]}'
+                  : '${context.l10n.errorCouldNotDelete(context.l10n.shoppingList)}: ${viewModel.error ?? context.l10n.errorUnexpected}',
             ),
             backgroundColor: success ? AppColors.success : AppColors.error,
           ),
@@ -219,14 +219,13 @@ class ShoppingListActions {
     return await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(AppStrings.createList),
+        title: Text(context.l10n.shoppingCreateList),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             StyledInput(
               controller: controller,
-              label: AppStrings.listName,
-              hint: 'T.ex. "Veckans inköpslista"',
+              label: context.l10n.shoppingListName,
               autofocus: true,
             ),
           ],
@@ -253,9 +252,8 @@ class ShoppingListActions {
   ) async {
     final result = await CommonDialogActions.showActionConfirmation(
       context: context,
-      title: '${AppStrings.addToList} "${list.name}"',
-      message:
-          'Vill du lägga till $itemCount artiklar från menyn i "${list.name}"?',
+      title: '${context.l10n.shoppingAddToList} "${list.name}"',
+      message: context.l10n.shoppingItemsFromMenuIn(itemCount, list.name),
       confirmText: context.l10n.commonAdd,
       icon: Icons.add_shopping_cart,
     );

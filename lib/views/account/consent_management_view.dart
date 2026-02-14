@@ -5,6 +5,8 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/settings/blocked_users_section.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// GDPR Article 7 - Consent Management View for user consent preferences
 class ConsentManagementView extends StatefulWidget {
@@ -27,7 +29,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hantera samtycken'),
+        title: Text(context.l10n.consentManageTitle),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -58,6 +60,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                       _buildRequiredConsentsSection(),
                       const SizedBox(height: AppDimensions.spacingLg),
                       _buildOptionalConsentsSection(viewModel),
+                      const SizedBox(height: AppDimensions.spacingLg),
+                      const BlockedUsersSection(),
                       const SizedBox(height: AppDimensions.spacingLg),
                       if (viewModel.hasError) _buildErrorMessage(viewModel),
                       if (viewModel.hasError)
@@ -98,14 +102,13 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 ),
                 const SizedBox(width: AppDimensions.spacingL),
                 Expanded(
-                  child: Text('Dina samtycken',
+                  child: Text(context.l10n.consentYourConsents,
                       style: AppTextStyles.titleBold),
                 ),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingMd),
-            Text(
-                'Enligt GDPR har du full kontroll över hur vi behandlar dina personuppgifter. Du kan när som helst ändra eller återkalla dina samtycken.',
+            Text(context.l10n.consentGdprDescription,
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium
@@ -115,10 +118,13 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               Container(
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: AppColors.info.withValues(alpha: AppDimensions.opacityVeryLight),
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                  border:
-                      Border.all(color: AppColors.info.withValues(alpha: AppDimensions.opacityMediumLight)),
+                  color: AppColors.info
+                      .withValues(alpha: AppDimensions.opacityVeryLight),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusM),
+                  border: Border.all(
+                      color: AppColors.info
+                          .withValues(alpha: AppDimensions.opacityMediumLight)),
                 ),
                 child: Row(
                   children: [
@@ -127,7 +133,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                         child: Text(
-                            'Senast uppdaterad: ${viewModel.getConsentTimestampText()}',
+                            '${context.l10n.consentLastUpdated}: ${viewModel.getConsentTimestampText()}',
                             style: AppTextStyles.infoText)),
                   ],
                 ),
@@ -150,26 +156,26 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           children: [
             Row(
               children: [
-                const Icon(Icons.lock, color: AppColors.textMedium, size: AppDimensions.iconSizeM),
+                const Icon(Icons.lock,
+                    color: AppColors.textMedium, size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingSm),
-                Text('Nödvändiga samtycken',
+                Text(context.l10n.consentRequiredTitle,
                     style: AppTextStyles.titleBold),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingSm),
-            Text(
-                'Dessa samtycken krävs för att appen ska fungera och kan inte inaktiveras.',
+            Text(context.l10n.consentRequiredDescription,
                 style: AppTextStyles.metadataEmphasized),
             const SizedBox(height: AppDimensions.spacingMd),
             _buildRequiredConsentItem(
-              'Grundläggande tjänster',
-              'Autentisering, säkerhet och grundläggande funktioner.',
+              context.l10n.consentBasicServices,
+              context.l10n.consentBasicServicesDescription,
               Icons.security,
             ),
             const SizedBox(height: AppDimensions.spacingL),
             _buildRequiredConsentItem(
-              'Databehandling',
-              'Lagring och behandling av recept, menyer och inköpslistor.',
+              context.l10n.consentDataProcessing,
+              context.l10n.consentDataProcessingDescription,
               Icons.storage,
             ),
           ],
@@ -189,8 +195,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title,
-                  style: AppTextStyles.bodyBold),
+              Text(title, style: AppTextStyles.bodyBold),
               const SizedBox(height: AppDimensions.spacingXs),
               Text(description,
                   style: Theme.of(context)
@@ -200,7 +205,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             ],
           ),
         ),
-        const Icon(Icons.check_circle, color: AppColors.success, size: AppDimensions.iconSizeM),
+        const Icon(Icons.check_circle,
+            color: AppColors.success, size: AppDimensions.iconSizeM),
       ],
     );
   }
@@ -212,13 +218,13 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Valfria samtycken',
+            Text(context.l10n.consentOptionalTitle,
                 style: AppTextStyles.titleBold),
             TextButton.icon(
               onPressed:
                   viewModel.isSaving ? null : () => _handleRevokeAll(viewModel),
               icon: const Icon(Icons.block, size: AppDimensions.iconSizeS),
-              label: const Text('Avvisa alla'),
+              label: Text(context.l10n.consentRejectAll),
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.error,
               ),
@@ -226,13 +232,13 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           ],
         ),
         const SizedBox(height: AppDimensions.spacingXs),
-        Text('Du kan när som helst aktivera eller inaktivera dessa samtycken.',
+        Text(context.l10n.consentOptionalDescription,
             style: AppTextStyles.metadataEmphasized),
         const SizedBox(height: AppDimensions.spacingMd),
         _buildConsentToggle(
           viewModel,
-          'Analysdata',
-          'Hjälp oss förbättra appen genom att dela användningsstatistik. Vi samlar in information om hur du använder appen för att identifiera buggar och förbättra användarupplevelsen.',
+          context.l10n.consentAnalytics,
+          context.l10n.consentAnalyticsDescription,
           Icons.analytics_rounded,
           viewModel.analytics,
           viewModel.setAnalytics,
@@ -240,8 +246,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         const SizedBox(height: AppDimensions.spacingL),
         _buildConsentToggle(
           viewModel,
-          'Marknadsföring',
-          'Ta emot nyhetsbrev och erbjudanden om nya funktioner, recept och uppdateringar via e-post.',
+          context.l10n.consentMarketing,
+          context.l10n.consentMarketingDescription,
           Icons.mail_rounded,
           viewModel.marketing,
           viewModel.setMarketing,
@@ -249,8 +255,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         const SizedBox(height: AppDimensions.spacingL),
         _buildConsentToggle(
           viewModel,
-          'Sociala funktioner',
-          'Dela dina recept med vänner, se andras skapelser och delta i communityn.',
+          context.l10n.consentSocialFeatures,
+          context.l10n.consentSocialFeaturesDescription,
           Icons.people_rounded,
           viewModel.socialFeatures,
           viewModel.setSocialFeatures,
@@ -258,8 +264,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         const SizedBox(height: AppDimensions.spacingL),
         _buildConsentToggle(
           viewModel,
-          'Push-notiser',
-          'Få meddelanden om kommentarer på dina recept, när vänner delar med dig och andra aktiviteter.',
+          context.l10n.consentPushNotifications,
+          context.l10n.consentPushNotificationsDescription,
           Icons.notifications_rounded,
           viewModel.pushNotifications,
           viewModel.setPushNotifications,
@@ -295,9 +301,11 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               padding: AppDimensions.paddingAll8,
               decoration: BoxDecoration(
                 color: value
-                    ? AppColors.primary.withValues(alpha: AppDimensions.opacityVeryLight)
+                    ? AppColors.primary
+                        .withValues(alpha: AppDimensions.opacityVeryLight)
                     : AppColors.backgroundTint,
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusM),
               ),
               child: Icon(
                 icon,
@@ -341,13 +349,17 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
+        border: Border.all(
+            color: AppColors.error
+                .withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.error, size: AppDimensions.iconSizeM),
+          const Icon(Icons.error_outline,
+              color: AppColors.error, size: AppDimensions.iconSizeM),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(
@@ -389,7 +401,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 const Icon(Icons.save_rounded, size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
-                  'Spara ändringar',
+                  context.l10n.commonSaveChanges,
                   style: AppTextStyles.titleBold.copyWith(
                     color: AppColors.cardWhite,
                   ),
@@ -401,7 +413,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
 
   Widget _buildInfoSection() {
     return Card(
-      color: AppColors.info.withValues(alpha: AppDimensions.opacityExtraVeryLight),
+      color:
+          AppColors.info.withValues(alpha: AppDimensions.opacityExtraVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingMd),
         child: Column(
@@ -409,21 +422,20 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           children: [
             Row(
               children: [
-                const Icon(Icons.info_outline, color: AppColors.info, size: AppDimensions.iconSizeM),
+                const Icon(Icons.info_outline,
+                    color: AppColors.info, size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
-                  'Bra att veta',
+                  context.l10n.consentGoodToKnow,
                   style: AppTextStyles.bodyBold,
                 ),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            _buildInfoItem('Dina ändringar träder i kraft omedelbart'),
-            _buildInfoItem('Du kan ändra dina samtycken när som helst'),
-            _buildInfoItem(
-                'Vi sparar en historik av dina samtycken för att följa GDPR'),
-            _buildInfoItem(
-                'Att återkalla samtycken påverkar inte tidigare behandling'),
+            _buildInfoItem(context.l10n.consentInfoImmediate),
+            _buildInfoItem(context.l10n.consentInfoChangeAnytime),
+            _buildInfoItem(context.l10n.consentInfoHistory),
+            _buildInfoItem(context.l10n.consentInfoRevoke),
           ],
         ),
       ),
@@ -461,12 +473,12 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Row(
             children: [
-              Icon(Icons.check_circle, color: AppColors.cardWhite),
-              SizedBox(width: AppDimensions.spacingSm),
-              Text('Samtycken har sparats'),
+              const Icon(Icons.check_circle, color: AppColors.cardWhite),
+              const SizedBox(width: AppDimensions.spacingSm),
+              Text(context.l10n.consentSaved),
             ],
           ),
           backgroundColor: AppColors.success,
@@ -480,19 +492,17 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Återkalla alla valfria samtycken?'),
-        content: const Text(
-          'Detta kommer att inaktivera alla valfria funktioner som analysdata, marknadsföring, sociala funktioner och push-notiser. Du kan aktivera dem igen när som helst.',
-        ),
+        title: Text(context.l10n.consentRevokeAllTitle),
+        content: Text(context.l10n.consentRevokeAllMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Återkalla alla'),
+            child: Text(context.l10n.consentRevokeAll),
           ),
         ],
       ),
@@ -503,12 +513,12 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
 
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle, color: AppColors.cardWhite),
-                SizedBox(width: AppDimensions.spacingSm),
-                Text('Alla valfria samtycken har återkallats'),
+                const Icon(Icons.check_circle, color: AppColors.cardWhite),
+                const SizedBox(width: AppDimensions.spacingSm),
+                Text(context.l10n.consentAllRevoked),
               ],
             ),
             backgroundColor: AppColors.success,

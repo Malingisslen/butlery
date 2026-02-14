@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -45,8 +46,8 @@ class AllergenStatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, icon) = _getStatusStyle();
-    final displayLabel = label ?? _getSwedishLabel();
-    final semanticLabel = _getSemanticLabel();
+    final displayLabel = label ?? _getDisplayLabel(context);
+    final semanticLabel = _getSemanticLabel(context);
 
     if (compact) {
       return _CompactBadge(
@@ -65,17 +66,17 @@ class AllergenStatusBadge extends StatelessWidget {
     );
   }
 
-  String _getSemanticLabel() {
+  String _getSemanticLabel(BuildContext context) {
     final entry = AllergenConfig.getByKey(allergen);
     final allergenName = entry?.key ?? allergen;
 
     switch (status) {
       case TriState.free:
-        return 'Fri från $allergenName';
+        return context.l10n.allergenStatusFreeA11y(allergenName);
       case TriState.contains:
-        return 'Innehåller $allergenName';
+        return context.l10n.allergenStatusContainsA11y(allergenName);
       case TriState.unknown:
-        return '$allergenName status okänd';
+        return context.l10n.allergenStatusUnknownA11y(allergenName);
     }
   }
 
@@ -95,26 +96,26 @@ class AllergenStatusBadge extends StatelessWidget {
     }
   }
 
-  String _getSwedishLabel() {
+  String _getDisplayLabel(BuildContext context) {
     final entry = AllergenConfig.getByKey(allergen);
     if (entry != null) {
       switch (status) {
         case TriState.free:
-          return entry.freeTag ?? '${entry.key}fri';
+          return entry.freeTag ?? context.l10n.allergenFreeLabel(entry.key);
         case TriState.contains:
           return entry.containsTag;
         case TriState.unknown:
-          return '${entry.key} okänd';
+          return context.l10n.allergenUnknownLabel(entry.key);
       }
     }
     // Fallback for unknown allergen keys
     switch (status) {
       case TriState.free:
-        return '${allergen}fri';
+        return context.l10n.allergenFreeLabel(allergen);
       case TriState.contains:
-        return 'innehåller $allergen';
+        return context.l10n.allergenContainsLabel(allergen);
       case TriState.unknown:
-        return '$allergen okänd';
+        return context.l10n.allergenUnknownLabel(allergen);
     }
   }
 }

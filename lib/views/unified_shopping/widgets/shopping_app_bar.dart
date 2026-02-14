@@ -9,6 +9,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// App bar actions for shopping view
 class ShoppingAppBar {
@@ -28,7 +29,7 @@ class ShoppingAppBar {
         children: [
           // Ny lista-knapp
           Semantics(
-            label: 'Ny lista',
+            label: context.l10n.shoppingNewList,
             button: true,
             enabled: true,
             child: IconButton(
@@ -40,13 +41,15 @@ class ShoppingAppBar {
                     .withValues(alpha: AppDimensions.opacityDark),
               ),
               onPressed: onCreateList,
-              tooltip: 'Ny lista',
+              tooltip: context.l10n.shoppingNewList,
             ),
           ),
 
           // Dela med vänner-knapp (social)
           Semantics(
-            label: canShare ? 'Dela med vänner' : 'Inga artiklar att dela',
+            label: canShare
+                ? context.l10n.a11yShareWithFriends
+                : context.l10n.a11yNoItemsToShare,
             button: true,
             enabled: canShare,
             child: IconButton(
@@ -60,13 +63,17 @@ class ShoppingAppBar {
                     : AppColors.textTertiary,
               ),
               onPressed: canShare ? onShowShareDialog : null,
-              tooltip: canShare ? 'Dela med vänner' : 'Inga artiklar att dela',
+              tooltip: canShare
+                  ? context.l10n.shoppingShareWithFriends
+                  : context.l10n.shoppingNoItemsToShare,
             ),
           ),
 
           // Dela externt-knapp
           Semantics(
-            label: canShare ? 'Dela externt' : 'Inga artiklar att dela',
+            label: canShare
+                ? context.l10n.a11yShareExternally
+                : context.l10n.a11yNoItemsToShare,
             button: true,
             enabled: canShare,
             child: IconButton(
@@ -80,7 +87,9 @@ class ShoppingAppBar {
                     : AppColors.textTertiary,
               ),
               onPressed: canShare ? onShareExternally : null,
-              tooltip: canShare ? 'Dela externt' : 'Inga artiklar att dela',
+              tooltip: canShare
+                  ? context.l10n.shoppingShareExternally
+                  : context.l10n.shoppingNoItemsToShare,
             ),
           ),
 
@@ -88,7 +97,7 @@ class ShoppingAppBar {
           Container(
             margin: AppDimensions.marginDirectionalOnlyStart8,
             child: Semantics(
-              label: _getSharingStatusTooltip(viewModel),
+              label: _getSharingStatusTooltip(context, viewModel),
               button: true,
               enabled: true,
               child: IconButton(
@@ -97,7 +106,7 @@ class ShoppingAppBar {
                   color: _getSharingStatusColor(viewModel),
                 ),
                 onPressed: () => onShowSyncStatus(),
-                tooltip: _getSharingStatusTooltip(viewModel),
+                tooltip: _getSharingStatusTooltip(context, viewModel),
               ),
             ),
           ),
@@ -126,7 +135,7 @@ class ShoppingAppBar {
           color: AppColors.headerForeground,
         ),
         onPressed: onCreateList,
-        tooltip: 'Ny lista',
+        tooltip: context.l10n.shoppingNewList,
       ),
 
       // Dela med vänner-knapp (social)
@@ -137,7 +146,7 @@ class ShoppingAppBar {
             color: AppColors.headerForeground,
           ),
           onPressed: onShowShareDialog,
-          tooltip: 'Dela med vänner',
+          tooltip: context.l10n.shoppingShareWithFriends,
         ),
 
       // Dela externt-knapp
@@ -148,7 +157,7 @@ class ShoppingAppBar {
             color: AppColors.headerForeground,
           ),
           onPressed: onShareExternally,
-          tooltip: 'Dela externt',
+          tooltip: context.l10n.shoppingShareExternally,
         ),
 
       // Sharing status indicator
@@ -158,7 +167,7 @@ class ShoppingAppBar {
           color: AppColors.headerForeground.withValues(alpha: 0.8),
         ),
         onPressed: onShowSyncStatus,
-        tooltip: _getSharingStatusTooltip(viewModel),
+        tooltip: _getSharingStatusTooltip(context, viewModel),
       ),
     ];
   }
@@ -168,7 +177,7 @@ class ShoppingAppBar {
     VoidCallback onAddItem,
   ) {
     return Semantics(
-      label: 'Lägg till vara',
+      label: context.l10n.a11yAddItem,
       button: true,
       enabled: true,
       child: ElevatedButton.icon(
@@ -178,7 +187,7 @@ class ShoppingAppBar {
           AdaptiveIcons.add,
           color: AppColors.cardWhite,
         ),
-        label: const Text('Lägg till vara'),
+        label: Text(context.l10n.shoppingAddItem),
       ),
     );
   }
@@ -248,17 +257,18 @@ class ShoppingAppBar {
   }
 
   /// Get the appropriate tooltip for sharing status based on list type and user permissions
-  static String _getSharingStatusTooltip(UnifiedShoppingViewModel viewModel) {
+  static String _getSharingStatusTooltip(
+      BuildContext context, UnifiedShoppingViewModel viewModel) {
     final activeList = viewModel.activeList;
-    if (activeList == null) return 'Lista';
+    if (activeList == null) return context.l10n.shoppingList;
 
     switch (activeList.type) {
       case ListType.personal:
-        return 'Personlig lista';
+        return context.l10n.shoppingPersonalList;
       case ListType.collaborative:
         final permissionService = ServiceLocator.get<PermissionService>();
         final currentUserId = permissionService.currentUser?.uid;
-        if (currentUserId == null) return 'Delad lista';
+        if (currentUserId == null) return context.l10n.shoppingSharedList;
 
         final userPermission = activeList.memberPermissions[currentUserId];
         final memberCount = activeList.memberPermissions.length +
@@ -269,24 +279,25 @@ class ShoppingAppBar {
         String permissionText;
         switch (userPermission) {
           case SharedListPermission.view:
-            permissionText = 'Kan bara se';
+            permissionText = context.l10n.shoppingPermissionViewOnly;
             break;
           case SharedListPermission.edit:
-            permissionText = 'Kan redigera';
+            permissionText = context.l10n.shoppingPermissionEdit;
             break;
           case SharedListPermission.admin:
-            permissionText = 'Administratör';
+            permissionText = context.l10n.shoppingPermissionAdministrator;
             break;
           default:
             // If not in permissions map, check if owner
             permissionText = activeList.ownerId == currentUserId
-                ? 'Administratör'
-                : 'Kan redigera';
+                ? context.l10n.shoppingPermissionAdministrator
+                : context.l10n.shoppingPermissionEdit;
         }
 
-        return 'Delad med $memberCount medlemmar - $permissionText';
+        return context.l10n
+            .shoppingSharedWithMembers(memberCount, permissionText);
       case ListType.template:
-        return 'Mall-lista';
+        return context.l10n.shoppingTemplateList;
     }
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
@@ -35,7 +36,7 @@ class AuthActionHandler {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Utloggning misslyckades: $e'),
+            content: Text(context.l10n.profileLogoutFailed('$e')),
             backgroundColor: AppColors.error,
           ),
         );
@@ -68,8 +69,8 @@ class AuthActionHandler {
       final reauthSuccess =
           await authService.reauthenticateWithPassword(password);
       if (!reauthSuccess) {
-        throw Exception(
-            authService.errorMessage ?? 'Autentisering misslyckades');
+        throw Exception(authService.errorMessage ??
+            context.l10n.profileAuthenticationFailed);
       }
 
       // Perform deletion using ProfileViewModel
@@ -89,15 +90,15 @@ class AuthActionHandler {
             (route) => false,
           );
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Ditt konto har raderats permanent'),
+            SnackBar(
+              content: Text(context.l10n.profileAccountDeletedPermanently),
               backgroundColor: AppColors.success,
             ),
           );
         } else {
           // Deletion failed
           ProfileDialogs.showErrorDialog(
-              context, 'Kontot kunde inte raderas helt. Kontakta support.');
+              context, context.l10n.profileAccountCouldNotBeFullyDeleted);
         }
       }
     } catch (e) {

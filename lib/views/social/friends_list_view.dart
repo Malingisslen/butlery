@@ -16,6 +16,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/indicators/circular_icon_badge.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 // Import focused components
 import 'package:butlery/views/social/friends_list/friends_tab.dart';
@@ -121,7 +122,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
         return LayoutComponents.mainMenu(
           currentIndex: null,
-          title: 'Vänner & Grupper',
+          title: context.l10n.socialFriendsAndGroups,
           body: SafeArea(
             // ✅ RESPONSIVE: Center and constrain content on large screens
             child: Center(
@@ -149,9 +150,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                         indicatorColor: Theme.of(context).colorScheme.primary,
                         indicatorWeight: AppDimensions.borderWidthThick,
                         tabs: [
-                          const Tab(
-                            icon: Icon(Icons.people),
-                            text: 'Vänner',
+                          Tab(
+                            icon: const Icon(Icons.people),
+                            text: context.l10n.socialFriends,
                           ),
                           Tab(
                             icon: Badge(
@@ -161,7 +162,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                                   '${friendsService.invitations.pendingReceivedInvitations.length}'),
                               child: const Icon(Icons.groups),
                             ),
-                            text: 'Grupper',
+                            text: context.l10n.socialGroups,
                           ),
                           Tab(
                             icon: Badge(
@@ -171,7 +172,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                                   Text('${viewModel.incomingRequests.length}'),
                               child: const Icon(Icons.search),
                             ),
-                            text: 'Hitta Vänner',
+                            text: context.l10n.socialFindFriends,
                           ),
                         ],
                       ),
@@ -186,11 +187,13 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                           width: double.infinity,
                           padding: const EdgeInsets.all(AppDimensions.paddingL),
                           decoration: BoxDecoration(
-                            color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+                            color: AppColors.error.withValues(
+                                alpha: AppDimensions.opacityVeryLight),
                             borderRadius: BorderRadius.circular(
                                 AppDimensions.borderRadiusM),
                             border: Border.all(
-                                color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight)),
+                                color: AppColors.error.withValues(
+                                    alpha: AppDimensions.opacityMediumLight)),
                           ),
                           child: Row(
                             children: [
@@ -205,7 +208,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                               ),
                               ActionButtons.secondaryButton(
                                 context,
-                                label: 'Stäng',
+                                label: context.l10n.commonClose,
                                 onPressed: viewModel.clearError,
                               ),
                             ],
@@ -220,7 +223,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                       SearchFilterWidget.searchOnly(
                         searchQuery: _searchQuery,
                         onSearchChanged: _onSearchChanged,
-                        searchHint: 'Sök efter grupper...',
+                        searchHint: context.l10n.socialSearchGroups,
                         autofocus: false,
                         padding: const EdgeInsets.all(AppDimensions.spacingL),
                         showStats: true,
@@ -230,7 +233,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                       SearchFilterWidget.searchOnly(
                         searchQuery: _searchQuery,
                         onSearchChanged: _onSearchChanged,
-                        searchHint: 'Sök efter nya vänner...',
+                        searchHint: context.l10n.socialSearchNewFriends,
                         autofocus: false,
                         padding: const EdgeInsets.all(AppDimensions.spacingL),
                         showStats: true,
@@ -257,6 +260,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           floatingActionButton: _currentTabIndex == 1
               ? FloatingActionButton(
                   onPressed: () => _showCreateGroupDialog(viewModel),
+                  tooltip: context.l10n.groupCreateGroup,
                   child: const Stack(
                     children: [
                       Center(
@@ -308,7 +312,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       // ✅ FIX: Dialog returns bool? - true on success, false/null on cancel
       // The transformation happens in social_group_components.dart: .then((result) => result != null)
       if (result == true && mounted) {
-        SnackBarUtils.showSuccess(context, 'Gruppen skapades! 🎉');
+        SnackBarUtils.showSuccess(context, context.l10n.groupCreatedSuccess);
         // ✅ FIX: Switch to groups tab (index 1) after successful creation
         if (mounted) {
           setState(() {
@@ -318,7 +322,8 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       }
     } catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(context, 'Kunde inte skapa grupp: $e');
+        SnackBarUtils.showError(
+            context, context.l10n.groupCouldNotCreate('$e'));
       }
     }
   }

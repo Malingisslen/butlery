@@ -5,6 +5,7 @@ import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Focused widget for collaborative shopping list header
 /// This widget handles ONLY header display responsibilities:
@@ -77,7 +78,8 @@ class CollaborativeShoppingHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
-        border: Border.all(color: color.withValues(alpha: AppDimensions.opacityMediumLight)),
+        border: Border.all(
+            color: color.withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Text(
         viewModel.statusText,
@@ -118,7 +120,8 @@ class CollaborativeShoppingHeader extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          '${viewModel.completedItems} av ${viewModel.totalItems} klara',
+          context.l10n.collaborativeCompletedOf(
+              viewModel.completedItems, viewModel.totalItems),
           style: AppTextStyles.bodyBold,
         ),
         Text(
@@ -137,8 +140,10 @@ class CollaborativeShoppingHeader extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       child: LinearProgressIndicator(
         value: progress,
-        backgroundColor:
-            Theme.of(context).colorScheme.outline.withValues(alpha: AppDimensions.opacityLight),
+        backgroundColor: Theme.of(context)
+            .colorScheme
+            .outline
+            .withValues(alpha: AppDimensions.opacityLight),
         valueColor: AlwaysStoppedAnimation<Color>(progressColor),
         minHeight: 8,
       ),
@@ -187,8 +192,7 @@ class CollaborativeShoppingHeader extends StatelessWidget {
         Expanded(
           child: Text(
             viewModel.activitySummary,
-            style:
-                AppTextStyles.metadataEmphasized,
+            style: AppTextStyles.metadataEmphasized,
             overflow: TextOverflow.ellipsis,
           ),
         ),

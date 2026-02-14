@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Helper for building sort menu items used across recipe views.
 class SortMenuBuilder {
@@ -11,14 +12,14 @@ class SortMenuBuilder {
     required bool sortAscending,
   }) {
     return [
-      _buildItem(context, SortCriteria.title, 'Titel', Icons.title, currentSort,
-          sortAscending),
-      _buildItem(context, SortCriteria.time, 'Tid', Icons.access_time,
-          currentSort, sortAscending),
-      _buildItem(context, SortCriteria.rating, 'Betyg', Icons.star, currentSort,
-          sortAscending),
-      _buildItem(context, SortCriteria.mealType, 'Måltidstyp', Icons.restaurant,
-          currentSort, sortAscending),
+      _buildItem(context, SortCriteria.title, context.l10n.sortTitle,
+          Icons.title, currentSort, sortAscending),
+      _buildItem(context, SortCriteria.time, context.l10n.sortTime,
+          Icons.access_time, currentSort, sortAscending),
+      _buildItem(context, SortCriteria.rating, context.l10n.sortRating,
+          Icons.star, currentSort, sortAscending),
+      _buildItem(context, SortCriteria.mealType, context.l10n.sortMealType,
+          Icons.restaurant, currentSort, sortAscending),
     ];
   }
 

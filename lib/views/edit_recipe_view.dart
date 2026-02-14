@@ -46,6 +46,7 @@ import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
 import 'package:butlery/widgets/recipe/recipe_form/dynamic_list_builder.dart';
 import 'package:butlery/widgets/tagging/tag_editor_dialog.dart';
 import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Comprehensive recipe editing view with all components inlined.
 class EditRecipeView extends StatelessWidget {
@@ -157,7 +158,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                       ),
                     ),
                     child: StateWidget.loading(
-                      message: 'Uppdaterar recept...',
+                      message: context.l10n.recipeUpdating,
                     ),
                   ),
                 ),
@@ -180,7 +181,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           final isCollaborative = status.isCollaborative;
 
           return AppBar(
-            title: const Text('Redigera recept'),
+            title: Text(context.l10n.recipeEdit),
             backgroundColor: isCollaborative
                 ? AppColors.forestGreen
                     .withValues(alpha: AppDimensions.opacityVeryLight)
@@ -193,7 +194,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                   child: Center(
                     child:
                         SocialCollaborativeComponents.collaborativeStatusBadge(
-                      text: 'Delat',
+                      text: context.l10n.socialShared,
                       icon: Icons.people,
                     ),
                   ),
@@ -232,8 +233,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         if (!status.isCollaborative) return const SizedBox.shrink();
 
         return SocialCollaborativeComponents.collaborativeBanner(
-          title: 'Du redigerar tillsammans med andra',
-          subtitle: 'Angringar synkas automatiskt med andra deltagare',
+          title: context.l10n.socialEditingTogether,
+          subtitle: context.l10n.socialChangesSyncAutomatically,
           context: context,
           contentId: recipe.id,
           contentType: 'recipe',
@@ -247,13 +248,13 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       return BottomActionContainer(
         child: UtilityComponents.primaryButton(
           context,
-          label: 'Spara ändringar',
+          label: context.l10n.commonSaveChanges,
           icon: Icons.save,
           onPressed: viewModel.isSaving || !viewModel.isValid
               ? null
               : () => _saveRecipe(context),
           isLoading: viewModel.isSaving,
-          loadingText: 'Sparar...',
+          loadingText: context.l10n.statusSaving,
           isExpanded: true,
         ),
       );
@@ -284,7 +285,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Måltidstyp',
+            context.l10n.recipeMealType,
             style: AppTextStyles.bodySmall.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -335,13 +336,13 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       // Title field
       TextFormField(
         initialValue: viewModel.title,
-        decoration: const InputDecoration(labelText: 'Titel'),
+        decoration: InputDecoration(labelText: context.l10n.recipeTitle),
         style: AppTextStyles.bodyMedium,
         textInputAction: TextInputAction.next,
         onChanged: viewModel.setTitle,
         validator: FormValidators.combine([
-          FormValidators.required('Titel'),
-          FormValidators.maxLength(100, 'Titel'),
+          FormValidators.required(context.l10n.recipeTitle),
+          FormValidators.maxLength(100, context.l10n.recipeTitle),
         ]),
       ),
       const SizedBox(height: AppDimensions.spacingXl),
@@ -350,18 +351,19 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       TextFormField(
         initialValue: viewModel.description,
         maxLines: 2,
-        decoration: const InputDecoration(labelText: 'Beskrivning'),
+        decoration: InputDecoration(labelText: context.l10n.recipeDescription),
         style: AppTextStyles.bodyMedium,
         textInputAction: TextInputAction.next,
         onChanged: viewModel.setDescription,
-        validator: FormValidators.maxLength(500, 'Beskrivning'),
+        validator:
+            FormValidators.maxLength(500, context.l10n.recipeDescription),
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
       // Portions field
       TextFormField(
         initialValue: viewModel.portions?.toString() ?? '',
-        decoration: const InputDecoration(labelText: 'Portioner'),
+        decoration: InputDecoration(labelText: context.l10n.recipePortions),
         style: AppTextStyles.bodyMedium,
         keyboardType: TextInputType.number,
         textInputAction: TextInputAction.next,
@@ -373,7 +375,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       // Time field
       TextFormField(
         initialValue: viewModel.timeMinutes?.toString() ?? '',
-        decoration: const InputDecoration(labelText: 'Tid (min)'),
+        decoration: InputDecoration(labelText: context.l10n.recipeTimeMinutes),
         style: AppTextStyles.bodyMedium,
         keyboardType: TextInputType.number,
         textInputAction: TextInputAction.next,
@@ -384,7 +386,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
       // Ingredients dynamic list
       DynamicListBuilder(
-        label: 'Ingrediens',
+        label: context.l10n.recipeIngredient,
         controllers: viewModel.ingredientControllers,
         onUpdate: viewModel.updateIngredient,
         onAdd: viewModel.addIngredient,
@@ -394,7 +396,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
       // Instructions dynamic list
       DynamicListBuilder(
-        label: 'Instruktion',
+        label: context.l10n.recipeInstruction,
         controllers: viewModel.instructionControllers,
         onUpdate: viewModel.updateInstruction,
         onAdd: viewModel.addInstruction,
@@ -407,7 +409,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       PersonalTagSelector(
         selectedTagIds: viewModel.tags.where((t) => t.isNotEmpty).toList(),
         onChanged: viewModel.setPersonalTagNames,
-        title: 'Personliga taggar',
+        title: context.l10n.recipePersonalTags,
         showManageButton: true,
       ),
       const SizedBox(height: AppDimensions.spacingM),
@@ -419,7 +421,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       // Rating field
       TextFormField(
         initialValue: viewModel.rating?.toString() ?? '',
-        decoration: const InputDecoration(labelText: 'Betyg (0–5)'),
+        decoration: InputDecoration(labelText: context.l10n.recipeRating),
         style: AppTextStyles.bodyMedium,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         textInputAction: TextInputAction.next,
@@ -432,11 +434,11 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       TextFormField(
         initialValue: viewModel.sourceUrl ?? '',
         decoration: InputDecoration(
-          labelText: 'Källa (URL)',
-          hintText: 'Valfritt: länk till originalreceptet',
-          helperText: viewModel.sourceUrl == 'Delad från annan app'
-              ? 'Importerat från delning'
-              : 'Länk till originalreceptet',
+          labelText: context.l10n.recipeSourceUrl,
+          hintText: context.l10n.recipeSourceUrlHint,
+          helperText: viewModel.sourceUrl == context.l10n.recipeSharedFromApp
+              ? context.l10n.recipeImportedFromShare
+              : context.l10n.recipeSourceUrlHelper,
           prefixIcon: const Icon(
             Icons.link,
             size: AppDimensions.iconSizeAction,
@@ -458,7 +460,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       onPressed: () => _openTagEditor(context, viewModel),
       icon: const Icon(Icons.local_offer_outlined),
       label: Text(
-        hasAutoTags ? 'Hantera alla taggar' : 'Lägg till taggar',
+        hasAutoTags
+            ? context.l10n.recipeManageAllTags
+            : context.l10n.recipeAddTags,
         style: AppTextStyles.bodyMedium,
       ),
       style: OutlinedButton.styleFrom(
@@ -481,7 +485,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     if (result != null) {
       viewModel.setTagOverrides(result);
       if (context.mounted) {
-        UtilityComponents.showSuccessSnackbar(context, 'Taggar uppdaterade');
+        UtilityComponents.showSuccessSnackbar(
+            context, context.l10n.recipeTagsUpdated);
       }
     }
   }
@@ -503,11 +508,12 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             context.read<CollaborativeStatusViewModel>();
         collaborativeViewModel.invalidateRecipeStatus(widget.recipe.id);
 
-        UtilityComponents.showSuccessSnackbar(context, 'Ändringar sparade!');
+        UtilityComponents.showSuccessSnackbar(
+            context, context.l10n.recipeChangesSaved);
         Navigator.pop(context, true);
       } else {
         UtilityComponents.showErrorSnackbar(
-            context, viewModel.error ?? 'Kunde inte spara ändringar');
+            context, viewModel.error ?? context.l10n.recipeCouldNotSaveChanges);
       }
     }
   }
@@ -528,13 +534,13 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       if (forkedRecipe != null) {
         UtilityComponents.showSuccessSnackbar(
           context,
-          'Din kopia av receptet sparades!',
+          context.l10n.recipeCopySaved,
         );
         Navigator.pop(context, true);
       } else {
         UtilityComponents.showErrorSnackbar(
           context,
-          viewModel.error ?? 'Kunde inte spara din kopia',
+          viewModel.error ?? context.l10n.recipeCouldNotSaveCopy,
         );
       }
     }
@@ -545,18 +551,17 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Osparade ändringar'),
-        content: const Text(
-            'Du har osparade ändringar. Vill du verkligen lämna utan att spara?'),
+        title: Text(context.l10n.recipeUnsavedChangesTitle),
+        content: Text(context.l10n.confirmUnsavedChanges),
         actions: [
           ActionButtons.secondaryButton(
             context,
-            label: 'Fortsätt redigera',
+            label: context.l10n.recipeContinueEditing,
             onPressed: () => Navigator.of(context).pop(false),
           ),
           ActionButtons.primaryButton(
             context,
-            label: 'Lämna utan att spara',
+            label: context.l10n.recipeLeaveWithoutSaving,
             onPressed: () => Navigator.of(context).pop(true),
           ),
         ],

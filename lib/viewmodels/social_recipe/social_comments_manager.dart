@@ -158,6 +158,22 @@ class SocialCommentsManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> deleteComment(String recipeId, String commentId) async {
+    try {
+      final success = await _recipeService.social.deleteComment(commentId);
+      if (success) {
+        await refreshComments(recipeId);
+        AppLogger.info('Comment deleted successfully: $commentId');
+      } else {
+        throw Exception('Service returned false for comment deletion');
+      }
+    } catch (e) {
+      _commentsError = 'Kunde inte ta bort kommentar: $e';
+      AppLogger.error('Failed to delete comment $commentId: $e');
+      notifyListeners();
+    }
+  }
+
   List<SocialComment> getReplies(String parentCommentId) {
     return _comments
         .where((comment) => comment.parentCommentId == parentCommentId)

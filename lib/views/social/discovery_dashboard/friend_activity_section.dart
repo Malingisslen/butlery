@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Friend Activity Section - Shows friend activity timeline
 class FriendActivitySection {
@@ -22,16 +23,16 @@ class FriendActivitySection {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DiscoverySectionHeader(
-          title: 'Vänners aktivitet',
+          title: context.l10n.discoveryFriendActivity,
           icon: Icons.timeline,
           iconColor: AppColors.secondary,
-          actionLabel: 'Se allt',
+          actionLabel: context.l10n.discoverySeeAll,
           onActionPressed: () => _showAllActivity(context, viewModel),
           count: friendActivity.length,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         if (friendActivity.isEmpty)
-          _buildEmptyState()
+          _buildEmptyState(context)
         else
           Column(
             children: friendActivity
@@ -43,7 +44,7 @@ class FriendActivitySection {
     );
   }
 
-  static Widget _buildEmptyState() {
+  static Widget _buildEmptyState(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -65,12 +66,12 @@ class FriendActivitySection {
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'Ingen vänaktivitet än',
+              context.l10n.discoveryNoFriendActivityYet,
               style: AppTextStyles.titleSmall,
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'När dina vänner delar recept, menyer eller inköpslistor visas de här.',
+              context.l10n.discoveryFriendActivityDescription,
               style: AppTextStyles.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -84,7 +85,8 @@ class FriendActivitySection {
       BuildContext context, Map<String, dynamic> activity) {
     final String type = activity['type'] ?? '';
     final String title = activity['title'] ?? '';
-    final String ownerName = activity['ownerName'] ?? 'Okänd användare';
+    final String ownerName =
+        activity['ownerName'] ?? context.l10n.discoveryUnknownUser;
     final String? imageUrl = activity['imageUrl'];
     final DateTime? sharedAt = activity['sharedAt'];
     final Map<String, dynamic> engagement = activity['engagement'] ?? {};
@@ -164,7 +166,7 @@ class FriendActivitySection {
                         const SizedBox(width: AppDimensions.spacingXs),
                         Expanded(
                           child: Text(
-                            'Delad av $ownerName',
+                            context.l10n.discoverySharedBy(ownerName),
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.onSurface
                                   .withValues(alpha: AppDimensions.opacityDark),
@@ -180,7 +182,7 @@ class FriendActivitySection {
                       children: [
                         if (sharedAt != null) ...[
                           Text(
-                            _formatTimeAgo(sharedAt),
+                            _formatTimeAgo(context, sharedAt),
                             style: AppTextStyles.labelMedium.copyWith(
                               color: AppColors.onSurface.withValues(
                                   alpha: AppDimensions.opacityMediumDark),
@@ -259,18 +261,18 @@ class FriendActivitySection {
     }
   }
 
-  static String _formatTimeAgo(DateTime dateTime) {
+  static String _formatTimeAgo(BuildContext context, DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
     if (difference.inDays > 0) {
-      return '${difference.inDays}d sedan';
+      return context.l10n.discoveryTimeAgoDays(difference.inDays);
     } else if (difference.inHours > 0) {
-      return '${difference.inHours}h sedan';
+      return context.l10n.discoveryTimeAgoHours(difference.inHours);
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m sedan';
+      return context.l10n.discoveryTimeAgoMinutes(difference.inMinutes);
     } else {
-      return 'Nu';
+      return context.l10n.discoveryTimeAgoNow;
     }
   }
 
@@ -319,7 +321,7 @@ class FriendActivitySection {
       BuildContext context, DiscoveryDashboardViewModel viewModel) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Vänaktivitet'),
+        title: Text(context.l10n.discoveryFriendActivity),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,
       ),
@@ -335,14 +337,14 @@ class FriendActivitySection {
                   ),
                   const SizedBox(height: AppDimensions.spacingM),
                   Text(
-                    'Ingen vänaktivitet än',
+                    context.l10n.discoveryNoFriendActivityYet,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: AppColors.onSurface,
                         ),
                   ),
                   const SizedBox(height: AppDimensions.spacingS),
                   Text(
-                    'Aktivitet från dina vänner visas här',
+                    context.l10n.discoveryFriendActivityWillAppearHere,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: AppColors.onSurface,
                         ),
@@ -369,16 +371,17 @@ class FriendActivitySection {
                             ),
                       ),
                     ),
-                    title: Text(
-                        activity['userName'] as String? ?? 'Okänd användare'),
+                    title: Text(activity['userName'] as String? ??
+                        context.l10n.discoveryUnknownUser),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(activity['action'] as String? ??
-                            'Utförde en aktivitet'),
+                            context.l10n.discoveryPerformedAction),
                         const SizedBox(height: AppDimensions.spacingXs),
                         Text(
-                          activity['timestamp'] as String? ?? 'Nyligen',
+                          activity['timestamp'] as String? ??
+                              context.l10n.discoveryRecently,
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: AppColors.onSurface,

@@ -5,6 +5,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Category Display Widgets
 /// Handles ONLY category display and presentation components.
@@ -29,7 +30,8 @@ class CategoryDisplayWidgets {
           ),
           title: Text(category.name),
           subtitle: showMemberCount
-              ? Text('${category.friendUserIds.length} medlemmar')
+              ? Text(
+                  context.l10n.friendMemberCount(category.friendUserIds.length))
               : null,
           trailing: const Icon(Icons.arrow_forward_ios,
               size: AppDimensions.iconSizeS),
@@ -58,33 +60,40 @@ class CategoryDisplayWidgets {
       itemBuilder: (context, index) {
         final category = categories[index];
         return Card(
-          child: InkWell(
-            onTap: () => onCategoryTap(category),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-            child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingMd),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    category.emoji != null ? Icons.emoji_emotions : Icons.group,
-                    size: AppDimensions.iconSizeXl,
-                    color: AppColors.forestGreen,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingS),
-                  Text(
-                    category.name,
-                    style: AppTextStyles.cardTitleStyle,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    '${category.friendUserIds.length} medlemmar',
-                    style: AppTextStyles.bodySmall,
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+          child: Semantics(
+            label: '${context.l10n.friendCategoryLabel}: ${category.name}',
+            button: true,
+            child: InkWell(
+              onTap: () => onCategoryTap(category),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              child: Padding(
+                padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      category.emoji != null
+                          ? Icons.emoji_emotions
+                          : Icons.group,
+                      size: AppDimensions.iconSizeXl,
+                      color: AppColors.forestGreen,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingS),
+                    Text(
+                      category.name,
+                      style: AppTextStyles.cardTitleStyle,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      context.l10n
+                          .friendMemberCount(category.friendUserIds.length),
+                      style: AppTextStyles.bodySmall,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -95,6 +104,7 @@ class CategoryDisplayWidgets {
 
   /// Build category statistics widget
   static Widget categoryStatistics({
+    required BuildContext context,
     required List<FriendCategory> categories,
     EdgeInsets? padding,
   }) {
@@ -114,7 +124,7 @@ class CategoryDisplayWidgets {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Kategoristatistik',
+              context.l10n.friendCategoryStatistics,
               style: AppTextStyles.sectionTitleStyle,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
@@ -123,7 +133,7 @@ class CategoryDisplayWidgets {
                 Expanded(
                   child: _StatItem(
                     icon: Icons.category,
-                    label: 'Kategorier',
+                    label: context.l10n.friendCategories,
                     value: categories.length.toString(),
                     color: AppColors.forestGreen,
                   ),
@@ -131,7 +141,7 @@ class CategoryDisplayWidgets {
                 Expanded(
                   child: _StatItem(
                     icon: Icons.people,
-                    label: 'Totalt medlemmar',
+                    label: context.l10n.friendTotalMembers,
                     value: totalMembers.toString(),
                     color: AppColors.success,
                   ),
@@ -139,7 +149,7 @@ class CategoryDisplayWidgets {
                 Expanded(
                   child: _StatItem(
                     icon: Icons.analytics,
-                    label: 'Genomsnitt',
+                    label: context.l10n.friendAverage,
                     value: averageSize.toString(),
                     color: AppColors.warning,
                   ),
@@ -149,7 +159,8 @@ class CategoryDisplayWidgets {
             if (largestCategory != null) ...[
               const SizedBox(height: AppDimensions.spacingMd),
               Text(
-                'Största kategori: ${largestCategory.name} (${largestCategory.memberIds.length} medlemmar)',
+                context.l10n.friendLargestCategory(
+                    largestCategory.name, largestCategory.memberIds.length),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -163,6 +174,7 @@ class CategoryDisplayWidgets {
 
   /// Build compact category card
   static Widget categoryCard({
+    required BuildContext context,
     required FriendCategory category,
     required VoidCallback onTap,
     bool showMemberCount = true,
@@ -174,68 +186,73 @@ class CategoryDisplayWidgets {
       width: width,
       height: height,
       child: Card(
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingMd),
-            child: Column(
-              mainAxisSize: MainAxisSize.min, // Fix unbounded height issue
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize
-                      .min, // Fix unbounded width constraints in horizontal scrollable
-                  children: [
-                    Icon(
-                      category.emoji != null
-                          ? Icons.emoji_emotions
-                          : Icons.group,
-                      color: AppColors.forestGreen,
-                      size: AppDimensions.iconSizeM,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingS),
-                    Flexible(
-                      child: Text(
-                        category.name,
-                        style: AppTextStyles.cardTitleStyle,
-                        // Using Flexible instead of Expanded for horizontal scrollable context
-                      ),
-                    ),
-                  ],
-                ),
-                if (showDescription &&
-                    category.description != null &&
-                    category.description!.isNotEmpty) ...[
-                  const SizedBox(height: AppDimensions.spacingS),
-                  Text(
-                    category.description!,
-                    style: AppTextStyles.bodySmall,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-                // Removed const Spacer() to fix unbounded height issues in scrollable contexts
-                if (showMemberCount) ...[
-                  const SizedBox(height: AppDimensions.spacingS),
+        child: Semantics(
+          label: '${context.l10n.friendCategoryLabel}: ${category.name}',
+          button: true,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            child: Padding(
+              padding: const EdgeInsets.all(AppDimensions.spacingMd),
+              child: Column(
+                mainAxisSize: MainAxisSize.min, // Fix unbounded height issue
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Row(
+                    mainAxisSize: MainAxisSize
+                        .min, // Fix unbounded width constraints in horizontal scrollable
                     children: [
-                      const Icon(
-                        Icons.people,
-                        size: AppDimensions.iconSizeS,
-                        color: AppColors.textMedium,
+                      Icon(
+                        category.emoji != null
+                            ? Icons.emoji_emotions
+                            : Icons.group,
+                        color: AppColors.forestGreen,
+                        size: AppDimensions.iconSizeM,
                       ),
-                      const SizedBox(width: AppDimensions.spacingXs),
-                      Text(
-                        '${category.friendUserIds.length} medlemmar',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textMedium,
+                      const SizedBox(width: AppDimensions.spacingS),
+                      Flexible(
+                        child: Text(
+                          category.name,
+                          style: AppTextStyles.cardTitleStyle,
+                          // Using Flexible instead of Expanded for horizontal scrollable context
                         ),
                       ),
                     ],
                   ),
+                  if (showDescription &&
+                      category.description != null &&
+                      category.description!.isNotEmpty) ...[
+                    const SizedBox(height: AppDimensions.spacingS),
+                    Text(
+                      category.description!,
+                      style: AppTextStyles.bodySmall,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  // Removed const Spacer() to fix unbounded height issues in scrollable contexts
+                  if (showMemberCount) ...[
+                    const SizedBox(height: AppDimensions.spacingS),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.people,
+                          size: AppDimensions.iconSizeS,
+                          color: AppColors.textMedium,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingXs),
+                        Text(
+                          context.l10n
+                              .friendMemberCount(category.friendUserIds.length),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
@@ -262,6 +279,7 @@ class CategoryDisplayWidgets {
         itemBuilder: (context, index) {
           final category = categories[index];
           return categoryCard(
+            context: context,
             category: category,
             onTap: () => onCategoryTap(category),
             // Removed fixed width to prevent layout constraints issues
@@ -274,6 +292,7 @@ class CategoryDisplayWidgets {
 
   /// Build category summary row
   static Widget categorySummaryRow({
+    required BuildContext context,
     required List<FriendCategory> categories,
     bool showTotalMembers = true,
     EdgeInsets? padding,
@@ -300,12 +319,12 @@ class CategoryDisplayWidgets {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${categories.length} ${categories.length == 1 ? 'kategori' : 'kategorier'}',
+                  context.l10n.friendCategoryCount(categories.length),
                   style: AppTextStyles.titleMedium,
                 ),
                 if (showTotalMembers)
                   Text(
-                    '$totalMembers totalt medlemmar',
+                    context.l10n.friendTotalMembersCount(totalMembers),
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textMedium,
                     ),
@@ -320,8 +339,9 @@ class CategoryDisplayWidgets {
 
   /// Build empty categories state
   static Widget emptyState({
-    String title = 'Inga kategorier',
-    String subtitle = 'Skapa din första vänkategori',
+    required BuildContext context,
+    String? title,
+    String? subtitle,
     VoidCallback? onCreateCategory,
     EdgeInsets? padding,
   }) {
@@ -337,7 +357,7 @@ class CategoryDisplayWidgets {
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
-            title,
+            title ?? context.l10n.emptyNoCategoriesTitle,
             style: AppTextStyles.titleMedium.copyWith(
               color: AppColors.textMedium,
             ),
@@ -345,7 +365,7 @@ class CategoryDisplayWidgets {
           ),
           const SizedBox(height: AppDimensions.spacingS),
           Text(
-            subtitle,
+            subtitle ?? context.l10n.friendCreateFirstCategory,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -356,7 +376,7 @@ class CategoryDisplayWidgets {
             ElevatedButton.icon(
               onPressed: onCreateCategory,
               icon: const Icon(Icons.add),
-              label: const Text('Skapa kategori'),
+              label: Text(context.l10n.friendCreateCategory),
             ),
           ],
         ],

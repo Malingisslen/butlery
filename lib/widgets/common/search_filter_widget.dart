@@ -30,7 +30,7 @@ class SearchFilterWidget extends StatefulWidget {
   // Search properties
   final String searchQuery;
   final Function(String) onSearchChanged;
-  final String searchHint;
+  final String? searchHint;
 
   // Filter properties (OPTIONAL - null means no filters)
   final Set<String>? activeTimeFilters;
@@ -71,7 +71,7 @@ class SearchFilterWidget extends StatefulWidget {
     super.key,
     required this.searchQuery,
     required this.onSearchChanged,
-    this.searchHint = 'Sök...',
+    this.searchHint,
 
     // Filter properties (optional)
     this.activeTimeFilters,
@@ -113,7 +113,7 @@ class SearchFilterWidget extends StatefulWidget {
   factory SearchFilterWidget.withFilters({
     required String searchQuery,
     required Function(String) onSearchChanged,
-    String searchHint = 'Sök...',
+    String? searchHint,
     required Set<String> activeTimeFilters,
     required Set<String> activeMealTypeFilters,
     required Set<String> activeRatingFilters,
@@ -150,7 +150,7 @@ class SearchFilterWidget extends StatefulWidget {
   factory SearchFilterWidget.searchOnly({
     required String searchQuery,
     required Function(String) onSearchChanged,
-    String searchHint = 'Sök...',
+    String? searchHint,
     bool autofocus = false,
     EdgeInsetsGeometry? padding,
     bool showStats = false,

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
@@ -26,8 +27,7 @@ class VeckomenyDialogs {
     required List<UserProfile> availableFriends,
   }) async {
     if (!viewModel.hasMenu) {
-      SnackBarUtils.showWarning(
-          context, 'Skapa en meny först innan du kan spara den');
+      SnackBarUtils.showWarning(context, context.l10n.menuCreateBeforeSave);
       return;
     }
 
@@ -56,8 +56,7 @@ class VeckomenyDialogs {
     required UnifiedFriendsService friendsService,
   }) async {
     if (!menuViewModel.hasMenu) {
-      SnackBarUtils.showWarning(
-          context, 'Skapa en meny först innan du kan dela den');
+      SnackBarUtils.showWarning(context, context.l10n.menuCreateBeforeShare);
       return;
     }
 
@@ -80,7 +79,7 @@ class VeckomenyDialogs {
         menu: menuViewModel.menu,
         menuName: menuName,
         viewModel: ServiceLocator.get<UniversalShareDialogViewModel>(),
-        initialMessage: 'Kolla min veckomeny!',
+        initialMessage: context.l10n.menuShareDefaultMessage,
         availableFriends: availableFriends,
       ),
     );
@@ -95,20 +94,20 @@ class VeckomenyDialogs {
 
     // Generate default name suggestion
     final recipeCount = menuViewModel.totalRecipeCount;
-    nameController.text = 'Veckomeny ($recipeCount recept)';
+    nameController.text = context.l10n.menuDefaultName(recipeCount);
 
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Namnge din meny'),
+        title: Text(context.l10n.menuNameYourMenu),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Ge din meny ett namn innan du delar den:'),
+            Text(context.l10n.menuNameBeforeShare),
             const SizedBox(height: AppDimensions.spacingM),
             StyledInput(
               controller: nameController,
-              hint: 'T.ex. "Min veckomeny v.45"',
+              hint: context.l10n.menuNameHint,
               autofocus: true,
               textInputAction: TextInputAction.done,
             ),
@@ -117,12 +116,12 @@ class VeckomenyDialogs {
         actions: [
           ActionButtons.secondaryButton(
             context,
-            label: 'Avbryt',
+            label: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context),
           ),
           ActionButtons.primaryButton(
             context,
-            label: 'Dela',
+            label: context.l10n.commonShare,
             icon: Icons.share,
             onPressed: () {
               final name = nameController.text.trim();
@@ -145,7 +144,7 @@ class VeckomenyDialogs {
   }) async {
     if (!viewModel.hasMenu || viewModel.menu.isEmpty) {
       SnackBarUtils.showWarning(
-          context, 'Skapa en meny först innan du kan skapa inköpslista');
+          context, context.l10n.menuCreateBeforeShoppingList);
       return;
     }
 
@@ -164,17 +163,17 @@ class VeckomenyDialogs {
     final shouldExit = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Avsluta Butlery?'),
-        content: const Text('Vill du verkligen avsluta appen?'),
+        title: Text(context.l10n.menuExitTitle),
+        content: Text(context.l10n.menuExitMessage),
         actions: [
           ActionButtons.secondaryButton(
             context,
-            label: 'Avbryt',
+            label: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context, false),
           ),
           ActionButtons.primaryButton(
             context,
-            label: 'Avsluta',
+            label: context.l10n.menuExitConfirm,
             onPressed: () => Navigator.pop(context, true),
           ),
         ],

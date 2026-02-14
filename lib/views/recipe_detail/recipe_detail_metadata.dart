@@ -7,11 +7,12 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/time_format_utils.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Recipe detail metadata widget — inline row with time, portions, rating,
 /// and "Lagat idag" chip. Source URL is shown as subtitle in the parent view.
-class RecipeDetailMetadata extends StatelessWidget {
+class RecipeDetailMetadata extends StatefulWidget {
   final RecipeDetailViewModel viewModel;
   final int currentPortions;
   final bool isScaled;
@@ -24,40 +25,87 @@ class RecipeDetailMetadata extends StatelessWidget {
   });
 
   @override
+  State<RecipeDetailMetadata> createState() => _RecipeDetailMetadataState();
+}
+
+class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
+  bool _hasUserRating = false;
+  bool _checkedUserRating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkUserRating();
+  }
+
+  Future<void> _checkUserRating() async {
+    final recipe = widget.viewModel.recipe;
+    if ((recipe.rating ?? 0) <= 0) return;
+
+    try {
+      final userRating =
+          await widget.viewModel.recipeService.social.getUserRating(recipe.id);
+      if (mounted) {
+        setState(() {
+          _hasUserRating = userRating != null;
+          _checkedUserRating = true;
+        });
+      }
+    } catch (_) {
+      // Non-critical — just won't show the remove button
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // UI Redesign: Simple inline metadata only (source URL shown as subtitle in parent)
     return _buildMetadata(context);
   }
 
   Widget _buildMetadata(BuildContext context) {
-    final recipe = viewModel.recipe;
-
-    // UI Redesign: Text+dots format for metadata + "Lagat idag" subtle chip
-    final parts = <String>[];
-
-    if ((recipe.timeMinutes ?? 0) > 0) {
-      parts.add(TimeFormatUtils.formatCookingTime(recipe.timeMinutes!));
-    }
-
-    if (currentPortions > 0) {
-      parts.add(
-          '$currentPortions ${currentPortions == 1 ? context.l10n.recipePortionSingular : context.l10n.recipePortionAbbreviation}');
-    }
+    final recipe = widget.viewModel.recipe;
 
     final metadataWidgets = <Widget>[];
 
-    // Dot-separated metadata text
-    if (parts.isNotEmpty) {
-      metadataWidgets.add(Text(
-        parts.join(' \u00B7 '),
-        style: AppTextStyles.bodySmall.copyWith(
-          color: isScaled ? AppColors.forestGreen : AppColors.textDark,
-          fontWeight: isScaled ? FontWeight.w600 : FontWeight.w400,
-        ),
+    // Time with clock icon
+    if ((recipe.timeMinutes ?? 0) > 0) {
+      metadataWidgets.add(Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.access_time, size: 16, color: AppColors.forestGreen),
+          const SizedBox(width: 4),
+          Text(
+            TimeFormatUtils.formatCookingTime(recipe.timeMinutes!),
+            style: AppTextStyles.bodySmall.copyWith(
+              color:
+                  widget.isScaled ? AppColors.forestGreen : AppColors.textDark,
+              fontWeight: widget.isScaled ? FontWeight.w600 : FontWeight.w400,
+            ),
+          ),
+        ],
       ));
     }
 
-    // Star rating row (detail keeps star row, not pill)
+    // Portions with person icon
+    if (widget.currentPortions > 0) {
+      metadataWidgets.add(Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.person_outline,
+              size: 16, color: AppColors.forestGreen),
+          const SizedBox(width: 4),
+          Text(
+            '${widget.currentPortions} ${widget.currentPortions == 1 ? context.l10n.recipePortionSingular : context.l10n.recipePortionAbbreviation}',
+            style: AppTextStyles.bodySmall.copyWith(
+              color:
+                  widget.isScaled ? AppColors.forestGreen : AppColors.textDark,
+              fontWeight: widget.isScaled ? FontWeight.w600 : FontWeight.w400,
+            ),
+          ),
+        ],
+      ));
+    }
+
+    // Star rating row with optional remove button
     if ((recipe.rating ?? 0) > 0) {
       metadataWidgets.add(Row(
         mainAxisSize: MainAxisSize.min,
@@ -68,6 +116,18 @@ class RecipeDetailMetadata extends StatelessWidget {
             recipe.rating!.toStringAsFixed(1),
             style: AppTextStyles.bodySmall.copyWith(color: AppColors.textDark),
           ),
+          // Remove own rating — only when the user has rated
+          if (_checkedUserRating && _hasUserRating) ...[
+            const SizedBox(width: AppDimensions.spacingXs),
+            GestureDetector(
+              onTap: () => _removeMyRating(context),
+              child: const Icon(
+                Icons.close,
+                size: 14,
+                color: AppColors.textMedium,
+              ),
+            ),
+          ],
         ],
       ));
     }
@@ -88,8 +148,8 @@ class RecipeDetailMetadata extends StatelessWidget {
           ),
           minimumSize: Size.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
           ),
         ),
       ),
@@ -140,9 +200,35 @@ class RecipeDetailMetadata extends StatelessWidget {
     );
   }
 
+  Future<void> _removeMyRating(BuildContext context) async {
+    final confirmed = await CommonDialogActions.showActionConfirmation(
+      context: context,
+      title: 'Ta bort betyg?',
+      message: 'Vill du ta bort ditt betyg för detta recept?',
+      confirmText: 'Ta bort',
+      icon: Icons.star_border,
+      isDangerous: true,
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      final success = await widget.viewModel.removeMyRating();
+      if (!context.mounted) return;
+      if (success) {
+        setState(() {
+          _hasUserRating = false;
+        });
+        SnackBarUtils.showSuccess(context, 'Betyg borttaget');
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      SnackBarUtils.showError(context, 'Kunde inte ta bort betyg');
+    }
+  }
+
   Future<void> _markAsCooked(BuildContext context) async {
     try {
-      await viewModel.markAsCooked();
+      await widget.viewModel.markAsCooked();
       if (!context.mounted) return;
       _showSnackBarSafely(
         context,

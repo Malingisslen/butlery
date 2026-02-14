@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// A platform-adaptive date picker helper.
 /// Shows a CupertinoDatePicker in a modal bottom sheet on iOS,
@@ -93,7 +94,7 @@ class AdaptiveDatePicker {
                         padding: EdgeInsets.zero,
                         onPressed: () => Navigator.of(context).pop(),
                         child: Text(
-                          cancelText ?? 'Avbryt',
+                          cancelText ?? context.l10n.commonCancel,
                           style: TextStyle(
                             color:
                                 CupertinoColors.systemBlue.resolveFrom(context),
@@ -105,7 +106,7 @@ class AdaptiveDatePicker {
                         onPressed: () =>
                             Navigator.of(context).pop(selectedDate),
                         child: Text(
-                          confirmText ?? 'Klar',
+                          confirmText ?? context.l10n.commonDone,
                           style: AppTextStyles.labelLarge.copyWith(
                             color:
                                 CupertinoColors.systemBlue.resolveFrom(context),
@@ -236,7 +237,7 @@ class AdaptiveDatePicker {
                         padding: EdgeInsets.zero,
                         onPressed: () => Navigator.of(context).pop(),
                         child: Text(
-                          cancelText ?? 'Avbryt',
+                          cancelText ?? context.l10n.commonCancel,
                           style: TextStyle(
                             color:
                                 CupertinoColors.systemBlue.resolveFrom(context),
@@ -248,7 +249,7 @@ class AdaptiveDatePicker {
                         onPressed: () =>
                             Navigator.of(context).pop(selectedDateTime),
                         child: Text(
-                          confirmText ?? 'Klar',
+                          confirmText ?? context.l10n.commonDone,
                           style: AppTextStyles.labelLarge.copyWith(
                             color:
                                 CupertinoColors.systemBlue.resolveFrom(context),
@@ -358,7 +359,7 @@ class AdaptiveDatePicker {
                         padding: EdgeInsets.zero,
                         onPressed: () => Navigator.of(context).pop(),
                         child: Text(
-                          cancelText ?? 'Avbryt',
+                          cancelText ?? context.l10n.commonCancel,
                           style: TextStyle(
                             color:
                                 CupertinoColors.systemBlue.resolveFrom(context),
@@ -371,7 +372,7 @@ class AdaptiveDatePicker {
                           TimeOfDay.fromDateTime(selectedDateTime),
                         ),
                         child: Text(
-                          confirmText ?? 'Klar',
+                          confirmText ?? context.l10n.commonDone,
                           style: AppTextStyles.labelLarge.copyWith(
                             color:
                                 CupertinoColors.systemBlue.resolveFrom(context),

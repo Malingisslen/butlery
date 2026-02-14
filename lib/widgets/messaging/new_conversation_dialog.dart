@@ -1,6 +1,7 @@
 // lib/widgets/messaging/new_conversation_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
@@ -103,7 +104,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Ny konversation'),
+      title: Text(context.l10n.conversationNew),
       content: SizedBox(
         width: double.maxFinite,
         height: 450,
@@ -116,7 +117,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
               child: OutlinedButton.icon(
                 onPressed: _navigateToGroupCreation,
                 icon: const Icon(Icons.group_add),
-                label: const Text('Skapa gruppkonversation'),
+                label: Text(context.l10n.conversationCreateGroup),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     vertical: AppDimensions.paddingM,
@@ -132,7 +133,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
             Align(
               alignment: AlignmentDirectional.centerStart,
               child: Text(
-                'Eller välj en vän för direktmeddelande:',
+                context.l10n.conversationSelectFriendForDM,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textMedium,
                     ),
@@ -152,10 +153,10 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Avbryt'),
+          child: Text(context.l10n.commonCancel),
         ),
         StyledButton.primary(
-          text: 'Skapa',
+          text: context.l10n.commonCreate,
           onPressed: _selectedFriendIds.isEmpty || _isCreating
               ? null
               : _createConversation,
@@ -168,7 +169,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
     return TextField(
       controller: _searchController,
       decoration: InputDecoration(
-        hintText: 'Sök vänner...',
+        hintText: context.l10n.chatSearchFriends,
         prefixIcon: const Icon(Icons.search),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -198,14 +199,14 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
             ),
             const SizedBox(height: AppDimensions.paddingM),
             Text(
-              'Inga vänner ännu',
+              context.l10n.conversationNoFriendsYet,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: AppColors.textMedium,
                   ),
             ),
             const SizedBox(height: AppDimensions.paddingS),
             Text(
-              'Lägg till vänner först för att starta konversationer.',
+              context.l10n.conversationAddFriendsFirst,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textLight,
@@ -219,7 +220,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
     if (_filteredFriends.isEmpty) {
       return Center(
         child: Text(
-          'Inga vänner matchar din sökning',
+          context.l10n.conversationNoFriendsMatch,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textMedium,
               ),
@@ -302,8 +303,8 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
           participantIds: participantIds,
           participantDisplayNames: participantDisplayNames,
           participantAvatarUrls: participantAvatarUrls,
-          title:
-              'Gruppchatt med ${selectedFriends.map((f) => f.displayName).join(', ')}',
+          title: context.l10n.conversationGroupChatWith(
+              selectedFriends.map((f) => f.displayName).join(', ')),
         );
       }
 
@@ -317,7 +318,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Kunde inte skapa konversation: $e'),
+            content: Text(context.l10n.conversationCreateError(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );

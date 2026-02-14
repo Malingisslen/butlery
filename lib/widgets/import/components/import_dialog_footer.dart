@@ -1,6 +1,7 @@
 // lib/widgets/import/components/import_dialog_footer.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/assisted_import_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -79,12 +80,12 @@ class ImportDialogFooter extends StatelessWidget {
                 TextButton.icon(
                   onPressed: onBack,
                   icon: const Icon(Icons.arrow_back),
-                  label: const Text('Tillbaka'),
+                  label: Text(context.l10n.commonBack),
                 )
               else
                 TextButton(
                   onPressed: onCancel,
-                  child: const Text('Avbryt'),
+                  child: Text(context.l10n.commonCancel),
                 ),
               const Spacer(),
               // Next/Save button
@@ -92,13 +93,13 @@ class ImportDialogFooter extends StatelessWidget {
                 FilledButton.icon(
                   onPressed: canProceed ? onSave : null,
                   icon: const Icon(Icons.save),
-                  label: const Text('Spara recept'),
+                  label: Text(context.l10n.importSaveRecipe),
                 )
               else
                 FilledButton.icon(
                   onPressed: canProceed ? onNext : null,
                   icon: const Icon(Icons.arrow_forward),
-                  label: const Text('Nästa'),
+                  label: Text(context.l10n.commonNext),
                 ),
             ],
           ),

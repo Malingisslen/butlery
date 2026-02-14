@@ -16,6 +16,7 @@ import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// View for creating new group conversations with friend selection.
 /// Provides comprehensive interface for users to create group messaging conversations
@@ -99,7 +100,7 @@ class _CreateGroupConversationViewState
       BuildContext context, CreateGroupConversationViewModel viewModel) {
     return AppBar(
       title: Text(
-        'Skapa gruppkonversation',
+        context.l10n.messagingCreateGroup,
         style: AppTextStyles.headlineSmall,
       ),
       backgroundColor: AppColors.cream,
@@ -109,7 +110,7 @@ class _CreateGroupConversationViewState
         if (viewModel.hasSelectedMembers)
           ActionButtons.textButton(
             context,
-            label: 'Rensa',
+            label: context.l10n.commonClear,
             onPressed: () {
               viewModel.clearSelection();
             },
@@ -121,20 +122,20 @@ class _CreateGroupConversationViewState
   Widget _buildBody(
       BuildContext context, CreateGroupConversationViewModel viewModel) {
     if (viewModel.isLoading && viewModel.availableFriends.isEmpty) {
-      return StateWidget.loading(message: 'Laddar vänner...');
+      return StateWidget.loading(message: context.l10n.messagingLoadingFriends);
     }
 
     if (viewModel.error != null && viewModel.availableFriends.isEmpty) {
       return StateWidget.error(
-        message: 'Kunde inte ladda vänner: ${viewModel.error!}',
+        message: context.l10n.messagingCouldNotLoadFriends(viewModel.error!),
         onAction: () => viewModel.loadFriends(),
       );
     }
 
     if (viewModel.availableFriends.isEmpty) {
       return StateWidget.empty(
-        title: 'Inga vänner tillgängliga',
-        subtitle: 'Lägg till vänner för att skapa gruppkonversationer',
+        title: context.l10n.messagingNoFriendsAvailable,
+        subtitle: context.l10n.messagingAddFriendsToCreateGroups,
       );
     }
 
@@ -173,19 +174,19 @@ class _CreateGroupConversationViewState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Gruppnamn',
+          context.l10n.messagingGroupName,
           style: AppTextStyles.titleMedium,
         ),
         const SizedBox(height: AppDimensions.spacingS),
         StyledInput.text(
           controller: _groupNameController,
-          hint: 'T.ex. Min familj, Jobbet, Bästa vännerna...',
+          hint: context.l10n.messagingGroupNameHint,
           onChanged: (value) => viewModel.updateGroupName(value),
           errorText: viewModel.validationError,
         ),
         const SizedBox(height: AppDimensions.spacingS),
         Text(
-          'Välj minst 2 medlemmar nedan',
+          context.l10n.messagingSelectAtLeastTwoMembers,
           style: AppTextStyles.bodySmall.copyWith(
             color: AppColors.textLight,
           ),
@@ -208,7 +209,8 @@ class _CreateGroupConversationViewState
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
-              'Valda medlemmar (${viewModel.selectedMemberCount})',
+              context.l10n
+                  .messagingSelectedMembers(viewModel.selectedMemberCount),
               style: AppTextStyles.titleMedium.copyWith(
                 color: AppColors.forestGreen,
               ),
@@ -240,7 +242,7 @@ class _CreateGroupConversationViewState
   Widget _buildSearchSection() {
     return StyledInput.search(
       controller: _searchController,
-      hint: 'Sök vänner...',
+      hint: context.l10n.messagingSearchFriends,
       onChanged: (value) => setState(() {}), // Rebuild to filter list
     );
   }
@@ -253,8 +255,8 @@ class _CreateGroupConversationViewState
 
     if (displayFriends.isEmpty) {
       return StateWidget.empty(
-        title: 'Inga vänner hittades',
-        subtitle: 'Försök med ett annat sökord',
+        title: context.l10n.messagingNoFriendsFound,
+        subtitle: context.l10n.messagingTryAnotherKeyword,
       );
     }
 
@@ -262,7 +264,7 @@ class _CreateGroupConversationViewState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Vänner (${displayFriends.length})',
+          context.l10n.messagingFriendsCount(displayFriends.length),
           style: AppTextStyles.titleMedium,
         ),
         const SizedBox(height: AppDimensions.spacingM),
@@ -335,7 +337,7 @@ class _CreateGroupConversationViewState
             ),
           ActionButtons.primaryButton(
             context,
-            label: 'Skapa gruppkonversation',
+            label: context.l10n.messagingCreateGroup,
             onPressed: viewModel.canCreateGroup
                 ? () => _handleCreateGroup(context, viewModel)
                 : null,
@@ -360,8 +362,8 @@ class _CreateGroupConversationViewState
 
     if (conversationId != null) {
       scaffoldMessenger.showSnackBar(
-        const SnackBar(
-          content: Text('Gruppkonversation skapad!'),
+        SnackBar(
+          content: Text(context.l10n.messagingGroupCreated),
           backgroundColor: AppColors.success,
         ),
       );

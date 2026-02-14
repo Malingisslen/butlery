@@ -14,6 +14,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/assisted_import_viewmodel.dart';
 import 'package:butlery/widgets/import/text_line_selector.dart';
@@ -147,21 +148,21 @@ class _AssistedImportDialogContent extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Avbryt import?'),
-        content: const Text(
-          'Är du säker på att du vill avbryta? Alla val kommer att förloras.',
+        title: Text(context.l10n.importCancelTitle),
+        content: Text(
+          context.l10n.importCancelMessage,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Fortsätt'),
+            child: Text(context.l10n.commonContinue),
           ),
           FilledButton(
             onPressed: () {
               Navigator.of(context).pop(); // Close confirmation
               Navigator.of(context).pop(); // Close dialog
             },
-            child: const Text('Avbryt import'),
+            child: Text(context.l10n.importCancelConfirm),
           ),
         ],
       ),
@@ -187,7 +188,7 @@ class _IngredientSelectionStep extends StatelessWidget {
       highlightedIndices: viewModel.likelyIngredientIndices,
       excludedIndices: const {},
       mode: SelectionMode.ingredients,
-      headerText: 'Välj ingredienser',
+      headerText: context.l10n.importSelectIngredients,
       onSelectionChanged: viewModel.setIngredientSelection,
     );
   }
@@ -216,7 +217,7 @@ class _InstructionSelectionStep extends StatelessWidget {
       highlightedIndices: likelyInstructions,
       excludedIndices: viewModel.selectedIngredientIndices,
       mode: SelectionMode.instructions,
-      headerText: 'Välj instruktioner',
+      headerText: context.l10n.importSelectInstructions,
       onSelectionChanged: viewModel.setInstructionSelection,
     );
   }
@@ -237,9 +238,9 @@ class _ReviewEditStep extends StatelessWidget {
           // Title
           TextFormField(
             initialValue: viewModel.title,
-            decoration: const InputDecoration(
-              labelText: 'Receptnamn *',
-              hintText: 'Ange receptets namn',
+            decoration: InputDecoration(
+              labelText: context.l10n.importRecipeNameRequired,
+              hintText: context.l10n.importRecipeNameHint,
               border: OutlineInputBorder(),
             ),
             onChanged: viewModel.setTitle,
@@ -250,9 +251,9 @@ class _ReviewEditStep extends StatelessWidget {
           // Description
           TextFormField(
             initialValue: viewModel.description,
-            decoration: const InputDecoration(
-              labelText: 'Beskrivning',
-              hintText: 'Kort beskrivning (valfritt)',
+            decoration: InputDecoration(
+              labelText: context.l10n.recipeDescription,
+              hintText: context.l10n.importDescriptionHint,
               border: OutlineInputBorder(),
             ),
             onChanged: viewModel.setDescription,
@@ -267,8 +268,8 @@ class _ReviewEditStep extends StatelessWidget {
               Expanded(
                 child: TextFormField(
                   initialValue: viewModel.portions.toString(),
-                  decoration: const InputDecoration(
-                    labelText: 'Portioner',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.recipePortions,
                     border: OutlineInputBorder(),
                     suffixText: 'st',
                   ),
@@ -283,8 +284,8 @@ class _ReviewEditStep extends StatelessWidget {
               Expanded(
                 child: TextFormField(
                   initialValue: viewModel.timeMinutes.toString(),
-                  decoration: const InputDecoration(
-                    labelText: 'Tid',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.recipeCookingTime,
                     border: OutlineInputBorder(),
                     suffixText: 'min',
                   ),
@@ -302,16 +303,23 @@ class _ReviewEditStep extends StatelessWidget {
           // Meal type dropdown
           DropdownButtonFormField<String>(
             initialValue: viewModel.mealType,
-            decoration: const InputDecoration(
-              labelText: 'Måltid',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: context.l10n.importMealType,
+              border: const OutlineInputBorder(),
             ),
-            items: const [
-              DropdownMenuItem(value: 'breakfast', child: Text('Frukost')),
-              DropdownMenuItem(value: 'lunch', child: Text('Lunch')),
-              DropdownMenuItem(value: 'dinner', child: Text('Middag')),
-              DropdownMenuItem(value: 'snack', child: Text('Mellanmål')),
-              DropdownMenuItem(value: 'dessert', child: Text('Dessert')),
+            items: [
+              DropdownMenuItem(
+                  value: 'breakfast',
+                  child: Text(context.l10n.importMealBreakfast)),
+              DropdownMenuItem(
+                  value: 'lunch', child: Text(context.l10n.importMealLunch)),
+              DropdownMenuItem(
+                  value: 'dinner', child: Text(context.l10n.importMealDinner)),
+              DropdownMenuItem(
+                  value: 'snack', child: Text(context.l10n.importMealSnack)),
+              DropdownMenuItem(
+                  value: 'dessert',
+                  child: Text(context.l10n.importMealDessert)),
             ],
             onChanged: (value) {
               if (value != null) viewModel.setMealType(value);
@@ -321,7 +329,7 @@ class _ReviewEditStep extends StatelessWidget {
 
           // Ingredients section
           EditableListHeader(
-            title: 'Ingredienser',
+            title: context.l10n.recipeIngredients,
             icon: Icons.restaurant,
             count: viewModel.editedIngredients.length,
           ),
@@ -331,13 +339,13 @@ class _ReviewEditStep extends StatelessWidget {
             onUpdate: viewModel.updateIngredient,
             onRemove: viewModel.removeIngredient,
             onAdd: viewModel.addIngredient,
-            hintText: 'Lägg till ingrediens',
+            hintText: context.l10n.importAddIngredient,
           ),
           const SizedBox(height: AppDimensions.spacingLg),
 
           // Instructions section
           EditableListHeader(
-            title: 'Instruktioner',
+            title: context.l10n.recipeInstructions,
             icon: Icons.format_list_numbered,
             count: viewModel.editedInstructions.length,
           ),
@@ -347,7 +355,7 @@ class _ReviewEditStep extends StatelessWidget {
             onUpdate: viewModel.updateInstruction,
             onRemove: viewModel.removeInstruction,
             onAdd: viewModel.addInstruction,
-            hintText: 'Lägg till steg',
+            hintText: context.l10n.importAddStep,
             showNumbers: true,
           ),
         ],

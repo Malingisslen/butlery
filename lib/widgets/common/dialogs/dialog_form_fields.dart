@@ -17,9 +17,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/validators/form_validators.dart';
-import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 
 /// Common form field factory that eliminates duplicate form field patterns.
@@ -79,8 +79,9 @@ class DialogFormFields {
 
   /// Name field with standard validation (eliminates 8+ duplicate implementations)
   static Widget buildNameField({
+    required BuildContext context,
     required TextEditingController controller,
-    String labelText = 'Namn',
+    String? labelText,
     String? hintText,
     IconData prefixIcon = Icons.label_outline,
     bool enabled = true,
@@ -89,7 +90,7 @@ class DialogFormFields {
   }) {
     return buildTextFormField(
       controller: controller,
-      labelText: labelText,
+      labelText: labelText ?? context.l10n.commonName,
       hintText: hintText,
       prefixIcon: prefixIcon,
       maxLength: maxLength,
@@ -101,9 +102,10 @@ class DialogFormFields {
 
   /// Description field with standard validation
   static Widget buildDescriptionField({
+    required BuildContext context,
     required TextEditingController controller,
-    String labelText = 'Beskrivning',
-    String? hintText = 'Valfri beskrivning...',
+    String? labelText,
+    String? hintText,
     IconData prefixIcon = Icons.description_outlined,
     bool enabled = true,
     int maxLength = 200,
@@ -111,8 +113,8 @@ class DialogFormFields {
   }) {
     return buildTextFormField(
       controller: controller,
-      labelText: labelText,
-      hintText: hintText,
+      labelText: labelText ?? context.l10n.dialogDescriptionLabel,
+      hintText: hintText ?? context.l10n.dialogDescriptionHint,
       prefixIcon: prefixIcon,
       maxLength: maxLength,
       maxLines: maxLines,
@@ -124,18 +126,20 @@ class DialogFormFields {
 
   /// Amount/quantity field with numeric validation
   static Widget buildAmountField({
+    required BuildContext context,
     required TextEditingController controller,
-    String labelText = 'Antal',
-    String? hintText = 'Ange antal...',
+    String? labelText,
+    String? hintText,
     IconData prefixIcon = Icons.numbers,
     bool enabled = true,
     double minValue = 0.1,
     double maxValue = 9999.0,
   }) {
+    final effectiveLabelText = labelText ?? context.l10n.dialogAmountLabel;
     return buildTextFormField(
       controller: controller,
-      labelText: labelText,
-      hintText: hintText,
+      labelText: effectiveLabelText,
+      hintText: hintText ?? context.l10n.dialogAmountHint,
       prefixIcon: prefixIcon,
       enabled: enabled,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -144,20 +148,20 @@ class DialogFormFields {
       ],
       customValidator: (value) {
         if (value == null || value.trim().isEmpty) {
-          return AppStrings.fieldRequired('Antal');
+          return context.l10n.dialogAmountRequired;
         }
 
         final amount = double.tryParse(value.trim());
         if (amount == null) {
-          return AppStrings.invalidAmount;
+          return context.l10n.dialogAmountInvalid;
         }
 
         if (amount < minValue) {
-          return 'Minst $minValue krävs';
+          return context.l10n.dialogAmountMin(minValue.toInt());
         }
 
         if (amount > maxValue) {
-          return 'Max $maxValue tillåtet';
+          return context.l10n.dialogAmountMax(maxValue.toInt());
         }
 
         return null;
@@ -168,14 +172,14 @@ class DialogFormFields {
   /// Email field with email validation
   static Widget buildEmailField({
     required TextEditingController controller,
-    String labelText = 'E-post',
-    String? hintText = 'din@email.com',
+    String? labelText,
+    String? hintText,
     bool enabled = true,
   }) {
     return buildTextFormField(
       controller: controller,
-      labelText: labelText,
-      hintText: hintText,
+      labelText: labelText ?? 'E-post',
+      hintText: hintText ?? 'din@email.com',
       prefixIcon: Icons.email_outlined,
       enabled: enabled,
       keyboardType: TextInputType.emailAddress,
@@ -186,16 +190,17 @@ class DialogFormFields {
 
   /// URL field with URL validation
   static Widget buildUrlField({
+    required BuildContext context,
     required TextEditingController controller,
     String labelText = 'URL',
-    String? hintText = 'https://exempel.se',
+    String? hintText,
     bool enabled = true,
     bool required = false,
   }) {
     return buildTextFormField(
       controller: controller,
       labelText: labelText,
-      hintText: hintText,
+      hintText: hintText ?? 'https://exempel.se',
       prefixIcon: Icons.link,
       enabled: enabled,
       keyboardType: TextInputType.url,
@@ -215,7 +220,7 @@ class DialogFormFields {
           final urlPattern = RegExp(
               r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$');
           if (!urlPattern.hasMatch(value.trim())) {
-            return AppStrings.invalidUrl;
+            return context.l10n.dialogInvalidUrl;
           }
         }
 
@@ -227,8 +232,9 @@ class DialogFormFields {
 
   /// Password field with password validation
   static Widget buildPasswordField({
+    required BuildContext context,
     required TextEditingController controller,
-    String labelText = 'Lösenord',
+    String? labelText,
     String? hintText,
     bool enabled = true,
     bool obscureText = true,
@@ -236,7 +242,7 @@ class DialogFormFields {
   }) {
     return buildTextFormField(
       controller: controller,
-      labelText: labelText,
+      labelText: labelText ?? context.l10n.authPassword,
       hintText: hintText,
       prefixIcon: Icons.lock_outline,
       enabled: enabled,
@@ -247,16 +253,17 @@ class DialogFormFields {
 
   /// Search field with search-specific styling
   static Widget buildSearchField({
+    required BuildContext context,
     required TextEditingController controller,
-    String labelText = 'Sök',
-    String? hintText = 'Skriv för att söka...',
+    String? labelText,
+    String? hintText,
     bool enabled = true,
     VoidCallback? onClear,
   }) {
     return buildTextFormField(
       controller: controller,
-      labelText: labelText,
-      hintText: hintText,
+      labelText: labelText ?? context.l10n.commonSearch,
+      hintText: hintText ?? context.l10n.dialogSearchHint,
       prefixIcon: Icons.search,
       enabled: enabled,
       required: false,
@@ -267,16 +274,17 @@ class DialogFormFields {
 
   /// Phone number field with phone validation
   static Widget buildPhoneField({
+    required BuildContext context,
     required TextEditingController controller,
-    String labelText = 'Telefonnummer',
-    String? hintText = '+46 70 123 45 67',
+    String? labelText,
+    String? hintText,
     bool enabled = true,
     bool required = false,
   }) {
     return buildTextFormField(
       controller: controller,
-      labelText: labelText,
-      hintText: hintText,
+      labelText: labelText ?? context.l10n.dialogPhoneLabel,
+      hintText: hintText ?? '+46 70 123 45 67',
       prefixIcon: Icons.phone_outlined,
       enabled: enabled,
       keyboardType: TextInputType.phone,
@@ -290,7 +298,8 @@ class DialogFormFields {
         }
 
         if (required) {
-          final requiredResult = FormValidators.required(labelText)(value);
+          final requiredResult = FormValidators.required(
+              labelText ?? context.l10n.dialogPhoneLabel)(value);
           if (requiredResult != null) return requiredResult;
         }
 
@@ -298,7 +307,7 @@ class DialogFormFields {
           // Basic phone validation - at least 10 digits
           final digitsOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
           if (digitsOnly.length < 10) {
-            return 'Ogiltigt telefonnummer';
+            return context.l10n.dialogPhoneInvalid;
           }
         }
 
@@ -310,6 +319,7 @@ class DialogFormFields {
 
   /// Dropdown field with standard styling
   static Widget buildDropdownField<T>({
+    required BuildContext context,
     required T? value,
     required List<DropdownMenuItem<T>> items,
     required ValueChanged<T?> onChanged,
@@ -334,7 +344,9 @@ class DialogFormFields {
         ),
         validator: validator ??
             (required
-                ? (value) => value == null ? '$labelText krävs' : null
+                ? (value) => value == null
+                    ? '$labelText ${context.l10n.dialogFieldRequired}'
+                    : null
                 : null),
       ),
     );

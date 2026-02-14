@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// PermissionWidgets - Permission-based action buttons
 /// Provides action buttons that adapt based on user permissions.
@@ -27,25 +28,23 @@ class PermissionWidgets {
     bool isExpanded = true,
   }) {
     // Dynamiska labels baserat på edit mode
-    final effectiveSaveLabel = saveLabel ?? _getSaveLabel(editMode);
-    final effectiveForkLabel = forkLabel ?? _getForkLabel(editMode);
+    final effectiveSaveLabel = saveLabel ?? _getSaveLabel(context, editMode);
+    final effectiveForkLabel = forkLabel ?? _getForkLabel(context, editMode);
 
     switch (editMode) {
       case EditMode.owner:
       case EditMode.edit:
-        // Ägare: Endast "Spara ändringar"
         return ActionButtons.primaryButton(
           context,
           label: effectiveSaveLabel,
           onPressed: isSaving ? null : onSave,
           icon: Icons.save,
           isLoading: isSaving,
-          loadingText: 'Sparar...',
+          loadingText: context.l10n.permissionSaving,
           isExpanded: isExpanded,
         );
 
       case EditMode.collaborative:
-        // Collaborator: Både "Spara ändringar" och "Spara min kopia"
         return Column(
           children: [
             ActionButtons.primaryButton(
@@ -54,7 +53,7 @@ class PermissionWidgets {
               onPressed: isSaving ? null : onSave,
               icon: Icons.save,
               isLoading: isSaving,
-              loadingText: 'Sparar...',
+              loadingText: context.l10n.permissionSaving,
               isExpanded: isExpanded,
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -64,7 +63,7 @@ class PermissionWidgets {
               onPressed: isForking ? null : onFork,
               icon: Icons.content_copy,
               isLoading: isForking,
-              loadingText: 'Skapar kopia...',
+              loadingText: context.l10n.permissionCreatingCopy,
               isExpanded: isExpanded,
             ),
           ],
@@ -72,23 +71,22 @@ class PermissionWidgets {
 
       case EditMode.readOnlyWithFork:
       case EditMode.view:
-        // Viewer: Endast "Spara min kopia"
         return ActionButtons.primaryButton(
           context,
           label: effectiveForkLabel,
           onPressed: isForking ? null : onFork,
           icon: Icons.content_copy,
           isLoading: isForking,
-          loadingText: 'Skapar kopia...',
+          loadingText: context.l10n.permissionCreatingCopy,
           isExpanded: isExpanded,
         );
 
       case EditMode.noAccess:
-        // Ingen åtkomst: Ingen knapp
         return Container(
           padding: const EdgeInsets.all(AppDimensions.spacingL),
           decoration: BoxDecoration(
-            color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+            color: AppColors.error
+                .withValues(alpha: AppDimensions.opacityVeryLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             border: Border.all(color: AppColors.error),
           ),
@@ -96,7 +94,7 @@ class PermissionWidgets {
             children: [
               const Icon(Icons.block, color: AppColors.error),
               const SizedBox(width: AppDimensions.spacingM),
-              Text('Ingen åtkomst',
+              Text(context.l10n.permissionNoAccess,
                   style: AppTextStyles.bodyMediumError),
             ],
           ),
@@ -115,8 +113,8 @@ class PermissionWidgets {
     String? saveLabel,
     String? forkLabel,
   }) {
-    final effectiveSaveLabel = saveLabel ?? _getSaveLabel(editMode);
-    final effectiveForkLabel = forkLabel ?? _getForkLabel(editMode);
+    final effectiveSaveLabel = saveLabel ?? _getSaveLabel(context, editMode);
+    final effectiveForkLabel = forkLabel ?? _getForkLabel(context, editMode);
 
     switch (editMode) {
       case EditMode.owner:
@@ -147,7 +145,7 @@ class PermissionWidgets {
             Expanded(
               child: ActionButtons.outlinedButton(
                 context,
-                label: 'Kopia',
+                label: context.l10n.permissionCopy,
                 onPressed: isForking ? null : onFork,
                 icon: Icons.content_copy,
                 isLoading: isForking,
@@ -172,35 +170,33 @@ class PermissionWidgets {
     }
   }
 
-  /// Helper för att få rätt save label baserat på edit mode
-  static String _getSaveLabel(EditMode editMode) {
+  static String _getSaveLabel(BuildContext context, EditMode editMode) {
     switch (editMode) {
       case EditMode.owner:
       case EditMode.edit:
-        return 'Spara ändringar';
+        return context.l10n.permissionSaveChanges;
       case EditMode.collaborative:
-        return 'Spara ändringar';
+        return context.l10n.permissionSaveChanges;
       case EditMode.readOnlyWithFork:
       case EditMode.view:
-        return 'Spara min kopia'; // ReadOnly kan bara fork:a
+        return context.l10n.permissionSaveMyCopy;
       case EditMode.noAccess:
-        return 'Ingen åtkomst'; // Används aldrig
+        return context.l10n.permissionNoAccess;
     }
   }
 
-  /// Helper för att få rätt fork label baserat på edit mode
-  static String _getForkLabel(EditMode editMode) {
+  static String _getForkLabel(BuildContext context, EditMode editMode) {
     switch (editMode) {
       case EditMode.owner:
       case EditMode.edit:
-        return 'Spara som ny'; // Används sällan
+        return context.l10n.permissionSaveAsNew;
       case EditMode.collaborative:
-        return 'Spara min kopia';
+        return context.l10n.permissionSaveMyCopy;
       case EditMode.readOnlyWithFork:
       case EditMode.view:
-        return 'Spara min kopia';
+        return context.l10n.permissionSaveMyCopy;
       case EditMode.noAccess:
-        return 'Ingen åtkomst'; // Används aldrig
+        return context.l10n.permissionNoAccess;
     }
   }
 }

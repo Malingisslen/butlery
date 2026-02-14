@@ -7,6 +7,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Shopping item dialogs for adding and editing items
 class ShoppingItemDialogs {
@@ -34,12 +35,12 @@ class ShoppingItemDialogs {
         );
 
         if (success) {
-          onSuccess('${result.name} tillagd!');
+          onSuccess(context.l10n.shoppingItemAdded(result.name));
         } else {
-          onError('Kunde inte lägga till ${result.name}');
+          onError(context.l10n.shoppingCouldNotAddItem(result.name));
         }
       } catch (e) {
-        onError('Fel vid tillägg: $e');
+        onError(context.l10n.shoppingErrorAdding(e.toString()));
       }
     }
   }
@@ -70,12 +71,12 @@ class ShoppingItemDialogs {
         );
 
         if (success) {
-          onSuccess('${result.name} uppdaterad!');
+          onSuccess(context.l10n.shoppingItemUpdated(result.name));
         } else {
-          onError('Kunde inte uppdatera ${result.name}');
+          onError(context.l10n.shoppingCouldNotUpdateItem(result.name));
         }
       } catch (e) {
-        onError('Fel vid uppdatering: $e');
+        onError(context.l10n.shoppingErrorUpdating(e.toString()));
       }
     }
   }
@@ -149,7 +150,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Lägg till vara'),
+      title: Text(context.l10n.shoppingAddItem),
       content: Form(
         key: _formKey,
         child: Column(
@@ -157,8 +158,8 @@ class _AddItemDialogState extends State<_AddItemDialog> {
           children: [
             StyledInput(
               controller: _nameController,
-              label: 'Varunamn',
-              hint: 'T.ex. Mjölk',
+              label: context.l10n.shoppingItemName,
+              hint: context.l10n.shoppingItemNameHint,
               validator: (value) =>
                   ValidationUtils.validateShoppingItemName(value),
             ),
@@ -169,7 +170,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
                   flex: 2,
                   child: StyledInput(
                     controller: _amountController,
-                    label: 'Mängd',
+                    label: context.l10n.shoppingAmount,
                     hint: '1',
                     keyboardType: TextInputType.number,
                   ),
@@ -179,8 +180,8 @@ class _AddItemDialogState extends State<_AddItemDialog> {
                   flex: 3,
                   child: StyledInput(
                     controller: _unitController,
-                    label: 'Enhet',
-                    hint: 'st, liter, kg',
+                    label: context.l10n.shoppingUnit,
+                    hint: context.l10n.shoppingUnitHint,
                   ),
                 ),
               ],
@@ -188,14 +189,14 @@ class _AddItemDialogState extends State<_AddItemDialog> {
             const SizedBox(height: AppDimensions.spacingM),
             StyledInput(
               controller: _categoryController,
-              label: 'Kategori',
-              hint: 'T.ex. Mejeri',
+              label: context.l10n.shoppingCategory,
+              hint: context.l10n.shoppingCategoryHint,
             ),
             const SizedBox(height: AppDimensions.spacingM),
             StyledInput(
               controller: _noteController,
-              label: 'Anteckning (valfritt)',
-              hint: 'T.ex. Laktosfri',
+              label: context.l10n.shoppingNoteOptional,
+              hint: context.l10n.shoppingNoteHint,
             ),
           ],
         ),
@@ -203,12 +204,12 @@ class _AddItemDialogState extends State<_AddItemDialog> {
       actions: [
         ActionButtons.secondaryButton(
           context,
-          label: 'Avbryt',
+          label: context.l10n.commonCancel,
           onPressed: () => Navigator.pop(context),
         ),
         ActionButtons.primaryButton(
           context,
-          label: 'Lägg till',
+          label: context.l10n.commonAdd,
           onPressed: _onSave,
         ),
       ],
@@ -222,7 +223,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
         amount: double.tryParse(_amountController.text) ?? 1.0,
         unit: _unitController.text.trim(),
         category: _categoryController.text.trim().isEmpty
-            ? 'Övrigt'
+            ? context.l10n.shoppingCategoryOther
             : _categoryController.text.trim(),
       );
 
@@ -277,7 +278,7 @@ class _EditItemDialogState extends State<_EditItemDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Redigera vara'),
+      title: Text(context.l10n.shoppingEditItem),
       content: Form(
         key: _formKey,
         child: Column(
@@ -285,8 +286,8 @@ class _EditItemDialogState extends State<_EditItemDialog> {
           children: [
             StyledInput(
               controller: _nameController,
-              label: 'Varunamn',
-              hint: 'T.ex. Mjölk',
+              label: context.l10n.shoppingItemName,
+              hint: context.l10n.shoppingItemNameHint,
               validator: (value) =>
                   ValidationUtils.validateShoppingItemName(value),
             ),
@@ -297,7 +298,7 @@ class _EditItemDialogState extends State<_EditItemDialog> {
                   flex: 2,
                   child: StyledInput(
                     controller: _amountController,
-                    label: 'Mängd',
+                    label: context.l10n.shoppingAmount,
                     hint: '1',
                     keyboardType: TextInputType.number,
                   ),
@@ -307,8 +308,8 @@ class _EditItemDialogState extends State<_EditItemDialog> {
                   flex: 3,
                   child: StyledInput(
                     controller: _unitController,
-                    label: 'Enhet',
-                    hint: 'st, liter, kg',
+                    label: context.l10n.shoppingUnit,
+                    hint: context.l10n.shoppingUnitHint,
                   ),
                 ),
               ],
@@ -316,14 +317,14 @@ class _EditItemDialogState extends State<_EditItemDialog> {
             const SizedBox(height: AppDimensions.spacingM),
             StyledInput(
               controller: _categoryController,
-              label: 'Kategori',
-              hint: 'T.ex. Mejeri',
+              label: context.l10n.shoppingCategory,
+              hint: context.l10n.shoppingCategoryHint,
             ),
             const SizedBox(height: AppDimensions.spacingM),
             StyledInput(
               controller: _noteController,
-              label: 'Anteckning (valfritt)',
-              hint: 'T.ex. Laktosfri',
+              label: context.l10n.shoppingNoteOptional,
+              hint: context.l10n.shoppingNoteHint,
             ),
           ],
         ),
@@ -331,12 +332,12 @@ class _EditItemDialogState extends State<_EditItemDialog> {
       actions: [
         ActionButtons.secondaryButton(
           context,
-          label: 'Avbryt',
+          label: context.l10n.commonCancel,
           onPressed: () => Navigator.pop(context),
         ),
         ActionButtons.primaryButton(
           context,
-          label: 'Spara',
+          label: context.l10n.commonSave,
           onPressed: _onSave,
         ),
       ],
@@ -350,7 +351,7 @@ class _EditItemDialogState extends State<_EditItemDialog> {
         amount: double.tryParse(_amountController.text) ?? widget.item.amount,
         unit: _unitController.text.trim(),
         category: _categoryController.text.trim().isEmpty
-            ? 'Övrigt'
+            ? context.l10n.shoppingCategoryOther
             : _categoryController.text.trim(),
         note: _noteController.text.trim().isEmpty
             ? null

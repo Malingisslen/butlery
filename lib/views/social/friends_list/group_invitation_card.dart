@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// GroupInvitationCard - Group invitation card component
 /// Displays group invitation with accept/reject actions.
@@ -24,7 +25,10 @@ class GroupInvitationCard {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         side: BorderSide(
-          color: Theme.of(context).colorScheme.tertiary.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: Theme.of(context)
+              .colorScheme
+              .tertiary
+              .withValues(alpha: AppDimensions.opacityMediumLight),
           width: 1,
         ),
       ),
@@ -64,13 +68,14 @@ class GroupInvitationCard {
                         style: AppTextStyles.titleBold,
                       ),
                       Text(
-                        'Inbjudan från ${invitation.fromUserName}',
+                        context.l10n
+                            .groupInvitationFrom(invitation.fromUserName),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                       Text(
-                        'Skickat: ${invitation.timeAgoText}',
+                        '${context.l10n.groupSent}: ${invitation.timeAgoText}',
                         style: AppTextStyles.bodySmall.copyWith(
                           color: Theme.of(context).colorScheme.tertiary,
                         ),
@@ -117,7 +122,7 @@ class GroupInvitationCard {
                         color: Theme.of(context).colorScheme.error,
                       ),
                     ),
-                    child: const Text('Avvisa'),
+                    child: Text(context.l10n.commonDecline),
                   ),
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
@@ -130,7 +135,7 @@ class GroupInvitationCard {
                     style: FilledButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
                     ),
-                    child: const Text('Acceptera'),
+                    child: Text(context.l10n.commonAccept),
                   ),
                 ),
               ],
@@ -168,7 +173,7 @@ class GroupInvitationCard {
     if (success && context.mounted) {
       SnackBarUtils.showSuccess(
         context,
-        'Inbjudan accepterad! Välkommen till gruppen! 🎉',
+        context.l10n.groupInvitationAccepted,
       );
     } else if (context.mounted && service.invitations.hasError) {
       SnackBarUtils.showError(
@@ -178,7 +183,7 @@ class GroupInvitationCard {
     } else if (!success && context.mounted) {
       SnackBarUtils.showError(
         context,
-        'Kunde inte acceptera inbjudan. Försök igen.',
+        context.l10n.groupCouldNotAcceptInvitation,
       );
     }
   }
@@ -192,7 +197,7 @@ class GroupInvitationCard {
         await service.invitations.rejectGroupInvitation(invitationId);
 
     if (success && context.mounted) {
-      SnackBarUtils.showWarning(context, 'Inbjudan avvisad');
+      SnackBarUtils.showWarning(context, context.l10n.groupInvitationDeclined);
     } else if (context.mounted && service.invitations.hasError) {
       SnackBarUtils.showError(
         context,

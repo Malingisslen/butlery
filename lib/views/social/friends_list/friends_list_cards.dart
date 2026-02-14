@@ -12,6 +12,7 @@ import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/views/social/group_detail_view.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Consolidated friends list card components
 /// This file contains card components for the friends list view:
@@ -71,7 +72,8 @@ class FriendRequestCard {
   ) async {
     final success = await viewModel.acceptFriendRequest(request.id);
     if (success && context.mounted) {
-      SnackBarUtils.showSuccess(context, 'Vänskapsförfrågan accepterad! 🎉');
+      SnackBarUtils.showSuccess(
+          context, context.l10n.socialFriendRequestAccepted);
     }
   }
 
@@ -82,7 +84,8 @@ class FriendRequestCard {
   ) async {
     final success = await viewModel.rejectFriendRequest(request.id);
     if (success && context.mounted) {
-      SnackBarUtils.showWarning(context, 'Vänskapsförfrågan avböjd');
+      SnackBarUtils.showWarning(
+          context, context.l10n.socialFriendRequestDeclined);
     }
   }
 }
@@ -97,8 +100,10 @@ class GroupCard {
       child: ListTile(
         onTap: () => _navigateToGroupDetail(context, group),
         leading: CircleAvatar(
-          backgroundColor:
-              Theme.of(context).colorScheme.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+          backgroundColor: Theme.of(context)
+              .colorScheme
+              .primary
+              .withValues(alpha: AppDimensions.opacityVeryLight),
           child: Text(
             group.emoji ?? '👥',
             style: AppTextStyles.headlineMedium,

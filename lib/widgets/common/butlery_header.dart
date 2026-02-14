@@ -104,6 +104,7 @@ class ButleryHeader extends StatelessWidget implements PreferredSizeWidget {
                                 color: AppColors.headerForeground,
                               ),
                               onPressed: () => Navigator.of(context).pop(),
+                              tooltip: 'Tillbaka',
                             ),
                       ] else ...[
                         const SizedBox(width: AppDimensions.spacingMd),
@@ -111,12 +112,16 @@ class ButleryHeader extends StatelessWidget implements PreferredSizeWidget {
 
                       // Title
                       Expanded(
-                        child: GestureDetector(
-                          onTap: onTitleTap,
-                          behavior: HitTestBehavior.opaque,
-                          child: centerTitle
-                              ? Center(child: _buildTitle())
-                              : _buildTitle(),
+                        child: Semantics(
+                          label: title,
+                          button: true,
+                          child: GestureDetector(
+                            onTap: onTitleTap,
+                            behavior: HitTestBehavior.opaque,
+                            child: centerTitle
+                                ? Center(child: _buildTitle())
+                                : _buildTitle(),
+                          ),
                         ),
                       ),
 
@@ -211,11 +216,15 @@ class SliverButleryHeader extends StatelessWidget {
     return SliverAppBar(
       backgroundColor: AppColors.headerBackground,
       foregroundColor: AppColors.headerForeground,
-      title: GestureDetector(
-        onTap: onTitleTap,
-        child: Text(
-          title.toLowerCase(),
-          style: AppTextStyles.headerTitle,
+      title: Semantics(
+        label: title,
+        button: true,
+        child: GestureDetector(
+          onTap: onTitleTap,
+          child: Text(
+            title.toLowerCase(),
+            style: AppTextStyles.headerTitle,
+          ),
         ),
       ),
       leading: leading,

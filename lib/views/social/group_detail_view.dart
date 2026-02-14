@@ -37,6 +37,7 @@ import 'package:butlery/widgets/social/groups/empty_group_delete_dialog.dart';
 import 'package:butlery/widgets/social/groups/ownership_transfer_dialog.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/views/social/group_detail/group_action_buttons.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Group detail view with member management and sharing capabilities.
 class GroupDetailView extends StatefulWidget {
@@ -142,8 +143,8 @@ class _GroupDetailViewState extends State<GroupDetailView>
 
     if (result == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gruppen uppdaterades! ✅'),
+        SnackBar(
+          content: Text(context.l10n.groupUpdated),
           backgroundColor: AppColors.success,
         ),
       );
@@ -161,8 +162,8 @@ class _GroupDetailViewState extends State<GroupDetailView>
 
     if (result == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gruppinbjudningar skickade! 🎉'),
+        SnackBar(
+          content: Text(context.l10n.groupInvitationsSentSuccess),
           backgroundColor: AppColors.success,
         ),
       );
@@ -197,7 +198,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gruppen "${group.name}" har tagits bort'),
+            content: Text(context.l10n.groupDeleted(group.name)),
             backgroundColor: AppColors.success,
           ),
         );
@@ -288,8 +289,8 @@ class _GroupDetailViewState extends State<GroupDetailView>
       final transferSuccess = await _viewModel.transferGroupOwnership(newOwner);
       if (!transferSuccess && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kunde inte överföra ägande. Försök igen.'),
+          SnackBar(
+            content: Text(context.l10n.groupCouldNotTransferOwnership),
             backgroundColor: AppColors.error,
           ),
         );
@@ -312,8 +313,8 @@ class _GroupDetailViewState extends State<GroupDetailView>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(decision.requiresOwnershipTransfer
-                ? 'Ägande överfört och du har lämnat gruppen 👑➡️'
-                : 'Du har lämnat gruppen 👋'),
+                ? context.l10n.groupOwnershipTransferredAndLeft
+                : context.l10n.groupYouLeftGroup),
             backgroundColor: AppColors.success,
           ),
         );
@@ -337,8 +338,8 @@ class _GroupDetailViewState extends State<GroupDetailView>
 
     if (memberIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gruppen har inga medlemmar att dela med'),
+        SnackBar(
+          content: Text(context.l10n.groupNoMembersToShare),
           backgroundColor: AppColors.warning,
         ),
       );
@@ -349,8 +350,8 @@ class _GroupDetailViewState extends State<GroupDetailView>
     // Use the first member's profile as representative for the dialog UI
     if (_viewModel.members.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Kunde inte ladda gruppmedlemmar'),
+        SnackBar(
+          content: Text(context.l10n.groupCouldNotLoadMembers),
           backgroundColor: AppColors.error,
         ),
       );
@@ -377,8 +378,8 @@ class _GroupDetailViewState extends State<GroupDetailView>
 
     if (group.friendUserIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gruppen har inga medlemmar att dela med'),
+        SnackBar(
+          content: Text(context.l10n.groupNoMembersToShare),
           backgroundColor: AppColors.warning,
         ),
       );
@@ -398,7 +399,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
           viewModel: shareViewModel,
           availableFriends: friendsService.friends,
           availableGroups: friendsService.categoriesList,
-          initialMessage: 'Delad från gruppen ${group.name}',
+          initialMessage: context.l10n.groupSharedFromGroup(group.name),
         ),
       ),
     );
@@ -420,8 +421,8 @@ class _GroupDetailViewState extends State<GroupDetailView>
 
     if (group.friendUserIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gruppen har inga medlemmar att dela med'),
+        SnackBar(
+          content: Text(context.l10n.groupNoMembersToShare),
           backgroundColor: AppColors.warning,
         ),
       );
@@ -441,7 +442,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
           viewModel: shareViewModel,
           availableFriends: friendsService.friends,
           availableGroups: friendsService.categoriesList,
-          initialMessage: 'Delad från gruppen ${group.name}',
+          initialMessage: context.l10n.groupSharedFromGroup(group.name),
         ),
       ),
     );
@@ -468,15 +469,15 @@ class _GroupDetailViewState extends State<GroupDetailView>
     if (_viewModel.isLoading && _viewModel.group == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Laddar...'),
+          title: Text(context.l10n.commonLoading),
         ),
-        body: const Center(
+        body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(),
-              SizedBox(height: AppDimensions.spacingMd),
-              Text('Laddar gruppinformation...'),
+              const CircularProgressIndicator(),
+              const SizedBox(height: AppDimensions.spacingMd),
+              Text(context.l10n.groupLoadingInfo),
             ],
           ),
         ),
@@ -487,12 +488,11 @@ class _GroupDetailViewState extends State<GroupDetailView>
     if (_viewModel.group == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Grupp hittades inte'),
+          title: Text(context.l10n.groupNotFound),
         ),
         body: StateWidget.empty(
-          title: 'Grupp hittades inte',
-          subtitle:
-              'Den här gruppen kanske har tagits bort eller så saknar du behörighet.',
+          title: context.l10n.groupNotFound,
+          subtitle: context.l10n.groupNotFoundDescription,
           icon: Icons.error_outline,
         ),
       );

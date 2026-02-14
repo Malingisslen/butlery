@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -79,7 +80,8 @@ class RecipeListAvatarBadge extends StatelessWidget {
     LayoutComponents.showProfileMenu(
       context,
       userImageUrl: userService.currentUserProfile?.avatarUrl,
-      displayName: userService.currentUserProfile?.displayName ?? 'Användare',
+      displayName: userService.currentUserProfile?.displayName ??
+          context.l10n.commonUser,
       email: userService.currentUserProfile?.email,
       onEditProfile: () => Navigator.pushNamed(context, Routes.profileEdit),
       onViewFriends: () => Navigator.pushNamed(context, Routes.friends),

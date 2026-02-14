@@ -28,6 +28,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// A view for adding new members to an existing social group.
 /// Provides an interface for group administrators to discover and invite
@@ -110,7 +111,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Lägg till medlemmar',
+            context.l10n.groupAddMembers,
             style: AppTextStyles.headlineSmall,
           ),
           if (viewModel.group != null)
@@ -127,7 +128,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         if (viewModel.hasSelectedFriends)
           ActionButtons.textButton(
             context,
-            label: 'Välj alla',
+            label: context.l10n.commonSelectAll,
             onPressed: () {
               viewModel.selectAllVisible();
             },
@@ -135,7 +136,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         if (viewModel.hasSelectedFriends)
           ActionButtons.textButton(
             context,
-            label: 'Rensa',
+            label: context.l10n.commonClear,
             onPressed: () {
               viewModel.clearAllSelections();
             },
@@ -147,8 +148,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
   Widget _buildBody(
       BuildContext context, AddMembersToGroupViewModel viewModel) {
     if (viewModel.isLoading && viewModel.availableFriends.isEmpty) {
-      return StateWidget.loading(
-          message: 'Laddar vänner...'); // ✅ MIGRATION: StateWidget
+      return StateWidget.loading(message: context.l10n.messagingLoadingFriends);
     }
 
     if (viewModel.hasError) {
@@ -156,13 +156,11 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
     }
 
     if (viewModel.showEmptyState) {
-      // ✅ MIGRATION: StateWidget istället för EmptyState
       return StateWidget.empty(
-        title: 'Inga vänner tillgängliga',
-        subtitle: 'Alla dina vänner är redan medlemmar i denna grupp, '
-            'eller så har du redan skickat inbjudningar till dem.',
+        title: context.l10n.groupNoFriendsAvailable,
+        subtitle: context.l10n.groupAllFriendsAlreadyMembers,
         icon: Icons.people_outline,
-        actionLabel: 'Uppdatera',
+        actionLabel: context.l10n.commonRefresh,
         onAction: () {
           viewModel.refresh();
         },
@@ -194,7 +192,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
           viewModel.updateSearch(value);
         },
         decoration: InputDecoration(
-          hintText: 'Sök vänner...',
+          hintText: context.l10n.messagingSearchFriends,
           prefixIcon: const Icon(Icons.search),
           suffixIcon: viewModel.hasSearchQuery
               ? IconButton(
@@ -226,8 +224,9 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
           Expanded(
             child: Text(
               viewModel.hasSelectedFriends
-                  ? '${viewModel.selectedCount} av ${viewModel.filteredFriends.length} vald(a)'
-                  : 'Välj vänner att bjuda in till gruppen',
+                  ? context.l10n.groupSelectedOfTotal(
+                      viewModel.selectedCount, viewModel.filteredFriends.length)
+                  : context.l10n.groupSelectFriendsToInvite,
               style: AppTextStyles.titleMedium,
             ),
           ),
@@ -292,17 +291,17 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         case 'sent':
           statusColor = AppColors.success;
           statusIcon = Icons.check_circle;
-          statusText = 'Skickad';
+          statusText = context.l10n.groupInvitationSent;
           break;
         case 'failed':
           statusColor = AppColors.error;
           statusIcon = Icons.error;
-          statusText = 'Misslyckades';
+          statusText = context.l10n.commonFailed;
           break;
         default:
           statusColor = AppColors.warning;
           statusIcon = Icons.schedule;
-          statusText = 'Väntar';
+          statusText = context.l10n.commonPending;
       }
 
       return Column(
@@ -370,7 +369,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
           ],
           ActionButtons.primaryButton(
             context,
-            label: 'Skicka ${viewModel.selectedCount} inbjudningar',
+            label: context.l10n.groupSendInvitations(viewModel.selectedCount),
             onPressed: viewModel.isSendingInvitations
                 ? null
                 : () async {
@@ -382,7 +381,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            '$invitationCount inbjudningar skickade! 📨',
+                            context.l10n.groupInvitationsSent(invitationCount),
                           ),
                           backgroundColor: AppColors.success,
                           behavior: SnackBarBehavior.floating,
@@ -395,7 +394,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                     }
                   },
             isLoading: viewModel.isSendingInvitations,
-            loadingText: 'Skickar...',
+            loadingText: context.l10n.commonSending,
             isExpanded: true,
           ),
         ],
@@ -405,7 +404,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
   Widget _buildErrorState(AddMembersToGroupViewModel viewModel) {
     return StateWidget.error(
-      message: viewModel.error ?? 'Okänt fel',
+      message: viewModel.error ?? context.l10n.errorUnknown,
       onAction: () {
         viewModel.clearError();
         viewModel.refresh();

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Statistics widget showing search and filter information
 class SearchStatsWidget extends StatelessWidget {
@@ -23,7 +24,7 @@ class SearchStatsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!_shouldShowStats()) return const SizedBox.shrink();
 
-    final statsText = _buildStatsText();
+    final statsText = _buildStatsText(context);
 
     return Container(
       width: double.infinity,
@@ -33,13 +34,15 @@ class SearchStatsWidget extends StatelessWidget {
       ),
       margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .primaryContainer
-            .withValues(alpha: AppDimensions.opacityMediumLight), // ✅ Back to proper AppTheme color
+        color: Theme.of(context).colorScheme.primaryContainer.withValues(
+            alpha: AppDimensions
+                .opacityMediumLight), // ✅ Back to proper AppTheme color
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: AppDimensions.opacityLight),
+          color: Theme.of(context)
+              .colorScheme
+              .primary
+              .withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: Row(
@@ -69,21 +72,21 @@ class SearchStatsWidget extends StatelessWidget {
   }
 
   /// Build stats text
-  String _buildStatsText() {
+  String _buildStatsText(BuildContext context) {
     final parts = <String>[];
 
     if (searchQuery.isNotEmpty) {
-      parts.add('Sökning: "$searchQuery"');
+      parts.add('${context.l10n.searchQuery}: "$searchQuery"');
     }
 
     if (hasActiveFilters &&
         activeFilterCount != null &&
         activeFilterCount! > 0) {
-      parts.add('$activeFilterCount filter aktiva');
+      parts.add(context.l10n.searchFiltersActive(activeFilterCount!));
     }
 
     if (resultCount != null) {
-      parts.add('$resultCount resultat');
+      parts.add(context.l10n.searchResults(resultCount!));
     }
 
     return parts.join(' • ');

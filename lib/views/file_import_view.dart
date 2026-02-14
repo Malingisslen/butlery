@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Consolidated state class for FileImportView to reduce setState calls
 class FileImportState {
@@ -54,7 +55,7 @@ class _FileImportViewState extends State<FileImportView> {
     setState(() {
       _state = _state.copyWith(
         isLoading: true,
-        statusMessage: 'Väljer fil...',
+        statusMessage: context.l10n.importSelectingFile,
         importedCount: 0,
         failedCount: 0,
       );
@@ -67,7 +68,7 @@ class _FileImportViewState extends State<FileImportView> {
       if (recipes.isEmpty) {
         setState(() {
           _state = _state.copyWith(
-            statusMessage: 'Ingen fil vald eller filen innehåller inga recept',
+            statusMessage: context.l10n.importNoFileOrNoRecipes,
             isLoading: false,
           );
         });
@@ -76,7 +77,7 @@ class _FileImportViewState extends State<FileImportView> {
 
       setState(() {
         _state = _state.copyWith(
-          statusMessage: 'Importerar ${recipes.length} recept...',
+          statusMessage: context.l10n.importImportingRecipes(recipes.length),
         );
       });
 
@@ -113,8 +114,8 @@ class _FileImportViewState extends State<FileImportView> {
       setState(() {
         _state = _state.copyWith(
           isLoading: false,
-          statusMessage:
-              'Import klar: ${_state.importedCount} lyckades, ${_state.failedCount} misslyckades',
+          statusMessage: context.l10n
+              .importComplete(_state.importedCount, _state.failedCount),
         );
       });
 
@@ -130,7 +131,7 @@ class _FileImportViewState extends State<FileImportView> {
       setState(() {
         _state = _state.copyWith(
           isLoading: false,
-          statusMessage: 'Import misslyckades: ${e.toString()}',
+          statusMessage: context.l10n.importFailed(e.toString()),
         );
       });
     }
@@ -140,7 +141,7 @@ class _FileImportViewState extends State<FileImportView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Importera från fil'),
+        title: Text(context.l10n.importFromFile),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -168,30 +169,30 @@ class _FileImportViewState extends State<FileImportView> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Importera recept från CSV eller Excel',
+                            context.l10n.importFromFileTitle,
                             style: AppTextStyles.headlineSmall,
                           ),
                           const SizedBox(height: AppDimensions.spacingM),
                           Text(
-                            'Din fil bör innehålla kolumner för:',
+                            context.l10n.importFileColumnsRequired,
                             style: AppTextStyles.bodyMedium,
                           ),
                           const SizedBox(height: AppDimensions.spacingS),
-                          _buildRequirement('Titel (title/namn)'),
+                          _buildRequirement(context.l10n.importColumnTitle),
                           _buildRequirement(
-                              'Ingredienser (ingredients/ingredienser)'),
+                              context.l10n.importColumnIngredients),
                           _buildRequirement(
-                              'Instruktioner (instructions/instruktioner)'),
+                              context.l10n.importColumnInstructions),
                           const SizedBox(height: AppDimensions.spacingS),
                           Text(
-                            'Valfria kolumner:',
+                            context.l10n.importFileColumnsOptional,
                             style: AppTextStyles.bodyMedium,
                           ),
                           const SizedBox(height: AppDimensions.spacingS),
-                          _buildOptional('Tillagningstid (cookingtime/tid)'),
-                          _buildOptional('Portioner (servings/portioner)'),
-                          _buildOptional('Kategori (category/kategori)'),
-                          _buildOptional('Taggar (tags/taggar)'),
+                          _buildOptional(context.l10n.importColumnCookingTime),
+                          _buildOptional(context.l10n.importColumnServings),
+                          _buildOptional(context.l10n.importColumnCategory),
+                          _buildOptional(context.l10n.importColumnTags),
                         ],
                       ),
                     ),
@@ -203,7 +204,7 @@ class _FileImportViewState extends State<FileImportView> {
                   if (!_state.isLoading)
                     UtilityComponents.primaryButton(
                       context,
-                      label: 'Välj fil och importera',
+                      label: context.l10n.importSelectFileAndImport,
                       icon: Icons.file_upload,
                       onPressed: _importFile,
                     ),
@@ -234,7 +235,8 @@ class _FileImportViewState extends State<FileImportView> {
                                         Theme.of(context).colorScheme.primary,
                                   ),
                                   const SizedBox(width: AppDimensions.spacingS),
-                                  Text('${_state.importedCount} lyckades'),
+                                  Text(context.l10n.importSucceededCount(
+                                      _state.importedCount)),
                                 ],
                                 if (_state.importedCount > 0 &&
                                     _state.failedCount > 0)
@@ -245,7 +247,8 @@ class _FileImportViewState extends State<FileImportView> {
                                     color: Theme.of(context).colorScheme.error,
                                   ),
                                   const SizedBox(width: AppDimensions.spacingS),
-                                  Text('${_state.failedCount} misslyckades'),
+                                  Text(context.l10n
+                                      .importFailedCount(_state.failedCount)),
                                 ],
                               ],
                             ),
@@ -287,7 +290,8 @@ class _FileImportViewState extends State<FileImportView> {
           left: AppDimensions.spacingM, bottom: AppDimensions.spacingXs),
       child: Row(
         children: [
-          const Icon(Icons.check, size: AppDimensions.iconSizeS, color: AppColors.success),
+          const Icon(Icons.check,
+              size: AppDimensions.iconSizeS, color: AppColors.success),
           const SizedBox(width: AppDimensions.spacingS),
           Text(text, style: AppTextStyles.bodySmall),
         ],
@@ -302,7 +306,8 @@ class _FileImportViewState extends State<FileImportView> {
       child: Row(
         children: [
           Icon(Icons.add,
-              size: AppDimensions.iconSizeS, color: Theme.of(context).colorScheme.onSurfaceVariant),
+              size: AppDimensions.iconSizeS,
+              color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(width: AppDimensions.spacingS),
           Text(text, style: AppTextStyles.bodySmall),
         ],

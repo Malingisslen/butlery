@@ -483,12 +483,12 @@ void main() {
         const mainCard = ImagePreviewCard(child: testChild);
 
         // Loading constructor
-        const loadingCard = ImagePreviewCard.loading(child: testChild);
+        final loadingCard = ImagePreviewCard.loading(child: testChild);
 
         await tester.pumpWidget(
           createTestWidget(
             child: Column(
-              children: const <Widget>[
+              children: <Widget>[
                 mainCard,
                 loadingCard,
                 // Empty constructor needs context so test separately
@@ -511,9 +511,9 @@ void main() {
 
         await tester.pumpWidget(
           createTestWidget(
-            child: const Column(
+            child: Column(
               children: [
-                ImagePreviewCard(
+                const ImagePreviewCard(
                   backgroundColor: Colors.red,
                   child: testChild,
                 ),

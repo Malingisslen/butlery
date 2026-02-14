@@ -463,7 +463,8 @@ class ChatViewModel extends ChangeNotifier
     _messagesSubscription?.cancel();
     _typingSubscription?.cancel();
     _typingDebounceTimer?.cancel();
-    clearTyping(); // Clear typing indicator when leaving chat
+    clearTyping();
+    disposeStreamResources();
     super.dispose();
   }
 }

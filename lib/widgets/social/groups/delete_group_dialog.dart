@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/delete_group_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -27,7 +28,7 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
     );
 
     if (!success) {
-      throw Exception('Kunde inte ta bort grupp. Försök igen.');
+      throw Exception('Failed to delete group');
     }
 
     return true;
@@ -46,8 +47,8 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
               color: Theme.of(context).colorScheme.onSurface,
             ),
             children: [
-              const TextSpan(
-                text: 'Är du säker på att du vill ta bort gruppen ',
+              TextSpan(
+                text: context.l10n.groupDeleteConfirmPrefix,
               ),
               TextSpan(
                 text: '"${group.name}"',
@@ -65,9 +66,8 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
         const SizedBox(height: AppDimensions.spacingM),
 
         // Warning message
-        const WarningDisplayWidget(
-          warningMessage:
-              'Detta kan inte ångras. Alla medlemmar kommer att tas bort från gruppen.',
+        WarningDisplayWidget(
+          warningMessage: context.l10n.groupDeleteWarning,
         ),
       ],
     );
@@ -81,16 +81,15 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
       );
 
   @override
-  String get dialogTitle => 'Ta bort grupp';
+  String dialogTitleText(BuildContext context) => context.l10n.groupDeleteGroup;
 
   @override
-  String get cancelButtonText => 'Avbryt';
+  String actionButtonLabel(BuildContext context) =>
+      context.l10n.groupDeleteGroup;
 
   @override
-  String get actionButtonText => 'Ta bort grupp';
-
-  @override
-  String get loadingButtonText => 'Tar bort...';
+  String? loadingButtonLabel(BuildContext context) =>
+      context.l10n.commonDeleting;
 
   @override
   Widget get actionButtonIcon => const Icon(Icons.delete_forever);

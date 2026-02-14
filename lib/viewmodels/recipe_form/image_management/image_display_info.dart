@@ -34,15 +34,15 @@ class ImageDisplayInfo {
   Color getStateColor() {
     switch (state) {
       case ImageUploadState.pending:
-        return Colors.blue;
+        return AppColors.info;
       case ImageUploadState.uploading:
-        return Colors.orange;
+        return AppColors.warning;
       case ImageUploadState.retrying:
-        return Colors.amber;
+        return AppColors.starGold;
       case ImageUploadState.completed:
-        return Colors.green;
+        return AppColors.success;
       case ImageUploadState.failed:
-        return Colors.red;
+        return AppColors.error;
       case ImageUploadState.cancelled:
         return AppColors.textMedium;
     }

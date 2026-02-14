@@ -3,6 +3,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// View for displaying shared shopping lists.
 /// This view shows all shopping lists that are shared with the current user,
@@ -14,7 +15,7 @@ class SharedShoppingListsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Delade inköpslistor'),
+        title: Text(context.l10n.shoppingSharedLists),
       ),
       body: SafeArea(
         // ✅ RESPONSIVE: Center and constrain content on large screens
@@ -38,12 +39,12 @@ class SharedShoppingListsView extends StatelessWidget {
                 ),
                 const SizedBox(height: AppDimensions.spacingMd),
                 Text(
-                  'Delade inköpslistor',
+                  context.l10n.shoppingSharedLists,
                   style: AppTextStyles.sectionHeader,
                 ),
                 const SizedBox(height: AppDimensions.spacingSm),
                 Text(
-                  'Kommer snart...',
+                  context.l10n.commonComingSoon,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: AppColors.textMedium,
                       ),

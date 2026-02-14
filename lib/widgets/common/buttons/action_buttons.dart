@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/animated_pressable.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// ActionButtons - Utility action buttons with loading support
 /// Provides consistent button styling and loading states for the app.
@@ -21,7 +22,8 @@ class ActionButtons {
     bool enablePressAnimation = true,
   }) {
     final effectiveOnPressed = isLoading ? null : onPressed;
-    final effectiveLabel = isLoading ? (loadingText ?? 'Laddar...') : label;
+    final effectiveLabel =
+        isLoading ? (loadingText ?? context.l10n.commonLoading) : label;
 
     final Widget buttonChild = Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
@@ -80,7 +82,8 @@ class ActionButtons {
         break;
     }
 
-    final semanticLabel = isLoading ? '$label, laddar' : label;
+    final semanticLabel =
+        isLoading ? '$label, ${context.l10n.commonLoading}' : label;
 
     final result = Semantics(
       label: semanticLabel,
@@ -135,7 +138,8 @@ class ActionButtons {
     String? loadingText,
     bool enablePressAnimation = true,
   }) {
-    final semanticLabel = isLoading ? '$label, laddar' : label;
+    final semanticLabel =
+        isLoading ? '$label, ${context.l10n.commonLoading}' : label;
 
     final result = Semantics(
       label: semanticLabel,
@@ -161,7 +165,7 @@ class ActionButtons {
                 Icon(icon, size: AppDimensions.iconSizeXl),
               const SizedBox(height: AppDimensions.spacingSm),
               Text(
-                isLoading ? (loadingText ?? 'Laddar...') : label,
+                isLoading ? (loadingText ?? context.l10n.commonLoading) : label,
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -191,7 +195,8 @@ class ActionButtons {
     EdgeInsets? margin,
     bool enablePressAnimation = true,
   }) {
-    final semanticLabel = isLoading ? '$label, laddar' : label;
+    final semanticLabel =
+        isLoading ? '$label, ${context.l10n.commonLoading}' : label;
 
     final Widget button = Semantics(
       label: semanticLabel,
@@ -213,7 +218,7 @@ class ActionButtons {
               : Icon(icon,
                   size: AppDimensions.iconSizeXl, color: AppColors.onPrimary),
           label: Text(
-            isLoading ? (loadingText ?? 'Laddar...') : label,
+            isLoading ? (loadingText ?? context.l10n.commonLoading) : label,
             style: AppTextStyles.labelLarge.copyWith(
               color: AppColors.onPrimary,
             ),
@@ -293,7 +298,8 @@ class ActionButtons {
     bool enablePressAnimation = true,
   }) {
     final effectiveOnPressed = isLoading ? null : onPressed;
-    final effectiveLabel = isLoading ? (loadingText ?? 'Laddar...') : label;
+    final effectiveLabel =
+        isLoading ? (loadingText ?? context.l10n.commonLoading) : label;
 
     final Widget buttonChild = Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
@@ -336,7 +342,8 @@ class ActionButtons {
       child: buttonChild,
     );
 
-    final semanticLabel = isLoading ? '$label, laddar' : label;
+    final semanticLabel =
+        isLoading ? '$label, ${context.l10n.commonLoading}' : label;
 
     final result = Semantics(
       label: semanticLabel,
@@ -356,12 +363,12 @@ class ActionButtons {
   /// Cancel button that pops the current context.
   static Widget cancel<T>(
     BuildContext context, {
-    String label = 'Avbryt',
+    String? label,
     T? result,
   }) {
     return secondaryButton(
       context,
-      label: label,
+      label: label ?? context.l10n.commonCancel,
       onPressed: () => Navigator.pop(context, result ?? false),
     );
   }
@@ -409,6 +416,7 @@ class FloatingActionButtonWidget extends StatelessWidget {
       enabled: onPressed != null,
       child: FloatingActionButton(
         onPressed: onPressed,
+        tooltip: semanticLabel,
         backgroundColor: backgroundColor ?? AppColors.forestGreen,
         foregroundColor: foregroundColor ?? AppColors.cardWhite,
         child: child,

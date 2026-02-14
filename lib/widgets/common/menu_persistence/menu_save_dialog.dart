@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Dialog for saving a menu with name, comment and social sharing
 /// This dialog allows users to save their generated menus with custom names,
@@ -36,7 +37,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
   @override
   void initState() {
     super.initState();
-    _shareMessageController.text = 'Kolla min nya veckomeny!';
+    // Default share message set in build() to use l10n
   }
 
   @override
@@ -49,8 +50,11 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
 
   @override
   Widget build(BuildContext context) {
+    if (_shareMessageController.text.isEmpty) {
+      _shareMessageController.text = context.l10n.menuShareDefaultMessage;
+    }
     return AlertDialog(
-      title: const Text('Spara meny'),
+      title: Text(context.l10n.menuSaveTitle),
       content: SizedBox(
         width: double.maxFinite,
         child: SingleChildScrollView(
@@ -81,7 +85,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
       actions: [
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: const Text('Avbryt'),
+          child: Text(context.l10n.commonCancel),
         ),
         FilledButton(
           onPressed: _isLoading ? null : _saveMenu,
@@ -96,7 +100,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
                     ),
                   ),
                 )
-              : const Text('Spara'),
+              : Text(context.l10n.commonSave),
         ),
       ],
     );
@@ -116,12 +120,14 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Meny att spara',
+            context.l10n.menuToSave,
             style: AppTextStyles.bodyLargeBold,
           ),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
-            '${widget.viewModel.totalRecipeCount} recept i ${widget.viewModel.menu.length} kategorier',
+            context.l10n.menuRecipesInCategories(
+                widget.viewModel.totalRecipeCount,
+                widget.viewModel.menu.length),
             style: AppTextStyles.bodySmall,
           ),
         ],
@@ -132,13 +138,13 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
   Widget _buildNameField() {
     return TextFormField(
       controller: _nameController,
-      decoration: const InputDecoration(
-        labelText: 'Menynamn',
-        hintText: 'T.ex. Vecka 45 eller Helgmeny',
-        border: OutlineInputBorder(),
-        prefixIcon: Icon(Icons.restaurant_menu),
+      decoration: InputDecoration(
+        labelText: context.l10n.menuNameLabel,
+        hintText: context.l10n.menuNameHint,
+        border: const OutlineInputBorder(),
+        prefixIcon: const Icon(Icons.restaurant_menu),
       ),
-      validator: FormValidators.required('Menynamn krävs'),
+      validator: FormValidators.required(context.l10n.menuNameRequired),
       maxLength: 50,
       enabled: !_isLoading,
     );
@@ -147,11 +153,11 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
   Widget _buildCommentField() {
     return TextFormField(
       controller: _commentController,
-      decoration: const InputDecoration(
-        labelText: 'Kommentar (valfritt)',
-        hintText: 'Beskrivning eller noteringar om menyn',
-        border: OutlineInputBorder(),
-        prefixIcon: Icon(Icons.comment),
+      decoration: InputDecoration(
+        labelText: context.l10n.menuCommentLabel,
+        hintText: context.l10n.menuCommentHint,
+        border: const OutlineInputBorder(),
+        prefixIcon: const Icon(Icons.comment),
       ),
       maxLines: 3,
       maxLength: 200,
@@ -161,8 +167,8 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
 
   Widget _buildSocialSharingToggle() {
     return SwitchListTile(
-      title: const Text('Dela med vänner'),
-      subtitle: const Text('Dela denna meny med valda vänner'),
+      title: Text(context.l10n.menuShareWithFriends),
+      subtitle: Text(context.l10n.menuShareWithFriendsDescription),
       value: _enableSocialSharing,
       onChanged: _isLoading
           ? null
@@ -184,7 +190,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Välj vänner att dela med',
+          context.l10n.menuSelectFriendsToShare,
           style: AppTextStyles.bodyLargeBold,
         ),
         const SizedBox(height: AppDimensions.spacingXs),
@@ -199,7 +205,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
               ? Center(
                   child: Builder(
                     builder: (context) => Text(
-                      'Inga vänner tillgängliga',
+                      context.l10n.menuNoFriendsAvailable,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: AppColors.textMedium,
                           ),
@@ -242,11 +248,11 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
   Widget _buildShareMessage() {
     return TextFormField(
       controller: _shareMessageController,
-      decoration: const InputDecoration(
-        labelText: 'Delningsmeddelande',
-        hintText: 'Meddelande som skickas med menyn',
-        border: OutlineInputBorder(),
-        prefixIcon: Icon(Icons.message),
+      decoration: InputDecoration(
+        labelText: context.l10n.menuShareMessageLabel,
+        hintText: context.l10n.menuShareMessageHint,
+        border: const OutlineInputBorder(),
+        prefixIcon: const Icon(Icons.message),
       ),
       maxLines: 2,
       maxLength: 100,
@@ -278,14 +284,16 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Meny "${_nameController.text}" sparad!'),
+              content:
+                  Text(context.l10n.menuSavedSuccess(_nameController.text)),
               backgroundColor: AppColors.success,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(widget.viewModel.error ?? 'Kunde inte spara meny'),
+              content:
+                  Text(widget.viewModel.error ?? context.l10n.menuSaveFailed),
               backgroundColor: AppColors.error,
             ),
           );
@@ -300,7 +308,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fel vid sparande: $e'),
+            content: Text(context.l10n.errorSavingWithDetails(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );

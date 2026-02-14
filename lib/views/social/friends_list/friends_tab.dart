@@ -7,6 +7,7 @@ import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// FriendsTab - Friends list tab component
 /// Displays the user's friends list with search and actions.
@@ -19,10 +20,9 @@ class FriendsTab {
       isLoading: viewModel.isLoading,
       error: viewModel.error,
       data: viewModel.friends,
-      loadingMessage: 'Laddar vänner...',
-      emptyTitle: 'Inga vänner än',
-      emptySubtitle:
-          'Lägg till vänner för att komma igång med social funktionalitet.',
+      loadingMessage: context.l10n.socialLoadingFriends,
+      emptyTitle: context.l10n.socialNoFriendsYet,
+      emptySubtitle: context.l10n.socialAddFriendsToGetStarted,
       emptyIcon: Icons.people_outline,
       builder: (context, friends) => RefreshIndicator(
         onRefresh: () async {

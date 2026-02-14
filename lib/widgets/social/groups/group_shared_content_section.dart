@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/group_shared_content_section.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
 import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
@@ -95,8 +96,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
       default:
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text('Visa ${item.title} (funktionalitet ej implementerad än)'),
+            content: Text(context.l10n.groupViewNotImplemented(item.title)),
             backgroundColor: AppColors.info,
           ),
         );
@@ -118,8 +118,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
       default:
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                'Importera ${item.title} (funktionalitet ej implementerad än)'),
+            content: Text(context.l10n.groupImportNotImplemented(item.title)),
             backgroundColor: AppColors.warning,
           ),
         );
@@ -136,8 +135,8 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
       if (sharedMenu == null) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kunde inte hämta meny från servern'),
+          SnackBar(
+            content: Text(context.l10n.groupCouldNotFetchMenu),
             backgroundColor: AppColors.error,
           ),
         );
@@ -155,7 +154,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Fel vid öppning av meny: $e'),
+          content: Text(context.l10n.groupErrorOpeningMenu(e.toString())),
           backgroundColor: AppColors.error,
         ),
       );
@@ -166,7 +165,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
     // Placeholder for recipe details
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Receptvisning: ${item.title} (kommer snart)'),
+        content: Text(context.l10n.groupRecipeViewComingSoon(item.title)),
         backgroundColor: AppColors.info,
       ),
     );
@@ -176,7 +175,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
     // Placeholder for shopping list details
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Inköpslistevisning: ${item.title} (kommer snart)'),
+        content: Text(context.l10n.groupShoppingListViewComingSoon(item.title)),
         backgroundColor: AppColors.info,
       ),
     );
@@ -186,7 +185,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
     // Placeholder for menu import functionality
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Importerar meny: ${item.title} (kommer snart)'),
+        content: Text(context.l10n.groupImportingMenuComingSoon(item.title)),
         backgroundColor: AppColors.success,
       ),
     );
@@ -196,7 +195,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
     // Placeholder for recipe import functionality
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Importerar recept: ${item.title} (kommer snart)'),
+        content: Text(context.l10n.groupImportingRecipeComingSoon(item.title)),
         backgroundColor: AppColors.success,
       ),
     );
@@ -206,7 +205,8 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
     // Placeholder for shopping list import functionality
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Importerar inköpslista: ${item.title} (kommer snart)'),
+        content:
+            Text(context.l10n.groupImportingShoppingListComingSoon(item.title)),
         backgroundColor: AppColors.success,
       ),
     );
@@ -251,7 +251,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                     Row(
                       children: [
                         Text(
-                          'Delat innehåll',
+                          context.l10n.groupSharedContent,
                           style: AppTextStyles.titleBold,
                         ),
                         if (totalItems > 0) ...[
@@ -295,17 +295,20 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                           Tab(
                             icon: const Icon(Icons.restaurant_menu,
                                 size: AppDimensions.iconSizeM),
-                            text: 'Recept (${recipes.length})',
+                            text:
+                                '${context.l10n.groupContentTypeRecipe} (${recipes.length})',
                           ),
                           Tab(
                             icon: const Icon(Icons.calendar_today,
                                 size: AppDimensions.iconSizeM),
-                            text: 'Menyer (${menus.length})',
+                            text:
+                                '${context.l10n.groupTabMenus} (${menus.length})',
                           ),
                           Tab(
                             icon: const Icon(Icons.shopping_cart,
                                 size: AppDimensions.iconSizeM),
-                            text: 'Listor (${shoppingLists.length})',
+                            text:
+                                '${context.l10n.groupTabLists} (${shoppingLists.length})',
                           ),
                         ],
                       ),
@@ -320,20 +323,20 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                         children: [
                           _buildTabContent(
                             recipes,
-                            'Inga recept delade',
-                            'Dela recept med gruppen för att inspirera varandra',
+                            context.l10n.groupNoRecipesShared,
+                            context.l10n.groupNoRecipesSharedSubtitle,
                             Icons.restaurant_menu_outlined,
                           ),
                           _buildTabContent(
                             menus,
-                            'Inga menyer delade',
-                            'Dela menyer med gruppen för att planera tillsammans',
+                            context.l10n.groupNoMenusShared,
+                            context.l10n.groupNoMenusSharedSubtitle,
                             Icons.calendar_today_outlined,
                           ),
                           _buildTabContent(
                             shoppingLists,
-                            'Inga inköpslistor delade',
-                            'Dela inköpslistor med gruppen för att samarbeta',
+                            context.l10n.groupNoShoppingListsShared,
+                            context.l10n.groupNoShoppingListsSharedSubtitle,
                             Icons.shopping_cart_outlined,
                           ),
                         ],

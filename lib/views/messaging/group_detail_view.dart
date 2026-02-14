@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/messaging/components/group_info_card.dart';
 import 'package:butlery/widgets/messaging/components/group_member_item.dart';
 import 'package:butlery/widgets/messaging/dialogs/add_group_members_dialog.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Group conversation details view with member management, add/remove operations, and admin controls.
 class GroupDetailView extends StatelessWidget {
@@ -63,7 +64,7 @@ class GroupDetailView extends StatelessWidget {
       BuildContext context, GroupDetailViewModel viewModel) {
     return AppBar(
       title: Text(
-        'Gruppinformation',
+        context.l10n.messagingGroupInfo,
         style: AppTextStyles.headlineSmall,
       ),
       backgroundColor: AppColors.cream,
@@ -74,7 +75,7 @@ class GroupDetailView extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () => _showEditGroupNameDialog(context, viewModel),
-            tooltip: 'Redigera gruppnamn',
+            tooltip: context.l10n.messagingEditGroupName,
           ),
       ],
     );
@@ -82,19 +83,20 @@ class GroupDetailView extends StatelessWidget {
 
   Widget _buildBody(BuildContext context, GroupDetailViewModel viewModel) {
     if (viewModel.isLoading && !viewModel.hasConversation) {
-      return StateWidget.loading(message: 'Laddar gruppinformation...');
+      return StateWidget.loading(
+          message: context.l10n.messagingLoadingGroupInfo);
     }
 
     if (viewModel.error != null && !viewModel.hasConversation) {
       return StateWidget.error(
-        message: 'Kunde inte ladda gruppinformation: ${viewModel.error!}',
+        message: context.l10n.messagingCouldNotLoadGroupInfo(viewModel.error!),
       );
     }
 
     if (!viewModel.hasConversation) {
       return StateWidget.empty(
-        title: 'Grupp hittades inte',
-        subtitle: 'Denna grupp finns inte längre',
+        title: context.l10n.messagingGroupNotFound,
+        subtitle: context.l10n.messagingGroupNoLongerExists,
       );
     }
 
@@ -136,14 +138,14 @@ class GroupDetailView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Medlemmar (${viewModel.memberCount})',
+              context.l10n.messagingMembersCount(viewModel.memberCount),
               style: AppTextStyles.titleLarge.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             ActionButtons.textButton(
               context,
-              label: 'Lägg till',
+              label: context.l10n.commonAdd,
               icon: Icons.person_add,
               onPressed: () => _showAddMembersDialog(context, viewModel),
             ),
@@ -182,7 +184,7 @@ class GroupDetailView extends StatelessWidget {
         // Leave group button
         ActionButtons.secondaryButton(
           context,
-          label: 'Lämna grupp',
+          label: context.l10n.messagingLeaveGroup,
           icon: Icons.exit_to_app,
           onPressed: viewModel.isLeavingGroup
               ? null
@@ -213,23 +215,23 @@ class GroupDetailView extends StatelessWidget {
     final newName = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Redigera gruppnamn'),
+        title: Text(context.l10n.messagingEditGroupName),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-            labelText: 'Gruppnamn',
-            hintText: 'Ange nytt gruppnamn',
+          decoration: InputDecoration(
+            labelText: context.l10n.messagingGroupName,
+            hintText: context.l10n.messagingEnterNewGroupName,
           ),
           autofocus: true,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Spara'),
+            child: Text(context.l10n.commonSave),
           ),
         ],
       ),
@@ -239,11 +241,12 @@ class GroupDetailView extends StatelessWidget {
       final success = await viewModel.updateGroupTitle(newName);
       if (context.mounted) {
         if (success) {
-          SnackBarUtils.showSuccess(context, 'Gruppnamn uppdaterat');
+          SnackBarUtils.showSuccess(
+              context, context.l10n.messagingGroupNameUpdated);
         } else {
           SnackBarUtils.showError(
             context,
-            viewModel.error ?? 'Kunde inte uppdatera gruppnamn',
+            viewModel.error ?? context.l10n.messagingCouldNotUpdateGroupName,
           );
         }
       }
@@ -260,7 +263,7 @@ class GroupDetailView extends StatelessWidget {
     if (availableFriends.isEmpty) {
       SnackBarUtils.showInfo(
         context,
-        'Alla dina vänner är redan med i gruppen',
+        context.l10n.messagingAllFriendsAlreadyInGroup,
       );
       return;
     }
@@ -285,12 +288,12 @@ class GroupDetailView extends StatelessWidget {
         if (success) {
           SnackBarUtils.showSuccess(
             context,
-            '${selectedFriends.length} medlem(mar) tillagda',
+            context.l10n.messagingMembersAdded(selectedFriends.length),
           );
         } else {
           SnackBarUtils.showError(
             context,
-            viewModel.error ?? 'Kunde inte lägga till medlemmar',
+            viewModel.error ?? context.l10n.messagingCouldNotAddMembers,
           );
         }
       }
@@ -306,7 +309,7 @@ class GroupDetailView extends StatelessWidget {
     final confirmed = await DialogFactory.showDeleteConfirmation(
       context,
       itemName: memberName,
-      itemType: 'från gruppen',
+      itemType: context.l10n.messagingFromGroup,
     );
 
     if (confirmed == true && context.mounted) {
@@ -314,11 +317,11 @@ class GroupDetailView extends StatelessWidget {
       if (context.mounted) {
         if (success) {
           SnackBarUtils.showSuccess(
-              context, '$memberName borttagen från gruppen');
+              context, context.l10n.messagingMemberRemoved(memberName));
         } else {
           SnackBarUtils.showError(
             context,
-            viewModel.error ?? 'Kunde inte ta bort medlem',
+            viewModel.error ?? context.l10n.messagingCouldNotRemoveMember,
           );
         }
       }
@@ -330,21 +333,21 @@ class GroupDetailView extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Lämna grupp'),
-        content: const Text(
-          'Är du säker på att du vill lämna denna grupp? Du kommer inte längre kunna se meddelanden i gruppen.',
+        title: Text(context.l10n.messagingLeaveGroup),
+        content: Text(
+          context.l10n.messagingLeaveGroupConfirm,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(
               foregroundColor: AppColors.error,
             ),
-            child: const Text('Lämna grupp'),
+            child: Text(context.l10n.messagingLeaveGroup),
           ),
         ],
       ),
@@ -354,12 +357,12 @@ class GroupDetailView extends StatelessWidget {
       final success = await viewModel.leaveGroup();
       if (context.mounted) {
         if (success) {
-          SnackBarUtils.showSuccess(context, 'Du har lämnat gruppen');
+          SnackBarUtils.showSuccess(context, context.l10n.messagingLeftGroup);
           Navigator.of(context).pop(); // Go back to conversations list
         } else {
           SnackBarUtils.showError(
             context,
-            viewModel.error ?? 'Kunde inte lämna grupp',
+            viewModel.error ?? context.l10n.messagingCouldNotLeaveGroup(''),
           );
         }
       }

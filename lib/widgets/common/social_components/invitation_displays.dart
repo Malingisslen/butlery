@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -151,7 +152,8 @@ class InvitationDisplays {
   }
 
   /// Build detailed target card
-  static Widget detailedTargetCard({
+  static Widget detailedTargetCard(
+    BuildContext context, {
     required InvitationTarget target,
     VoidCallback? onTap,
     bool selected = false,
@@ -175,17 +177,17 @@ class InvitationDisplays {
                   if (onEdit != null)
                     TextButton(
                       onPressed: onEdit,
-                      child: const Text('Redigera'),
+                      child: Text(context.l10n.commonEdit),
                     ),
                   if (onViewMembers != null)
                     TextButton(
                       onPressed: onViewMembers,
-                      child: const Text('Visa medlemmar'),
+                      child: Text(context.l10n.groupViewMembers),
                     ),
                   if (onDelete != null)
                     TextButton(
                       onPressed: onDelete,
-                      child: const Text('Ta bort'),
+                      child: Text(context.l10n.commonDelete),
                     ),
                 ],
               ),

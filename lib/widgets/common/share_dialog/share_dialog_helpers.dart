@@ -1,34 +1,38 @@
 // lib/widgets/common/share_dialog/share_dialog_helpers.dart
 
+import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 class ShareDialogHelpers {
-  static String getContentTypeName(ShareContentType contentType) {
+  static String getContentTypeName(
+      BuildContext context, ShareContentType contentType) {
     switch (contentType) {
       case ShareContentType.recipe:
-        return 'recept';
+        return context.l10n.shareContentTypeRecipe;
       case ShareContentType.menu:
-        return 'menyer';
+        return context.l10n.shareContentTypeMenu;
       case ShareContentType.shoppingList:
-        return 'inköpslistor';
+        return context.l10n.shareContentTypeShoppingList;
     }
   }
 
   static String getShareButtonText(
+    BuildContext context,
     ShareContentType contentType,
     ShareMode selectedMode,
     bool supportsRealtimeSharing,
   ) {
     if (selectedMode == ShareMode.realtime && supportsRealtimeSharing) {
-      return 'Skapa & Dela';
+      return context.l10n.shareCreateAndShare;
     } else {
       switch (contentType) {
         case ShareContentType.recipe:
-          return 'Dela recept';
+          return context.l10n.shareRecipe;
         case ShareContentType.menu:
-          return 'Dela meny';
+          return context.l10n.shareMenu;
         case ShareContentType.shoppingList:
-          return 'Dela inköpslista';
+          return context.l10n.shareShoppingList;
       }
     }
   }
@@ -43,49 +47,55 @@ class ShareDialogHelpers {
   }
 
   static String getDefaultMessage(
+    BuildContext context,
     ShareContentType contentType,
     String contentName,
   ) {
     switch (contentType) {
       case ShareContentType.recipe:
-        return 'Kolla in detta recept: $contentName';
+        return context.l10n.shareDefaultMessageRecipe(contentName);
       case ShareContentType.menu:
-        return 'Kolla in denna veckomeny: $contentName';
+        return context.l10n.shareDefaultMessageMenu(contentName);
       case ShareContentType.shoppingList:
-        return 'Kolla in denna inköpslista: $contentName';
+        return context.l10n.shareDefaultMessageShoppingList(contentName);
     }
   }
 
   static String getSuccessMessage(
+    BuildContext context,
     ShareContentType contentType,
     int recipientCount,
     ShareMode shareMode,
   ) {
-    final contentName = getContentTypeName(contentType);
-    final modeText =
-        shareMode == ShareMode.realtime ? 'realtidsdelning' : 'kopia';
+    final contentName = getContentTypeName(context, contentType);
+    final modeText = shareMode == ShareMode.realtime
+        ? context.l10n.shareRealtimeSharing
+        : context.l10n.shareStaticCopy;
 
-    return '$contentName har delats som $modeText med $recipientCount mottagare.';
+    return context.l10n
+        .shareSuccessMessage(contentName, modeText, recipientCount);
   }
 
-  static String getShareTitle(ShareContentType contentType) {
+  static String getShareTitle(
+      BuildContext context, ShareContentType contentType) {
     switch (contentType) {
       case ShareContentType.recipe:
-        return 'Dela recept med vänner';
+        return context.l10n.shareRecipeWithFriends;
       case ShareContentType.menu:
-        return 'Dela veckomeny med vänner';
+        return context.l10n.shareMenuWithFriends;
       case ShareContentType.shoppingList:
-        return 'Dela inköpslista';
+        return context.l10n.shareShoppingList;
     }
   }
 
   static String formatSelectionSummary(
+    BuildContext context,
     int selectedCount,
     String contentTypeName,
   ) {
     if (selectedCount == 0) {
-      return 'Välj minst en vän för att dela $contentTypeName';
+      return context.l10n.shareSelectAtLeastOne(contentTypeName);
     }
-    return '$selectedCount vän${selectedCount > 1 ? 'ner' : ''} valda';
+    return context.l10n.shareFriendsSelected(selectedCount);
   }
 }

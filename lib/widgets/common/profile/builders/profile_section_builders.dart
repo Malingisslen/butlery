@@ -8,6 +8,7 @@ import 'package:butlery/widgets/common/profile/builders/menu_item_builders.dart'
 import 'package:butlery/widgets/common/profile/handlers/backup_restore_handler.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/widgets/common/profile/handlers/gdpr_consent_handler.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Builders for profile section widgets.
 class ProfileSectionBuilders {
@@ -25,7 +26,7 @@ class ProfileSectionBuilders {
           ),
           const SizedBox(height: AppDimensions.spacingXl),
           Text(
-            'Data & Backup',
+            context.l10n.profileDataBackup,
             style: AppTextStyles.headlineSmall.copyWith(
               fontSize: AppTextStyles.displaySmall.fontSize,
               color: Theme.of(context).colorScheme.primary,
@@ -35,8 +36,8 @@ class ProfileSectionBuilders {
           MenuItemBuilders.buildDataButton(
             context: context,
             icon: Icons.download,
-            title: 'Ladda ner backup',
-            subtitle: 'Spara alla recept som JSON',
+            title: context.l10n.profileDownloadBackup,
+            subtitle: context.l10n.profileDownloadBackupSubtitle,
             onTap: () =>
                 BackupRestoreHandler.handleBackup(rootContext ?? context),
             color: AppColors.forestGreen,
@@ -45,8 +46,8 @@ class ProfileSectionBuilders {
           MenuItemBuilders.buildDataButton(
             context: context,
             icon: Icons.upload,
-            title: 'Återställ från backup',
-            subtitle: 'Importera recept från JSON',
+            title: context.l10n.profileRestoreFromBackup,
+            subtitle: context.l10n.profileRestoreFromBackupSubtitle,
             onTap: () =>
                 BackupRestoreHandler.handleRestore(rootContext ?? context),
             color: AppColors.forestGreen,
@@ -87,7 +88,8 @@ class ProfileSectionBuilders {
                 ),
               ),
               icon: const Icon(Icons.logout),
-              label: Text('Logga ut', style: AppTextStyles.labelLarge),
+              label: Text(context.l10n.profileLogout,
+                  style: AppTextStyles.labelLarge),
             ),
           ),
         ],
@@ -108,7 +110,7 @@ class ProfileSectionBuilders {
           ),
           const SizedBox(height: AppDimensions.spacingXl),
           Text(
-            'Kontohantering',
+            context.l10n.profileAccountManagement,
             style: AppTextStyles.headlineSmall.copyWith(
               fontSize: AppTextStyles.displaySmall.fontSize,
               color: Theme.of(context).colorScheme.primary,
@@ -120,8 +122,8 @@ class ProfileSectionBuilders {
           MenuItemBuilders.buildDataButton(
             context: context,
             icon: Icons.policy_rounded,
-            title: 'Integritetspolicy',
-            subtitle: 'Läs om hur vi hanterar dina personuppgifter (GDPR)',
+            title: context.l10n.profilePrivacyPolicy,
+            subtitle: context.l10n.profilePrivacyPolicySubtitle,
             onTap: () => GdprConsentHandler.handlePrivacyPolicy(context),
             color: AppColors.primary,
           ),
@@ -131,8 +133,8 @@ class ProfileSectionBuilders {
           MenuItemBuilders.buildDataButton(
             context: context,
             icon: Icons.privacy_tip_rounded,
-            title: 'Hantera samtycken',
-            subtitle: 'Välj hur vi får behandla dina personuppgifter (GDPR)',
+            title: context.l10n.profileManageConsent,
+            subtitle: context.l10n.profileManageConsentSubtitle,
             onTap: () => GdprConsentHandler.handleManageConsent(context),
             color: AppColors.primary,
           ),
@@ -142,8 +144,8 @@ class ProfileSectionBuilders {
           MenuItemBuilders.buildDataButton(
             context: context,
             icon: Icons.download_rounded,
-            title: 'Exportera mina data',
-            subtitle: 'Ladda ner all din data i JSON-format (GDPR)',
+            title: context.l10n.profileExportData,
+            subtitle: context.l10n.profileExportDataSubtitle,
             onTap: () => GdprConsentHandler.handleExportData(context),
             color: AppColors.info,
           ),
@@ -153,8 +155,8 @@ class ProfileSectionBuilders {
           MenuItemBuilders.buildDataButton(
             context: context,
             icon: Icons.delete_forever,
-            title: 'Radera konto',
-            subtitle: 'Ta bort ditt konto och all data permanent',
+            title: context.l10n.profileDeleteAccount,
+            subtitle: context.l10n.profileDeleteAccountSubtitle,
             onTap: () => AuthActionHandler.handleDeleteAccount(context),
             color: AppColors.error,
           ),

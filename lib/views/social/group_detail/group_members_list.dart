@@ -11,6 +11,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/views/social/group_detail/group_member_card.dart';
 import 'package:butlery/views/social/group_detail/group_invitation_card.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// GroupMembersList - Members list component
 /// Displays group members and pending invitations with actions.
@@ -33,7 +34,7 @@ class GroupMembersList {
         Row(
           children: [
             Text(
-              'Medlemmar & Inbjudningar',
+              context.l10n.groupMembersAndInvitations,
               style: AppTextStyles.titleBold,
             ),
             const Spacer(),
@@ -41,7 +42,7 @@ class GroupMembersList {
               TextButton.icon(
                 onPressed: onAddMembers,
                 icon: const Icon(Icons.person_add),
-                label: const Text('Lägg till'),
+                label: Text(context.l10n.commonAdd),
               ),
           ],
         ),
@@ -50,7 +51,7 @@ class GroupMembersList {
         // Members section
         if (members.isNotEmpty) ...[
           Text(
-            'Medlemmar (${members.length})',
+            context.l10n.groupMembersCount(members.length),
             style: AppTextStyles.titleMedium.copyWith(
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -79,7 +80,8 @@ class GroupMembersList {
           if (members.isNotEmpty)
             const SizedBox(height: AppDimensions.spacingXl),
           Text(
-            'Väntande inbjudningar (${pendingInvitations.length})',
+            context.l10n
+                .groupPendingInvitationsCount(pendingInvitations.length),
             style: AppTextStyles.titleMedium.copyWith(
               color: Theme.of(context).colorScheme.tertiary,
             ),
@@ -105,8 +107,8 @@ class GroupMembersList {
         // Empty state
         if (members.isEmpty && pendingInvitations.isEmpty)
           StateWidget.empty(
-            title: 'Inga medlemmar än',
-            subtitle: 'Lägg till vänner i den här gruppen för att komma igång.',
+            title: context.l10n.groupNoMembersYet,
+            subtitle: context.l10n.groupNoMembersDescription,
             icon: Icons.people_outline,
           ),
       ],

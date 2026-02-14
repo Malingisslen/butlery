@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// SharedContentTabBar - Tab bar for shared content view
 /// Handles tab navigation between recipes, menus, and shared shopping lists with unread counts.
@@ -36,7 +37,8 @@ class SharedContentTabBar {
                 children: [
                   const Icon(Icons.restaurant, size: AppDimensions.iconSizeM),
                   const SizedBox(width: AppDimensions.spacingXs),
-                  Text('Recept (${viewModel.recipeViewModel.totalCount})'),
+                  Text(context.l10n
+                      .sharedTabRecipes(viewModel.recipeViewModel.totalCount)),
                   if (viewModel.recipeViewModel.unreadCount > 0) ...[
                     const SizedBox(width: AppDimensions.spacingXs),
                     _buildUnreadBadge(
@@ -54,7 +56,8 @@ class SharedContentTabBar {
                   const Icon(Icons.calendar_month,
                       size: AppDimensions.iconSizeM),
                   const SizedBox(width: AppDimensions.spacingXs),
-                  Text('Menyer (${viewModel.menuViewModel.totalCount})'),
+                  Text(context.l10n
+                      .sharedTabMenus(viewModel.menuViewModel.totalCount)),
                   if (viewModel.menuViewModel.unreadCount > 0) ...[
                     const SizedBox(width: AppDimensions.spacingXs),
                     _buildUnreadBadge(
@@ -72,8 +75,8 @@ class SharedContentTabBar {
                   const Icon(Icons.shopping_cart,
                       size: AppDimensions.iconSizeM),
                   const SizedBox(width: AppDimensions.spacingXs),
-                  Text(
-                      'Inköpslistor (${viewModel.shoppingViewModel.totalCount})'),
+                  Text(context.l10n.sharedTabShoppingLists(
+                      viewModel.shoppingViewModel.totalCount)),
                   if (viewModel.shoppingViewModel.unreadCount > 0) ...[
                     const SizedBox(width: AppDimensions.spacingXs),
                     _buildUnreadBadge(

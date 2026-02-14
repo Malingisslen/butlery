@@ -215,8 +215,8 @@ class UtilityComponents {
     required List<String> selectedFriendIds,
     required Function(List<String>) onSelectionChanged,
     bool allowMultipleCategories = true,
-    String title = 'Välj vänner',
-    String subtitle = 'Välj kategorier eller individuella vänner',
+    String? title,
+    String? subtitle,
   }) {
     return FriendCategoryWidgets.friendCategoryManager(
       selectedFriendIds: selectedFriendIds,

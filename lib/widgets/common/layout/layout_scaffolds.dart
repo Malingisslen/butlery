@@ -3,6 +3,7 @@
 // UI Redesign: Updated to use ButleryHeader and new navigation
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/butlery_header.dart';
 
@@ -33,7 +34,7 @@ class LayoutScaffolds {
     );
   }
 
-  /// Simple layout without bottom navigation
+  /// Simple layout with optional bottom navigation
   /// For detail views and dialogs
   static Widget simpleLayout({
     required Widget body,
@@ -41,6 +42,8 @@ class LayoutScaffolds {
     List<Widget>? actions,
     PreferredSizeWidget? appBar,
     Widget? floatingActionButton,
+    bool showBottomNav = false,
+    int bottomNavIndex = 0,
   }) {
     return _SimpleLayout(
       body: body,
@@ -48,6 +51,8 @@ class LayoutScaffolds {
       actions: actions,
       appBar: appBar,
       floatingActionButton: floatingActionButton,
+      showBottomNav: showBottomNav,
+      bottomNavIndex: bottomNavIndex,
     );
   }
 }
@@ -75,7 +80,7 @@ class _MainMenuLayout extends StatelessWidget {
     // Use AdaptiveNavigationScaffold with Butlery's navigation items
     return AdaptiveNavigationScaffold(
       currentIndex: currentIndex ?? 0,
-      items: ButleryAdaptiveNavigation.navigationItems,
+      items: ButleryAdaptiveNavigation.getNavigationItems(context),
       body: body,
       title:
           appBar == null ? title : null, // Only use title if no custom appBar
@@ -94,6 +99,8 @@ class _SimpleLayout extends StatelessWidget {
   final List<Widget>? actions;
   final PreferredSizeWidget? appBar;
   final Widget? floatingActionButton;
+  final bool showBottomNav;
+  final int bottomNavIndex;
 
   const _SimpleLayout({
     required this.body,
@@ -101,6 +108,8 @@ class _SimpleLayout extends StatelessWidget {
     this.actions,
     this.appBar,
     this.floatingActionButton,
+    this.showBottomNav = false,
+    this.bottomNavIndex = 0,
   });
 
   @override
@@ -120,6 +129,21 @@ class _SimpleLayout extends StatelessWidget {
               : null),
       body: body,
       floatingActionButton: floatingActionButton,
+      bottomNavigationBar: showBottomNav
+          ? ButleryBottomNavigation(
+              currentIndex: bottomNavIndex,
+              items: ButleryAdaptiveNavigation.getNavigationItems(context),
+              backgroundColor: AppColors.creamDarker,
+              selectedItemColor: AppColors.forestGreenDark,
+              unselectedItemColor: AppColors.greenMuted,
+              onTap: (index) {
+                final route =
+                    ButleryAdaptiveNavigation.getNavigationItems(context)[index]
+                        .route;
+                Navigator.pushNamed(context, route);
+              },
+            )
+          : null,
     );
   }
 }

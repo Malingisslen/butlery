@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -13,7 +14,7 @@ import 'package:butlery/widgets/social/collaborative/components/collaborative_pa
 class CollaborativeStatusWidgets {
   /// Compact badge to show that content is shared/collaborative
   static Widget statusBadge({
-    String text = 'Delat',
+    String? text,
     IconData icon = Icons.people,
     Color? color,
     EdgeInsets? padding,
@@ -43,10 +44,12 @@ class CollaborativeStatusWidgets {
             color: effectiveColor,
           ),
           const SizedBox(width: AppDimensions.spacingXs),
-          Text(
-            text,
-            style: AppTextStyles.labelLarge.copyWith(
-              color: effectiveColor,
+          Builder(
+            builder: (context) => Text(
+              text ?? context.l10n.collaborativeShared,
+              style: AppTextStyles.labelLarge.copyWith(
+                color: effectiveColor,
+              ),
             ),
           ),
         ],
@@ -182,9 +185,8 @@ class CollaborativeStatusWidgets {
         if (!isCollaborative) return const SizedBox.shrink();
 
         return banner(
-          title: title ?? 'Du redigerar tillsammans med andra',
-          subtitle:
-              subtitle ?? 'Ändringar synkas automatiskt med andra deltagare',
+          title: title ?? context.l10n.collaborativeEditingTogether,
+          subtitle: subtitle ?? context.l10n.collaborativeSyncAutomatic,
           contentId: contentId,
           contentType: contentType,
           context: context,
@@ -247,7 +249,7 @@ class _CollaborativeAppBar extends StatelessWidget
         final participants = status.participants;
 
         return AppBar(
-          title: Text(title ?? 'Innehåll'),
+          title: Text(title ?? context.l10n.collaborativeContent),
           backgroundColor: isCollaborative
               ? AppColors.forestGreen
                   .withValues(alpha: AppDimensions.opacityVeryLight)
@@ -262,12 +264,13 @@ class _CollaborativeAppBar extends StatelessWidget
                 child: Center(
                   child: Tooltip(
                     message: participants.isNotEmpty
-                        ? 'Delat med ${participants.length} ${participants.length == 1 ? 'person' : 'personer'}'
-                        : 'Delat innehåll',
+                        ? context.l10n
+                            .collaborativeSharedWithCount(participants.length)
+                        : context.l10n.collaborativeSharedContent,
                     child: CollaborativeStatusWidgets.statusBadge(
                       text: participants.isNotEmpty
                           ? '${participants.length}'
-                          : 'Delat',
+                          : context.l10n.collaborativeShared,
                       icon: Icons.people,
                       color: AppColors.forestGreen,
                     ),

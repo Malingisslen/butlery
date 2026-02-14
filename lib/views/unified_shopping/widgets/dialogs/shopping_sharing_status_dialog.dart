@@ -417,7 +417,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
   }
 
   String _getDialogTitle(BuildContext context) {
-    return context.l10n.shoppingListName(list.name);
+    return list.name;
   }
 
   bool _canManageSharing(String currentUserId) {

@@ -1,6 +1,7 @@
 // lib/widgets/recipe/comment_form_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -44,7 +45,7 @@ class CommentFormWidget extends StatelessWidget {
                 const SizedBox(width: AppDimensions.spacingS),
                 Expanded(
                   child: Text(
-                    'Svarar på kommentar',
+                    context.l10n.commentReplyingTo,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: Theme.of(context).colorScheme.primary,
                     ),
@@ -69,7 +70,7 @@ class CommentFormWidget extends StatelessWidget {
           children: [
             SocialAvatarComponents.avatar(
               user: socialViewModel.currentUser,
-              displayName: 'Du',
+              displayName: context.l10n.commentYou,
               size: ImageSize.small,
             ),
             const SizedBox(width: AppDimensions.spacingS),
@@ -78,8 +79,8 @@ class CommentFormWidget extends StatelessWidget {
                 onChanged: socialViewModel.updateNewCommentText,
                 decoration: InputDecoration(
                   hintText: socialViewModel.isReplying
-                      ? 'Skriv ditt svar...'
-                      : 'Skriv en kommentar...',
+                      ? context.l10n.commentWriteReply
+                      : context.l10n.commentWriteComment,
                   border: OutlineInputBorder(
                     borderRadius:
                         BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -97,10 +98,10 @@ class CommentFormWidget extends StatelessWidget {
                   ? () async {
                       try {
                         await socialViewModel.postComment(recipeId);
-                        onShowMessage('Kommentar publicerad!');
+                        onShowMessage(context.l10n.commentPosted);
                         onCommentPosted?.call();
                       } catch (e) {
-                        onShowMessage('Kunde inte publicera kommentar',
+                        onShowMessage(context.l10n.commentCouldNotPost,
                             isError: true);
                       }
                     }

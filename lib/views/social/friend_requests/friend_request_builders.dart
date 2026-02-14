@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 
 // Local
 import 'package:butlery/views/social/friend_requests/friend_request_card.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Builds the header and app bar for friend requests view
 class FriendRequestsHeaderBuilder {
@@ -34,7 +35,7 @@ class FriendRequestsHeaderBuilder {
         viewModel.incomingRequests.length + viewModel.sentRequests.length;
 
     return AppBar(
-      title: Text('Notiser ($totalRequests)'),
+      title: Text(context.l10n.socialNotificationsCount(totalRequests)),
       bottom: TabBar(
         controller: tabController,
         onTap: (_) => onClearSelection(),
@@ -45,7 +46,7 @@ class FriendRequestsHeaderBuilder {
               label: Text('${viewModel.incomingRequests.length}'),
               child: const Icon(Icons.inbox),
             ),
-            text: 'Inkommande',
+            text: context.l10n.socialIncoming,
           ),
           Tab(
             icon: Badge(
@@ -53,7 +54,7 @@ class FriendRequestsHeaderBuilder {
               label: Text('${viewModel.sentRequests.length}'),
               child: const Icon(Icons.outbox),
             ),
-            text: 'Skickade',
+            text: context.l10n.socialSent,
           ),
         ],
       ),
@@ -79,7 +80,8 @@ class FriendRequestsHeaderBuilder {
                   children: [
                     const Icon(Icons.check_circle, color: AppColors.success),
                     const SizedBox(width: AppDimensions.spacingSm),
-                    Text('Acceptera valda (${selectedIncoming.length})'),
+                    Text(context.l10n
+                        .socialAcceptCount(selectedIncoming.length)),
                   ],
                 ),
               ),
@@ -89,7 +91,8 @@ class FriendRequestsHeaderBuilder {
                   children: [
                     const Icon(Icons.cancel, color: AppColors.error),
                     const SizedBox(width: AppDimensions.spacingSm),
-                    Text('Avböj valda (${selectedIncoming.length})'),
+                    Text(context.l10n
+                        .socialDeclineCount(selectedIncoming.length)),
                   ],
                 ),
               ),
@@ -102,7 +105,7 @@ class FriendRequestsHeaderBuilder {
               color: AppColors.error,
             ),
             onPressed: onCancelSelected,
-            tooltip: 'Avbryt valda (${selectedSent.length})',
+            tooltip: context.l10n.socialCancelCount(selectedSent.length),
           ),
       ],
     );
@@ -139,7 +142,7 @@ class FriendRequestsHeaderBuilder {
           ),
           TextButton(
             onPressed: viewModel.clearError,
-            child: const Text('Stäng'),
+            child: Text(context.l10n.commonClose),
           ),
         ],
       ),
@@ -157,13 +160,13 @@ class IncomingRequestsTabBuilder {
     VoidCallback onClearSelection,
   ) {
     if (viewModel.isLoading && viewModel.incomingRequests.isEmpty) {
-      return StateWidget.loading(message: 'Laddar förfrågningar...');
+      return StateWidget.loading(message: context.l10n.socialLoadingRequests);
     }
 
     if (viewModel.incomingRequests.isEmpty) {
       return StateWidget.empty(
-        title: 'Inga vänskapsförfrågningar',
-        subtitle: 'När någon skickar dig en vänskapsförfrågan visas den här.',
+        title: context.l10n.socialNoFriendRequests,
+        subtitle: context.l10n.socialNoFriendRequestsDescription,
         icon: Icons.inbox_outlined,
       );
     }
@@ -192,7 +195,8 @@ class IncomingRequestsTabBuilder {
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
                   Text(
-                    '${selectedIncoming.length} förfrågningar valda',
+                    context.l10n
+                        .socialRequestsSelected(selectedIncoming.length),
                     style: AppTextStyles.titleSmall.copyWith(
                       color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
@@ -200,7 +204,7 @@ class IncomingRequestsTabBuilder {
                   const Spacer(),
                   ActionButtons.secondaryButton(
                     context,
-                    label: 'Rensa',
+                    label: context.l10n.commonClear,
                     onPressed: onClearSelection,
                   ),
                 ],
@@ -244,13 +248,14 @@ class SentRequestsTabBuilder {
     VoidCallback onClearSelection,
   ) {
     if (viewModel.isLoading && viewModel.sentRequests.isEmpty) {
-      return StateWidget.loading(message: 'Laddar skickade förfrågningar...');
+      return StateWidget.loading(
+          message: context.l10n.socialLoadingSentRequests);
     }
 
     if (viewModel.sentRequests.isEmpty) {
       return StateWidget.empty(
-        title: 'Inga skickade förfrågningar',
-        subtitle: 'Förfrågningar du skickar till andra visas här.',
+        title: context.l10n.socialNoSentRequests,
+        subtitle: context.l10n.socialNoSentRequestsDescription,
         icon: Icons.outbox_outlined,
       );
     }
@@ -279,7 +284,7 @@ class SentRequestsTabBuilder {
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
                   Text(
-                    '${selectedSent.length} förfrågningar valda',
+                    context.l10n.socialRequestsSelected(selectedSent.length),
                     style: AppTextStyles.titleSmall.copyWith(
                       color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
@@ -287,7 +292,7 @@ class SentRequestsTabBuilder {
                   const Spacer(),
                   ActionButtons.secondaryButton(
                     context,
-                    label: 'Rensa',
+                    label: context.l10n.commonClear,
                     onPressed: onClearSelection,
                   ),
                 ],

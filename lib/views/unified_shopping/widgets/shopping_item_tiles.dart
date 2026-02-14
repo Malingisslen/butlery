@@ -35,8 +35,8 @@ class ShoppingItemTiles {
         ),
         child: Semantics(
           label: isCompleted
-              ? '${item.displayText}, avbockad, tryck för att bocka av'
-              : '${item.displayText}, tryck för att bocka av',
+              ? context.l10n.a11yShoppingItemChecked(item.displayText)
+              : context.l10n.a11yShoppingItemUnchecked(item.displayText),
           button: true,
           enabled: true,
           child: Material(
@@ -131,7 +131,7 @@ class ShoppingItemTiles {
                       children: [
                         // Edit button
                         Semantics(
-                          label: 'Redigera ${item.name}',
+                          label: context.l10n.a11yEditItem(item.name),
                           button: true,
                           enabled: true,
                           child: IconButton(
@@ -152,7 +152,7 @@ class ShoppingItemTiles {
 
                         // Delete button
                         Semantics(
-                          label: 'Ta bort ${item.name}',
+                          label: context.l10n.a11yDeleteItem(item.name),
                           button: true,
                           enabled: true,
                           child: IconButton(

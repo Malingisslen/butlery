@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// LoadingWidgets - Loading and error utility components
 /// Provides loading overlays, error boundaries, and responsive wrappers.
@@ -91,9 +92,11 @@ class LoadingWidgets {
                           color: AppColors.error.withValues(
                               alpha: AppDimensions.opacityMediumLight)),
                     ),
-                    child: Text(
-                      'Ett oväntat fel uppstod',
-                      style: AppTextStyles.bodyMediumError,
+                    child: Builder(
+                      builder: (context) => Text(
+                        context.l10n.errorUnexpected,
+                        style: AppTextStyles.bodyMediumError,
+                      ),
                     ),
                   ),
                 ),

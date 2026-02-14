@@ -7,6 +7,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// ServiceWidgets - Service integration widgets
 /// Provides widgets that integrate with services and handle loading/error states.
@@ -69,9 +70,11 @@ class ServiceWidgets {
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXl),
-          Text(
-            'Laddar recept...',
-            style: AppTextStyles.titleMedium,
+          Builder(
+            builder: (context) => Text(
+              context.l10n.loadingRecipes,
+              style: AppTextStyles.titleMedium,
+            ),
           ),
         ],
       ),

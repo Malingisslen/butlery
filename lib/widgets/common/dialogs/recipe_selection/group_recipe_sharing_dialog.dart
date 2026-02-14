@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -37,7 +38,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
         builder: (context, viewModel, child) {
           return AlertDialog(
             title: Text(
-              'Dela recept med ${group.name}',
+              context.l10n.dialogShareRecipesWith(group.name),
               style: AppTextStyles.headlineSmall,
             ),
             contentPadding: EdgeInsets.zero,
@@ -49,7 +50,8 @@ class GroupRecipeSharingDialog extends StatelessWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Avbryt', style: AppTextStyles.labelLarge),
+                child: Text(context.l10n.commonCancel,
+                    style: AppTextStyles.labelLarge),
               ),
               if (viewModel.hasSelectedRecipes)
                 FilledButton.icon(
@@ -85,8 +87,8 @@ class GroupRecipeSharingDialog extends StatelessWidget {
                       : const Icon(Icons.share),
                   label: Text(
                     viewModel.isSharing
-                        ? 'Delar...'
-                        : 'Dela (${viewModel.selectedCount})',
+                        ? context.l10n.dialogSharing
+                        : '${context.l10n.commonShare} (${viewModel.selectedCount})',
                     style: AppTextStyles.labelLarge,
                   ),
                 ),
@@ -100,7 +102,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
   Widget _buildContent(
       BuildContext context, GroupRecipeSelectionViewModel viewModel) {
     if (viewModel.isLoading) {
-      return StateWidget.loading(message: 'Laddar recept...');
+      return StateWidget.loading(message: context.l10n.dialogLoadingRecipes);
     }
 
     if (viewModel.hasError) {
@@ -112,8 +114,8 @@ class GroupRecipeSharingDialog extends StatelessWidget {
 
     if (viewModel.isEmpty) {
       return StateWidget.empty(
-        title: 'Inga recept',
-        subtitle: 'Du har inga recept att dela än',
+        title: context.l10n.dialogNoRecipes,
+        subtitle: context.l10n.dialogNoRecipesToShare,
         icon: Icons.restaurant_menu,
       );
     }
@@ -124,7 +126,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
         SearchFilterWidget.searchOnly(
           searchQuery: viewModel.searchQuery,
           onSearchChanged: viewModel.setSearchQuery,
-          searchHint: 'Sök recept...',
+          searchHint: context.l10n.dialogSearchRecipes,
           padding: const EdgeInsets.all(AppDimensions.spacingL),
           showStats: true,
           resultCount: viewModel.filteredRecipes.isNotEmpty
@@ -172,7 +174,8 @@ class GroupRecipeSharingDialog extends StatelessWidget {
         children: [
           if (viewModel.searchQuery.isNotEmpty)
             Text(
-              '${viewModel.filteredCount} av ${viewModel.totalCount} recept',
+              context.l10n.dialogFilteredRecipeCount(
+                  viewModel.filteredCount, viewModel.totalCount),
               style: AppTextStyles.bodySmall,
             ),
           if (viewModel.hasSelectedRecipes) ...[
@@ -189,7 +192,7 @@ class GroupRecipeSharingDialog extends StatelessWidget {
                     BorderRadius.circular(AppDimensions.borderRadiusRound),
               ),
               child: Text(
-                '${viewModel.selectedCount} valda',
+                context.l10n.dialogSelectedCount(viewModel.selectedCount),
                 style: AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.forestGreen,
                 ),
@@ -200,12 +203,14 @@ class GroupRecipeSharingDialog extends StatelessWidget {
           if (viewModel.hasSelectedRecipes)
             TextButton(
               onPressed: viewModel.clearSelections,
-              child: Text('Rensa val', style: AppTextStyles.labelLarge),
+              child: Text(context.l10n.dialogClearSelection,
+                  style: AppTextStyles.labelLarge),
             )
           else if (viewModel.searchQuery.isNotEmpty)
             TextButton(
               onPressed: viewModel.clearSearch,
-              child: Text('Rensa', style: AppTextStyles.labelLarge),
+              child: Text(context.l10n.commonClear,
+                  style: AppTextStyles.labelLarge),
             ),
         ],
       ),
@@ -304,7 +309,7 @@ class GroupRecipeListItem extends StatelessWidget {
                         .withValues(alpha: AppDimensions.opacityMediumLight)),
               ),
               child: Text(
-                'Delad',
+                context.l10n.dialogAlreadyShared,
                 style: AppTextStyles.labelSmallSuccess,
               ),
             ),

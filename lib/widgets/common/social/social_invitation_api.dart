@@ -171,11 +171,13 @@ class SocialInvitationApi {
 
   /// Build target search field
   static Widget targetSearchField({
+    required BuildContext context,
     required ValueChanged<String> onChanged,
     String? hint,
     String? initialValue,
   }) {
     return InvitationTargetWidgets.targetSearchField(
+      context: context,
       onChanged: onChanged,
       hint: hint,
       initialValue: initialValue,
@@ -266,8 +268,8 @@ class SocialInvitationApi {
   }
 
   /// Build target card loading state
-  static Widget targetCardLoading() {
-    return InvitationTargetStates.targetCardLoading();
+  static Widget targetCardLoading(BuildContext context) {
+    return InvitationTargetStates.targetCardLoading(context);
   }
 
   /// Build target loading error state

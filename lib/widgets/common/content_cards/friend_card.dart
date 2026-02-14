@@ -1,6 +1,7 @@
 // lib/widgets/common/content_cards/friend_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -51,21 +52,25 @@ class FriendCard extends StatelessWidget {
         margin: margin ?? _getDefaultMargin(),
         child: Material(
           type: MaterialType.transparency,
-          child: InkWell(
-            onTap: onTap,
-            onLongPress: onLongPress,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            child: Container(
-              padding: padding ?? _getDefaultPadding(),
-              decoration: BoxDecoration(
-                color: AppColors.backgroundLight,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusM),
-                border: Border.all(
-                    color: AppColors.textLight,
-                    width: AppDimensions.borderWidthThin),
+          child: Semantics(
+            label: context.l10n.a11yFriend(user.displayName),
+            button: true,
+            child: InkWell(
+              onTap: onTap,
+              onLongPress: onLongPress,
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              child: Container(
+                padding: padding ?? _getDefaultPadding(),
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundLight,
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusM),
+                  border: Border.all(
+                      color: AppColors.textLight,
+                      width: AppDimensions.borderWidthThin),
+                ),
+                child: _buildContent(context),
               ),
-              child: _buildContent(context),
             ),
           ),
         ),
@@ -250,19 +255,24 @@ class FriendRequestCard extends StatelessWidget {
       margin: margin ?? const EdgeInsets.only(bottom: AppDimensions.spacingS),
       child: Material(
         type: MaterialType.transparency,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          child: Container(
-            padding: padding ?? const EdgeInsets.all(AppDimensions.spacingS),
-            decoration: BoxDecoration(
-              color: AppColors.backgroundLight,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(
-                  color: AppColors.textLight,
-                  width: AppDimensions.borderWidthThin),
+        child: Semantics(
+          label: context.l10n.a11yFriendRequest,
+          button: true,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            child: Container(
+              padding: padding ?? const EdgeInsets.all(AppDimensions.spacingS),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundLight,
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusM),
+                border: Border.all(
+                    color: AppColors.textLight,
+                    width: AppDimensions.borderWidthThin),
+              ),
+              child: _buildContent(context),
             ),
-            child: _buildContent(context),
           ),
         ),
       ),
@@ -281,14 +291,14 @@ class FriendRequestCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Friend Request', // FriendRequest doesn't store sender display name directly
+                    context.l10n.friendRequestTitle,
                     style: AppTextStyles.titleMedium,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: AppDimensions.spacingXs),
                   Text(
-                    'Vill bli din vän',
+                    context.l10n.friendWantsToBeFriend,
                     style: AppTextStyles.metadataEmphasized,
                   ),
                   if (friendRequest.message?.isNotEmpty == true) ...[
@@ -332,7 +342,7 @@ class FriendRequestCard extends StatelessWidget {
                 side: const BorderSide(color: AppColors.textMedium),
               ),
               child: Text(
-                'Avvisa',
+                context.l10n.friendDecline,
                 style: AppTextStyles.labelMediumMuted,
               ),
             ),
@@ -347,7 +357,7 @@ class FriendRequestCard extends StatelessWidget {
                 backgroundColor: Theme.of(context).colorScheme.primary,
               ),
               child: Text(
-                'Acceptera',
+                context.l10n.friendAccept,
                 style: AppTextStyles.labelMedium.copyWith(
                   color: Theme.of(context).colorScheme.onPrimary,
                 ),

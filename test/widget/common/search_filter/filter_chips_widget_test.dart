@@ -3,6 +3,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/search_filter/filter_chips_widget.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -224,11 +226,10 @@ void main() {
         await tester.tap(find.text('Option 1'));
         await tester.pumpAndSettle();
 
-        // Should be selected after tap
+        // Should be selected after tap (StatefulBuilder triggers rebuild)
         final updatedChips =
             tester.widgetList<FilterChip>(find.byType(FilterChip)).toList();
-        expect(updatedChips[0].selected,
-            false); // The widget hasn't rebuilt with new state
+        expect(updatedChips[0].selected, true);
       });
     });
 
@@ -622,12 +623,22 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
+            locale: const Locale('sv'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+            ],
             home: Scaffold(
-              body: FilterChipsWidget(
-                title: 'Meal Type',
-                options: RecipeFilters.mealTypeFilters,
-                activeFilters: const {'breakfast'},
-                onToggle: (id) {},
+              body: Builder(
+                builder: (context) => FilterChipsWidget(
+                  title: 'Meal Type',
+                  options: RecipeFilters.mealTypeFilters(context),
+                  activeFilters: const {'breakfast'},
+                  onToggle: (id) {},
+                ),
               ),
             ),
           ),

@@ -4,6 +4,7 @@
 /// Implements clean conversation header with action coordination.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -44,42 +45,42 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
           onSelected: _handleMenuAction,
           icon: const Icon(Icons.more_vert),
           itemBuilder: (context) => [
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'info',
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.info_outline),
-                  SizedBox(width: AppDimensions.spacingS),
+                  const Icon(Icons.info_outline),
+                  const SizedBox(width: AppDimensions.spacingS),
                   Flexible(
-                    child: Text('Konversationsinfo'),
+                    child: Text(context.l10n.chatConversationInfo),
                   ),
                 ],
               ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'mute',
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.notifications_off_outlined),
-                  SizedBox(width: AppDimensions.spacingS),
+                  const Icon(Icons.notifications_off_outlined),
+                  const SizedBox(width: AppDimensions.spacingS),
                   Flexible(
-                    child: Text('Tysta'),
+                    child: Text(context.l10n.chatMute),
                   ),
                 ],
               ),
             ),
             const PopupMenuDivider(),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'leave',
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.exit_to_app, color: AppColors.error),
-                  SizedBox(width: AppDimensions.spacingS),
+                  const Icon(Icons.exit_to_app, color: AppColors.error),
+                  const SizedBox(width: AppDimensions.spacingS),
                   Flexible(
-                    child: Text('Lämna konversation'),
+                    child: Text(context.l10n.chatLeaveConversation),
                   ),
                 ],
               ),
@@ -91,26 +92,31 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Widget _buildTitle() {
-    if (conversation == null) {
-      return const Text('Chatt');
-    }
+    return Builder(
+      builder: (context) {
+        if (conversation == null) {
+          return Text(context.l10n.chatTitle);
+        }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          conversation?.title ?? '',
-          style: AppTextStyles.titleMedium,
-        ),
-        if (conversation != null && conversation!.participantIds.length > 2)
-          Text(
-            '${conversation!.participantIds.length} deltagare',
-            style: AppTextStyles.labelMedium.copyWith(
-              color: AppColors.textSecondary,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              conversation?.title ?? '',
+              style: AppTextStyles.titleMedium,
             ),
-          ),
-      ],
+            if (conversation != null && conversation!.participantIds.length > 2)
+              Text(
+                context.l10n
+                    .chatParticipantCount(conversation!.participantIds.length),
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

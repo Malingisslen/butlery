@@ -1,6 +1,7 @@
 // lib/widgets/recipe/comment_debug_panel.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -27,7 +28,8 @@ class CommentDebugPanel extends StatelessWidget {
 
     return Container(
       padding: AppDimensions.paddingAll3,
-      color: AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
+      color:
+          AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -58,10 +60,10 @@ class CommentDebugPanel extends StatelessWidget {
                 );
 
                 if (profile != null) {
-                  onShowMessage('Profil skapad! Starta om appen.');
+                  onShowMessage(context.l10n.socialProfileCreatedRestart);
                 }
               },
-              child: const Text('Skapa Profil'),
+              child: Text(context.l10n.socialCreateProfile),
             ),
         ],
       ),

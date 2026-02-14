@@ -255,8 +255,11 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: DialogFormFields.buildNameField(
-                controller: controller,
+              body: Builder(
+                builder: (context) => DialogFormFields.buildNameField(
+                  context: context,
+                  controller: controller,
+                ),
               ),
             ),
           ),
@@ -273,8 +276,11 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: DialogFormFields.buildDescriptionField(
-                controller: controller,
+              body: Builder(
+                builder: (context) => DialogFormFields.buildDescriptionField(
+                  context: context,
+                  controller: controller,
+                ),
               ),
             ),
           ),
@@ -292,8 +298,11 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: DialogFormFields.buildAmountField(
-                controller: controller,
+              body: Builder(
+                builder: (context) => DialogFormFields.buildAmountField(
+                  context: context,
+                  controller: controller,
+                ),
               ),
             ),
           ),
@@ -312,12 +321,15 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Form(
-                key: formKey,
-                child: DialogFormFields.buildAmountField(
-                  controller: controller,
-                  minValue: 1.0,
-                  maxValue: 100.0,
+              body: Builder(
+                builder: (context) => Form(
+                  key: formKey,
+                  child: DialogFormFields.buildAmountField(
+                    context: context,
+                    controller: controller,
+                    minValue: 1.0,
+                    maxValue: 100.0,
+                  ),
                 ),
               ),
             ),
@@ -362,8 +374,11 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: DialogFormFields.buildUrlField(
-                controller: controller,
+              body: Builder(
+                builder: (context) => DialogFormFields.buildUrlField(
+                  context: context,
+                  controller: controller,
+                ),
               ),
             ),
           ),
@@ -380,8 +395,11 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: DialogFormFields.buildPasswordField(
-                controller: controller,
+              body: Builder(
+                builder: (context) => DialogFormFields.buildPasswordField(
+                  context: context,
+                  controller: controller,
+                ),
               ),
             ),
           ),
@@ -398,8 +416,11 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: DialogFormFields.buildSearchField(
-                controller: controller,
+              body: Builder(
+                builder: (context) => DialogFormFields.buildSearchField(
+                  context: context,
+                  controller: controller,
+                ),
               ),
             ),
           ),
@@ -417,8 +438,11 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: DialogFormFields.buildPhoneField(
-                controller: controller,
+              body: Builder(
+                builder: (context) => DialogFormFields.buildPhoneField(
+                  context: context,
+                  controller: controller,
+                ),
               ),
             ),
           ),
@@ -446,8 +470,11 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
-                body: DialogFormFields.buildPhoneField(
-                  controller: controller,
+                body: Builder(
+                  builder: (context) => DialogFormFields.buildPhoneField(
+                    context: context,
+                    controller: controller,
+                  ),
                 ),
               ),
             ),
@@ -466,8 +493,11 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
-                body: DialogFormFields.buildPhoneField(
-                  controller: controller,
+                body: Builder(
+                  builder: (context) => DialogFormFields.buildPhoneField(
+                    context: context,
+                    controller: controller,
+                  ),
                 ),
               ),
             ),
@@ -486,8 +516,11 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
-                body: DialogFormFields.buildPhoneField(
-                  controller: controller,
+                body: Builder(
+                  builder: (context) => DialogFormFields.buildPhoneField(
+                    context: context,
+                    controller: controller,
+                  ),
                 ),
               ),
             ),
@@ -510,11 +543,14 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
-                body: Form(
-                  key: formKey,
-                  child: DialogFormFields.buildPhoneField(
-                    controller: controller,
-                    required: true,
+                body: Builder(
+                  builder: (context) => Form(
+                    key: formKey,
+                    child: DialogFormFields.buildPhoneField(
+                      context: context,
+                      controller: controller,
+                      required: true,
+                    ),
                   ),
                 ),
               ),
@@ -536,11 +572,14 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
-                body: Form(
-                  key: formKey,
-                  child: DialogFormFields.buildPhoneField(
-                    controller: controller,
-                    required: false, // Default behavior
+                body: Builder(
+                  builder: (context) => Form(
+                    key: formKey,
+                    child: DialogFormFields.buildPhoneField(
+                      context: context,
+                      controller: controller,
+                      required: false, // Default behavior
+                    ),
                   ),
                 ),
               ),
@@ -563,10 +602,13 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
-                body: Form(
-                  key: formKey,
-                  child: DialogFormFields.buildPhoneField(
-                    controller: controller,
+                body: Builder(
+                  builder: (context) => Form(
+                    key: formKey,
+                    child: DialogFormFields.buildPhoneField(
+                      context: context,
+                      controller: controller,
+                    ),
                   ),
                 ),
               ),
@@ -591,10 +633,13 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
-                body: Form(
-                  key: formKey,
-                  child: DialogFormFields.buildPhoneField(
-                    controller: controller,
+                body: Builder(
+                  builder: (context) => Form(
+                    key: formKey,
+                    child: DialogFormFields.buildPhoneField(
+                      context: context,
+                      controller: controller,
+                    ),
                   ),
                 ),
               ),
@@ -620,10 +665,13 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
-                body: Form(
-                  key: formKey,
-                  child: DialogFormFields.buildPhoneField(
-                    controller: controller,
+                body: Builder(
+                  builder: (context) => Form(
+                    key: formKey,
+                    child: DialogFormFields.buildPhoneField(
+                      context: context,
+                      controller: controller,
+                    ),
                   ),
                 ),
               ),
@@ -660,10 +708,13 @@ void main() {
             await tester.pumpWidget(
               MaterialApp(
                 home: Scaffold(
-                  body: Form(
-                    key: formKey,
-                    child: DialogFormFields.buildPhoneField(
-                      controller: controller,
+                  body: Builder(
+                    builder: (context) => Form(
+                      key: formKey,
+                      child: DialogFormFields.buildPhoneField(
+                        context: context,
+                        controller: controller,
+                      ),
                     ),
                   ),
                 ),
@@ -688,10 +739,13 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
-                body: Form(
-                  key: formKey,
-                  child: DialogFormFields.buildPhoneField(
-                    controller: controller,
+                body: Builder(
+                  builder: (context) => Form(
+                    key: formKey,
+                    child: DialogFormFields.buildPhoneField(
+                      context: context,
+                      controller: controller,
+                    ),
                   ),
                 ),
               ),
@@ -717,9 +771,12 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
-                body: DialogFormFields.buildPhoneField(
-                  controller: controller,
-                  enabled: false,
+                body: Builder(
+                  builder: (context) => DialogFormFields.buildPhoneField(
+                    context: context,
+                    controller: controller,
+                    enabled: false,
+                  ),
                 ),
               ),
             ),
@@ -737,10 +794,13 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
-                body: DialogFormFields.buildPhoneField(
-                  controller: controller,
-                  labelText: 'Mobilnummer',
-                  hintText: '08-123 456 78',
+                body: Builder(
+                  builder: (context) => DialogFormFields.buildPhoneField(
+                    context: context,
+                    controller: controller,
+                    labelText: 'Mobilnummer',
+                    hintText: '08-123 456 78',
+                  ),
                 ),
               ),
             ),
@@ -758,10 +818,13 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
-                body: Form(
-                  key: formKey,
-                  child: DialogFormFields.buildPhoneField(
-                    controller: controller,
+                body: Builder(
+                  builder: (context) => Form(
+                    key: formKey,
+                    child: DialogFormFields.buildPhoneField(
+                      context: context,
+                      controller: controller,
+                    ),
                   ),
                 ),
               ),
@@ -787,8 +850,11 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
-                body: DialogFormFields.buildPhoneField(
-                  controller: controller,
+                body: Builder(
+                  builder: (context) => DialogFormFields.buildPhoneField(
+                    context: context,
+                    controller: controller,
+                  ),
                 ),
               ),
             ),
@@ -812,10 +878,13 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
-                body: Form(
-                  key: formKey,
-                  child: DialogFormFields.buildPhoneField(
-                    controller: controller,
+                body: Builder(
+                  builder: (context) => Form(
+                    key: formKey,
+                    child: DialogFormFields.buildPhoneField(
+                      context: context,
+                      controller: controller,
+                    ),
                   ),
                 ),
               ),
@@ -843,11 +912,14 @@ void main() {
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
-                body: Form(
-                  key: formKey,
-                  child: DialogFormFields.buildPhoneField(
-                    controller: controller,
-                    labelText: 'Telefonnummer',
+                body: Builder(
+                  builder: (context) => Form(
+                    key: formKey,
+                    child: DialogFormFields.buildPhoneField(
+                      context: context,
+                      controller: controller,
+                      labelText: 'Telefonnummer',
+                    ),
                   ),
                 ),
               ),
@@ -874,18 +946,22 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: DialogFormFields.buildDropdownField<String>(
-                value: selectedValue,
-                labelText: 'Kategori',
-                items: [
-                  const DropdownMenuItem(
-                      value: 'Förrätt', child: Text('Förrätt')),
-                  const DropdownMenuItem(
-                      value: 'Huvudrätt', child: Text('Huvudrätt')),
-                  const DropdownMenuItem(
-                      value: 'Efterrätt', child: Text('Efterrätt')),
-                ],
-                onChanged: (value) => selectedValue = value,
+              body: Builder(
+                builder: (context) =>
+                    DialogFormFields.buildDropdownField<String>(
+                  context: context,
+                  value: selectedValue,
+                  labelText: 'Kategori',
+                  items: [
+                    const DropdownMenuItem(
+                        value: 'Förrätt', child: Text('Förrätt')),
+                    const DropdownMenuItem(
+                        value: 'Huvudrätt', child: Text('Huvudrätt')),
+                    const DropdownMenuItem(
+                        value: 'Efterrätt', child: Text('Efterrätt')),
+                  ],
+                  onChanged: (value) => selectedValue = value,
+                ),
               ),
             ),
           ),
@@ -901,18 +977,22 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: DialogFormFields.buildDropdownField<String>(
-                value: selectedValue,
-                labelText: 'Kategori',
-                items: [
-                  const DropdownMenuItem(
-                      value: 'Förrätt', child: Text('Förrätt')),
-                  const DropdownMenuItem(
-                      value: 'Huvudrätt', child: Text('Huvudrätt')),
-                  const DropdownMenuItem(
-                      value: 'Efterrätt', child: Text('Efterrätt')),
-                ],
-                onChanged: (value) => selectedValue = value,
+              body: Builder(
+                builder: (context) =>
+                    DialogFormFields.buildDropdownField<String>(
+                  context: context,
+                  value: selectedValue,
+                  labelText: 'Kategori',
+                  items: [
+                    const DropdownMenuItem(
+                        value: 'Förrätt', child: Text('Förrätt')),
+                    const DropdownMenuItem(
+                        value: 'Huvudrätt', child: Text('Huvudrätt')),
+                    const DropdownMenuItem(
+                        value: 'Efterrätt', child: Text('Efterrätt')),
+                  ],
+                  onChanged: (value) => selectedValue = value,
+                ),
               ),
             ),
           ),
@@ -928,21 +1008,24 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Form(
-                key: formKey,
-                child: DialogFormFields.buildDropdownField<String>(
-                  value: selectedValue,
-                  labelText: 'Kategori',
-                  items: [
-                    const DropdownMenuItem(
-                        value: 'Förrätt', child: Text('Förrätt')),
-                    const DropdownMenuItem(
-                        value: 'Huvudrätt', child: Text('Huvudrätt')),
-                    const DropdownMenuItem(
-                        value: 'Efterrätt', child: Text('Efterrätt')),
-                  ],
-                  onChanged: (value) => selectedValue = value,
-                  required: true,
+              body: Builder(
+                builder: (context) => Form(
+                  key: formKey,
+                  child: DialogFormFields.buildDropdownField<String>(
+                    context: context,
+                    value: selectedValue,
+                    labelText: 'Kategori',
+                    items: [
+                      const DropdownMenuItem(
+                          value: 'Förrätt', child: Text('Förrätt')),
+                      const DropdownMenuItem(
+                          value: 'Huvudrätt', child: Text('Huvudrätt')),
+                      const DropdownMenuItem(
+                          value: 'Efterrätt', child: Text('Efterrätt')),
+                    ],
+                    onChanged: (value) => selectedValue = value,
+                    required: true,
+                  ),
                 ),
               ),
             ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Filter chips for personal tags with include/exclude support.
 ///
@@ -11,7 +12,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 /// sections for including and excluding tags from search results.
 class PersonalTagFilterChipsWidget extends StatelessWidget {
   /// Title for the include filter section.
-  final String title;
+  final String? title;
 
   /// Available personal tags to show as filter options.
   final List<PersonalTag> tags;
@@ -36,7 +37,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
 
   const PersonalTagFilterChipsWidget({
     super.key,
-    this.title = 'Personliga taggar',
+    this.title,
     required this.tags,
     required this.selectedTagIds,
     required this.onToggle,
@@ -63,7 +64,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  title,
+                  title ?? context.l10n.filterPersonalTags,
                   style: AppTextStyles.headlineSmall.copyWith(
                     fontSize: AppTextStyles.bodyLarge.fontSize,
                     color: Theme.of(context).colorScheme.primary,
@@ -75,7 +76,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
                   icon: const Icon(Icons.settings,
                       size: AppDimensions.iconSize18),
                   onPressed: onManageTags,
-                  tooltip: 'Hantera taggar',
+                  tooltip: context.l10n.filterManageTags,
                   visualDensity: VisualDensity.compact,
                 ),
             ],
@@ -97,7 +98,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
           if (showExcludeSection && onExcludeToggle != null) ...[
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              'Exkludera taggar',
+              context.l10n.filterExcludeTags,
               style: AppTextStyles.headlineSmall.copyWith(
                 fontSize: AppTextStyles.bodyLarge.fontSize,
                 color: Theme.of(context).colorScheme.error,
@@ -134,7 +135,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
         children: [
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            title,
+            title ?? context.l10n.filterPersonalTags,
             style: AppTextStyles.headlineSmall.copyWith(
               fontSize: AppTextStyles.bodyLarge.fontSize,
               color: Theme.of(context).colorScheme.primary,
@@ -144,7 +145,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
           TextButton.icon(
             onPressed: onManageTags,
             icon: const Icon(Icons.add, size: AppDimensions.iconSize18),
-            label: const Text('Skapa personliga taggar'),
+            label: Text(context.l10n.filterCreatePersonalTags),
           ),
         ],
       ),
@@ -169,7 +170,8 @@ class _PersonalTagFilterChip extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Semantics(
-      label: 'Filtrera på ${tag.name}, ${isSelected ? "aktiv" : "inaktiv"}',
+      label: context.l10n.a11yFilterTag(tag.name,
+          isSelected ? context.l10n.a11yActive : context.l10n.a11yInactive),
       selected: isSelected,
       button: true,
       child: FilterChip(
@@ -216,7 +218,8 @@ class _PersonalTagExcludeChip extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Semantics(
-      label: 'Exkludera ${tag.name}, ${isExcluded ? "aktiv" : "inaktiv"}',
+      label: context.l10n.a11yExcludeTag(tag.name,
+          isExcluded ? context.l10n.a11yActive : context.l10n.a11yInactive),
       selected: isExcluded,
       button: true,
       child: FilterChip(

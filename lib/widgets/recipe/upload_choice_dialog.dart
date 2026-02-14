@@ -1,6 +1,7 @@
 // lib/widgets/recipe/upload_choice_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/theme/app_colors.dart';
 
@@ -32,37 +33,38 @@ Future<UploadChoice?> showUploadChoiceDialog({
   final List<Widget> actions = [];
 
   if (hasFailedUploads && hasPendingUploads) {
-    dialogTitle = 'Bilduppladdning pågår';
-    dialogContent =
-        'Några bilder kunde inte laddas upp (${safetyResult.failedImagePaths.length}) och andra laddas fortfarande upp (${safetyResult.pendingImagePaths.length}).\n\nVad vill du göra?';
+    dialogTitle = context.l10n.uploadInProgress;
+    dialogContent = context.l10n.uploadMixedStatus(
+        safetyResult.failedImagePaths.length,
+        safetyResult.pendingImagePaths.length);
   } else if (hasFailedUploads) {
-    dialogTitle = 'Bilduppladdning misslyckades';
+    dialogTitle = context.l10n.uploadFailed;
     dialogContent =
-        '${safetyResult.failedImagePaths.length} bilder kunde inte laddas upp.\n\nVad vill du göra?';
+        context.l10n.uploadFailedCount(safetyResult.failedImagePaths.length);
   } else {
-    dialogTitle = 'Bilduppladdning pågår';
+    dialogTitle = context.l10n.uploadInProgress;
     dialogContent =
-        '${safetyResult.pendingImagePaths.length} bilder laddas fortfarande upp.\n\nVad vill du göra?';
+        context.l10n.uploadPendingCount(safetyResult.pendingImagePaths.length);
   }
 
   // Add common actions
   actions.addAll([
     TextButton(
       onPressed: () => Navigator.of(context).pop(UploadChoice.cancel),
-      child: const Text('Avbryt'),
+      child: Text(context.l10n.commonCancel),
     ),
     if (hasPendingUploads)
       TextButton(
         onPressed: () => Navigator.of(context).pop(UploadChoice.wait),
-        child: const Text('Vänta på uppladdning'),
+        child: Text(context.l10n.uploadWait),
       ),
     TextButton(
       onPressed: () =>
           Navigator.of(context).pop(UploadChoice.saveWithoutPending),
       style: TextButton.styleFrom(foregroundColor: AppColors.warning),
       child: Text(hasFailedUploads
-          ? 'Spara utan misslyckade bilder'
-          : 'Spara utan väntande bilder'),
+          ? context.l10n.uploadSaveWithoutFailed
+          : context.l10n.uploadSaveWithoutPending),
     ),
   ]);
 

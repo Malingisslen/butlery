@@ -27,8 +27,7 @@ class AvatarWidgets {
     bool clickable = false,
   }) {
     final effectiveImageUrl = user?.avatarUrl ?? imageUrl;
-    final effectiveDisplayName =
-        user?.displayName ?? displayName ?? 'Okänd användare';
+    final effectiveDisplayName = user?.displayName ?? displayName ?? 'Okänd';
     final effectiveIsOnline = user?.isOnline ?? isOnline;
 
     return UserDisplayWidgets.avatar(
@@ -56,8 +55,7 @@ class AvatarWidgets {
     double? borderWidth,
   }) {
     final effectiveImageUrl = user?.avatarUrl ?? imageUrl;
-    final effectiveDisplayName =
-        user?.displayName ?? displayName ?? 'Okänd användare';
+    final effectiveDisplayName = user?.displayName ?? displayName ?? 'Okänd';
 
     return UserDisplayWidgets.editableAvatar(
       imageUrl: effectiveImageUrl,
@@ -77,8 +75,7 @@ class AvatarWidgets {
     int? maxLines,
     TextOverflow? overflow,
   }) {
-    final effectiveDisplayName =
-        user?.displayName ?? displayName ?? 'Okänd användare';
+    final effectiveDisplayName = user?.displayName ?? displayName ?? 'Okänd';
 
     return UserDisplayWidgets.userName(
       displayName: effectiveDisplayName,
@@ -97,8 +94,7 @@ class AvatarWidgets {
     TextStyle? nameStyle,
     TextStyle? emailStyle,
   }) {
-    final effectiveDisplayName =
-        user?.displayName ?? displayName ?? 'Okänd användare';
+    final effectiveDisplayName = user?.displayName ?? displayName ?? 'Okänd';
     final effectiveEmail = user?.email ?? email;
 
     return UserDisplayWidgets.userInfo(
@@ -124,8 +120,7 @@ class AvatarWidgets {
     EdgeInsets? padding,
   }) {
     final effectiveImageUrl = user?.avatarUrl ?? imageUrl;
-    final effectiveDisplayName =
-        user?.displayName ?? displayName ?? 'Okänd användare';
+    final effectiveDisplayName = user?.displayName ?? displayName ?? 'Okänd';
     final effectiveEmail = user?.email ?? email;
     final effectiveSubtitle = subtitle;
     final effectiveIsOnline = user?.isOnline ?? false;
@@ -164,8 +159,7 @@ class AvatarWidgets {
     bool isOnline = false,
   }) {
     final effectiveImageUrl = user?.avatarUrl ?? imageUrl;
-    final effectiveDisplayName =
-        user?.displayName ?? displayName ?? 'Okänd användare';
+    final effectiveDisplayName = user?.displayName ?? displayName ?? 'Okänd';
     final effectiveEmail = user?.email ?? email;
     final effectiveSubtitle = subtitle;
     final effectiveDescription = description;
@@ -203,8 +197,7 @@ class AvatarWidgets {
     Color? backgroundColor,
   }) {
     final effectiveImageUrl = user?.avatarUrl ?? imageUrl;
-    final effectiveDisplayName =
-        user?.displayName ?? displayName ?? 'Okänd användare';
+    final effectiveDisplayName = user?.displayName ?? displayName ?? 'Okänd';
     final effectiveEmail = user?.email ?? email;
     final effectiveSubtitle = subtitle;
     final effectiveIsOnline = user?.isOnline ?? isOnline;
@@ -291,8 +284,8 @@ class AvatarWidgets {
 
   /// Build empty state for users
   static Widget emptyUserState({
-    String title = 'Inga användare',
-    String subtitle = 'Inga användare att visa',
+    String? title,
+    String? subtitle,
     IconData icon = Icons.people_outline,
     VoidCallback? onAction,
     String? actionLabel,

@@ -80,8 +80,8 @@ class ImageGridWidgets {
   }) {
     return Semantics(
       label: isPrimary
-          ? 'Primär bild, tryck för att visa fullstorlek'
-          : 'Välj som primär bild',
+          ? context.l10n.a11yPrimaryImageTap
+          : context.l10n.a11ySelectAsPrimary,
       button: true,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -178,7 +178,7 @@ class ImageGridWidgets {
                 bottom: AppDimensions.spacingXs,
                 right: AppDimensions.spacingXs,
                 child: Semantics(
-                  label: 'Ta bort bild',
+                  label: context.l10n.a11yRemoveImage,
                   button: true,
                   child: GestureDetector(
                     onTap: () {
@@ -188,7 +188,7 @@ class ImageGridWidgets {
                     },
                     child: buildGridActionButton(
                       icon: Icons.close,
-                      tooltip: 'Ta bort bild',
+                      tooltip: context.l10n.imageRemoveImage,
                       isDestructive: true,
                     ),
                   ),
@@ -232,41 +232,41 @@ class ImageGridWidgets {
     required bool isLoading,
     required VoidCallback onAddImage,
   }) {
-    return Semantics(
-      label: 'Lägg till bild',
-      button: true,
-      enabled: !isLoading,
-      child: GestureDetector(
-        onTap: isLoading ? null : onAddImage,
-        child: Container(
-          height: AppDimensions.buttonHeight,
-          decoration: BoxDecoration(
-            borderRadius: config.effectiveBorderRadius,
-            border: Border.all(
+    return Builder(
+      builder: (context) => Semantics(
+        label: context.l10n.a11yAddImage,
+        button: true,
+        enabled: !isLoading,
+        child: GestureDetector(
+          onTap: isLoading ? null : onAddImage,
+          child: Container(
+            height: AppDimensions.buttonHeight,
+            decoration: BoxDecoration(
+              borderRadius: config.effectiveBorderRadius,
+              border: Border.all(
+                color: AppColors.forestGreen
+                    .withValues(alpha: AppDimensions.opacityMediumLight),
+                width: AppDimensions.borderWidthThin,
+              ),
               color: AppColors.forestGreen
-                  .withValues(alpha: AppDimensions.opacityMediumLight),
-              width: AppDimensions.borderWidthThin,
+                  .withValues(alpha: AppDimensions.opacityExtraVeryLight),
             ),
-            color: AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityExtraVeryLight),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (isLoading) ...[
-                const SizedBox(
-                  width: AppDimensions.iconSizeM,
-                  height: AppDimensions.iconSizeM,
-                  child: CircularProgressIndicator(
-                    strokeWidth: AppDimensions.borderWidthThin,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (isLoading) ...[
+                  const SizedBox(
+                    width: AppDimensions.iconSizeM,
+                    height: AppDimensions.iconSizeM,
+                    child: CircularProgressIndicator(
+                      strokeWidth: AppDimensions.borderWidthThin,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
+                    ),
                   ),
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Flexible(
-                  child: Builder(
-                    builder: (context) => Text(
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Flexible(
+                    child: Text(
                       context.l10n.imageAdding,
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.forestGreen,
@@ -274,17 +274,15 @@ class ImageGridWidgets {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-              ] else ...[
-                const Icon(
-                  Icons.add_photo_alternate_outlined,
-                  color: AppColors.forestGreen,
-                  size: AppDimensions.iconSizeM,
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Flexible(
-                  child: Builder(
-                    builder: (context) => Text(
+                ] else ...[
+                  const Icon(
+                    Icons.add_photo_alternate_outlined,
+                    color: AppColors.forestGreen,
+                    size: AppDimensions.iconSizeM,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Flexible(
+                    child: Text(
                       context.l10n.imageAddCount(remainingSlots),
                       style: AppTextStyles.contentLabel.copyWith(
                         color: AppColors.forestGreen,
@@ -292,9 +290,9 @@ class ImageGridWidgets {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

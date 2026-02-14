@@ -1,7 +1,6 @@
 {
   "@@locale": "en",
   "@@last_modified": "2025-12-25",
-
   "commonSave": "Save",
   "commonCancel": "Cancel",
   "commonDelete": "Delete",
@@ -19,8 +18,9 @@
   "commonRetry": "Retry",
   "commonLoading": "Loading...",
   "commonWorking": "Working...",
+  "commonDeleting": "Deleting...",
+  "commonYou": "You",
   "commonSend": "Send",
-
   "shoppingRenameList": "Rename list",
   "shoppingCreateList": "New shopping list",
   "shoppingNewName": "New name",
@@ -34,53 +34,64 @@
   "shoppingAddItem": "Add item",
   "shoppingEditItem": "Edit item",
   "shoppingList": "Shopping list",
-
   "authResetPassword": "Reset password",
   "authForgotPassword": "Forgot password?",
   "authEnterPassword": "Enter your password",
   "authPasswordMinLength": "Min 6 characters",
   "authResetPasswordInstructions": "Enter your email address and we'll send you instructions to reset your password.",
-
   "navExitApp": "Exit Butlery?",
   "navExitAppConfirmation": "Are you sure you want to exit the app?",
   "navExit": "Exit",
-
   "imageAddImage": "Add image",
   "imageTakePhoto": "Take photo",
   "imageUseCamera": "Use camera",
-  "imageFromGallery": "From gallery",
-  "imageSelectFromGallery": "Select an image from gallery",
+  "imageFromGallery": "Choose from gallery",
+  "imageSelectFromGallery": "Select from gallery",
   "imageSelectUpTo": "Select up to {count} images",
   "@imageSelectUpTo": {
     "placeholders": {
-      "count": {"type": "int", "example": "5"}
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "validationFieldRequired": "{fieldName} is required",
   "@validationFieldRequired": {
     "placeholders": {
-      "fieldName": {"type": "String", "example": "Email"}
+      "fieldName": {
+        "type": "String",
+        "example": "Email"
+      }
     }
   },
   "validationFieldTooShort": "{fieldName} must be at least {minLength} characters",
   "@validationFieldTooShort": {
     "placeholders": {
-      "fieldName": {"type": "String"},
-      "minLength": {"type": "int"}
+      "fieldName": {
+        "type": "String"
+      },
+      "minLength": {
+        "type": "int"
+      }
     }
   },
   "validationFieldTooLong": "{fieldName} cannot exceed {maxLength} characters",
   "@validationFieldTooLong": {
     "placeholders": {
-      "fieldName": {"type": "String"},
-      "maxLength": {"type": "int"}
+      "fieldName": {
+        "type": "String"
+      },
+      "maxLength": {
+        "type": "int"
+      }
     }
   },
   "validationInvalidFormat": "Invalid format for {fieldName}",
   "@validationInvalidFormat": {
     "placeholders": {
-      "fieldName": {"type": "String"}
+      "fieldName": {
+        "type": "String"
+      }
     }
   },
   "validationNameRequired": "Name required",
@@ -93,7 +104,6 @@
   "validationPasswordTooShort": "Password must be at least 6 characters",
   "validationGenericRequired": "This field is required",
   "validationEmailInvalid": "Invalid email address",
-
   "errorGeneric": "An error occurred. Please try again.",
   "errorNetwork": "Network error. Check your internet connection.",
   "errorServer": "Server error. Please try again later.",
@@ -104,76 +114,100 @@
   "errorCouldNotCreate": "Could not create {itemType}. Please try again.",
   "@errorCouldNotCreate": {
     "placeholders": {
-      "itemType": {"type": "String", "example": "recipe"}
+      "itemType": {
+        "type": "String",
+        "example": "recipe"
+      }
     }
   },
   "errorCouldNotUpdate": "Could not update {itemType}. Please try again.",
   "@errorCouldNotUpdate": {
     "placeholders": {
-      "itemType": {"type": "String"}
+      "itemType": {
+        "type": "String"
+      }
     }
   },
   "errorCouldNotDelete": "Could not delete {itemType}. Please try again.",
   "@errorCouldNotDelete": {
     "placeholders": {
-      "itemType": {"type": "String"}
+      "itemType": {
+        "type": "String"
+      }
     }
   },
   "errorCouldNotLoad": "Could not load {itemType}. Please try again.",
   "@errorCouldNotLoad": {
     "placeholders": {
-      "itemType": {"type": "String"}
+      "itemType": {
+        "type": "String"
+      }
     }
   },
   "errorWithContext": "Error during {action}: {error}",
   "@errorWithContext": {
     "placeholders": {
-      "action": {"type": "String"},
-      "error": {"type": "String"}
+      "action": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
     }
   },
   "errorActionSpecific": "Problem while {action}: {issue}",
   "@errorActionSpecific": {
     "placeholders": {
-      "action": {"type": "String"},
-      "issue": {"type": "String"}
+      "action": {
+        "type": "String"
+      },
+      "issue": {
+        "type": "String"
+      }
     }
   },
-
   "successItemCreated": "{itemType} created!",
   "@successItemCreated": {
     "placeholders": {
-      "itemType": {"type": "String"}
+      "itemType": {
+        "type": "String"
+      }
     }
   },
   "successItemUpdated": "{itemType} updated!",
   "@successItemUpdated": {
     "placeholders": {
-      "itemType": {"type": "String"}
+      "itemType": {
+        "type": "String"
+      }
     }
   },
   "successItemDeleted": "{itemType} deleted!",
   "@successItemDeleted": {
     "placeholders": {
-      "itemType": {"type": "String"}
+      "itemType": {
+        "type": "String"
+      }
     }
   },
   "successItemAdded": "{itemName} added!",
   "@successItemAdded": {
     "placeholders": {
-      "itemName": {"type": "String"}
+      "itemName": {
+        "type": "String"
+      }
     }
   },
-
   "confirmDeleteItem": "Are you sure you want to delete \"{itemName}\"?",
   "@confirmDeleteItem": {
     "placeholders": {
-      "itemName": {"type": "String"}
+      "itemName": {
+        "type": "String"
+      }
     }
   },
   "confirmUnsavedChanges": "You have unsaved changes. Do you want to leave without saving?",
   "confirmIrreversibleAction": "This action cannot be undone.",
-
   "draftRecovery": "Restore draft",
   "draftRecoverySubtitle": "You have unsaved recipe drafts. Would you like to continue where you left off?",
   "draftRestore": "Restore",
@@ -186,35 +220,35 @@
   "draftFieldsFilledCount": "{count} fields filled",
   "@draftFieldsFilledCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "draftRestoredWithCount": "Draft restored! {count} fields loaded",
   "@draftRestoredWithCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "connectivityOfflineMode": "Offline mode enabled",
   "connectivityRestored": "Connection restored",
   "connectivitySyncingPending": "Syncing pending changes...",
   "connectivityLocalSaved": "Changes saved locally",
   "connectivityWillSync": "Will sync when you're back online",
-
   "permissionInsufficient": "Insufficient permissions",
   "permissionReadOnly": "Read-only access",
   "permissionOwnerOnly": "Only the owner can perform this action",
   "permissionRequestEdit": "Request edit permissions",
   "permissionMakePersonalCopy": "Make a personal copy",
-
   "recoveryCheckConnection": "Check your internet connection",
   "recoveryTryAgain": "Try again",
   "recoveryLoginAgain": "Sign in again",
   "recoveryContactOwner": "Contact the owner",
   "recoveryWaitAndRetry": "Wait and try again",
   "recoveryCheckPermissions": "Check permissions",
-
   "emptyNoItems": "No items found.",
   "emptyList": "The list is empty.",
   "emptyNoResults": "No results found.",
@@ -224,7 +258,9 @@
   "emptyNoRecipesSubtitle": "Add your first recipe by tapping \"{addButton}\"",
   "@emptyNoRecipesSubtitle": {
     "placeholders": {
-      "addButton": {"type": "String"}
+      "addButton": {
+        "type": "String"
+      }
     }
   },
   "emptyNoSearchResultsSubtitle": "Try searching for something else or clear the search",
@@ -245,7 +281,6 @@
   "emptyNoSavedMenusTitle": "No saved menus",
   "emptyNoSavedMenusSubtitle": "Create and save menus to easily load them later",
   "emptyGenericTitle": "No content to display",
-
   "recipeName": "Recipe name",
   "recipeDescription": "Description",
   "recipeIngredients": "Ingredients",
@@ -259,10 +294,12 @@
   "recipeFormatPortions": "{count, plural, =1{1 serving} other{{count} servings}}",
   "@recipeFormatPortions": {
     "placeholders": {
-      "count": {"type": "int", "example": "4"}
+      "count": {
+        "type": "int",
+        "example": "4"
+      }
     }
   },
-
   "socialFriendName": "Friend name",
   "socialGroupName": "Group name",
   "socialDisplayName": "Display name",
@@ -274,12 +311,10 @@
   "socialSendFriendRequest": "Send friend request",
   "socialAcceptFriendRequest": "Accept friend request",
   "socialDeclineFriendRequest": "Decline friend request",
-
   "menuName": "Menu name",
   "menuSave": "Save menu",
   "menuLoad": "Load menu",
   "menuWeek": "Weekly menu",
-
   "messagingTitle": "Messages",
   "messagingNewConversation": "New conversation",
   "messagingSearchConversations": "Search conversations...",
@@ -297,7 +332,9 @@
   "messagingCouldNotLeaveGroup": "Could not leave the group: {error}",
   "@messagingCouldNotLeaveGroup": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "messagingLeave": "Leave",
@@ -305,28 +342,35 @@
   "messagingCouldNotShowProfile": "Could not show profile: {error}",
   "@messagingCouldNotShowProfile": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "messagingConversationDeleted": "Conversation \"{title}\" deleted",
   "@messagingConversationDeleted": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "messagingCouldNotDeleteConversation": "Could not delete conversation: {error}",
   "@messagingCouldNotDeleteConversation": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "messagingConfirmLeaveGroup": "Are you sure you want to leave \"{groupName}\"?",
   "@messagingConfirmLeaveGroup": {
     "placeholders": {
-      "groupName": {"type": "String"}
+      "groupName": {
+        "type": "String"
+      }
     }
   },
-
   "profileLogout": "Log out",
   "profileLogoutConfirm": "Are you sure you want to log out?",
   "profileDeleteAccount": "Delete account permanently",
@@ -346,23 +390,26 @@
   "profileCouldNotDeleteAccount": "Could not delete account: {error}",
   "@profileCouldNotDeleteAccount": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
-
   "chatErrorOccurred": "An error occurred",
-  "chatConversationInfo": "Conversation information",
+  "chatConversationInfo": "Conversation info",
   "chatTypeDirectMessage": "Type: Direct message",
   "chatCreatedAt": "Created: {date}",
   "@chatCreatedAt": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "chatNotificationSettingsUpdated": "Notification settings updated",
   "chatCouldNotChangeNotifications": "Could not change notification settings",
   "chatLeaveConversation": "Leave conversation",
-  "chatLeaveConversationConfirm": "Are you sure you want to leave the conversation?",
+  "chatLeaveConversationConfirm": "Are you sure you want to leave this conversation?",
   "chatCouldNotLeaveConversation": "Could not leave the conversation",
   "chatEditMessage": "Edit message",
   "chatWriteYourMessage": "Write your message...",
@@ -384,14 +431,12 @@
   "chatCouldNotSharePhoto": "Could not share photo",
   "chatDeleteMessage": "Delete",
   "chatDeleteMessageConfirm": "Are you sure you want to delete the message?",
-
   "placeholderSearch": "Search...",
   "placeholderName": "Enter name",
   "placeholderDescription": "Enter description (optional)",
   "placeholderEmail": "your@email.com",
   "placeholderUrl": "https://example.com",
   "placeholderPhone": "+1 555 123 4567",
-
   "statusConnecting": "Connecting...",
   "statusSyncing": "Syncing...",
   "statusUploading": "Uploading...",
@@ -401,45 +446,43 @@
   "statusDeleting": "Deleting...",
   "statusCreating": "Creating...",
   "statusUpdating": "Updating...",
-
   "accessibilityMenuButton": "Menu button",
   "accessibilityBackButton": "Back",
   "accessibilityCloseButton": "Close",
   "accessibilityMoreOptions": "More options",
   "accessibilityExpandButton": "Expand",
   "accessibilityCollapseButton": "Collapse",
-
   "timeToday": "Today",
   "timeYesterday": "Yesterday",
   "timeTomorrow": "Tomorrow",
   "timeThisWeek": "This week",
   "timeLastWeek": "Last week",
   "timeNextWeek": "Next week",
-
   "unitMinutesShort": "min",
   "unitHoursShort": "h",
   "unitPiecesShort": "pcs",
   "unitLiters": "liters",
   "unitKilograms": "kg",
   "unitGrams": "g",
-
   "technicalShowDetails": "Show technical details",
   "technicalHideDetails": "Hide technical details",
   "technicalInformation": "Technical information",
   "technicalContactSupport": "Contact support",
   "technicalTryAgainLater": "Try again later",
-
   "dialogErrorTitle": "An error occurred",
   "dialogLoading": "Loading...",
   "dialogConfirmDeleteTitle": "Confirm deletion",
   "dialogConfirmDeleteMessage": "Are you sure you want to remove {itemName} from {itemType}?",
   "@dialogConfirmDeleteMessage": {
     "placeholders": {
-      "itemName": {"type": "String"},
-      "itemType": {"type": "String"}
+      "itemName": {
+        "type": "String"
+      },
+      "itemType": {
+        "type": "String"
+      }
     }
   },
-
   "recipePortionAbbreviation": "srv",
   "recipePortionSingular": "serving",
   "recipePortionsPlural": "servings",
@@ -452,14 +495,18 @@
   "recipeImageCount": "{count, plural, =1{1 image} other{{count} images}}",
   "@recipeImageCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "recipePersonalTags": "Personal tags",
   "recipeIngredientsForPortions": "Ingredients for {count} {count, plural, =1{serving} other{servings}}:",
   "@recipeIngredientsForPortions": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "recipeAnalysisFailed": "Analysis failed",
@@ -471,33 +518,38 @@
   "recipeCountBadge": "{count} recipes",
   "@recipeCountBadge": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "scalerPortionsLabel": "Servings:",
   "scalerUsingSwedishUnits": "Using metric units",
   "scalerConvertAmericanUnits": "Convert American units",
   "scalerScaledFromTo": "Scaled from {from} to {to} servings",
   "@scalerScaledFromTo": {
     "placeholders": {
-      "from": {"type": "int"},
-      "to": {"type": "int"}
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
     }
   },
   "scalerAmericanConverted": "American units converted to metric",
-
   "menuPromptQuestion": "What kind of menu do you want?",
   "menuPromptHint": "E.g. 3 dinners, 2 lunches and 1 breakfast",
   "menuGenerating": "Generating...",
   "menuGenerateNew": "Generate new menu",
   "menuGenerate": "Generate menu",
   "menuYourWeeklyMenu": "Your weekly menu",
-  "menuRecipeCount": "{recipes} recipes in {categories} categories",
+  "menuRecipeCount": "{count} recipes",
   "@menuRecipeCount": {
     "placeholders": {
-      "recipes": {"type": "int"},
-      "categories": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuChooseManually": "Choose recipes manually",
@@ -506,14 +558,20 @@
   "menuWeekBadgeWithCount": "Week {week} · {count} dishes",
   "@menuWeekBadgeWithCount": {
     "placeholders": {
-      "week": {"type": "int"},
-      "count": {"type": "int"}
+      "week": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuWeekBadge": "Week {week}",
   "@menuWeekBadge": {
     "placeholders": {
-      "week": {"type": "int"}
+      "week": {
+        "type": "int"
+      }
     }
   },
   "menuToShoppingList": "To shopping list",
@@ -522,44 +580,49 @@
   "menuShared": "Weekly menu shared!",
   "menuGeneratingOverlay": "Generating your weekly menu...",
   "menuGeneratingSubtitle": "Finding recipes that match your preferences",
-
   "shoppingCountBadge": "{items} items · {done} done",
   "@shoppingCountBadge": {
     "placeholders": {
-      "items": {"type": "int"},
-      "done": {"type": "int"}
+      "items": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
     }
   },
-
   "commonSort": "Sort",
   "commonHide": "Hide",
   "commonShowAllCount": "Show all ({count})",
   "@commonShowAllCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "commonMoreCount": "+{count} more",
   "@commonMoreCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "commonDismiss": "Dismiss",
   "errorUnexpected": "An unexpected error occurred",
-
   "searchClearSearch": "Clear search",
   "searchClearFilters": "Clear filters",
-
   "syncComplete": "Sync complete!",
   "syncFailed": "Sync failed: {error}",
   "@syncFailed": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "offlineShowingLocal": "Offline mode - showing local recipes",
-
   "recipeCreateCopy": "Create copy",
   "recipeCreateShoppingList": "Create shopping list",
   "recipeUpdateTags": "Update tags",
@@ -569,28 +632,32 @@
   "recipeSourceFrom": "From {host}",
   "@recipeSourceFrom": {
     "placeholders": {
-      "host": {"type": "String"}
+      "host": {
+        "type": "String"
+      }
     }
   },
   "errorCouldNotOpenLink": "Could not open link",
   "errorInvalidLink": "Invalid link",
-
   "shoppingItemRemoved": "{name} removed!",
   "@shoppingItemRemoved": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "shoppingItemRemoveError": "Could not remove {name}",
   "@shoppingItemRemoveError": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "shoppingAllUnchecked": "All items unchecked!",
   "shoppingNoListForRename": "No list selected for renaming",
   "shoppingNoListForDelete": "No list selected for deletion",
-
   "commonBack": "Back",
   "commonEnable": "Enable",
   "commonDisable": "Disable",
@@ -626,10 +693,11 @@
   "commonRemoveLabel": "Remove {label}",
   "@commonRemoveLabel": {
     "placeholders": {
-      "label": {"type": "String"}
+      "label": {
+        "type": "String"
+      }
     }
   },
-
   "personalTagsViewTitle": "Personal Tags",
   "personalTagCreateTag": "Create tag",
   "personalTagCreateGroup": "Create group",
@@ -641,20 +709,28 @@
   "personalTagRecipeCount": "{count, plural, =1{1 recipe} other{{count} recipes}}",
   "@personalTagRecipeCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagRuleCount": "{count} rules",
   "@personalTagRuleCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagRuleCountActive": "{enabled}/{total} rules active",
   "@personalTagRuleCountActive": {
     "placeholders": {
-      "enabled": {"type": "int"},
-      "total": {"type": "int"}
+      "enabled": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "personalTagNoUsage": "Not used",
@@ -663,13 +739,17 @@
   "personalTagRulesDisabled": "{count} rules disabled",
   "@personalTagRulesDisabled": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagRulesActive": "{count} rules active",
   "@personalTagRulesActive": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagMoveToGroup": "Move to group",
@@ -679,15 +759,23 @@
   "personalTagEnableAllRulesMessage": "All {count} rules for \"{name}\" will be enabled.",
   "@personalTagEnableAllRulesMessage": {
     "placeholders": {
-      "count": {"type": "int"},
-      "name": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
     }
   },
   "personalTagDisableAllRulesMessage": "All {count} rules for \"{name}\" will be disabled.",
   "@personalTagDisableAllRulesMessage": {
     "placeholders": {
-      "count": {"type": "int"},
-      "name": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
     }
   },
   "personalTagAllRulesEnabled": "All rules enabled",
@@ -707,7 +795,9 @@
   "personalTagDeleteTagMessage": "Are you sure you want to delete \"{name}\"? The tag will be removed from all recipes.",
   "@personalTagDeleteTagMessage": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "personalTagDeleted": "Tag deleted",
@@ -721,7 +811,9 @@
   "personalTagDeleteGroupMessage": "Are you sure you want to delete \"{name}\"? Tags in the group will be ungrouped.",
   "@personalTagDeleteGroupMessage": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "personalTagGroupDeleted": "Group deleted",
@@ -731,13 +823,20 @@
   "personalTagTileSemantics": "{name}, {count} recipes, {enabled} of {total} rules active",
   "@personalTagTileSemantics": {
     "placeholders": {
-      "name": {"type": "String"},
-      "count": {"type": "int"},
-      "enabled": {"type": "int"},
-      "total": {"type": "int"}
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "enabled": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
-
   "tagDetailDefaultTitle": "Tag",
   "tagDetailNotFound": "Tag could not be found",
   "tagDetailEditTitle": "Edit tag",
@@ -756,7 +855,9 @@
   "tagDetailDeleteRuleMessage": "Are you sure you want to delete \"{name}\"?",
   "@tagDetailDeleteRuleMessage": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "tagDetailRuleDeleted": "Rule deleted",
@@ -765,8 +866,12 @@
   "tagDetailRulesAppliedSuccess": "{tagsApplied} tags applied to {recipesModified} recipes",
   "@tagDetailRulesAppliedSuccess": {
     "placeholders": {
-      "tagsApplied": {"type": "int"},
-      "recipesModified": {"type": "int"}
+      "tagsApplied": {
+        "type": "int"
+      },
+      "recipesModified": {
+        "type": "int"
+      }
     }
   },
   "tagDetailNoRecipesMatched": "No recipes matched the rules",
@@ -775,7 +880,9 @@
   "tagDetailDeleteTagMessage": "Are you sure you want to delete \"{name}\"? The tag will be removed from all recipes.",
   "@tagDetailDeleteTagMessage": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "tagDetailDeleted": "Tag deleted",
@@ -783,21 +890,29 @@
   "tagDetailRecipeCount": "{count, plural, =1{1 recipe} other{{count} recipes}}",
   "@tagDetailRecipeCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "tagDetailRulesActive": "{enabled}/{total} rules active",
   "@tagDetailRulesActive": {
     "placeholders": {
-      "enabled": {"type": "int"},
-      "total": {"type": "int"}
+      "enabled": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "tagDetailRuleCalculating": "Calculating...",
   "tagDetailRuleMatches": "{count, plural, =1{1 recipe matches} other{{count} recipes match}}",
   "@tagDetailRuleMatches": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "tagDetailRuleNoConditions": "No conditions",
@@ -806,7 +921,9 @@
   "tagDetailRuleMoreConditions": "(+{count} more)",
   "@tagDetailRuleMoreConditions": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "tagDetailRulesDescription": "Rules automatically apply the tag to recipes that match the conditions.",
@@ -814,7 +931,6 @@
   "tagDetailRulesEmptyTitle": "No rules yet",
   "tagDetailRulesEmptySubtitle": "Create rules to automatically tag recipes",
   "tagDetailRulesCreateFirst": "Create first rule",
-
   "tagAlreadyExists": "Tag already exists",
   "tagManageTags": "Manage tags",
   "tagActiveTags": "Active tags",
@@ -827,7 +943,6 @@
   "tagManuallyAdded": "Manually added",
   "tagAutoGenerated": "Auto-generated",
   "tagClickToRestore": "Click to restore",
-
   "allergenSettingsTitle": "Allergen Settings",
   "allergenTrackAllergensTitle": "Track Allergens",
   "allergenTrackAllergensSubtitle": "Select which allergens you want to see status for on recipes.",
@@ -846,12 +961,13 @@
   "allergenResetConfirm": "Reset settings?",
   "allergenResetMessage": "This will reset all allergen and dietary preferences to default values.",
   "allergenReset": "Reset",
-
   "personalTagWizardAddRule": "Add a rule?",
   "personalTagWizardAddRuleMessage": "Do you want to create an automation rule for \"{name}\"?\n\nRules can automatically add this tag to recipes based on ingredients, source, time, and more.",
   "@personalTagWizardAddRuleMessage": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "personalTagWizardLater": "Later",
@@ -862,19 +978,25 @@
   "personalTagChipSelectedA11y": "{name}, selected. Double tap to remove.",
   "@personalTagChipSelectedA11y": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "personalTagChipUnselectedA11y": "{name}. Double tap to select.",
   "@personalTagChipUnselectedA11y": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "personalTagA11yLabel": "Tag: {name}",
   "@personalTagA11yLabel": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "personalTagManagerTitle": "My tags",
@@ -885,7 +1007,9 @@
   "personalTagCreatedDate": "Created {date}",
   "@personalTagCreatedDate": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "personalTagCreateRuleForTag": "Create rule for tag",
@@ -896,13 +1020,16 @@
   "personalTagApplyRulesProgress": "Processing recipe {progress} of {total}...",
   "@personalTagApplyRulesProgress": {
     "placeholders": {
-      "progress": {"type": "int"},
-      "total": {"type": "int"}
+      "progress": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "personalTagApplyRulesFetching": "Fetching recipes...",
   "personalTagSelectColor": "Select color",
-
   "ruleEditTitle": "Edit rule",
   "ruleCreateTitle": "Create rule",
   "ruleNewTitle": "New rule",
@@ -923,8 +1050,12 @@
   "ruleConditionCountWithMode": "{count} conditions, {mode} must match",
   "@ruleConditionCountWithMode": {
     "placeholders": {
-      "count": {"type": "int"},
-      "mode": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "mode": {
+        "type": "String"
+      }
     }
   },
   "ruleEnabledTitle": "Rule enabled",
@@ -936,7 +1067,6 @@
   "ruleRemoveCondition": "Remove condition",
   "ruleSelectProperty": "Select property...",
   "ruleAllConditionsNeedValue": "All conditions must have a value",
-
   "ruleHintIngredient": "E.g. \"chicken\", \"salmon\"",
   "ruleHintProperty": "E.g. \"seafood\", \"meat\", \"dairy\"",
   "ruleHintKeyword": "E.g. \"quick\", \"vegetarian\"",
@@ -951,7 +1081,6 @@
   "ruleHintOwnership": "E.g. \"personal\", \"shared\", \"collaborative\"",
   "ruleHintHasImage": "true or false",
   "ruleHintCompleteness": "E.g. \"description\", \"ingredients\"",
-
   "ruleCategoryAllergens": "Allergens",
   "ruleCategoryLactose": "Lactose",
   "ruleCategoryMeat": "Meat",
@@ -959,89 +1088,111 @@
   "ruleCategoryAnimal": "Animal",
   "ruleCategoryDiet": "Diet",
   "ruleCategoryOther": "Other",
-
   "tagResultNoAllergens": "No allergens to display",
   "tagResultOutdated": "Tags can be updated",
   "tagResultCoverage": "Coverage",
   "tagResultUnknownIngredients": "{count} unknown ingredients",
   "@tagResultUnknownIngredients": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "tagResultUnknownIngredientsA11y": "{count} unknown ingredients",
   "@tagResultUnknownIngredientsA11y": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "dietaryStatusFreeA11y": "Suitable for {name} diet",
   "@dietaryStatusFreeA11y": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "dietaryStatusContainsA11y": "Not suitable for {name} diet",
   "@dietaryStatusContainsA11y": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "dietaryStatusUnknownA11y": "{name} status unknown",
   "@dietaryStatusUnknownA11y": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "dietaryStatusNotLabel": "Not {name}",
   "@dietaryStatusNotLabel": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
-
   "allergenStatusFreeA11y": "Free from {name}",
   "@allergenStatusFreeA11y": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "allergenStatusContainsA11y": "Contains {name}",
   "@allergenStatusContainsA11y": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "allergenStatusUnknownA11y": "{name} status unknown",
   "@allergenStatusUnknownA11y": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "allergenFreeLabel": "{name}-free",
   "@allergenFreeLabel": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "allergenContainsLabel": "contains {name}",
   "@allergenContainsLabel": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "allergenUnknownLabel": "{name} unknown",
   "@allergenUnknownLabel": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
-
   "friendMemberCount": "{count, plural, =1{1 member} other{{count} members}}",
   "@friendMemberCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "friendCategoryLabel": "Category",
@@ -1052,20 +1203,28 @@
   "friendLargestCategory": "Largest category: {name} ({count} members)",
   "@friendLargestCategory": {
     "placeholders": {
-      "name": {"type": "String"},
-      "count": {"type": "int"}
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "friendCategoryCount": "{count, plural, =1{1 category} other{{count} categories}}",
   "@friendCategoryCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "friendTotalMembersCount": "{count} total members",
   "@friendTotalMembersCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "friendCreateFirstCategory": "Create your first friend category",
@@ -1076,20 +1235,28 @@
   "friendSelectedCategoriesSummary": "{count, plural, =1{1 category} other{{count} categories}} ({friends} friends)",
   "@friendSelectedCategoriesSummary": {
     "placeholders": {
-      "count": {"type": "int"},
-      "friends": {"type": "int"}
+      "count": {
+        "type": "int"
+      },
+      "friends": {
+        "type": "int"
+      }
     }
   },
   "friendCategoriesSelected": "{count} categories selected",
   "@friendCategoriesSelected": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "friendFriendsCount": "{count} friends",
   "@friendFriendsCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "friendFriendsLabel": "friends",
@@ -1107,21 +1274,28 @@
   "friendSelectedCount": "{count, plural, =1{1 friend selected} other{{count} friends selected}}",
   "@friendSelectedCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "shoppingItemsWillBeRemoved": "{count} items will be removed.",
   "@shoppingItemsWillBeRemoved": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "shoppingItemsFromMenuIn": "{count} items from the menu in \"{name}\"",
   "@shoppingItemsFromMenuIn": {
     "placeholders": {
-      "count": {"type": "int"},
-      "name": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
     }
   },
   "shoppingItemHint": "E.g. Milk",
@@ -1134,7 +1308,9 @@
   "shoppingAndMore": "... and {count} more",
   "@shoppingAndMore": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "shoppingOwner": "Owner",
@@ -1151,8 +1327,12 @@
   "shoppingToListWithCount": "To \"{name}\" ({count})",
   "@shoppingToListWithCount": {
     "placeholders": {
-      "name": {"type": "String"},
-      "count": {"type": "int"}
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "shoppingLoadingLists": "Loading lists...",
@@ -1164,7 +1344,9 @@
   "shoppingAddItemsCount": "Add {count} items...",
   "@shoppingAddItemsCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "shoppingPreview": "Preview",
@@ -1173,29 +1355,38 @@
   "shoppingListCreated": "List \"{name}\" created",
   "@shoppingListCreated": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "shoppingCouldNotCreateList": "Could not create list: {error}",
   "@shoppingCouldNotCreateList": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "shoppingItemsAddedToList": "{count} items added to \"{name}\"",
   "@shoppingItemsAddedToList": {
     "placeholders": {
-      "count": {"type": "int"},
-      "name": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
     }
   },
   "shoppingCouldNotAddItems": "Could not add items: {error}",
   "@shoppingCouldNotAddItems": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
-
   "profileSocialFeatures": "Social features",
   "profileEditProfile": "Edit profile",
   "profileEditProfileSubtitle": "Update your name and profile picture",
@@ -1229,7 +1420,9 @@
   "profileLogoutFailed": "Logout failed: {error}",
   "@profileLogoutFailed": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "profileAccountDeletedPermanently": "Your account has been permanently deleted",
@@ -1238,35 +1431,44 @@
   "profileBackupFailed": "Backup failed: {error}",
   "@profileBackupFailed": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "profileRestoreCompleted": "Restore completed!",
   "profileRestoreFailed": "Restore failed: {error}",
   "@profileRestoreFailed": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "profileCouldNotOpenPrivacyPolicy": "Could not open privacy policy: {error}",
   "@profileCouldNotOpenPrivacyPolicy": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "profileCouldNotOpenConsentManager": "Could not open consent manager: {error}",
   "@profileCouldNotOpenConsentManager": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "profileCouldNotOpenDataExport": "Could not open data export: {error}",
   "@profileCouldNotOpenDataExport": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
-
   "shareRecipeTitle": "Share recipe",
   "shareMenuTitle": "Share menu",
   "shareShoppingListTitle": "Share shopping list",
@@ -1284,8 +1486,12 @@
   "shareRecipesInCategories": "{recipes} recipes in {categories} categories",
   "@shareRecipesInCategories": {
     "placeholders": {
-      "recipes": {"type": "int"},
-      "categories": {"type": "int"}
+      "recipes": {
+        "type": "int"
+      },
+      "categories": {
+        "type": "int"
+      }
     }
   },
   "shareNoFriendsToShareWith": "No friends to share with",
@@ -1312,7 +1518,6 @@
   "shareNoGroupsAvailable": "No groups available",
   "shareNoGroupsMatchedSearch": "No groups matched your search",
   "shareAlreadySharingList": "Already sharing list",
-
   "menuSavedMenus": "Saved menus",
   "menuNoSavedMenus": "No saved menus",
   "menuSavedMenusSavedEarlier": "Saved earlier",
@@ -1332,7 +1537,6 @@
   "menuShareMessageHint": "Message sent with the menu",
   "menuMenuNameHint": "E.g. Week 45 or Weekend menu",
   "menuUnnamedMenu": "Unnamed menu",
-
   "socialUnknownUser": "Unknown user",
   "socialShared": "Shared",
   "socialEditRecipe": "Edit recipe",
@@ -1341,16 +1545,20 @@
   "socialActive": "Active",
   "socialParticipants": "Participants",
   "socialViewAll": "View all",
-  "socialSharedRecipeMembers": "Shared recipe \u2022 {count} members",
+  "socialSharedRecipeMembers": "Shared recipe • {count} members",
   "@socialSharedRecipeMembers": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
-  "socialSharedMenuMembers": "Shared menu \u2022 {count} members",
+  "socialSharedMenuMembers": "Shared menu • {count} members",
   "@socialSharedMenuMembers": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "socialActiveCollaboration": "Active collaboration",
@@ -1362,26 +1570,34 @@
   "socialLastActive": "Last active: {time}",
   "@socialLastActive": {
     "placeholders": {
-      "time": {"type": "String"}
+      "time": {
+        "type": "String"
+      }
     }
   },
   "socialJustNow": "just now",
   "socialMinutesAgo": "{count} min ago",
   "@socialMinutesAgo": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "socialHoursAgo": "{count} hours ago",
   "@socialHoursAgo": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "socialDaysAgo": "{count} days ago",
   "@socialDaysAgo": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "socialPermissionOwner": "Owner",
@@ -1400,14 +1616,15 @@
   "socialSelectAllLabel": "Select all",
   "socialDeselectAllLabel": "Deselect all",
   "socialInvertLabel": "Invert",
-
   "invitationNoTargetsAvailable": "No targets available",
   "invitationSearchTargets": "Search targets...",
   "invitationSelectedTargets": "Selected targets",
   "invitationTargetsSelected": "{count} targets selected",
   "@invitationTargetsSelected": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "invitationSortLabel": "Sort:",
@@ -1436,17 +1653,20 @@
   "invitationNoResultsFor": "No results for \"{query}\"",
   "@invitationNoResultsFor": {
     "placeholders": {
-      "query": {"type": "String"}
+      "query": {
+        "type": "String"
+      }
     }
   },
   "invitationTargetsSelectedCount": "{count} targets selected",
   "@invitationTargetsSelectedCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "invitationNoSelectionsMade": "No selections made",
-
   "socialSharedRecipes": "Shared recipes",
   "socialSharedMenus": "Shared menus",
   "socialActiveCollaborations": "Active collaborations",
@@ -1454,19 +1674,15 @@
   "socialReceived": "Received",
   "socialAccepted": "Accepted",
   "socialPending": "Pending",
-
   "commonUser": "User",
   "commonDone": "Done",
-  "commonBack": "Back",
   "commonClearError": "Clear error",
   "commonClearSearch": "Clear search",
   "commonComingSoon": "Coming soon...",
   "commonDiscard": "Discard",
   "commonFailed": "Failed",
-  "commonHide": "Hide",
   "commonImporting": "Importing...",
   "commonLater": "Later",
-  "commonLoading": "Loading...",
   "commonMessage": "Message:",
   "commonPending": "Pending",
   "commonRefresh": "Refresh",
@@ -1475,18 +1691,17 @@
   "commonSending": "Sending...",
   "commonUndo": "Undo",
   "commonUploading": "Uploading...",
-
   "authLogIn": "Log in",
-
   "collaborativeListNoAccess": "The list may have been deleted or you no longer have access",
   "collaborativeListNotFound": "List not found",
   "collaborativeLoadingSharedList": "Loading shared list...",
-
   "discoveryActivity": "Activity",
   "discoveryByAuthor": "By {name}",
   "@discoveryByAuthor": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "discoveryCategories": "Categories",
@@ -1503,7 +1718,9 @@
   "discoveryItemCount": "{count} items",
   "@discoveryItemCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "discoveryLoading": "Loading discovery content...",
@@ -1528,7 +1745,6 @@
   "discoveryShowTrends": "Show trends",
   "discoveryShowTrendsDescription": "Show popular content from the community",
   "discoveryToDiscover": "to discover",
-
   "allergenCrustacean": "Crustacean",
   "allergenDairy": "Dairy",
   "allergenEgg": "Egg",
@@ -1537,7 +1753,6 @@
   "allergenPeanut": "Peanut",
   "allergenSoy": "Soy",
   "allergenTreeNut": "Tree nut",
-
   "commentCouldNotPost": "Could not post comment",
   "commentPosted": "Comment posted",
   "commentReply": "Reply",
@@ -1545,11 +1760,12 @@
   "commentWriteComment": "Write a comment",
   "commentWriteReply": "Write a reply",
   "commentYou": "You",
-
   "dialogAddRecipesToCategory": "Add recipes to {categoryName}",
   "@dialogAddRecipesToCategory": {
     "placeholders": {
-      "categoryName": {"type": "String"}
+      "categoryName": {
+        "type": "String"
+      }
     }
   },
   "dialogAlreadyShared": "Shared",
@@ -1559,7 +1775,9 @@
   "dialogCouldNotSave": "Could not save: {error}",
   "@dialogCouldNotSave": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "dialogCreateList": "Create list",
@@ -1569,8 +1787,12 @@
   "dialogFilteredRecipeCount": "{filtered} of {total} recipes",
   "@dialogFilteredRecipeCount": {
     "placeholders": {
-      "filtered": {"type": "int"},
-      "total": {"type": "int"}
+      "filtered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "dialogImportWithoutAi": "Import without AI",
@@ -1578,8 +1800,12 @@
   "dialogItemsProgress": "{completed}/{total} done",
   "@dialogItemsProgress": {
     "placeholders": {
-      "completed": {"type": "int"},
-      "total": {"type": "int"}
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "dialogLoadingMenus": "Loading menus...",
@@ -1600,19 +1826,25 @@
   "dialogRetryInHours": "Try again in {hours} hour(s)",
   "@dialogRetryInHours": {
     "placeholders": {
-      "hours": {"type": "int"}
+      "hours": {
+        "type": "int"
+      }
     }
   },
   "dialogRetryInMinutes": "Try again in {minutes} minute(s)",
   "@dialogRetryInMinutes": {
     "placeholders": {
-      "minutes": {"type": "int"}
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "dialogRetryInSeconds": "Try again in {seconds} second(s)",
   "@dialogRetryInSeconds": {
     "placeholders": {
-      "seconds": {"type": "int"}
+      "seconds": {
+        "type": "int"
+      }
     }
   },
   "dialogRetryLater": "Try later",
@@ -1622,26 +1854,34 @@
   "dialogSelectedCount": "Selected ({count})",
   "@dialogSelectedCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "dialogShared": "Shared",
   "dialogShareMenuWith": "Share menu with {groupName}",
   "@dialogShareMenuWith": {
     "placeholders": {
-      "groupName": {"type": "String"}
+      "groupName": {
+        "type": "String"
+      }
     }
   },
   "dialogShareRecipesWith": "Share recipes with {name}",
   "@dialogShareRecipesWith": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "dialogShareShoppingListWith": "Share shopping list with {groupName}",
   "@dialogShareShoppingListWith": {
     "placeholders": {
-      "groupName": {"type": "String"}
+      "groupName": {
+        "type": "String"
+      }
     }
   },
   "dialogSharing": "Sharing...",
@@ -1650,12 +1890,15 @@
   "dialogUnknownIngredientProgress": "Unknown ingredient {current}/{total}",
   "@dialogUnknownIngredientProgress": {
     "placeholders": {
-      "current": {"type": "int"},
-      "total": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "dialogUsesSimpleExtraction": "Uses simpler extraction",
-
   "dietaryAlcohol": "Alcohol",
   "dietaryAnimalProduct": "Animal product",
   "dietaryBeef": "Beef",
@@ -1664,11 +1907,9 @@
   "dietaryPoultry": "Poultry",
   "dietarySeafood": "Seafood",
   "dietarySpicy": "Spicy",
-
   "draftContinueEditing": "Continue editing",
   "draftDiscardAll": "Discard all",
   "draftUnsavedFound": "Unsaved drafts found",
-
   "groupContentTypeContent": "Content",
   "groupContentTypeMenu": "Menu",
   "groupContentTypeRecipe": "Recipe",
@@ -1677,14 +1918,18 @@
   "groupCouldNotCopyList": "Could not copy list: {error}",
   "@groupCouldNotCopyList": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "groupCouldNotFetchMenu": "Could not fetch menu from server",
   "groupCouldNotImportList": "Could not import list: {error}",
   "@groupCouldNotImportList": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "groupCreateNew": "Create new group",
@@ -1697,39 +1942,51 @@
   "groupErrorOpeningMenu": "Error opening menu: {error}",
   "@groupErrorOpeningMenu": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "groupImport": "Import",
   "groupImportingMenuComingSoon": "Importing menu: {title} (coming soon)",
   "@groupImportingMenuComingSoon": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "groupImportingRecipeComingSoon": "Importing recipe: {title} (coming soon)",
   "@groupImportingRecipeComingSoon": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "groupImportingShoppingListComingSoon": "Importing shopping list: {title} (coming soon)",
   "@groupImportingShoppingListComingSoon": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "groupImportNotImplemented": "Import {title} (not yet implemented)",
   "@groupImportNotImplemented": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "groupImportShoppingList": "Import shopping list",
   "groupImportShoppingListConfirm": "Do you want to import \"{name}\" to your shopping lists?",
   "@groupImportShoppingListConfirm": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "groupInvitationNote": "These friends will receive an invitation to the group.",
@@ -1738,13 +1995,17 @@
   "groupListCopyName": "Copy of {name}",
   "@groupListCopyName": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "groupListImported": "\"{name}\" has been imported",
   "@groupListImported": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "groupNameHint": "E.g. \"Family\", \"Work\", \"Book club\"",
@@ -1758,14 +2019,18 @@
   "groupOnlyMember": "You are the only member in \"{name}\".",
   "@groupOnlyMember": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "groupPasteInAnyApp": "Paste in any app",
   "groupRecipeViewComingSoon": "Recipe view: {title} (coming soon)",
   "@groupRecipeViewComingSoon": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "groupRemoveMemberConfirmPrefix": "Are you sure you want to remove ",
@@ -1774,10 +2039,12 @@
   "groupSelectedMembers": "Selected members ({count})",
   "@groupSelectedMembers": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
-  "groupSelectFriendsToInvite": "Select friends you want to invite to the group:",
+  "groupSelectFriendsToInvite": "Select friends to invite to the group",
   "groupSelectIcon": "Select icon",
   "groupSelectMembers": "Select members",
   "groupSelectNewOwner": "Select new owner:",
@@ -1786,7 +2053,9 @@
   "groupSharedBy": "Shared by {name}",
   "@groupSharedBy": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "groupSharedContent": "Shared content",
@@ -1795,7 +2064,9 @@
   "groupShoppingListViewComingSoon": "Shopping list view: {title} (coming soon)",
   "@groupShoppingListViewComingSoon": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "groupTabLists": "Lists",
@@ -1804,21 +2075,26 @@
   "groupTransferOwnershipMessage": "You are the owner of \"{name}\". You must select a new owner before you can leave the group.",
   "@groupTransferOwnershipMessage": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "groupView": "View",
   "groupViewNotImplemented": "View {title} (not yet implemented)",
   "@groupViewNotImplemented": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
-
   "profileCouldNotOpenConsentManagement": "Could not open consent management: {error}",
   "@profileCouldNotOpenConsentManagement": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "profileDataBackup": "Data & Backup",
@@ -1826,42 +2102,47 @@
   "profileExportDataSubtitle": "Download all your data in JSON format (GDPR)",
   "profileManageConsent": "Manage consents",
   "profileManageConsentSubtitle": "Choose how we may process your personal data (GDPR)",
-
   "rateLimitAiBudget": "AI budget exhausted",
   "rateLimitAiLimit": "AI limit reached",
   "rateLimitDailyQuota": "Daily quota reached",
   "rateLimitSlowDown": "Slow down a bit",
-
   "sessionContinue": "Continue session",
   "sessionContinueOrLogout": "Do you want to continue your session or log out now?",
   "sessionExpiringMessage": "Your session will expire in:",
   "sessionExpiringTitle": "Session expiring soon",
-
   "shareContentTypeMenu": "menus",
   "shareContentTypeRecipe": "recipes",
   "shareContentTypeShoppingList": "shopping lists",
   "shareDefaultMessageMenu": "Check out this weekly menu: {name}",
   "@shareDefaultMessageMenu": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "shareDefaultMessageRecipe": "Check out this recipe: {name}",
   "@shareDefaultMessageRecipe": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "shareDefaultMessageShoppingList": "Check out this shopping list: {name}",
   "@shareDefaultMessageShoppingList": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "shareFriendsSelected": "{count} friend(s) selected",
   "@shareFriendsSelected": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "shareMenu": "Share menu",
@@ -1869,37 +2150,52 @@
   "shareSelectAtLeastOne": "Select at least one friend to share {contentType}",
   "@shareSelectAtLeastOne": {
     "placeholders": {
-      "contentType": {"type": "String"}
+      "contentType": {
+        "type": "String"
+      }
     }
   },
   "shareSuccessMessage": "{name} has been shared as {mode} with {count} recipients.",
   "@shareSuccessMessage": {
     "placeholders": {
-      "name": {"type": "String"},
-      "mode": {"type": "String"},
-      "count": {"type": "int"}
+      "name": {
+        "type": "String"
+      },
+      "mode": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "uploadFailed": "Image upload failed",
   "uploadFailedCount": "{count} images could not be uploaded.\n\nWhat do you want to do?",
   "@uploadFailedCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "uploadInProgress": "Image upload in progress",
   "uploadMixedStatus": "Some images could not be uploaded ({failedCount}) and others are still uploading ({pendingCount}).\n\nWhat do you want to do?",
   "@uploadMixedStatus": {
     "placeholders": {
-      "failedCount": {"type": "int"},
-      "pendingCount": {"type": "int"}
+      "failedCount": {
+        "type": "int"
+      },
+      "pendingCount": {
+        "type": "int"
+      }
     }
   },
   "uploadPendingCount": "{count} images are still uploading.\n\nWhat do you want to do?",
   "@uploadPendingCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "uploadSaveWithoutFailed": "Save without failed images",
@@ -1909,22 +2205,27 @@
   "uploadRetryAllCount": "Retry all ({count})",
   "@uploadRetryAllCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "uploadStopAllCount": "Stop all ({count})",
   "@uploadStopAllCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "uploadTimeRemaining": "{time} remaining",
   "@uploadTimeRemaining": {
     "placeholders": {
-      "time": {"type": "String"}
+      "time": {
+        "type": "String"
+      }
     }
   },
-
   "consentManageTitle": "Manage consents",
   "consentYourConsents": "Your consents",
   "consentGdprDescription": "Under GDPR you have full control over how we process your personal data. You can change or revoke your consents at any time.",
@@ -1956,7 +2257,6 @@
   "consentRevokeAllMessage": "This will disable all optional features such as analytics, marketing, social features and push notifications. You can enable them again at any time.",
   "consentRevokeAll": "Revoke all",
   "consentAllRevoked": "All optional consents have been revoked",
-
   "dataExportTitle": "Export my data",
   "dataExportDownloadTitle": "Download your data",
   "dataExportGdprDescription": "Under GDPR Article 20 you have the right to obtain a copy of all your personal data stored in Butlery. Data is exported in JSON format that you can save or transfer to another service.",
@@ -1977,74 +2277,71 @@
   "dataExportIncludesComments": "Comments and ratings",
   "dataExportIncludesActivity": "Activity history",
   "dataExportOnlyYourData": "Note: The export only contains your own data. No data from other users is included.",
-
   "dateToday": "Today",
   "dateYesterday": "Yesterday",
   "dateDaysAgo": "{days} days ago",
   "@dateDaysAgo": {
     "placeholders": {
-      "days": {"type": "int"}
+      "days": {
+        "type": "int"
+      }
     }
   },
   "dateWeeksAgo": "{weeks} weeks ago",
   "@dateWeeksAgo": {
     "placeholders": {
-      "weeks": {"type": "int"}
+      "weeks": {
+        "type": "int"
+      }
     }
   },
   "dateMonthsAgo": "{months} months ago",
   "@dateMonthsAgo": {
     "placeholders": {
-      "months": {"type": "int"}
+      "months": {
+        "type": "int"
+      }
     }
   },
-
   "friendAccept": "Accept",
   "friendDecline": "Decline",
   "friendRequestTitle": "Friend request",
   "friendWantsToBeFriend": "Wants to be your friend",
-
   "imageAddCount": "Add ({count})",
   "@imageAddCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
-  "imageAddImage": "Add image",
   "imageAddImages": "Add images",
   "imageAdding": "Adding...",
   "imageAddingImage": "Adding image...",
-  "imageFromGallery": "Choose from gallery",
   "imagePermissionMessage": "Butlery needs access to your {permission} to add images to recipes. Go to settings to grant permission.",
   "@imagePermissionMessage": {
     "placeholders": {
-      "permission": {"type": "String"}
+      "permission": {
+        "type": "String"
+      }
     }
   },
   "imagePermissionRequired": "Permission required",
   "imagePrimary": "Primary",
   "imageSelectExistingFromGallery": "Select an existing image from your gallery",
-  "imageSelectFromGallery": "Select from gallery",
   "imageSelectSource": "Select image source",
-  "imageSelectUpTo": "Select up to {count} images",
-  "@imageSelectUpTo": {
-    "placeholders": {
-      "count": {"type": "int"}
-    }
-  },
-  "imageTakePhoto": "Take photo",
   "imageTapToAddUpTo": "Tap to add up to {count} images",
   "@imageTapToAddUpTo": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "imageTapToLoad": "Tap to load",
   "imageUploadingImages": "Uploading images",
   "imageUploadPreparing": "Preparing...",
-  "imageUseCamera": "Use camera",
   "imageUseCameraForNewPhoto": "Use the camera to take a new photo",
-
   "importAddIngredient": "Add ingredient",
   "importAddStep": "Add step",
   "importCancelConfirm": "Cancel import",
@@ -2066,18 +2363,21 @@
   "importStep1SelectIngredients": "Step 1: Select ingredients",
   "importStep2SelectInstructions": "Step 2: Select instructions",
   "importStep3ReviewEdit": "Step 3: Review and edit",
-
   "menuCardMoreRecipes": "+ {count} more recipes",
   "@menuCardMoreRecipes": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuCardNoRecipes": "No recipes in menu",
   "menuCardRecipeCount": "{count} recipes",
   "@menuCardRecipeCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuCardRecipesInMenu": "Recipes in menu:",
@@ -2085,39 +2385,46 @@
   "menuCardSharedWithCount": "Shared with {count} people",
   "@menuCardSharedWithCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "searchHint": "search...",
-
   "shareFriendsSelectedCount": "{count} friend(s) selected",
   "@shareFriendsSelectedCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "shareGroupMembersCount": "{count} members",
   "@shareGroupMembersCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "shareTabFriends": "Friends",
   "shareTabGroups": "Groups",
-
   "shoppingCardComplete": "Complete",
   "shoppingCardCompleted": "{count} completed",
   "@shoppingCardCompleted": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "shoppingCardItemsOnList": "Items on list:",
   "shoppingCardMoreItems": "+ {count} more items",
   "@shoppingCardMoreItems": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "shoppingCardNoItems": "No items on list",
@@ -2125,78 +2432,87 @@
   "shoppingCardSharedWithCount": "Shared with {count} people",
   "@shoppingCardSharedWithCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "adminYouAreAdmin": "You are an administrator",
-
-  "chatConversationInfo": "Conversation info",
-  "chatCouldNotShareRecipe": "Could not share recipe",
   "chatCreatedDate": "Created: {date}",
   "@chatCreatedDate": {
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
-  "chatLeaveConversation": "Leave conversation",
-  "chatLeaveConversationConfirm": "Are you sure you want to leave this conversation?",
   "chatMemberCount": "{count} members",
   "@chatMemberCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "chatMute": "Mute",
   "chatParticipantCount": "{count} participants",
   "@chatParticipantCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "chatTitle": "Chat",
-
   "commonSearch": "Search",
   "commonUnknown": "Unknown",
-
   "dataExportClearConfirmMessage": "Are you sure you want to clear the exported data? You can export again at any time.",
   "dataExportClearConfirmTitle": "Clear export?",
   "dataExportCleared": "Export cleared",
   "dataExportCouldNotSaveFile": "Could not save file: {error}",
   "@dataExportCouldNotSaveFile": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "dataExportCouldNotShare": "Could not share: {error}",
   "@dataExportCouldNotShare": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "dataExportExportedSuccessfully": "Data exported successfully",
   "dataExportFileSaved": "File saved: {fileName}",
   "@dataExportFileSaved": {
     "placeholders": {
-      "fileName": {"type": "String"}
+      "fileName": {
+        "type": "String"
+      }
     }
   },
   "dataExportShareSubject": "Butlery Data Export",
   "dataExportShareText": "My exported data from the Butlery app",
-
   "dialogAmountHint": "Enter amount...",
   "dialogAmountInvalid": "Invalid amount",
   "dialogAmountLabel": "Amount",
   "dialogAmountMax": "Maximum {max} allowed",
   "@dialogAmountMax": {
     "placeholders": {
-      "max": {"type": "int"}
+      "max": {
+        "type": "int"
+      }
     }
   },
   "dialogAmountMin": "Minimum {min} required",
   "@dialogAmountMin": {
     "placeholders": {
-      "min": {"type": "int"}
+      "min": {
+        "type": "int"
+      }
     }
   },
   "dialogAmountRequired": "Amount is required",
@@ -2205,43 +2521,48 @@
   "dialogFieldRequired": "{field} is required",
   "@dialogFieldRequired": {
     "placeholders": {
-      "field": {"type": "String"}
+      "field": {
+        "type": "String"
+      }
     }
   },
   "dialogInvalidUrl": "Invalid URL",
   "dialogPhoneInvalid": "Invalid phone number",
   "dialogPhoneLabel": "Phone number",
   "dialogSearchHint": "Type to search...",
-
   "importLikely": "Likely",
   "importNoLinesToShow": "No lines to show",
   "importSelectAllHighlighted": "Select all highlighted ({count})",
   "@importSelectAllHighlighted": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "importSelectedCount": "{count} selected",
   "@importSelectedCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "importStep": "Step",
   "importStepAnalyzing": "Analyzing",
   "importStepCreating": "Creating",
   "importStepFetching": "Fetching",
-
   "invitationClearSearch": "Clear search",
   "invitationCouldNotLoadTargets": "Could not load targets",
-
   "menuCreateBeforeSave": "Create a menu first before you can save it",
   "menuCreateBeforeShare": "Create a menu first before you can share it",
   "menuCreateBeforeShoppingList": "Create a menu first before you can create a shopping list",
   "menuDefaultName": "Weekly menu ({count} recipes)",
   "@menuDefaultName": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuExitConfirm": "Exit",
@@ -2251,7 +2572,6 @@
   "menuNameHint": "E.g. \"My weekly menu w.45\"",
   "menuNameYourMenu": "Name your menu",
   "menuShareDefaultMessage": "Check out my weekly menu!",
-
   "messagingEdited": "edited",
   "messagingImageLoadError": "Image could not be loaded",
   "messagingImageLoadFailed": "Could not load image",
@@ -2268,13 +2588,17 @@
   "messagingCouldNotLoadFriends": "Could not load friends: {error}",
   "@messagingCouldNotLoadFriends": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "messagingCouldNotLoadGroupInfo": "Could not load group info: {error}",
   "@messagingCouldNotLoadGroupInfo": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "messagingCouldNotRemoveMember": "Could not remove member",
@@ -2285,7 +2609,9 @@
   "messagingFriendsCount": "Friends ({count})",
   "@messagingFriendsCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "messagingFromGroup": "from the group",
@@ -2301,19 +2627,25 @@
   "messagingMembersAdded": "{count} member(s) added",
   "@messagingMembersAdded": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "messagingMembersCount": "Members ({count})",
   "@messagingMembersCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "messagingMemberRemoved": "{name} removed from the group",
   "@messagingMemberRemoved": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "messagingNoFriendsAvailable": "No friends available",
@@ -2323,15 +2655,18 @@
   "messagingSelectedMembers": "Selected members ({count})",
   "@messagingSelectedMembers": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "messagingTryAnotherKeyword": "Try another keyword",
-
   "mfaCodeSentTo": "A verification code has been sent to {phone}.",
   "@mfaCodeSentTo": {
     "placeholders": {
-      "phone": {"type": "String"}
+      "phone": {
+        "type": "String"
+      }
     }
   },
   "mfaEnterCode": "Enter the verification code",
@@ -2343,7 +2678,9 @@
   "mfaSendingTo": "To: {phone}",
   "@mfaSendingTo": {
     "placeholders": {
-      "phone": {"type": "String"}
+      "phone": {
+        "type": "String"
+      }
     }
   },
   "mfaSessionExpired": "Session has expired. Try logging in again.",
@@ -2368,7 +2705,9 @@
   "mfaRegistered": "Registered: {time}",
   "@mfaRegistered": {
     "placeholders": {
-      "time": {"type": "String"}
+      "time": {
+        "type": "String"
+      }
     }
   },
   "mfaRegisteredMethods": "Registered methods",
@@ -2376,22 +2715,20 @@
   "mfaRemoveTitle": "Remove MFA?",
   "mfaSendCode": "Send code",
   "mfaSmsDescription": "We will send a verification code via SMS when you log in.",
-
   "realtimeOffline": "Offline",
-
   "recipeMealType": "Meal type",
   "recipeTitle": "Title",
   "recipeUpdating": "Updating recipe...",
-
   "chatAddCount": "Add ({count})",
   "@chatAddCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "chatAddMembers": "Add members",
   "chatSearchFriends": "Search friends...",
-
   "collaborativeContent": "Content",
   "collaborativeEditingTogether": "You are editing together with others",
   "collaborativeOffline": "Offline",
@@ -2401,23 +2738,28 @@
   "collaborativeSharedWithCount": "Shared with {count} people",
   "@collaborativeSharedWithCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "collaborativeSyncAutomatic": "Changes sync automatically with other participants",
-
   "conversationAddFriendsFirst": "Add friends first to start conversations.",
   "conversationCreateError": "Could not create conversation: {error}",
   "@conversationCreateError": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "conversationCreateGroup": "Create group conversation",
   "conversationGroupChatWith": "Group chat with {names}",
   "@conversationGroupChatWith": {
     "placeholders": {
-      "names": {"type": "String"}
+      "names": {
+        "type": "String"
+      }
     }
   },
   "conversationGroupCreated": "Group created",
@@ -2427,29 +2769,32 @@
   "conversationSayHi": "Say hi!",
   "conversationSelectFriendForDM": "Or select a friend for direct message:",
   "conversationYouPrefix": "You:",
-
   "errorDeletingWithDetails": "Error deleting: {error}",
   "@errorDeletingWithDetails": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "errorLoadingFailed": "Loading failed",
   "errorLoadingWithDetails": "Error loading: {error}",
   "@errorLoadingWithDetails": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "errorUnknown": "Unknown error",
-
   "imageSelectImage": "Select image",
   "imageTitle": "Image",
-
   "importAllCount": "Import all ({count})",
   "@importAllCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "importColumnCategory": "Category (category/kategori)",
@@ -2462,8 +2807,12 @@
   "importComplete": "Import complete: {succeeded} succeeded, {failed} failed",
   "@importComplete": {
     "placeholders": {
-      "succeeded": {"type": "int"},
-      "failed": {"type": "int"}
+      "succeeded": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
     }
   },
   "importEditTextBeforeImport": "Edit text before import",
@@ -2472,13 +2821,17 @@
   "importFailed": "Import failed: {error}",
   "@importFailed": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "importFailedCount": "{count} failed",
   "@importFailedCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "importFetching": "Fetching...",
@@ -2495,7 +2848,9 @@
   "importImportingRecipes": "Importing {count} recipes...",
   "@importImportingRecipes": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "importImportingRecipesProgress": "Importing recipes...",
@@ -2514,27 +2869,31 @@
   "importSucceededCount": "{count} succeeded",
   "@importSucceededCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "importTagsCount": "{count} tags",
   "@importTagsCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "importTipsContent": "Paste the full recipe including ingredients. Make sure ingredients come before instructions. Text can come from Instagram, TikTok, Facebook etc.",
   "importTipsTitle": "Tips for best results",
   "importTryAdjustFilters": "Try adjusting search or filters",
   "importViaUrl": "Import via URL",
-
   "indicatorOfflineMode": "Offline mode - Changes saved locally",
-
   "invitationCheckConnectionAndRetry": "Check your internet connection and try again.",
   "invitationCurrentItem": "Current: {item}",
   "@invitationCurrentItem": {
     "placeholders": {
-      "item": {"type": "String"}
+      "item": {
+        "type": "String"
+      }
     }
   },
   "invitationDone": "Done",
@@ -2545,7 +2904,9 @@
   "invitationSearchQuery": "Search: \"{query}\"",
   "@invitationSearchQuery": {
     "placeholders": {
-      "query": {"type": "String"}
+      "query": {
+        "type": "String"
+      }
     }
   },
   "invitationSelectTargetsToContinue": "Select targets from the list above to continue.",
@@ -2553,26 +2914,30 @@
   "invitationsSentMessage": "Invitations have been sent to {count} targets.",
   "@invitationsSentMessage": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "invitationsSentTitle": "Invitations sent",
   "invitationTargetsSelectedForInvitation": "You have selected {count} targets for invitation.",
   "@invitationTargetsSelectedForInvitation": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "invitationTryDifferentSearch": "Try searching with different words or check the spelling.",
-
   "loadingNoContent": "No content",
-
   "menuCommentLabel": "Comment (optional)",
   "menuDeleteConfirmation": "Are you sure you want to delete this menu?",
   "menuDeletedSuccess": "Menu \"{name}\" deleted",
   "@menuDeletedSuccess": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "menuDeleteFailed": "Could not delete menu",
@@ -2580,7 +2945,9 @@
   "menuLoadedSuccess": "Menu \"{name}\" loaded!",
   "@menuLoadedSuccess": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "menuLoadFailed": "Could not load menu",
@@ -2590,8 +2957,12 @@
   "menuRecipesInCategories": "{recipeCount} recipes in {categoryCount} categories",
   "@menuRecipesInCategories": {
     "placeholders": {
-      "recipeCount": {"type": "int"},
-      "categoryCount": {"type": "int"}
+      "recipeCount": {
+        "type": "int"
+      },
+      "categoryCount": {
+        "type": "int"
+      }
     }
   },
   "menuSavedEarlier": "Saved earlier",
@@ -2599,10 +2970,8 @@
   "menuShareWithFriendsDescription": "Share this menu with selected friends",
   "menuToSave": "Menu to save",
   "menuUnnamed": "Unnamed menu",
-
   "privacyCouldNotLoad": "Could not load the privacy policy. Try again later.",
   "privacyTitle": "Privacy policy",
-
   "recipeAddTags": "Add tags",
   "recipeChangesSaved": "Changes saved!",
   "recipeContinueEditing": "Continue editing",
@@ -2617,7 +2986,7 @@
   "recipeInstruction": "Instruction",
   "recipeLeaveWithoutSaving": "Leave without saving",
   "recipeManageAllTags": "Manage all tags",
-  "recipeRating": "Rating (0\u20135)",
+  "recipeRating": "Rating (0–5)",
   "recipeSourceUrl": "Source (URL)",
   "recipeSourceUrlHelper": "Link to the original recipe",
   "recipeSourceUrlHint": "Optional: link to the original recipe",
@@ -2625,43 +2994,50 @@
   "recipeTimeMinutes": "Time (min)",
   "recipeUnsavedChangesTitle": "Unsaved changes",
   "recipeWriteManually": "Write manually",
-
   "searchRecipesHint": "search recipes...",
-
   "shoppingAddItems": "Add",
   "shoppingAddItemsFromMenu": "Add {count} items from menu to \"{listName}\"",
   "@shoppingAddItemsFromMenu": {
     "placeholders": {
-      "count": {"type": "int"},
-      "listName": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "listName": {
+        "type": "String"
+      }
     }
   },
   "shoppingCreateFirstListDescription": "Create your first shopping list to get started",
   "shoppingItemsAdded": "{count} items added to \"{listName}\"",
   "@shoppingItemsAdded": {
     "placeholders": {
-      "count": {"type": "int"},
-      "listName": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "listName": {
+        "type": "String"
+      }
     }
   },
   "shoppingItemsAddFailed": "Could not add items: {error}",
   "@shoppingItemsAddFailed": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "shoppingListCreateFailed": "Could not create list: {error}",
   "@shoppingListCreateFailed": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
-
   "socialTotalMembers": "Total members",
-
   "userNoUsers": "No users",
   "userNoUsersToShow": "No users to show",
-
   "chatAttachments": "Attachments",
   "chatAttachmentTypes": "Attachments: Recipe, Menu, Shopping list, Photo",
   "chatCouldNotSendMessage": "Could not send the message. Try again.",
@@ -2671,25 +3047,26 @@
   "chatSendImage": "Send image",
   "chatSendToStartConversation": "Send a message to start the conversation",
   "chatWriteMessage": "Write a message...",
-
   "commonOr": "or",
-
   "errorCouldNotLoadPage": "Could not load the page",
   "errorLoadingRetryOrGoBack": "An error occurred while loading. Try again or go back.",
   "errorSavingWithDetails": "Could not save: {error}",
   "@errorSavingWithDetails": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "errorTitle": "Error",
   "errorOccurredWithDetails": "An error occurred: {error}",
   "@errorOccurredWithDetails": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
-
   "filterAllergenFree": "Allergen free",
   "filterClearAll": "Clear all filters",
   "filterCookingTime": "Cooking time",
@@ -2702,7 +3079,6 @@
   "filterPersonalTags": "Personal tags",
   "filterRating": "Rating",
   "filterShow": "Show filters",
-
   "importAnalyzingContent": "Analyzing content...",
   "importChooseFromGallery": "Choose from gallery",
   "importChooseFromGallerySubtitle": "Choose an existing image from your phone",
@@ -2712,8 +3088,12 @@
   "importConfidenceTooltip": "{label}: {percentage}% confidence",
   "@importConfidenceTooltip": {
     "placeholders": {
-      "label": {"type": "String"},
-      "percentage": {"type": "int"}
+      "label": {
+        "type": "String"
+      },
+      "percentage": {
+        "type": "int"
+      }
     }
   },
   "importContinueWithImport": "Continue with import",
@@ -2726,7 +3106,9 @@
   "importFetchingFromPlatform": "Fetching recipe from {platform}...",
   "@importFetchingFromPlatform": {
     "placeholders": {
-      "platform": {"type": "String"}
+      "platform": {
+        "type": "String"
+      }
     }
   },
   "importFromPhoto": "Import from photo",
@@ -2735,14 +3117,18 @@
   "importImageQualityLow": "Image quality is low ({percentage}%)",
   "@importImageQualityLow": {
     "placeholders": {
-      "percentage": {"type": "int"}
+      "percentage": {
+        "type": "int"
+      }
     }
   },
   "importImport": "Import",
   "importImportedFrom": "Imported from {source}",
   "@importImportedFrom": {
     "placeholders": {
-      "source": {"type": "String"}
+      "source": {
+        "type": "String"
+      }
     }
   },
   "importImprovementSuggestions": "Improvement suggestions:",
@@ -2752,7 +3138,9 @@
   "importManualCopyInstructions": "1. Go back to {platform}\n2. Copy the recipe text from the post\n3. Come back here and choose \"Paste text\"",
   "@importManualCopyInstructions": {
     "placeholders": {
-      "platform": {"type": "String"}
+      "platform": {
+        "type": "String"
+      }
     }
   },
   "importManually": "Import manually",
@@ -2782,14 +3170,15 @@
   "importUrlFromPlatform": "URL from {platform}",
   "@importUrlFromPlatform": {
     "placeholders": {
-      "platform": {"type": "String"}
+      "platform": {
+        "type": "String"
+      }
     }
   },
   "importVideoNoText": "Video has no text",
   "importVideoNoTextDescription": "This video has no subtitles we can read.\n\nYou can take a screenshot of the recipe in the video and import it instead.",
   "importWebRecipeLinkDetected": "Recipe link from website detected!",
   "importWebsite": "Website",
-
   "groupAddMembers": "Add members",
   "groupAllFriendsAlreadyMembers": "All your friends are already members of this group, or you have already sent invitations to them.",
   "groupCouldNotLoadMembers": "Could not load group members",
@@ -2797,14 +3186,18 @@
   "groupDeleted": "Group \"{name}\" has been deleted",
   "@groupDeleted": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "groupInvitationSent": "Sent",
   "groupInvitationsSent": "{count} invitations sent",
   "@groupInvitationsSent": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "groupInvitationsSentSuccess": "Invitations have been sent!",
@@ -2814,56 +3207,71 @@
   "groupNotFound": "Group not found",
   "groupNotFoundDescription": "This group may have been deleted or you do not have permission.",
   "groupOwnershipTransferredAndLeft": "Ownership transferred and you have left the group",
-  "groupSelectFriendsToInvite": "Select friends to invite to the group",
   "groupSelectedOfTotal": "{selected} of {total} selected",
   "@groupSelectedOfTotal": {
     "placeholders": {
-      "selected": {"type": "int"},
-      "total": {"type": "int"}
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "groupSendInvitations": "Send {count} invitations",
   "@groupSendInvitations": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "groupSharedFromGroup": "Shared from group {name}",
   "@groupSharedFromGroup": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "groupUpdated": "Group updated!",
   "groupYouLeftGroup": "You have left the group",
-
   "loadingGeneric": "Loading...",
   "loadingRecipes": "Loading recipes...",
-
   "menuCategoryCount": "{count} categories",
   "@menuCategoryCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuConnectingCollaborative": "Connecting to \"{title}\" for collaborative editing...",
   "@menuConnectingCollaborative": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "menuCouldNotHide": "Could not hide menu",
   "menuHiddenFromList": "\"{title}\" hidden from your list",
   "@menuHiddenFromList": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "menuHideConfirm": "Would you like to hide \"{title}\" from your list?\n\nYou can still access the menu by asking {sharedBy} to share it again.",
   "@menuHideConfirm": {
     "placeholders": {
-      "title": {"type": "String"},
-      "sharedBy": {"type": "String"}
+      "title": {
+        "type": "String"
+      },
+      "sharedBy": {
+        "type": "String"
+      }
     }
   },
   "menuHideMenu": "Hide menu",
@@ -2871,43 +3279,43 @@
   "menuImportDescription": "When you import the menu, all {count} recipes will be added to your collection.",
   "@menuImportDescription": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuImported": "Menu imported",
   "menuImportedSuccess": "Menu \"{title}\" imported!",
   "@menuImportedSuccess": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "menuImportFailed": "Import failed",
   "menuNoRecipesInMenu": "No recipes in the menu",
-  "menuRecipeCount": "{count} recipes",
-  "@menuRecipeCount": {
-    "placeholders": {
-      "count": {"type": "int"}
-    }
-  },
   "menuSharedMenu": "SHARED MENU",
   "menuShareMenu": "Share menu",
   "menuSharingComingSoon": "Sharing of \"{title}\" coming soon!",
   "@menuSharingComingSoon": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "menuSavedSuccess": "Menu \"{name}\" saved!",
   "@menuSavedSuccess": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "menuSaveFailed": "Could not save the menu",
-
   "navigationGoHome": "Go home",
   "navigationSubtitle": "Your digital cookbook",
-
   "permissionCopy": "Copy",
   "permissionCreatingCopy": "Creating copy...",
   "permissionNoAccess": "No access",
@@ -2915,7 +3323,6 @@
   "permissionSaveChanges": "Save changes",
   "permissionSaveMyCopy": "Save my copy",
   "permissionSaving": "Saving...",
-
   "privacyContactUs": "Contact us",
   "privacyCouldNotOpenEmail": "Could not open email client",
   "privacyGdprCompliant": "This privacy policy complies with GDPR requirements",
@@ -2923,7 +3330,6 @@
   "privacyNotAvailable": "Privacy policy is not available",
   "privacyQuestionsTitle": "Questions about privacy?",
   "privacyReload": "Reload",
-
   "profileAddAvatar": "Add avatar",
   "profileAvatarRemoved": "Avatar removed",
   "profileAvatarUploaded": "Avatar uploaded!",
@@ -2932,13 +3338,14 @@
   "profileCouldNotUploadAvatar": "Could not upload avatar",
   "profileDisplayName": "Display name",
   "profileDisplayNameHint": "Your name as others see it",
-  "profileEditProfile": "Edit profile",
   "profileFormReset": "Form reset",
   "profileLanguage": "Language",
   "profileLanguageChangedTo": "Language changed to {language}",
   "@profileLanguageChangedTo": {
     "placeholders": {
-      "language": {"type": "String"}
+      "language": {
+        "type": "String"
+      }
     }
   },
   "profileLoading": "Loading profile...",
@@ -2953,7 +3360,9 @@
   "profileThemeChangedTo": "Theme changed to {theme}",
   "@profileThemeChangedTo": {
     "placeholders": {
-      "theme": {"type": "String"}
+      "theme": {
+        "type": "String"
+      }
     }
   },
   "profileThemeDark": "Dark mode",
@@ -2965,7 +3374,6 @@
   "profileVisibleInSearch": "Visible in searches",
   "profileVisibleInSearchDescription": "Other users can find you when they search",
   "profileYouHaveUnsavedChanges": "You have unsaved changes",
-
   "recipeCouldNotSave": "Could not save recipe",
   "recipeCouldNotDelete": "Could not delete recipe",
   "recipeCouldNotMarkAsCooked": "Could not mark as cooked",
@@ -2977,7 +3385,9 @@
   "recipeImportedFrom": "Imported from: {sourceUrl}",
   "@recipeImportedFrom": {
     "placeholders": {
-      "sourceUrl": {"type": "String"}
+      "sourceUrl": {
+        "type": "String"
+      }
     }
   },
   "recipeSaved": "Recipe saved!",
@@ -2985,8 +3395,12 @@
   "recipeSavedWithTags": "Recipe saved! {tagCount} tags ({coverage}%)",
   "@recipeSavedWithTags": {
     "placeholders": {
-      "tagCount": {"type": "int"},
-      "coverage": {"type": "int"}
+      "tagCount": {
+        "type": "int"
+      },
+      "coverage": {
+        "type": "int"
+      }
     }
   },
   "recipeSaveStartedDuringDialog": "A save started during the dialog. Please wait while the recipe is saved...",
@@ -2995,41 +3409,48 @@
   "recipeAddItem": "Add {label}",
   "@recipeAddItem": {
     "placeholders": {
-      "label": {"type": "String"}
+      "label": {
+        "type": "String"
+      }
     }
   },
   "recipeSave": "Save recipe",
   "recipeSaving": "Saving recipe...",
   "recipeTag": "Tag",
-
   "searchFiltersActive": "{count} filters active",
   "@searchFiltersActive": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "searchQuery": "Search",
   "searchResults": "{count} results",
   "@searchResults": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "shareFailed": "Sharing failed: {error}",
   "@shareFailed": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
-
   "socialCategories": "Categories",
   "socialCategoryStatistics": "Category statistics",
   "socialCreateCategory": "Create category",
   "socialMembersCount": "{count} members",
   "@socialMembersCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "socialNoCategories": "No categories",
@@ -3039,7 +3460,9 @@
   "socialCommentsCount": "{count} comments",
   "@socialCommentsCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "socialCouldNotCreateProfile": "Could not create user profile",
@@ -3048,7 +3471,9 @@
   "socialCouldNotStartConversation": "Could not start conversation: {error}",
   "@socialCouldNotStartConversation": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "socialCouldNotUpdateLike": "Could not update like",
@@ -3056,7 +3481,9 @@
   "socialFriendRemoved": "{name} removed from friend list",
   "@socialFriendRemoved": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "socialFriends": "Friends",
@@ -3070,11 +3497,12 @@
   "socialStartingConversation": "Starting conversation...",
   "socialStatistics": "Statistics",
   "socialUserProfileCreated": "User profile created",
-
   "shoppingAddIngredientsFrom": "Add ingredients from \"{title}\"",
   "@shoppingAddIngredientsFrom": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "shoppingAddToShoppingList": "Add to shopping list",
@@ -3083,15 +3511,23 @@
   "shoppingIngredientsAddedToList": "{count} ingredients have been added to \"{listName}\".\n\nWould you like to go to the shopping list now?",
   "@shoppingIngredientsAddedToList": {
     "placeholders": {
-      "count": {"type": "int"},
-      "listName": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "listName": {
+        "type": "String"
+      }
     }
   },
   "shoppingIngredientsFromRecipe": "{count} ingredients from \"{title}\":",
   "@shoppingIngredientsFromRecipe": {
     "placeholders": {
-      "count": {"type": "int"},
-      "title": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      }
     }
   },
   "shoppingNoEditPermission": "You do not have permission to edit this shopping list",
@@ -3101,20 +3537,19 @@
   "shoppingViewList": "View list",
   "shoppingYourList": "your shopping list",
   "shoppingSharedLists": "Shared shopping lists",
-
   "sharedByUser": "Shared by {name}",
   "@sharedByUser": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "sharedContentWillAppearHere": "When friends share recipes or menus with you, they will appear here.",
   "sharedHideFromList": "Hide from my list",
   "sharedLoadingContent": "Loading shared content...",
   "sharedNoContentYet": "No shared recipes yet",
-
   "socialAddFriends": "Add friends",
-
   "taggingAnalyzingIngredients": "Analyzing ingredients...",
   "taggingCouldNotAnalyze": "Could not analyze recipe",
   "taggingCouldNotSaveTags": "Could not save tags",
@@ -3123,7 +3558,9 @@
   "taggingError": "Tagging error: {error}",
   "@taggingError": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "taggingManageTags": "Manage tags",
@@ -3133,41 +3570,47 @@
   "taggingPersonalTagsSaved": "{count} personal tags saved",
   "@taggingPersonalTagsSaved": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "taggingTagsGenerated": "{count} tags generated ({coverage}% coverage)",
   "@taggingTagsGenerated": {
     "placeholders": {
-      "count": {"type": "int"},
-      "coverage": {"type": "int"}
+      "count": {
+        "type": "int"
+      },
+      "coverage": {
+        "type": "int"
+      }
     }
   },
   "taggingTagsSelected": "{count} tags selected",
   "@taggingTagsSelected": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "taggingUpdateTagsMessage": "Analyzing ingredients and updating allergen and dietary tags for \"{title}\".",
   "@taggingUpdateTagsMessage": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "taggingUpdateTagsTitle": "Update tags?",
-
   "sortMealType": "Meal type",
   "sortRating": "Rating",
   "sortTime": "Time",
   "sortTitle": "Title",
-
   "stateAddRecipes": "Add recipes",
   "stateCreateWeeklyMenu": "Create weekly menu",
   "stateGenerateMenu": "Generate menu",
-
   "commonStart": "Start",
-
   "discoveryAllRecommendationsComingSoon": "Show all recommendations coming soon!",
   "discoveryBuildingRecommendations": "Building recommendations",
   "discoveryCouldNotHideRecommendation": "Could not hide recommendation right now.",
@@ -3196,7 +3639,9 @@
   "discoveryPortions": "{count} portions",
   "@discoveryPortions": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "discoveryRecently": "Recently",
@@ -3211,15 +3656,21 @@
   "discoverySearchResultsFor": "{count} results for \"{query}\"",
   "@discoverySearchResultsFor": {
     "placeholders": {
-      "count": {"type": "int"},
-      "query": {"type": "String"}
+      "count": {
+        "type": "int"
+      },
+      "query": {
+        "type": "String"
+      }
     }
   },
   "discoverySeasonal": "Seasonal",
   "discoverySharedBy": "Shared by {name}",
   "@discoverySharedBy": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "discoverySharing": "sharing",
@@ -3227,19 +3678,25 @@
   "discoveryTimeAgoDays": "{count}d ago",
   "@discoveryTimeAgoDays": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "discoveryTimeAgoHours": "{count}h ago",
   "@discoveryTimeAgoHours": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "discoveryTimeAgoMinutes": "{count}m ago",
   "@discoveryTimeAgoMinutes": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "discoveryTimeAgoNow": "Now",
@@ -3248,8 +3705,12 @@
   "discoveryUserSharedType": "{user} shared {type}",
   "@discoveryUserSharedType": {
     "placeholders": {
-      "user": {"type": "String"},
-      "type": {"type": "String"}
+      "user": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      }
     }
   },
   "discoveryVoiceSearch": "Voice search",
@@ -3257,11 +3718,12 @@
   "discoveryVoiceSearchPreview": "Search started! (Voice search is a preview)",
   "discoveryVoiceSearchPrompt": "Say what you want to search for...",
   "discoveryVoiceSearchResult": "Voice search: \"pasta recipe\"",
-
   "groupInvitationsCount": "Group invitations ({count})",
   "@groupInvitationsCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "groupInvitationsDescription": "You have received invitations to join groups",
@@ -3269,7 +3731,9 @@
   "groupMyGroupsCount": "My groups ({count})",
   "@groupMyGroupsCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "groupNoGroupsDescription": "Create your first group or wait for invitations from friends.",
@@ -3280,6 +3744,7 @@
   "groupCreated": "Created",
   "groupDaysActive": "Days active",
   "groupDeleteGroup": "Delete group",
+  "groupViewMembers": "View members",
   "groupEditGroup": "Edit group",
   "groupInformation": "Group information",
   "groupInvitationAccepted": "Invitation accepted! Welcome to the group!",
@@ -3287,14 +3752,18 @@
   "groupInvitationFrom": "Invitation from {name}",
   "@groupInvitationFrom": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "groupLeaveGroup": "Leave group",
   "groupMemberCount": "{count} people",
   "@groupMemberCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "groupMembers": "Members",
@@ -3302,7 +3771,9 @@
   "groupMembersCount": "Members ({count})",
   "@groupMembersCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "groupNoDescription": "No description",
@@ -3311,23 +3782,24 @@
   "groupPendingInvitationsCount": "Pending invitations ({count})",
   "@groupPendingInvitationsCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "groupSent": "Sent",
   "groupUpdatedDate": "Updated",
   "groupYesterday": "Yesterday",
-
   "commonAccept": "Accept",
   "commonDecline": "Decline",
-
   "shoppingItemCount": "{count} items",
   "@shoppingItemCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "socialAddFriendsToGetStarted": "Add friends to get started with social features.",
   "socialLoadingFriends": "Loading friends...",
   "socialNoFriendsYet": "No friends yet",
@@ -3345,21 +3817,1362 @@
   "socialFriendRequestAcceptedFrom": "Friend request from {name} accepted!",
   "@socialFriendRequestAcceptedFrom": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "socialFriendRequestDeclined": "Friend request declined",
   "socialFriendRequestSent": "Friend request sent to {name}!",
   "@socialFriendRequestSent": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "socialIncomingRequests": "Incoming requests",
   "socialNoFriendRequests": "No friend requests",
   "socialNoFriendRequestsDescription": "Start searching for friends above to expand your network!",
   "socialRequestSent": "Sent",
-  "socialSendFriendRequest": "Send friend request",
   "socialSentRequests": "Sent requests",
-  "socialWaitingForResponse": "Waiting for response..."
+  "socialWaitingForResponse": "Waiting for response...",
+  "addRecipeTitle": "Add recipe",
+  "authPassword": "Password",
+  "authTagline": "Smart recipe management for your everyday",
+  "collaborativeAdd": "Add",
+  "collaborativeAddFirstItem": "Add the first item",
+  "collaborativeAdding": "Adding...",
+  "collaborativeAddItemHint": "Type item name...",
+  "collaborativeClearAll": "Clear all",
+  "collaborativeClearCompleted": "Clear completed",
+  "collaborativeClearCompletedConfirm": "Do you want to clear all completed items?",
+  "collaborativeClearCompletedMessage": "Do you want to clear {count} completed items?",
+  "@collaborativeClearCompletedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "collaborativeCompleted": "Completed",
+  "collaborativeCompletedItemsCleared": "{count} completed items cleared",
+  "@collaborativeCompletedItemsCleared": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "collaborativeCompletedOf": "{completed} of {total} completed",
+  "@collaborativeCompletedOf": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "collaborativeCopyLink": "Copy link",
+  "collaborativeCopyLinkDescription": "Share via link",
+  "collaborativeCouldNotClearCompleted": "Could not clear completed items",
+  "collaborativeEmailSharingComingSoon": "Email sharing coming soon",
+  "collaborativeLinkCopied": "Link copied!",
+  "collaborativeManageMembers": "Manage members",
+  "collaborativeMembersComingSoon": "Member management coming soon",
+  "collaborativeMessageSharingComingSoon": "Message sharing coming soon",
+  "collaborativeMoreActions": "More actions",
+  "collaborativeNoCompletedItems": "No completed items",
+  "collaborativeNoItemsYet": "No items yet",
+  "collaborativeSendEmail": "Send email",
+  "collaborativeSendEmailDescription": "Share via email",
+  "collaborativeSendMessage": "Send message",
+  "collaborativeSendMessageDescription": "Share via message",
+  "collaborativeSettings": "Settings",
+  "collaborativeSettingsComingSoon": "Settings coming soon",
+  "collaborativeShareList": "Share list",
+  "collaborativeViewOnly": "View only",
+  "collaborativeWaitingForOthers": "Waiting for others...",
+  "commonActionCannotBeUndone": "This action cannot be undone.",
+  "commonDescription": "Description",
+  "commonShowMore": "Show more",
+  "commonType": "Type",
+  "commonUnknownError": "An unknown error occurred",
+  "commonView": "View",
+  "discoveryClearSearch": "Clear search",
+  "groupCancelInvitation": "Cancel invitation",
+  "groupCancelInvitationConfirm": "Are you sure you want to cancel this invitation?",
+  "groupCancelInvitationMessage": "Do you want to cancel the invitation to {name}?",
+  "@groupCancelInvitationMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupCouldNotCreate": "Could not create group: {error}",
+  "@groupCouldNotCreate": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupCouldNotDelete": "Could not delete group: {error}",
+  "@groupCouldNotDelete": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupCouldNotLeave": "Could not leave group: {error}",
+  "@groupCouldNotLeave": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupCouldNotRemoveMember": "Could not remove member: {error}",
+  "@groupCouldNotRemoveMember": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupCouldNotUpdate": "Could not update group: {error}",
+  "@groupCouldNotUpdate": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupCreatedSuccess": "Group created!",
+  "groupCreateGroup": "Create group",
+  "groupCreator": "Creator",
+  "groupEmoji": "Emoji",
+  "groupGroupName": "Group name",
+  "groupInvitationCancelled": "Invitation cancelled",
+  "groupInvitationExpires": "Invitation expires",
+  "groupInvitationSentDate": "Sent",
+  "groupItemType": "Type",
+  "groupLeave": "Leave",
+  "groupLeaveGroupConfirm": "Do you want to leave the group {name}?",
+  "@groupLeaveGroupConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupLeftGroup": "You have left the group",
+  "groupManageGroup": "Manage group",
+  "groupMemberRemoved": "{name} has been removed",
+  "@groupMemberRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "groupOwner": "Owner",
+  "groupRemoveFromGroup": "Remove from group",
+  "groupRemoveMember": "Remove member",
+  "groupRemoveMemberConfirm": "Do you want to remove {name} from {groupName}?",
+  "@groupRemoveMemberConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "groupShareMenu": "Share menu",
+  "groupShareRecipe": "Share recipe",
+  "groupShareWithGroup": "Share with group",
+  "groupYesCancel": "Yes, cancel",
+  "sharedAlreadyMember": "You are already a member",
+  "sharedContent": "Shared content",
+  "sharedCopy": "Copy",
+  "sharedCouldNotHideMenu": "Could not hide menu",
+  "sharedCouldNotHideRecipe": "Could not hide recipe",
+  "sharedCouldNotHideShoppingList": "Could not hide shopping list",
+  "sharedCouldNotJoinList": "Could not join the list",
+  "sharedCouldNotJoinListTryAgain": "Could not join the list. Try again.",
+  "sharedHideImported": "Hide imported",
+  "sharedHideMenu": "Hide menu",
+  "sharedHideRecipe": "Hide recipe",
+  "sharedHideShoppingList": "Hide shopping list",
+  "sharedImport": "Import",
+  "sharedImported": "Imported",
+  "sharedImportFailed": "Import failed",
+  "sharedJoin": "Join",
+  "sharedJoinedButCouldNotNavigate": "Joined but could not navigate to the list",
+  "sharedJoinList": "Join list",
+  "sharedLive": "Live",
+  "sharedMember": "Member",
+  "sharedNoMenus": "No shared menus",
+  "sharedNoMenusDescription": "Menus shared with you will appear here",
+  "sharedNoRecipes": "No shared recipes",
+  "sharedNoRecipesDescription": "Recipes shared with you will appear here",
+  "sharedNoShoppingLists": "No shared shopping lists",
+  "sharedNoShoppingListsDescription": "Shopping lists shared with you will appear here",
+  "sharedSearchHint": "Search shared content...",
+  "sharedTabRecipes": "Recipes ({count})",
+  "@sharedTabRecipes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sharedTabMenus": "Menus ({count})",
+  "@sharedTabMenus": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sharedTabShoppingLists": "Shopping lists ({count})",
+  "@sharedTabShoppingLists": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sharedShowImported": "Show imported",
+  "sharedShowingImported": "Showing imported",
+  "sharedTapToSeeAllItems": "Tap to see all items",
+  "sharedByName": "Shared by {name}",
+  "@sharedByName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedCategoryCount": "{count} categories",
+  "@sharedCategoryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sharedConnectingToCollaborativeMenu": "Connecting to collaborative menu: {title}",
+  "@sharedConnectingToCollaborativeMenu": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedContentHidden": "{title} has been hidden",
+  "@sharedContentHidden": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedHideMenuConfirm": "Do you want to hide the menu \"{title}\" shared by {sharedBy}?",
+  "@sharedHideMenuConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "sharedBy": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedHideRecipeConfirm": "Do you want to hide the recipe \"{title}\" shared by {sharedBy}?",
+  "@sharedHideRecipeConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "sharedBy": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedHideShoppingListConfirm": "Do you want to hide the shopping list \"{name}\" shared by {sharedBy}?",
+  "@sharedHideShoppingListConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "sharedBy": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedJoinedList": "Joined the list \"{name}\"",
+  "@sharedJoinedList": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedJoinedListFindInShopping": "Joined \"{name}\". Find it in Shopping Lists.",
+  "@sharedJoinedListFindInShopping": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedMenuImported": "Menu \"{title}\" has been imported",
+  "@sharedMenuImported": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedRecipeImported": "Recipe \"{title}\" has been imported",
+  "@sharedRecipeImported": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "recipePortionsCount": "{count} servings",
+  "@recipePortionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingAddedWithEditPermission": "Added with edit permission",
+  "shoppingAddFriends": "Add friends",
+  "shoppingAdminOwner": "Admin/Owner",
+  "shoppingAdminOwnerDescription": "Full access and management",
+  "shoppingAllFriendsAreMembers": "All friends are already members",
+  "shoppingBy": "By",
+  "shoppingCategoryHint": "Select category...",
+  "shoppingCategoryOther": "Other",
+  "shoppingClear": "Clear",
+  "shoppingClearPurchasedTitle": "Clear purchased items",
+  "shoppingCouldNotAddMembers": "Could not add members",
+  "shoppingCouldNotDeleteList": "Could not delete list",
+  "shoppingCouldNotRemoveMember": "Could not remove member",
+  "shoppingCouldNotRenameList": "Could not rename list",
+  "shoppingCouldNotUpdatePermission": "Could not update permission",
+  "shoppingCreateNewList": "Create new list",
+  "shoppingCreateNewListHint": "Name for new shopping list...",
+  "shoppingCreateSharedList": "Create shared list",
+  "shoppingCreateSharedListDescription": "Create a new shopping list to share with friends",
+  "shoppingCreator": "Creator",
+  "shoppingDeleteList": "Delete list",
+  "shoppingDescriptionHint": "Add a description...",
+  "shoppingDescriptionOptional": "Description (optional)",
+  "shoppingItemNameHint": "Item name...",
+  "shoppingJustNow": "Just now",
+  "shoppingListDetails": "List details",
+  "shoppingListInfo": "List information",
+  "shoppingListTitle": "Shopping list",
+  "shoppingManageSharing": "Manage sharing",
+  "shoppingNewNameHint": "New name...",
+  "shoppingNoFriends": "No friends",
+  "shoppingNoFriendsDescription": "Add friends to share shopping lists",
+  "shoppingNoFriendsFound": "No friends found",
+  "shoppingNoItemsToShare": "No items to share",
+  "shoppingNoteHint": "Add a note...",
+  "shoppingNoteOptional": "Note (optional)",
+  "shoppingPermissionAdmin": "Administrator",
+  "shoppingPermissionAdminDescription": "Can add, remove, and manage members",
+  "shoppingPermissionAdministrator": "Administrator",
+  "shoppingPermissionEdit": "Edit",
+  "shoppingPermissionEditDescription": "Can add and edit items",
+  "shoppingPermissionOwner": "Owner",
+  "shoppingPermissionShared": "Shared",
+  "shoppingPermissionTemplate": "Template",
+  "shoppingPermissionUnspecified": "Unspecified",
+  "shoppingPermissionUnspecifiedDescription": "Permission not specified",
+  "shoppingPermissionView": "View",
+  "shoppingPermissionViewDescription": "Can view items but not modify",
+  "shoppingPermissionViewOnly": "View only",
+  "shoppingPersonalList": "Personal list",
+  "shoppingPurchased": "Purchased",
+  "shoppingPurchasedCleared": "Purchased items cleared",
+  "shoppingRecentActivity": "Recent activity",
+  "shoppingRemoveMember": "Remove member",
+  "shoppingSearchFriends": "Search friends...",
+  "shoppingSelectFriendsToShare": "Select friends to share with",
+  "shoppingSharedList": "Shared list",
+  "shoppingSharedListTitle": "Shared shopping list",
+  "shoppingSharedListTitleHint": "Name for shared list...",
+  "shoppingShareExternally": "Share externally",
+  "shoppingShareInfoBullets": "Members can see and edit items in real time",
+  "shoppingShareWithFriends": "Share with friends",
+  "shoppingTemplateList": "Template",
+  "shoppingUncheckAll": "Uncheck all",
+  "shoppingUnitHint": "Unit...",
+  "shoppingUnknownUser": "Unknown user",
+  "shoppingWhatHappensWhenSharing": "What happens when you share?",
+  "shoppingWhen": "When",
+  "shoppingYourPermission": "Your permission",
+  "shoppingAddFriendsCount": "Add {count} friends",
+  "@shoppingAddFriendsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingBoughtOfTotal": "{bought} of {total} bought",
+  "@shoppingBoughtOfTotal": {
+    "placeholders": {
+      "bought": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingClearCount": "Clear {count}",
+  "@shoppingClearCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingClearPurchasedMessage": "Do you want to clear {count} purchased items?",
+  "@shoppingClearPurchasedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingCouldNotAddItem": "Could not add {name}",
+  "@shoppingCouldNotAddItem": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingCouldNotLoadFriends": "Could not load friends: {error}",
+  "@shoppingCouldNotLoadFriends": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingCouldNotShowShareDialog": "Could not show share dialog: {error}",
+  "@shoppingCouldNotShowShareDialog": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingCouldNotUpdateItem": "Could not update {name}",
+  "@shoppingCouldNotUpdateItem": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingCurrentMembers": "Current members ({count})",
+  "@shoppingCurrentMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingCurrentName": "Current name: {name}",
+  "@shoppingCurrentName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingDaysAgo": "{days} days ago",
+  "@shoppingDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingDeleteListConfirm": "Do you want to delete the list \"{name}\"?",
+  "@shoppingDeleteListConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingDeleteListWithItemsConfirm": "Do you want to delete the list \"{name}\" with {count} items?",
+  "@shoppingDeleteListWithItemsConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingErrorAdding": "Error adding: {error}",
+  "@shoppingErrorAdding": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingErrorRemoving": "Error removing: {error}",
+  "@shoppingErrorRemoving": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingErrorUpdating": "Error updating: {error}",
+  "@shoppingErrorUpdating": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingHoursAgo": "{hours} hours ago",
+  "@shoppingHoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingItemAdded": "{name} added",
+  "@shoppingItemAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingItemCountText": "{count} items",
+  "@shoppingItemCountText": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingItemUpdated": "{name} updated",
+  "@shoppingItemUpdated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListDeleted": "List \"{name}\" deleted",
+  "@shoppingListDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListRenamed": "List renamed to \"{name}\"",
+  "@shoppingListRenamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingMemberRemoved": "{name} has been removed",
+  "@shoppingMemberRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingMembersAdded": "{count} members added",
+  "@shoppingMembersAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingMembersCount": "{count} members",
+  "@shoppingMembersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingMinutesAgo": "{minutes} minutes ago",
+  "@shoppingMinutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingPermissionUpdated": "Permission updated for {name}",
+  "@shoppingPermissionUpdated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingRemoveMemberConfirm": "Do you want to remove {name} from the list?",
+  "@shoppingRemoveMemberConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingSharedWithMembers": "Shared with {count} ({permission})",
+  "@shoppingSharedWithMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "permission": {
+        "type": "String"
+      }
+    }
+  },
+  "socialAcceptAll": "Accept all",
+  "socialAcceptAllSelectedConfirm": "Accept all selected requests?",
+  "socialAcceptSelected": "Accept selected",
+  "socialBlock": "Block",
+  "socialBlockUserConfirm": "Do you want to block this user?",
+  "socialCancelAll": "Cancel all",
+  "socialCancelFriendRequestConfirm": "Do you want to cancel this friend request?",
+  "socialCancelRequest": "Cancel request",
+  "socialCancelSelectedRequestsConfirm": "Cancel all selected requests?",
+  "socialCouldNotAcceptAllRequests": "Could not accept all requests",
+  "socialCouldNotBlockUser": "Could not block user",
+  "socialCouldNotCancelAllRequests": "Could not cancel all requests",
+  "socialCouldNotCancelFriendRequest": "Could not cancel friend request",
+  "socialCouldNotRejectAllRequests": "Could not reject all requests",
+  "socialCouldNotRejectFriendRequest": "Could not reject friend request",
+  "socialCouldNotRemoveFriend": "Could not remove friend",
+  "socialCouldNotSearchUsers": "Could not search users",
+  "socialCouldNotUnblockUser": "Could not unblock user",
+  "socialCouldNotUpdateRequests": "Could not update requests",
+  "socialDecline": "Decline",
+  "socialDeclined": "Declined",
+  "socialEnterSearchTerm": "Enter a search term",
+  "socialExpired": "Expired",
+  "socialFindFriends": "Find friends",
+  "socialFriendRequestsUpdated": "Friend requests updated",
+  "socialFriendsAndGroups": "Friends & groups",
+  "socialGroups": "Groups",
+  "socialIncoming": "Incoming",
+  "socialLoadingRequests": "Loading requests...",
+  "socialLoadingSentRequests": "Loading sent requests...",
+  "socialNoRequestsSelected": "No requests selected",
+  "socialNoSentRequests": "No sent requests",
+  "socialNoSentRequestsDescription": "You have no sent friend requests",
+  "socialPendingResponse": "Pending response",
+  "socialReject": "Reject",
+  "socialRejectAll": "Reject all",
+  "socialRejectAllSelectedConfirm": "Reject all selected requests?",
+  "socialRejectFriendRequestConfirm": "Do you want to reject this friend request?",
+  "socialRemoveFriendConfirm": "Do you want to remove this friend?",
+  "socialRequestCancelled": "Request cancelled",
+  "socialSearchGroups": "Search groups...",
+  "socialSearchNewFriends": "Search for new friends",
+  "socialUnknownStatus": "Unknown status",
+  "socialWantsToBeFriend": "wants to be your friend",
+  "socialAcceptAllSelectedMessage": "Do you want to accept {count} selected requests?",
+  "@socialAcceptAllSelectedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialAcceptCount": "Accept ({count})",
+  "@socialAcceptCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialAcceptingRequests": "Accepting {count} requests...",
+  "@socialAcceptingRequests": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialBlockUserMessage": "Do you want to block {name}? They won't be able to see your profile or send requests.",
+  "@socialBlockUserMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "socialCancelCount": "Cancel ({count})",
+  "@socialCancelCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialCancelFriendRequestMessage": "Do you want to cancel the friend request to {name}?",
+  "@socialCancelFriendRequestMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "socialCancellingRequests": "Cancelling {count} requests...",
+  "@socialCancellingRequests": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialCancelSelectedRequestsMessage": "Do you want to cancel {count} selected requests?",
+  "@socialCancelSelectedRequestsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialDeclineCount": "Decline ({count})",
+  "@socialDeclineCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialFriendRequestCancelled": "Friend request to {name} cancelled",
+  "@socialFriendRequestCancelled": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "socialFriendRequestRejected": "Friend request from {name} rejected",
+  "@socialFriendRequestRejected": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "socialNotificationsCount": "Notifications ({count})",
+  "@socialNotificationsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRejectAllSelectedMessage": "Do you want to reject {count} selected requests?",
+  "@socialRejectAllSelectedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRejectFriendRequestMessage": "Do you want to reject the friend request from {name}?",
+  "@socialRejectFriendRequestMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "socialRejectingRequests": "Rejecting {count} requests...",
+  "@socialRejectingRequests": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRemoveFriendMessage": "Do you want to remove {name} as a friend?",
+  "@socialRemoveFriendMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "socialRequestsAccepted": "{count} requests accepted",
+  "@socialRequestsAccepted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRequestsCancelled": "{count} requests cancelled",
+  "@socialRequestsCancelled": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRequestsRejected": "{count} requests rejected",
+  "@socialRequestsRejected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialRequestsSelected": "{count} selected",
+  "@socialRequestsSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialUserBlocked": "{name} has been blocked",
+  "@socialUserBlocked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "socialUserUnblocked": "{name} has been unblocked",
+  "@socialUserUnblocked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "authLogin": "Log in",
+  "authCreateAccount": "Create account",
+  "authYourName": "Your name",
+  "authEnterYourName": "Enter your name",
+  "authEmail": "Email",
+  "authEmailHint": "your.email@example.com",
+  "authNoAccountSignUp": "Don't have an account? Create account",
+  "authHasAccountLogin": "Already have an account? Log in",
+  "authResetEmailSent": "Email sent! Check your inbox.",
+  "authResetEmailFailed": "Could not send email",
+  "avatarUnknownUser": "Unknown user",
+  "commonNow": "now",
+  "commonJustNow": "just now",
+  "imageNoImagesYet": "No images yet",
+  "imageWillAppearHere": "Images will appear here",
+  "imageNoImagesToDisplay": "No images to display",
+  "imageRemoveImage": "Remove image",
+  "imageSetAsPrimary": "Set as primary",
+  "imageSelectedImages": "Selected images",
+  "imageSelectImages": "Select images",
+  "imageSelectingImages": "Selecting images...",
+  "imageTapToSelectOne": "Tap to select an image",
+  "messagingCancelReply": "Cancel reply",
+  "messagingImagePreview": "Image",
+  "navigationRecipes": "recipes",
+  "navigationMenu": "menu",
+  "navigationShopping": "shopping",
+  "navigationAddNew": "add new",
+  "recipeRecipe": "Recipe",
+  "recipeSharedFromApp": "Shared from another app",
+  "shoppingBought": "bought",
+  "shoppingCollaborative": "Collaborative",
+  "shoppingCopyLink": "Copy link",
+  "shoppingCopyList": "Copy list",
+  "shoppingRemaining": "remaining",
+  "shoppingShareForward": "Share forward",
+  "shoppingShareShoppingList": "Share shopping list",
+  "shoppingShoppingList": "Shopping list",
+  "shoppingTotal": "total",
+  "socialCreateProfile": "Create Profile",
+  "socialProfileCreatedRestart": "Profile created! Restart the app.",
+  "socialReport": "Report",
+  "socialReportContent": "Report content",
+  "socialReportCopyright": "Copyright infringement",
+  "socialReportInappropriate": "Inappropriate content",
+  "socialReportIncorrectInfo": "Incorrect information",
+  "socialReportOther": "Other",
+  "socialReportSent": "Report sent. Thank you for your feedback!",
+  "socialReportShoppingListReason": "Why do you want to report this shopping list?",
+  "socialReportSpam": "Spam or advertising",
+  "commonDaysAgo": "{days} days ago",
+  "@commonDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "commonHoursAgo": "{hours} hours ago",
+  "@commonHoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "commonMinutesAgo": "{minutes} minutes ago",
+  "@commonMinutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "imageCountSelected": "{count} selected",
+  "@imageCountSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "imageFailedToSelect": "Failed to select images: {error}",
+  "@imageFailedToSelect": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "imageSelectedCount": "{count} of {max} images selected",
+  "@imageSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "imageTapToSelectUpTo": "Tap to select up to {count} images",
+  "@imageTapToSelectUpTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "messagingRecipePreview": "{title}",
+  "@messagingRecipePreview": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "messagingReplyingTo": "Replying to {name}",
+  "@messagingReplyingTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedMenusCount": "Menus ({count})",
+  "@sharedMenusCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sharedRecipesCount": "Recipes ({count})",
+  "@sharedRecipesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sharedShoppingListsCount": "Shopping lists ({count})",
+  "@sharedShoppingListsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingCouldNotOpenShareMenu": "Could not open share menu: {error}",
+  "@shoppingCouldNotOpenShareMenu": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingCouldNotShareList": "Could not share the list: {error}",
+  "@shoppingCouldNotShareList": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingSharedBy": "Shared by {name}",
+  "@shoppingSharedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingShareListWith": "Share \"{name}\" with:",
+  "@shoppingShareListWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingSharingComingSoon": "Sharing via {option} coming soon!",
+  "@shoppingSharingComingSoon": {
+    "placeholders": {
+      "option": {
+        "type": "String"
+      }
+    }
+  },
+  "socialCouldNotSendReport": "Could not send report: {error}",
+  "@socialCouldNotSendReport": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "socialLikeCount": "{count} likes",
+  "@socialLikeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialLikesHeader": "Likes ({count})",
+  "@socialLikesHeader": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commonAdding": "Adding...",
+  "a11yHidePassword": "Hide password",
+  "a11yShowPassword": "Show password",
+  "a11yShareWithFriends": "Share with friends",
+  "a11yNoItemsToShare": "No items to share",
+  "a11yShareExternally": "Share externally",
+  "a11yAddItem": "Add item",
+  "a11yShoppingItemChecked": "{itemText}, checked, tap to uncheck",
+  "@a11yShoppingItemChecked": {
+    "placeholders": {
+      "itemText": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yShoppingItemUnchecked": "{itemText}, tap to check off",
+  "@a11yShoppingItemUnchecked": {
+    "placeholders": {
+      "itemText": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yTagSelected": "{tagName}, selected. Double tap to remove.",
+  "@a11yTagSelected": {
+    "placeholders": {
+      "tagName": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yTagUnselected": "{tagName}. Double tap to select.",
+  "@a11yTagUnselected": {
+    "placeholders": {
+      "tagName": {
+        "type": "String"
+      }
+    }
+  },
+  "a11ySharedShoppingList": "Shared shopping list: {listName}",
+  "@a11ySharedShoppingList": {
+    "placeholders": {
+      "listName": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yDismissSharedRecipe": "Dismiss shared recipe",
+  "a11yDismissSharedMenu": "Dismiss shared menu",
+  "a11yDeclineSharedShoppingList": "Decline shared shopping list",
+  "a11yPrimaryImageTap": "Primary image, tap to view full size",
+  "a11ySelectAsPrimary": "Select as primary image",
+  "a11yAddImage": "Add image",
+  "a11yRemoveImage": "Remove image",
+  "a11yViewFullSizeImage": "View full size image",
+  "a11yViewFullSizeImageOf": "View full size image {current} of {total}",
+  "@a11yViewFullSizeImageOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "a11ySwitchToImageOf": "Switch to image {current} of {total}",
+  "@a11ySwitchToImageOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yShrinkImage": "Shrink image",
+  "a11yEnlargeImage": "Enlarge image",
+  "a11yLoadImage": "Load image",
+  "a11yMessageSwipeToReply": "Message, swipe to reply",
+  "a11yMessageLongPressOptions": "Message content, long press for options",
+  "a11yImageMessageTap": "Image message, tap for full size",
+  "a11yReplyToComment": "Reply to comment",
+  "a11yUnlikeComment": "Remove like",
+  "a11yLikeComment": "Like comment",
+  "a11yProfileImage": "Profile image for {displayName}",
+  "@a11yProfileImage": {
+    "placeholders": {
+      "displayName": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yChangeProfileImage": "Change profile image",
+  "a11yShoppingList": "Shopping list: {name}",
+  "@a11yShoppingList": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yFriend": "Friend: {name}",
+  "@a11yFriend": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yFriendRequest": "Friend request",
+  "a11yFilterTag": "Filter by {tagName}, {status}",
+  "@a11yFilterTag": {
+    "placeholders": {
+      "tagName": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yActive": "active",
+  "a11yInactive": "inactive",
+  "a11yExcludeTag": "Exclude {tagName}, {status}",
+  "@a11yExcludeTag": {
+    "placeholders": {
+      "tagName": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yShowImage": "Show image",
+  "a11yShowMore": "Show {count} more",
+  "@a11yShowMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yEditItem": "Edit {name}",
+  "@a11yEditItem": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yDeleteItem": "Delete {name}",
+  "@a11yDeleteItem": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11ySharedRecipe": "Shared recipe: {title}",
+  "@a11ySharedRecipe": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11ySharedMenu": "Shared menu: {title}",
+  "@a11ySharedMenu": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRemoveProfileImage": "Remove profile image",
+  "a11yMenu": "Menu: {title}",
+  "@a11yMenu": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "filterBreakfast": "Breakfast",
+  "filterLunch": "Lunch",
+  "filterDinner": "Dinner",
+  "filterSnack": "Snack",
+  "filterDessert": "Dessert",
+  "filterGlutenFree": "Gluten-free",
+  "filterDairyFree": "Dairy-free",
+  "filterLactoseFree": "Lactose-free",
+  "filterNutFree": "Nut-free",
+  "filterEggFree": "Egg-free",
+  "filterSoyFree": "Soy-free",
+  "filterVegetarian": "Vegetarian",
+  "filterVegan": "Vegan",
+  "filterPescetarian": "Pescetarian",
+  "filterHalal": "Halal-friendly",
+  "filterKidFriendly": "Kid-friendly",
+  "unitPieces": "pcs",
+  "unitLiter": "liter",
+  "unitTablespoon": "tbsp",
+  "unitPinch": "pinch",
+  "unitPackage": "package",
+  "unitPackageShort": "pkg",
+  "unitTeaspoon": "tsp",
+  "unitBag": "bag",
+  "unitCan": "can",
+  "unitBottle": "bottle",
+  "unitPiece": "piece",
+  "unitClove": "clove",
+  "categoryFruitVeg": "Fruit & Vegetables",
+  "categoryDairy": "Dairy",
+  "categoryMeatFish": "Meat & Fish",
+  "categoryBread": "Bread",
+  "categoryPantry": "Pantry",
+  "categoryFrozen": "Frozen",
+  "categoryBeverage": "Beverages",
+  "categorySnacks": "Snacks & Candy",
+  "categoryHygiene": "Cleaning & Hygiene",
+  "categoryOther": "Other",
+  "privacyEmailSubject": "Privacy inquiry",
+  "shoppingConvertToCollaborative": "Make collaborative",
+  "shoppingConvertToPersonal": "Make personal",
+  "shoppingConvertToCollaborativeTitle": "Make collaborative list",
+  "shoppingConvertToCollaborativeDescription": "Select friends to share this list with. They will be able to add and check off items in real time.",
+  "shoppingConvertToPersonalTitle": "Make personal list",
+  "shoppingConvertToPersonalWarning": "All collaborators will lose access to this list. Items will be kept.",
+  "shoppingConvertedToCollaborative": "List converted to collaborative",
+  "shoppingConvertedToPersonal": "List converted to personal",
+  "shoppingConvertError": "Could not convert list",
+  "shoppingConvertSelectFriends": "Select at least one friend",
+  "shoppingDescriptionLabel": "Description (optional)",
+  "unshareRecipeTitle": "Stop sharing recipe?",
+  "unshareRecipeConfirm": "The recipe \"{title}\" will be removed from all groups it was shared with.",
+  "@unshareRecipeConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "unshareMenuTitle": "Stop sharing menu?",
+  "unshareMenuConfirm": "The menu \"{title}\" will be removed from all groups it was shared with.",
+  "@unshareMenuConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "unshareShoppingListTitle": "Stop sharing shopping list?",
+  "unshareShoppingListConfirm": "The shopping list \"{name}\" will be removed from all groups it was shared with.",
+  "@unshareShoppingListConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "unshareButton": "Stop sharing",
+  "unshareSuccess": "\"{title}\" is no longer shared",
+  "@unshareSuccess": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "unshareFailed": "Could not stop sharing. Try again.",
+  "favoritesAdd": "Add to favorites",
+  "favoritesRemove": "Remove from favorites"
 }

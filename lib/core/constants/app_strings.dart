@@ -19,10 +19,6 @@ class AppStrings {
   /// Private constructor
   AppStrings._();
 
-  // ==========================================================================
-  // CONTEXT-AWARE METHODS (preferred - delegate to l10n)
-  // ==========================================================================
-
   // Common actions - context-aware
   static String saveL10n(BuildContext context) => context.l10n.commonSave;
   static String cancelL10n(BuildContext context) => context.l10n.commonCancel;
@@ -55,10 +51,6 @@ class AppStrings {
       context.l10n.validationEmailRequired;
   static String invalidEmailL10n(BuildContext context) =>
       context.l10n.validationEmailInvalid;
-
-  // ==========================================================================
-  // LEGACY CONSTANTS (deprecated - migrate to l10n)
-  // ==========================================================================
 
   // Common actions
   @Deprecated(

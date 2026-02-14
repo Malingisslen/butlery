@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -31,20 +32,20 @@ class EditActionsPanel extends StatelessWidget {
             _EditActionButton(
               icon: Icons.add_photo_alternate_outlined,
               onTap: onAddImage,
-              tooltip: 'Add image',
+              tooltip: context.l10n.imageAddImage,
             ),
           const SizedBox(height: AppDimensions.spacingSm),
           if (canSetPrimary)
             _EditActionButton(
               icon: Icons.star_outline,
               onTap: onSetPrimary,
-              tooltip: 'Set as primary',
+              tooltip: context.l10n.imageSetAsPrimary,
             ),
           const SizedBox(height: AppDimensions.spacingSm),
           _EditActionButton(
             icon: Icons.delete_outline,
             onTap: onRemoveImage,
-            tooltip: 'Remove image',
+            tooltip: context.l10n.imageRemoveImage,
             isDestructive: true,
           ),
         ],

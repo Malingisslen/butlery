@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Recipe tagging action handler.
 /// Handles manual re-tagging of recipes from the detail view.
@@ -30,10 +31,9 @@ class RecipeTaggingHandler {
     // Confirm with user
     final confirmed = await CommonDialogActions.showActionConfirmation(
       context: context,
-      title: 'Uppdatera taggar?',
-      message:
-          'Analyserar ingredienser och uppdaterar allergen- och kosttaggar för "${viewModel.recipe.title}".',
-      confirmText: 'Uppdatera',
+      title: context.l10n.taggingUpdateTagsTitle,
+      message: context.l10n.taggingUpdateTagsMessage(viewModel.recipe.title),
+      confirmText: context.l10n.commonUpdate,
       icon: Icons.local_offer,
       confirmColor: AppColors.forestGreen,
     );
@@ -53,7 +53,7 @@ class RecipeTaggingHandler {
               const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: Text(
-                  'Analyserar ingredienser...',
+                  context.l10n.taggingAnalyzingIngredients,
                   style: Theme.of(dialogContext).textTheme.bodyMedium,
                 ),
               ),
@@ -74,7 +74,7 @@ class RecipeTaggingHandler {
 
       if (tagResult == null) {
         showSnackBar(
-          'Kunde inte analysera recept',
+          context.l10n.taggingCouldNotAnalyze,
           backgroundColor: AppColors.error,
         );
         return;
@@ -100,7 +100,7 @@ class RecipeTaggingHandler {
       // Show success with tag summary
       final coverage = (tagResult.coverage * 100).toInt();
       showSnackBar(
-        '${tagResult.tags.length} taggar genererade ($coverage% täckning)',
+        context.l10n.taggingTagsGenerated(tagResult.tags.length, coverage),
         backgroundColor: AppColors.success,
       );
     } catch (e) {
@@ -108,7 +108,7 @@ class RecipeTaggingHandler {
       // Close loading dialog if still open
       Navigator.of(context).pop();
       showSnackBar(
-        'Fel vid taggning: $e',
+        context.l10n.taggingError(e.toString()),
         backgroundColor: AppColors.error,
       );
     }

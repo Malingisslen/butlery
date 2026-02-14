@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -53,7 +54,7 @@ class RateLimitDialog extends StatelessWidget {
         color: AppColors.warning,
         size: AppDimensions.iconSizeXxl,
       ),
-      title: Text(_getTitleForLimitType(rateLimitResult.limitType)),
+      title: Text(_getTitleForLimitType(context, rateLimitResult.limitType)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,7 +66,7 @@ class RateLimitDialog extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          _buildRetryInfo(),
+          _buildRetryInfo(context),
           const SizedBox(height: AppDimensions.spacingL),
           _buildAlternativeActions(context),
         ],
@@ -73,30 +74,30 @@ class RateLimitDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(null),
-          child: const Text('Avbryt'),
+          child: Text(context.l10n.commonCancel),
         ),
         if (rateLimitResult.suggestedAction == FallbackAction.retryLater)
           FilledButton(
             onPressed: () =>
                 Navigator.of(context).pop(FallbackAction.retryLater),
-            child: const Text('Försök senare'),
+            child: Text(context.l10n.dialogRetryLater),
           ),
       ],
     );
   }
 
-  Widget _buildRetryInfo() {
+  Widget _buildRetryInfo(BuildContext context) {
     final retryAfter = rateLimitResult.retryAfter;
     String timeText;
 
     if (retryAfter.inDays > 0) {
-      timeText = 'Försök igen imorgon';
+      timeText = context.l10n.dialogRetryTomorrow;
     } else if (retryAfter.inHours > 0) {
-      timeText = 'Försök igen om ${retryAfter.inHours} timme(ar)';
+      timeText = context.l10n.dialogRetryInHours(retryAfter.inHours);
     } else if (retryAfter.inMinutes > 0) {
-      timeText = 'Försök igen om ${retryAfter.inMinutes} minut(er)';
+      timeText = context.l10n.dialogRetryInMinutes(retryAfter.inMinutes);
     } else {
-      timeText = 'Försök igen om ${retryAfter.inSeconds} sekund(er)';
+      timeText = context.l10n.dialogRetryInSeconds(retryAfter.inSeconds);
     }
 
     return Container(
@@ -135,8 +136,8 @@ class RateLimitDialog extends StatelessWidget {
       actions.add(
         _ActionTile(
           icon: Icons.auto_fix_off_outlined,
-          title: 'Importera utan AI',
-          subtitle: 'Använder enklare extrahering',
+          title: context.l10n.dialogImportWithoutAi,
+          subtitle: context.l10n.dialogUsesSimpleExtraction,
           onTap: () {
             Navigator.of(context).pop(FallbackAction.skipLlm);
             onTryWithoutAi?.call();
@@ -150,8 +151,8 @@ class RateLimitDialog extends StatelessWidget {
       actions.add(
         _ActionTile(
           icon: Icons.edit_outlined,
-          title: 'Manuell import',
-          subtitle: 'Markera ingredienser själv',
+          title: context.l10n.dialogManualImport,
+          subtitle: context.l10n.dialogMarkIngredientsYourself,
           onTap: () {
             Navigator.of(context).pop(FallbackAction.useUserAssisted);
             onManualImport?.call();
@@ -168,7 +169,7 @@ class RateLimitDialog extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Alternativ:',
+          context.l10n.dialogAlternatives,
           style: AppTextStyles.metadataEmphasized.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -202,19 +203,19 @@ class RateLimitDialog extends StatelessWidget {
     }
   }
 
-  String _getTitleForLimitType(LimitType type) {
+  String _getTitleForLimitType(BuildContext context, LimitType type) {
     switch (type) {
       case LimitType.perMinute:
       case LimitType.perHour:
-        return 'Sakta ner lite';
+        return context.l10n.rateLimitSlowDown;
       case LimitType.perDay:
-        return 'Dagskvot uppnådd';
+        return context.l10n.rateLimitDailyQuota;
       case LimitType.llmDaily:
       case LimitType.llmMonthly:
-        return 'AI-gräns nådd';
+        return context.l10n.rateLimitAiLimit;
       case LimitType.costDaily:
       case LimitType.costMonthly:
-        return 'AI-budget förbrukad';
+        return context.l10n.rateLimitAiBudget;
     }
   }
 }
@@ -235,45 +236,49 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      child: Container(
-        padding: const EdgeInsets.all(AppDimensions.spacingM),
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.divider),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: AppColors.forestGreen,
-              size: AppDimensions.iconSizeL,
-            ),
-            const SizedBox(width: AppDimensions.spacingM),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.bodyBold,
-                  ),
-                  Text(
-                    subtitle,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
+    return Semantics(
+      label: title,
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        child: Container(
+          padding: const EdgeInsets.all(AppDimensions.spacingM),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.divider),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: AppColors.forestGreen,
+                size: AppDimensions.iconSizeL,
               ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              color: AppColors.textSecondary,
-            ),
-          ],
+              const SizedBox(width: AppDimensions.spacingM),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.bodyBold,
+                    ),
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right,
+                color: AppColors.textSecondary,
+              ),
+            ],
+          ),
         ),
       ),
     );

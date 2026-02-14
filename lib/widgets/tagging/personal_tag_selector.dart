@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -72,7 +73,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
       if (mounted) {
         setState(() {
           _initialized = true;
-          _error = 'Kunde inte ladda taggar';
+          _error = context.l10n.personalTagCouldNotLoad;
         });
       }
     }
@@ -129,7 +130,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
                   onPressed: _openTagManager,
                   icon: const Icon(Icons.settings,
                       size: AppDimensions.iconSize18),
-                  label: const Text('Hantera'),
+                  label: Text(context.l10n.personalTagManage),
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.forestGreen,
                     padding: const EdgeInsets.symmetric(
@@ -192,7 +193,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
             child: Text(
-              'Inga taggar skapade',
+              context.l10n.personalTagEmptyTitle,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textMedium,
               ),
@@ -200,7 +201,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
           ),
           TextButton(
             onPressed: _openTagManager,
-            child: const Text('Skapa'),
+            child: Text(context.l10n.commonCreate),
           ),
         ],
       ),
@@ -237,7 +238,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
           ),
           TextButton(
             onPressed: _retryLoad,
-            child: const Text('Försök igen'),
+            child: Text(context.l10n.commonRetry),
           ),
         ],
       ),
@@ -276,8 +277,8 @@ class _PersonalTagChip extends StatelessWidget {
     // MED-12: Accessibility label for screen readers
     return Semantics(
       label: isSelected
-          ? '${tag.name}, vald. Dubbeltryck för att ta bort.'
-          : '${tag.name}. Dubbeltryck för att välja.',
+          ? context.l10n.personalTagChipSelectedA11y(tag.name)
+          : context.l10n.personalTagChipUnselectedA11y(tag.name),
       selected: isSelected,
       button: true,
       child: FilterChip(
@@ -374,7 +375,7 @@ class _MiniTagChip extends StatelessWidget {
   Widget build(BuildContext context) {
     // MED-12: Accessibility label for screen readers
     return Semantics(
-      label: 'Tagg: ${tag.name}',
+      label: context.l10n.personalTagA11yLabel(tag.name),
       child: Container(
         padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingS,
@@ -419,7 +420,7 @@ class _SimpleTagChip extends StatelessWidget {
   Widget build(BuildContext context) {
     // MED-12: Accessibility label for screen readers
     return Semantics(
-      label: 'Tagg: $name',
+      label: context.l10n.personalTagA11yLabel(name),
       child: Container(
         padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingS,

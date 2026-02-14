@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
@@ -36,7 +37,8 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
       child: Consumer<RecipeListViewModel>(
         builder: (context, viewModel, child) {
           return AlertDialog(
-            title: Text('Lägg till recept i ${widget.categoryName}'),
+            title: Text(
+                context.l10n.dialogAddRecipesToCategory(widget.categoryName)),
             contentPadding: EdgeInsets.zero,
             content: SizedBox(
               width: double.maxFinite,
@@ -46,7 +48,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Avbryt'),
+                child: Text(context.l10n.commonCancel),
               ),
               if (_selectedRecipeIds.isNotEmpty)
                 FilledButton.icon(
@@ -64,7 +66,8 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                     ),
                   ),
                   icon: const Icon(Icons.add),
-                  label: Text('Lägg till (${_selectedRecipeIds.length})'),
+                  label: Text(
+                      '${context.l10n.commonAdd} (${_selectedRecipeIds.length})'),
                 ),
             ],
           );
@@ -75,7 +78,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
 
   Widget _buildContent(BuildContext context, RecipeListViewModel viewModel) {
     if (viewModel.isLoading) {
-      return StateWidget.loading(message: 'Laddar recept...');
+      return StateWidget.loading(message: context.l10n.dialogLoadingRecipes);
     }
 
     if (viewModel.hasError) {
@@ -119,7 +122,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
               });
             }
           },
-          searchHint: 'Sök recept att lägga till...',
+          searchHint: context.l10n.dialogSearchRecipesToAdd,
           autofocus: true,
           padding: const EdgeInsets.all(AppDimensions.spacingL),
           showStats: true,
@@ -184,7 +187,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             ),
             child: Text(
-              '${_selectedRecipeIds.length} valda',
+              context.l10n.dialogSelectedCount(_selectedRecipeIds.length),
               style: AppTextStyles.metadataEmphasized.copyWith(
                 color: AppColors.forestGreen,
               ),
@@ -199,7 +202,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                 });
               }
             },
-            child: const Text('Rensa val'),
+            child: Text(context.l10n.dialogClearSelection),
           ),
         ],
       ),

@@ -21,6 +21,7 @@ import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/core/providers/locale_provider.dart';
 import 'package:butlery/services/theme_service.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 class UserProfileEditView extends StatelessWidget {
   const UserProfileEditView({super.key});
@@ -112,13 +113,13 @@ class _UserProfileEditViewContentState
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const AlertDialog(
+      builder: (context) => AlertDialog(
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: AppDimensions.spacingL),
-            Text('Laddar upp avatar...'),
+            const CircularProgressIndicator(),
+            const SizedBox(height: AppDimensions.spacingL),
+            Text(context.l10n.profileUploadingAvatar),
           ],
         ),
       ),
@@ -133,9 +134,10 @@ class _UserProfileEditViewContentState
 
       if (success) {
         AppLogger.info('🎨 VIEW: Upload success, showing success message');
-        SnackBarUtils.showSuccess(context, 'Avatar uppladdad!');
+        SnackBarUtils.showSuccess(context, context.l10n.profileAvatarUploaded);
       } else {
-        final errorMsg = viewModel.error ?? 'Kunde inte ladda upp avatar';
+        final errorMsg =
+            viewModel.error ?? context.l10n.profileCouldNotUploadAvatar;
         AppLogger.error('🎨 VIEW: Upload failed, showing error: $errorMsg');
         SnackBarUtils.showError(context, errorMsg);
       }
@@ -157,13 +159,13 @@ class _UserProfileEditViewContentState
 
     if (mounted) {
       if (success) {
-        SnackBarUtils.showSuccess(context, 'Profil sparad!');
+        SnackBarUtils.showSuccess(context, context.l10n.profileSaved);
 
         // Navigate back after successful save
         Navigator.pop(context);
       } else {
         SnackBarUtils.showError(
-            context, viewModel.error ?? 'Kunde inte spara profil');
+            context, viewModel.error ?? context.l10n.profileCouldNotSave);
       }
     }
   }
@@ -174,24 +176,24 @@ class _UserProfileEditViewContentState
     final shouldDiscard = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Osparade ändringar'),
-        content: const Text(
-          'Du har osparade ändringar. Vill du spara innan du lämnar?',
+        title: Text(context.l10n.profileUnsavedChanges),
+        content: Text(
+          context.l10n.profileUnsavedChangesMessage,
         ),
         actions: [
           ActionButtons.secondaryButton(
             context,
-            label: 'Kasta bort',
+            label: context.l10n.commonDiscard,
             onPressed: () => Navigator.pop(context, true),
           ),
           ActionButtons.secondaryButton(
             context,
-            label: 'Avbryt',
+            label: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context, false),
           ),
           ActionButtons.primaryButton(
             context,
-            label: 'Spara',
+            label: context.l10n.commonSave,
             onPressed: () async {
               Navigator.pop(context, false);
               await _saveProfile();
@@ -241,7 +243,7 @@ class _UserProfileEditViewContentState
                 ),
               ),
               child: FormScaffold(
-                title: 'Redigera profil',
+                title: context.l10n.profileEditProfile,
                 form: _buildForm(viewModel),
                 onSave: viewModel.isLoading || !viewModel.isFormValid
                     ? null
@@ -255,7 +257,7 @@ class _UserProfileEditViewContentState
                     IconButton(
                       icon: const Icon(Icons.refresh),
                       onPressed: viewModel.clearError,
-                      tooltip: 'Rensa fel',
+                      tooltip: context.l10n.commonClearError,
                     ),
                 ],
               ),
@@ -269,13 +271,13 @@ class _UserProfileEditViewContentState
   Widget _buildForm(UserProfileViewModel viewModel) {
     // Show loading state for initial profile load
     if (viewModel.isLoading && !viewModel.hasProfile) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: AppDimensions.spacingMd),
-            Text('Laddar profil...'),
+            const CircularProgressIndicator(),
+            const SizedBox(height: AppDimensions.spacingMd),
+            Text(context.l10n.profileLoading),
           ],
         ),
       );
@@ -324,12 +326,12 @@ class _UserProfileEditViewContentState
                 imageUrl: viewModel.avatarUrl,
                 displayName: viewModel.displayName.isNotEmpty
                     ? viewModel.displayName
-                    : 'Ny användare',
+                    : context.l10n.profileNewUser,
                 onEditTap: _uploadAvatar, // Lägg till denna parameter
               ),
               // Upload progress overlay
               if (viewModel.isUploadingAvatar)
-                const ProgressOverlay.avatar(text: 'Laddar upp...'),
+                ProgressOverlay.avatar(text: context.l10n.commonUploading),
             ],
           ),
 
@@ -343,22 +345,22 @@ class _UserProfileEditViewContentState
               ActionButtons.outlinedButton(
                 context,
                 label: viewModel.avatarUrl != null
-                    ? 'Ändra avatar'
-                    : 'Lägg till avatar',
+                    ? context.l10n.profileChangeAvatar
+                    : context.l10n.profileAddAvatar,
                 icon: Icons.camera_alt,
                 onPressed: viewModel.isUploadingAvatar ? null : _uploadAvatar,
               ),
               if (viewModel.avatarUrl != null)
                 ActionButtons.outlinedButton(
                   context,
-                  label: 'Ta bort',
+                  label: context.l10n.commonRemove,
                   icon: Icons.delete_outline,
                   onPressed: viewModel.isUploadingAvatar
                       ? null
                       : () {
                           viewModel.removeAvatar();
                           SnackBarUtils.showSuccess(
-                              context, 'Avatar borttagen');
+                              context, context.l10n.profileAvatarRemoved);
                         },
                 ),
             ],
@@ -373,14 +375,14 @@ class _UserProfileEditViewContentState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Visningsnamn',
+          context.l10n.profileDisplayName,
           style: AppTextStyles.labelMedium,
         ),
         const SizedBox(height: AppDimensions.spacingXs),
         StyledInput(
           controller: _displayNameController,
           focusNode: _displayNameFocusNode,
-          hint: 'Ditt namn som andra ser',
+          hint: context.l10n.profileDisplayNameHint,
           prefixIcon: const Icon(Icons.person),
           suffixIcon: viewModel.displayNameError != null
               ? const Icon(Icons.error, color: AppColors.error)
@@ -390,7 +392,7 @@ class _UserProfileEditViewContentState
                   : null,
           validator: (value) => ValidationUtils.validateRequired(
             value,
-            fieldName: 'Visningsnamn',
+            fieldName: context.l10n.profileDisplayName,
           ),
           onChanged: (value) {
             viewModel.updateDisplayName(value);
@@ -422,7 +424,7 @@ class _UserProfileEditViewContentState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Integritetsinställningar',
+          context.l10n.profilePrivacySettings,
           style: AppTextStyles.titleMedium,
         ),
         const SizedBox(height: AppDimensions.spacingL),
@@ -430,18 +432,17 @@ class _UserProfileEditViewContentState
           child: Column(
             children: [
               SwitchListTile(
-                title: const Text('Synlig i sökningar'),
-                subtitle:
-                    const Text('Andra användare kan hitta dig när de söker'),
+                title: Text(context.l10n.profileVisibleInSearch),
+                subtitle: Text(context.l10n.profileVisibleInSearchDescription),
                 value: viewModel.isSearchable,
                 onChanged: viewModel.updateIsSearchable,
                 secondary: const Icon(Icons.search),
               ),
               const Divider(height: 1),
               SwitchListTile(
-                title: const Text('Sökbar via e-post'),
+                title: Text(context.l10n.profileSearchableByEmail),
                 subtitle:
-                    const Text('Andra kan hitta dig genom din e-postadress'),
+                    Text(context.l10n.profileSearchableByEmailDescription),
                 value: viewModel.allowEmailSearch,
                 onChanged: viewModel.updateAllowEmailSearch,
                 secondary: const Icon(Icons.email),
@@ -458,7 +459,7 @@ class _UserProfileEditViewContentState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Språk',
+          context.l10n.profileLanguage,
           style: AppTextStyles.titleMedium,
         ),
         const SizedBox(height: AppDimensions.spacingL),
@@ -476,7 +477,8 @@ class _UserProfileEditViewContentState
                     _localeProvider.setLocale(value);
                     SnackBarUtils.showSuccess(
                       context,
-                      'Språk ändrat till ${LocaleProvider.getLocaleName(value)}',
+                      context.l10n.profileLanguageChangedTo(
+                          LocaleProvider.getLocaleName(value)),
                     );
                   }
                 },
@@ -494,16 +496,20 @@ class _UserProfileEditViewContentState
 
   Widget _buildThemeSettings() {
     final themeModes = [
-      (ThemeMode.system, 'Systemets inställning', Icons.settings_suggest),
-      (ThemeMode.light, 'Ljust läge', Icons.light_mode),
-      (ThemeMode.dark, 'Mörkt läge', Icons.dark_mode),
+      (
+        ThemeMode.system,
+        context.l10n.profileThemeSystem,
+        Icons.settings_suggest
+      ),
+      (ThemeMode.light, context.l10n.profileThemeLight, Icons.light_mode),
+      (ThemeMode.dark, context.l10n.profileThemeDark, Icons.dark_mode),
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Tema',
+          context.l10n.profileTheme,
           style: AppTextStyles.titleMedium,
         ),
         const SizedBox(height: AppDimensions.spacingL),
@@ -520,7 +526,7 @@ class _UserProfileEditViewContentState
                     _themeService.setThemeMode(value);
                     SnackBarUtils.showSuccess(
                       context,
-                      'Tema ändrat till ${mode.$2}',
+                      context.l10n.profileThemeChangedTo(mode.$2),
                     );
                   }
                 },
@@ -542,13 +548,13 @@ class _UserProfileEditViewContentState
         // Save button
         ActionButtons.primaryButton(
           context,
-          label: 'Spara profil',
+          label: context.l10n.profileSaveProfile,
           icon: Icons.save,
           onPressed: viewModel.isLoading || !viewModel.isFormValid
               ? null
               : _saveProfile,
           isLoading: viewModel.isLoading,
-          loadingText: 'Sparar...',
+          loadingText: context.l10n.commonSaving,
           isExpanded: true,
         ),
 
@@ -557,13 +563,14 @@ class _UserProfileEditViewContentState
         // Reset button
         ActionButtons.outlinedButton(
           context,
-          label: 'Återställ ändringar',
+          label: context.l10n.profileResetChanges,
           icon: Icons.refresh,
           onPressed: viewModel.hasUnsavedChanges
               ? () {
                   viewModel.resetForm();
                   _initializeForm(viewModel);
-                  SnackBarUtils.showSuccess(context, 'Formulär återställt');
+                  SnackBarUtils.showSuccess(
+                      context, context.l10n.profileFormReset);
                 }
               : null,
           isExpanded: true,
@@ -576,10 +583,12 @@ class _UserProfileEditViewContentState
             width: double.infinity,
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
+              color: AppColors.warning
+                  .withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border:
-                  Border.all(color: AppColors.warning.withValues(alpha: AppDimensions.opacityMediumLight)),
+              border: Border.all(
+                  color: AppColors.warning
+                      .withValues(alpha: AppDimensions.opacityMediumLight)),
             ),
             child: Row(
               children: [
@@ -591,7 +600,7 @@ class _UserProfileEditViewContentState
                 const SizedBox(width: AppDimensions.spacingXs),
                 Expanded(
                   child: Text(
-                    'Du har osparade ändringar',
+                    context.l10n.profileYouHaveUnsavedChanges,
                     style: AppTextStyles.bodySmall,
                   ),
                 ),

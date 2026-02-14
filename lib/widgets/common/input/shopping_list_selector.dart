@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/input/editable_menu_items_preview_dialog.
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Shopping List Selector Widget
 /// A comprehensive widget that allows users to:
@@ -67,18 +68,18 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
           animation: _viewModel,
           builder: (context, child) {
             if (_viewModel.isLoading) {
-              return const StateWidget(
+              return StateWidget(
                 type: StateType.loading,
-                title: 'Laddar listor...',
+                title: context.l10n.shoppingLoadingLists,
               );
             }
 
             if (_viewModel.hasError) {
               return StateWidget(
                 type: StateType.error,
-                title: 'Fel vid laddning',
+                title: context.l10n.errorLoadingFailed,
                 subtitle: _viewModel.error,
-                actionLabel: 'Försök igen',
+                actionLabel: context.l10n.commonRetry,
                 onAction: () => _viewModel.loadLists(),
               );
             }
@@ -113,7 +114,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         const SizedBox(width: AppDimensions.spacingM),
         Expanded(
           child: Text(
-            'Inköpslistor',
+            context.l10n.shoppingLists,
             style: AppTextStyles.headlineSmall,
           ),
         ),
@@ -121,7 +122,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
           child: SizedBox(
             height: 40,
             child: StyledButton.primary(
-              text: 'Ny lista',
+              text: context.l10n.shoppingNewList,
               icon: const Icon(Icons.add),
               onPressed: () => _createNewList(context),
             ),
@@ -193,7 +194,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               const SizedBox(width: AppDimensions.spacingM),
               Expanded(
                 child: Text(
-                  'Lägg till från meny',
+                  context.l10n.shoppingAddFromMenu,
                   style: AppTextStyles.titleMedium.copyWith(
                     color: AppColors.success,
                   ),
@@ -204,8 +205,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
           const SizedBox(height: AppDimensions.spacingM),
           Text(
             menuItems.isEmpty
-                ? 'Inga artiklar valda från menyn'
-                : 'Lägg till ${menuItems.length} artiklar från menyn i "${selectedList.name}"',
+                ? context.l10n.shoppingNoItemsFromMenu
+                : context.l10n.shoppingAddItemsFromMenu(
+                    menuItems.length, selectedList.name),
             style: AppTextStyles.bodyLarge,
           ),
           const SizedBox(height: AppDimensions.spacingXl),
@@ -214,7 +216,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               Expanded(
                 child: ActionButtons.outlinedButton(
                   context,
-                  label: 'Förhandsgranska',
+                  label: context.l10n.shoppingPreview,
                   icon: Icons.preview,
                   onPressed: () => _previewAndEditMenuItems(context, menuItems),
                 ),
@@ -223,10 +225,10 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               Expanded(
                 child: StyledButton.primary(
                   text: _isAddingToList
-                      ? 'Lägger till...'
+                      ? context.l10n.shoppingAdding
                       : menuItems.isEmpty
-                          ? 'Inga artiklar att lägga till'
-                          : 'Lägg till',
+                          ? context.l10n.shoppingNoItemsToAdd
+                          : context.l10n.shoppingAddItems,
                   icon: _isAddingToList
                       ? null
                       : const Icon(Icons.add_shopping_cart),
@@ -267,8 +269,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
           SnackBar(
             content: Text(
               success
-                  ? 'Lista "$name" skapad'
-                  : 'Kunde inte skapa lista: ${_viewModel.error ?? "Okänt fel"}',
+                  ? context.l10n.shoppingListCreated(name)
+                  : context.l10n.shoppingListCreateFailed(
+                      _viewModel.error ?? context.l10n.errorUnknown),
             ),
             backgroundColor: success ? AppColors.success : AppColors.error,
           ),
@@ -320,8 +323,10 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
             SnackBar(
               content: Text(
                 success
-                    ? '${menuItems.length} artiklar tillagda i "${selectedList.name}"'
-                    : 'Kunde inte lägga till artiklar: ${viewModel.error ?? "Okänt fel"}',
+                    ? context.l10n
+                        .shoppingItemsAdded(menuItems.length, selectedList.name)
+                    : context.l10n.shoppingItemsAddFailed(
+                        viewModel.error ?? context.l10n.errorUnknown),
               ),
               backgroundColor: success ? AppColors.success : AppColors.error,
             ),

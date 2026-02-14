@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/social/friends_list/group_invitation_card.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// GroupsTab - Groups tab component
 /// Displays user's groups and pending group invitations.
@@ -28,7 +29,7 @@ class GroupsTab {
         if (friendsService.isLoading &&
             groups.isEmpty &&
             pendingInvitations.isEmpty) {
-          return StateWidget.loading(message: 'Laddar grupper...');
+          return StateWidget.loading(message: context.l10n.groupLoadingGroups);
         }
 
         return RefreshIndicator(
@@ -97,9 +98,8 @@ class GroupsTab {
               if (groups.isEmpty && pendingInvitations.isEmpty) ...[
                 SliverFillRemaining(
                   child: StateWidget.empty(
-                    title: 'Inga grupper än',
-                    subtitle:
-                        'Skapa din första grupp eller vänta på inbjudningar från vänner.',
+                    title: context.l10n.groupNoGroupsYet,
+                    subtitle: context.l10n.groupNoGroupsDescription,
                     icon: Icons.groups_outlined,
                   ),
                 ),
@@ -129,7 +129,7 @@ class GroupsTab {
               ),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(
-                'Gruppinbjudningar (${invitations.length})',
+                context.l10n.groupInvitationsCount(invitations.length),
                 style: AppTextStyles.titleBold.copyWith(
                   color: Theme.of(context).colorScheme.tertiary,
                 ),
@@ -138,7 +138,7 @@ class GroupsTab {
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
-            'Du har fått inbjudningar att gå med i grupper',
+            context.l10n.groupInvitationsDescription,
             style: AppTextStyles.bodySmall.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -163,7 +163,7 @@ class GroupsTab {
           ),
           const SizedBox(width: AppDimensions.spacingSm),
           Text(
-            'Mina grupper (${groups.length})',
+            context.l10n.groupMyGroupsCount(groups.length),
             style: AppTextStyles.titleBold,
           ),
         ],

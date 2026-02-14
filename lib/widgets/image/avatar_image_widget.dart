@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 
@@ -158,9 +159,13 @@ class AvatarImageWidget extends StatelessWidget {
 
     // Wrap with tap handler
     if (onTap != null || isEditable) {
-      avatar = GestureDetector(
-        onTap: isEditable ? _handleEditTap : onTap,
-        child: avatar,
+      avatar = Semantics(
+        label: isEditable ? 'Profilbild, tryck for att andra' : 'Profilbild',
+        button: true,
+        child: GestureDetector(
+          onTap: isEditable ? _handleEditTap : onTap,
+          child: avatar,
+        ),
       );
     }
 
@@ -341,22 +346,26 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
           Positioned(
             top: -4,
             right: -4,
-            child: GestureDetector(
-              onTap: widget.onImageRemoved,
-              child: Container(
-                padding: const EdgeInsets.all(AppDimensions.spacingXs),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.error,
-                  border: Border.all(
-                    color: AppColors.cardWhite,
-                    width: 2,
+            child: Semantics(
+              label: context.l10n.a11yRemoveProfileImage,
+              button: true,
+              child: GestureDetector(
+                onTap: widget.onImageRemoved,
+                child: Container(
+                  padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.error,
+                    border: Border.all(
+                      color: AppColors.cardWhite,
+                      width: 2,
+                    ),
                   ),
-                ),
-                child: const Icon(
-                  Icons.close,
-                  size: AppDimensions.iconSizeS,
-                  color: AppColors.cardWhite,
+                  child: const Icon(
+                    Icons.close,
+                    size: AppDimensions.iconSizeS,
+                    color: AppColors.cardWhite,
+                  ),
                 ),
               ),
             ),

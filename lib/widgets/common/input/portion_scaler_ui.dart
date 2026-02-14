@@ -37,7 +37,11 @@ class PortionScalerUI {
           onUpdatePortions,
         ),
 
-        const SizedBox(height: AppDimensions.spacingM),
+        // Only add gap when status/toggle content follows
+        if (currentPortions != originalPortions ||
+            convertToSwedish ||
+            hasAmericanUnits)
+          const SizedBox(height: AppDimensions.spacingM),
 
         // Status info
         if (currentPortions != originalPortions || convertToSwedish)
@@ -69,6 +73,7 @@ class PortionScalerUI {
     Function(int) onUpdatePortions,
   ) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           context.l10n.scalerPortionsLabel,

@@ -320,20 +320,20 @@ class DiscoverySearchSection {
   static void _simulateVoiceInput(BuildContext context) {
     // Show processing state
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Row(
           children: [
-            SizedBox(
+            const SizedBox(
               width: 16,
               height: 16,
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
-            SizedBox(width: AppDimensions.spacingM),
+            const SizedBox(width: AppDimensions.spacingM),
             Text(context.l10n.discoveryListening),
           ],
         ),
         backgroundColor: AppColors.info,
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
 

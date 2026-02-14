@@ -112,13 +112,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           backgroundColor: AppColors.cream,
           bottomNavigationBar: ButleryBottomNavigation(
             currentIndex: 0,
-            items: ButleryAdaptiveNavigation.navigationItems,
+            items: ButleryAdaptiveNavigation.getNavigationItems(context),
             backgroundColor: AppColors.creamDarker,
             selectedItemColor: AppColors.forestGreenDark,
             unselectedItemColor: AppColors.greenMuted,
             onTap: (index) {
               final route =
-                  ButleryAdaptiveNavigation.navigationItems[index].route;
+                  ButleryAdaptiveNavigation.getNavigationItems(context)[index]
+                      .route;
               Navigator.pushNamed(context, route);
             },
           ),
@@ -214,6 +215,19 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 ),
                 // UI Redesign: Hero action buttons with cream background
                 actions: [
+                  // Favorite toggle
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: _HeroButton(
+                      icon: recipe.isFavorite
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      onPressed: () => viewModel.toggleFavorite(),
+                      tooltip: recipe.isFavorite
+                          ? context.l10n.favoritesRemove
+                          : context.l10n.favoritesAdd,
+                    ),
+                  ),
                   // Internal sharing with friends and groups
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -243,7 +257,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           child: Row(
                             children: [
                               const Icon(Icons.edit_outlined,
-                                  size: AppDimensions.iconSizeM),
+                                  size: AppDimensions.iconSizeM,
+                                  color: AppColors.forestGreen),
                               const SizedBox(width: AppDimensions.spacingM),
                               Text(context.l10n.recipeEdit),
                             ],
@@ -254,7 +269,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           child: Row(
                             children: [
                               const Icon(Icons.content_copy_outlined,
-                                  size: AppDimensions.iconSizeM),
+                                  size: AppDimensions.iconSizeM,
+                                  color: AppColors.forestGreen),
                               const SizedBox(width: AppDimensions.spacingM),
                               Text(context.l10n.recipeCreateCopy),
                             ],
@@ -265,7 +281,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           child: Row(
                             children: [
                               const Icon(Icons.shopping_cart_outlined,
-                                  size: AppDimensions.iconSizeM),
+                                  size: AppDimensions.iconSizeM,
+                                  color: AppColors.forestGreen),
                               const SizedBox(width: AppDimensions.spacingM),
                               Text(context.l10n.recipeCreateShoppingList),
                             ],
@@ -276,7 +293,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           child: Row(
                             children: [
                               const Icon(Icons.local_offer_outlined,
-                                  size: AppDimensions.iconSizeM),
+                                  size: AppDimensions.iconSizeM,
+                                  color: AppColors.forestGreen),
                               const SizedBox(width: AppDimensions.spacingM),
                               Text(context.l10n.recipeUpdateTags),
                             ],
@@ -307,7 +325,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             child: Row(
                               children: [
                                 const Icon(Icons.link_outlined,
-                                    size: AppDimensions.iconSizeM),
+                                    size: AppDimensions.iconSizeM,
+                                    color: AppColors.forestGreen),
                                 const SizedBox(width: AppDimensions.spacingM),
                                 Text(context.l10n.recipeViewSource),
                               ],

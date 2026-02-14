@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -86,12 +87,18 @@ class UserAvatarWidgets {
     }
 
     return onTap != null
-        ? Material(
-            color: AppColors.transparent,
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.zero,
-              child: avatar,
+        ? Builder(
+            builder: (context) => Material(
+              color: AppColors.transparent,
+              child: Semantics(
+                label: context.l10n.a11yProfileImage(displayName),
+                button: true,
+                child: InkWell(
+                  onTap: onTap,
+                  borderRadius: BorderRadius.zero,
+                  child: avatar,
+                ),
+              ),
             ),
           )
         : avatar;
@@ -118,27 +125,34 @@ class UserAvatarWidgets {
         Positioned(
           right: 0,
           bottom: 0,
-          child: Material(
-            color: AppColors.forestGreen,
-            shape: const CircleBorder(),
-            child: InkWell(
-              onTap: onEditTap,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-              child: Container(
-                width: AppDimensions.iconSizeXl,
-                height: AppDimensions.iconSizeXl,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.forestGreen,
-                  border: Border.all(
-                    color: AppColors.cardWhite,
-                    width: AppDimensions.borderWidthThick,
+          child: Builder(
+            builder: (context) => Material(
+              color: AppColors.forestGreen,
+              shape: const CircleBorder(),
+              child: Semantics(
+                label: context.l10n.a11yChangeProfileImage,
+                button: true,
+                child: InkWell(
+                  onTap: onEditTap,
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusL),
+                  child: Container(
+                    width: AppDimensions.iconSizeXl,
+                    height: AppDimensions.iconSizeXl,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.forestGreen,
+                      border: Border.all(
+                        color: AppColors.cardWhite,
+                        width: AppDimensions.borderWidthThick,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.edit,
+                      size: AppDimensions.iconSizeM,
+                      color: AppColors.cardWhite,
+                    ),
                   ),
-                ),
-                child: const Icon(
-                  Icons.edit,
-                  size: AppDimensions.iconSizeM,
-                  color: AppColors.cardWhite,
                 ),
               ),
             ),

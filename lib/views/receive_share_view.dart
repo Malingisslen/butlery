@@ -25,6 +25,7 @@ import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Stateful widget for shared content reception with intelligent content routing.
 class ReceiveShareView extends StatefulWidget {
@@ -99,7 +100,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
       arguments: {
         'text': widget.content,
         'sourceUrl': _detectionResult.extractedUrl ??
-            'Importerad från ${_getSourceDescription()}',
+            context.l10n.importImportedFrom(_getSourceDescription()),
       },
     );
   }
@@ -107,11 +108,11 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
   /// Get user-friendly source description based on content type.
   String _getSourceDescription() {
     if (_detectionResult.type == content_detector.ContentType.recipeText) {
-      return 'delad text';
+      return context.l10n.importSharedText;
     } else if (_detectionResult.platform != null) {
       return _getPlatformName();
     } else {
-      return 'annan app';
+      return context.l10n.importOtherApp;
     }
   }
 
@@ -168,7 +169,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
             );
           } else {
             // Logga misslyckad extraktion
-            final errorMessage = result.error ?? 'Kunde inte extrahera text';
+            final errorMessage =
+                result.error ?? context.l10n.importCouldNotExtractText;
 
             _analytics.logExtractionError(
               url: _detectionResult.extractedUrl!,
@@ -204,7 +206,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
 
         if (mounted) {
           setState(() {
-            _extractionError = 'Ett fel uppstod: ${e.toString()}';
+            _extractionError = context.l10n
+                .errorWithContext(context.l10n.importExtraction, e.toString());
             _isExtracting = false;
           });
         }
@@ -223,12 +226,10 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
 
     DialogFactory.showConfirmation(
       context,
-      title: 'Manuell kopiering',
-      message: '1. Gå tillbaka till ${_getPlatformName()}\n'
-          '2. Kopiera recepttexten från inlägget\n'
-          '3. Kom tillbaka hit och välj "Klistra in text"',
-      confirmText: 'Klistra in text',
-      cancelText: 'Avbryt',
+      title: context.l10n.importManualCopy,
+      message: context.l10n.importManualCopyInstructions(_getPlatformName()),
+      confirmText: context.l10n.importPasteText,
+      cancelText: context.l10n.commonCancel,
     ).then((confirmed) {
       if (confirmed == true) {
         _navigateToTextImport();
@@ -240,20 +241,22 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
   @override
   Widget build(BuildContext context) {
     if (_isProcessing) {
-      return const LoadingScaffold(
-        title: 'Importera recept',
-        loadingMessage: 'Analyserar innehåll...',
+      return LoadingScaffold(
+        title: context.l10n.importRecipeTitle,
+        loadingMessage: context.l10n.importAnalyzingContent,
       );
     }
 
     if (_isExtracting) {
       return LoadingScaffold(
-        title: 'Importera recept',
-        loadingMessage: 'Hämtar recept från ${_getPlatformName()}...',
+        title: context.l10n.importRecipeTitle,
+        loadingMessage:
+            context.l10n.importFetchingFromPlatform(_getPlatformName()),
       );
     }
 
-    return BaseScaffold(title: 'Importera recept', body: _buildContentView());
+    return BaseScaffold(
+        title: context.l10n.importRecipeTitle, body: _buildContentView());
   }
 
   /// Build content view with detection header, preview, and action buttons.
@@ -296,22 +299,22 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
     switch (_detectionResult.type) {
       case content_detector.ContentType.socialMediaUrl:
         icon = Icons.link;
-        title = 'URL från ${_getPlatformName()}';
+        title = context.l10n.importUrlFromPlatform(_getPlatformName());
         color = AppColors.forestGreen;
         break;
       case content_detector.ContentType.recipeText:
         icon = Icons.restaurant_menu;
-        title = 'Recepttext detekterad!';
+        title = context.l10n.importRecipeTextDetected;
         color = AppColors.success;
         break;
       case content_detector.ContentType.recipeUrl:
         icon = Icons.public;
-        title = 'Receptlänk detekterad';
+        title = context.l10n.importRecipeLinkDetected;
         color = AppColors.forestGreen;
         break;
       default:
         icon = Icons.text_fields;
-        title = 'Textinnehåll';
+        title = context.l10n.importTextContent;
         color = Theme.of(context).colorScheme.onSurfaceVariant;
     }
 
@@ -398,18 +401,18 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
               icon: const Icon(Icons.download),
               label: Text(
                 _extractionError != null
-                    ? 'Försök igen'
-                    : 'Hämta recept automatiskt',
+                    ? context.l10n.commonRetry
+                    : context.l10n.importFetchAutomatically,
               ),
               style: ComponentThemes.primaryButtonStyle,
             ),
             const SizedBox(height: AppDimensions.spacingL),
-            Text('eller', style: AppTextStyles.bodySmall),
+            Text(context.l10n.commonOr, style: AppTextStyles.bodySmall),
             const SizedBox(height: AppDimensions.spacingS),
             OutlinedButton.icon(
               onPressed: _handleManualCopy,
               icon: const Icon(Icons.content_paste),
-              label: const Text('Kopiera manuellt'),
+              label: Text(context.l10n.importCopyManually),
               style: ComponentThemes.outlinedButtonStyle,
             ),
           ],
@@ -420,7 +423,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
         return Column(
           children: [
             Text(
-              'Receptlänk från webbsida detekterad!',
+              context.l10n.importWebRecipeLinkDetected,
               style: AppTextStyles.titleSmall,
               textAlign: TextAlign.center,
             ),
@@ -428,7 +431,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
             ElevatedButton.icon(
               onPressed: _navigateToUrlImport,
               icon: const Icon(Icons.download),
-              label: const Text('Hämta recept från webbsida'),
+              label: Text(context.l10n.importFetchFromWebsite),
               style: ComponentThemes.primaryButtonStyle,
             ),
           ],
@@ -455,7 +458,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                   const SizedBox(width: AppDimensions.spacingS),
                   Expanded(
                     child: Text(
-                      'Recepttext detekterad! Vi kan importera detta.',
+                      context.l10n.importRecipeTextCanImport,
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.success,
                       ),
@@ -468,7 +471,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
             ElevatedButton.icon(
               onPressed: _navigateToTextImport,
               icon: const Icon(Icons.arrow_forward),
-              label: const Text('Fortsätt med import'),
+              label: Text(context.l10n.importContinueWithImport),
               style: ComponentThemes.primaryButtonStyle,
             ),
           ],
@@ -479,7 +482,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
         return Column(
           children: [
             Text(
-              'Ingen receptinformation hittades i texten.',
+              context.l10n.importNoRecipeInfoFound,
               style: AppTextStyles.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -487,7 +490,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
             OutlinedButton.icon(
               onPressed: _navigateToTextImport,
               icon: const Icon(Icons.edit),
-              label: const Text('Försök ändå'),
+              label: Text(context.l10n.importTryAnyway),
               style: ComponentThemes.outlinedButtonStyle,
             ),
           ],
@@ -507,9 +510,9 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
       case content_detector.SourcePlatform.youtube:
         return 'YouTube';
       case content_detector.SourcePlatform.website:
-        return 'Webbsida';
+        return context.l10n.importWebsite;
       default:
-        return 'Okänd källa';
+        return context.l10n.importUnknownSource;
     }
   }
 }

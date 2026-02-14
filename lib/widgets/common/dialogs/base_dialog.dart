@@ -1,5 +1,6 @@
 /// Base Dialog Classes - Unified dialog patterns with template method pattern for form, confirmation, and loading dialogs.
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -10,8 +11,8 @@ abstract class BaseDialog<T> extends StatefulWidget {
   final String title;
   final IconData? titleIcon;
   final String? subtitle;
-  final String primaryActionText;
-  final String secondaryActionText;
+  final String? primaryActionText;
+  final String? secondaryActionText;
   final IconData? primaryActionIcon;
   final Color? primaryActionColor;
   final bool isDangerous;
@@ -22,8 +23,8 @@ abstract class BaseDialog<T> extends StatefulWidget {
     required this.title,
     this.titleIcon,
     this.subtitle,
-    this.primaryActionText = 'OK',
-    this.secondaryActionText = 'Avbryt',
+    this.primaryActionText,
+    this.secondaryActionText,
     this.primaryActionIcon,
     this.primaryActionColor,
     this.isDangerous = false,
@@ -76,17 +77,25 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
       actions: [
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-          child: Text(widget.secondaryActionText),
+          child: Text(widget.secondaryActionText ?? context.l10n.commonCancel),
         ),
         _buildPrimaryButton(),
       ],
     );
   }
 
+  String _resolvedPrimaryActionText() {
+    if (widget.primaryActionText != null) return widget.primaryActionText!;
+    if (widget.isDangerous) return context.l10n.commonDelete;
+    if (widget is BaseFormDialog) return context.l10n.commonSave;
+    return 'OK';
+  }
+
   Widget _buildPrimaryButton() {
     final buttonColor = widget.isDangerous
         ? AppColors.error
         : (widget.primaryActionColor ?? AppColors.forestGreen);
+    final resolvedText = _resolvedPrimaryActionText();
     if (widget.isDangerous) {
       return FilledButton.icon(
         onPressed: _isLoading ? null : _onPrimaryAction,
@@ -105,7 +114,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
                 ),
               )
             : Icon(widget.primaryActionIcon ?? Icons.delete),
-        label: Text(_isLoading ? 'Arbetar...' : widget.primaryActionText),
+        label: Text(_isLoading ? context.l10n.commonWorking : resolvedText),
       );
     } else {
       return FilledButton.icon(
@@ -122,7 +131,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
                 ),
               )
             : Icon(widget.primaryActionIcon ?? Icons.check),
-        label: Text(_isLoading ? 'Arbetar...' : widget.primaryActionText),
+        label: Text(_isLoading ? context.l10n.commonWorking : resolvedText),
       );
     }
   }
@@ -188,8 +197,8 @@ abstract class BaseFormDialog<T> extends BaseDialog<T> {
     required super.title,
     super.titleIcon,
     super.subtitle,
-    super.primaryActionText = 'Spara',
-    super.secondaryActionText = 'Avbryt',
+    super.primaryActionText,
+    super.secondaryActionText,
     super.primaryActionIcon = Icons.save,
     super.primaryActionColor = AppColors.forestGreen,
   });
@@ -226,7 +235,7 @@ class ConfirmationDialog extends BaseDialog<bool> {
     this.customContent,
     super.titleIcon,
     super.primaryActionText = 'OK',
-    super.secondaryActionText = 'Avbryt',
+    super.secondaryActionText,
     super.isDangerous = false,
     super.primaryActionIcon,
   }) : super(primaryActionColor: null);
@@ -248,7 +257,7 @@ class ConfirmationDialog extends BaseDialog<bool> {
     Widget? customContent,
     IconData? titleIcon,
     String primaryActionText = 'OK',
-    String secondaryActionText = 'Avbryt',
+    String? secondaryActionText,
     bool isDangerous = false,
     IconData? primaryActionIcon,
   }) {
@@ -280,8 +289,8 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
     required this.message,
     required this.itemName,
     this.customContent,
-    super.primaryActionText = 'Ta bort',
-    super.secondaryActionText = 'Avbryt',
+    super.primaryActionText,
+    super.secondaryActionText,
   }) : super(
           titleIcon: Icons.warning_amber_rounded,
           isDangerous: true,
@@ -317,8 +326,8 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
     required String message,
     required String itemName,
     Widget? customContent,
-    String primaryActionText = 'Ta bort',
-    String secondaryActionText = 'Avbryt',
+    String? primaryActionText,
+    String? secondaryActionText,
   }) {
     return showDialog<bool>(
       context: context,
@@ -343,10 +352,10 @@ abstract class BaseActionDialog<T> extends StatefulWidget {
   bool validateBeforeAction() => true;
 
   Widget? get dialogIcon => null;
-  String get dialogTitle;
-  String get cancelButtonText => 'Avbryt';
-  String get actionButtonText;
-  String get loadingButtonText => 'Arbetar...';
+  String dialogTitleText(BuildContext context);
+  String? get cancelButtonText => null;
+  String actionButtonLabel(BuildContext context);
+  String? loadingButtonLabel(BuildContext context) => null;
   Widget get actionButtonIcon => const Icon(Icons.check);
   ButtonStyle? get actionButtonStyle => null;
   bool get isDestructiveAction => false;
@@ -364,7 +373,7 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
   Widget build(BuildContext context) {
     return AlertDialog(
       icon: widget.dialogIcon,
-      title: Text(widget.dialogTitle),
+      title: Text(widget.dialogTitleText(context)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -379,7 +388,7 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
       actions: [
         TextButton(
           onPressed: isLoading ? null : () => Navigator.of(context).pop(),
-          child: Text(widget.cancelButtonText),
+          child: Text(widget.cancelButtonText ?? context.l10n.commonCancel),
         ),
         _buildActionButton(),
       ],
@@ -387,6 +396,8 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
   }
 
   Widget _buildActionButton() {
+    final loadingText =
+        widget.loadingButtonLabel(context) ?? context.l10n.commonWorking;
     if (widget.actionButtonStyle != null) {
       return FilledButton.icon(
         onPressed: isLoading ? null : _performAction,
@@ -401,8 +412,8 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
                 ),
               )
             : widget.actionButtonIcon,
-        label: Text(
-            isLoading ? widget.loadingButtonText : widget.actionButtonText),
+        label:
+            Text(isLoading ? loadingText : widget.actionButtonLabel(context)),
       );
     } else {
       return FilledButton.icon(
@@ -414,8 +425,8 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
             : widget.actionButtonIcon,
-        label: Text(
-            isLoading ? widget.loadingButtonText : widget.actionButtonText),
+        label:
+            Text(isLoading ? loadingText : widget.actionButtonLabel(context)),
       );
     }
   }

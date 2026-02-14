@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Refactored CollaborativeShoppingActions using BaseActionHandler
 /// This class handles ONLY action-related responsibilities:
@@ -47,7 +48,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
     return IconButton(
       icon: const Icon(Icons.share),
       onPressed: onShare,
-      tooltip: 'Dela lista',
+      tooltip: context.l10n.collaborativeShareList,
     );
   }
 
@@ -55,24 +56,24 @@ class CollaborativeShoppingActions extends BaseActionHandler
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert),
       onSelected: onMenuAction,
-      tooltip: 'Fler åtgärder',
+      tooltip: context.l10n.collaborativeMoreActions,
       itemBuilder: (context) => [
         _buildPopupMenuItem(
           value: 'settings',
           icon: Icons.settings,
-          label: 'Inställningar',
+          label: context.l10n.collaborativeSettings,
         ),
         _buildPopupMenuItem(
           value: 'members',
           icon: Icons.group,
-          label: 'Hantera medlemmar',
+          label: context.l10n.collaborativeManageMembers,
         ),
         if (viewModel.canEdit) ...[
           const PopupMenuDivider(),
           _buildPopupMenuItem(
             value: 'clear_completed',
             icon: Icons.clear_all,
-            label: 'Rensa klara artiklar',
+            label: context.l10n.collaborativeClearCompleted,
           ),
         ],
       ],
@@ -146,7 +147,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
           ),
           const SizedBox(width: AppDimensions.spacingM),
           Text(
-            'Du kan bara visa denna lista',
+            context.l10n.collaborativeViewOnly,
             style: AppTextStyles.titleMedium.copyWith(
               fontStyle: FontStyle.italic,
             ),
@@ -160,7 +161,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
     return TextField(
       controller: newItemController,
       decoration: InputDecoration(
-        hintText: 'Lägg till artikel...',
+        hintText: context.l10n.collaborativeAddItemHint,
         suffixIcon: viewModel.isAddingItem
             ? const Padding(
                 padding: EdgeInsets.all(AppDimensions.spacingS),
@@ -184,7 +185,9 @@ class CollaborativeShoppingActions extends BaseActionHandler
     return FilledButton.icon(
       onPressed: viewModel.isAddingItem ? null : onAddItem,
       icon: Icon(viewModel.isAddingItem ? Icons.hourglass_empty : Icons.add),
-      label: Text(viewModel.isAddingItem ? 'Lägger till...' : 'Lägg till'),
+      label: Text(viewModel.isAddingItem
+          ? context.l10n.collaborativeAdding
+          : context.l10n.collaborativeAdd),
     );
   }
 
@@ -207,11 +210,11 @@ class CollaborativeShoppingActions extends BaseActionHandler
   }
 
   Future<void> _showSettings(BuildContext context) async {
-    showInfoMessage(context, 'Inställningar kommer snart');
+    showInfoMessage(context, context.l10n.collaborativeSettingsComingSoon);
   }
 
   Future<void> _showMembers(BuildContext context) async {
-    showInfoMessage(context, 'Medlemshantering kommer snart');
+    showInfoMessage(context, context.l10n.collaborativeMembersComingSoon);
   }
 
   /// Clear completed items using BaseActionHandler
@@ -221,7 +224,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
     final completedItems = viewModel.completedItemsList;
 
     if (completedItems.isEmpty) {
-      showInfoMessage(context, 'Inga klarmarkerade artiklar att rensa');
+      showInfoMessage(context, context.l10n.collaborativeNoCompletedItems);
       return;
     }
 
@@ -232,15 +235,15 @@ class CollaborativeShoppingActions extends BaseActionHandler
         await Future.delayed(AppDimensions.animationDurationLong);
         return true;
       },
-      confirmationTitle: 'Rensa klara artiklar?',
-      confirmationMessage:
-          'Vill du ta bort alla ${completedItems.length} klarmarkerade artiklar?',
-      confirmActionText: 'Rensa alla',
+      confirmationTitle: context.l10n.collaborativeClearCompletedConfirm,
+      confirmationMessage: context.l10n
+          .collaborativeClearCompletedMessage(completedItems.length),
+      confirmActionText: context.l10n.collaborativeClearAll,
       confirmationIcon: Icons.clear_all,
       isDangerous: true,
-      successMessage:
-          '${completedItems.length} klarmarkerade artiklar borttagna',
-      errorMessage: 'Kunde inte rensa klarmarkerade artiklar',
+      successMessage: context.l10n
+          .collaborativeCompletedItemsCleared(completedItems.length),
+      errorMessage: context.l10n.collaborativeCouldNotClearCompleted,
       metadata: {
         'completed_count': completedItems.length,
         'action': 'clear_completed_items',
@@ -265,14 +268,14 @@ class CollaborativeShoppingActions extends BaseActionHandler
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Dela lista',
+            context.l10n.collaborativeShareList,
             style: AppTextStyles.headlineSmall,
           ),
           const SizedBox(height: AppDimensions.spacingL),
           ListTile(
             leading: const Icon(Icons.link),
-            title: const Text('Kopiera länk'),
-            subtitle: const Text('Dela med länk som fungerar i alla appar'),
+            title: Text(context.l10n.collaborativeCopyLink),
+            subtitle: Text(context.l10n.collaborativeCopyLinkDescription),
             onTap: () {
               Navigator.pop(context);
               _copyShareLink(context);
@@ -280,8 +283,8 @@ class CollaborativeShoppingActions extends BaseActionHandler
           ),
           ListTile(
             leading: const Icon(Icons.message),
-            title: const Text('Skicka meddelande'),
-            subtitle: const Text('Dela via SMS eller meddelande-app'),
+            title: Text(context.l10n.collaborativeSendMessage),
+            subtitle: Text(context.l10n.collaborativeSendMessageDescription),
             onTap: () {
               Navigator.pop(context);
               _shareViaMessage(context);
@@ -289,8 +292,8 @@ class CollaborativeShoppingActions extends BaseActionHandler
           ),
           ListTile(
             leading: const Icon(Icons.email),
-            title: const Text('Skicka e-post'),
-            subtitle: const Text('Dela via e-post med detaljer'),
+            title: Text(context.l10n.collaborativeSendEmail),
+            subtitle: Text(context.l10n.collaborativeSendEmailDescription),
             onTap: () {
               Navigator.pop(context);
               _shareViaEmail(context);
@@ -301,7 +304,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
             width: double.infinity,
             child: TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Avbryt'),
+              child: Text(context.l10n.commonCancel),
             ),
           ),
         ],
@@ -317,7 +320,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
         await Future.delayed(AppDimensions.animationDurationMedium);
         return true;
       },
-      successMessage: 'Länk kopierad till urklipp',
+      successMessage: context.l10n.collaborativeLinkCopied,
       metadata: {
         'list_id': viewModel.listId,
         'action': 'copy_share_link',
@@ -326,11 +329,12 @@ class CollaborativeShoppingActions extends BaseActionHandler
   }
 
   Future<void> _shareViaMessage(BuildContext context) async {
-    showInfoMessage(context, 'Meddelandedelning kommer snart');
+    showInfoMessage(
+        context, context.l10n.collaborativeMessageSharingComingSoon);
   }
 
   Future<void> _shareViaEmail(BuildContext context) async {
-    showInfoMessage(context, 'E-postdelning kommer snart');
+    showInfoMessage(context, context.l10n.collaborativeEmailSharingComingSoon);
   }
 
   bool shouldShowAddItemSection() {
@@ -343,11 +347,11 @@ class CollaborativeShoppingActions extends BaseActionHandler
   }
 
   /// Get add button text based on current state
-  String getAddButtonText() {
+  String getAddButtonText(BuildContext context) {
     if (viewModel.isAddingItem) {
-      return 'Lägger till...';
+      return context.l10n.commonAdding;
     }
-    return 'Lägg till';
+    return context.l10n.commonAdd;
   }
 
   /// Get add button icon based on current state

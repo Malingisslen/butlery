@@ -11,25 +11,28 @@ library;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/tagging/tagging_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/views/tag_detail_view.dart';
+import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Sort order for personal tags.
 enum TagSortOrder {
-  byName('Namn'),
-  byUsage('Användning'),
-  byRuleCount('Antal regler');
-
-  final String label;
-  const TagSortOrder(this.label);
+  byName,
+  byUsage,
+  byRuleCount;
 }
 
 /// Full-screen view for managing personal tags.
@@ -97,15 +100,26 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).maybePop(),
-          tooltip: '', // Empty tooltip to avoid layout issues on web
+          tooltip: context.l10n.commonBack,
         ),
-        title: const Text('Personliga taggar'),
+        title: Text(context.l10n.personalTagsViewTitle),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.sync),
+            tooltip: 'Tillämpa regler på alla recept',
+            onPressed: () => _showRetagDialog(context),
+          ),
           PopupMenuButton<TagSortOrder>(
             icon: const Icon(Icons.sort),
-            tooltip: 'Sortera',
+            tooltip: context.l10n.commonSort,
             onSelected: (order) => setState(() => _sortOrder = order),
             itemBuilder: (context) => TagSortOrder.values.map((order) {
+              final label = switch (order) {
+                TagSortOrder.byName => context.l10n.personalTagSortByName,
+                TagSortOrder.byUsage => context.l10n.personalTagSortByUsage,
+                TagSortOrder.byRuleCount =>
+                  context.l10n.personalTagSortByRuleCount,
+              };
               return PopupMenuItem(
                 value: order,
                 child: Row(
@@ -115,7 +129,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                     else
                       const SizedBox(width: AppDimensions.iconSize18),
                     const SizedBox(width: AppDimensions.spacingSm),
-                    Text(order.label),
+                    Text(label),
                   ],
                 ),
               );
@@ -123,7 +137,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.add),
-            tooltip: 'Skapa',
+            tooltip: context.l10n.commonCreate,
             onSelected: (value) {
               if (value == 'tag') {
                 _createTag(context);
@@ -131,20 +145,20 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                 _createGroup(context);
               }
             },
-            itemBuilder: (context) => const [
+            itemBuilder: (context) => [
               PopupMenuItem(
                 value: 'tag',
                 child: ListTile(
-                  leading: Icon(Icons.label_outline),
-                  title: Text('Skapa tagg'),
+                  leading: const Icon(Icons.label_outline),
+                  title: Text(context.l10n.personalTagCreateTag),
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
               PopupMenuItem(
                 value: 'group',
                 child: ListTile(
-                  leading: Icon(Icons.folder_outlined),
-                  title: Text('Skapa grupp'),
+                  leading: const Icon(Icons.folder_outlined),
+                  title: Text(context.l10n.personalTagCreateGroup),
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
@@ -160,7 +174,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
 
           if (viewModel.hasError) {
             return StateWidget.error(
-              message: viewModel.error ?? 'Ett fel uppstod',
+              message: viewModel.error ?? context.l10n.commonErrorOccurred,
               onAction: viewModel.initialize,
             );
           }
@@ -178,9 +192,9 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   Widget _buildEmptyState(BuildContext context) {
     return StateWidget.empty(
       icon: Icons.label_outline,
-      title: 'Inga personliga taggar',
-      subtitle: 'Skapa taggar för att organisera dina recept',
-      actionLabel: 'Skapa tagg',
+      title: context.l10n.personalTagEmptyTitle,
+      subtitle: context.l10n.personalTagEmptySubtitle,
+      actionLabel: context.l10n.personalTagCreateTag,
       onAction: () => _createTag(context),
     );
   }
@@ -212,7 +226,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                       _buildTagSection(
                         context,
                         viewModel,
-                        title: 'Taggar',
+                        title: context.l10n.personalTagSectionTags,
                         tags: ungroupedTags,
                         groupId: null,
                       ),
@@ -252,20 +266,20 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         icon: const Icon(Icons.more_vert, size: AppDimensions.iconSizeM),
         onSelected: (value) => _handleGroupAction(context, value, group),
         itemBuilder: (context) => [
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'rename',
             child: ListTile(
-              leading: Icon(Icons.edit),
-              title: Text('Byt namn'),
+              leading: const Icon(Icons.edit),
+              title: Text(context.l10n.commonRename),
               contentPadding: EdgeInsets.zero,
             ),
           ),
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'delete',
             child: ListTile(
-              leading: Icon(Icons.delete, color: AppColors.error),
-              title: Text('Ta bort grupp',
-                  style: TextStyle(color: AppColors.error)),
+              leading: const Icon(Icons.delete, color: AppColors.error),
+              title: Text(context.l10n.personalTagDeleteGroup,
+                  style: const TextStyle(color: AppColors.error)),
               contentPadding: EdgeInsets.zero,
             ),
           ),
@@ -314,7 +328,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
               vertical: AppDimensions.spacingMd,
             ),
             child: Text(
-              'Inga taggar i denna grupp',
+              context.l10n.personalTagGroupEmpty,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: colorScheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
@@ -338,8 +352,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     final isUnused = usageCount == 0;
 
     return Semantics(
-      label:
-          '${tag.name}, $usageCount recept, $enabledRuleCount av $ruleCount regler aktiva',
+      label: context.l10n.personalTagTileSemantics(
+          tag.name, usageCount, enabledRuleCount, ruleCount),
       button: true,
       child: Opacity(
         opacity: isUnused ? 0.6 : 1.0,
@@ -384,7 +398,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           ),
           title: Text(tag.name),
           subtitle: Text(
-            _buildSubtitle(usageCount, ruleCount, enabledRuleCount),
+            _buildSubtitle(context, usageCount, ruleCount, enabledRuleCount),
             style: AppTextStyles.bodySmall.copyWith(
               color: isUnused
                   ? colorScheme.onSurfaceVariant
@@ -400,22 +414,47 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     );
   }
 
-  String _buildSubtitle(int usageCount, int ruleCount, int enabledRuleCount) {
+  String _buildSubtitle(BuildContext context, int usageCount, int ruleCount,
+      int enabledRuleCount) {
     final parts = <String>[];
 
     if (usageCount > 0) {
-      parts.add('$usageCount recept');
+      parts.add(context.l10n.personalTagRecipeCount(usageCount));
     }
 
     if (ruleCount > 0) {
       if (enabledRuleCount == ruleCount) {
-        parts.add('$ruleCount regler');
+        parts.add(context.l10n.personalTagRuleCount(ruleCount));
       } else {
-        parts.add('$enabledRuleCount/$ruleCount regler aktiva');
+        parts.add(context.l10n
+            .personalTagRuleCountActive(enabledRuleCount, ruleCount));
       }
     }
 
-    return parts.isEmpty ? 'Ingen användning' : parts.join(' · ');
+    return parts.isEmpty ? context.l10n.personalTagNoUsage : parts.join(' · ');
+  }
+
+  void _showRetagDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => RetagProgressDialog(
+        retagFunction: (onProgress) async {
+          final taggingService = ServiceLocator.get<TaggingService>();
+          final authService = ServiceLocator.get<AuthService>();
+          final recipeRepo = ServiceLocator.get<RecipeRepository>();
+          final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+
+          return await taggingService.retagUserRecipes(
+            userId: authService.currentUser!.uid,
+            getRecipes: () =>
+                recipeRepo.fetchAllUserRecipes(authService.currentUser!.uid),
+            saveRecipe: (recipe) => recipeService.personal.updateRecipe(recipe),
+            onProgress: onProgress,
+          );
+        },
+      ),
+    );
   }
 
   void _navigateToTagDetail(BuildContext context, PersonalTag tag) {
@@ -457,7 +496,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.info_outline),
-              title: const Text('Visa detaljer'),
+              title: Text(context.l10n.commonShowDetails),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _navigateToTagDetail(context, tag);
@@ -465,7 +504,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             ),
             ListTile(
               leading: const Icon(Icons.edit),
-              title: const Text('Redigera namn'),
+              title: Text(context.l10n.commonEditName),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _editTag(context, tag);
@@ -474,9 +513,9 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             if (hasRules && !allRulesEnabled)
               ListTile(
                 leading: const Icon(Icons.play_arrow, color: AppColors.success),
-                title: const Text('Aktivera alla regler'),
-                subtitle: Text(
-                    '${tag.rules.length - enabledRuleCount} regler inaktiverade'),
+                title: Text(context.l10n.personalTagEnableAllRules),
+                subtitle: Text(context.l10n.personalTagRulesDisabled(
+                    tag.rules.length - enabledRuleCount)),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   _toggleAllRules(context, tag, enable: true);
@@ -485,8 +524,9 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             if (hasRules && !allRulesDisabled)
               ListTile(
                 leading: const Icon(Icons.pause, color: AppColors.warning),
-                title: const Text('Inaktivera alla regler'),
-                subtitle: Text('$enabledRuleCount regler aktiva'),
+                title: Text(context.l10n.personalTagDisableAllRules),
+                subtitle:
+                    Text(context.l10n.personalTagRulesActive(enabledRuleCount)),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   _toggleAllRules(context, tag, enable: false);
@@ -494,7 +534,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
               ),
             ListTile(
               leading: const Icon(Icons.folder),
-              title: const Text('Flytta till grupp'),
+              title: Text(context.l10n.personalTagMoveToGroup),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _moveTagToGroup(context, tag);
@@ -503,8 +543,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.delete, color: AppColors.error),
-              title: const Text('Ta bort tagg',
-                  style: TextStyle(color: AppColors.error)),
+              title: Text(context.l10n.personalTagDeleteTag,
+                  style: const TextStyle(color: AppColors.error)),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _deleteTag(context, tag);
@@ -527,21 +567,26 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title:
-            Text(enable ? 'Aktivera alla regler?' : 'Inaktivera alla regler?'),
+        title: Text(enable
+            ? context.l10n.personalTagEnableAllRulesConfirm
+            : context.l10n.personalTagDisableAllRulesConfirm),
         content: Text(
           enable
-              ? 'Alla ${tag.rules.length} regler för "${tag.name}" kommer att aktiveras.'
-              : 'Alla ${tag.rules.length} regler för "${tag.name}" kommer att inaktiveras.',
+              ? context.l10n
+                  .personalTagEnableAllRulesMessage(tag.rules.length, tag.name)
+              : context.l10n.personalTagDisableAllRulesMessage(
+                  tag.rules.length, tag.name),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(enable ? 'Aktivera' : 'Inaktivera'),
+            child: Text(enable
+                ? context.l10n.commonEnable
+                : context.l10n.commonDisable),
           ),
         ],
       ),
@@ -557,12 +602,15 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         if (context.mounted) {
           SnackBarUtils.showSuccess(
             context,
-            enable ? 'Alla regler aktiverade' : 'Alla regler inaktiverade',
+            enable
+                ? context.l10n.personalTagAllRulesEnabled
+                : context.l10n.personalTagAllRulesDisabled,
           );
         }
       } catch (e) {
         if (context.mounted) {
-          SnackBarUtils.showError(context, 'Kunde inte ändra reglerna');
+          SnackBarUtils.showError(
+              context, context.l10n.personalTagCouldNotChangeRules);
         }
       }
     }
@@ -575,12 +623,12 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Skapa tagg'),
+        title: Text(context.l10n.personalTagCreateTag),
         content: TextField(
           controller: nameController,
-          decoration: const InputDecoration(
-            labelText: 'Taggnamn',
-            hintText: 'T.ex. Favoriter',
+          decoration: InputDecoration(
+            labelText: context.l10n.personalTagNameLabel,
+            hintText: context.l10n.personalTagNameHint,
           ),
           autofocus: true,
           textCapitalization: TextCapitalization.sentences,
@@ -588,11 +636,11 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Skapa'),
+            child: Text(context.l10n.commonCreate),
           ),
         ],
       ),
@@ -613,10 +661,10 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       final success = await viewModel.createTag(name: name);
       if (context.mounted) {
         if (success) {
-          SnackBarUtils.showSuccess(context, 'Tagg skapad');
+          SnackBarUtils.showSuccess(context, context.l10n.personalTagCreated);
         } else {
-          SnackBarUtils.showError(
-              context, viewModel.error ?? 'Kunde inte skapa taggen');
+          SnackBarUtils.showError(context,
+              viewModel.error ?? context.l10n.personalTagCouldNotCreate);
         }
       }
     }
@@ -631,12 +679,12 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Skapa grupp'),
+        title: Text(context.l10n.personalTagCreateGroup),
         content: TextField(
           controller: nameController,
-          decoration: const InputDecoration(
-            labelText: 'Gruppnamn',
-            hintText: 'T.ex. Middagar',
+          decoration: InputDecoration(
+            labelText: context.l10n.personalTagGroupNameLabel,
+            hintText: context.l10n.personalTagGroupNameHint,
           ),
           autofocus: true,
           textCapitalization: TextCapitalization.sentences,
@@ -644,11 +692,11 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Skapa'),
+            child: Text(context.l10n.commonCreate),
           ),
         ],
       ),
@@ -660,11 +708,12 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       );
       if (context.mounted) {
         if (success) {
-          SnackBarUtils.showSuccess(context, 'Grupp skapad');
+          SnackBarUtils.showSuccess(
+              context, context.l10n.personalTagGroupCreated);
         } else {
           SnackBarUtils.showError(
             context,
-            viewModel.error ?? 'Kunde inte skapa gruppen',
+            viewModel.error ?? context.l10n.personalTagCouldNotCreateGroup,
           );
         }
       }
@@ -680,11 +729,11 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Redigera tagg'),
+        title: Text(context.l10n.personalTagEditTag),
         content: TextField(
           controller: nameController,
-          decoration: const InputDecoration(
-            labelText: 'Taggnamn',
+          decoration: InputDecoration(
+            labelText: context.l10n.personalTagNameLabel,
           ),
           autofocus: true,
           textCapitalization: TextCapitalization.sentences,
@@ -692,11 +741,11 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Spara'),
+            child: Text(context.l10n.commonSave),
           ),
         ],
       ),
@@ -707,7 +756,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         final updated = tag.copyWith(name: nameController.text.trim());
         await viewModel.updateTag(updated);
         if (context.mounted) {
-          SnackBarUtils.showSuccess(context, 'Tagg uppdaterad');
+          SnackBarUtils.showSuccess(context, context.l10n.personalTagUpdated);
         }
       } catch (e) {
         if (context.mounted) {
@@ -725,22 +774,19 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Ta bort tagg?'),
-        content: Text(
-          'Är du säker på att du vill ta bort "${tag.name}"? '
-          'Taggen tas bort från alla recept.',
-        ),
+        title: Text(context.l10n.personalTagDeleteTagConfirm),
+        content: Text(context.l10n.personalTagDeleteTagMessage(tag.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,
             ),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Ta bort'),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ),
@@ -750,7 +796,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       try {
         await viewModel.deleteTag(tag.id);
         if (context.mounted) {
-          SnackBarUtils.showSuccess(context, 'Tagg borttagen');
+          SnackBarUtils.showSuccess(context, context.l10n.personalTagDeleted);
         }
       } catch (e) {
         if (context.mounted) {
@@ -768,13 +814,13 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     final selectedGroupId = await showDialog<String?>(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('Flytta till grupp'),
+        title: Text(context.l10n.personalTagMoveToGroup),
         children: [
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, ''),
-            child: const ListTile(
-              leading: Icon(Icons.folder_off),
-              title: Text('Ingen grupp'),
+            child: ListTile(
+              leading: const Icon(Icons.folder_off),
+              title: Text(context.l10n.personalTagNoGroup),
               contentPadding: EdgeInsets.zero,
             ),
           ),
@@ -791,9 +837,9 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           const Divider(),
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, createNewSentinel),
-            child: const ListTile(
-              leading: Icon(Icons.add),
-              title: Text('Skapa ny grupp'),
+            child: ListTile(
+              leading: const Icon(Icons.add),
+              title: Text(context.l10n.personalTagCreateNewGroup),
               contentPadding: EdgeInsets.zero,
             ),
           ),
@@ -812,7 +858,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       final groupId = selectedGroupId.isEmpty ? null : selectedGroupId;
       await viewModel.moveTagToGroup(tag.id, groupId);
       if (context.mounted) {
-        SnackBarUtils.showSuccess(context, 'Tagg flyttad');
+        SnackBarUtils.showSuccess(context, context.l10n.personalTagMoved);
       }
     } catch (e) {
       if (context.mounted) {
@@ -831,12 +877,12 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Skapa ny grupp'),
+        title: Text(context.l10n.personalTagCreateNewGroup),
         content: TextField(
           controller: nameController,
-          decoration: const InputDecoration(
-            labelText: 'Gruppnamn',
-            hintText: 'T.ex. Middagar',
+          decoration: InputDecoration(
+            labelText: context.l10n.personalTagGroupNameLabel,
+            hintText: context.l10n.personalTagGroupNameHint,
           ),
           autofocus: true,
           textCapitalization: TextCapitalization.sentences,
@@ -844,11 +890,11 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Skapa'),
+            child: Text(context.l10n.commonCreate),
           ),
         ],
       ),
@@ -868,7 +914,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         if (newGroup != null) {
           await viewModel.moveTagToGroup(tag.id, newGroup.id);
           if (context.mounted) {
-            SnackBarUtils.showSuccess(context, 'Grupp skapad och tagg flyttad');
+            SnackBarUtils.showSuccess(
+                context, context.l10n.personalTagGroupCreatedAndTagMoved);
           }
         }
       }
@@ -894,20 +941,21 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         final result = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Byt namn på grupp'),
+            title: Text(context.l10n.personalTagRenameGroup),
             content: TextField(
               controller: nameController,
-              decoration: const InputDecoration(labelText: 'Gruppnamn'),
+              decoration: InputDecoration(
+                  labelText: context.l10n.personalTagGroupNameLabel),
               autofocus: true,
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Avbryt'),
+                child: Text(context.l10n.commonCancel),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Spara'),
+                child: Text(context.l10n.commonSave),
               ),
             ],
           ),
@@ -918,7 +966,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             final updated = group.copyWith(name: nameController.text.trim());
             await viewModel.updateGroup(updated);
             if (context.mounted) {
-              SnackBarUtils.showSuccess(context, 'Grupp uppdaterad');
+              SnackBarUtils.showSuccess(
+                  context, context.l10n.personalTagGroupUpdated);
             }
           } catch (e) {
             if (context.mounted) {
@@ -933,20 +982,18 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Ta bort grupp?'),
-            content: Text(
-              'Är du säker på att du vill ta bort "${group.name}"? '
-              'Taggar i gruppen blir ogrupperade.',
-            ),
+            title: Text(context.l10n.personalTagDeleteGroupConfirm),
+            content:
+                Text(context.l10n.personalTagDeleteGroupMessage(group.name)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Avbryt'),
+                child: Text(context.l10n.commonCancel),
               ),
               FilledButton(
                 style: FilledButton.styleFrom(backgroundColor: AppColors.error),
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Ta bort'),
+                child: Text(context.l10n.commonDelete),
               ),
             ],
           ),
@@ -956,7 +1003,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           try {
             await viewModel.deleteGroup(group.id);
             if (context.mounted) {
-              SnackBarUtils.showSuccess(context, 'Grupp borttagen');
+              SnackBarUtils.showSuccess(
+                  context, context.l10n.personalTagGroupDeleted);
             }
           } catch (e) {
             if (context.mounted) {

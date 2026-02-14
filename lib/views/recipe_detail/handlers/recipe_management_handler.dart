@@ -3,11 +3,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/share_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Recipe management action handler
 /// Handles recipe CRUD operations: delete, edit, mark as cooked, and share.
@@ -34,10 +38,11 @@ class RecipeManagementHandler {
       if (!context.mounted) return;
       if (success) {
         popNavigation();
-        showSnackBar('Recept borttaget', backgroundColor: AppColors.success);
+        showSnackBar(context.l10n.recipeDeleted,
+            backgroundColor: AppColors.success);
         onSuccess();
       } else {
-        showSnackBar('Kunde inte ta bort recept',
+        showSnackBar(context.l10n.recipeCouldNotDelete,
             backgroundColor: AppColors.error);
       }
     }
@@ -61,7 +66,7 @@ class RecipeManagementHandler {
       );
     } catch (e) {
       if (!context.mounted) return;
-      showSnackBar('Kunde inte öppna redigeringsvy',
+      showSnackBar(context.l10n.recipeCouldNotOpenEditor,
           backgroundColor: AppColors.error);
     }
   }
@@ -79,11 +84,11 @@ class RecipeManagementHandler {
     try {
       await viewModel.markAsCooked();
       if (!context.mounted) return;
-      showSnackBar('Recept markerat som lagat idag!',
+      showSnackBar(context.l10n.recipeMarkedAsCooked,
           backgroundColor: AppColors.success);
     } catch (e) {
       if (!context.mounted) return;
-      showSnackBar('Kunde inte markera som lagat',
+      showSnackBar(context.l10n.recipeCouldNotMarkAsCooked,
           backgroundColor: AppColors.error);
     }
   }
@@ -102,10 +107,166 @@ class RecipeManagementHandler {
     try {
       await shareService.shareRecipe(viewModel.recipe);
       if (!context.mounted) return;
-      showSnackBar('Recept delat', backgroundColor: AppColors.success);
+      showSnackBar(context.l10n.recipeShared,
+          backgroundColor: AppColors.success);
     } catch (e) {
       if (!context.mounted) return;
-      showSnackBar('Kunde inte dela recept', backgroundColor: AppColors.error);
+      showSnackBar(context.l10n.recipeCouldNotShare,
+          backgroundColor: AppColors.error);
+    }
+  }
+
+  /// Toggle collaborative editing on a recipe.
+  /// Shows enable dialog (friend picker) or disable confirmation based on current state.
+  static Future<void> toggleCollaboration(
+    BuildContext context, {
+    required void Function(String message, {Color? backgroundColor})
+        showSnackBar,
+  }) async {
+    if (!context.mounted) return;
+
+    final viewModel = context.read<RecipeDetailViewModel>();
+    final recipe = viewModel.recipe;
+
+    if (recipe.isCollaborative) {
+      await _confirmDisableCollaboration(context, recipe,
+          showSnackBar: showSnackBar);
+    } else {
+      await _showEnableCollaborationDialog(context, recipe,
+          showSnackBar: showSnackBar);
+    }
+  }
+
+  /// Show dialog to select friends as collaborators, then enable collaboration
+  static Future<void> _showEnableCollaborationDialog(
+    BuildContext context,
+    Recipe recipe, {
+    required void Function(String message, {Color? backgroundColor})
+        showSnackBar,
+  }) async {
+    final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+    final friends = friendsService.friendsList;
+
+    if (friends.isEmpty) {
+      showSnackBar(
+        'Du har inga vänner att samarbeta med',
+        backgroundColor: AppColors.error,
+      );
+      return;
+    }
+
+    final selectedIds = <String>{};
+
+    if (!context.mounted) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: const RoundedRectangleBorder(),
+          title: const Text('Aktivera samarbete'),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 300,
+            child: ListView(
+              children: friends
+                  .map(
+                    (friend) => CheckboxListTile(
+                      title: Text(friend.displayName),
+                      subtitle:
+                          friend.email.isNotEmpty ? Text(friend.email) : null,
+                      value: selectedIds.contains(friend.uid),
+                      activeColor: AppColors.forestGreen,
+                      onChanged: (v) => setDialogState(() {
+                        if (v == true) {
+                          selectedIds.add(friend.uid);
+                        } else {
+                          selectedIds.remove(friend.uid);
+                        }
+                      }),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Avbryt'),
+            ),
+            TextButton(
+              onPressed:
+                  selectedIds.isEmpty ? null : () => Navigator.pop(ctx, true),
+              child: const Text('Aktivera'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed == true && selectedIds.isNotEmpty) {
+      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+      final success = await recipeService.realtime
+          .enableCollaborativeEditing(recipe.id, selectedIds.toList());
+
+      if (!context.mounted) return;
+      if (success) {
+        showSnackBar(
+          'Samarbete aktiverat',
+          backgroundColor: AppColors.success,
+        );
+      } else {
+        showSnackBar(
+          'Kunde inte aktivera samarbete',
+          backgroundColor: AppColors.error,
+        );
+      }
+    }
+  }
+
+  /// Show confirmation dialog and disable collaboration
+  static Future<void> _confirmDisableCollaboration(
+    BuildContext context,
+    Recipe recipe, {
+    required void Function(String message, {Color? backgroundColor})
+        showSnackBar,
+  }) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: const RoundedRectangleBorder(),
+        title: const Text('Avaktivera samarbete?'),
+        content: const Text(
+            'Alla samarbetspartners förlorar åtkomst till receptet.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Avbryt'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Avaktivera'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+      final success =
+          await recipeService.realtime.disableCollaborativeEditing(recipe.id);
+
+      if (!context.mounted) return;
+      if (success) {
+        showSnackBar(
+          'Samarbete avaktiverat',
+          backgroundColor: AppColors.success,
+        );
+      } else {
+        showSnackBar(
+          'Kunde inte avaktivera samarbete',
+          backgroundColor: AppColors.error,
+        );
+      }
     }
   }
 }

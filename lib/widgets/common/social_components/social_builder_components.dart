@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -131,24 +132,24 @@ class SocialBuilderComponents {
     final stats = <String, dynamic>{
       'friends': {
         'value': friendCount,
-        'label': 'Vänner',
+        'label': context.l10n.shareTabFriends,
         'icon': Icons.people,
       },
       'groups': {
         'value': groupCount,
-        'label': 'Grupper',
+        'label': context.l10n.shareTabGroups,
         'icon': Icons.group,
       },
       if (sharedRecipeCount != null)
         'shared_recipes': {
           'value': sharedRecipeCount,
-          'label': 'Delade recept',
+          'label': context.l10n.socialSharedRecipes,
           'icon': Icons.restaurant,
         },
       if (sharedMenuCount != null)
         'shared_menus': {
           'value': sharedMenuCount,
-          'label': 'Delade menyer',
+          'label': context.l10n.socialSharedMenus,
           'icon': Icons.menu_book,
         },
     };
@@ -174,18 +175,18 @@ class SocialBuilderComponents {
     final stats = <String, dynamic>{
       'active': {
         'value': activeCollaborations,
-        'label': 'Aktiva samarbeten',
+        'label': context.l10n.socialActiveCollaborations,
         'icon': Icons.sync,
       },
       'members': {
         'value': totalMembers,
-        'label': 'Totalt medlemmar',
+        'label': context.l10n.socialTotalMembers,
         'icon': Icons.people,
       },
       if (totalEdits != null)
         'edits': {
           'value': totalEdits,
-          'label': 'Ändringar',
+          'label': context.l10n.socialChanges,
           'icon': Icons.edit,
         },
     };
@@ -201,7 +202,7 @@ class SocialBuilderComponents {
         if (lastActivity != null) ...[
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
-            'Senast aktiv: ${_formatRelativeTime(lastActivity)}',
+            context.l10n.socialLastActive(_formatRelativeTime(lastActivity)),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.textMedium,
                 ),
@@ -224,24 +225,24 @@ class SocialBuilderComponents {
     final stats = <String, dynamic>{
       'sent': {
         'value': sentInvitations,
-        'label': 'Skickade',
+        'label': context.l10n.socialSent,
         'icon': Icons.send,
       },
       'received': {
         'value': receivedInvitations,
-        'label': 'Mottagna',
+        'label': context.l10n.socialReceived,
         'icon': Icons.inbox,
       },
       if (acceptedInvitations != null)
         'accepted': {
           'value': acceptedInvitations,
-          'label': 'Accepterade',
+          'label': context.l10n.socialAccepted,
           'icon': Icons.check_circle,
         },
       if (pendingInvitations != null)
         'pending': {
           'value': pendingInvitations,
-          'label': 'Väntande',
+          'label': context.l10n.socialPending,
           'icon': Icons.pending,
         },
     };

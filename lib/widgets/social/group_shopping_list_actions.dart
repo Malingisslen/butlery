@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/group_content_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -33,10 +34,9 @@ class GroupShoppingListActions {
   ) async {
     final confirmed = await DialogFactory.showConfirmation(
       context,
-      title: 'Importera inköpslista',
-      message:
-          'Vill du importera "${shoppingList.name}" till dina egna listor?',
-      confirmText: 'Importera',
+      title: context.l10n.groupImportShoppingList,
+      message: context.l10n.groupImportShoppingListConfirm(shoppingList.name),
+      confirmText: context.l10n.groupImport,
     );
 
     if (confirmed == true) {
@@ -44,18 +44,17 @@ class GroupShoppingListActions {
         final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
 
         final personalListId = await shoppingService.createPersonalList(
-          '${shoppingList.name} (Kopia)',
+          context.l10n.groupListCopyName(shoppingList.name),
           items: shoppingList.items,
         );
 
         if (personalListId != null && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:
-                  Text('"${shoppingList.name}" importerad till dina listor!'),
+              content: Text(context.l10n.groupListImported(shoppingList.name)),
               backgroundColor: AppColors.success,
               action: SnackBarAction(
-                label: 'Visa',
+                label: context.l10n.groupView,
                 onPressed: () {
                   Navigator.pushNamed(
                     context,
@@ -71,7 +70,7 @@ class GroupShoppingListActions {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Kunde inte importera listan: $e'),
+              content: Text(context.l10n.groupCouldNotImportList(e.toString())),
               backgroundColor: AppColors.error,
             ),
           );
@@ -91,8 +90,8 @@ class GroupShoppingListActions {
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Inköpslista kopierad till urklipp!'),
+          SnackBar(
+            content: Text(context.l10n.groupListCopiedToClipboard),
             backgroundColor: AppColors.success,
           ),
         );
@@ -101,7 +100,7 @@ class GroupShoppingListActions {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Kunde inte kopiera listan: $e'),
+            content: Text(context.l10n.groupCouldNotCopyList(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -127,21 +126,21 @@ class GroupShoppingListActions {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Dela inköpslista',
+                  context.l10n.groupShareShoppingList,
                   style: AppTextStyles.titleBold,
                 ),
                 const SizedBox(height: AppDimensions.spacingM),
                 ListTile(
                   leading: const Icon(Icons.content_copy),
-                  title: const Text('Kopierat till urklipp'),
-                  subtitle: const Text('Klistra in i valfri app'),
+                  title: Text(context.l10n.groupCopiedToClipboard),
+                  subtitle: Text(context.l10n.groupPasteInAnyApp),
                   trailing: const Icon(Icons.check, color: AppColors.success),
                   onTap: () => Navigator.pop(context),
                 ),
                 ListTile(
                   leading: const Icon(Icons.people),
-                  title: const Text('Dela med vänner i Butlery'),
-                  subtitle: const Text('Skicka till dina vänner'),
+                  title: Text(context.l10n.groupShareWithFriendsInButlery),
+                  subtitle: Text(context.l10n.groupSendToFriends),
                   onTap: () {
                     Navigator.pop(context);
                     shareWithFriends(context, shoppingList);
@@ -156,7 +155,7 @@ class GroupShoppingListActions {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Kunde inte dela listan: $e'),
+            content: Text(context.l10n.shoppingCouldNotShareList(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -173,25 +172,25 @@ class GroupShoppingListActions {
       final shareOptions = await showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Dela inköpslista'),
+          title: Text(context.l10n.shoppingShareShoppingList),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Dela "${shoppingList.name}" med:'),
+              Text(context.l10n.shoppingShareListWith(shoppingList.name)),
               const SizedBox(height: AppDimensions.spacingMd),
               ListTile(
                 leading: const Icon(Icons.people),
-                title: const Text('Vänner'),
+                title: Text(context.l10n.socialFriends),
                 onTap: () => Navigator.pop(context, 'friends'),
               ),
               ListTile(
                 leading: const Icon(Icons.group),
-                title: const Text('Grupper'),
+                title: Text(context.l10n.socialGroups),
                 onTap: () => Navigator.pop(context, 'groups'),
               ),
               ListTile(
                 leading: const Icon(Icons.link),
-                title: const Text('Kopiera länk'),
+                title: Text(context.l10n.shoppingCopyLink),
                 onTap: () => Navigator.pop(context, 'link'),
               ),
             ],
@@ -199,7 +198,7 @@ class GroupShoppingListActions {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Avbryt'),
+              child: Text(context.l10n.commonCancel),
             ),
           ],
         ),
@@ -208,7 +207,7 @@ class GroupShoppingListActions {
       if (shareOptions != null && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Delning via $shareOptions kommer snart!'),
+            content: Text(context.l10n.shoppingSharingComingSoon(shareOptions)),
             backgroundColor: AppColors.info,
           ),
         );
@@ -217,7 +216,8 @@ class GroupShoppingListActions {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Kunde inte öppna delningsmenyn: $e'),
+            content:
+                Text(context.l10n.shoppingCouldNotOpenShareMenu(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -240,15 +240,15 @@ class GroupShoppingListActions {
             'Reported by user, list owner: ${shoppingList.ownerDisplayName}');
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Rapport skickad. Tack för din feedback!'),
+          SnackBar(
+            content: Text(context.l10n.socialReportSent),
             backgroundColor: AppColors.success,
           ),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Kunde inte skicka rapport: $e'),
+            content: Text(context.l10n.socialCouldNotSendReport(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -264,12 +264,12 @@ class GroupShoppingListActions {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Rapportera innehåll'),
+          title: Text(context.l10n.socialReportContent),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Varför vill du rapportera denna inköpslista?'),
+              Text(context.l10n.socialReportShoppingListReason),
               const SizedBox(height: AppDimensions.spacingMd),
               RadioGroup<String>(
                 groupValue: selectedReason,
@@ -277,11 +277,11 @@ class GroupShoppingListActions {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    'Olämpligt innehåll',
-                    'Spam eller reklam',
-                    'Felaktig information',
-                    'Upphovsrättsintrång',
-                    'Annat'
+                    context.l10n.socialReportInappropriate,
+                    context.l10n.socialReportSpam,
+                    context.l10n.socialReportIncorrectInfo,
+                    context.l10n.socialReportCopyright,
+                    context.l10n.socialReportOther,
                   ]
                       .map((reason) => RadioListTile<String>(
                             title: Text(reason),
@@ -295,13 +295,13 @@ class GroupShoppingListActions {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Avbryt'),
+              child: Text(context.l10n.commonCancel),
             ),
             ElevatedButton(
               onPressed: selectedReason != null
                   ? () => Navigator.pop(context, selectedReason)
                   : null,
-              child: const Text('Rapportera'),
+              child: Text(context.l10n.socialReport),
             ),
           ],
         ),
@@ -324,7 +324,7 @@ class GroupShoppingListActions {
           children: [
             ListTile(
               leading: const Icon(Icons.copy),
-              title: const Text('Kopiera lista'),
+              title: Text(context.l10n.shoppingCopyList),
               onTap: () {
                 Navigator.pop(context);
                 copyShoppingList(context, shoppingList);
@@ -332,7 +332,7 @@ class GroupShoppingListActions {
             ),
             ListTile(
               leading: const Icon(Icons.share),
-              title: const Text('Dela vidare'),
+              title: Text(context.l10n.shoppingShareForward),
               onTap: () {
                 Navigator.pop(context);
                 shareShoppingList(context, shoppingList);
@@ -340,7 +340,7 @@ class GroupShoppingListActions {
             ),
             ListTile(
               leading: const Icon(Icons.report),
-              title: const Text('Rapportera'),
+              title: Text(context.l10n.socialReport),
               onTap: () {
                 Navigator.pop(context);
                 reportShoppingList(context, shoppingList);

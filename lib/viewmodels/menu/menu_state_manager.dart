@@ -96,6 +96,12 @@ class MenuStateManager extends ChangeNotifier with StreamManagementMixin {
       clearError();
     }
   }
+
+  @override
+  void dispose() {
+    disposeStreamResources();
+    super.dispose();
+  }
 }
 
 /// Data class for saved menu information

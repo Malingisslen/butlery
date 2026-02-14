@@ -69,6 +69,7 @@ class MenuContentWidgets {
                             .onSurface
                             .withValues(alpha: AppDimensions.opacityDark)),
                     onPressed: onClear,
+                    tooltip: 'Rensa',
                   )
                 : null,
             textInputAction: TextInputAction.done,
@@ -198,8 +199,7 @@ class MenuContentWidgets {
                       ),
                     ),
                     Text(
-                      context.l10n.menuRecipeCount(
-                          viewModel.totalRecipeCount, viewModel.menu.length),
+                      context.l10n.menuRecipeCount(viewModel.totalRecipeCount),
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Theme.of(context).colorScheme.onPrimaryContainer,
                       ),

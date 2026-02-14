@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/widgets/image/components/upload_progress_widgets.dart';
@@ -285,7 +286,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     return Stack(
       children: [
         Semantics(
-          label: 'Visa fullstorlek av bild',
+          label: context.l10n.a11yViewFullSizeImage,
           button: true,
           child: GestureDetector(
             key: ValueKey('gesture_$imageUrl'),
@@ -326,7 +327,8 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: widget.config.effectiveBorderRadius,
-          color: AppColors.textDark.withValues(alpha: AppDimensions.opacityHalf),
+          color:
+              AppColors.textDark.withValues(alpha: AppDimensions.opacityHalf),
         ),
         child: const Center(
           child: CircularProgressIndicator(color: AppColors.cardWhite),

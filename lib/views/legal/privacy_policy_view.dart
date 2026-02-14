@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// GDPR Article 13/14 - Privacy Policy View
 /// Displays the complete privacy policy in Swedish, covering all GDPR
@@ -58,8 +59,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
 
       if (mounted) {
         setState(() {
-          _errorMessage =
-              'Kunde inte ladda integritetspolicyn. Försök igen senare.';
+          _errorMessage = context.l10n.privacyCouldNotLoad;
           _isLoading = false;
         });
       }
@@ -70,13 +70,13 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Integritetspolicy'),
+        title: Text(context.l10n.privacyTitle),
         centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _isLoading ? null : _loadPrivacyPolicy,
-            tooltip: 'Ladda om',
+            tooltip: context.l10n.privacyReload,
           ),
         ],
       ),
@@ -123,7 +123,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
           const CircularProgressIndicator(),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
-            'Laddar integritetspolicy...',
+            context.l10n.privacyLoading,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textMedium,
                 ),
@@ -155,7 +155,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
             ElevatedButton.icon(
               onPressed: _loadPrivacyPolicy,
               icon: const Icon(Icons.refresh),
-              label: const Text('Försök igen'),
+              label: Text(context.l10n.commonRetry),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.cardWhite,
@@ -170,7 +170,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   Widget _buildEmptyState() {
     return Center(
       child: Text(
-        'Ingen integritetspolicy tillgänglig',
+        context.l10n.privacyNotAvailable,
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: AppColors.textMedium,
             ),
@@ -206,18 +206,20 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         color: AppColors.info.withValues(alpha: AppDimensions.opacityVeryLight),
         border: Border(
           bottom: BorderSide(
-            color: AppColors.info.withValues(alpha: AppDimensions.opacityMediumLight),
+            color: AppColors.info
+                .withValues(alpha: AppDimensions.opacityMediumLight),
             width: 1,
           ),
         ),
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline, color: AppColors.info, size: AppDimensions.iconSizeM),
+          const Icon(Icons.info_outline,
+              color: AppColors.info, size: AppDimensions.iconSizeM),
           const SizedBox(width: AppDimensions.spacingL),
           Expanded(
             child: Text(
-              'GDPR-kompatibel integritetspolicy. Senast uppdaterad: 2025-10-21',
+              context.l10n.privacyGdprCompliant,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.info,
                   ),
@@ -245,7 +247,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Har du frågor om vår integritetspolicy?',
+            context.l10n.privacyQuestionsTitle,
             style: AppTextStyles.bodyBold,
             textAlign: TextAlign.center,
           ),
@@ -253,7 +255,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
           ElevatedButton.icon(
             onPressed: _handleContactUs,
             icon: const Icon(Icons.email_rounded),
-            label: const Text('Kontakta oss'),
+            label: Text(context.l10n.privacyContactUs),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.cardWhite,
@@ -266,7 +268,8 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   }
 
   Future<void> _handleContactUs() async {
-    final uri = Uri.parse('mailto:privacy@butlery.se?subject=Integritetsfråga');
+    final subject = Uri.encodeComponent(context.l10n.privacyEmailSubject);
+    final uri = Uri.parse('mailto:privacy@butlery.se?subject=$subject');
 
     try {
       final canLaunch = await canLaunchUrl(uri);
@@ -274,14 +277,14 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         await launchUrl(uri);
       } else {
         if (mounted) {
-          _showError('Kunde inte öppna e-postklient');
+          _showError(context.l10n.privacyCouldNotOpenEmail);
         }
       }
     } catch (e) {
       app_logger.AppLogger.error(
           '[PrivacyPolicyView] Failed to launch email', e);
       if (mounted) {
-        _showError('Kunde inte öppna e-postklient');
+        _showError(context.l10n.privacyCouldNotOpenEmail);
       }
     }
   }

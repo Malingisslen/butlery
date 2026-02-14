@@ -21,7 +21,8 @@ import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/views/personal_tags_view.dart';
 
 // Constants and theming
-import 'package:butlery/core/constants/app_strings.dart';
+// AppStrings import removed — using context.l10n
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 // Widget components for modern UI architecture
@@ -47,6 +48,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 
 // Core services and utilities
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
@@ -169,8 +171,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     final shouldExit = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(AppStrings.exitApp),
-        content: const Text(AppStrings.exitAppConfirmation),
+        title: Text(context.l10n.navExitApp),
+        content: Text(context.l10n.navExitAppConfirmation),
         actions: [
           ActionButtons.secondaryButton(
             context,
@@ -179,7 +181,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           ),
           ActionButtons.primaryButton(
             context,
-            label: AppStrings.exit,
+            label: context.l10n.navExit,
             onPressed: () => Navigator.pop(context, true),
           ),
         ],
@@ -233,7 +235,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     if (viewModel.activeDietaryFilters.contains('vegetarian')) {
       ids.add('vegetarian');
     }
-    // TODO: Add favorites filter when implemented in ViewModel
+    if (viewModel.favoritesOnly) {
+      ids.add('favorites');
+    }
     return ids;
   }
 
@@ -247,7 +251,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         viewModel.toggleDietaryFilter('vegetarian');
         break;
       case 'favorites':
-        // TODO: Implement favorites filter in ViewModel
+        viewModel.toggleFavoritesFilter();
         break;
     }
   }
@@ -472,26 +476,69 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 final userService = context.watch<UserService>();
                 final allergenPrefs = userService.allergenPreferences;
 
-                return ContentCard(
-                  key: ValueKey(recipe.id),
-                  item: recipe,
-                  type: ContentCardType.recipe,
-                  userAllergenPrefs: allergenPrefs.showOnCards
-                      ? allergenPrefs.trackedAllergens
-                      : null,
-                  userDietaryPrefs: allergenPrefs.showOnCards
-                      ? allergenPrefs.trackedDietary
-                      : null,
-                  onTap: () async {
-                    // Navigera till detaljer
-                    await Navigator.pushNamed(
-                      context,
-                      '/receptDetalj',
-                      arguments: recipe,
-                    );
-
-                    // Ingen refresh behövs - ViewModel lyssnar på RecipeService
+                return Dismissible(
+                  key: Key('recipe-${recipe.id}'),
+                  direction: DismissDirection.horizontal,
+                  confirmDismiss: (direction) async {
+                    if (direction == DismissDirection.endToStart) {
+                      // Left swipe = delete with reusable confirmation dialog
+                      final confirmed = await CommonDialogActions
+                          .showRecipeDeleteConfirmation(
+                        context: context,
+                        recipeName: recipe.title,
+                      );
+                      if (confirmed == true) {
+                        viewModel.deleteRecipe(recipe.id);
+                      }
+                      // Never auto-dismiss — viewmodel handles list update
+                      return false;
+                    } else if (direction == DismissDirection.startToEnd) {
+                      // Right swipe = navigate to edit view
+                      Navigator.pushNamed(
+                        context,
+                        Routes.redigeraRecept,
+                        arguments: recipe,
+                      );
+                      return false;
+                    }
+                    return false;
                   },
+                  background: Container(
+                    // Right swipe background (edit) - green
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingLg),
+                    color: AppColors.forestGreen,
+                    child: const Icon(Icons.edit,
+                        color: Colors.white, size: AppDimensions.iconSize28),
+                  ),
+                  secondaryBackground: Container(
+                    // Left swipe background (delete) - red
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingLg),
+                    color: AppColors.error,
+                    child: const Icon(Icons.delete,
+                        color: Colors.white, size: AppDimensions.iconSize28),
+                  ),
+                  child: ContentCard(
+                    key: ValueKey(recipe.id),
+                    item: recipe,
+                    type: ContentCardType.recipe,
+                    userAllergenPrefs: allergenPrefs.showOnCards
+                        ? allergenPrefs.trackedAllergens
+                        : null,
+                    userDietaryPrefs: allergenPrefs.showOnCards
+                        ? allergenPrefs.trackedDietary
+                        : null,
+                    onTap: () async {
+                      await Navigator.pushNamed(
+                        context,
+                        Routes.receptDetalj,
+                        arguments: recipe,
+                      );
+                    },
+                  ),
                 );
               },
             ),

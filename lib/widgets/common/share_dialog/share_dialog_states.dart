@@ -1,6 +1,7 @@
 // lib/widgets/common/share_dialog/share_dialog_states.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -11,8 +12,6 @@ class ShareDialogStates {
     BuildContext context,
     ShareContentType contentType,
   ) {
-    final contentTypeName = _getContentTypeName(contentType);
-
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Column(
@@ -25,7 +24,7 @@ class ShareDialogStates {
           ),
           const SizedBox(height: AppDimensions.spacingLg),
           Text(
-            'Inga vänner att dela med',
+            context.l10n.shareNoFriendsToShareWith,
             style: AppTextStyles.titleMedium.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -33,7 +32,7 @@ class ShareDialogStates {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            'Du behöver lägga till vänner för att kunna dela $contentTypeName.',
+            context.l10n.shareAddFriendsToShare,
             style: AppTextStyles.bodySmall.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -46,7 +45,7 @@ class ShareDialogStates {
               Navigator.pushNamed(context, '/friends');
             },
             icon: const Icon(Icons.person_add),
-            label: const Text('Lägg till vänner'),
+            label: Text(context.l10n.shareAddFriends),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -103,7 +102,7 @@ class ShareDialogStates {
           ),
           const SizedBox(height: AppDimensions.spacingLg),
           Text(
-            'Ett fel uppstod',
+            context.l10n.shareErrorOccurred,
             style: AppTextStyles.titleMedium.copyWith(
               color: AppColors.error,
             ),
@@ -122,7 +121,7 @@ class ShareDialogStates {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Försök igen'),
+              label: Text(context.l10n.commonRetry),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.error,
                 foregroundColor: AppColors.cardWhite,
@@ -155,7 +154,7 @@ class ShareDialogStates {
           ),
           const SizedBox(height: AppDimensions.spacingLg),
           Text(
-            'Delning lyckades!',
+            context.l10n.shareSucceeded,
             style: AppTextStyles.titleMedium.copyWith(
               color: AppColors.success,
             ),
@@ -181,22 +180,11 @@ class ShareDialogStates {
                   vertical: AppDimensions.spacingL,
                 ),
               ),
-              child: const Text('Stäng'),
+              child: Text(context.l10n.commonClose),
             ),
           ],
         ],
       ),
     );
-  }
-
-  static String _getContentTypeName(ShareContentType contentType) {
-    switch (contentType) {
-      case ShareContentType.recipe:
-        return 'recept';
-      case ShareContentType.menu:
-        return 'menyer';
-      case ShareContentType.shoppingList:
-        return 'inköpslistor';
-    }
   }
 }

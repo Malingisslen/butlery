@@ -9,6 +9,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/social/group_detail/group_detail_actions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// GroupMemberCard - Member card component
 /// Displays individual group member information with actions.
@@ -54,7 +55,7 @@ class GroupMemberCard {
                           BorderRadius.circular(AppDimensions.borderRadiusS),
                     ),
                     child: Text(
-                      'Ägare',
+                      context.l10n.groupOwner,
                       style: AppTextStyles.metadataEmphasized.copyWith(
                         color: Theme.of(context).colorScheme.onPrimary,
                       ),
@@ -77,7 +78,7 @@ class GroupMemberCard {
                           BorderRadius.circular(AppDimensions.borderRadiusS),
                     ),
                     child: Text(
-                      'Skapare',
+                      context.l10n.groupCreator,
                       style: AppTextStyles.metadataEmphasized.copyWith(
                         color: Theme.of(context).colorScheme.onSecondary,
                       ),
@@ -113,7 +114,7 @@ class GroupMemberCard {
                         ),
                         const SizedBox(width: AppDimensions.spacingXs),
                         Text(
-                          'Ta bort från grupp',
+                          context.l10n.groupRemoveFromGroup,
                           style:
                               Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     color: Theme.of(context).colorScheme.error,

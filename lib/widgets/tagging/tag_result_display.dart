@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -77,7 +78,7 @@ class TagResultDisplay extends StatelessWidget {
 
     if (allergens.isEmpty && diets.isEmpty) {
       return Text(
-        'Inga allergener att visa',
+        context.l10n.tagResultNoAllergens,
         style: AppTextStyles.bodySmall.copyWith(
           color: AppColors.textMedium,
           fontStyle: FontStyle.italic,
@@ -132,7 +133,7 @@ class TagResultDisplay extends StatelessWidget {
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
-              'Taggarna kan uppdateras',
+              context.l10n.tagResultOutdated,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.warning,
               ),
@@ -149,7 +150,7 @@ class TagResultDisplay extends StatelessWidget {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: Text(
-                'Uppdatera',
+                context.l10n.commonUpdate,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.forestGreen,
                   fontWeight: FontWeight.w600,
@@ -179,7 +180,7 @@ class TagResultDisplay extends StatelessWidget {
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
-              'Täckning',
+              context.l10n.tagResultCoverage,
               style: compact
                   ? AppTextStyles.titleSmall
                   : AppTextStyles.titleMedium,
@@ -212,31 +213,37 @@ class TagResultDisplay extends StatelessWidget {
         ),
         if (hasUnknowns) ...[
           const SizedBox(height: AppDimensions.spacingS),
-          GestureDetector(
-            onTap: onUnknownIngredientsTap,
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  size: AppDimensions.iconSizeS,
-                  color: AppColors.warning,
-                ),
-                const SizedBox(width: AppDimensions.spacingXs),
-                Expanded(
-                  child: Text(
-                    '${tagResult.unknownIngredients.length} okända ingredienser',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.warning,
-                    ),
-                  ),
-                ),
-                if (onUnknownIngredientsTap != null)
+          Semantics(
+            label: context.l10n.tagResultUnknownIngredientsA11y(
+                tagResult.unknownIngredients.length),
+            button: onUnknownIngredientsTap != null,
+            child: GestureDetector(
+              onTap: onUnknownIngredientsTap,
+              child: Row(
+                children: [
                   const Icon(
-                    Icons.chevron_right,
-                    size: AppDimensions.iconSize18,
+                    Icons.warning_amber_rounded,
+                    size: AppDimensions.iconSizeS,
                     color: AppColors.warning,
                   ),
-              ],
+                  const SizedBox(width: AppDimensions.spacingXs),
+                  Expanded(
+                    child: Text(
+                      context.l10n.tagResultUnknownIngredients(
+                          tagResult.unknownIngredients.length),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.warning,
+                      ),
+                    ),
+                  ),
+                  if (onUnknownIngredientsTap != null)
+                    const Icon(
+                      Icons.chevron_right,
+                      size: AppDimensions.iconSize18,
+                      color: AppColors.warning,
+                    ),
+                ],
+              ),
             ),
           ),
         ],

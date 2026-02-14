@@ -1,6 +1,7 @@
 // lib/widgets/common/indicators/realtime_status_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -103,10 +104,10 @@ class RealtimeStatusBanner extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Offline',
+                  context.l10n.realtimeOffline,
                   style: AppTextStyles.titleBold.copyWith(
-                        color: AppColors.error,
-                      ),
+                    color: AppColors.error,
+                  ),
                 ),
                 Text(
                   statusDescription,
@@ -118,7 +119,7 @@ class RealtimeStatusBanner extends StatelessWidget {
           if (onRetry != null)
             TextButton(
               onPressed: onRetry,
-              child: const Text('Försök igen'),
+              child: Text(context.l10n.commonRetry),
             ),
         ],
       ),

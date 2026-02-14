@@ -12,6 +12,7 @@ import 'package:butlery/models/recommendation.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Recommendations Section - Shows personalized content recommendations
 class RecommendationsSection {
@@ -25,16 +26,16 @@ class RecommendationsSection {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DiscoverySectionHeader(
-          title: 'Rekommenderat för dig',
+          title: context.l10n.discoveryRecommendedForYou,
           icon: Icons.auto_awesome,
           iconColor: AppColors.secondary,
-          actionLabel: 'Se allt',
+          actionLabel: context.l10n.discoverySeeAll,
           onActionPressed: () => _showAllRecommendations(context, viewModel),
           count: recommendations.length,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         if (recommendations.isEmpty)
-          _buildEmptyState()
+          _buildEmptyState(context)
         else
           Column(
             children: recommendations
@@ -47,7 +48,7 @@ class RecommendationsSection {
     );
   }
 
-  static Widget _buildEmptyState() {
+  static Widget _buildEmptyState(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
@@ -69,12 +70,12 @@ class RecommendationsSection {
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'Bygger rekommendationer',
+              context.l10n.discoveryBuildingRecommendations,
               style: AppTextStyles.titleSmall,
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'Vi lär oss dina preferenser för att ge bättre rekommendationer.',
+              context.l10n.discoveryLearningPreferences,
               style: AppTextStyles.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -178,7 +179,7 @@ class RecommendationsSection {
                           ),
                           const SizedBox(width: AppDimensions.spacingXs),
                           Text(
-                            _getRecommendationTypeLabel(type),
+                            _getRecommendationTypeLabel(context, type),
                             style: AppTextStyles.labelSmall.copyWith(
                               color: AppColors.secondary,
                             ),
@@ -260,7 +261,7 @@ class RecommendationsSection {
                           .withValues(alpha: AppDimensions.opacityDark),
                       size: AppDimensions.iconSizeM,
                     ),
-                    tooltip: 'Gilla',
+                    tooltip: context.l10n.discoveryLike,
                   ),
                   IconButton(
                     onPressed: () =>
@@ -271,7 +272,7 @@ class RecommendationsSection {
                           .withValues(alpha: AppDimensions.opacityMedium),
                       size: AppDimensions.iconSizeM,
                     ),
-                    tooltip: 'Dölj',
+                    tooltip: context.l10n.commonHide,
                   ),
                 ],
               ),
@@ -291,18 +292,18 @@ class RecommendationsSection {
     );
   }
 
-  static String _getRecommendationTypeLabel(String type) {
+  static String _getRecommendationTypeLabel(BuildContext context, String type) {
     switch (type) {
       case 'similar_to_shared':
-        return 'Liknar delat';
+        return context.l10n.discoverySimilarToShared;
       case 'trending_for_you':
-        return 'Populärt';
+        return context.l10n.discoveryPopular;
       case 'based_on_friends':
-        return 'Vänners val';
+        return context.l10n.discoveryFriendsChoice;
       case 'seasonal':
-        return 'Säsong';
+        return context.l10n.discoverySeasonal;
       default:
-        return 'Rekommenderat';
+        return context.l10n.discoveryRecommended;
     }
   }
 
@@ -345,9 +346,8 @@ class RecommendationsSection {
         // Here we would call the recommendation service to record the feedback
         // For now, we'll show success feedback to user
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'Tack för din feedback! Vi förbättrar rekommendationerna.'),
+          SnackBar(
+            content: Text(context.l10n.discoveryFeedbackThanksImproving),
             backgroundColor: AppColors.success,
             duration: Duration(seconds: 2),
           ),
@@ -363,8 +363,8 @@ class RecommendationsSection {
       // Check if context is still valid
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kunde inte skicka feedback just nu.'),
+          SnackBar(
+            content: Text(context.l10n.discoveryCouldNotSendFeedback),
             backgroundColor: AppColors.error,
           ),
         );
@@ -380,12 +380,11 @@ class RecommendationsSection {
         // Record dismissal
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text(
-                'Rekommendation dold. Vi visar inte liknande innehåll.'),
+            content: Text(context.l10n.discoveryRecommendationHidden),
             backgroundColor: AppColors.info,
             duration: const Duration(seconds: 3),
             action: SnackBarAction(
-              label: 'Ångra',
+              label: context.l10n.commonUndo,
               onPressed: () => _undoDismissal(context, recommendationId),
             ),
           ),
@@ -400,8 +399,8 @@ class RecommendationsSection {
       // Check if context is still valid
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kunde inte dölja rekommendation just nu.'),
+          SnackBar(
+            content: Text(context.l10n.discoveryCouldNotHideRecommendation),
             backgroundColor: AppColors.error,
           ),
         );
@@ -413,8 +412,8 @@ class RecommendationsSection {
       BuildContext context, String recommendationId) async {
     try {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Rekommendation återställd.'),
+        SnackBar(
+          content: Text(context.l10n.discoveryRecommendationRestored),
           backgroundColor: AppColors.success,
           duration: Duration(seconds: 2),
         ),
@@ -427,8 +426,8 @@ class RecommendationsSection {
       // Check if context is still valid
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kunde inte återställa rekommendation.'),
+          SnackBar(
+            content: Text(context.l10n.discoveryCouldNotRestoreRecommendation),
             backgroundColor: AppColors.error,
           ),
         );
@@ -448,8 +447,8 @@ class RecommendationsSection {
       // Fallback if route doesn't exist yet
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Visa alla rekommendationer kommer snart!'),
+          SnackBar(
+            content: Text(context.l10n.discoveryAllRecommendationsComingSoon),
             backgroundColor: AppColors.info,
           ),
         );

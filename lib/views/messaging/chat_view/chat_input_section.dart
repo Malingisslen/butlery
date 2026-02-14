@@ -11,6 +11,7 @@ import 'package:butlery/widgets/messaging/reply_banner.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Consolidated state class for ChatInputSection to reduce setState calls
 class ChatInputState {
@@ -133,10 +134,10 @@ class _ChatInputSectionState extends State<ChatInputSection> {
       // Show error to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kunde inte skicka meddelandet. Försök igen.'),
+          SnackBar(
+            content: Text(context.l10n.chatCouldNotSendMessage),
             backgroundColor: AppColors.error,
-            duration: Duration(seconds: 3),
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -178,7 +179,8 @@ class _ChatInputSectionState extends State<ChatInputSection> {
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
           top: BorderSide(
-            color: AppColors.textMedium.withValues(alpha: AppDimensions.opacityMediumLight),
+            color: AppColors.textMedium
+                .withValues(alpha: AppDimensions.opacityMediumLight),
             width: 1,
           ),
         ),
@@ -206,8 +208,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                         const EdgeInsets.only(bottom: AppDimensions.spacingS),
                     child: Container(
                       padding: const EdgeInsets.all(AppDimensions.spacingL),
-                      child: const Text(
-                          'Bilagor: Recept, Meny, Handlingslista, Foto'),
+                      child: Text(context.l10n.chatAttachmentTypes),
                     ),
                   ),
 
@@ -220,7 +221,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                       onPressed: _handleImagePick,
                       icon: const Icon(Icons.image_outlined),
                       color: AppColors.success,
-                      tooltip: 'Skicka bild',
+                      tooltip: context.l10n.chatSendImage,
                     ),
 
                     // Attachment button
@@ -234,7 +235,9 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                             ? AppColors.primary
                             : AppColors.textSecondary,
                       ),
-                      tooltip: _state.showAttachments ? 'Stäng' : 'Bilagor',
+                      tooltip: _state.showAttachments
+                          ? context.l10n.commonClose
+                          : context.l10n.chatAttachments,
                     ),
 
                     // Text input field
@@ -242,7 +245,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                       child: MessageInputField(
                         controller: _textController,
                         focusNode: _focusNode,
-                        hintText: 'Skriv ett meddelande...',
+                        hintText: context.l10n.chatWriteMessage,
                         onSubmitted: _handleSendMessage,
                       ),
                     ),
@@ -259,7 +262,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                               ? AppColors.primary
                               : AppColors.textSecondary,
                         ),
-                        tooltip: 'Skicka',
+                        tooltip: context.l10n.chatSend,
                       ),
                     ),
                   ],

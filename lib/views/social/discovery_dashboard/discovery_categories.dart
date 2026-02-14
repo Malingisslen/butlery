@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Discovery Categories - Category selector for discovery dashboard
 class DiscoveryCategories {
@@ -17,8 +18,8 @@ class DiscoveryCategories {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const DiscoverySectionHeader(
-          title: 'Kategorier',
+        DiscoverySectionHeader(
+          title: context.l10n.discoveryCategories,
           icon: Icons.category_outlined,
         ),
         const SizedBox(height: AppDimensions.spacingM),
@@ -58,7 +59,8 @@ class DiscoveryCategories {
           border: Border.all(
             color: isSelected
                 ? AppColors.primary
-                : AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
+                : AppColors.outline
+                    .withValues(alpha: AppDimensions.opacityLight),
           ),
           boxShadow: isSelected ? AppShadows.card : null,
         ),
@@ -85,8 +87,10 @@ class DiscoveryCategories {
                 count.toString(),
                 style: AppTextStyles.labelSmall.copyWith(
                   color: isSelected
-                      ? AppColors.onPrimary.withValues(alpha: AppDimensions.opacityVeryDark)
-                      : AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark),
+                      ? AppColors.onPrimary
+                          .withValues(alpha: AppDimensions.opacityVeryDark)
+                      : AppColors.onSurface
+                          .withValues(alpha: AppDimensions.opacityMediumDark),
                 ),
               ),
           ],
