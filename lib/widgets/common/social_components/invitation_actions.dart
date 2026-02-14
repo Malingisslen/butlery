@@ -9,7 +9,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 /// Invitation action widgets.
 class InvitationActions {
   /// Build quick selection buttons.
-  static Widget quickSelectionButtons({
+  static Widget quickSelectionButtons(
+    BuildContext context, {
     VoidCallback? onSelectAll,
     VoidCallback? onSelectNone,
     VoidCallback? onSelectFriends,
@@ -22,9 +23,10 @@ class InvitationActions {
     MainAxisAlignment alignment = MainAxisAlignment.spaceEvenly,
   }) {
     return SocialFacade.quickSelectionButtons(
+      context,
       onSelectAll: onSelectAll ?? () {},
       onDeselectAll: onSelectNone ?? () {},
-      onInvertSelection: () {}, // Not provided in original, using empty
+      onInvertSelection: () {},
     );
   }
 
@@ -125,12 +127,14 @@ class InvitationActions {
 
     if (showSend && onSendInvitations != null) {
       buttons.add(
-        FloatingActionButton.extended(
-          onPressed: onSendInvitations,
-          tooltip: sendTooltip,
-          heroTag: 'send_invitations',
-          icon: const Icon(Icons.send),
-          label: Text(sendTooltip ?? 'Skicka'),
+        Builder(
+          builder: (context) => FloatingActionButton.extended(
+            onPressed: onSendInvitations,
+            tooltip: sendTooltip,
+            heroTag: 'send_invitations',
+            icon: const Icon(Icons.send),
+            label: Text(sendTooltip ?? context.l10n.commonSend),
+          ),
         ),
       );
     }

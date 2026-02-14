@@ -1204,6 +1204,14 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commonDeselectAll => 'Avmarkera alla';
 
   @override
+  String get commonInvertSelection => 'Invertera';
+
+  @override
+  String commonAddWithLabel(String label) {
+    return 'Lägg till $label';
+  }
+
+  @override
   String get commonClearAll => 'Rensa alla';
 
   @override
@@ -7971,4 +7979,212 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get menuTemplateTemplates => 'Mallar';
+
+  @override
+  String get personalTagApplyRulesToAll => 'Tillämpa regler på alla recept';
+
+  @override
+  String get messagingPinned => 'FÄSTA';
+
+  @override
+  String get messagingUnpin => 'Ta bort fäst';
+
+  @override
+  String get messagingPin => 'Fäst';
+
+  @override
+  String get messagingArchive => 'Arkivera';
+
+  @override
+  String get messagingUnarchive => 'Avarkivera';
+
+  @override
+  String messagingArchivedCount(int count) {
+    return 'Arkiverade ($count)';
+  }
+
+  @override
+  String get allergenRetagAllRecipesTitle => 'Omtagga alla recept';
+
+  @override
+  String get allergenAnalyzeAllRecipes =>
+      'Analysera alla recept med uppdaterade inställningar';
+
+  @override
+  String get allergenUpdateAllRecipes => 'Uppdatera alla recept';
+
+  @override
+  String get notificationSaveError => 'Kunde inte spara inställningar';
+
+  @override
+  String get notificationTitle => 'Aviseringar';
+
+  @override
+  String get notificationEnableTitle => 'Aktivera aviseringar';
+
+  @override
+  String get notificationEnableSubtitle =>
+      'Aktivera eller inaktivera alla aviseringar';
+
+  @override
+  String get notificationCategoriesTitle => 'Aviseringskategorier';
+
+  @override
+  String get notificationQuietHoursTitle => 'Tysta timmar';
+
+  @override
+  String get notificationQuietHoursEnable => 'Aktivera tysta timmar';
+
+  @override
+  String get notificationQuietHoursSubtitle =>
+      'Inga aviseringar under vald tidsperiod';
+
+  @override
+  String get commonFrom => 'Från';
+
+  @override
+  String get commonTo => 'Till';
+
+  @override
+  String get notificationSound => 'Ljud';
+
+  @override
+  String get notificationVibration => 'Vibration';
+
+  @override
+  String get notificationCategoryFriends => 'Vänner';
+
+  @override
+  String get notificationCategoryRecipes => 'Recept';
+
+  @override
+  String get notificationCategoryCollaboration => 'Samarbete';
+
+  @override
+  String get notificationCategoryShopping => 'Inköp';
+
+  @override
+  String get notificationCategorySocial => 'Social aktivitet';
+
+  @override
+  String get notificationCategorySystem => 'System';
+
+  @override
+  String get collaborationNoFriends => 'Du har inga vänner att samarbeta med';
+
+  @override
+  String get collaborationEnableTitle => 'Aktivera samarbete';
+
+  @override
+  String get collaborationEnabled => 'Samarbete aktiverat';
+
+  @override
+  String get collaborationCouldNotEnable => 'Kunde inte aktivera samarbete';
+
+  @override
+  String get collaborationDeactivateTitle => 'Avaktivera samarbete?';
+
+  @override
+  String get collaborationDeactivateMessage =>
+      'Alla samarbetspartners förlorar åtkomst till receptet.';
+
+  @override
+  String get commonDeactivate => 'Avaktivera';
+
+  @override
+  String get collaborationDeactivated => 'Samarbete avaktiverat';
+
+  @override
+  String get collaborationCouldNotDeactivate =>
+      'Kunde inte avaktivera samarbete';
+
+  @override
+  String get ratingRemoveTitle => 'Ta bort betyg?';
+
+  @override
+  String get ratingRemoveMessage =>
+      'Vill du ta bort ditt betyg för detta recept?';
+
+  @override
+  String get ratingRemoved => 'Betyg borttaget';
+
+  @override
+  String get ratingRemoveError => 'Kunde inte ta bort betyg';
+
+  @override
+  String get messagingSending => 'Skickar';
+
+  @override
+  String get messagingSent => 'Skickat';
+
+  @override
+  String get messagingDelivered => 'Levererat';
+
+  @override
+  String get messagingRead => 'Läst';
+
+  @override
+  String get messagingFailed => 'Misslyckades';
+
+  @override
+  String get a11ySelected => 'vald';
+
+  @override
+  String get a11yNotSelected => 'ej vald';
+
+  @override
+  String get blockedUsersUnblockTitle => 'Avblockera användare?';
+
+  @override
+  String blockedUsersUnblockMessage(String name) {
+    return 'Vill du avblockera $name? Användaren kommer kunna se ditt innehåll igen.';
+  }
+
+  @override
+  String get blockedUsersUnblock => 'Avblockera';
+
+  @override
+  String get blockedUsersTitle => 'Blockerade användare';
+
+  @override
+  String get blockedUsersEmpty => 'Inga blockerade användare';
+
+  @override
+  String get retagFetchingRecipes => 'Hämtar recept...';
+
+  @override
+  String get retagRetaggingRecipes => 'Omtaggar recept';
+
+  @override
+  String retagRetaggingProgress(int current, int total) {
+    return 'Omtaggar $current av $total recept...';
+  }
+
+  @override
+  String retagRecipesRetagged(int count) {
+    return '$count recept omtaggade';
+  }
+
+  @override
+  String get profileNotifications => 'Aviseringar';
+
+  @override
+  String get profileNotificationsSubtitle => 'Kategorier och tysta timmar';
+
+  @override
+  String get filterFavorites => 'Favoriter';
+
+  @override
+  String get filterUnder30Min => 'Under 30 min';
+
+  @override
+  String get filterVegetarianQuick => 'Vegetariskt';
+
+  @override
+  String get filterAll => 'Alla';
+
+  @override
+  String instructionLabel(int number) {
+    return 'Instruktion $number';
+  }
 }

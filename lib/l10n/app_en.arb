@@ -677,6 +677,15 @@
   "commonSaveAsNew": "Save as new",
   "commonSelectAll": "Select all",
   "commonDeselectAll": "Deselect all",
+  "commonInvertSelection": "Invert",
+  "commonAddWithLabel": "Add {label}",
+  "@commonAddWithLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "commonClearAll": "Clear all",
   "commonClear": "Clear",
   "commonImage": "Image",
@@ -5175,7 +5184,6 @@
   "unshareFailed": "Could not stop sharing. Try again.",
   "favoritesAdd": "Add to favorites",
   "favoritesRemove": "Remove from favorites",
-
   "menuCommentsTitle": "Comments",
   "menuCommentsCount": "{count} comments",
   "@menuCommentsCount": {
@@ -5267,5 +5275,107 @@
   "menuTemplateDeletedSuccess": "Template deleted",
   "menuTemplateDeleteFailed": "Could not delete template",
   "menuTemplateSavedMenus": "Saved menus",
-  "menuTemplateTemplates": "Templates"
+  "menuTemplateTemplates": "Templates",
+  "personalTagApplyRulesToAll": "Apply rules to all recipes",
+  "messagingPinned": "PINNED",
+  "messagingUnpin": "Unpin",
+  "messagingPin": "Pin",
+  "messagingArchive": "Archive",
+  "messagingUnarchive": "Unarchive",
+  "messagingArchivedCount": "Archived ({count})",
+  "@messagingArchivedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allergenRetagAllRecipesTitle": "Retag all recipes",
+  "allergenAnalyzeAllRecipes": "Analyze all recipes with updated settings",
+  "allergenUpdateAllRecipes": "Update all recipes",
+  "notificationSaveError": "Could not save settings",
+  "notificationTitle": "Notifications",
+  "notificationEnableTitle": "Enable notifications",
+  "notificationEnableSubtitle": "Enable or disable all notifications",
+  "notificationCategoriesTitle": "Notification categories",
+  "notificationQuietHoursTitle": "Quiet hours",
+  "notificationQuietHoursEnable": "Enable quiet hours",
+  "notificationQuietHoursSubtitle": "No notifications during selected time period",
+  "commonFrom": "From",
+  "commonTo": "To",
+  "notificationSound": "Sound",
+  "notificationVibration": "Vibration",
+  "notificationCategoryFriends": "Friends",
+  "notificationCategoryRecipes": "Recipes",
+  "notificationCategoryCollaboration": "Collaboration",
+  "notificationCategoryShopping": "Shopping",
+  "notificationCategorySocial": "Social activity",
+  "notificationCategorySystem": "System",
+  "collaborationNoFriends": "You have no friends to collaborate with",
+  "collaborationEnableTitle": "Enable collaboration",
+  "collaborationEnabled": "Collaboration enabled",
+  "collaborationCouldNotEnable": "Could not enable collaboration",
+  "collaborationDeactivateTitle": "Deactivate collaboration?",
+  "collaborationDeactivateMessage": "All collaborators will lose access to the recipe.",
+  "commonDeactivate": "Deactivate",
+  "collaborationDeactivated": "Collaboration deactivated",
+  "collaborationCouldNotDeactivate": "Could not deactivate collaboration",
+  "ratingRemoveTitle": "Remove rating?",
+  "ratingRemoveMessage": "Do you want to remove your rating for this recipe?",
+  "ratingRemoved": "Rating removed",
+  "ratingRemoveError": "Could not remove rating",
+  "messagingSending": "Sending",
+  "messagingSent": "Sent",
+  "messagingDelivered": "Delivered",
+  "messagingRead": "Read",
+  "messagingFailed": "Failed",
+  "a11ySelected": "selected",
+  "a11yNotSelected": "not selected",
+  "blockedUsersUnblockTitle": "Unblock user?",
+  "blockedUsersUnblockMessage": "Do you want to unblock {name}? The user will be able to see your content again.",
+  "blockedUsersUnblock": "Unblock",
+  "blockedUsersTitle": "Blocked users",
+  "blockedUsersEmpty": "No blocked users",
+  "retagFetchingRecipes": "Fetching recipes...",
+  "retagRetaggingRecipes": "Retagging recipes",
+  "retagRetaggingProgress": "Retagging {current} of {total} recipes...",
+  "@retagRetaggingProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "retagRecipesRetagged": "{count} recipes retagged",
+  "@retagRecipesRetagged": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileNotifications": "Notifications",
+  "profileNotificationsSubtitle": "Categories and quiet hours",
+  "filterFavorites": "Favorites",
+  "filterUnder30Min": "Under 30 min",
+  "filterVegetarianQuick": "Vegetarian",
+  "filterAll": "All",
+  "instructionLabel": "Instruction {number}",
+  "@instructionLabel": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "@blockedUsersUnblockMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

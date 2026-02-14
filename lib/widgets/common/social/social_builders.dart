@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Builder functions for social components
 class SocialBuilders {
@@ -87,7 +88,8 @@ class SocialBuilders {
   }
 
   /// Build quick selection buttons
-  static Widget quickSelectionButtons({
+  static Widget quickSelectionButtons(
+    BuildContext context, {
     required VoidCallback onSelectAll,
     required VoidCallback onDeselectAll,
     required VoidCallback onInvertSelection,
@@ -97,15 +99,15 @@ class SocialBuilders {
       children: [
         TextButton(
           onPressed: onSelectAll,
-          child: const Text('Markera alla'),
+          child: Text(context.l10n.commonSelectAll),
         ),
         TextButton(
           onPressed: onDeselectAll,
-          child: const Text('Avmarkera alla'),
+          child: Text(context.l10n.commonDeselectAll),
         ),
         TextButton(
           onPressed: onInvertSelection,
-          child: const Text('Invertera'),
+          child: Text(context.l10n.commonInvertSelection),
         ),
       ],
     );

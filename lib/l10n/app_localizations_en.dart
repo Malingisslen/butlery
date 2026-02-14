@@ -1200,6 +1200,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonDeselectAll => 'Deselect all';
 
   @override
+  String get commonInvertSelection => 'Invert';
+
+  @override
+  String commonAddWithLabel(String label) {
+    return 'Add $label';
+  }
+
+  @override
   String get commonClearAll => 'Clear all';
 
   @override
@@ -7953,4 +7961,213 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuTemplateTemplates => 'Templates';
+
+  @override
+  String get personalTagApplyRulesToAll => 'Apply rules to all recipes';
+
+  @override
+  String get messagingPinned => 'PINNED';
+
+  @override
+  String get messagingUnpin => 'Unpin';
+
+  @override
+  String get messagingPin => 'Pin';
+
+  @override
+  String get messagingArchive => 'Archive';
+
+  @override
+  String get messagingUnarchive => 'Unarchive';
+
+  @override
+  String messagingArchivedCount(int count) {
+    return 'Archived ($count)';
+  }
+
+  @override
+  String get allergenRetagAllRecipesTitle => 'Retag all recipes';
+
+  @override
+  String get allergenAnalyzeAllRecipes =>
+      'Analyze all recipes with updated settings';
+
+  @override
+  String get allergenUpdateAllRecipes => 'Update all recipes';
+
+  @override
+  String get notificationSaveError => 'Could not save settings';
+
+  @override
+  String get notificationTitle => 'Notifications';
+
+  @override
+  String get notificationEnableTitle => 'Enable notifications';
+
+  @override
+  String get notificationEnableSubtitle =>
+      'Enable or disable all notifications';
+
+  @override
+  String get notificationCategoriesTitle => 'Notification categories';
+
+  @override
+  String get notificationQuietHoursTitle => 'Quiet hours';
+
+  @override
+  String get notificationQuietHoursEnable => 'Enable quiet hours';
+
+  @override
+  String get notificationQuietHoursSubtitle =>
+      'No notifications during selected time period';
+
+  @override
+  String get commonFrom => 'From';
+
+  @override
+  String get commonTo => 'To';
+
+  @override
+  String get notificationSound => 'Sound';
+
+  @override
+  String get notificationVibration => 'Vibration';
+
+  @override
+  String get notificationCategoryFriends => 'Friends';
+
+  @override
+  String get notificationCategoryRecipes => 'Recipes';
+
+  @override
+  String get notificationCategoryCollaboration => 'Collaboration';
+
+  @override
+  String get notificationCategoryShopping => 'Shopping';
+
+  @override
+  String get notificationCategorySocial => 'Social activity';
+
+  @override
+  String get notificationCategorySystem => 'System';
+
+  @override
+  String get collaborationNoFriends =>
+      'You have no friends to collaborate with';
+
+  @override
+  String get collaborationEnableTitle => 'Enable collaboration';
+
+  @override
+  String get collaborationEnabled => 'Collaboration enabled';
+
+  @override
+  String get collaborationCouldNotEnable => 'Could not enable collaboration';
+
+  @override
+  String get collaborationDeactivateTitle => 'Deactivate collaboration?';
+
+  @override
+  String get collaborationDeactivateMessage =>
+      'All collaborators will lose access to the recipe.';
+
+  @override
+  String get commonDeactivate => 'Deactivate';
+
+  @override
+  String get collaborationDeactivated => 'Collaboration deactivated';
+
+  @override
+  String get collaborationCouldNotDeactivate =>
+      'Could not deactivate collaboration';
+
+  @override
+  String get ratingRemoveTitle => 'Remove rating?';
+
+  @override
+  String get ratingRemoveMessage =>
+      'Do you want to remove your rating for this recipe?';
+
+  @override
+  String get ratingRemoved => 'Rating removed';
+
+  @override
+  String get ratingRemoveError => 'Could not remove rating';
+
+  @override
+  String get messagingSending => 'Sending';
+
+  @override
+  String get messagingSent => 'Sent';
+
+  @override
+  String get messagingDelivered => 'Delivered';
+
+  @override
+  String get messagingRead => 'Read';
+
+  @override
+  String get messagingFailed => 'Failed';
+
+  @override
+  String get a11ySelected => 'selected';
+
+  @override
+  String get a11yNotSelected => 'not selected';
+
+  @override
+  String get blockedUsersUnblockTitle => 'Unblock user?';
+
+  @override
+  String blockedUsersUnblockMessage(String name) {
+    return 'Do you want to unblock $name? The user will be able to see your content again.';
+  }
+
+  @override
+  String get blockedUsersUnblock => 'Unblock';
+
+  @override
+  String get blockedUsersTitle => 'Blocked users';
+
+  @override
+  String get blockedUsersEmpty => 'No blocked users';
+
+  @override
+  String get retagFetchingRecipes => 'Fetching recipes...';
+
+  @override
+  String get retagRetaggingRecipes => 'Retagging recipes';
+
+  @override
+  String retagRetaggingProgress(int current, int total) {
+    return 'Retagging $current of $total recipes...';
+  }
+
+  @override
+  String retagRecipesRetagged(int count) {
+    return '$count recipes retagged';
+  }
+
+  @override
+  String get profileNotifications => 'Notifications';
+
+  @override
+  String get profileNotificationsSubtitle => 'Categories and quiet hours';
+
+  @override
+  String get filterFavorites => 'Favorites';
+
+  @override
+  String get filterUnder30Min => 'Under 30 min';
+
+  @override
+  String get filterVegetarianQuick => 'Vegetarian';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String instructionLabel(int number) {
+    return 'Instruction $number';
+  }
 }

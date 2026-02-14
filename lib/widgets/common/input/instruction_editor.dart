@@ -1,6 +1,7 @@
 // lib/widgets/common/input/instruction_editor.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -90,7 +91,7 @@ class _InstructionEditorState extends State<InstructionEditor> {
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusM),
               ),
-              labelText: 'Instruktion ${i + 1}',
+              labelText: context.l10n.instructionLabel(i + 1),
               labelStyle: AppTextStyles.labelLarge,
               contentPadding: const EdgeInsets.all(AppDimensions.paddingM),
             ),

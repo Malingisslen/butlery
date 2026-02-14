@@ -375,7 +375,7 @@ class InvitationStates {
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
-            '${operationName ?? context.l10n.invitationProcessing} $completed/${total}',
+            '${operationName ?? context.l10n.invitationProcessing} $completed/$total',
             style: AppTextStyles.contentTitle,
           ),
           if (currentItem != null) ...[

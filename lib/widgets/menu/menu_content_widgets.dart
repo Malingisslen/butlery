@@ -69,7 +69,7 @@ class MenuContentWidgets {
                             .onSurface
                             .withValues(alpha: AppDimensions.opacityDark)),
                     onPressed: onClear,
-                    tooltip: 'Rensa',
+                    tooltip: context.l10n.commonClear,
                   )
                 : null,
             textInputAction: TextInputAction.done,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -58,22 +59,19 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Avblockera användare?'),
-        content: Text(
-          'Vill du avblockera $displayName? '
-          'Användaren kommer kunna se ditt innehåll igen.',
-        ),
+        title: Text(context.l10n.blockedUsersUnblockTitle),
+        content: Text(context.l10n.blockedUsersUnblockMessage(displayName)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
               foregroundColor: AppColors.primary,
             ),
-            child: const Text('Avblockera'),
+            child: Text(context.l10n.blockedUsersUnblock),
           ),
         ],
       ),
@@ -111,7 +109,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Blockerade användare',
+                          context.l10n.blockedUsersTitle,
                           style: AppTextStyles.titleBold,
                         ),
                         const SizedBox(height: AppDimensions.spacingXs),
@@ -148,7 +146,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
               Padding(
                 padding: const EdgeInsets.all(AppDimensions.spacingMd),
                 child: Text(
-                  'Inga blockerade användare',
+                  context.l10n.blockedUsersEmpty,
                   style: AppTextStyles.metadataEmphasized,
                 ),
               )
@@ -191,7 +189,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
               foregroundColor: AppColors.primary,
               padding: AppDimensions.paddingSymmetric16x8,
             ),
-            child: const Text('Avblockera'),
+            child: Text(context.l10n.blockedUsersUnblock),
           ),
         ],
       ),

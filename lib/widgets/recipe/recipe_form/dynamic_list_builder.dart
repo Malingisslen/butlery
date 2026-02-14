@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Builds a dynamic list of text fields with add/remove functionality.
 /// Used for ingredients, instructions, and tags in recipe forms.
@@ -31,7 +32,7 @@ class DynamicListBuilder extends StatelessWidget {
         const SizedBox(height: AppDimensions.spacingM),
         for (int index = 0; index < controllers.length; index++)
           _buildItemRow(context, index),
-        if (controllers.isEmpty) _buildAddButton(),
+        if (controllers.isEmpty) _buildAddButton(context),
       ],
     );
   }
@@ -74,10 +75,10 @@ class DynamicListBuilder extends StatelessWidget {
     }
   }
 
-  Widget _buildAddButton() {
+  Widget _buildAddButton(BuildContext context) {
     return TextButton.icon(
       icon: const Icon(Icons.add),
-      label: Text('Lagg till $label'),
+      label: Text(context.l10n.commonAddWithLabel(label)),
       onPressed: onAdd,
     );
   }

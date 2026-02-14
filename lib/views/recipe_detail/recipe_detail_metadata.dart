@@ -203,9 +203,9 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
   Future<void> _removeMyRating(BuildContext context) async {
     final confirmed = await CommonDialogActions.showActionConfirmation(
       context: context,
-      title: 'Ta bort betyg?',
-      message: 'Vill du ta bort ditt betyg för detta recept?',
-      confirmText: 'Ta bort',
+      title: context.l10n.ratingRemoveTitle,
+      message: context.l10n.ratingRemoveMessage,
+      confirmText: context.l10n.commonDelete,
       icon: Icons.star_border,
       isDangerous: true,
     );
@@ -218,11 +218,11 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         setState(() {
           _hasUserRating = false;
         });
-        SnackBarUtils.showSuccess(context, 'Betyg borttaget');
+        SnackBarUtils.showSuccess(context, context.l10n.ratingRemoved);
       }
     } catch (e) {
       if (!context.mounted) return;
-      SnackBarUtils.showError(context, 'Kunde inte ta bort betyg');
+      SnackBarUtils.showError(context, context.l10n.ratingRemoveError);
     }
   }
 

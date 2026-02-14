@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
@@ -52,8 +53,8 @@ class _NotificationPreferencesViewState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kunde inte spara inställningar'),
+          SnackBar(
+            content: Text(context.l10n.notificationSaveError),
             backgroundColor: AppColors.error,
           ),
         );
@@ -64,7 +65,7 @@ class _NotificationPreferencesViewState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Aviseringar')),
+      appBar: AppBar(title: Text(context.l10n.notificationTitle)),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Center(
@@ -93,11 +94,11 @@ class _NotificationPreferencesViewState
   Widget _buildMasterToggle() {
     return SwitchListTile(
       title: Text(
-        'Aktivera aviseringar',
+        context.l10n.notificationEnableTitle,
         style: AppTextStyles.titleMedium,
       ),
       subtitle: Text(
-        'Aktivera eller inaktivera alla aviseringar',
+        context.l10n.notificationEnableSubtitle,
         style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
       ),
       secondary: Icon(
@@ -127,9 +128,10 @@ class _NotificationPreferencesViewState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Aviseringskategorier', style: AppTextStyles.headlineSmall),
+        Text(context.l10n.notificationCategoriesTitle,
+            style: AppTextStyles.headlineSmall),
         const SizedBox(height: AppDimensions.spacingMd),
-        ..._categoryItems.map((item) => _buildCategoryTile(item)),
+        ..._buildCategoryItems(context).map((item) => _buildCategoryTile(item)),
       ],
     );
   }
@@ -178,15 +180,16 @@ class _NotificationPreferencesViewState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Tysta timmar', style: AppTextStyles.headlineSmall),
+        Text(context.l10n.notificationQuietHoursTitle,
+            style: AppTextStyles.headlineSmall),
         const SizedBox(height: AppDimensions.spacingMd),
         SwitchListTile(
           title: Text(
-            'Aktivera tysta timmar',
+            context.l10n.notificationQuietHoursEnable,
             style: AppTextStyles.titleMedium,
           ),
           subtitle: Text(
-            'Inga aviseringar under vald tidsperiod',
+            context.l10n.notificationQuietHoursSubtitle,
             style:
                 AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
           ),
@@ -240,7 +243,7 @@ class _NotificationPreferencesViewState
       children: [
         Expanded(
           child: _buildTimeTile(
-            label: 'Från',
+            label: context.l10n.commonFrom,
             time: startText,
             onTap: () => _pickTime(isStart: true),
           ),
@@ -251,7 +254,7 @@ class _NotificationPreferencesViewState
         ),
         Expanded(
           child: _buildTimeTile(
-            label: 'Till',
+            label: context.l10n.commonTo,
             time: endText,
             onTap: () => _pickTime(isStart: false),
           ),
@@ -320,7 +323,8 @@ class _NotificationPreferencesViewState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SwitchListTile(
-          title: Text('Ljud', style: AppTextStyles.titleMedium),
+          title: Text(context.l10n.notificationSound,
+              style: AppTextStyles.titleMedium),
           secondary: Icon(
             _preferences.soundEnabled
                 ? Icons.volume_up_outlined
@@ -344,7 +348,8 @@ class _NotificationPreferencesViewState
         ),
         const Divider(),
         SwitchListTile(
-          title: Text('Vibration', style: AppTextStyles.titleMedium),
+          title: Text(context.l10n.notificationVibration,
+              style: AppTextStyles.titleMedium),
           secondary: const Icon(
             Icons.vibration_outlined,
             color: AppColors.forestGreen,
@@ -420,35 +425,35 @@ class _CategoryItem {
   });
 }
 
-const _categoryItems = [
-  _CategoryItem(
-    category: NotificationCategory.friends,
-    label: 'Vänner',
-    icon: Icons.people_outline,
-  ),
-  _CategoryItem(
-    category: NotificationCategory.recipes,
-    label: 'Recept',
-    icon: Icons.restaurant_outlined,
-  ),
-  _CategoryItem(
-    category: NotificationCategory.collaboration,
-    label: 'Samarbete',
-    icon: Icons.group_work_outlined,
-  ),
-  _CategoryItem(
-    category: NotificationCategory.shopping,
-    label: 'Inköp',
-    icon: Icons.shopping_cart_outlined,
-  ),
-  _CategoryItem(
-    category: NotificationCategory.social,
-    label: 'Social aktivitet',
-    icon: Icons.forum_outlined,
-  ),
-  _CategoryItem(
-    category: NotificationCategory.system,
-    label: 'System',
-    icon: Icons.settings_outlined,
-  ),
-];
+List<_CategoryItem> _buildCategoryItems(BuildContext context) => [
+      _CategoryItem(
+        category: NotificationCategory.friends,
+        label: context.l10n.notificationCategoryFriends,
+        icon: Icons.people_outline,
+      ),
+      _CategoryItem(
+        category: NotificationCategory.recipes,
+        label: context.l10n.notificationCategoryRecipes,
+        icon: Icons.restaurant_outlined,
+      ),
+      _CategoryItem(
+        category: NotificationCategory.collaboration,
+        label: context.l10n.notificationCategoryCollaboration,
+        icon: Icons.group_work_outlined,
+      ),
+      _CategoryItem(
+        category: NotificationCategory.shopping,
+        label: context.l10n.notificationCategoryShopping,
+        icon: Icons.shopping_cart_outlined,
+      ),
+      _CategoryItem(
+        category: NotificationCategory.social,
+        label: context.l10n.notificationCategorySocial,
+        icon: Icons.forum_outlined,
+      ),
+      _CategoryItem(
+        category: NotificationCategory.system,
+        label: context.l10n.notificationCategorySystem,
+        icon: Icons.settings_outlined,
+      ),
+    ];

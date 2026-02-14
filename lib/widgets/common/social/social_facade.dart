@@ -485,12 +485,14 @@ class SocialFacade {
         labelStyle: labelStyle,
       );
 
-  static Widget quickSelectionButtons({
+  static Widget quickSelectionButtons(
+    BuildContext context, {
     required VoidCallback onSelectAll,
     required VoidCallback onDeselectAll,
     required VoidCallback onInvertSelection,
   }) =>
       SocialBuilders.quickSelectionButtons(
+        context,
         onSelectAll: onSelectAll,
         onDeselectAll: onDeselectAll,
         onInvertSelection: onInvertSelection,

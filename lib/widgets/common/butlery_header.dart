@@ -7,6 +7,7 @@
 /// - Support for leading/trailing actions and search
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -104,7 +105,7 @@ class ButleryHeader extends StatelessWidget implements PreferredSizeWidget {
                                 color: AppColors.headerForeground,
                               ),
                               onPressed: () => Navigator.of(context).pop(),
-                              tooltip: 'Tillbaka',
+                              tooltip: context.l10n.commonBack,
                             ),
                       ] else ...[
                         const SizedBox(width: AppDimensions.spacingMd),

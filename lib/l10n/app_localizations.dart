@@ -2228,6 +2228,18 @@ abstract class AppLocalizations {
   /// **'Avmarkera alla'**
   String get commonDeselectAll;
 
+  /// No description provided for @commonInvertSelection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Invertera'**
+  String get commonInvertSelection;
+
+  /// No description provided for @commonAddWithLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till {label}'**
+  String commonAddWithLabel(String label);
+
   /// No description provided for @commonClearAll.
   ///
   /// In sv, this message translates to:
@@ -13826,6 +13838,390 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Mallar'**
   String get menuTemplateTemplates;
+
+  /// No description provided for @personalTagApplyRulesToAll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillämpa regler på alla recept'**
+  String get personalTagApplyRulesToAll;
+
+  /// No description provided for @messagingPinned.
+  ///
+  /// In sv, this message translates to:
+  /// **'FÄSTA'**
+  String get messagingPinned;
+
+  /// No description provided for @messagingUnpin.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort fäst'**
+  String get messagingUnpin;
+
+  /// No description provided for @messagingPin.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fäst'**
+  String get messagingPin;
+
+  /// No description provided for @messagingArchive.
+  ///
+  /// In sv, this message translates to:
+  /// **'Arkivera'**
+  String get messagingArchive;
+
+  /// No description provided for @messagingUnarchive.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avarkivera'**
+  String get messagingUnarchive;
+
+  /// No description provided for @messagingArchivedCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Arkiverade ({count})'**
+  String messagingArchivedCount(int count);
+
+  /// No description provided for @allergenRetagAllRecipesTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omtagga alla recept'**
+  String get allergenRetagAllRecipesTitle;
+
+  /// No description provided for @allergenAnalyzeAllRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Analysera alla recept med uppdaterade inställningar'**
+  String get allergenAnalyzeAllRecipes;
+
+  /// No description provided for @allergenUpdateAllRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppdatera alla recept'**
+  String get allergenUpdateAllRecipes;
+
+  /// No description provided for @notificationSaveError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara inställningar'**
+  String get notificationSaveError;
+
+  /// No description provided for @notificationTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aviseringar'**
+  String get notificationTitle;
+
+  /// No description provided for @notificationEnableTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktivera aviseringar'**
+  String get notificationEnableTitle;
+
+  /// No description provided for @notificationEnableSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktivera eller inaktivera alla aviseringar'**
+  String get notificationEnableSubtitle;
+
+  /// No description provided for @notificationCategoriesTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aviseringskategorier'**
+  String get notificationCategoriesTitle;
+
+  /// No description provided for @notificationQuietHoursTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tysta timmar'**
+  String get notificationQuietHoursTitle;
+
+  /// No description provided for @notificationQuietHoursEnable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktivera tysta timmar'**
+  String get notificationQuietHoursEnable;
+
+  /// No description provided for @notificationQuietHoursSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga aviseringar under vald tidsperiod'**
+  String get notificationQuietHoursSubtitle;
+
+  /// No description provided for @commonFrom.
+  ///
+  /// In sv, this message translates to:
+  /// **'Från'**
+  String get commonFrom;
+
+  /// No description provided for @commonTo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Till'**
+  String get commonTo;
+
+  /// No description provided for @notificationSound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ljud'**
+  String get notificationSound;
+
+  /// No description provided for @notificationVibration.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vibration'**
+  String get notificationVibration;
+
+  /// No description provided for @notificationCategoryFriends.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner'**
+  String get notificationCategoryFriends;
+
+  /// No description provided for @notificationCategoryRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get notificationCategoryRecipes;
+
+  /// No description provided for @notificationCategoryCollaboration.
+  ///
+  /// In sv, this message translates to:
+  /// **'Samarbete'**
+  String get notificationCategoryCollaboration;
+
+  /// No description provided for @notificationCategoryShopping.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inköp'**
+  String get notificationCategoryShopping;
+
+  /// No description provided for @notificationCategorySocial.
+  ///
+  /// In sv, this message translates to:
+  /// **'Social aktivitet'**
+  String get notificationCategorySocial;
+
+  /// No description provided for @notificationCategorySystem.
+  ///
+  /// In sv, this message translates to:
+  /// **'System'**
+  String get notificationCategorySystem;
+
+  /// No description provided for @collaborationNoFriends.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inga vänner att samarbeta med'**
+  String get collaborationNoFriends;
+
+  /// No description provided for @collaborationEnableTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktivera samarbete'**
+  String get collaborationEnableTitle;
+
+  /// No description provided for @collaborationEnabled.
+  ///
+  /// In sv, this message translates to:
+  /// **'Samarbete aktiverat'**
+  String get collaborationEnabled;
+
+  /// No description provided for @collaborationCouldNotEnable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte aktivera samarbete'**
+  String get collaborationCouldNotEnable;
+
+  /// No description provided for @collaborationDeactivateTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avaktivera samarbete?'**
+  String get collaborationDeactivateTitle;
+
+  /// No description provided for @collaborationDeactivateMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla samarbetspartners förlorar åtkomst till receptet.'**
+  String get collaborationDeactivateMessage;
+
+  /// No description provided for @commonDeactivate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avaktivera'**
+  String get commonDeactivate;
+
+  /// No description provided for @collaborationDeactivated.
+  ///
+  /// In sv, this message translates to:
+  /// **'Samarbete avaktiverat'**
+  String get collaborationDeactivated;
+
+  /// No description provided for @collaborationCouldNotDeactivate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte avaktivera samarbete'**
+  String get collaborationCouldNotDeactivate;
+
+  /// No description provided for @ratingRemoveTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort betyg?'**
+  String get ratingRemoveTitle;
+
+  /// No description provided for @ratingRemoveMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vill du ta bort ditt betyg för detta recept?'**
+  String get ratingRemoveMessage;
+
+  /// No description provided for @ratingRemoved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyg borttaget'**
+  String get ratingRemoved;
+
+  /// No description provided for @ratingRemoveError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort betyg'**
+  String get ratingRemoveError;
+
+  /// No description provided for @messagingSending.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickar'**
+  String get messagingSending;
+
+  /// No description provided for @messagingSent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickat'**
+  String get messagingSent;
+
+  /// No description provided for @messagingDelivered.
+  ///
+  /// In sv, this message translates to:
+  /// **'Levererat'**
+  String get messagingDelivered;
+
+  /// No description provided for @messagingRead.
+  ///
+  /// In sv, this message translates to:
+  /// **'Läst'**
+  String get messagingRead;
+
+  /// No description provided for @messagingFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Misslyckades'**
+  String get messagingFailed;
+
+  /// No description provided for @a11ySelected.
+  ///
+  /// In sv, this message translates to:
+  /// **'vald'**
+  String get a11ySelected;
+
+  /// No description provided for @a11yNotSelected.
+  ///
+  /// In sv, this message translates to:
+  /// **'ej vald'**
+  String get a11yNotSelected;
+
+  /// No description provided for @blockedUsersUnblockTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avblockera användare?'**
+  String get blockedUsersUnblockTitle;
+
+  /// No description provided for @blockedUsersUnblockMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vill du avblockera {name}? Användaren kommer kunna se ditt innehåll igen.'**
+  String blockedUsersUnblockMessage(String name);
+
+  /// No description provided for @blockedUsersUnblock.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avblockera'**
+  String get blockedUsersUnblock;
+
+  /// No description provided for @blockedUsersTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Blockerade användare'**
+  String get blockedUsersTitle;
+
+  /// No description provided for @blockedUsersEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga blockerade användare'**
+  String get blockedUsersEmpty;
+
+  /// No description provided for @retagFetchingRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar recept...'**
+  String get retagFetchingRecipes;
+
+  /// No description provided for @retagRetaggingRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omtaggar recept'**
+  String get retagRetaggingRecipes;
+
+  /// No description provided for @retagRetaggingProgress.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omtaggar {current} av {total} recept...'**
+  String retagRetaggingProgress(int current, int total);
+
+  /// No description provided for @retagRecipesRetagged.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept omtaggade'**
+  String retagRecipesRetagged(int count);
+
+  /// No description provided for @profileNotifications.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aviseringar'**
+  String get profileNotifications;
+
+  /// No description provided for @profileNotificationsSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kategorier och tysta timmar'**
+  String get profileNotificationsSubtitle;
+
+  /// No description provided for @filterFavorites.
+  ///
+  /// In sv, this message translates to:
+  /// **'Favoriter'**
+  String get filterFavorites;
+
+  /// No description provided for @filterUnder30Min.
+  ///
+  /// In sv, this message translates to:
+  /// **'Under 30 min'**
+  String get filterUnder30Min;
+
+  /// No description provided for @filterVegetarianQuick.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vegetariskt'**
+  String get filterVegetarianQuick;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla'**
+  String get filterAll;
+
+  /// No description provided for @instructionLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Instruktion {number}'**
+  String instructionLabel(int number);
 }
 
 class _AppLocalizationsDelegate
