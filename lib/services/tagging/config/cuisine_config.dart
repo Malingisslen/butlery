@@ -124,8 +124,6 @@ class CuisineConfig {
     argentinsk,
   ];
 
-  // ===== INDIVIDUAL CUISINE DEFINITIONS =====
-
   static const svensk = CuisineEntry(
     key: 'svensk',
     tag: 'svensk',
@@ -553,8 +551,6 @@ class CuisineConfig {
     minIngredientMatches: 2,
   );
 
-  // ===== AFRICAN CUISINES =====
-
   static const etiopisk = CuisineEntry(
     key: 'etiopisk',
     tag: 'etiopisk',
@@ -575,8 +571,6 @@ class CuisineConfig {
     },
     minIngredientMatches: 2,
   );
-
-  // ===== NORTH AFRICAN CUISINES =====
 
   static const marockansk = CuisineEntry(
     key: 'marockansk',
@@ -602,8 +596,6 @@ class CuisineConfig {
     },
     minIngredientMatches: 2,
   );
-
-  // ===== SOUTH AMERICAN CUISINES =====
 
   static const brasiliansk = CuisineEntry(
     key: 'brasiliansk',

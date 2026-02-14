@@ -37,15 +37,7 @@ class UIStage implements BootstrapStage {
   @override
   Future<void> execute() async {
     try {
-      // Setup analytics observers
-      // Analytics observer setup would happen here
-      // Note: In the original main.dart, this was done after background init
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      // Initialize deep link handling
-      // Deep link initialization would happen here
-      // Note: This will be extracted to a separate handler
-      await Future.delayed(const Duration(milliseconds: 50));
+      // Analytics and deep link setup handled by _ButleryAppState._initializeUI()
 
       // Validate OCR service during startup
       await _validateOcrService();

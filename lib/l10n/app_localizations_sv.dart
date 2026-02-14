@@ -7854,4 +7854,121 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get favoritesRemove => 'Ta bort favorit';
+
+  @override
+  String get shoppingConvertToCollaborative => 'Gör samarbetslista';
+
+  @override
+  String get shoppingConvertToPersonal => 'Gör personlig lista';
+
+  @override
+  String get shoppingConvertToCollaborativeTitle => 'Gör till samarbetslista';
+
+  @override
+  String get shoppingConvertToCollaborativeDescription =>
+      'Välj vänner att dela listan med. De kan lägga till och bocka av varor i realtid.';
+
+  @override
+  String get shoppingConvertToPersonalTitle => 'Gör till personlig lista';
+
+  @override
+  String get shoppingConvertToPersonalWarning =>
+      'Alla samarbetspartners förlorar åtkomst till listan. Varor behålls.';
+
+  @override
+  String get shoppingConvertedToCollaborative =>
+      'Listan omvandlad till samarbetslista';
+
+  @override
+  String get shoppingConvertedToPersonal => 'Listan omvandlad till personlig';
+
+  @override
+  String get shoppingConvertError => 'Kunde inte omvandla listan';
+
+  @override
+  String get shoppingConvertSelectFriends => 'Välj minst en vän';
+
+  @override
+  String get shoppingDescriptionLabel => 'Beskrivning (valfritt)';
+
+  @override
+  String get menuTemplateSaveAsTemplate => 'Spara som mall';
+
+  @override
+  String get menuTemplateSaveAsTemplateDescription =>
+      'Sparar menyns kategoristruktur som en återanvändbar mall';
+
+  @override
+  String get menuTemplateName => 'Mallnamn';
+
+  @override
+  String get menuTemplateNameHint => 'T.ex. Vardagsmeny familj';
+
+  @override
+  String get menuTemplateNameRequired => 'Mallnamn krävs';
+
+  @override
+  String get menuTemplateDescription => 'Beskrivning (valfritt)';
+
+  @override
+  String get menuTemplateDescriptionHint =>
+      'T.ex. Perfekt för vardagar med barn';
+
+  @override
+  String menuTemplateSavedSuccess(String name) {
+    return 'Mall \"$name\" sparad!';
+  }
+
+  @override
+  String get menuTemplateSaveFailed => 'Kunde inte spara mall';
+
+  @override
+  String get menuTemplateLoadTemplate => 'Ladda mall';
+
+  @override
+  String get menuTemplateNoTemplates => 'Inga mallar';
+
+  @override
+  String get menuTemplateNoTemplatesDescription =>
+      'Du har inga sparade menymmallar. Spara en meny som mall för att återanvända kategoristrukturen.';
+
+  @override
+  String get menuTemplateBrowseTitle => 'Menymmallar';
+
+  @override
+  String menuTemplateCategories(int count) {
+    return '$count kategorier';
+  }
+
+  @override
+  String menuTemplateRecipes(int count) {
+    return '$count recept';
+  }
+
+  @override
+  String menuTemplateUsedCount(int count) {
+    return 'Använd $count gånger';
+  }
+
+  @override
+  String get menuTemplateUseTemplate => 'Använd mall';
+
+  @override
+  String get menuTemplateDeleteTitle => 'Ta bort mall';
+
+  @override
+  String get menuTemplateDeleteConfirmation =>
+      'Är du säker på att du vill ta bort denna mall?';
+
+  @override
+  String get menuTemplateDeletedSuccess => 'Mall borttagen';
+
+  @override
+  String get menuTemplateDeleteFailed => 'Kunde inte ta bort mall';
+
+  @override
+  String get menuTemplateSavedMenus => 'Sparade menyer';
+
+  @override
+  String get menuTemplateTemplates => 'Mallar';
 }

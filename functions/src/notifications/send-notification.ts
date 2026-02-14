@@ -69,6 +69,7 @@ export const sendNotification = functions.https.onCall(
       );
     }
 
+    const callerUid = context.auth.uid;
     const { targetUserId, title, body, data: payload, imageUrl, silent } = data;
 
     // Validate required fields
@@ -84,6 +85,30 @@ export const sendNotification = functions.https.onCall(
         "invalid-argument",
         "title and body are required for display notifications"
       );
+    }
+
+    // Authorization: verify caller can send to target user
+    if (callerUid !== targetUserId) {
+      const conversations = await admin
+        .firestore()
+        .collection("conversations")
+        .where("participantIds", "array-contains", callerUid)
+        .get();
+
+      const isAuthorized = conversations.docs.some((doc) => {
+        const participants = doc.data().participantIds as string[];
+        return participants?.includes(targetUserId);
+      });
+
+      if (!isAuthorized) {
+        functions.logger.warn(
+          `Unauthorized notification attempt: ${callerUid} -> ${targetUserId}`
+        );
+        throw new functions.https.HttpsError(
+          "permission-denied",
+          "Not authorized to send notifications to this user"
+        );
+      }
     }
 
     try {
@@ -298,6 +323,7 @@ export const sendNotificationBatch = functions.https.onCall(
       );
     }
 
+    const callerUid = context.auth.uid;
     const { notifications } = data;
 
     if (!notifications || !Array.isArray(notifications)) {
@@ -323,6 +349,39 @@ export const sendNotificationBatch = functions.https.onCall(
         validationErrors.push({ index, error });
       }
     });
+
+    // Authorization: verify caller can send to all target users
+    const uniqueTargets = [...new Set(
+      notifications.map((n) => n.targetUserId).filter((id) => id !== callerUid)
+    )];
+
+    if (uniqueTargets.length > 0) {
+      const conversations = await admin
+        .firestore()
+        .collection("conversations")
+        .where("participantIds", "array-contains", callerUid)
+        .get();
+
+      const reachableUserIds = new Set<string>();
+      conversations.docs.forEach((doc) => {
+        const participants = doc.data().participantIds as string[];
+        participants?.forEach((id: string) => reachableUserIds.add(id));
+      });
+
+      const unauthorizedTargets = uniqueTargets.filter(
+        (id) => !reachableUserIds.has(id)
+      );
+
+      if (unauthorizedTargets.length > 0) {
+        functions.logger.warn(
+          `Unauthorized batch notification: ${callerUid} -> ${unauthorizedTargets.join(", ")}`
+        );
+        throw new functions.https.HttpsError(
+          "permission-denied",
+          `Not authorized to send notifications to ${unauthorizedTargets.length} target user(s)`
+        );
+      }
+    }
 
     if (validationErrors.length > 0) {
       functions.logger.warn(

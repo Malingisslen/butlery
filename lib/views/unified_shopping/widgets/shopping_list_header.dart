@@ -19,8 +19,9 @@ class ShoppingListHeader {
     VoidCallback onClearCompleted,
     VoidCallback onUncheckAll,
     VoidCallback onRenameList,
-    VoidCallback onDeleteList,
-  ) {
+    VoidCallback onDeleteList, {
+    VoidCallback? onConvertList,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -32,7 +33,8 @@ class ShoppingListHeader {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Lista-väljare dropdown with management buttons
-          _buildListSelector(context, viewModel, onRenameList, onDeleteList),
+          _buildListSelector(
+              context, viewModel, onRenameList, onDeleteList, onConvertList),
 
           if (viewModel.activeList != null) ...[
             const SizedBox(height: AppDimensions.spacingM),
@@ -49,6 +51,7 @@ class ShoppingListHeader {
     UnifiedShoppingViewModel viewModel,
     VoidCallback onRenameList,
     VoidCallback onDeleteList,
+    VoidCallback? onConvertList,
   ) {
     return Row(
       children: [
@@ -113,6 +116,38 @@ class ShoppingListHeader {
               ),
             ),
           ),
+
+          // Convert button - show when user owns the list
+          if (onConvertList != null) ...[
+            const SizedBox(width: AppDimensions.spacingXs),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppColors.cream,
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadius12),
+                border: Border.all(color: AppColors.divider),
+              ),
+              child: IconButton(
+                onPressed: onConvertList,
+                icon: Icon(
+                  Icons.swap_horiz,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: AppDimensions.opacityDark),
+                  size: AppDimensions.iconSizeAction,
+                ),
+                tooltip: viewModel.activeList?.isPersonal == true
+                    ? context.l10n.shoppingConvertToCollaborative
+                    : context.l10n.shoppingConvertToPersonal,
+                padding: const EdgeInsets.all(AppDimensions.spacingS),
+                constraints: const BoxConstraints(
+                  minWidth: AppDimensions.minTouchTarget,
+                  minHeight: AppDimensions.minTouchTarget,
+                ),
+              ),
+            ),
+          ],
 
           const SizedBox(width: AppDimensions.spacingXs),
 

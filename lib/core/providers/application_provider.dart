@@ -109,6 +109,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
 
 /// Comprehensive application provider widget that enables widget-friendly dependency injection access throughout the application.
@@ -306,7 +307,7 @@ class ApplicationReadyBuilder extends StatelessWidget {
           const Icon(
             Icons.error_outline,
             size: 48,
-            color: Colors.red,
+            color: AppColors.error,
           ),
           const SizedBox(height: 16),
           const Text(

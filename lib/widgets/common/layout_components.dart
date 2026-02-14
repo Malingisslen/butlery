@@ -163,10 +163,11 @@ class LayoutComponents {
     );
   }
 
-  /// Bottom sheet for loading a saved menu.
+  /// Bottom sheet for loading a saved menu or template.
   static Future<void> showLoadMenuDialog(
     BuildContext context, {
     required MenuViewModel viewModel,
+    ValueChanged<String>? onTemplateSelected,
   }) {
     return showModalBottomSheet<void>(
       context: context,
@@ -175,7 +176,10 @@ class LayoutComponents {
         borderRadius: BorderRadius.vertical(
             top: Radius.circular(AppDimensions.borderRadius16)),
       ),
-      builder: (context) => LoadMenuBottomSheet(viewModel: viewModel),
+      builder: (context) => LoadMenuBottomSheet(
+        viewModel: viewModel,
+        onTemplateSelected: onTemplateSelected,
+      ),
     );
   }
 

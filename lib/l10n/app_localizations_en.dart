@@ -7766,76 +7766,191 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unshareFailed => 'Could not stop sharing. Try again.';
 
   @override
-  String get menuCommentsTitle => 'Kommentarer';
+  String get menuCommentsTitle => 'Comments';
 
   @override
   String menuCommentsCount(int count) {
-    return '$count kommentarer';
+    return '$count comments';
   }
 
   @override
-  String get menuNoCommentsYet => 'Inga kommentarer än';
+  String get menuNoCommentsYet => 'No comments yet';
 
   @override
-  String get menuBeFirstToComment => 'Var först med att kommentera denna meny!';
+  String get menuBeFirstToComment => 'Be the first to comment on this menu!';
 
   @override
-  String get menuLoadingComments => 'Laddar kommentarer...';
+  String get menuLoadingComments => 'Loading comments...';
 
   @override
-  String get menuWriteComment => 'Skriv en kommentar om menyn...';
+  String get menuWriteComment => 'Write a comment about the menu...';
 
   @override
-  String get menuCommentPostedSuccess => 'Kommentar postad!';
+  String get menuCommentPostedSuccess => 'Comment posted!';
 
   @override
-  String get menuCommentPostFailed => 'Kunde inte posta kommentaren';
+  String get menuCommentPostFailed => 'Could not post comment';
 
   @override
-  String get menuCommentDeleteFailed => 'Kunde inte ta bort kommentaren';
+  String get menuCommentDeleteFailed => 'Could not delete comment';
 
   @override
-  String get menuMustBeLoggedInToComment =>
-      'Du måste vara inloggad för att kommentera';
+  String get menuMustBeLoggedInToComment => 'You must be logged in to comment';
 
   @override
-  String get menuRatingTitle => 'Betyg';
+  String get menuRatingTitle => 'Rating';
 
   @override
   String menuAverageRating(String rating) {
-    return 'Medelbetyg: $rating';
+    return 'Average rating: $rating';
   }
 
   @override
   String menuRatingCount(int count) {
-    return '$count betyg';
+    return '$count ratings';
   }
 
   @override
-  String get menuNoRatingsYet => 'Inga betyg än';
+  String get menuNoRatingsYet => 'No ratings yet';
 
   @override
-  String get menuTapToRate => 'Tryck för att betygsätta';
+  String get menuTapToRate => 'Tap to rate';
 
   @override
-  String get menuYourRating => 'Ditt betyg';
+  String get menuYourRating => 'Your rating';
 
   @override
-  String get menuRatingSaved => 'Betyg sparat!';
+  String get menuRatingSaved => 'Rating saved!';
 
   @override
-  String get menuRatingFailed => 'Kunde inte spara betyg';
+  String get menuRatingFailed => 'Could not save rating';
 
   @override
-  String get menuRemoveRating => 'Ta bort betyg';
+  String get menuRemoveRating => 'Remove rating';
 
   @override
-  String get menuMustBeLoggedInToRate =>
-      'Du måste vara inloggad för att betygsätta';
+  String get menuMustBeLoggedInToRate => 'You must be logged in to rate';
 
   @override
   String get favoritesAdd => 'Add to favorites';
 
   @override
   String get favoritesRemove => 'Remove from favorites';
+
+  @override
+  String get shoppingConvertToCollaborative => 'Make collaborative';
+
+  @override
+  String get shoppingConvertToPersonal => 'Make personal';
+
+  @override
+  String get shoppingConvertToCollaborativeTitle => 'Make collaborative list';
+
+  @override
+  String get shoppingConvertToCollaborativeDescription =>
+      'Select friends to share this list with. They will be able to add and check off items in real time.';
+
+  @override
+  String get shoppingConvertToPersonalTitle => 'Make personal list';
+
+  @override
+  String get shoppingConvertToPersonalWarning =>
+      'All collaborators will lose access to this list. Items will be kept.';
+
+  @override
+  String get shoppingConvertedToCollaborative =>
+      'List converted to collaborative';
+
+  @override
+  String get shoppingConvertedToPersonal => 'List converted to personal';
+
+  @override
+  String get shoppingConvertError => 'Could not convert list';
+
+  @override
+  String get shoppingConvertSelectFriends => 'Select at least one friend';
+
+  @override
+  String get shoppingDescriptionLabel => 'Description (optional)';
+
+  @override
+  String get menuTemplateSaveAsTemplate => 'Save as template';
+
+  @override
+  String get menuTemplateSaveAsTemplateDescription =>
+      'Saves the menu\'s category structure as a reusable template';
+
+  @override
+  String get menuTemplateName => 'Template name';
+
+  @override
+  String get menuTemplateNameHint => 'E.g. Weekday family menu';
+
+  @override
+  String get menuTemplateNameRequired => 'Template name required';
+
+  @override
+  String get menuTemplateDescription => 'Description (optional)';
+
+  @override
+  String get menuTemplateDescriptionHint =>
+      'E.g. Perfect for weekdays with kids';
+
+  @override
+  String menuTemplateSavedSuccess(String name) {
+    return 'Template \"$name\" saved!';
+  }
+
+  @override
+  String get menuTemplateSaveFailed => 'Could not save template';
+
+  @override
+  String get menuTemplateLoadTemplate => 'Load template';
+
+  @override
+  String get menuTemplateNoTemplates => 'No templates';
+
+  @override
+  String get menuTemplateNoTemplatesDescription =>
+      'You have no saved menu templates. Save a menu as a template to reuse the category structure.';
+
+  @override
+  String get menuTemplateBrowseTitle => 'Menu templates';
+
+  @override
+  String menuTemplateCategories(int count) {
+    return '$count categories';
+  }
+
+  @override
+  String menuTemplateRecipes(int count) {
+    return '$count recipes';
+  }
+
+  @override
+  String menuTemplateUsedCount(int count) {
+    return 'Used $count times';
+  }
+
+  @override
+  String get menuTemplateUseTemplate => 'Use template';
+
+  @override
+  String get menuTemplateDeleteTitle => 'Delete template';
+
+  @override
+  String get menuTemplateDeleteConfirmation =>
+      'Are you sure you want to delete this template?';
+
+  @override
+  String get menuTemplateDeletedSuccess => 'Template deleted';
+
+  @override
+  String get menuTemplateDeleteFailed => 'Could not delete template';
+
+  @override
+  String get menuTemplateSavedMenus => 'Saved menus';
+
+  @override
+  String get menuTemplateTemplates => 'Templates';
 }

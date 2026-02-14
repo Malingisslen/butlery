@@ -5,7 +5,7 @@ import 'package:butlery/models/user_profile.dart' as model;
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
-import 'package:butlery/core/constants/app_strings.dart';
+
 import 'package:butlery/services/user_service.dart' as user_svc;
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -58,7 +58,7 @@ class FriendsManagementOperations extends BaseService {
 
       if (ValidationUtils.isNullOrEmpty(currentUserId) ||
           ValidationUtils.isNullOrEmpty(currentUserDisplayName)) {
-        throw Exception(AppStrings.authenticationError);
+        throw Exception('Autentiseringsfel. Logga in igen.');
       }
 
       // Validate not sending to self

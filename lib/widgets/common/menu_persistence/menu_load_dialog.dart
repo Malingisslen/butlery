@@ -7,30 +7,45 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/menu/menu_template_browser.dart';
 
-/// Bottom sheet for loading a saved menu
-/// This bottom sheet allows users to browse and load their saved menus,
-/// with options to load, mark as modified, or delete menus.
+/// Bottom sheet for loading a saved menu or template.
+/// Provides two tabs: saved menus and templates.
+/// Templates pre-fill the prompt with category structure when selected.
 class LoadMenuBottomSheet extends StatefulWidget {
   final MenuViewModel viewModel;
+
+  /// Called with the prompt string when a template is selected.
+  /// If null, template tab navigates to a separate template browser bottom sheet.
+  final ValueChanged<String>? onTemplateSelected;
 
   const LoadMenuBottomSheet({
     super.key,
     required this.viewModel,
+    this.onTemplateSelected,
   });
 
   @override
   State<LoadMenuBottomSheet> createState() => _LoadMenuBottomSheetState();
 }
 
-class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
+class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet>
+    with SingleTickerProviderStateMixin {
   List<dynamic> _savedMenus = [];
   bool _isLoading = false;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _loadSavedMenus();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadSavedMenus() async {
@@ -41,8 +56,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
     }
 
     try {
-      // FIXED: Use actual ViewModel saved menus
-      await widget.viewModel.refreshSavedMenus(); // Ensure menus are loaded
+      await widget.viewModel.refreshSavedMenus();
 
       if (mounted) {
         setState(() {
@@ -88,7 +102,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
             ),
           ),
 
-          // Title
+          // Title row with close button
           Padding(
             padding:
                 const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
@@ -113,17 +127,37 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
             ),
           ),
 
-          const Divider(height: AppDimensions.spacingL),
+          // Tab bar for saved menus vs templates
+          TabBar(
+            controller: _tabController,
+            tabs: [
+              Tab(text: context.l10n.menuTemplateSavedMenus),
+              Tab(text: context.l10n.menuTemplateTemplates),
+            ],
+          ),
 
-          // Content
+          // Tab content
           Flexible(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : _savedMenus.isEmpty
-                    ? _buildEmptyState()
-                    : _buildMenuList(),
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // Tab 1: Saved menus
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _savedMenus.isEmpty
+                        ? _buildEmptyState()
+                        : _buildMenuList(),
+
+                // Tab 2: Templates
+                MenuTemplateBrowser(
+                  viewModel: widget.viewModel,
+                  onTemplateSelected: (prompt) {
+                    Navigator.pop(context);
+                    widget.onTemplateSelected?.call(prompt);
+                  },
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -233,7 +267,6 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
 
   Future<void> _loadMenu(dynamic menu) async {
     try {
-      // FIXED: Use actual ViewModel load logic
       final success = await widget.viewModel.loadSavedMenu(menu.key);
 
       if (mounted) {
@@ -291,7 +324,6 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
 
     if (shouldDelete == true) {
       try {
-        // FIXED: Use actual ViewModel delete logic
         final success = await widget.viewModel.deleteSavedMenu(menu.key);
 
         if (mounted) {
@@ -327,13 +359,5 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
         }
       }
     }
-  }
-
-  @override
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions
-    // Dispose of resources
-    super.dispose();
   }
 }

@@ -216,6 +216,24 @@ class CollaborativeMenuOperations {
     return templateId;
   }
 
+  /// Get user's saved menu templates
+  Future<List<Map<String, dynamic>>> getUserMenuTemplates() async {
+    return await _repository.getUserMenuTemplates();
+  }
+
+  /// Delete a menu template
+  Future<bool> deleteMenuTemplate(String templateId) async {
+    final result = await _repository.deleteMenuTemplate(templateId);
+    if (result) {
+      // Remove from local cache
+      final userId = ServiceLocator.get<PermissionService>().currentUserId;
+      if (userId != null) {
+        _menuTemplates[userId]?.remove(templateId);
+      }
+    }
+    return result;
+  }
+
   /// Create menu from template
   Future<String?> createMenuFromTemplate({
     required String templateId,

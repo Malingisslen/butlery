@@ -150,8 +150,8 @@ void main() {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       // Set up dotenv for testing
-      dotenv.testLoad(
-          fileInput:
+      dotenv.loadFromString(
+          envString:
               'OCR_API_KEY=test-api-key\nOCR_API_URL=https://api.ocr.space/parse/image');
       registerFallbackValue(ImageSource.camera);
       registerFallbackValue(RecipeFactory.build());

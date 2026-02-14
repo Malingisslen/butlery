@@ -9,6 +9,8 @@ import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/core/router/app_router.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -272,7 +274,7 @@ class SharedContentActions {
               SnackBar(
                 content: Text(context.l10n.sharedJoinedButCouldNotNavigate),
                 backgroundColor: AppColors.warning,
-                duration: Duration(seconds: 5),
+                duration: const Duration(seconds: 5),
               ),
             );
           }
@@ -350,6 +352,162 @@ class SharedContentActions {
           SnackBar(
             content: Text(viewModel.shoppingViewModel.error ??
                 context.l10n.sharedCouldNotHideShoppingList),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Unshare a recipe - removes it from all groups it was shared with
+  static Future<void> unshareRecipe(
+    BuildContext context,
+    SharedRecipe sharedRecipe,
+  ) async {
+    final confirmed = await CommonDialogActions.showActionConfirmation(
+      context: context,
+      title: context.l10n.unshareRecipeTitle,
+      message: context.l10n.unshareRecipeConfirm(sharedRecipe.recipeTitle),
+      confirmText: context.l10n.unshareButton,
+      icon: Icons.link_off,
+      isDangerous: true,
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+      final success = await friendsService.groupSharing
+          .removeContentFromAllGroups(contentId: sharedRecipe.id);
+
+      if (!context.mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text(context.l10n.unshareSuccess(sharedRecipe.recipeTitle)),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.unshareFailed),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to unshare recipe', e);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.unshareFailed),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Unshare a menu - removes it from all groups it was shared with
+  static Future<void> unshareMenu(
+    BuildContext context,
+    SharedMenu sharedMenu,
+  ) async {
+    final confirmed = await CommonDialogActions.showActionConfirmation(
+      context: context,
+      title: context.l10n.unshareMenuTitle,
+      message: context.l10n.unshareMenuConfirm(sharedMenu.menuTitle),
+      confirmText: context.l10n.unshareButton,
+      icon: Icons.link_off,
+      isDangerous: true,
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+      final success = await friendsService.groupSharing
+          .removeContentFromAllGroups(contentId: sharedMenu.id);
+
+      if (!context.mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.unshareSuccess(sharedMenu.menuTitle)),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.unshareFailed),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to unshare menu', e);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.unshareFailed),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Unshare a shopping list - removes it from all groups it was shared with
+  static Future<void> unshareShoppingList(
+    BuildContext context,
+    SharedShoppingList sharedShoppingList,
+  ) async {
+    final confirmed = await CommonDialogActions.showActionConfirmation(
+      context: context,
+      title: context.l10n.unshareShoppingListTitle,
+      message:
+          context.l10n.unshareShoppingListConfirm(sharedShoppingList.listName),
+      confirmText: context.l10n.unshareButton,
+      icon: Icons.link_off,
+      isDangerous: true,
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+      final success = await friendsService.groupSharing
+          .removeContentFromAllGroups(contentId: sharedShoppingList.id);
+
+      if (!context.mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text(context.l10n.unshareSuccess(sharedShoppingList.listName)),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.unshareFailed),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to unshare shopping list', e);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.unshareFailed),
             backgroundColor: AppColors.error,
           ),
         );

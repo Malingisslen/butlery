@@ -130,12 +130,16 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   List<Widget> _buildHeaderActions(
       BuildContext context, MenuViewModel viewModel) {
     return [
-      // Load menu button
+      // Load menu / template button
       IconButton(
         icon: const Icon(Icons.folder_open, color: AppColors.headerForeground),
         onPressed: () => VeckomenyDialogs.showLoadMenuBottomSheet(
           context,
           viewModel: viewModel,
+          onTemplateSelected: (prompt) {
+            _promptController.text = prompt;
+            setState(() {});
+          },
         ),
         tooltip: context.l10n.menuLoadSaved,
       ),

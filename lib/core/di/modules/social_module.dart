@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
@@ -119,7 +120,9 @@ class SocialModule implements DIModule {
       // Social recipe repository
       container.registerSingleton<SocialRecipeRepository>(
         FirebaseSocialRecipeRepository(
-            authRepository: container<AuthRepository>()),
+          authRepository: container<AuthRepository>(),
+          auth: FirebaseAuth.instance,
+        ),
       );
 
       // Phase 1 shared content repositories (Issue #014)

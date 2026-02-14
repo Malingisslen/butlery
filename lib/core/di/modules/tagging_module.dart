@@ -15,6 +15,7 @@ import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
 
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_ingredient_repository.dart';
@@ -74,7 +75,9 @@ class TaggingModule implements DIModule {
     try {
       // Tag configuration service with Firebase + SharedPreferences caching
       container.registerLazySingleton<TagConfigService>(
-        () => TagConfigService(),
+        () => TagConfigService(
+          firestore: container<FirestoreRepository>().firestore,
+        ),
       );
 
       // Global ingredient repository with in-memory caching

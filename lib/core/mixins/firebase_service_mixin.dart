@@ -668,7 +668,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   /// Enable/disable Firebase persistence
   Future<void> configureFirebasePersistence({
     bool enablePersistence = true,
-    int cacheSizeBytes = Settings.CACHE_SIZE_UNLIMITED,
+    int cacheSizeBytes = 100 * 1024 * 1024, // 100 MB default
   }) async {
     try {
       firestore.settings = Settings(

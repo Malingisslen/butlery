@@ -217,6 +217,10 @@ class RecipeCore with JsonSerializableMixin {
   /// Null for recipes that haven't been evaluated by the rule engine.
   int? personalTagVersion;
 
+  /// Whether this recipe is marked as a favorite by the user.
+  /// Simple boolean flag for quick filtering in recipe list.
+  bool isFavorite;
+
   /// In-memory status of data integrity verification.
   /// Set during deserialization based on checksum validation.
   /// Not persisted to Firestore - tracked silently for analytics.
@@ -290,6 +294,7 @@ class RecipeCore with JsonSerializableMixin {
     this.tagResult,
     this.tagOverrides,
     this.personalTagVersion,
+    this.isFavorite = false,
     this.dataIntegrityStatus = DataIntegrityStatus.unverified,
   })  : id = id ?? const Uuid().v4(),
         imageUrls = imageUrls ?? [],
@@ -325,6 +330,7 @@ class RecipeCore with JsonSerializableMixin {
     TagResult? tagResult,
     TagOverrides? tagOverrides,
     int? personalTagVersion,
+    bool? isFavorite,
     DataIntegrityStatus? dataIntegrityStatus,
   }) {
     final newTitle = title ?? this.title;
@@ -377,6 +383,7 @@ class RecipeCore with JsonSerializableMixin {
       tagResult: tagResult ?? this.tagResult,
       tagOverrides: tagOverrides ?? this.tagOverrides,
       personalTagVersion: personalTagVersion ?? this.personalTagVersion,
+      isFavorite: isFavorite ?? this.isFavorite,
       dataIntegrityStatus: newIntegrityStatus,
     );
   }
@@ -425,6 +432,7 @@ class RecipeCore with JsonSerializableMixin {
         'tagResult': tagResult?.toJson(),
         'tagOverrides': tagOverrides?.toJson(),
         'personalTagVersion': personalTagVersion,
+        'isFavorite': isFavorite,
       };
 
   Map<String, dynamic> toFirestore() => {
@@ -457,6 +465,7 @@ class RecipeCore with JsonSerializableMixin {
         'tagResult': tagResult?.toFirestore(),
         'tagOverrides': tagOverrides?.toJson(),
         'personalTagVersion': personalTagVersion,
+        'isFavorite': isFavorite,
       };
 
   factory RecipeCore.fromJson(Map<String, dynamic> json) {
@@ -531,6 +540,7 @@ class RecipeCore with JsonSerializableMixin {
       tagResult: _parseTagResult(json['tagResult']),
       tagOverrides: _parseTagOverrides(json['tagOverrides']),
       personalTagVersion: json['personalTagVersion'] as int?,
+      isFavorite: (json['isFavorite'] as bool?) ?? false,
       dataIntegrityStatus: integrityStatus,
     );
   }
@@ -689,6 +699,8 @@ class RecipeCore with JsonSerializableMixin {
       tagOverrides: _parseTagOverrides(data['tagOverrides']),
       personalTagVersion:
           utils.SerializationUtils.safeNullableInt(data, 'personalTagVersion'),
+      isFavorite: utils.SerializationUtils.safeBool(data, 'isFavorite',
+          defaultValue: false),
       dataIntegrityStatus: integrityStatus,
     );
   }
@@ -889,6 +901,7 @@ class Recipe {
   String? get createdBy => core.createdBy;
   bool get isPublic => core.isPublic;
   DateTime? get lastCookedAt => core.lastCookedAt;
+  bool get isFavorite => core.isFavorite;
 
   // Helper getters
   bool get hasImages => core.hasImages;
@@ -1119,6 +1132,7 @@ class Recipe {
     TagOverrides? tagOverrides,
     TagResult? tagResult,
     int? personalTagVersion,
+    bool? isFavorite,
   }) {
     return Recipe(
       core: core.copyWith(
@@ -1141,6 +1155,7 @@ class Recipe {
         tagOverrides: tagOverrides,
         tagResult: tagResult,
         personalTagVersion: personalTagVersion,
+        isFavorite: isFavorite,
         updatedAt: DateTime.now(),
       ),
       type: type ?? this.type,

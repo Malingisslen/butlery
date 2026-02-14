@@ -314,6 +314,10 @@ class SocialRecipeOperations {
     );
   }
 
+  Future<bool> removeRating(String recipeId) async {
+    return await _socialStats.removeRating(recipeId);
+  }
+
   Future<Map<String, dynamic>> getRecipeStats(String recipeId) async {
     return await _socialStats.getRecipeStats(recipeId);
   }

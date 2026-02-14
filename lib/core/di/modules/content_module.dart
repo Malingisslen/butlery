@@ -383,13 +383,12 @@ class ContentModule implements DIModule {
       final unifiedRecipeService = container<UnifiedRecipeService>();
       await unifiedRecipeService.initialize();
 
-      // Initialize UnifiedMenuService
-      final unifiedMenuService = container<UnifiedMenuService>();
-      await unifiedMenuService.initialize();
-
-      // Initialize RecipeParserService (local cache + site config seeding)
-      final recipeParserService = container<RecipeParserService>();
-      await recipeParserService.init();
+      // Initialize UnifiedMenuService and RecipeParserService in parallel
+      // (both are independent after OfflineService + UnifiedRecipeService)
+      await Future.wait([
+        container<UnifiedMenuService>().initialize(),
+        container<RecipeParserService>().init(),
+      ]);
 
       // Validate other services are accessible (no explicit initialization needed)
       final services = [

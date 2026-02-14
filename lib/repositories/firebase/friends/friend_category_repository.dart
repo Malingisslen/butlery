@@ -444,10 +444,6 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     );
   }
 
-  // =========================================================================
-  // Hybrid Member Access (Inline + Subcollection)
-  // =========================================================================
-
   /// Get member IDs for a category using hybrid access.
   /// Returns from subcollection if usesSubcollectionMembers, otherwise from inline array.
   Future<List<String>> getCategoryMemberIds(

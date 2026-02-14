@@ -6,7 +6,12 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
@@ -157,5 +162,242 @@ class ShoppingListOperations {
         onError(context.l10n.shoppingCouldNotDeleteList);
       }
     }
+  }
+
+  /// Shows friend picker dialog for converting a personal list to collaborative.
+  /// Loads available friends, lets the user select members, then calls the
+  /// backend conversion operation.
+  static Future<void> showConvertToCollaborativeDialog(
+    BuildContext context,
+    UnifiedShoppingList list,
+    Function(String) onSuccess,
+    Function(String) onError,
+  ) async {
+    try {
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+      await friendsService.initialize();
+      final availableFriends = friendsService.friends;
+
+      if (availableFriends.isEmpty) {
+        if (context.mounted) {
+          onError(context.l10n.shoppingNoFriends);
+        }
+        return;
+      }
+
+      if (!context.mounted) return;
+
+      final result = await showDialog<_ConvertToCollaborativeResult>(
+        context: context,
+        builder: (context) => _ConvertToCollaborativeDialog(
+          friends: availableFriends,
+        ),
+      );
+
+      if (result == null || result.selectedFriends.isEmpty) return;
+
+      final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
+      final memberIds = result.selectedFriends.map((f) => f.uid).toList();
+      final memberDisplayNames = {
+        for (final f in result.selectedFriends) f.uid: f.displayName,
+      };
+
+      final newListId =
+          await shoppingService.collaborative.convertPersonalToCollaborative(
+        personalListId: list.id,
+        memberIds: memberIds,
+        memberDisplayNames: memberDisplayNames,
+        description: result.description,
+      );
+
+      if (newListId != null && context.mounted) {
+        onSuccess(context.l10n.shoppingConvertedToCollaborative);
+      } else if (context.mounted) {
+        onError(context.l10n.shoppingConvertError);
+      }
+    } catch (e) {
+      AppLogger.error('Error converting to collaborative: $e');
+      if (context.mounted) {
+        onError(context.l10n.shoppingConvertError);
+      }
+    }
+  }
+
+  /// Shows confirmation dialog for converting a collaborative list to personal.
+  /// Warns that collaborators will lose access.
+  static Future<void> showConvertToPersonalDialog(
+    BuildContext context,
+    UnifiedShoppingList list,
+    Function(String) onSuccess,
+    Function(String) onError,
+  ) async {
+    final confirmed = await DialogFactory.showConfirmation(
+      context,
+      title: context.l10n.shoppingConvertToPersonalTitle,
+      message: context.l10n.shoppingConvertToPersonalWarning,
+      confirmText: context.l10n.shoppingConvertToPersonal,
+      isDangerous: true,
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
+      final newListId = await shoppingService.collaborative
+          .convertCollaborativeToPersonal(list.id);
+
+      if (newListId != null && context.mounted) {
+        onSuccess(context.l10n.shoppingConvertedToPersonal);
+      } else if (context.mounted) {
+        onError(context.l10n.shoppingConvertError);
+      }
+    } catch (e) {
+      AppLogger.error('Error converting to personal: $e');
+      if (context.mounted) {
+        onError(context.l10n.shoppingConvertError);
+      }
+    }
+  }
+}
+
+/// Result from the convert-to-collaborative dialog
+class _ConvertToCollaborativeResult {
+  final List<UserProfile> selectedFriends;
+  final String? description;
+
+  _ConvertToCollaborativeResult({
+    required this.selectedFriends,
+    this.description,
+  });
+}
+
+/// Stateful dialog for selecting friends when converting to collaborative list
+class _ConvertToCollaborativeDialog extends StatefulWidget {
+  final List<UserProfile> friends;
+
+  const _ConvertToCollaborativeDialog({required this.friends});
+
+  @override
+  State<_ConvertToCollaborativeDialog> createState() =>
+      _ConvertToCollaborativeDialogState();
+}
+
+class _ConvertToCollaborativeDialogState
+    extends State<_ConvertToCollaborativeDialog> {
+  final Set<String> _selectedIds = {};
+  final TextEditingController _descriptionController = TextEditingController();
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(context.l10n.shoppingConvertToCollaborativeTitle),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              context.l10n.shoppingConvertToCollaborativeDescription,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textMedium,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingM),
+            // Friend list with checkboxes
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: widget.friends.length,
+                itemBuilder: (context, index) {
+                  final friend = widget.friends[index];
+                  final isSelected = _selectedIds.contains(friend.uid);
+                  return CheckboxListTile(
+                    value: isSelected,
+                    onChanged: (checked) {
+                      setState(() {
+                        if (checked == true) {
+                          _selectedIds.add(friend.uid);
+                        } else {
+                          _selectedIds.remove(friend.uid);
+                        }
+                      });
+                    },
+                    title: Text(
+                      friend.displayName,
+                      style: AppTextStyles.contentLabel,
+                    ),
+                    subtitle: friend.email.isNotEmpty
+                        ? Text(
+                            friend.email,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textMedium,
+                            ),
+                          )
+                        : null,
+                    secondary: CircleAvatar(
+                      backgroundColor: AppColors.forestGreen,
+                      child: Text(
+                        friend.displayName.isNotEmpty
+                            ? friend.displayName[0].toUpperCase()
+                            : '?',
+                        style: AppTextStyles.contentLabel.copyWith(
+                          color: AppColors.cardWhite,
+                        ),
+                      ),
+                    ),
+                    controlAffinity: ListTileControlAffinity.trailing,
+                    activeColor: AppColors.forestGreen,
+                    contentPadding: EdgeInsets.zero,
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingM),
+            // Optional description field
+            StyledInput(
+              controller: _descriptionController,
+              label: context.l10n.shoppingDescriptionLabel,
+              maxLength: 200,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        ActionButtons.secondaryButton(
+          context,
+          label: context.l10n.commonCancel,
+          onPressed: () => Navigator.pop(context),
+        ),
+        ActionButtons.primaryButton(
+          context,
+          label: context.l10n.shoppingConvertToCollaborative,
+          onPressed: _selectedIds.isEmpty
+              ? null
+              : () {
+                  final selected = widget.friends
+                      .where((f) => _selectedIds.contains(f.uid))
+                      .toList();
+                  final description =
+                      _descriptionController.text.trim().isNotEmpty
+                          ? _descriptionController.text.trim()
+                          : null;
+                  Navigator.pop(
+                    context,
+                    _ConvertToCollaborativeResult(
+                      selectedFriends: selected,
+                      description: description,
+                    ),
+                  );
+                },
+        ),
+      ],
+    );
   }
 }

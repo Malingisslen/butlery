@@ -5174,5 +5174,98 @@
   },
   "unshareFailed": "Could not stop sharing. Try again.",
   "favoritesAdd": "Add to favorites",
-  "favoritesRemove": "Remove from favorites"
+  "favoritesRemove": "Remove from favorites",
+
+  "menuCommentsTitle": "Comments",
+  "menuCommentsCount": "{count} comments",
+  "@menuCommentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuNoCommentsYet": "No comments yet",
+  "menuBeFirstToComment": "Be the first to comment on this menu!",
+  "menuLoadingComments": "Loading comments...",
+  "menuWriteComment": "Write a comment about the menu...",
+  "menuCommentPostedSuccess": "Comment posted!",
+  "menuCommentPostFailed": "Could not post comment",
+  "menuCommentDeleteFailed": "Could not delete comment",
+  "menuMustBeLoggedInToComment": "You must be logged in to comment",
+  "menuRatingTitle": "Rating",
+  "menuAverageRating": "Average rating: {rating}",
+  "@menuAverageRating": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "menuRatingCount": "{count} ratings",
+  "@menuRatingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuNoRatingsYet": "No ratings yet",
+  "menuTapToRate": "Tap to rate",
+  "menuYourRating": "Your rating",
+  "menuRatingSaved": "Rating saved!",
+  "menuRatingFailed": "Could not save rating",
+  "menuRemoveRating": "Remove rating",
+  "menuMustBeLoggedInToRate": "You must be logged in to rate",
+  "menuTemplateSaveAsTemplate": "Save as template",
+  "menuTemplateSaveAsTemplateDescription": "Saves the menu's category structure as a reusable template",
+  "menuTemplateName": "Template name",
+  "menuTemplateNameHint": "E.g. Weekday family menu",
+  "menuTemplateNameRequired": "Template name required",
+  "menuTemplateDescription": "Description (optional)",
+  "menuTemplateDescriptionHint": "E.g. Perfect for weekdays with kids",
+  "menuTemplateSavedSuccess": "Template \"{name}\" saved!",
+  "@menuTemplateSavedSuccess": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "menuTemplateSaveFailed": "Could not save template",
+  "menuTemplateLoadTemplate": "Load template",
+  "menuTemplateNoTemplates": "No templates",
+  "menuTemplateNoTemplatesDescription": "You have no saved menu templates. Save a menu as a template to reuse the category structure.",
+  "menuTemplateBrowseTitle": "Menu templates",
+  "menuTemplateCategories": "{count} categories",
+  "@menuTemplateCategories": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuTemplateRecipes": "{count} recipes",
+  "@menuTemplateRecipes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuTemplateUsedCount": "Used {count} times",
+  "@menuTemplateUsedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "menuTemplateUseTemplate": "Use template",
+  "menuTemplateDeleteTitle": "Delete template",
+  "menuTemplateDeleteConfirmation": "Are you sure you want to delete this template?",
+  "menuTemplateDeletedSuccess": "Template deleted",
+  "menuTemplateDeleteFailed": "Could not delete template",
+  "menuTemplateSavedMenus": "Saved menus",
+  "menuTemplateTemplates": "Templates"
 }

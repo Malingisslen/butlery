@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 // ViewModel integration for shopping state management
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
 
 // Theme and utility components
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -106,6 +107,9 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                       () => _uncheckAllItems(viewModel),
                       () => _showRenameListDialog(viewModel),
                       () => _showDeleteListConfirmation(viewModel),
+                      onConvertList: _canConvertActiveList(viewModel)
+                          ? () => _convertActiveList(viewModel)
+                          : null,
                     ),
 
                     // Main shopping list content with item management
@@ -309,6 +313,47 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
       _showSuccessSnackBar,
       _showErrorSnackBar,
     );
+  }
+
+  /// Whether the current user can convert the active list.
+  /// Personal lists owned by the user can become collaborative.
+  /// Collaborative lists owned by the user can become personal.
+  bool _canConvertActiveList(UnifiedShoppingViewModel viewModel) {
+    final list = viewModel.activeList;
+    if (list == null) return false;
+    final currentUserId = viewModel.currentUserId;
+    if (currentUserId == null) return false;
+    // Only owner can convert
+    if (list.ownerId != currentUserId) return false;
+    // Templates cannot be converted
+    if (list.type == ListType.template) return false;
+    return true;
+  }
+
+  /// Dispatches to the appropriate conversion dialog based on current list type
+  Future<void> _convertActiveList(UnifiedShoppingViewModel viewModel) async {
+    final list = viewModel.activeList;
+    if (list == null) return;
+
+    if (list.isPersonal) {
+      await ShoppingDialogs.showConvertToCollaborativeDialog(
+        context,
+        list,
+        _showSuccessSnackBar,
+        _showErrorSnackBar,
+      );
+      // Reload lists after conversion
+      await viewModel.loadLists();
+    } else if (list.isCollaborative) {
+      await ShoppingDialogs.showConvertToPersonalDialog(
+        context,
+        list,
+        _showSuccessSnackBar,
+        _showErrorSnackBar,
+      );
+      // Reload lists after conversion
+      await viewModel.loadLists();
+    }
   }
 
   void _showErrorSnackBar(String message) {
