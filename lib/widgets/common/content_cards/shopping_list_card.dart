@@ -1,6 +1,7 @@
 // lib/widgets/common/content_cards/shopping_list_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -48,13 +49,17 @@ class ShoppingListCard extends StatelessWidget {
           elevation: AppDimensions.elevationMedium,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           color: AppColors.backgroundLight,
-          child: InkWell(
-            onTap: onTap,
-            onLongPress: onLongPress,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            child: Padding(
-              padding: padding ?? _getDefaultPadding(),
-              child: _buildContent(context),
+          child: Semantics(
+            label: context.l10n.a11yShoppingList(shoppingList.name),
+            button: true,
+            child: InkWell(
+              onTap: onTap,
+              onLongPress: onLongPress,
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              child: Padding(
+                padding: padding ?? _getDefaultPadding(),
+                child: _buildContent(context),
+              ),
             ),
           ),
         ),
@@ -169,13 +174,13 @@ class ShoppingListCard extends StatelessWidget {
 
     final metadata = <String>[];
     if (totalItems > 0) {
-      metadata.add('$totalItems föremål');
+      metadata.add('$totalItems ${context.l10n.shoppingItems}');
     }
     if (completedItems > 0) {
-      metadata.add('$completedItems slutförda');
+      metadata.add(context.l10n.shoppingCardCompleted(completedItems));
     }
     if (createdDate != null) {
-      metadata.add(_formatDate(createdDate));
+      metadata.add(_formatDate(context, createdDate));
     }
 
     if (metadata.isEmpty) {
@@ -207,7 +212,7 @@ class ShoppingListCard extends StatelessWidget {
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
-              'Inga föremål i listan',
+              context.l10n.shoppingCardNoItems,
               style: AppTextStyles.metadataEmphasized,
             ),
           ],
@@ -219,7 +224,7 @@ class ShoppingListCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Föremål på listan:',
+          context.l10n.shoppingCardItemsOnList,
           style: AppTextStyles.labelMediumMuted,
         ),
         const SizedBox(height: AppDimensions.spacingS),
@@ -259,7 +264,7 @@ class ShoppingListCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
             child: Text(
-              '+ ${items.length - 4} fler föremål',
+              context.l10n.shoppingCardMoreItems(items.length - 4),
               style: AppTextStyles.metadataEmphasized,
             ),
           ),
@@ -299,7 +304,9 @@ class ShoppingListCard extends StatelessWidget {
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Text(
-            memberCount > 0 ? 'Delad med $memberCount personer' : 'Delad lista',
+            memberCount > 0
+                ? context.l10n.shoppingCardSharedWithCount(memberCount)
+                : context.l10n.shoppingCardSharedList,
             style: AppTextStyles.linkSmall,
           ),
         ],
@@ -362,7 +369,9 @@ class ShoppingListCard extends StatelessWidget {
           ),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
-            isComplete ? 'Klar' : '${(completionPercentage * 100).round()}%',
+            isComplete
+                ? context.l10n.shoppingCardComplete
+                : '${(completionPercentage * 100).round()}%',
             style: AppTextStyles.labelSmall.copyWith(
               color: isComplete ? AppColors.success : AppColors.warning,
             ),
@@ -411,20 +420,20 @@ class ShoppingListCard extends StatelessWidget {
     return shoppingList.memberCount;
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(BuildContext context, DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
-      return 'Idag';
+      return context.l10n.dateToday;
     } else if (difference.inDays == 1) {
-      return 'Igår';
+      return context.l10n.dateYesterday;
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} dagar sedan';
+      return context.l10n.dateDaysAgo(difference.inDays);
     } else if (difference.inDays < 30) {
-      return '${(difference.inDays / 7).round()} veckor sedan';
+      return context.l10n.dateWeeksAgo((difference.inDays / 7).round());
     } else {
-      return '${(difference.inDays / 30).round()} månader sedan';
+      return context.l10n.dateMonthsAgo((difference.inDays / 30).round());
     }
   }
 

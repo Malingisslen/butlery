@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 // Focused components (Phase 9 refactoring)
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_header.dart';
@@ -97,7 +98,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
       isLoading: viewModel.isLoading,
       error: viewModel.error,
       data: viewModel.currentList,
-      loadingMessage: 'Laddar gemensam lista...',
+      loadingMessage: context.l10n.collaborativeLoadingSharedList,
       emptyBuilder: (context) => _buildNotFoundState(context),
       builder: (context, shoppingList) => _buildListContent(context, viewModel),
       onErrorRetry: () {
@@ -121,12 +122,12 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
             ),
             const SizedBox(height: AppDimensions.spacingXl),
             Text(
-              'Lista hittades inte',
+              context.l10n.collaborativeListNotFound,
               style: AppTextStyles.headlineSmall,
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'Listan kanske har tagits bort eller så har du inte tillgång längre',
+              context.l10n.collaborativeListNoAccess,
               style: AppTextStyles.titleMedium,
               textAlign: TextAlign.center,
             ),
@@ -134,7 +135,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
             FilledButton.icon(
               onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.arrow_back),
-              label: const Text('Tillbaka'),
+              label: Text(context.l10n.commonBack),
             ),
           ],
         ),

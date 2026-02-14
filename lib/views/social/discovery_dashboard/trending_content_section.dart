@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Trending Content Section - Shows trending recipes, menus, shopping lists
 class TrendingContentSection {
@@ -22,16 +23,16 @@ class TrendingContentSection {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DiscoverySectionHeader(
-          title: 'Populärt just nu',
+          title: context.l10n.discoveryPopularNow,
           icon: Icons.trending_up,
           iconColor: AppColors.success,
-          actionLabel: 'Se allt',
+          actionLabel: context.l10n.discoverySeeAll,
           onActionPressed: () => _showAllTrending(context, viewModel),
           count: trendingRecipes.length,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         if (trendingRecipes.isEmpty)
-          _buildEmptyState()
+          _buildEmptyState(context)
         else
           SizedBox(
             height: AppDimensions.heightXLarge,
@@ -50,7 +51,7 @@ class TrendingContentSection {
     );
   }
 
-  static Widget _buildEmptyState() {
+  static Widget _buildEmptyState(BuildContext context) {
     return Container(
       height: AppDimensions.heightLarge,
       decoration: BoxDecoration(
@@ -73,7 +74,7 @@ class TrendingContentSection {
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'Laddar populärt innehåll...',
+              context.l10n.discoveryLoadingPopularContent,
               style: AppTextStyles.bodyMedium,
             ),
           ],
@@ -151,7 +152,8 @@ class TrendingContentSection {
                     const SizedBox(height: AppDimensions.spacingS),
                     if (recipe.socialData?.ownerDisplayName != null)
                       Text(
-                        'Av ${recipe.socialData!.ownerDisplayName}',
+                        context.l10n.discoveryByAuthor(
+                            recipe.socialData!.ownerDisplayName!),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.onSurface.withValues(
                               alpha: AppDimensions.opacityMediumDark),
@@ -187,7 +189,7 @@ class TrendingContentSection {
                                 AppDimensions.borderRadiusS),
                           ),
                           child: Text(
-                            'Populär',
+                            context.l10n.discoveryPopular,
                             style: AppTextStyles.labelSmall.copyWith(
                               color: AppColors.success,
                             ),
@@ -243,7 +245,7 @@ class TrendingContentSection {
       BuildContext context, DiscoveryDashboardViewModel viewModel) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Populärt innehåll'),
+        title: Text(context.l10n.discoveryPopularContent),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,
       ),
@@ -253,8 +255,8 @@ class TrendingContentSection {
           children: [
             // Extended trending recipes section
             if (viewModel.trendingRecipes.isNotEmpty) ...[
-              _buildSectionHeader(
-                  'Populära recept', viewModel.trendingRecipes.length),
+              _buildSectionHeader(context.l10n.discoveryPopularRecipes,
+                  viewModel.trendingRecipes.length),
               const SizedBox(height: AppDimensions.spacingS),
               ...viewModel.trendingRecipes.take(20).map(
                     (recipe) => Card(
@@ -278,8 +280,8 @@ class TrendingContentSection {
 
             // Extended trending menus section
             if (viewModel.trendingMenus.isNotEmpty) ...[
-              _buildSectionHeader(
-                  'Populära menyer', viewModel.trendingMenus.length),
+              _buildSectionHeader(context.l10n.discoveryPopularMenus,
+                  viewModel.trendingMenus.length),
               const SizedBox(height: AppDimensions.spacingS),
               ...viewModel.trendingMenus.take(10).map(
                     (menu) => Card(
@@ -288,7 +290,8 @@ class TrendingContentSection {
                       child: ListTile(
                         leading: const Icon(Icons.calendar_month),
                         title: Text(menu.menuTitle),
-                        subtitle: Text('${menu.totalRecipeCount} recept'),
+                        subtitle: Text(context.l10n
+                            .menuRecipeCount(menu.totalRecipeCount)),
                         trailing: const Icon(Icons.arrow_forward_ios),
                         onTap: () => Navigator.pushNamed(
                           context,
@@ -303,7 +306,7 @@ class TrendingContentSection {
 
             // Extended trending shopping lists section
             if (viewModel.trendingShoppingLists.isNotEmpty) ...[
-              _buildSectionHeader('Populära inköpslistor',
+              _buildSectionHeader(context.l10n.discoveryPopularShoppingLists,
                   viewModel.trendingShoppingLists.length),
               const SizedBox(height: AppDimensions.spacingS),
               ...viewModel.trendingShoppingLists.take(10).map(
@@ -313,7 +316,8 @@ class TrendingContentSection {
                       child: ListTile(
                         leading: const Icon(Icons.shopping_cart),
                         title: Text(list.name),
-                        subtitle: Text('${list.items.length} varor'),
+                        subtitle: Text(
+                            context.l10n.shoppingItemCount(list.items.length)),
                         trailing: const Icon(Icons.arrow_forward_ios),
                         onTap: () => Navigator.pushNamed(
                           context,

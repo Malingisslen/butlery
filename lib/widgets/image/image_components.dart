@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Shared image components and utilities
@@ -19,6 +20,7 @@ class ImageComponents {
     VoidCallback? onTap,
     Widget? placeholder,
     Widget? errorWidget,
+    BuildContext? context,
   }) {
     // Detect if it's a file path or URL
     if (_isFilePath(pathOrUrl)) {
@@ -30,6 +32,7 @@ class ImageComponents {
         onTap: onTap,
         placeholder: placeholder,
         errorWidget: errorWidget,
+        context: context,
       );
     } else {
       AppLogger.debug('🌍 ADAPTIVE_IMAGE: Displaying URL: $pathOrUrl');
@@ -40,6 +43,7 @@ class ImageComponents {
         onTap: onTap,
         placeholder: placeholder,
         errorWidget: errorWidget,
+        context: context,
       );
     }
   }
@@ -63,6 +67,7 @@ class ImageComponents {
     VoidCallback? onTap,
     Widget? placeholder,
     Widget? errorWidget,
+    BuildContext? context,
   }) {
     final dimensions = config.getDimensions();
     final file = File(filePath);
@@ -116,7 +121,7 @@ class ImageComponents {
     }
 
     if (onTap != null) {
-      image = _wrapWithTapHandler(image, onTap);
+      image = _wrapWithTapHandler(image, onTap, context: context);
     }
 
     return image;
@@ -130,6 +135,7 @@ class ImageComponents {
     VoidCallback? onTap,
     Widget? placeholder,
     Widget? errorWidget,
+    BuildContext? context,
   }) {
     final dimensions = config.getDimensions();
 
@@ -154,7 +160,7 @@ class ImageComponents {
     }
 
     if (onTap != null) {
-      image = _wrapWithTapHandler(image, onTap);
+      image = _wrapWithTapHandler(image, onTap, context: context);
     }
 
     return image;
@@ -327,22 +333,26 @@ class ImageComponents {
         mainAxisAlignment: MainAxisAlignment.center,
         children: List.generate(
           totalImages,
-          (index) => GestureDetector(
-            onTap: onDotTap != null ? () => onDotTap(index) : null,
-            child: Container(
-              width: AppDimensions.dotSize,
-              height: AppDimensions.dotSize,
-              margin: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingXs),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: index == currentIndex
-                    ? AppColors.forestGreen
-                    : AppColors.cardWhite
-                        .withValues(alpha: AppDimensions.opacityMediumDark),
-                border: Border.all(
-                  color: AppColors.divider,
-                  width: AppDimensions.strokeWidth05,
+          (index) => Semantics(
+            label: 'Bild ${index + 1}',
+            button: onDotTap != null,
+            child: GestureDetector(
+              onTap: onDotTap != null ? () => onDotTap(index) : null,
+              child: Container(
+                width: AppDimensions.dotSize,
+                height: AppDimensions.dotSize,
+                margin: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingXs),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: index == currentIndex
+                      ? AppColors.forestGreen
+                      : AppColors.cardWhite
+                          .withValues(alpha: AppDimensions.opacityMediumDark),
+                  border: Border.all(
+                    color: AppColors.divider,
+                    width: AppDimensions.strokeWidth05,
+                  ),
                 ),
               ),
             ),
@@ -386,10 +396,18 @@ class ImageComponents {
   }
 
   /// Wrap widget with tap handler
-  static Widget _wrapWithTapHandler(Widget child, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: child,
+  static Widget _wrapWithTapHandler(
+    Widget child,
+    VoidCallback onTap, {
+    BuildContext? context,
+  }) {
+    return Semantics(
+      label: context != null ? context.l10n.a11yShowImage : 'Show image',
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: child,
+      ),
     );
   }
 }

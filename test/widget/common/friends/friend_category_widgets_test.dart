@@ -337,8 +337,11 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.categoryStatistics(
-              categories: testCategories,
+            Builder(
+              builder: (context) => FriendCategoryWidgets.categoryStatistics(
+                context: context,
+                categories: testCategories,
+              ),
             ),
           ),
         );
@@ -352,12 +355,15 @@ void main() {
         // Act - Remove fixed dimensions to prevent layout overflow
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.categoryCard(
-              category: testCategories.first,
-              onTap: () {},
-              showMemberCount: true,
-              showDescription: true,
-              // Removed fixed width/height to allow natural sizing
+            Builder(
+              builder: (context) => FriendCategoryWidgets.categoryCard(
+                context: context,
+                category: testCategories.first,
+                onTap: () {},
+                showMemberCount: true,
+                showDescription: true,
+                // Removed fixed width/height to allow natural sizing
+              ),
             ),
           ),
         );
@@ -391,9 +397,12 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.categorySummaryRow(
-              categories: testCategories,
-              showTotalMembers: true,
+            Builder(
+              builder: (context) => FriendCategoryWidgets.categorySummaryRow(
+                context: context,
+                categories: testCategories,
+                showTotalMembers: true,
+              ),
             ),
           ),
         );
@@ -407,7 +416,11 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.emptyState(),
+            Builder(
+              builder: (context) => FriendCategoryWidgets.emptyState(
+                context: context,
+              ),
+            ),
           ),
         );
 
@@ -423,10 +436,13 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.emptyState(
-              title: 'Custom Empty Title',
-              subtitle: 'Custom Empty Subtitle',
-              onCreateCategory: () => callbackCalled = true,
+            Builder(
+              builder: (context) => FriendCategoryWidgets.emptyState(
+                context: context,
+                title: 'Custom Empty Title',
+                subtitle: 'Custom Empty Subtitle',
+                onCreateCategory: () => callbackCalled = true,
+              ),
             ),
           ),
         );
@@ -476,12 +492,16 @@ void main() {
         // Act - Remove fixed width to prevent CheckboxListTile overflow
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.categoryMultiSelectDropdown(
-              categories: testCategories,
-              selectedCategoryIds: testSelectedCategoryIds,
-              onCategoryToggled: (_) {},
-              hint: 'Custom Hint Text',
-              // Removed fixed width to allow natural sizing and prevent overflow
+            Builder(
+              builder: (context) =>
+                  FriendCategoryWidgets.categoryMultiSelectDropdown(
+                context: context,
+                categories: testCategories,
+                selectedCategoryIds: testSelectedCategoryIds,
+                onCategoryToggled: (_) {},
+                hint: 'Custom Hint Text',
+                // Removed fixed width to allow natural sizing and prevent overflow
+              ),
             ),
           ),
         );
@@ -570,9 +590,12 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.categoryCard(
-              category: testCategories.first,
-              onTap: () => tapped = true,
+            Builder(
+              builder: (context) => FriendCategoryWidgets.categoryCard(
+                context: context,
+                category: testCategories.first,
+                onTap: () => tapped = true,
+              ),
             ),
           ),
         );
@@ -646,10 +669,13 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.categoryCard(
-              category: categoryWithoutDescription,
-              onTap: () {},
-              showDescription: true,
+            Builder(
+              builder: (context) => FriendCategoryWidgets.categoryCard(
+                context: context,
+                category: categoryWithoutDescription,
+                onTap: () {},
+                showDescription: true,
+              ),
             ),
           ),
         );
@@ -731,14 +757,18 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            Column(
-              children: [
-                FriendCategoryWidgets.friendCategoryManager(
-                  selectedFriendIds: [],
-                  onSelectionChanged: (_) {},
-                ),
-                FriendCategoryWidgets.emptyState(),
-              ],
+            Builder(
+              builder: (context) => Column(
+                children: [
+                  FriendCategoryWidgets.friendCategoryManager(
+                    selectedFriendIds: [],
+                    onSelectionChanged: (_) {},
+                  ),
+                  FriendCategoryWidgets.emptyState(
+                    context: context,
+                  ),
+                ],
+              ),
             ),
           ),
         );

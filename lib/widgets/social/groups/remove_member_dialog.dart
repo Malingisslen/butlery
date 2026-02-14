@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/remove_member_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -34,7 +35,7 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
     );
 
     if (!success) {
-      throw Exception('Kunde inte ta bort medlem. Försök igen.');
+      throw Exception('Failed to remove member');
     }
 
     return true;
@@ -53,8 +54,8 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
               color: Theme.of(context).colorScheme.onSurface,
             ),
             children: [
-              const TextSpan(
-                text: 'Är du säker på att du vill ta bort ',
+              TextSpan(
+                text: context.l10n.groupRemoveMemberConfirmPrefix,
               ),
               TextSpan(
                 text: member.displayName,
@@ -62,8 +63,8 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
-              const TextSpan(
-                text: ' från gruppen ',
+              TextSpan(
+                text: context.l10n.groupRemoveMemberFromGroup,
               ),
               TextSpan(
                 text: '"${group.name}"',
@@ -81,9 +82,8 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
         const SizedBox(height: AppDimensions.spacingM),
 
         // Warning message
-        const WarningDisplayWidget(
-          warningMessage:
-              'Medlemmen kommer att förlora åtkomst till gruppens innehåll.',
+        WarningDisplayWidget(
+          warningMessage: context.l10n.groupRemoveMemberWarning,
         ),
       ],
     );
@@ -97,13 +97,16 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
       );
 
   @override
-  String get dialogTitle => 'Ta bort medlem';
+  String dialogTitleText(BuildContext context) =>
+      context.l10n.groupRemoveMember;
 
   @override
-  String get actionButtonText => 'Ta bort medlem';
+  String actionButtonLabel(BuildContext context) =>
+      context.l10n.groupRemoveMember;
 
   @override
-  String get loadingButtonText => 'Tar bort...';
+  String? loadingButtonLabel(BuildContext context) =>
+      context.l10n.commonDeleting;
 
   @override
   Widget get actionButtonIcon => const Icon(Icons.person_remove);

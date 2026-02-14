@@ -10,6 +10,7 @@ import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Main content area for shopping list.
 ///
@@ -31,21 +32,21 @@ class ShoppingListContent {
 
     if (viewModel.hasError) {
       return StateWidget.error(
-        message: viewModel.error ?? 'Okänt fel',
+        message: viewModel.error ?? context.l10n.commonUnknownError,
         onAction: () => viewModel.initialize(),
       );
     }
 
     if (viewModel.activeList == null) {
       return StateWidget.noShoppingList(
-        actionLabel: 'Skapa lista',
+        actionLabel: context.l10n.shoppingCreateList,
         onAction: onCreateList,
       );
     }
 
     if (!viewModel.hasItems) {
       return StateWidget.noShoppingList(
-        actionLabel: 'Lägg till vara',
+        actionLabel: context.l10n.shoppingAddItem,
         onAction: onAddItem,
       );
     }
@@ -71,7 +72,7 @@ class ShoppingListContent {
       // Completed items section
       if (viewModel.boughtItems > 0) ...[
         const SizedBox(height: AppDimensions.spacingLg),
-        _buildCompletedItemsHeader(viewModel),
+        _buildCompletedItemsHeader(context, viewModel),
         const SizedBox(height: AppDimensions.spacingSm),
         ..._buildCompletedItems(
             context, viewModel, onItemTap, onEditItem, onDeleteItem),
@@ -101,7 +102,9 @@ class ShoppingListContent {
 
     final categorizedItems = <String, List<UnifiedShoppingItem>>{};
     for (final item in pendingItems) {
-      final category = item.category.isEmpty ? 'Övrigt' : item.category;
+      final category = item.category.isEmpty
+          ? context.l10n.shoppingCategoryOther
+          : item.category;
       categorizedItems.putIfAbsent(category, () => []).add(item);
     }
 
@@ -131,7 +134,9 @@ class ShoppingListContent {
 
     final categorizedItems = <String, List<UnifiedShoppingItem>>{};
     for (final item in completedItems) {
-      final category = item.category.isEmpty ? 'Övrigt' : item.category;
+      final category = item.category.isEmpty
+          ? context.l10n.shoppingCategoryOther
+          : item.category;
       categorizedItems.putIfAbsent(category, () => []).add(item);
     }
 
@@ -253,7 +258,8 @@ class ShoppingListContent {
     }
   }
 
-  static Widget _buildCompletedItemsHeader(UnifiedShoppingViewModel viewModel) {
+  static Widget _buildCompletedItemsHeader(
+      BuildContext context, UnifiedShoppingViewModel viewModel) {
     return Row(
       children: [
         const Icon(
@@ -267,13 +273,14 @@ class ShoppingListContent {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Inhandlat',
+                context.l10n.shoppingPurchased,
                 style: AppTextStyles.bodyLargeBold.copyWith(
                   color: AppColors.forestGreen,
                 ),
               ),
               Text(
-                '${viewModel.boughtItems} av ${viewModel.totalItems} varor',
+                context.l10n.shoppingBoughtOfTotal(
+                    viewModel.boughtItems, viewModel.totalItems),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.forestGreen
                       .withValues(alpha: AppDimensions.opacityVeryDark),

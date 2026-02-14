@@ -6,6 +6,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Widget that loads a deferred module and displays the route once loaded
 class DeferredRouteLoader extends StatefulWidget {
@@ -107,10 +108,12 @@ class ModuleLoadingScreen extends StatelessWidget {
               strokeWidth: 3,
             ),
             const SizedBox(height: AppDimensions.spacingLg),
-            Text(
-              'Laddar...',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+            Builder(
+              builder: (context) => Text(
+                context.l10n.loadingGeneric,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
           ],
@@ -138,7 +141,9 @@ class ModuleLoadErrorScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.cream,
       appBar: AppBar(
-        title: const Text('Fel'),
+        title: Builder(
+          builder: (context) => Text(context.l10n.errorTitle),
+        ),
         backgroundColor: AppColors.cream,
       ),
       body: Center(
@@ -154,13 +159,13 @@ class ModuleLoadErrorScreen extends StatelessWidget {
               ),
               const SizedBox(height: AppDimensions.spacingXl),
               Text(
-                'Kunde inte ladda sidan',
+                context.l10n.errorCouldNotLoadPage,
                 style: AppTextStyles.headlineSmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppDimensions.spacingMd),
               Text(
-                'Ett fel uppstod vid laddning. Försök igen eller gå tillbaka.',
+                context.l10n.errorLoadingRetryOrGoBack,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -173,13 +178,13 @@ class ModuleLoadErrorScreen extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: onGoHome,
                     icon: const Icon(Icons.home),
-                    label: const Text('Till start'),
+                    label: Text(context.l10n.navigationGoHome),
                   ),
                   const SizedBox(width: AppDimensions.spacingMd),
                   ElevatedButton.icon(
                     onPressed: onRetry,
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Försök igen'),
+                    label: Text(context.l10n.commonRetry),
                   ),
                 ],
               ),

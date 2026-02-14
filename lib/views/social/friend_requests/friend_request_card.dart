@@ -17,6 +17,7 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Builds friend request card widgets for incoming and sent requests
 class FriendRequestCard {
@@ -97,7 +98,7 @@ class FriendRequestCard {
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          'vill bli vän',
+                          context.l10n.socialWantsToBeFriend,
                           style: AppTextStyles.bodyMedium.copyWith(
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
@@ -148,7 +149,7 @@ class FriendRequestCard {
                     Expanded(
                       child: ActionButtons.outlinedButton(
                         context,
-                        label: 'Avböj',
+                        label: context.l10n.socialDecline,
                         icon: Icons.close,
                         onPressed: viewModel.isLoading
                             ? null
@@ -158,7 +159,7 @@ class FriendRequestCard {
                     const SizedBox(width: AppDimensions.spacingL),
                     Expanded(
                       child: StyledButton.primary(
-                        text: 'Acceptera',
+                        text: context.l10n.commonAccept,
                         icon: const Icon(Icons.check),
                         onPressed: viewModel.isLoading
                             ? null
@@ -196,27 +197,27 @@ class FriendRequestCard {
       case FriendRequestStatus.pending:
         statusColor = AppColors.warning;
         statusIcon = Icons.schedule;
-        statusText = 'Väntande svar';
+        statusText = context.l10n.socialPendingResponse;
         break;
       case FriendRequestStatus.accepted:
         statusColor = AppColors.success;
         statusIcon = Icons.check_circle;
-        statusText = 'Accepterad';
+        statusText = context.l10n.socialAccepted;
         break;
       case FriendRequestStatus.rejected:
         statusColor = AppColors.error;
         statusIcon = Icons.cancel;
-        statusText = 'Avböjd';
+        statusText = context.l10n.socialDeclined;
         break;
       case FriendRequestStatus.expired:
         statusColor = AppColors.neutralMedium;
         statusIcon = Icons.timer_off;
-        statusText = 'Utgången';
+        statusText = context.l10n.socialExpired;
         break;
       default:
         statusColor = AppColors.neutralMedium;
         statusIcon = Icons.help;
-        statusText = 'Okänd status';
+        statusText = context.l10n.socialUnknownStatus;
     }
 
     return Card(
@@ -327,7 +328,7 @@ class FriendRequestCard {
                   onPressed: () =>
                       _cancelSentRequest(context, request, viewModel),
                   icon: const Icon(Icons.cancel, color: AppColors.error),
-                  tooltip: 'Avbryt förfrågan',
+                  tooltip: context.l10n.socialCancelRequest,
                 ),
             ],
           ),
@@ -346,8 +347,8 @@ class FriendRequestCard {
 
     if (success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vänskapsförfrågan accepterad! 🎉'),
+        SnackBar(
+          content: Text(context.l10n.socialFriendRequestAccepted),
           backgroundColor: AppColors.success,
         ),
       );
@@ -363,8 +364,8 @@ class FriendRequestCard {
 
     if (success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vänskapsförfrågan avböjd'),
+        SnackBar(
+          content: Text(context.l10n.socialFriendRequestDeclined),
           backgroundColor: AppColors.warning,
         ),
       );
@@ -380,8 +381,8 @@ class FriendRequestCard {
 
     if (success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Förfrågan avbruten'),
+        SnackBar(
+          content: Text(context.l10n.socialRequestCancelled),
           backgroundColor: AppColors.warning,
         ),
       );

@@ -8,6 +8,7 @@ import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/indicators/realtime_indicators.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Facade for navigation components. Delegates to specialized navigation modules.
 class NavigationComponents {
@@ -106,16 +107,16 @@ class NavigationComponents {
     BuildContext context, {
     required String title,
     required String message,
-    String confirmText = 'OK',
-    String cancelText = 'Avbryt',
+    String? confirmText,
+    String? cancelText,
     Color? confirmColor,
   }) async {
     return ConfirmationDialogs.showConfirmationDialog(
       context,
       title: title,
       message: message,
-      confirmText: confirmText,
-      cancelText: cancelText,
+      confirmText: confirmText ?? context.l10n.commonOk,
+      cancelText: cancelText ?? context.l10n.commonCancel,
       confirmColor: confirmColor,
     );
   }
@@ -125,15 +126,15 @@ class NavigationComponents {
     BuildContext context, {
     required String title,
     required String message,
-    String confirmText = 'Ta bort',
-    String cancelText = 'Avbryt',
+    String? confirmText,
+    String? cancelText,
   }) async {
     return ConfirmationDialogs.showDestructiveConfirmationDialog(
       context,
       title: title,
       message: message,
-      confirmText: confirmText,
-      cancelText: cancelText,
+      confirmText: confirmText ?? context.l10n.commonDelete,
+      cancelText: cancelText ?? context.l10n.commonCancel,
     );
   }
 
@@ -142,15 +143,15 @@ class NavigationComponents {
     BuildContext context, {
     required String title,
     required String message,
-    String confirmText = 'Fortsätt',
-    String cancelText = 'Avbryt',
+    String? confirmText,
+    String? cancelText,
   }) async {
     return ConfirmationDialogs.showLoadingConfirmationDialog(
       context,
       title: title,
       message: message,
-      confirmText: confirmText,
-      cancelText: cancelText,
+      confirmText: confirmText ?? context.l10n.commonContinue,
+      cancelText: cancelText ?? context.l10n.commonCancel,
     );
   }
 
@@ -161,7 +162,7 @@ class NavigationComponents {
     required List<T> items,
     required String Function(T) itemBuilder,
     String? message,
-    String cancelText = 'Avbryt',
+    String? cancelText,
   }) async {
     return ConfirmationDialogs.showListSelectionDialog<T>(
       context,
@@ -169,7 +170,7 @@ class NavigationComponents {
       items: items,
       itemBuilder: itemBuilder,
       message: message,
-      cancelText: cancelText,
+      cancelText: cancelText ?? context.l10n.commonCancel,
     );
   }
 
@@ -180,8 +181,8 @@ class NavigationComponents {
     String? message,
     String? initialValue,
     String? hintText,
-    String confirmText = 'OK',
-    String cancelText = 'Avbryt',
+    String? confirmText,
+    String? cancelText,
     bool isRequired = false,
     int? maxLength,
   }) async {
@@ -191,8 +192,8 @@ class NavigationComponents {
       message: message,
       initialValue: initialValue,
       hintText: hintText,
-      confirmText: confirmText,
-      cancelText: cancelText,
+      confirmText: confirmText ?? context.l10n.commonOk,
+      cancelText: cancelText ?? context.l10n.commonCancel,
       isRequired: isRequired,
       maxLength: maxLength,
     );

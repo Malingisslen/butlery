@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 
@@ -45,7 +44,7 @@ class ListScaffold<T> extends StatelessWidget {
     if (items.isEmpty) {
       return EmptyStateScaffold(
         title: title,
-        emptyMessage: emptyMessage ?? AppStrings.noItemsFound,
+        emptyMessage: emptyMessage ?? context.l10n.emptyNoItems,
         emptyIcon: emptyIcon,
         onAction: onAdd,
         actionText: onAdd != null ? context.l10n.commonAdd : null,
@@ -76,6 +75,7 @@ class ListScaffold<T> extends StatelessWidget {
           (onAdd != null
               ? FloatingActionButton(
                   onPressed: onAdd,
+                  tooltip: context.l10n.commonAdd,
                   child: const Icon(Icons.add),
                 )
               : null),

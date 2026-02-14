@@ -9,6 +9,7 @@ import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// SharedRecipeCard - Card for displaying shared recipes
 /// Displays shared recipe information with action buttons.
@@ -25,57 +26,61 @@ class SharedRecipeCard {
       elevation:
           isRead ? AppDimensions.elevationLow : AppDimensions.elevationMedium,
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        onTap: () {
-          if (!isRead) {
-            viewModel.recipeViewModel.markAsViewed(sharedRecipe);
-          }
-          // Use contentSnapshot which provides minimal recipe from denormalized fields
-          Navigator.pushNamed(
-            context,
-            Routes.receptDetalj,
-            arguments: sharedRecipe.contentSnapshot,
-          );
-        },
-        child: Container(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            border: !isRead
-                ? Border.all(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
-                  )
-                : null,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header med delningsinfo
-              _buildHeader(context, viewModel, sharedRecipe, isRead),
-              const SizedBox(height: AppDimensions.spacingS),
-
-              // Recept content - uses denormalized fields for V2 efficiency
-              _buildRecipeContent(context, sharedRecipe),
-
-              // Message från delaren
-              if (sharedRecipe.shareMessage?.isNotEmpty == true) ...[
+      child: Semantics(
+        label: context.l10n.a11ySharedRecipe(sharedRecipe.recipeTitle),
+        button: true,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          onTap: () {
+            if (!isRead) {
+              viewModel.recipeViewModel.markAsViewed(sharedRecipe);
+            }
+            // Use contentSnapshot which provides minimal recipe from denormalized fields
+            Navigator.pushNamed(
+              context,
+              Routes.receptDetalj,
+              arguments: sharedRecipe.contentSnapshot,
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              border: !isRead
+                  ? Border.all(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2,
+                    )
+                  : null,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header med delningsinfo
+                _buildHeader(context, viewModel, sharedRecipe, isRead),
                 const SizedBox(height: AppDimensions.spacingS),
-                _buildShareMessage(context, sharedRecipe.shareMessage!),
+
+                // Recept content - uses denormalized fields for V2 efficiency
+                _buildRecipeContent(context, sharedRecipe),
+
+                // Message från delaren
+                if (sharedRecipe.shareMessage?.isNotEmpty == true) ...[
+                  const SizedBox(height: AppDimensions.spacingS),
+                  _buildShareMessage(context, sharedRecipe.shareMessage!),
+                ],
+
+                const SizedBox(height: AppDimensions.spacingS),
+
+                // Action buttons
+                _buildActionButtons(
+                  context,
+                  viewModel,
+                  sharedRecipe,
+                  isRead,
+                  isImported,
+                ),
               ],
-
-              const SizedBox(height: AppDimensions.spacingS),
-
-              // Action buttons
-              _buildActionButtons(
-                context,
-                viewModel,
-                sharedRecipe,
-                isRead,
-                isImported,
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -100,7 +105,7 @@ class SharedRecipeCard {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Delat av ${sharedRecipe.sharedByDisplayName}',
+                context.l10n.sharedByName(sharedRecipe.sharedByDisplayName),
                 style: isRead
                     ? AppTextStyles.bodySmall.copyWith(
                         color: Theme.of(context).colorScheme.primary,
@@ -125,24 +130,29 @@ class SharedRecipeCard {
               .errorContainer
               .withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-            onTap: () => SharedContentActions.dismissRecipe(
-              context,
-              viewModel,
-              sharedRecipe,
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(AppDimensions.spacingXs),
-              constraints: const BoxConstraints(
-                minWidth: AppDimensions.iconSizeAction + AppDimensions.spacingS,
-                minHeight:
-                    AppDimensions.iconSizeAction + AppDimensions.spacingS,
+          child: Semantics(
+            label: context.l10n.a11yDismissSharedRecipe,
+            button: true,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+              onTap: () => SharedContentActions.dismissRecipe(
+                context,
+                viewModel,
+                sharedRecipe,
               ),
-              child: Icon(
-                Icons.close,
-                size: AppDimensions.iconSizeM,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              child: Container(
+                padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                constraints: const BoxConstraints(
+                  minWidth:
+                      AppDimensions.iconSizeAction + AppDimensions.spacingS,
+                  minHeight:
+                      AppDimensions.iconSizeAction + AppDimensions.spacingS,
+                ),
+                child: Icon(
+                  Icons.close,
+                  size: AppDimensions.iconSizeM,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ),
@@ -233,7 +243,8 @@ class SharedRecipeCard {
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
-                    '${sharedRecipe.recipePortions ?? '?'} portioner',
+                    context.l10n
+                        .recipePortionsCount(sharedRecipe.recipePortions ?? 0),
                     style: AppTextStyles.bodySmall,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
@@ -284,7 +295,7 @@ class SharedRecipeCard {
       children: [
         Expanded(
           child: SocialBuilderComponents.socialActionButton(
-            text: 'Visa',
+            text: context.l10n.commonView,
             onPressed: () {
               if (!isRead) {
                 viewModel.recipeViewModel.markAsViewed(sharedRecipe);
@@ -303,7 +314,9 @@ class SharedRecipeCard {
         const SizedBox(width: AppDimensions.spacingS),
         Expanded(
           child: SocialBuilderComponents.socialActionButton(
-            text: isImported ? 'Importerat' : 'Importera',
+            text: isImported
+                ? context.l10n.sharedImported
+                : context.l10n.sharedImport,
             onPressed: () {
               if (!isImported && !viewModel.recipeViewModel.isOperating) {
                 SharedContentActions.importRecipe(

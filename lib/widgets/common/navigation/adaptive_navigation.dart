@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Navigation item model for adaptive navigation
 class AdaptiveNavigationItem {
@@ -242,34 +243,32 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
   /// UI Redesign: Order matches mockup (recept, meny, inköp, lägg till)
   /// Uses outline icons for both states per mockup design.
   /// UI Redesign: "recept" uses grid icon per mockup (not book)
-  static List<AdaptiveNavigationItem> get navigationItems => [
+  static List<AdaptiveNavigationItem> getNavigationItems(
+          BuildContext context) =>
+      [
         AdaptiveNavigationItem(
-          label: 'recept',
+          label: context.l10n.navigationRecipes,
           icon: AdaptiveIcons.gridOutlined,
           activeIcon: AdaptiveIcons.gridOutlined, // Outline for both states
           route: '/',
-          semanticLabel: 'Navigera till mina recept',
         ),
         AdaptiveNavigationItem(
-          label: 'meny',
+          label: context.l10n.navigationMenu,
           icon: AdaptiveIcons.calendarOutlined,
           activeIcon: AdaptiveIcons.calendarOutlined, // Outline for both states
           route: '/veckomeny',
-          semanticLabel: 'Navigera till veckomeny',
         ),
         AdaptiveNavigationItem(
-          label: 'inköp',
+          label: context.l10n.navigationShopping,
           icon: AdaptiveIcons.cartOutlined,
           activeIcon: AdaptiveIcons.cartOutlined, // Outline for both states
           route: '/inkopslista',
-          semanticLabel: 'Navigera till inköpslista',
         ),
         AdaptiveNavigationItem(
-          label: 'lägg till',
+          label: context.l10n.navigationAddNew,
           icon: AdaptiveIcons.addOutlined,
           activeIcon: AdaptiveIcons.addOutlined, // Outline for both states
           route: '/laggTill',
-          semanticLabel: 'Lägg till nytt recept',
         ),
       ];
 
@@ -277,7 +276,7 @@ class ButleryAdaptiveNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     return AdaptiveNavigationScaffold(
       currentIndex: currentIndex,
-      items: navigationItems,
+      items: getNavigationItems(context),
       body: body,
       title: title,
       actions: actions,
@@ -348,7 +347,7 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
                   ),
                   const SizedBox(height: AppDimensions.spacingSm),
                   Text(
-                    'Din digitala kokbok',
+                    context.l10n.navigationSubtitle,
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
@@ -415,17 +414,29 @@ class ButleryBottomNavigation extends StatelessWidget {
     required this.currentIndex,
     required this.items,
     required this.onTap,
+    this.backgroundColor,
+    this.selectedItemColor,
+    this.unselectedItemColor,
   });
 
   final int currentIndex;
   final List<AdaptiveNavigationItem> items;
   final ValueChanged<int> onTap;
 
+  /// Override background color (defaults to navBackground/forestGreen)
+  final Color? backgroundColor;
+
+  /// Override selected item color (defaults to navSelectedItem/white)
+  final Color? selectedItemColor;
+
+  /// Override unselected item color (defaults to navUnselectedItem/70% white)
+  final Color? unselectedItemColor;
+
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.navBackground,
+      decoration: BoxDecoration(
+        color: backgroundColor ?? AppColors.navBackground,
       ),
       child: SafeArea(
         top: false,
@@ -444,6 +455,8 @@ class ButleryBottomNavigation extends StatelessWidget {
                   item: item,
                   isSelected: isSelected,
                   onTap: () => onTap(index),
+                  selectedColor: selectedItemColor,
+                  unselectedColor: unselectedItemColor,
                 ),
               );
             }).toList(),
@@ -459,16 +472,21 @@ class _BottomNavItem extends StatelessWidget {
     required this.item,
     required this.isSelected,
     required this.onTap,
+    this.selectedColor,
+    this.unselectedColor,
   });
 
   final AdaptiveNavigationItem item;
   final bool isSelected;
   final VoidCallback onTap;
+  final Color? selectedColor;
+  final Color? unselectedColor;
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        isSelected ? AppColors.navSelectedItem : AppColors.navUnselectedItem;
+    final color = isSelected
+        ? (selectedColor ?? AppColors.navSelectedItem)
+        : (unselectedColor ?? AppColors.navUnselectedItem);
 
     return Semantics(
       label: item.accessibleLabel,

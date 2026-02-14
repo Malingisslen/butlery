@@ -70,42 +70,46 @@ class UserLayoutWidgets {
     bool isOnline = false,
     EdgeInsets? padding,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      child: Padding(
-        padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
-        child: Row(
-          children: [
-            UserAvatarWidgets.avatar(
-              imageUrl: imageUrl,
-              displayName: displayName,
-              size: avatarSize,
-              showStatus: showStatus,
-              isOnline: isOnline,
-            ),
-            const SizedBox(width: AppDimensions.spacingM),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  userName(displayName: displayName),
-                  if (email != null) ...[
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    userEmail(email: email),
-                  ],
-                  if (subtitle != null) ...[
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Text(subtitle, style: AppTextStyles.bodySmall),
-                  ],
-                ],
+    return Semantics(
+      label: displayName,
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        child: Padding(
+          padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
+          child: Row(
+            children: [
+              UserAvatarWidgets.avatar(
+                imageUrl: imageUrl,
+                displayName: displayName,
+                size: avatarSize,
+                showStatus: showStatus,
+                isOnline: isOnline,
               ),
-            ),
-            if (trailing != null) ...[
               const SizedBox(width: AppDimensions.spacingM),
-              trailing,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    userName(displayName: displayName),
+                    if (email != null) ...[
+                      const SizedBox(height: AppDimensions.spacingXs),
+                      userEmail(email: email),
+                    ],
+                    if (subtitle != null) ...[
+                      const SizedBox(height: AppDimensions.spacingXs),
+                      Text(subtitle, style: AppTextStyles.bodySmall),
+                    ],
+                  ],
+                ),
+              ),
+              if (trailing != null) ...[
+                const SizedBox(width: AppDimensions.spacingM),
+                trailing,
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -131,41 +135,46 @@ class UserLayoutWidgets {
       elevation: AppDimensions.elevationLow,
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        child: Padding(
-          padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  UserAvatarWidgets.avatar(
-                    imageUrl: imageUrl,
-                    displayName: displayName,
-                    size: avatarSize,
-                    showStatus: showStatus,
-                    isOnline: isOnline,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingM),
-                  Expanded(
-                      child: userInfo(displayName: displayName, email: email)),
+      child: Semantics(
+        label: displayName,
+        button: true,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+          child: Padding(
+            padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    UserAvatarWidgets.avatar(
+                      imageUrl: imageUrl,
+                      displayName: displayName,
+                      size: avatarSize,
+                      showStatus: showStatus,
+                      isOnline: isOnline,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingM),
+                    Expanded(
+                        child:
+                            userInfo(displayName: displayName, email: email)),
+                  ],
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: AppDimensions.spacingM),
+                  Text(subtitle, style: AppTextStyles.titleMedium),
                 ],
-              ),
-              if (subtitle != null) ...[
-                const SizedBox(height: AppDimensions.spacingM),
-                Text(subtitle, style: AppTextStyles.titleMedium),
+                if (description != null) ...[
+                  const SizedBox(height: AppDimensions.spacingM),
+                  Text(description, style: AppTextStyles.bodyLarge),
+                ],
+                if (actions != null) ...[
+                  const SizedBox(height: AppDimensions.spacingXl),
+                  actions,
+                ],
               ],
-              if (description != null) ...[
-                const SizedBox(height: AppDimensions.spacingM),
-                Text(description, style: AppTextStyles.bodyLarge),
-              ],
-              if (actions != null) ...[
-                const SizedBox(height: AppDimensions.spacingXl),
-                actions,
-              ],
-            ],
+            ),
           ),
         ),
       ),

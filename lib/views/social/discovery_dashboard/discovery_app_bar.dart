@@ -77,7 +77,7 @@ class DiscoveryAppBar {
                         ],
                       ),
                     ),
-                    _buildDiscoveryStats(viewModel),
+                    _buildDiscoveryStats(context, viewModel),
                   ],
                 ),
               ],
@@ -124,7 +124,8 @@ class DiscoveryAppBar {
     );
   }
 
-  static Widget _buildDiscoveryStats(DiscoveryDashboardViewModel viewModel) {
+  static Widget _buildDiscoveryStats(
+      BuildContext context, DiscoveryDashboardViewModel viewModel) {
     final stats = viewModel.discoveryStats;
     final totalContent = stats['totalDiscoverableContent'] as int;
 

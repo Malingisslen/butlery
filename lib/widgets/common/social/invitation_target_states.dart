@@ -1,6 +1,7 @@
 // lib/widgets/common/social/invitation_target_states.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -13,11 +14,11 @@ class InvitationTargetStates {
   }
 
   /// Build target card loading state
-  static Widget targetCardLoading() {
-    return const Card(
+  static Widget targetCardLoading(BuildContext context) {
+    return Card(
       child: ListTile(
-        leading: CircularProgressIndicator(),
-        title: Text('Laddar...'),
+        leading: const CircularProgressIndicator(),
+        title: Text(context.l10n.commonLoading),
       ),
     );
   }
@@ -39,7 +40,7 @@ class InvitationTargetStates {
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
-            message ?? 'Kunde inte ladda mål',
+            message ?? context.l10n.invitationCouldNotLoadTargets,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.error,
                 ),
@@ -48,7 +49,7 @@ class InvitationTargetStates {
             const SizedBox(height: AppDimensions.spacingL),
             ElevatedButton(
               onPressed: onRetry,
-              child: const Text('Försök igen'),
+              child: Text(context.l10n.commonRetry),
             ),
           ],
         ],
@@ -74,7 +75,7 @@ class InvitationTargetStates {
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
-            message ?? 'Inga mål tillgängliga',
+            message ?? context.l10n.invitationNoTargetsAvailable,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textMedium,
                 ),
@@ -109,8 +110,8 @@ class InvitationTargetStates {
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             searchQuery != null
-                ? 'Inga resultat för "$searchQuery"'
-                : 'Inga sökresultat',
+                ? context.l10n.invitationNoResultsFor(searchQuery)
+                : context.l10n.invitationNoSearchResults,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textMedium,
                 ),
@@ -119,7 +120,7 @@ class InvitationTargetStates {
             const SizedBox(height: AppDimensions.spacingL),
             TextButton(
               onPressed: onClearSearch,
-              child: const Text('Rensa sökning'),
+              child: Text(context.l10n.invitationClearSearch),
             ),
           ],
         ],
@@ -144,7 +145,7 @@ class InvitationTargetStates {
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
-            '$count mål valda',
+            context.l10n.invitationTargetsSelectedCount(count),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.success,
                 ),
@@ -153,7 +154,7 @@ class InvitationTargetStates {
             const SizedBox(height: AppDimensions.spacingL),
             ElevatedButton(
               onPressed: onContinue,
-              child: const Text('Fortsätt'),
+              child: Text(context.l10n.commonContinue),
             ),
           ],
         ],
@@ -220,7 +221,7 @@ class InvitationTargetStates {
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
-            message ?? 'Inga val gjorda',
+            message ?? context.l10n.invitationNoSelectionsMade,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textMedium,
                 ),

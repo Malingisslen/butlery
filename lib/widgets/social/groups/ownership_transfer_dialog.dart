@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/ownership_transfer_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -38,17 +39,17 @@ class OwnershipTransferDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Överför gruppägande'),
+      title: Text(context.l10n.groupTransferOwnership),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Du är ägare av "${group.name}". Du måste välja en ny ägare innan du kan lämna gruppen.',
+            context.l10n.groupTransferOwnershipMessage(group.name),
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
-            'Välj ny ägare:',
+            context.l10n.groupSelectNewOwner,
             style: AppTextStyles.bodyBold,
           ),
           const SizedBox(height: AppDimensions.spacingM),
@@ -71,7 +72,7 @@ class OwnershipTransferDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Avbryt'),
+          child: Text(context.l10n.commonCancel),
         ),
       ],
     );

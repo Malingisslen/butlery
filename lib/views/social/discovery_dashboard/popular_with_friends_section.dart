@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Popular with friends section showing trending recipes among user's friends.
 class PopularWithFriendsSection {
@@ -14,22 +15,23 @@ class PopularWithFriendsSection {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DiscoverySectionHeader(
-          title: 'Populärt bland vänner',
+          title: context.l10n.discoveryPopularWithFriends,
           icon: Icons.people,
           count: viewModel.trendingRecipes.length,
         ),
         const SizedBox(height: AppDimensions.spacingS),
         Text(
-          'Innehåll som dina vänner gillar och delar',
+          context.l10n.discoveryPopularWithFriendsDescription,
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
+            color: AppColors.onSurface
+                .withValues(alpha: AppDimensions.opacityDark),
           ),
         ),
         const SizedBox(height: AppDimensions.spacingM),
         if (viewModel.trendingRecipes.isNotEmpty)
           _buildRecipeList(viewModel)
         else
-          _buildEmptyState(),
+          _buildEmptyState(context),
       ],
     );
   }
@@ -59,9 +61,10 @@ class PopularWithFriendsSection {
                 ),
                 const Spacer(),
                 Text(
-                  '${recipe.mealType} • ${recipe.portions ?? 0} portioner',
+                  '${recipe.mealType} • ${context.l10n.discoveryPortions(recipe.portions ?? 0)}',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
+                    color: AppColors.onSurface
+                        .withValues(alpha: AppDimensions.opacityDark),
                   ),
                 ),
               ],
@@ -72,12 +75,12 @@ class PopularWithFriendsSection {
     );
   }
 
-  static Widget _buildEmptyState() {
+  static Widget _buildEmptyState(BuildContext context) {
     return Container(
       height: 120,
       decoration: ComponentThemes.emptyStateContainerDecoration,
-      child: const Center(
-        child: Text('Inga populära recept än'),
+      child: Center(
+        child: Text(context.l10n.discoveryNoPopularRecipesYet),
       ),
     );
   }

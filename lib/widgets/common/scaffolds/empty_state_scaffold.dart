@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
@@ -8,7 +8,7 @@ import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 /// Empty state scaffold consolidating patterns from 20+ files
 class EmptyStateScaffold extends StatelessWidget {
   final String? title;
-  final String emptyMessage;
+  final String? emptyMessage;
   final IconData? emptyIcon;
   final VoidCallback? onAction;
   final String? actionText;
@@ -18,7 +18,7 @@ class EmptyStateScaffold extends StatelessWidget {
   const EmptyStateScaffold({
     super.key,
     this.title,
-    this.emptyMessage = AppStrings.noItemsFound,
+    this.emptyMessage,
     this.emptyIcon = Icons.inbox_outlined,
     this.onAction,
     this.actionText,
@@ -59,7 +59,7 @@ class EmptyStateScaffold extends StatelessWidget {
                 SizedBox(height: spacing),
               ],
               Text(
-                emptyMessage,
+                emptyMessage ?? context.l10n.emptyNoItems,
                 style: AppTextStyles.bodyLarge,
                 textAlign: TextAlign.center,
               ),

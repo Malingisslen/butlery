@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// SearchResultCard - Enhanced search result card component with explicit action buttons
 /// Displays search result user with clear friendship status and action buttons.
@@ -55,7 +56,7 @@ class SearchResultCard {
   ) {
     return ActionButtons.primaryButton(
       context,
-      label: 'Skicka vänförfrågan',
+      label: context.l10n.socialSendFriendRequest,
       onPressed: () => _handleSendFriendRequest(context, user, viewModel),
     );
   }
@@ -64,7 +65,7 @@ class SearchResultCard {
   static Widget _buildRequestSentButton(BuildContext context) {
     return ActionButtons.outlinedButton(
       context,
-      label: 'Skickad',
+      label: context.l10n.socialRequestSent,
       icon: Icons.schedule,
       onPressed: null, // Disabled
     );
@@ -74,7 +75,7 @@ class SearchResultCard {
   static Widget _buildAlreadyFriendsButton(BuildContext context) {
     return ActionButtons.outlinedButton(
       context,
-      label: 'Vänner',
+      label: context.l10n.socialFriends,
       icon: Icons.check_circle,
       onPressed: null, // Disabled
     );
@@ -88,7 +89,7 @@ class SearchResultCard {
   ) {
     return ActionButtons.primaryButton(
       context,
-      label: 'Acceptera',
+      label: context.l10n.commonAccept,
       onPressed: () => _handleAcceptFriendRequest(context, user, viewModel),
     );
   }
@@ -97,7 +98,7 @@ class SearchResultCard {
   static Widget _buildBlockedButton(BuildContext context) {
     return ActionButtons.outlinedButton(
       context,
-      label: 'Blockerad',
+      label: context.l10n.socialBlocked,
       icon: Icons.block,
       onPressed: null, // Disabled
     );
@@ -112,7 +113,7 @@ class SearchResultCard {
     try {
       final success = await viewModel.sendFriendRequest(
         user.uid,
-        message: 'Hej! Skulle vi kunna bli vänner?',
+        message: context.l10n.socialDefaultFriendMessage,
       );
 
       if (context.mounted) {
@@ -120,15 +121,15 @@ class SearchResultCard {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content:
-                  Text('Vänförfrågan skickad till ${user.displayName}! 📨'),
+                  Text(context.l10n.socialFriendRequestSent(user.displayName)),
               backgroundColor: AppColors.success,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:
-                  Text(viewModel.error ?? 'Kunde inte skicka vänförfrågan'),
+              content: Text(viewModel.error ??
+                  context.l10n.socialCouldNotSendFriendRequest),
               backgroundColor: AppColors.error,
             ),
           );
@@ -138,7 +139,7 @@ class SearchResultCard {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ett fel uppstod: $e'),
+            content: Text(context.l10n.errorOccurredWithDetails('$e')),
             backgroundColor: AppColors.error,
           ),
         );
@@ -160,8 +161,8 @@ class SearchResultCard {
     if (request == null) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kunde inte hitta vänskapsförfrågan'),
+          SnackBar(
+            content: Text(context.l10n.socialCouldNotFindFriendRequest),
             backgroundColor: AppColors.error,
           ),
         );
@@ -176,16 +177,16 @@ class SearchResultCard {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                  'Vänskapsförfrågan från ${user.displayName} accepterad! 🎉'),
+              content: Text(context.l10n
+                  .socialFriendRequestAcceptedFrom(user.displayName)),
               backgroundColor: AppColors.success,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                  viewModel.error ?? 'Kunde inte acceptera vänskapsförfrågan'),
+              content: Text(viewModel.error ??
+                  context.l10n.socialCouldNotAcceptFriendRequest),
               backgroundColor: AppColors.error,
             ),
           );
@@ -195,7 +196,7 @@ class SearchResultCard {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ett fel uppstod: $e'),
+            content: Text(context.l10n.errorOccurredWithDetails('$e')),
             backgroundColor: AppColors.error,
           ),
         );

@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/edit_group_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -83,7 +84,8 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
       } else {
         if (mounted) {
           setState(() {
-            _error = 'Kunde inte uppdatera grupp. Försök igen.';
+            _error = context.l10n.errorCouldNotUpdate(
+                context.l10n.socialGroupName.toLowerCase());
           });
         }
       }
@@ -91,7 +93,8 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
       AppLogger.error('Error updating group', e);
       if (mounted) {
         setState(() {
-          _error = 'Ett fel uppstod: ${e.toString()}';
+          _error = context.l10n.errorWithContext(
+              context.l10n.statusUpdating.toLowerCase(), e.toString());
         });
       }
     } finally {
@@ -117,7 +120,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
             children: [
               // Header
               DialogHeader(
-                title: 'Redigera grupp',
+                title: context.l10n.socialEditGroup,
                 icon: Icons.edit,
                 onClose: () => Navigator.of(context).pop(),
               ),
@@ -145,9 +148,9 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                     // Group name
                     TextFormField(
                       controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Gruppnamn *',
-                        prefixIcon: Icon(Icons.group),
+                      decoration: InputDecoration(
+                        labelText: '${context.l10n.socialGroupName} *',
+                        prefixIcon: const Icon(Icons.group),
                       ),
                       validator: ValidationUtils.validateGroupName,
                       maxLength: 50,
@@ -159,10 +162,10 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                     // Description (optional)
                     TextFormField(
                       controller: _descriptionController,
-                      decoration: const InputDecoration(
-                        labelText: 'Beskrivning (valfritt)',
-                        hintText: 'Vad handlar den här gruppen om?',
-                        prefixIcon: Icon(Icons.description),
+                      decoration: InputDecoration(
+                        labelText: context.l10n.groupDescriptionLabel,
+                        hintText: context.l10n.groupDescriptionHint,
+                        prefixIcon: const Icon(Icons.description),
                       ),
                       maxLines: 3,
                       maxLength: 200,
@@ -180,9 +183,10 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
 
               // Actions
               DialogFooter(
-                primaryActionText:
-                    _isUpdating ? 'Sparar...' : 'Spara ändringar',
-                secondaryActionText: 'Avbryt',
+                primaryActionText: _isUpdating
+                    ? context.l10n.statusSaving
+                    : context.l10n.commonSaveChanges,
+                secondaryActionText: context.l10n.commonCancel,
                 onPrimaryAction: _isUpdating ? null : _updateGroup,
                 onSecondaryAction: () => Navigator.of(context).pop(),
                 isLoading: _isUpdating,

@@ -19,6 +19,7 @@ import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Friend profile view displaying stats, messaging, and sharing options.
 class FriendProfileView extends StatelessWidget {
@@ -80,7 +81,7 @@ class FriendProfileView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Statistik',
+                            context.l10n.socialStatistics,
                             style: AppTextStyles.titleBold,
                           ),
                           const SizedBox(height: AppDimensions.spacingL),
@@ -89,13 +90,13 @@ class FriendProfileView extends StatelessWidget {
                             children: [
                               _buildStatItem(
                                 context,
-                                'Vänner',
+                                context.l10n.socialFriends,
                                 '${friend.friendsCount}',
                                 Icons.people,
                               ),
                               _buildStatItem(
                                 context,
-                                'Recept',
+                                context.l10n.socialRecipes,
                                 '${friend.publicRecipeCount}',
                                 Icons.restaurant_menu,
                               ),
@@ -116,7 +117,7 @@ class FriendProfileView extends StatelessWidget {
                               child: OutlinedButton.icon(
                                 onPressed: () => _startConversation(context),
                                 icon: const Icon(Icons.message),
-                                label: const Text('Skicka meddelande'),
+                                label: Text(context.l10n.socialSendMessage),
                               ),
                             ),
                             const SizedBox(width: AppDimensions.spacingL),
@@ -124,7 +125,7 @@ class FriendProfileView extends StatelessWidget {
                               child: ElevatedButton.icon(
                                 onPressed: () => _showRecipeSelection(context),
                                 icon: const Icon(Icons.share),
-                                label: const Text('Dela recept'),
+                                label: Text(context.l10n.socialShareRecipe),
                               ),
                             ),
                           ],
@@ -136,7 +137,7 @@ class FriendProfileView extends StatelessWidget {
                             onPressed: () => _showRemoveFriendDialog(context),
                             style: ComponentThemes.deleteButtonStyle,
                             icon: const Icon(Icons.person_remove),
-                            label: const Text('Ta bort vän'),
+                            label: Text(context.l10n.socialRemoveFriend),
                           ),
                         ),
                       ],
@@ -163,7 +164,7 @@ class FriendProfileView extends StatelessWidget {
   Future<void> _startConversation(BuildContext context) async {
     try {
       // Show loading indicator
-      SnackBarUtils.showInfo(context, 'Startar konversation...');
+      SnackBarUtils.showInfo(context, context.l10n.socialStartingConversation);
 
       // Get messaging service
       final messagingService = ServiceLocator.get<MessagingService>();
@@ -198,7 +199,7 @@ class FriendProfileView extends StatelessWidget {
       if (!context.mounted) return;
       SnackBarUtils.showError(
         context,
-        'Kunde inte starta konversation: ${e.toString()}',
+        context.l10n.socialCouldNotStartConversation(e.toString()),
       );
     }
   }
@@ -207,7 +208,7 @@ class FriendProfileView extends StatelessWidget {
     final shouldRemove = await DialogFactory.showDeleteConfirmation(
       context,
       itemName: friend.displayName,
-      itemType: 'vän från din vänlista',
+      itemType: context.l10n.socialFriendFromList,
     );
 
     if (shouldRemove == true && context.mounted) {
@@ -216,7 +217,7 @@ class FriendProfileView extends StatelessWidget {
       if (success && context.mounted) {
         SnackBarUtils.showSuccess(
           context,
-          '${friend.displayName} borttagen från vänlista',
+          context.l10n.socialFriendRemoved(friend.displayName),
         );
         Navigator.of(context).pop(); // Go back to friends list
       }

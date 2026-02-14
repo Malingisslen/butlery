@@ -1,6 +1,7 @@
 // lib/widgets/common/input/shopping_list_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -134,7 +135,7 @@ class ShoppingListCard extends StatelessWidget {
         _buildMetadataBadge(
           context,
           Icons.shopping_cart,
-          '${list.itemCount} artiklar',
+          '${list.itemCount} ${context.l10n.shoppingItems}',
           AppColors.textMedium,
         ),
 
@@ -142,7 +143,7 @@ class ShoppingListCard extends StatelessWidget {
         _buildMetadataBadge(
           context,
           _getListTypeIcon(),
-          _getListTypeLabel(),
+          _getListTypeLabel(context),
           _getListTypeColor(),
         ),
 
@@ -151,7 +152,7 @@ class ShoppingListCard extends StatelessWidget {
           _buildMetadataBadge(
             context,
             Icons.people,
-            '${list.memberCount} medlemmar',
+            context.l10n.friendMemberCount(list.memberCount),
             AppColors.forestGreen,
           ),
           // User permission badge
@@ -163,7 +164,7 @@ class ShoppingListCard extends StatelessWidget {
           _buildMetadataBadge(
             context,
             Icons.access_time,
-            'Aktiv',
+            context.l10n.shoppingActive,
             AppColors.warning,
           ),
         ],
@@ -185,7 +186,7 @@ class ShoppingListCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Senaste artiklar:',
+            context.l10n.shoppingRecentItems,
             style: AppTextStyles.bodySmall,
           ),
           const SizedBox(height: AppDimensions.spacingXs),
@@ -222,7 +223,7 @@ class ShoppingListCard extends StatelessWidget {
           if (list.itemCount > 3) ...[
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
-              '... och ${list.itemCount - 3} till',
+              context.l10n.shoppingAndMore(list.itemCount - 3),
               style: AppTextStyles.bodySmall.copyWith(
                 fontStyle: FontStyle.italic,
               ),
@@ -282,14 +283,14 @@ class ShoppingListCard extends StatelessWidget {
   }
 
   /// Get list type label
-  String _getListTypeLabel() {
+  String _getListTypeLabel(BuildContext context) {
     switch (list.type) {
       case ShoppingListType.personal:
-        return 'Personlig';
+        return context.l10n.shoppingPersonal;
       case ShoppingListType.collaborative:
-        return 'Delad';
+        return context.l10n.shoppingShared;
       case ShoppingListType.template:
-        return 'Mall';
+        return context.l10n.shoppingTemplate;
     }
   }
 
@@ -321,29 +322,28 @@ class ShoppingListCard extends StatelessWidget {
     Color permissionColor;
 
     if (isOwner) {
-      permissionLabel = 'Ägare';
+      permissionLabel = context.l10n.shoppingOwner;
       permissionIcon = Icons.admin_panel_settings;
       permissionColor = AppColors.forestGreen;
     } else {
       switch (userPermission) {
         case SharedListPermission.view:
-          permissionLabel = 'Kan se';
+          permissionLabel = context.l10n.shoppingCanView;
           permissionIcon = Icons.visibility;
           permissionColor = AppColors.warning;
           break;
         case SharedListPermission.edit:
-          permissionLabel = 'Kan redigera';
+          permissionLabel = context.l10n.shoppingCanEdit;
           permissionIcon = Icons.edit;
           permissionColor = AppColors.success;
           break;
         case SharedListPermission.admin:
-          permissionLabel = 'Admin';
+          permissionLabel = context.l10n.shoppingAdmin;
           permissionIcon = Icons.admin_panel_settings;
           permissionColor = AppColors.forestGreen;
           break;
         default:
-          // If not in permissions map but is collaborative, assume edit permission
-          permissionLabel = 'Kan redigera';
+          permissionLabel = context.l10n.shoppingCanEdit;
           permissionIcon = Icons.edit;
           permissionColor = AppColors.success;
       }
@@ -383,14 +383,14 @@ class ShoppingListEmptyState extends StatelessWidget {
           ),
           const SizedBox(height: AppDimensions.spacingXl),
           Text(
-            'Inga inköpslistor än',
+            context.l10n.shoppingCreateFirstList,
             style: AppTextStyles.titleLarge.copyWith(
               color: AppColors.textLight,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            'Skapa din första inköpslista för att komma igång',
+            context.l10n.shoppingCreateFirstListDescription,
             style: AppTextStyles.titleMedium,
             textAlign: TextAlign.center,
           ),
@@ -398,7 +398,7 @@ class ShoppingListEmptyState extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingXl),
             ActionButtons.primaryButton(
               context,
-              label: 'Skapa lista',
+              label: context.l10n.shoppingCreateList,
               icon: Icons.add,
               onPressed: onCreateList!,
             ),

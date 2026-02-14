@@ -109,10 +109,6 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return tag?.rules ?? [];
   }
 
-  // ============================================================
-  // INITIALIZATION
-  // ============================================================
-
   /// Retry configuration for initialization failures.
   static const _maxRetryAttempts = 3;
   static const _initialRetryDelay = Duration(seconds: 1);
@@ -180,10 +176,6 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     _selectedTagId = tagId;
     _safeNotifyListeners();
   }
-
-  // ============================================================
-  // TAG CRUD OPERATIONS
-  // ============================================================
 
   /// Creates a new personal tag.
   Future<bool> createTag({
@@ -290,10 +282,6 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return result ?? false;
   }
 
-  // ============================================================
-  // GROUP CRUD OPERATIONS
-  // ============================================================
-
   /// Creates a new tag group.
   Future<bool> createGroup({
     required String name,
@@ -384,10 +372,6 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return result ?? false;
   }
 
-  // ============================================================
-  // RULE CRUD OPERATIONS (EMBEDDED IN TAGS)
-  // ============================================================
-
   /// Creates a new automation rule for a tag.
   Future<bool> createRule(String tagId, PersonalTagRule rule) async {
     _clearError();
@@ -464,10 +448,6 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
     return result ?? false;
   }
-
-  // ============================================================
-  // STATISTICS
-  // ============================================================
 
   /// Loads usage statistics for all tags.
   ///
@@ -565,10 +545,6 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
       _safeNotifyListeners();
     }
   }
-
-  // ============================================================
-  // BATCH OPERATIONS
-  // ============================================================
 
   /// Applies all enabled rules to existing recipes.
   ///
@@ -691,10 +667,6 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return await recipeRepo.fetchAllUserRecipes(userId);
   }
 
-  // ============================================================
-  // VALIDATION HELPERS
-  // ============================================================
-
   /// Checks if a tag name already exists.
   Future<bool> tagNameExists(String name, {String? excludeId}) async {
     return await _service.tagNameExists(name, excludeId: excludeId);
@@ -704,10 +676,6 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
   String? validateTagName(String? name) {
     return PersonalTag.validateName(name);
   }
-
-  // ============================================================
-  // STATE MANAGEMENT
-  // ============================================================
 
   void _setLoading(bool value) {
     _isLoading = value;

@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
@@ -226,7 +228,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
           top: AppDimensions.spacingSm,
           right: AppDimensions.spacingSm,
           child: Semantics(
-            label: 'Stäng profilmeny',
+            label: context.l10n.profileCloseMenu,
             button: true,
             child: IconButton(
               onPressed: () => Navigator.pop(context),
@@ -247,11 +249,11 @@ class _ProfileMenuState extends State<ProfileMenu> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildStatItem('48', 'Recept'),
+        _buildStatItem('48', context.l10n.profileRecipes),
         const SizedBox(width: AppDimensions.spacingXl),
-        _buildStatItem('12', 'Menyer'),
+        _buildStatItem('12', context.l10n.profileMenus),
         const SizedBox(width: AppDimensions.spacingXl),
-        _buildStatItem('$_pendingRequestsCount', 'Vänner'),
+        _buildStatItem('$_pendingRequestsCount', context.l10n.profileFriends),
       ],
     );
   }
@@ -353,52 +355,60 @@ class _ProfileMenuState extends State<ProfileMenu> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Sociala funktioner',
+            context.l10n.profileSocialFeatures,
             style: AppTextStyles.headlineSmall,
           ),
           const SizedBox(height: AppDimensions.spacingXl),
           ProfileActions.buildMenuItem(
             context,
-            title: 'Redigera profil',
-            subtitle: 'Uppdatera ditt namn och profilbild',
+            title: context.l10n.profileEditProfile,
+            subtitle: context.l10n.profileEditProfileSubtitle,
             icon: Icons.edit,
             onTap: widget.onEditProfile,
           ),
           ProfileActions.buildNotificationMenuItem(
             context,
-            title: 'Vänner och grupper',
-            subtitle: 'Hantera dina vänner och grupper',
+            title: context.l10n.profileFriendsAndGroups,
+            subtitle: context.l10n.profileFriendsAndGroupsSubtitle,
             icon: Icons.people,
             onTap: widget.onViewFriends,
             count: _pendingRequestsCount + _pendingGroupInvitationsCount,
           ),
           ProfileActions.buildNotificationMenuItem(
             context,
-            title: 'Delat med mig',
-            subtitle: 'Recept och menyer som delats med dig',
+            title: context.l10n.profileSharedWithMe,
+            subtitle: context.l10n.profileSharedWithMeSubtitle,
             icon: Icons.share,
             onTap: widget.onViewShared,
             count: _sharedItemsCount,
           ),
           ProfileActions.buildNotificationMenuItem(
             context,
-            title: 'Meddelanden',
-            subtitle: 'Dina konversationer och meddelanden',
+            title: context.l10n.profileMessages,
+            subtitle: context.l10n.profileMessagesSubtitle,
             icon: Icons.message,
             onTap: widget.onViewMessages,
             count: _unreadMessagesCount,
           ),
           ProfileActions.buildMenuItem(
             context,
-            title: 'Allergeninställningar',
-            subtitle: 'Välj vilka allergener du vill spåra',
+            title: context.l10n.profileAllergenSettings,
+            subtitle: context.l10n.profileAllergenSettingsSubtitle,
             icon: Icons.health_and_safety,
             onTap: widget.onViewAllergens,
           ),
           ProfileActions.buildMenuItem(
             context,
-            title: 'Mina taggar',
-            subtitle: 'Hantera dina personliga taggar',
+            title: 'Aviseringar',
+            subtitle: 'Kategorier och tysta timmar',
+            icon: Icons.notifications_outlined,
+            onTap: () =>
+                Navigator.pushNamed(context, Routes.settingsNotifications),
+          ),
+          ProfileActions.buildMenuItem(
+            context,
+            title: context.l10n.profileMyTags,
+            subtitle: context.l10n.profileMyTagsSubtitle,
             icon: Icons.local_offer_outlined,
             onTap: widget.onViewPersonalTags,
           ),

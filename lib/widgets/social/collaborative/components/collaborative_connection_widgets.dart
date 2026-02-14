@@ -1,6 +1,7 @@
 // lib/widgets/social/collaborative/components/collaborative_connection_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -23,7 +24,8 @@ class CollaborativeConnectionWidgets {
           vertical: AppDimensions.spacingXs,
         ),
         decoration: BoxDecoration(
-          color: AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
+          color: AppColors.success
+              .withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
         ),
         child: Row(
@@ -38,10 +40,12 @@ class CollaborativeConnectionWidgets {
               ),
             ),
             const SizedBox(width: AppDimensions.spacingXs),
-            Text(
-              'Online',
-              style: AppTextStyles.metadataEmphasized.copyWith(
-                color: AppColors.success,
+            Builder(
+              builder: (context) => Text(
+                context.l10n.collaborativeOnline,
+                style: AppTextStyles.metadataEmphasized.copyWith(
+                  color: AppColors.success,
+                ),
               ),
             ),
           ],
@@ -54,9 +58,11 @@ class CollaborativeConnectionWidgets {
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color:
+            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
         border: Border.all(
-          color: AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: AppColors.error
+              .withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
@@ -77,10 +83,12 @@ class CollaborativeConnectionWidgets {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Offline',
-                  style: AppTextStyles.bodyLargeBold.copyWith(
-                    color: AppColors.error,
+                Builder(
+                  builder: (context) => Text(
+                    context.l10n.collaborativeOffline,
+                    style: AppTextStyles.bodyLargeBold.copyWith(
+                      color: AppColors.error,
+                    ),
                   ),
                 ),
                 Text(
@@ -93,12 +101,14 @@ class CollaborativeConnectionWidgets {
             ),
           ),
           if (showRetryButton && onRetry != null)
-            TextButton(
-              onPressed: onRetry,
-              child: Text(
-                'Försök igen',
-                style: AppTextStyles.buttonTextStyle.copyWith(
-                  color: AppColors.error,
+            Builder(
+              builder: (context) => TextButton(
+                onPressed: onRetry,
+                child: Text(
+                  context.l10n.commonRetry,
+                  style: AppTextStyles.buttonTextStyle.copyWith(
+                    color: AppColors.error,
+                  ),
                 ),
               ),
             ),

@@ -1,6 +1,7 @@
 // lib/widgets/common/share_dialog/share_dialog_actions.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -19,6 +20,7 @@ class ShareDialogActions {
     VoidCallback onShare,
   ) {
     final shareButtonText = _getShareButtonText(
+      context,
       contentType,
       selectedMode,
       supportsRealtimeSharing,
@@ -49,7 +51,7 @@ class ShareDialogActions {
               flex: 3,
               child: ActionButtons.outlinedButton(
                 context,
-                label: 'Avbryt',
+                label: context.l10n.commonCancel,
                 onPressed: isLoading ? null : onCancel,
                 // Fix BUG-019: use isExpanded to fill container and fix hit-testing
                 isExpanded: true,
@@ -76,20 +78,21 @@ class ShareDialogActions {
   }
 
   static String _getShareButtonText(
+    BuildContext context,
     ShareContentType contentType,
     ShareMode selectedMode,
     bool supportsRealtimeSharing,
   ) {
     if (selectedMode == ShareMode.realtime && supportsRealtimeSharing) {
-      return 'Skapa & Dela';
+      return context.l10n.shareCreateAndShare;
     } else {
       switch (contentType) {
         case ShareContentType.recipe:
-          return 'Dela recept';
+          return context.l10n.shareRecipeTitle;
         case ShareContentType.menu:
-          return 'Dela meny';
+          return context.l10n.shareMenuTitle;
         case ShareContentType.shoppingList:
-          return 'Dela inköpslista';
+          return context.l10n.shareShoppingListTitle;
       }
     }
   }
@@ -124,7 +127,7 @@ class ShareDialogActions {
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Text(
-                'Välj minst en vän för att dela $contentTypeName',
+                context.l10n.shareSelectAtLeastOneFriend,
                 style: AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.warning,
                 ),
@@ -159,7 +162,7 @@ class ShareDialogActions {
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
             child: Text(
-              '$selectedCount vän${selectedCount > 1 ? 'ner' : ''} valda',
+              context.l10n.shareFriendsSelectedCount(selectedCount),
               style: AppTextStyles.metadataEmphasized.copyWith(
                 color: AppColors.success,
               ),

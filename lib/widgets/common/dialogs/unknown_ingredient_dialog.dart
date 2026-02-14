@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -81,7 +82,8 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
 
     return AlertDialog(
       title: Text(
-        'Okänd ingrediens ${_currentIndex + 1}/${_definitions.length}',
+        context.l10n.dialogUnknownIngredientProgress(
+            _currentIndex + 1, _definitions.length),
         style: theme.textTheme.titleLarge,
       ),
       content: SizedBox(
@@ -98,8 +100,7 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
               ),
               const SizedBox(height: AppDimensions.spacingSm),
               Text(
-                'Denna ingrediens finns inte i databasen. '
-                'Du kan definiera dess egenskaper för bättre taggning.',
+                context.l10n.dialogUnknownIngredientDescription,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -108,7 +109,7 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
 
               // Common allergen toggles
               Text(
-                'Innehåller allergener:',
+                context.l10n.dialogContainsAllergens,
                 style: theme.textTheme.titleSmall,
               ),
               const SizedBox(height: AppDimensions.spacingSm),
@@ -118,7 +119,7 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
 
               // Dietary properties
               Text(
-                'Dietegenskaper:',
+                context.l10n.dialogDietaryProperties,
                 style: theme.textTheme.titleSmall,
               ),
               const SizedBox(height: AppDimensions.spacingSm),
@@ -131,7 +132,8 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
         // Skip button
         TextButton(
           onPressed: _isSaving ? null : _skipCurrent,
-          child: Text(_isLast ? 'Hoppa över alla' : 'Hoppa över'),
+          child: Text(
+              _isLast ? context.l10n.commonSkipAll : context.l10n.commonSkip),
         ),
         // Navigation/Save buttons
         Row(
@@ -140,7 +142,7 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
             if (!_isFirst)
               TextButton(
                 onPressed: _isSaving ? null : _previous,
-                child: const Text('Föregående'),
+                child: Text(context.l10n.commonPrevious),
               ),
             const SizedBox(width: AppDimensions.spacingSm),
             FilledButton(
@@ -151,7 +153,9 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
                       height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : Text(_isLast ? 'Spara och stäng' : 'Spara och nästa'),
+                  : Text(_isLast
+                      ? context.l10n.commonSaveAndClose
+                      : context.l10n.commonSaveAndNext),
             ),
           ],
         ),
@@ -161,14 +165,14 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
 
   Widget _buildAllergenSection() {
     final commonAllergens = [
-      ('contains-gluten', 'Gluten'),
-      ('dairy', 'Mjölk'),
-      ('egg', 'Ägg'),
-      ('fish', 'Fisk'),
-      ('crustacean', 'Kräftdjur'),
-      ('tree-nut', 'Trädnötter'),
-      ('peanut', 'Jordnötter'),
-      ('soy', 'Soja'),
+      ('contains-gluten', context.l10n.allergenGluten),
+      ('dairy', context.l10n.allergenDairy),
+      ('egg', context.l10n.allergenEgg),
+      ('fish', context.l10n.allergenFish),
+      ('crustacean', context.l10n.allergenCrustacean),
+      ('tree-nut', context.l10n.allergenTreeNut),
+      ('peanut', context.l10n.allergenPeanut),
+      ('soy', context.l10n.allergenSoy),
     ];
 
     return Wrap(
@@ -195,14 +199,14 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
 
   Widget _buildDietarySection() {
     final dietaryOptions = [
-      ('meat', 'Kött'),
-      ('pork', 'Fläsk'),
-      ('beef', 'Nötkött'),
-      ('poultry', 'Fågel'),
-      ('seafood', 'Fisk/skaldjur'),
-      ('animal-product', 'Animalisk produkt'),
-      ('contains-alcohol', 'Alkohol'),
-      ('is-spicy', 'Starkt'),
+      ('meat', context.l10n.dietaryMeat),
+      ('pork', context.l10n.dietaryPork),
+      ('beef', context.l10n.dietaryBeef),
+      ('poultry', context.l10n.dietaryPoultry),
+      ('seafood', context.l10n.dietarySeafood),
+      ('animal-product', context.l10n.dietaryAnimalProduct),
+      ('contains-alcohol', context.l10n.dietaryAlcohol),
+      ('is-spicy', context.l10n.dietarySpicy),
     ];
 
     return Wrap(
@@ -274,7 +278,8 @@ class _UnknownIngredientDialogState extends State<UnknownIngredientDialog> {
       setState(() => _isSaving = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Kunde inte spara: $e')),
+          SnackBar(
+              content: Text(context.l10n.dialogCouldNotSave(e.toString()))),
         );
       }
     }

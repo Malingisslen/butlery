@@ -1,6 +1,7 @@
 // lib/widgets/import/components/import_dialog_header.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/assisted_import_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -43,11 +44,11 @@ class ImportDialogHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Manuell import',
+                  context.l10n.importManualTitle,
                   style: theme.textTheme.titleLarge,
                 ),
                 Text(
-                  _getStepDescription(currentStep),
+                  _getStepDescription(context, currentStep),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -58,21 +59,21 @@ class ImportDialogHeader extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.close),
             onPressed: onClose,
-            tooltip: 'Avbryt',
+            tooltip: context.l10n.commonCancel,
           ),
         ],
       ),
     );
   }
 
-  String _getStepDescription(AssistedImportStep step) {
+  String _getStepDescription(BuildContext context, AssistedImportStep step) {
     switch (step) {
       case AssistedImportStep.selectIngredients:
-        return 'Steg 1: Välj ingredienser';
+        return context.l10n.importStep1SelectIngredients;
       case AssistedImportStep.selectInstructions:
-        return 'Steg 2: Välj instruktioner';
+        return context.l10n.importStep2SelectInstructions;
       case AssistedImportStep.reviewEdit:
-        return 'Steg 3: Granska och redigera';
+        return context.l10n.importStep3ReviewEdit;
     }
   }
 }

@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 class CommentItemWidgets {
   /// Build a single comment item with header, content, and actions.
   static Widget buildCommentItem({
+    required BuildContext context,
     required dynamic comment,
     required String authorDisplayName,
     required String? authorAvatarUrl,
@@ -18,6 +19,8 @@ class CommentItemWidgets {
     required VoidCallback onReply,
     required VoidCallback onToggleLike,
     required VoidCallback? onShowLikes,
+    VoidCallback? onDelete,
+    bool isOwnComment = false,
     int depth = 0,
   }) {
     final isReply = depth > 0;
@@ -60,7 +63,7 @@ class CommentItemWidgets {
               ),
               // Reply button
               Semantics(
-                label: 'Svara på kommentar',
+                label: context.l10n.a11yReplyToComment,
                 button: true,
                 child: IconButton(
                   onPressed: onReply,
@@ -74,8 +77,8 @@ class CommentItemWidgets {
               // Like button
               Semantics(
                 label: comment.isLiked
-                    ? 'Ta bort gilla-markering'
-                    : 'Gilla kommentar',
+                    ? context.l10n.a11yUnlikeComment
+                    : context.l10n.a11yLikeComment,
                 button: true,
                 child: IconButton(
                   onPressed: onToggleLike,
@@ -88,6 +91,16 @@ class CommentItemWidgets {
                   ),
                 ),
               ),
+              // Delete button — only visible for the comment author
+              if (isOwnComment && onDelete != null)
+                IconButton(
+                  onPressed: onDelete,
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: AppColors.textMedium,
+                    size: AppDimensions.iconSizeM,
+                  ),
+                ),
             ],
           ),
 
@@ -105,7 +118,7 @@ class CommentItemWidgets {
             GestureDetector(
               onTap: onShowLikes,
               child: Text(
-                '${comment.likeCount} ${comment.likeCount == 1 ? 'gilla-markering' : 'gilla-markeringar'}',
+                context.l10n.socialLikeCount(comment.likeCount),
                 style: AppTextStyles.metadataEmphasized.copyWith(
                   color: AppColors.primary,
                   decoration: TextDecoration.underline,
@@ -159,6 +172,7 @@ class CommentItemWidgets {
 
   /// Build the likes dialog showing who liked a comment.
   static Widget buildLikesDialog({
+    required BuildContext context,
     required int likeCount,
     required List<String> likedByUserIds,
     required String Function(String userId) getDisplayName,
@@ -174,7 +188,7 @@ class CommentItemWidgets {
           Padding(
             padding: AppDimensions.paddingOnlyBottom12,
             child: Text(
-              'Gilla-markeringar ($likeCount)',
+              context.l10n.socialLikesHeader(likeCount),
               style: AppTextStyles.headlineSmall,
             ),
           ),
@@ -211,12 +225,12 @@ class CommentItemWidgets {
   }
 
   /// Format comment time for display.
-  static String formatCommentTime(DateTime timestamp) {
+  static String formatCommentTime(BuildContext context, DateTime timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
 
     if (difference.inMinutes < 1) {
-      return 'nu';
+      return context.l10n.commonNow;
     } else if (difference.inMinutes < 60) {
       return '${difference.inMinutes}m';
     } else if (difference.inHours < 24) {

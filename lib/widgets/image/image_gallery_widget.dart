@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 
@@ -146,7 +147,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             const SizedBox(
                 height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
             Text(
-              'No images yet',
+              context.l10n.imageNoImagesYet,
               style: AppTextStyles.bodyLarge.copyWith(
                 color: AppColors.textDark
                     .withValues(alpha: AppDimensions.opacityMediumDark),
@@ -154,7 +155,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
-              'Images will appear here',
+              context.l10n.imageWillAppearHere,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textDark
                     .withValues(alpha: AppDimensions.opacityMedium),
@@ -185,7 +186,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
           ),
           const SizedBox(width: AppDimensions.spacingSm),
           Text(
-            '${_selectedImages.length} selected',
+            context.l10n.imageCountSelected(_selectedImages.length),
             style: AppTextStyles.contentTitle.copyWith(
               color: AppColors.cardWhite,
             ),
@@ -194,7 +195,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
           TextButton(
             onPressed: _exitSelectionMode,
             child: Text(
-              'Cancel',
+              context.l10n.commonCancel,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.forestGreen,
               ),
@@ -235,7 +236,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                 ),
                 const SizedBox(height: AppDimensions.spacingXs),
                 Text(
-                  'Add',
+                  context.l10n.commonAdd,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.forestGreen,
                   ),
@@ -270,7 +271,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
           child: ClipRRect(
             borderRadius: widget.config.effectiveBorderRadius,
             child: Semantics(
-              label: 'Visa bild',
+              label: context.l10n.a11yShowImage,
               button: true,
               child: GestureDetector(
                 onTap: () => _handleImageTap(imageUrl, index),
@@ -447,7 +448,7 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
               const SizedBox(
                   height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
               Text(
-                'No images to display',
+                context.l10n.imageNoImagesToDisplay,
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: AppColors.textDark
                       .withValues(alpha: AppDimensions.opacityMediumDark),
@@ -473,7 +474,7 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
         final imageUrl = imageUrls[index];
 
         return Semantics(
-          label: 'Visa bild',
+          label: context.l10n.a11yShowImage,
           button: true,
           child: GestureDetector(
             onTap: () {

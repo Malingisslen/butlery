@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_list_operations.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Main facade for shopping dialog coordination
 class ShoppingDialogs {
@@ -126,13 +127,12 @@ class ShoppingDialogs {
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              title: const Text('Inga vänner'),
-              content: const Text(
-                  'Du har inga vänner att dela med än. Lägg till vänner först.'),
+              title: Text(context.l10n.shoppingNoFriends),
+              content: Text(context.l10n.shoppingNoFriendsDescription),
               actions: [
                 ActionButtons.primaryButton(
                   context,
-                  label: 'OK',
+                  label: context.l10n.commonOk,
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -162,7 +162,8 @@ class ShoppingDialogs {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Kunde inte visa delningsdialog: $e'),
+            content: Text(
+                context.l10n.shoppingCouldNotShowShareDialog(e.toString())),
             backgroundColor: AppColors.error,
             duration: const Duration(seconds: 4),
           ),

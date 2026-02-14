@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 
@@ -90,7 +91,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           Padding(
             padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
             child: Text(
-              '${widget.selectedImages.length}/${widget.config.maxImages} images selected',
+              context.l10n.imageSelectedCount(
+                  widget.selectedImages.length, widget.config.maxImages),
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textDark
                     .withValues(alpha: AppDimensions.opacityDark),
@@ -142,7 +144,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       height:
                           (AppDimensions.spacingSm + AppDimensions.spacingXs)),
                   Text(
-                    'Selecting images...',
+                    context.l10n.imageSelectingImages,
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.textDark
                           .withValues(alpha: AppDimensions.opacityDark),
@@ -166,14 +168,17 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       height:
                           (AppDimensions.spacingSm + AppDimensions.spacingXs)),
                   Text(
-                    widget.allowMultiple ? 'Select images' : 'Select image',
+                    widget.allowMultiple
+                        ? context.l10n.imageSelectImages
+                        : context.l10n.imageSelectImage,
                     style: AppTextStyles.contentTitle,
                   ),
                   const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     widget.allowMultiple
-                        ? 'Tap to select up to ${widget.config.maxImages} images'
-                        : 'Tap to select an image',
+                        ? context.l10n
+                            .imageTapToSelectUpTo(widget.config.maxImages)
+                        : context.l10n.imageTapToSelectOne,
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.textDark
                           .withValues(alpha: AppDimensions.opacityDark),
@@ -197,7 +202,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Selected Images',
+          context.l10n.imageSelectedImages,
           style: AppTextStyles.contentTitle,
         ),
         const SizedBox(height: AppDimensions.spacingSm),
@@ -364,7 +369,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to select images: ${e.toString()}'),
+            content: Text(context.l10n.imageFailedToSelect(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );

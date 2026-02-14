@@ -15,48 +15,52 @@ class MenuItemBuilders {
     required IconData icon,
     VoidCallback? onTap,
   }) {
-    return InkWell(
-      onTap: onTap != null
-          ? () {
-              Navigator.pop(context);
-              onTap();
-            }
-          : null,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(AppDimensions.spacingS),
-        margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: AppDimensions.iconSizeAction,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(width: AppDimensions.spacingL),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.titleMedium,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXs),
-                  Text(
-                    subtitle,
-                    style: AppTextStyles.bodySmall,
-                  ),
-                ],
+    return Semantics(
+      label: title,
+      button: true,
+      child: InkWell(
+        onTap: onTap != null
+            ? () {
+                Navigator.pop(context);
+                onTap();
+              }
+            : null,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppDimensions.spacingS),
+          margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: AppDimensions.iconSizeAction,
+                color: Theme.of(context).colorScheme.primary,
               ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: AppDimensions.iconSizeM,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ],
+              const SizedBox(width: AppDimensions.spacingL),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.titleMedium,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: AppDimensions.iconSizeM,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -71,75 +75,79 @@ class MenuItemBuilders {
     VoidCallback? onTap,
     int count = 0,
   }) {
-    return InkWell(
-      onTap: onTap != null
-          ? () {
-              Navigator.pop(context);
-              onTap();
-            }
-          : null,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(AppDimensions.spacingS),
-        margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
-        child: Row(
-          children: [
-            Stack(
-              children: [
-                Icon(
-                  icon,
-                  size: AppDimensions.iconSizeAction,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                if (count > 0)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(AppDimensions.spacingXs),
-                      decoration: const BoxDecoration(
-                        color: AppColors.error,
-                        shape: BoxShape.circle,
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 16,
-                        minHeight: 16,
-                      ),
-                      child: Text(
-                        count > 99 ? '99+' : '$count',
-                        style: AppTextStyles.badge.copyWith(
-                          color: AppColors.neutralLight,
+    return Semantics(
+      label: title,
+      button: true,
+      child: InkWell(
+        onTap: onTap != null
+            ? () {
+                Navigator.pop(context);
+                onTap();
+              }
+            : null,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppDimensions.spacingS),
+          margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+          child: Row(
+            children: [
+              Stack(
+                children: [
+                  Icon(
+                    icon,
+                    size: AppDimensions.iconSizeAction,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  if (count > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                        decoration: const BoxDecoration(
+                          color: AppColors.error,
+                          shape: BoxShape.circle,
                         ),
-                        textAlign: TextAlign.center,
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          count > 99 ? '99+' : '$count',
+                          style: AppTextStyles.badge.copyWith(
+                            color: AppColors.neutralLight,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-            const SizedBox(width: AppDimensions.spacingL),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.titleMedium,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXs),
-                  Text(
-                    subtitle,
-                    style: AppTextStyles.bodySmall,
-                  ),
                 ],
               ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: AppDimensions.iconSizeM,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ],
+              const SizedBox(width: AppDimensions.spacingL),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.titleMedium,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: AppDimensions.iconSizeM,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -154,48 +162,52 @@ class MenuItemBuilders {
     required VoidCallback onTap,
     required Color color,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(AppDimensions.spacingS),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          border: Border.all(
-            color: color.withValues(alpha: AppDimensions.opacityMediumLight),
+    return Semantics(
+      label: title,
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppDimensions.spacingS),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: AppDimensions.opacityVeryLight),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            border: Border.all(
+              color: color.withValues(alpha: AppDimensions.opacityMediumLight),
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: AppDimensions.iconSizeAction,
-              color: color,
-            ),
-            const SizedBox(width: AppDimensions.spacingL),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.titleMedium.copyWith(
-                      color: color,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXs),
-                  Text(
-                    subtitle,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: color,
-                    ),
-                  ),
-                ],
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: AppDimensions.iconSizeAction,
+                color: color,
               ),
-            ),
-          ],
+              const SizedBox(width: AppDimensions.spacingL),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.titleMedium.copyWith(
+                        color: color,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: color,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

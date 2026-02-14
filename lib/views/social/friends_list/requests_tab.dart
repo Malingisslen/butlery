@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// RequestsTab - Friend discovery hub component
 /// Primary social discovery tab with search encouragement and request management.
@@ -54,9 +55,8 @@ class RequestsTab {
                 viewModel.sentRequests.isEmpty) ...[
               const SizedBox(height: AppDimensions.spacingXl),
               StateWidget.empty(
-                title: 'Inga vänskapsförfrågningar',
-                subtitle:
-                    'Börja söka efter vänner ovan för att utvidga ditt nätverk!',
+                title: context.l10n.socialNoFriendRequests,
+                subtitle: context.l10n.socialNoFriendRequestsDescription,
                 icon: Icons.search,
               ),
             ],
@@ -72,10 +72,16 @@ class RequestsTab {
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: Theme.of(context)
+            .colorScheme
+            .primary
+            .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+          color: Theme.of(context)
+              .colorScheme
+              .primary
+              .withValues(alpha: AppDimensions.opacityMediumLight),
           width: AppDimensions.borderWidthThin,
         ),
       ),
@@ -88,7 +94,7 @@ class RequestsTab {
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            'Hitta nya vänner',
+            context.l10n.socialFindNewFriends,
             style: AppTextStyles.headlineSmall.copyWith(
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -96,7 +102,7 @@ class RequestsTab {
           ),
           const SizedBox(height: AppDimensions.spacingS),
           Text(
-            'Använd sökfältet ovan för att hitta personer du vill bli vän med. Sök på namn eller användarnamn.',
+            context.l10n.socialFindNewFriendsDescription,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textMedium,
             ),
@@ -124,7 +130,7 @@ class RequestsTab {
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
-              'Inkommande förfrågningar',
+              context.l10n.socialIncomingRequests,
               style: AppTextStyles.titleMedium,
             ),
             const SizedBox(width: AppDimensions.spacingS),
@@ -173,7 +179,7 @@ class RequestsTab {
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
-              'Skickade förfrågningar',
+              context.l10n.socialSentRequests,
               style: AppTextStyles.titleMedium.copyWith(
                 color: AppColors.textMedium,
               ),
@@ -254,7 +260,7 @@ class RequestsTab {
                 ),
                 const SizedBox(height: AppDimensions.spacingXs),
                 Text(
-                  'Väntar på svar...',
+                  context.l10n.socialWaitingForResponse,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textMedium,
                   ),
@@ -276,7 +282,7 @@ class RequestsTab {
                 ),
               ),
               child: Text(
-                'Avbryt',
+                context.l10n.commonCancel,
                 style: AppTextStyles.labelSmall.copyWith(
                   color: AppColors.textMedium,
                 ),

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/viewmodels/account/data_export_viewmodel.dart';
@@ -34,7 +35,7 @@ class GdprConsentHandler {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Kunde inte öppna integritetspolicy: $e'),
+            content: Text(context.l10n.profileCouldNotOpenPrivacyPolicy('$e')),
             backgroundColor: AppColors.error,
           ),
         );
@@ -69,7 +70,8 @@ class GdprConsentHandler {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Kunde inte öppna samtyckeshantering: $e'),
+            content:
+                Text(context.l10n.profileCouldNotOpenConsentManagement('$e')),
             backgroundColor: AppColors.error,
           ),
         );
@@ -104,7 +106,7 @@ class GdprConsentHandler {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Kunde inte öppna dataexport: $e'),
+            content: Text(context.l10n.profileCouldNotOpenDataExport('$e')),
             backgroundColor: AppColors.error,
           ),
         );

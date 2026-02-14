@@ -13,6 +13,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/state/loading_states.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
 import 'package:butlery/core/constants/routes.dart';
 
@@ -145,11 +146,11 @@ class _DiscoveryDashboardViewContentState
               child: TabBar(
                 controller: _tabController,
                 tabs: [
-                  _buildTab(
-                      'Upptäck', Icons.explore, viewModel.trendingContentCount),
-                  _buildTab('Aktivitet', Icons.timeline,
+                  _buildTab(context.l10n.discoveryDiscover, Icons.explore,
+                      viewModel.trendingContentCount),
+                  _buildTab(context.l10n.discoveryActivity, Icons.timeline,
                       viewModel.friendActivityCount),
-                  _buildTab('För dig', Icons.recommend,
+                  _buildTab(context.l10n.discoveryForYou, Icons.recommend,
                       viewModel.recommendationsCount),
                 ],
                 labelColor: Theme.of(context).colorScheme.primary,
@@ -224,7 +225,7 @@ class _DiscoveryDashboardViewContentState
         child: LoadingStates.buildLoadingState(
           context,
           variant: LoadingVariant.spinner,
-          message: 'Laddar upptäcktsinnehåll...',
+          message: context.l10n.discoveryLoading,
         ),
       );
     }
@@ -241,7 +242,7 @@ class _DiscoveryDashboardViewContentState
     if (viewModel.searchQuery.isNotEmpty && !viewModel.hasSearchResults) {
       return SliverFillRemaining(
         child: StateWidget.noSearchResults(
-          actionLabel: 'Rensa sökning',
+          actionLabel: context.l10n.commonClearSearch,
           onAction: () {
             _searchController.clear();
             viewModel.clearSearch();
@@ -314,7 +315,7 @@ class _DiscoveryDashboardViewContentState
 
     if (searchResults.isEmpty) {
       return StateWidget.noSearchResults(
-        actionLabel: 'Rensa sökning',
+        actionLabel: context.l10n.discoveryClearSearch,
         onAction: () {
           _searchController.clear();
           viewModel.clearSearch();
@@ -359,7 +360,7 @@ class _DiscoveryDashboardViewContentState
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis),
             if (ownerName != null)
-              Text('Av $ownerName',
+              Text(context.l10n.discoveryByAuthor(ownerName),
                   style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.onSurface
                           .withValues(alpha: AppDimensions.opacityMediumDark))),

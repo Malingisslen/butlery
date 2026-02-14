@@ -10,6 +10,7 @@ import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// List management operations for shopping lists
 class ShoppingListOperations {
@@ -20,15 +21,15 @@ class ShoppingListOperations {
   ) async {
     final name = await DialogFactory.showTextInput(
       context,
-      title: 'Skapa ny lista',
-      hintText: 'T.ex. Veckohandling',
-      confirmText: 'Skapa',
+      title: context.l10n.shoppingCreateNewList,
+      hintText: context.l10n.shoppingCreateNewListHint,
+      confirmText: context.l10n.commonCreate,
       required: true,
     );
 
     if (name != null && name.isNotEmpty) {
       await viewModel.createPersonalList(name);
-      onSuccess('Lista "$name" skapad!');
+      onSuccess(context.l10n.shoppingListCreated(name));
     }
   }
 
@@ -41,16 +42,16 @@ class ShoppingListOperations {
 
     final confirmed = await DialogFactory.showConfirmation(
       context,
-      title: 'Töm inhandlade varor',
+      title: context.l10n.shoppingClearPurchasedTitle,
       message:
-          'Vill du ta bort alla ${viewModel.boughtItems} inhandlade varor från listan?',
-      confirmText: 'Töm',
+          context.l10n.shoppingClearPurchasedMessage(viewModel.boughtItems),
+      confirmText: context.l10n.shoppingClear,
       isDangerous: true,
     );
 
     if (confirmed == true) {
       await viewModel.clearBoughtItems();
-      onSuccess('Inhandlade varor rensade!');
+      onSuccess(context.l10n.shoppingPurchasedCleared);
     }
   }
 
@@ -67,14 +68,14 @@ class ShoppingListOperations {
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Byt namn på lista'),
+        title: Text(context.l10n.shoppingRenameList),
         content: Form(
           key: formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Nuvarande namn: "${list.name}"',
+                context.l10n.shoppingCurrentName(list.name),
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textMedium,
                 ),
@@ -83,14 +84,16 @@ class ShoppingListOperations {
               StyledInput(
                 controller: textController,
                 autofocus: true,
-                label: 'Nytt namn',
-                hint: 'Ange det nya namnet för listan',
+                label: context.l10n.shoppingNewName,
+                hint: context.l10n.shoppingNewNameHint,
                 validator: (value) {
                   final requiredCheck = ValidationUtils.validateRequired(value,
-                      fieldName: 'Namn');
+                      fieldName: context.l10n.commonName);
                   if (requiredCheck != null) return requiredCheck;
                   return ValidationUtils.validateLength(value,
-                      minLength: 2, maxLength: 50, fieldName: 'Namnet');
+                      minLength: 2,
+                      maxLength: 50,
+                      fieldName: context.l10n.commonName);
                 },
                 maxLength: 50,
               ),
@@ -100,12 +103,12 @@ class ShoppingListOperations {
         actions: [
           ActionButtons.secondaryButton(
             context,
-            label: 'Avbryt',
+            label: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context),
           ),
           ActionButtons.primaryButton(
             context,
-            label: 'Spara',
+            label: context.l10n.commonSave,
             onPressed: () {
               if (formKey.currentState!.validate()) {
                 final newName = textController.text.trim();
@@ -120,9 +123,9 @@ class ShoppingListOperations {
     if (result != null && result != list.name) {
       final success = await viewModel.renameList(list.id, result);
       if (success) {
-        onSuccess('Lista döpt om till "$result"');
+        onSuccess(context.l10n.shoppingListRenamed(result));
       } else {
-        onError('Kunde inte döpa om listan');
+        onError(context.l10n.shoppingCouldNotRenameList);
       }
     }
   }
@@ -136,21 +139,22 @@ class ShoppingListOperations {
   ) async {
     final confirmed = await DialogFactory.showConfirmation(
       context,
-      title: 'Ta bort lista',
+      title: context.l10n.shoppingDeleteList,
       message: list.items.isEmpty
-          ? 'Är du säker på att du vill ta bort listan "${list.name}"?'
-          : 'Är du säker på att du vill ta bort listan "${list.name}"?\n\nListan innehåller ${list.items.length} artiklar som kommer att försvinna permanent.',
-      confirmText: 'Ta bort',
-      cancelText: 'Avbryt',
+          ? context.l10n.shoppingDeleteListConfirm(list.name)
+          : context.l10n
+              .shoppingDeleteListWithItemsConfirm(list.name, list.items.length),
+      confirmText: context.l10n.commonDelete,
+      cancelText: context.l10n.commonCancel,
       isDangerous: true,
     );
 
     if (confirmed == true) {
       final success = await viewModel.deleteList(list.id);
       if (success) {
-        onSuccess('Lista "${list.name}" borttagen');
+        onSuccess(context.l10n.shoppingListDeleted(list.name));
       } else {
-        onError('Kunde inte ta bort listan');
+        onError(context.l10n.shoppingCouldNotDeleteList);
       }
     }
   }

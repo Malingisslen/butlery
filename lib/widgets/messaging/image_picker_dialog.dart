@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -44,7 +45,7 @@ class ImagePickerDialog extends StatelessWidget {
             children: [
               // Header
               Text(
-                'Välj bild',
+                context.l10n.imageSelectImage,
                 style: AppTextStyles.titleBold,
                 textAlign: TextAlign.center,
               ),
@@ -54,7 +55,7 @@ class ImagePickerDialog extends StatelessWidget {
               // Camera option
               _SourceOption(
                 icon: Icons.camera_alt,
-                label: 'Ta foto',
+                label: context.l10n.commonTakePhoto,
                 color: AppColors.forestGreen,
                 onTap: () => Navigator.pop(context, ImageSource.camera),
               ),
@@ -64,7 +65,7 @@ class ImagePickerDialog extends StatelessWidget {
               // Gallery option
               _SourceOption(
                 icon: Icons.photo_library,
-                label: 'Välj från galleri',
+                label: context.l10n.commonSelectFromGallery,
                 color: AppColors.success,
                 onTap: () => Navigator.pop(context, ImageSource.gallery),
               ),
@@ -79,7 +80,7 @@ class ImagePickerDialog extends StatelessWidget {
                     vertical: AppDimensions.paddingM,
                   ),
                 ),
-                child: const Text('Avbryt'),
+                child: Text(context.l10n.commonCancel),
               ),
             ],
           ),

@@ -7,6 +7,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Builds action buttons for group detail view.
 class GroupActionButtons extends StatelessWidget {
@@ -37,21 +38,21 @@ class GroupActionButtons extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildSharingSection(),
+        _buildSharingSection(context),
         const SizedBox(height: AppDimensions.spacingL),
         const Divider(),
         const SizedBox(height: AppDimensions.spacingL),
-        _buildManagementSection(),
+        _buildManagementSection(context),
       ],
     );
   }
 
-  Widget _buildSharingSection() {
+  Widget _buildSharingSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Dela med gruppen',
+          context.l10n.groupShareWithGroup,
           style: AppTextStyles.titleBold,
         ),
         const SizedBox(height: AppDimensions.spacingM),
@@ -61,7 +62,7 @@ class GroupActionButtons extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: onShareRecipe,
                 icon: const Icon(Icons.restaurant_menu),
-                label: const Text('Dela recept'),
+                label: Text(context.l10n.groupShareRecipe),
               ),
             ),
             const SizedBox(width: AppDimensions.spacingM),
@@ -69,7 +70,7 @@ class GroupActionButtons extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: onShareMenu,
                 icon: const Icon(Icons.calendar_today),
-                label: const Text('Dela meny'),
+                label: Text(context.l10n.groupShareMenu),
               ),
             ),
           ],
@@ -80,19 +81,19 @@ class GroupActionButtons extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: onShareShoppingList,
             icon: const Icon(Icons.shopping_cart),
-            label: const Text('Dela inköpslista'),
+            label: Text(context.l10n.groupShareShoppingList),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildManagementSection() {
+  Widget _buildManagementSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Hantera grupp',
+          context.l10n.groupManageGroup,
           style: AppTextStyles.titleBold,
         ),
         const SizedBox(height: AppDimensions.spacingM),
@@ -100,20 +101,20 @@ class GroupActionButtons extends StatelessWidget {
           FilledButton.icon(
             onPressed: onEditGroup,
             icon: const Icon(Icons.edit),
-            label: const Text('Redigera grupp'),
+            label: Text(context.l10n.groupEditGroup),
           ),
           const SizedBox(height: AppDimensions.spacingL),
           OutlinedButton.icon(
             onPressed: onDeleteGroup,
             icon: const Icon(Icons.delete),
-            label: const Text('Ta bort grupp'),
+            label: Text(context.l10n.groupDeleteGroup),
             style: ComponentThemes.deleteButtonStyle,
           ),
         ] else
           OutlinedButton.icon(
             onPressed: onLeaveGroup,
             icon: const Icon(Icons.exit_to_app),
-            label: const Text('Lämna grupp'),
+            label: Text(context.l10n.groupLeaveGroup),
             style: ComponentThemes.outlinedButtonStyle,
           ),
       ],

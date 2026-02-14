@@ -203,8 +203,8 @@ class UserDisplayWidgets {
       );
 
   static Widget emptyUserState({
-    String title = 'Inga användare',
-    String subtitle = 'Inga användare att visa',
+    String? title,
+    String? subtitle,
     IconData icon = Icons.people_outline,
     VoidCallback? onAction,
     String? actionLabel,

@@ -1,6 +1,7 @@
 // lib/widgets/common/search_filter/filter_models.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Filter option data model
 class FilterOption {
@@ -40,38 +41,38 @@ class RecipeFilters {
     ),
   ];
 
-  static const List<FilterOption> mealTypeFilters = [
-    FilterOption(
-      id: 'breakfast',
-      label: 'Frukost',
-      icon: Icons.breakfast_dining,
-      value: 'Frukost',
-    ),
-    FilterOption(
-      id: 'lunch',
-      label: 'Lunch',
-      icon: Icons.lunch_dining,
-      value: 'Lunch',
-    ),
-    FilterOption(
-      id: 'dinner',
-      label: 'Middag',
-      icon: Icons.dinner_dining,
-      value: 'Middag',
-    ),
-    FilterOption(
-      id: 'snack',
-      label: 'Mellanmål',
-      icon: Icons.cookie,
-      value: 'Mellanmål',
-    ),
-    FilterOption(
-      id: 'dessert',
-      label: 'Efterrätt',
-      icon: Icons.cake,
-      value: 'Efterrätt',
-    ),
-  ];
+  static List<FilterOption> mealTypeFilters(BuildContext context) => [
+        FilterOption(
+          id: 'breakfast',
+          label: context.l10n.filterBreakfast,
+          icon: Icons.breakfast_dining,
+          value: 'Frukost',
+        ),
+        FilterOption(
+          id: 'lunch',
+          label: context.l10n.filterLunch,
+          icon: Icons.lunch_dining,
+          value: 'Lunch',
+        ),
+        FilterOption(
+          id: 'dinner',
+          label: context.l10n.filterDinner,
+          icon: Icons.dinner_dining,
+          value: 'Middag',
+        ),
+        FilterOption(
+          id: 'snack',
+          label: context.l10n.filterSnack,
+          icon: Icons.cookie,
+          value: 'Mellanmål',
+        ),
+        FilterOption(
+          id: 'dessert',
+          label: context.l10n.filterDessert,
+          icon: Icons.cake,
+          value: 'Efterrätt',
+        ),
+      ];
 
   static const List<FilterOption> ratingFilters = [
     FilterOption(
@@ -86,77 +87,103 @@ class RecipeFilters {
     ),
   ];
 
+  // Data-only lookups for ViewModel (no BuildContext needed)
+  static const _allergenFilterValues = {
+    'gluten-free': 'gluten',
+    'dairy-free': 'mjölk',
+    'lactose-free': 'laktos',
+    'nut-free': 'nötter',
+    'egg-free': 'ägg',
+    'soy-free': 'soja',
+  };
+
+  static const _dietaryFilterValues = {
+    'vegetarian': 'vegetarisk',
+    'vegan': 'vegansk',
+    'pescetarian': 'pescetarian',
+    'halal': 'halalanpassad',
+    'kid-friendly': 'barnvänlig',
+  };
+
+  /// Look up allergen filter value by ID (no BuildContext needed).
+  static String? allergenFilterValue(String filterId) =>
+      _allergenFilterValues[filterId];
+
+  /// Look up dietary filter value by ID (no BuildContext needed).
+  static String? dietaryFilterValue(String filterId) =>
+      _dietaryFilterValues[filterId];
+
   /// Allergen-free filters (recipe must be proven FREE from these).
-  static const List<FilterOption> allergenFreeFilters = [
-    FilterOption(
-      id: 'gluten-free',
-      label: 'Glutenfri',
-      icon: Icons.check_circle_outline,
-      value: 'gluten',
-    ),
-    FilterOption(
-      id: 'dairy-free',
-      label: 'Mjölkfri',
-      icon: Icons.check_circle_outline,
-      value: 'mjölk',
-    ),
-    FilterOption(
-      id: 'lactose-free',
-      label: 'Laktosfri',
-      icon: Icons.check_circle_outline,
-      value: 'laktos',
-    ),
-    FilterOption(
-      id: 'nut-free',
-      label: 'Nötfri',
-      icon: Icons.check_circle_outline,
-      value: 'nötter',
-    ),
-    FilterOption(
-      id: 'egg-free',
-      label: 'Äggfri',
-      icon: Icons.check_circle_outline,
-      value: 'ägg',
-    ),
-    FilterOption(
-      id: 'soy-free',
-      label: 'Sojafri',
-      icon: Icons.check_circle_outline,
-      value: 'soja',
-    ),
-  ];
+  static List<FilterOption> allergenFreeFilters(BuildContext context) => [
+        FilterOption(
+          id: 'gluten-free',
+          label: context.l10n.filterGlutenFree,
+          icon: Icons.check_circle_outline,
+          value: 'gluten',
+        ),
+        FilterOption(
+          id: 'dairy-free',
+          label: context.l10n.filterDairyFree,
+          icon: Icons.check_circle_outline,
+          value: 'mjölk',
+        ),
+        FilterOption(
+          id: 'lactose-free',
+          label: context.l10n.filterLactoseFree,
+          icon: Icons.check_circle_outline,
+          value: 'laktos',
+        ),
+        FilterOption(
+          id: 'nut-free',
+          label: context.l10n.filterNutFree,
+          icon: Icons.check_circle_outline,
+          value: 'nötter',
+        ),
+        FilterOption(
+          id: 'egg-free',
+          label: context.l10n.filterEggFree,
+          icon: Icons.check_circle_outline,
+          value: 'ägg',
+        ),
+        FilterOption(
+          id: 'soy-free',
+          label: context.l10n.filterSoyFree,
+          icon: Icons.check_circle_outline,
+          value: 'soja',
+        ),
+      ];
 
   /// Dietary restriction filters (recipe must be safe for this diet).
-  static const List<FilterOption> dietaryFilters = [
-    FilterOption(
-      id: 'vegetarian',
-      label: 'Vegetarisk',
-      icon: Icons.eco_outlined,
-      value: 'vegetarisk',
-    ),
-    FilterOption(
-      id: 'vegan',
-      label: 'Vegansk',
-      icon: Icons.eco_outlined,
-      value: 'vegansk',
-    ),
-    FilterOption(
-      id: 'pescetarian',
-      label: 'Pescetarian',
-      icon: Icons.set_meal,
-      value: 'pescetarian',
-    ),
-    FilterOption(
-      id: 'halal',
-      label: 'Halalanpassad',
-      icon: Icons.restaurant,
-      value: 'halalanpassad',
-    ),
-    FilterOption(
-      id: 'kid-friendly',
-      label: 'Barnvänlig',
-      icon: Icons.child_care,
-      value: 'barnvänlig',
-    ),
-  ];
+  static List<FilterOption> dietaryFilters(BuildContext context) => [
+        FilterOption(
+          id: 'vegetarian',
+          label: context.l10n.filterVegetarian,
+          icon: Icons.eco_outlined,
+          value: 'vegetarisk',
+        ),
+        FilterOption(
+          id: 'vegan',
+          label: context.l10n.filterVegan,
+          icon: Icons.eco_outlined,
+          value: 'vegansk',
+        ),
+        FilterOption(
+          id: 'pescetarian',
+          label: context.l10n.filterPescetarian,
+          icon: Icons.set_meal,
+          value: 'pescetarian',
+        ),
+        FilterOption(
+          id: 'halal',
+          label: context.l10n.filterHalal,
+          icon: Icons.restaurant,
+          value: 'halalanpassad',
+        ),
+        FilterOption(
+          id: 'kid-friendly',
+          label: context.l10n.filterKidFriendly,
+          icon: Icons.child_care,
+          value: 'barnvänlig',
+        ),
+      ];
 }

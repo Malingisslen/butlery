@@ -2,6 +2,7 @@
 /// Extracted from editable_image_widget.dart for better organization.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -119,48 +120,50 @@ class UploadProgressWidgets {
     final failed = summary['failed'] as int? ?? 0;
     final active = summary['active'] as int? ?? 0;
 
-    final controls = <Widget>[];
+    return Builder(builder: (context) {
+      final controls = <Widget>[];
 
-    if (canBulkRetry && onRetryAllFailed != null) {
-      controls.add(
-        buildBulkActionButton(
-          icon: Icons.refresh,
-          label: 'Försök alla ($failed)',
-          onTap: onRetryAllFailed,
-          color: AppColors.forestGreen,
-        ),
+      if (canBulkRetry && onRetryAllFailed != null) {
+        controls.add(
+          buildBulkActionButton(
+            icon: Icons.refresh,
+            label: context.l10n.uploadRetryAllCount(failed),
+            onTap: onRetryAllFailed,
+            color: AppColors.forestGreen,
+          ),
+        );
+      }
+
+      if (canBulkCancel && onCancelAllActive != null) {
+        controls.add(
+          buildBulkActionButton(
+            icon: Icons.stop,
+            label: context.l10n.uploadStopAllCount(active),
+            onTap: onCancelAllActive,
+            color: AppColors.textMedium,
+          ),
+        );
+      }
+
+      if (hasRetryableFailures && onClearAllFailed != null) {
+        controls.add(
+          buildBulkActionButton(
+            icon: Icons.clear_all,
+            label: context.l10n.uploadClearFailed,
+            onTap: onClearAllFailed,
+            color: AppColors.error,
+          ),
+        );
+      }
+
+      if (controls.isEmpty) return const SizedBox.shrink();
+
+      return Wrap(
+        spacing: AppDimensions.spacingSm,
+        runSpacing: AppDimensions.spacingSm,
+        children: controls,
       );
-    }
-
-    if (canBulkCancel && onCancelAllActive != null) {
-      controls.add(
-        buildBulkActionButton(
-          icon: Icons.stop,
-          label: 'Stoppa alla ($active)',
-          onTap: onCancelAllActive,
-          color: AppColors.textMedium,
-        ),
-      );
-    }
-
-    if (hasRetryableFailures && onClearAllFailed != null) {
-      controls.add(
-        buildBulkActionButton(
-          icon: Icons.clear_all,
-          label: 'Rensa misslyckade',
-          onTap: onClearAllFailed,
-          color: AppColors.error,
-        ),
-      );
-    }
-
-    if (controls.isEmpty) return const SizedBox.shrink();
-
-    return Wrap(
-      spacing: AppDimensions.spacingSm,
-      runSpacing: AppDimensions.spacingSm,
-      children: controls,
-    );
+    });
   }
 
   /// Build bulk action button
@@ -286,13 +289,15 @@ class UploadProgressWidgets {
                   if (status.isActive &&
                       status.formattedTimeRemaining != null) ...[
                     const SizedBox(height: AppDimensions.spacingXxs),
-                    Text(
-                      '${status.formattedTimeRemaining} kvar',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.cardWhite
-                            .withValues(alpha: AppDimensions.opacityVeryDark),
-                      ),
-                    ),
+                    Builder(
+                        builder: (context) => Text(
+                              context.l10n.uploadTimeRemaining(
+                                  status.formattedTimeRemaining!),
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.cardWhite.withValues(
+                                    alpha: AppDimensions.opacityVeryDark),
+                              ),
+                            )),
                   ],
                   if (status.fileSizeMB != null) ...[
                     const SizedBox(height: AppDimensions.spacingXxs),
@@ -310,29 +315,30 @@ class UploadProgressWidgets {
             if (status.state == ImageUploadState.failed ||
                 status.state == ImageUploadState.cancelled) ...[
               const SizedBox(height: AppDimensions.spacingSm),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (status.canRetry && onRetryUpload != null)
-                    buildUploadActionButton(
-                      icon: Icons.refresh,
-                      label: 'Försök igen',
-                      onTap: () => onRetryUpload(imageUrl),
-                      color: AppColors.forestGreen,
-                    ),
-                  if (status.canRetry &&
-                      onRetryUpload != null &&
-                      onCancelUpload != null)
-                    const SizedBox(width: AppDimensions.spacingSm),
-                  if (onCancelUpload != null)
-                    buildUploadActionButton(
-                      icon: Icons.close,
-                      label: 'Ta bort',
-                      onTap: () => onCancelUpload(imageUrl),
-                      color: AppColors.error,
-                    ),
-                ],
-              ),
+              Builder(
+                  builder: (context) => Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (status.canRetry && onRetryUpload != null)
+                            buildUploadActionButton(
+                              icon: Icons.refresh,
+                              label: context.l10n.commonRetry,
+                              onTap: () => onRetryUpload(imageUrl),
+                              color: AppColors.forestGreen,
+                            ),
+                          if (status.canRetry &&
+                              onRetryUpload != null &&
+                              onCancelUpload != null)
+                            const SizedBox(width: AppDimensions.spacingSm),
+                          if (onCancelUpload != null)
+                            buildUploadActionButton(
+                              icon: Icons.close,
+                              label: context.l10n.commonDelete,
+                              onTap: () => onCancelUpload(imageUrl),
+                              color: AppColors.error,
+                            ),
+                        ],
+                      )),
             ],
           ],
         ),

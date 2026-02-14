@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -329,7 +330,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
         ShareDialogActions.buildSelectionSummary(
           context,
           _selectedFriendIds.length + _selectedGroupIds.length,
-          ShareDialogHelpers.getContentTypeName(widget.contentType),
+          ShareDialogHelpers.getContentTypeName(context, widget.contentType),
         ),
         const SizedBox(height: AppDimensions.spacingXl),
         ShareDialogActions.buildActionButtons(
@@ -398,6 +399,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
 
       if (shareResult && mounted) {
         final successMessage = ShareDialogHelpers.getSuccessMessage(
+          context,
           widget.contentType,
           _selectedFriendIds.length + _selectedGroupIds.length,
           _selectedMode,
@@ -427,7 +429,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Delning misslyckades: $e'),
+            content: Text(context.l10n.shareFailed(e.toString())),
             backgroundColor: AppColors.error,
           ),
         );

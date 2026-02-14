@@ -12,6 +12,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// SharedContentActions - Action methods for shared content
 /// Handles import, dismiss, and other actions for shared content.
@@ -28,15 +29,16 @@ class SharedContentActions {
     if (recipeId != null && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('✅ Recept "${sharedRecipe.recipeTitle}" importerat!'),
+          content:
+              Text(context.l10n.sharedRecipeImported(sharedRecipe.recipeTitle)),
           backgroundColor: AppColors.success,
         ),
       );
     } else if (context.mounted && viewModel.recipeViewModel.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text(viewModel.recipeViewModel.error ?? 'Import misslyckades'),
+          content: Text(viewModel.recipeViewModel.error ??
+              context.l10n.sharedImportFailed),
           backgroundColor: AppColors.error,
         ),
       );
@@ -56,8 +58,8 @@ class SharedContentActions {
         // Navigate to collaborative menu view
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                '📡 Ansluter till samarbetsmeny "${sharedMenu.menuTitle}"...'),
+            content: Text(context.l10n
+                .sharedConnectingToCollaborativeMenu(sharedMenu.menuTitle)),
             backgroundColor: AppColors.primary,
             duration: const Duration(seconds: 2),
           ),
@@ -72,7 +74,8 @@ class SharedContentActions {
         // Regular menu import
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✅ Meny "${sharedMenu.menuTitle}" importerad!'),
+            content:
+                Text(context.l10n.sharedMenuImported(sharedMenu.menuTitle)),
             backgroundColor: AppColors.success,
           ),
         );
@@ -80,7 +83,8 @@ class SharedContentActions {
     } else if (context.mounted && viewModel.menuViewModel.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(viewModel.menuViewModel.error ?? 'Import misslyckades'),
+          content: Text(
+              viewModel.menuViewModel.error ?? context.l10n.sharedImportFailed),
           backgroundColor: AppColors.error,
         ),
       );
@@ -96,21 +100,20 @@ class SharedContentActions {
     final shouldDismiss = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Dölj recept'),
+        title: Text(context.l10n.sharedHideRecipe),
         content: Text(
-          'Vill du dölja "${sharedRecipe.recipeTitle}" från din lista?\n\n'
-          'Du kan fortfarande komma åt receptet genom att söka eller be '
-          '${sharedRecipe.sharedByDisplayName} att dela det igen.',
+          context.l10n.sharedHideRecipeConfirm(
+              sharedRecipe.recipeTitle, sharedRecipe.sharedByDisplayName),
         ),
         actions: [
           ActionButtons.secondaryButton(
             context,
-            label: 'Avbryt',
+            label: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context, false),
           ),
           ActionButtons.primaryButton(
             context,
-            label: 'Dölj',
+            label: context.l10n.commonHide,
             onPressed: () => Navigator.pop(context, true),
           ),
         ],
@@ -124,11 +127,11 @@ class SharedContentActions {
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text('✅ "${sharedRecipe.recipeTitle}" dolt från din lista'),
+            content: Text(
+                context.l10n.sharedContentHidden(sharedRecipe.recipeTitle)),
             backgroundColor: AppColors.success,
             action: SnackBarAction(
-              label: 'Ångra',
+              label: context.l10n.commonUndo,
               onPressed: () =>
                   viewModel.recipeViewModel.undismissSharedRecipe(sharedRecipe),
             ),
@@ -137,8 +140,8 @@ class SharedContentActions {
       } else if (context.mounted && viewModel.recipeViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                viewModel.recipeViewModel.error ?? 'Kunde inte dölja recept'),
+            content: Text(viewModel.recipeViewModel.error ??
+                context.l10n.sharedCouldNotHideRecipe),
             backgroundColor: AppColors.error,
           ),
         );
@@ -155,21 +158,20 @@ class SharedContentActions {
     final shouldDismiss = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Dölj meny'),
+        title: Text(context.l10n.sharedHideMenu),
         content: Text(
-          'Vill du dölja "${sharedMenu.menuTitle}" från din lista?\n\n'
-          'Du kan fortfarande komma åt menyn genom att be '
-          '${sharedMenu.sharedByDisplayName} att dela den igen.',
+          context.l10n.sharedHideMenuConfirm(
+              sharedMenu.menuTitle, sharedMenu.sharedByDisplayName),
         ),
         actions: [
           ActionButtons.secondaryButton(
             context,
-            label: 'Avbryt',
+            label: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context, false),
           ),
           ActionButtons.primaryButton(
             context,
-            label: 'Dölj',
+            label: context.l10n.commonHide,
             onPressed: () => Navigator.pop(context, true),
           ),
         ],
@@ -183,10 +185,11 @@ class SharedContentActions {
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✅ "${sharedMenu.menuTitle}" dold från din lista'),
+            content:
+                Text(context.l10n.sharedContentHidden(sharedMenu.menuTitle)),
             backgroundColor: AppColors.success,
             action: SnackBarAction(
-              label: 'Ångra',
+              label: context.l10n.commonUndo,
               onPressed: () =>
                   viewModel.menuViewModel.undismissSharedMenu(sharedMenu),
             ),
@@ -195,8 +198,8 @@ class SharedContentActions {
       } else if (context.mounted && viewModel.menuViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text(viewModel.menuViewModel.error ?? 'Kunde inte dölja meny'),
+            content: Text(viewModel.menuViewModel.error ??
+                context.l10n.sharedCouldNotHideMenu),
             backgroundColor: AppColors.error,
           ),
         );
@@ -218,7 +221,7 @@ class SharedContentActions {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content:
-              Text('✅ Du är nu medlem i "${sharedShoppingList.listName}"!'),
+              Text(context.l10n.sharedJoinedList(sharedShoppingList.listName)),
           backgroundColor: AppColors.success,
         ),
       );
@@ -253,8 +256,8 @@ class SharedContentActions {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(
-                    '✅ Du är nu medlem i "${sharedShoppingList.listName}"! Hitta den delade listan i inköpslistor.'),
+                content: Text(context.l10n.sharedJoinedListFindInShopping(
+                    sharedShoppingList.listName)),
                 backgroundColor: AppColors.success,
                 duration: const Duration(seconds: 4),
               ),
@@ -266,9 +269,8 @@ class SharedContentActions {
           // Show error to user since both navigation attempts failed
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                    '⚠️ Du är nu medlem i listan, men kunde inte navigera dit automatiskt. Hitta listan i "Inköpslistor".'),
+              SnackBar(
+                content: Text(context.l10n.sharedJoinedButCouldNotNavigate),
                 backgroundColor: AppColors.warning,
                 duration: Duration(seconds: 5),
               ),
@@ -281,14 +283,14 @@ class SharedContentActions {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(viewModel.shoppingViewModel.error ??
-                'Kunde inte gå med i listan'),
+                context.l10n.sharedCouldNotJoinList),
             backgroundColor: AppColors.error,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kunde inte gå med i listan. Försök igen.'),
+          SnackBar(
+            content: Text(context.l10n.sharedCouldNotJoinListTryAgain),
             backgroundColor: AppColors.error,
           ),
         );
@@ -305,21 +307,21 @@ class SharedContentActions {
     final shouldDismiss = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Dölj inköpslista'),
+        title: Text(context.l10n.sharedHideShoppingList),
         content: Text(
-          'Vill du dölja "${sharedShoppingList.listName}" från din lista?\n\n'
-          'Du kan fortfarande komma åt listan genom att be '
-          '${sharedShoppingList.sharedByDisplayName} att dela den igen.',
+          context.l10n.sharedHideShoppingListConfirm(
+              sharedShoppingList.listName,
+              sharedShoppingList.sharedByDisplayName),
         ),
         actions: [
           ActionButtons.secondaryButton(
             context,
-            label: 'Avbryt',
+            label: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context, false),
           ),
           ActionButtons.primaryButton(
             context,
-            label: 'Dölj',
+            label: context.l10n.commonHide,
             onPressed: () => Navigator.pop(context, true),
           ),
         ],
@@ -333,11 +335,11 @@ class SharedContentActions {
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text('✅ "${sharedShoppingList.listName}" dold från din lista'),
+            content: Text(
+                context.l10n.sharedContentHidden(sharedShoppingList.listName)),
             backgroundColor: AppColors.success,
             action: SnackBarAction(
-              label: 'Ångra',
+              label: context.l10n.commonUndo,
               onPressed: () => viewModel.shoppingViewModel
                   .undismissSharedShoppingList(sharedShoppingList),
             ),
@@ -347,7 +349,7 @@ class SharedContentActions {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(viewModel.shoppingViewModel.error ??
-                'Kunde inte dölja inköpslista'),
+                context.l10n.sharedCouldNotHideShoppingList),
             backgroundColor: AppColors.error,
           ),
         );

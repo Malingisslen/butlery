@@ -69,6 +69,7 @@ class Routes {
   // Settings routes
   static const String settingsAllergens = '/settings/allergens';
   static const String settingsPersonalTags = '/settings/personal-tags';
+  static const String settingsNotifications = '/settings/notifications';
 
   // Route aliases
   static const Map<String, String> aliases = {
@@ -105,6 +106,7 @@ class Routes {
     chat,
     settingsAllergens,
     settingsPersonalTags,
+    settingsNotifications,
   };
 
   /// Routes using slide-from-bottom animation
@@ -136,6 +138,7 @@ class Routes {
     chat,
     settingsAllergens,
     settingsPersonalTags,
+    settingsNotifications,
   };
 
   /// Routes using fade animation
@@ -218,6 +221,7 @@ class Routes {
     // Settings
     settingsAllergens,
     settingsPersonalTags,
+    settingsNotifications,
   };
 
   /// All routes including aliases

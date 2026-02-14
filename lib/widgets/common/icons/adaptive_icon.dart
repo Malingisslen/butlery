@@ -67,10 +67,6 @@ class AdaptiveIcon extends StatelessWidget {
     );
   }
 
-  // ============================================================
-  // Navigation Icons
-  // ============================================================
-
   /// Book icon for recipes navigation.
   const AdaptiveIcon.book({
     super.key,
@@ -160,10 +156,6 @@ class AdaptiveIcon extends StatelessWidget {
     this.semanticLabel,
   })  : materialIcon = Icons.explore_outlined,
         cupertinoIcon = CupertinoIcons.compass;
-
-  // ============================================================
-  // Action Icons
-  // ============================================================
 
   /// Share icon.
   const AdaptiveIcon.share({
@@ -264,10 +256,6 @@ class AdaptiveIcon extends StatelessWidget {
   })  : materialIcon = Icons.settings,
         cupertinoIcon = CupertinoIcons.gear;
 
-  // ============================================================
-  // Social Icons
-  // ============================================================
-
   /// People/friends icon.
   const AdaptiveIcon.people({
     super.key,
@@ -321,10 +309,6 @@ class AdaptiveIcon extends StatelessWidget {
     this.semanticLabel,
   })  : materialIcon = Icons.group_outlined,
         cupertinoIcon = CupertinoIcons.person_3;
-
-  // ============================================================
-  // Status/Feedback Icons
-  // ============================================================
 
   /// Star/favorite icon.
   const AdaptiveIcon.star({
@@ -397,10 +381,6 @@ class AdaptiveIcon extends StatelessWidget {
     this.semanticLabel,
   })  : materialIcon = Icons.info_outline,
         cupertinoIcon = CupertinoIcons.info;
-
-  // ============================================================
-  // Content Icons
-  // ============================================================
 
   /// Restaurant/food icon.
   const AdaptiveIcon.restaurant({
@@ -501,10 +481,6 @@ class AdaptiveIcon extends StatelessWidget {
     this.semanticLabel,
   })  : materialIcon = Icons.bookmark_border,
         cupertinoIcon = CupertinoIcons.bookmark;
-
-  // ============================================================
-  // Navigation/Arrow Icons
-  // ============================================================
 
   /// Arrow back icon.
   const AdaptiveIcon.arrowBack({

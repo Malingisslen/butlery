@@ -1,6 +1,7 @@
 // lib/widgets/messaging/message_bubble.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -96,7 +97,7 @@ class _MessageBubbleState extends State<MessageBubble>
 
     return RepaintBoundary(
       child: Semantics(
-        label: 'Meddelande, svep för att svara',
+        label: context.l10n.a11yMessageSwipeToReply,
         container: true,
         child: GestureDetector(
           onHorizontalDragUpdate:
@@ -271,7 +272,7 @@ class _MessageBubbleState extends State<MessageBubble>
 
   Widget _buildMessageCard(BuildContext context) {
     return Semantics(
-      label: 'Meddelandeinnehåll, långtryck för alternativ',
+      label: context.l10n.a11yMessageLongPressOptions,
       button: true,
       child: GestureDetector(
         onTap: widget.onTap,

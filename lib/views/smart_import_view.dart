@@ -22,6 +22,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/rate_limit_dialog.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Main view for unified recipe imports.
 class SmartImportView extends StatelessWidget {
@@ -74,7 +75,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Importera recept'),
+        title: Text(context.l10n.importRecipeTitle),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -273,20 +274,19 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
       builder: (dialogContext) => AlertDialog(
         icon: Icon(Icons.videocam_off,
             size: 48, color: theme.colorScheme.primary),
-        title: const Text('Videon saknar text'),
-        content: const Text(
-          'Den här videon har inga undertexter som vi kan läsa.\n\n'
-          'Du kan ta en skärmbild av receptet i videon och importera den istället.',
+        title: Text(context.l10n.importVideoNoText),
+        content: Text(
+          context.l10n.importVideoNoTextDescription,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop('cancel'),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton.icon(
             onPressed: () => Navigator.of(dialogContext).pop('photo'),
             icon: const Icon(Icons.photo_camera),
-            label: const Text('Fotoimport'),
+            label: Text(context.l10n.importPhotoImport),
           ),
         ],
       ),
@@ -369,9 +369,10 @@ class _InputSection extends StatelessWidget {
       maxLines: 5,
       minLines: 3,
       decoration: InputDecoration(
-        hintText: 'Klistra in länk eller text här...',
+        hintText: context.l10n.importPasteLinkOrText,
         hintStyle: theme.textTheme.bodyLarge?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: AppDimensions.opacityMediumDark),
+          color: theme.colorScheme.onSurfaceVariant
+              .withValues(alpha: AppDimensions.opacityMediumDark),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
@@ -397,7 +398,7 @@ class _InputSection extends StatelessWidget {
                   controller.clear();
                   viewModel.clearInput();
                 },
-                tooltip: 'Rensa',
+                tooltip: context.l10n.commonClear,
               )
             : null,
       ),
@@ -475,7 +476,7 @@ class _ActionSection extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: onPaste,
             icon: const Icon(Icons.content_paste),
-            label: const Text('Klistra in från urklipp'),
+            label: Text(context.l10n.importPasteFromClipboard),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
@@ -499,7 +500,9 @@ class _ActionSection extends StatelessWidget {
                   ),
                 )
               : const Icon(Icons.download),
-          label: Text(viewModel.isImporting ? 'Importerar...' : 'Importera'),
+          label: Text(viewModel.isImporting
+              ? context.l10n.importImporting
+              : context.l10n.importImport),
           style: FilledButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 14),
           ),
@@ -512,7 +515,7 @@ class _ActionSection extends StatelessWidget {
           onPressed: viewModel.canImport && !viewModel.isImporting
               ? onManualImport
               : null,
-          child: const Text('Importera manuellt'),
+          child: Text(context.l10n.importManually),
         ),
       ],
     );

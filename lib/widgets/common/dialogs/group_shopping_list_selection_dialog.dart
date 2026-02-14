@@ -1,6 +1,7 @@
 // lib/widgets/common/dialogs/group_shopping_list_selection_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -26,7 +27,7 @@ class GroupShoppingListSelectionDialog extends StatelessWidget {
 
     return AlertDialog(
       title: Text(
-        'Dela inköpslista med $groupName',
+        context.l10n.dialogShareShoppingListWith(groupName),
         style: AppTextStyles.headlineSmall,
       ),
       contentPadding: EdgeInsets.zero,
@@ -35,8 +36,8 @@ class GroupShoppingListSelectionDialog extends StatelessWidget {
         height: MediaQuery.of(context).size.height * 0.5,
         child: lists.isEmpty
             ? StateWidget.empty(
-                title: 'Inga inköpslistor',
-                subtitle: 'Du har inga inköpslistor att dela än',
+                title: context.l10n.dialogNoShoppingLists,
+                subtitle: context.l10n.dialogNoShoppingListsToShare,
                 icon: Icons.shopping_cart,
               )
             : ListView.builder(
@@ -53,7 +54,8 @@ class GroupShoppingListSelectionDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text('Avbryt', style: AppTextStyles.labelLarge),
+          child:
+              Text(context.l10n.commonCancel, style: AppTextStyles.labelLarge),
         ),
       ],
     );
@@ -112,7 +114,7 @@ class _ShoppingListItem extends StatelessWidget {
             ),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
-            '$completedCount/$totalCount artiklar',
+            context.l10n.dialogItemsProgress(completedCount, totalCount),
             style: AppTextStyles.metadataEmphasized.copyWith(
               color: AppColors.forestGreen,
             ),

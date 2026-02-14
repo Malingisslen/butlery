@@ -10,7 +10,6 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/branding/app_logo.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/core/validators/form_validators.dart';
-import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/mina_recept_view.dart'; // ULTRATHINK: Direct navigation import
 import 'package:butlery/core/utils/logger.dart'; // For AppLogger
@@ -100,11 +99,10 @@ class _AuthViewState extends State<AuthView> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return const Column(
+    return Column(
       children: [
-        // App branding with logo, name, and Swedish localized tagline
         AppBranding.auth(
-          tagline: 'Smart recepthantering för din vardag',
+          tagline: context.l10n.authTagline,
         ),
       ],
     );
@@ -120,7 +118,9 @@ class _AuthViewState extends State<AuthView> {
             children: [
               // Rubrik
               Text(
-                viewModel.isLoginMode ? 'Logga in' : 'Skapa konto',
+                viewModel.isLoginMode
+                    ? context.l10n.authLogin
+                    : context.l10n.authCreateAccount,
                 style: AppTextStyles.headlineSmall,
                 textAlign: TextAlign.center,
               ),
@@ -173,11 +173,11 @@ class _AuthViewState extends State<AuthView> {
       focusNode: _nameFocus,
       textInputAction: TextInputAction.next,
       enabled: !viewModel.isLoading,
-      decoration: const InputDecoration(
-        labelText: 'Ditt namn',
-        hintText: 'Ange ditt namn',
-        prefixIcon:
-            Icon(Icons.person_outline, size: AppDimensions.iconSizeAction),
+      decoration: InputDecoration(
+        labelText: context.l10n.authYourName,
+        hintText: context.l10n.authEnterYourName,
+        prefixIcon: const Icon(Icons.person_outline,
+            size: AppDimensions.iconSizeAction),
       ),
       validator: FormValidators.authName(),
       autofillHints: const [AutofillHints.name],
@@ -192,8 +192,8 @@ class _AuthViewState extends State<AuthView> {
       key: const Key('email_field'),
       controller: _emailController,
       focusNode: _emailFocus,
-      label: 'E-post',
-      hint: 'din.email@exempel.se',
+      label: context.l10n.authEmail,
+      hint: context.l10n.authEmailHint,
       validator: FormValidators.authEmail(),
     );
   }
@@ -203,17 +203,19 @@ class _AuthViewState extends State<AuthView> {
       key: const Key('password_field'),
       controller: _passwordController,
       focusNode: _passwordFocus,
-      label: 'Lösenord',
+      label: context.l10n.authPassword,
       hint: viewModel.isLoginMode
-          ? AppStrings.enterPassword
-          : AppStrings.passwordMinLength,
+          ? context.l10n.authEnterPassword
+          : context.l10n.authPasswordMinLength,
       obscureText: !viewModel.isPasswordVisible,
       enabled: !viewModel.isLoading,
       validator: viewModel.isLoginMode
           ? FormValidators.authPassword()
           : FormValidators.strongPassword(),
       suffixIcon: Semantics(
-        label: viewModel.isPasswordVisible ? 'Dölj lösenord' : 'Visa lösenord',
+        label: viewModel.isPasswordVisible
+            ? context.l10n.a11yHidePassword
+            : context.l10n.a11yShowPassword,
         button: true,
         enabled: !viewModel.isLoading,
         child: IconButton(
@@ -237,7 +239,7 @@ class _AuthViewState extends State<AuthView> {
       alignment: AlignmentDirectional.centerEnd,
       child: ActionButtons.textButton(
         context,
-        label: AppStrings.forgotPassword,
+        label: context.l10n.authForgotPassword,
         onPressed: viewModel.isLoading
             ? null
             : () => _showPasswordResetDialog(context, viewModel),
@@ -258,7 +260,9 @@ class _AuthViewState extends State<AuthView> {
   Widget _buildSubmitButton(AuthViewModel viewModel) {
     return StyledButton.primary(
       key: const Key('submit_button'),
-      text: viewModel.isLoginMode ? 'Logga in' : 'Skapa konto',
+      text: viewModel.isLoginMode
+          ? context.l10n.authLogin
+          : context.l10n.authCreateAccount,
       onPressed: viewModel.isLoading ? null : () => _handleSubmit(viewModel),
       isLoading: viewModel.isLoading,
     );
@@ -268,8 +272,8 @@ class _AuthViewState extends State<AuthView> {
     return ActionButtons.textButton(
       context,
       label: viewModel.isLoginMode
-          ? 'Har du inget konto? Skapa konto'
-          : 'Har du redan ett konto? Logga in',
+          ? context.l10n.authNoAccountSignUp
+          : context.l10n.authHasAccountLogin,
       onPressed: viewModel.isLoading ? null : viewModel.toggleAuthMode,
       style: TextButton.styleFrom(
         textStyle: AppTextStyles.bodyMedium,
@@ -333,21 +337,21 @@ class _AuthViewState extends State<AuthView> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text(AppStrings.resetPassword),
+          title: Text(context.l10n.authResetPassword),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                AppStrings.resetPasswordInstructions,
+                context.l10n.authResetPasswordInstructions,
                 style: AppTextStyles.bodyMedium,
               ),
               const SizedBox(height: AppDimensions.spacingXl),
               TextField(
                 key: const Key('reset_email_field'),
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  hintText: 'din.email@exempel.se',
+                decoration: InputDecoration(
+                  labelText: context.l10n.authEmail,
+                  hintText: context.l10n.authEmailHint,
                 ),
                 onChanged: (value) {
                   emailValue = value;
@@ -383,7 +387,8 @@ class _AuthViewState extends State<AuthView> {
     final messenger = ScaffoldMessenger.of(context);
     // ignore: use_build_context_synchronously
     final theme = Theme.of(context);
-    final primaryColor = theme.colorScheme.primary.withValues(alpha: AppDimensions.opacityVeryDark);
+    final primaryColor = theme.colorScheme.primary
+        .withValues(alpha: AppDimensions.opacityVeryDark);
     final errorColor = theme.colorScheme.error;
 
     // Use addPostFrameCallback to ensure dialog is fully unmounted
@@ -399,8 +404,8 @@ class _AuthViewState extends State<AuthView> {
         SnackBar(
           content: Text(
             success
-                ? 'Email skickad! Kontrollera din inkorg.'
-                : viewModel.errorMessage ?? 'Kunde inte skicka email',
+                ? context.l10n.authResetEmailSent
+                : viewModel.errorMessage ?? context.l10n.authResetEmailFailed,
           ),
           backgroundColor: success ? primaryColor : errorColor,
         ),

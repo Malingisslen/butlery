@@ -19,6 +19,7 @@ import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/router/app_router.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// ✅ MenuPreviewView - Visa delad meny med alla recept
 class MenuPreviewView extends StatelessWidget {
@@ -76,7 +77,7 @@ class MenuPreviewView extends StatelessWidget {
         IconButton(
           onPressed: () => _shareMenu(context),
           icon: const Icon(Icons.share),
-          tooltip: 'Dela meny',
+          tooltip: context.l10n.menuShareMenu,
         ),
       ],
     );
@@ -110,7 +111,8 @@ class MenuPreviewView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Delat av ${sharedMenu.sharedByDisplayName}',
+                          context.l10n
+                              .sharedByUser(sharedMenu.sharedByDisplayName),
                           style: AppTextStyles.titleMedium.copyWith(
                             color: Theme.of(context)
                                 .colorScheme
@@ -128,7 +130,7 @@ class MenuPreviewView extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const StatusBadge.primary(text: 'DELAD MENY'),
+                  StatusBadge.primary(text: context.l10n.menuSharedMenu),
                 ],
               ),
 
@@ -154,7 +156,7 @@ class MenuPreviewView extends StatelessWidget {
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
-                    '${sharedMenu.totalRecipeCount} recept',
+                    context.l10n.menuRecipeCount(sharedMenu.totalRecipeCount),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
@@ -167,7 +169,8 @@ class MenuPreviewView extends StatelessWidget {
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
-                    '${sharedMenu.categories.length} kategorier',
+                    context.l10n
+                        .menuCategoryCount(sharedMenu.categories.length),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
@@ -191,7 +194,7 @@ class MenuPreviewView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Meddelande:',
+                        context.l10n.commonMessage,
                         style: AppTextStyles.labelLarge,
                       ),
                       const SizedBox(height: AppDimensions.spacingXs),
@@ -221,7 +224,7 @@ class MenuPreviewView extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: StateWidget.empty(
-            title: 'Inga recept i menyn',
+            title: context.l10n.menuNoRecipesInMenu,
             icon: Icons.restaurant_outlined,
           ),
         ),
@@ -291,14 +294,15 @@ class MenuPreviewView extends StatelessWidget {
                 // Import knapp
                 ActionButtons.primaryButton(
                   context,
-                  label:
-                      isImported ? 'Meny importerad' : 'Importera hela menyn',
+                  label: isImported
+                      ? context.l10n.menuImported
+                      : context.l10n.menuImportAll,
                   icon: isImported ? Icons.check : Icons.download,
                   onPressed: isImported || isThisMenuOperating
                       ? null
                       : () => _importMenu(context, viewModel),
                   isLoading: isThisMenuOperating,
-                  loadingText: 'Importerar...',
+                  loadingText: context.l10n.commonImporting,
                   isExpanded: true,
                 ),
 
@@ -307,7 +311,7 @@ class MenuPreviewView extends StatelessWidget {
                 // Dismiss knapp
                 ActionButtons.outlinedButton(
                   context,
-                  label: 'Dölj från min lista',
+                  label: context.l10n.sharedHideFromList,
                   icon: Icons.visibility_off,
                   onPressed: () => _dismissMenu(context, viewModel),
                   isExpanded: true,
@@ -317,7 +321,8 @@ class MenuPreviewView extends StatelessWidget {
 
                 // Info text
                 Text(
-                  'När du importerar menyn läggs alla ${sharedMenu.totalRecipeCount} recept till i din samling.',
+                  context.l10n
+                      .menuImportDescription(sharedMenu.totalRecipeCount),
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -377,7 +382,7 @@ class MenuPreviewView extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                '📡 Ansluter till samarbetsmeny "${sharedMenu.menuTitle}"...'),
+                context.l10n.menuConnectingCollaborative(sharedMenu.menuTitle)),
             backgroundColor: AppColors.primary,
             duration: const Duration(seconds: 2),
           ),
@@ -392,7 +397,8 @@ class MenuPreviewView extends StatelessWidget {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✅ Meny "${sharedMenu.menuTitle}" importerad!'),
+            content:
+                Text(context.l10n.menuImportedSuccess(sharedMenu.menuTitle)),
             backgroundColor: AppColors.success,
             duration: const Duration(seconds: 3),
           ),
@@ -403,7 +409,8 @@ class MenuPreviewView extends StatelessWidget {
     } else if (context.mounted && viewModel.menuViewModel.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(viewModel.menuViewModel.error ?? 'Import misslyckades'),
+          content: Text(
+              viewModel.menuViewModel.error ?? context.l10n.menuImportFailed),
           backgroundColor: AppColors.error,
         ),
       );
@@ -418,21 +425,20 @@ class MenuPreviewView extends StatelessWidget {
     final shouldDismiss = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Dölj meny'),
+        title: Text(context.l10n.menuHideMenu),
         content: Text(
-          'Vill du dölja "${sharedMenu.menuTitle}" från din lista?\n\n'
-          'Du kan fortfarande komma åt menyn genom att be '
-          '${sharedMenu.sharedByDisplayName} att dela den igen.',
+          context.l10n.menuHideConfirm(
+              sharedMenu.menuTitle, sharedMenu.sharedByDisplayName),
         ),
         actions: [
           ActionButtons.secondaryButton(
             context,
-            label: 'Avbryt',
+            label: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context, false),
           ),
           ActionButtons.primaryButton(
             context,
-            label: 'Dölj',
+            label: context.l10n.commonHide,
             onPressed: () => Navigator.pop(context, true),
           ),
         ],
@@ -446,10 +452,11 @@ class MenuPreviewView extends StatelessWidget {
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✅ "${sharedMenu.menuTitle}" dold från din lista'),
+            content:
+                Text(context.l10n.menuHiddenFromList(sharedMenu.menuTitle)),
             backgroundColor: AppColors.success,
             action: SnackBarAction(
-              label: 'Ångra',
+              label: context.l10n.commonUndo,
               onPressed: () =>
                   viewModel.menuViewModel.undismissSharedMenu(sharedMenu),
             ),
@@ -461,8 +468,8 @@ class MenuPreviewView extends StatelessWidget {
       } else if (context.mounted && viewModel.menuViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text(viewModel.menuViewModel.error ?? 'Kunde inte dölja meny'),
+            content: Text(
+                viewModel.menuViewModel.error ?? context.l10n.menuCouldNotHide),
             backgroundColor: AppColors.error,
           ),
         );
@@ -474,7 +481,7 @@ class MenuPreviewView extends StatelessWidget {
     // Implementera delning av meny-information
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Delning av "${sharedMenu.menuTitle}" kommer snart!'),
+        content: Text(context.l10n.menuSharingComingSoon(sharedMenu.menuTitle)),
         backgroundColor: AppColors.accent,
       ),
     );

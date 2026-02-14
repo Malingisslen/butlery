@@ -22,6 +22,7 @@ import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/recipe/recipe_draft_recovery_handler.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
@@ -173,17 +174,17 @@ class _SkrivSjalvReceptViewContentState
           if (tagResult != null && tagResult.hasFailed) {
             UtilityComponents.showWarningSnackbar(
               context,
-              'Recept sparat, men taggning misslyckades. '
-              'Allergeninformation kan vara ofullständig.',
+              context.l10n.recipeSavedTaggingFailed,
             );
           } else if (tagResult != null && tagResult.tags.isNotEmpty) {
             final coverage = (tagResult.coverage * 100).toInt();
             UtilityComponents.showSuccessSnackbar(
               context,
-              'Recept sparat! ${tagResult.tags.length} taggar ($coverage%)',
+              context.l10n.recipeSavedWithTags(tagResult.tags.length, coverage),
             );
           } else {
-            UtilityComponents.showSuccessSnackbar(context, 'Recept sparat!');
+            UtilityComponents.showSuccessSnackbar(
+                context, context.l10n.recipeSaved);
           }
           // MEDIUM PRIORITY FIX: Better navigation that preserves user context
           // Navigate to recipe detail or back to recipes list instead of clearing entire stack
@@ -192,7 +193,7 @@ class _SkrivSjalvReceptViewContentState
         } else {
           // ✅ MIGRERAD: Använd UtilityComponents.showErrorSnackbar
           UtilityComponents.showErrorSnackbar(
-              context, viewModel.error ?? 'Kunde inte spara recept');
+              context, viewModel.error ?? context.l10n.recipeCouldNotSave);
         }
       }
     } finally {
@@ -233,18 +234,17 @@ class _SkrivSjalvReceptViewContentState
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Osparade ändringar'),
-        content: const Text(
-            'Du har osparade ändringar. Vill du verkligen lämna utan att spara?'),
+        title: Text(context.l10n.recipeUnsavedChangesTitle),
+        content: Text(context.l10n.confirmUnsavedChanges),
         actions: [
           ActionButtons.secondaryButton(
             context,
-            label: 'Fortsätt skriva',
+            label: context.l10n.recipeContinueEditing,
             onPressed: () => Navigator.of(context).pop(false),
           ),
           ActionButtons.primaryButton(
             context,
-            label: 'Lämna utan att spara',
+            label: context.l10n.recipeLeaveWithoutSaving,
             onPressed: () => Navigator.of(context).pop(true),
           ),
         ],
@@ -269,7 +269,7 @@ class _SkrivSjalvReceptViewContentState
           if (_isSaving || viewModel.isSaving) {
             if (context.mounted) {
               UtilityComponents.showWarningSnackbar(
-                  context, 'Vänta medan receptet sparas...');
+                  context, context.l10n.recipeWaitWhileSaving);
             }
             return;
           }
@@ -286,8 +286,8 @@ class _SkrivSjalvReceptViewContentState
             } else if (shouldPop && (_isSaving || viewModel.isSaving)) {
               // Show warning if save started during dialog
               if (context.mounted) {
-                UtilityComponents.showWarningSnackbar(context,
-                    'En sparning påbörjades under valet. Vänta medan receptet sparas...');
+                UtilityComponents.showWarningSnackbar(
+                    context, context.l10n.recipeSaveStartedDuringDialog);
               }
             }
           } else {
@@ -298,7 +298,9 @@ class _SkrivSjalvReceptViewContentState
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            viewModel.isEditMode ? 'Redigera recept' : 'Skriv nytt recept',
+            viewModel.isEditMode
+                ? context.l10n.recipeEdit
+                : context.l10n.recipeWriteNew,
           ),
           backgroundColor: AppColors.cream,
           foregroundColor: AppColors.textDark,
@@ -335,7 +337,7 @@ class _SkrivSjalvReceptViewContentState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Måltidstyp',
+                              context.l10n.recipeMealType,
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: Theme.of(context)
                                     .colorScheme
@@ -411,12 +413,13 @@ class _SkrivSjalvReceptViewContentState
                         // Titel
                         StyledInput(
                           controller: _titleController,
-                          label: 'Titel',
+                          label: context.l10n.recipeTitle,
                           textInputAction: TextInputAction.next,
                           onChanged: viewModel.setTitle,
                           validator: FormValidators.combine([
-                            FormValidators.required('Titel'),
-                            FormValidators.maxLength(100, 'Titel'),
+                            FormValidators.required(context.l10n.recipeTitle),
+                            FormValidators.maxLength(
+                                100, context.l10n.recipeTitle),
                           ]),
                         ),
                         const SizedBox(height: AppDimensions.spacingXl),
@@ -424,20 +427,20 @@ class _SkrivSjalvReceptViewContentState
                         // Beskrivning
                         StyledInput(
                           controller: _descriptionController,
-                          label: 'Beskrivning',
+                          label: context.l10n.recipeDescription,
                           maxLines: 2,
                           minLines: 2,
                           textInputAction: TextInputAction.next,
                           onChanged: viewModel.setDescription,
-                          validator:
-                              FormValidators.maxLength(500, 'Beskrivning'),
+                          validator: FormValidators.maxLength(
+                              500, context.l10n.recipeDescription),
                         ),
                         const SizedBox(height: AppDimensions.spacingXl),
 
                         // Portioner
                         StyledInput(
                           controller: _portionsController,
-                          label: 'Portioner',
+                          label: context.l10n.recipePortions,
                           keyboardType: TextInputType.number,
                           textInputAction: TextInputAction.next,
                           onChanged: (value) =>
@@ -449,7 +452,7 @@ class _SkrivSjalvReceptViewContentState
                         // Tid
                         StyledInput(
                           controller: _timeMinutesController,
-                          label: 'Tid (min)',
+                          label: context.l10n.recipeTimeMinutes,
                           keyboardType: TextInputType.number,
                           textInputAction: TextInputAction.next,
                           onChanged: (value) =>
@@ -460,7 +463,7 @@ class _SkrivSjalvReceptViewContentState
 
                         // Ingredienser
                         _buildDynamicList(
-                          label: 'Ingrediens',
+                          label: context.l10n.recipeIngredient,
                           controllers: viewModel.ingredientControllers,
                           onUpdate: viewModel.updateIngredient,
                           onAdd: viewModel.addIngredient,
@@ -471,7 +474,7 @@ class _SkrivSjalvReceptViewContentState
 
                         // Instruktioner
                         _buildDynamicList(
-                          label: 'Instruktion',
+                          label: context.l10n.recipeInstruction,
                           controllers: viewModel.instructionControllers,
                           onUpdate: viewModel.updateInstruction,
                           onAdd: viewModel.addInstruction,
@@ -482,7 +485,7 @@ class _SkrivSjalvReceptViewContentState
 
                         // Taggar
                         _buildDynamicList(
-                          label: 'Tagg',
+                          label: context.l10n.recipeTag,
                           controllers: viewModel.tagControllers,
                           onUpdate: viewModel.updateTag,
                           onAdd: viewModel.addTag,
@@ -494,7 +497,7 @@ class _SkrivSjalvReceptViewContentState
                         // Betyg
                         StyledInput(
                           controller: _ratingController,
-                          label: 'Betyg (0–5)',
+                          label: context.l10n.recipeRating,
                           keyboardType: const TextInputType.numberWithOptions(
                               decimal: true),
                           textInputAction: TextInputAction.next,
@@ -507,12 +510,12 @@ class _SkrivSjalvReceptViewContentState
                         // Source URL-fält
                         StyledInput(
                           controller: _sourceUrlController,
-                          label: 'Källa (URL)',
-                          hint: 'Valfritt: länk till originalreceptet',
-                          helperText:
-                              viewModel.sourceUrl == 'Delad från annan app'
-                                  ? 'Importerat från delning'
-                                  : 'Länk till originalreceptet',
+                          label: context.l10n.recipeSourceUrl,
+                          hint: context.l10n.recipeSourceUrlHint,
+                          helperText: viewModel.sourceUrl ==
+                                  context.l10n.recipeSharedFromApp
+                              ? context.l10n.recipeImportedFromShare
+                              : context.l10n.recipeSourceUrlHelper,
                           prefixIcon: const Icon(
                             Icons.link,
                             size: AppDimensions.iconSizeAction,
@@ -546,7 +549,7 @@ class _SkrivSjalvReceptViewContentState
                       ),
                     ),
                     child: StateWidget.loading(
-                      message: 'Sparar recept...',
+                      message: context.l10n.recipeSaving,
                     ),
                   ),
                 ),
@@ -556,13 +559,13 @@ class _SkrivSjalvReceptViewContentState
         bottomNavigationBar: BottomActionContainer(
           child: UtilityComponents.primaryButton(
             context,
-            label: 'Spara recept',
+            label: context.l10n.recipeSave,
             icon: Icons.save,
             onPressed: (_isSaving || viewModel.isSaving || !viewModel.isValid)
                 ? null
                 : _saveRecipe,
             isLoading: _isSaving || viewModel.isSaving,
-            loadingText: 'Sparar...',
+            loadingText: context.l10n.statusSaving,
             isExpanded: true,
           ),
         ),
@@ -623,7 +626,7 @@ class _SkrivSjalvReceptViewContentState
         if (controllers.isEmpty)
           TextButton.icon(
             icon: const Icon(Icons.add),
-            label: Text('Lägg till $label'),
+            label: Text(context.l10n.recipeAddItem(label)),
             onPressed: onAdd,
           ),
       ],

@@ -6,6 +6,7 @@
 /// - Matching icons and typography
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -24,7 +25,7 @@ class ButlerySearchBox extends StatefulWidget {
   /// Creates a Butlery-styled search box.
   const ButlerySearchBox({
     this.controller,
-    this.hintText = 'sök...',
+    this.hintText,
     this.onChanged,
     this.onSubmitted,
     this.onClear,
@@ -40,7 +41,7 @@ class ButlerySearchBox extends StatefulWidget {
   final TextEditingController? controller;
 
   /// Hint text displayed when the field is empty.
-  final String hintText;
+  final String? hintText;
 
   /// Callback when the text changes.
   final ValueChanged<String>? onChanged;
@@ -138,7 +139,7 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
           color: AppColors.textDark,
         ),
         decoration: InputDecoration(
-          hintText: widget.hintText,
+          hintText: widget.hintText ?? context.l10n.searchHint,
           hintStyle: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textLight,
           ),
@@ -157,7 +158,7 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
                         size: AppDimensions.iconSizeM,
                       ),
                       onPressed: _clearText,
-                      tooltip: 'Rensa',
+                      tooltip: context.l10n.commonClear,
                     )
                   : null),
           border: InputBorder.none,
@@ -183,7 +184,7 @@ class ButleryHeaderSearchBox extends StatelessWidget {
   /// Creates a header search box.
   const ButleryHeaderSearchBox({
     this.controller,
-    this.hintText = 'sök...',
+    this.hintText,
     this.onChanged,
     this.onSubmitted,
     this.onClear,
@@ -196,7 +197,7 @@ class ButleryHeaderSearchBox extends StatelessWidget {
   final TextEditingController? controller;
 
   /// Hint text displayed when the field is empty.
-  final String hintText;
+  final String? hintText;
 
   /// Callback when the text changes.
   final ValueChanged<String>? onChanged;
@@ -221,42 +222,46 @@ class ButleryHeaderSearchBox extends StatelessWidget {
         vertical: AppDimensions.spacingSm,
       ),
       child: readOnly
-          ? GestureDetector(
-              onTap: onTap,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingMd,
-                  vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.cardWhite.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadius8,
+          ? Semantics(
+              label: 'Sok recept',
+              button: true,
+              child: GestureDetector(
+                onTap: onTap,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingMd,
+                    vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
                   ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.search,
-                      color: AppColors.textLight,
-                      size: AppDimensions.iconSizeM,
+                  decoration: BoxDecoration(
+                    color: AppColors.cardWhite.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadius8,
                     ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Expanded(
-                      child: Text(
-                        hintText,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textLight,
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.search,
+                        color: AppColors.textLight,
+                        size: AppDimensions.iconSizeM,
+                      ),
+                      const SizedBox(width: AppDimensions.spacingSm),
+                      Expanded(
+                        child: Text(
+                          hintText ?? context.l10n.searchHint,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: AppColors.textLight,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             )
           : ButlerySearchBox(
               controller: controller,
-              hintText: hintText,
+              hintText: hintText ?? context.l10n.searchHint,
               onChanged: onChanged,
               onSubmitted: onSubmitted,
               onClear: onClear,

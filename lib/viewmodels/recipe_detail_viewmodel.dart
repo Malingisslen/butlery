@@ -127,6 +127,9 @@ class RecipeDetailViewModel extends ChangeNotifier
   /// ensuring UI components always display the most current recipe information.
   Recipe get recipe => _recipe;
 
+  /// Exposes recipe service for sub-widgets that need social operations (e.g. rating checks).
+  UnifiedRecipeService get recipeService => _recipeService;
+
   /// Deletion operation state for UI progress indication and interaction control.
   /// Indicates active deletion operation for UI loading indicators and interaction disabling
   /// during recipe deletion processes for optimal user experience and operation feedback.
@@ -272,6 +275,31 @@ class RecipeDetailViewModel extends ChangeNotifier
         return true;
       } else {
         throw Exception('Kunde inte uppdatera recept');
+      }
+    });
+  }
+
+  /// Toggles the favorite status of this recipe.
+  /// Performs optimistic UI update then persists via service.
+  Future<void> toggleFavorite() async {
+    final newValue = !_recipe.isFavorite;
+    _recipe = _recipe.copyWith(isFavorite: newValue);
+    notifyListeners();
+    await _recipeService.toggleFavorite(_recipe.id, newValue);
+  }
+
+  /// Removes the current user's rating from this recipe.
+  /// Returns true if the rating was successfully removed.
+  Future<bool> removeMyRating() async {
+    return await executeAsync(() async {
+      final success = await _recipeService.social.removeRating(_recipe.id);
+      if (success) {
+        // Clear the local rating so UI updates immediately
+        _recipe = _recipe.copyWith(rating: null);
+        notifyListeners();
+        return true;
+      } else {
+        throw Exception('Kunde inte ta bort betyg');
       }
     });
   }

@@ -6,6 +6,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/social/friends_list/search_result_card.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// SearchTab - Friend search tab component
 /// Displays search results for finding new friends.
@@ -18,15 +19,14 @@ class SearchTab {
   }) {
     if (searchQuery.isEmpty) {
       return StateWidget.empty(
-        title: 'Sök efter nya vänner',
-        subtitle:
-            'Skriv ett namn eller användarnamn i sökfältet ovan för att hitta nya vänner.',
+        title: context.l10n.socialSearchForNewFriends,
+        subtitle: context.l10n.socialSearchForNewFriendsDescription,
         icon: Icons.search,
       );
     }
 
     if (viewModel.isSearching) {
-      return StateWidget.loading(message: 'Söker användare...');
+      return StateWidget.loading(message: context.l10n.socialSearchingUsers);
     }
 
     if (viewModel.searchResults.isEmpty) {

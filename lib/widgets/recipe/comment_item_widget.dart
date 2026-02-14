@@ -1,6 +1,7 @@
 // lib/widgets/recipe/comment_item_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/recipe/comment_time_formatter.dart';
@@ -117,7 +118,7 @@ class CommentItemWidget extends StatelessWidget {
       child: Padding(
         padding: AppDimensions.paddingSymmetric4x3,
         child: Text(
-          'Svara',
+          context.l10n.commentReply,
           style: AppTextStyles.bodySmall.copyWith(
             color: Theme.of(context).colorScheme.primary,
           ),

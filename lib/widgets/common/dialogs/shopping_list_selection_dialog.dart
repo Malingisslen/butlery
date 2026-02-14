@@ -1,6 +1,7 @@
 // lib/widgets/common/dialogs/shopping_list_selection_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -145,7 +146,7 @@ class _ShoppingListSelectionDialogState
                         ? Theme.of(context).colorScheme.primary
                         : null,
                   ),
-                  title: const Text('Skapa ny inköpslista'),
+                  title: Text(context.l10n.shoppingCreateList),
                   subtitle: _isCreatingNew
                       ? Form(
                           key: _formKey,
@@ -154,21 +155,21 @@ class _ShoppingListSelectionDialogState
                                 top: AppDimensions.spacingS),
                             child: StyledInput(
                               controller: _newListNameController,
-                              label: 'Listnamn',
-                              hint: 'T.ex. "Pannkakor - Ingredienser"',
+                              label: context.l10n.shoppingListName,
+                              hint: context.l10n.dialogShoppingListNameHint,
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return 'Ange ett namn för listan';
+                                  return context.l10n.dialogEnterListName;
                                 }
                                 if (value.trim().length < 2) {
-                                  return 'Namnet måste vara minst 2 tecken';
+                                  return context.l10n.dialogNameMinTwoChars;
                                 }
                                 return null;
                               },
                             ),
                           ),
                         )
-                      : const Text('Skapa en ny lista för dessa ingredienser'),
+                      : Text(context.l10n.dialogCreateNewListForIngredients),
                   onTap: _handleCreateNew,
                 ),
               ),
@@ -178,7 +179,7 @@ class _ShoppingListSelectionDialogState
               // Existing lists
               if (_availableLists.isNotEmpty) ...[
                 Text(
-                  'Eller välj befintlig lista:',
+                  context.l10n.dialogOrSelectExistingList,
                   style: AppTextStyles.titleMedium,
                 ),
                 const SizedBox(height: AppDimensions.spacingS),
@@ -203,7 +204,7 @@ class _ShoppingListSelectionDialogState
                           ),
                           title: Text(list.name),
                           subtitle: Text(
-                            '${list.totalItems} objekt • ${list.type == ListType.collaborative ? 'Delad' : 'Privat'}',
+                            '${list.totalItems} ${context.l10n.dialogItems} • ${list.type == ListType.collaborative ? context.l10n.dialogShared : context.l10n.dialogPrivate}',
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.textSecondary,
                             ),
@@ -231,7 +232,7 @@ class _ShoppingListSelectionDialogState
                       const SizedBox(width: AppDimensions.spacingM),
                       Expanded(
                         child: Text(
-                          'Du har inga redigerbara inköpslistor. Endast listor du kan redigera visas här. Skapa en ny lista ovan.',
+                          context.l10n.dialogNoEditableShoppingLists,
                           style: AppTextStyles.bodyMedium,
                         ),
                       ),
@@ -245,11 +246,13 @@ class _ShoppingListSelectionDialogState
       ),
       actions: [
         StyledButton.secondary(
-          text: 'Avbryt',
+          text: context.l10n.commonCancel,
           onPressed: () => Navigator.pop(context),
         ),
         StyledButton.primary(
-          text: _isCreatingNew ? 'Skapa lista' : 'Lägg till',
+          text: _isCreatingNew
+              ? context.l10n.dialogCreateList
+              : context.l10n.commonAdd,
           onPressed:
               _isCreatingNew || _selectedListId != null ? _handleConfirm : null,
         ),

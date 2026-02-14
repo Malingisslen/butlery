@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/backup_service.dart';
 import 'package:butlery/widgets/common/profile/utils/result_displayer.dart';
 
@@ -26,7 +27,7 @@ class BackupRestoreHandler {
           ResultDisplayer.showResult(
             context,
             success: false,
-            message: 'Backup misslyckades: ${result.message}',
+            message: context.l10n.profileBackupFailed(result.message),
             closeModal: true,
           );
         }
@@ -37,7 +38,7 @@ class BackupRestoreHandler {
         ResultDisplayer.showResult(
           context,
           success: false,
-          message: 'Backup misslyckades: $e',
+          message: context.l10n.profileBackupFailed('$e'),
           closeModal: true,
         );
       }
@@ -55,7 +56,7 @@ class BackupRestoreHandler {
           ResultDisplayer.showResult(
             context,
             success: true,
-            message: 'Återställning genomförd!',
+            message: context.l10n.profileRestoreCompleted,
             closeModal: true,
           );
         } else if (result.cancelled) {
@@ -65,8 +66,8 @@ class BackupRestoreHandler {
           ResultDisplayer.showResult(
             context,
             success: false,
-            message:
-                'Återställning misslyckades: ${result.errorMessage ?? 'Okänt fel'}',
+            message: context.l10n.profileRestoreFailed(
+                result.errorMessage ?? context.l10n.errorUnexpected),
             closeModal: true,
           );
         }
@@ -77,7 +78,7 @@ class BackupRestoreHandler {
         ResultDisplayer.showResult(
           context,
           success: false,
-          message: 'Återställning misslyckades: $e',
+          message: context.l10n.profileRestoreFailed('$e'),
           closeModal: true,
         );
       }

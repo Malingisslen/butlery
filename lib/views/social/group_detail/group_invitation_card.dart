@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// GroupInvitationCard - Invitation card component
 /// Displays pending group invitation with cancel action.
@@ -41,8 +42,8 @@ class GroupInvitationCard {
                         ? invitation.fromUserName[0].toUpperCase()
                         : '?',
                     style: AppTextStyles.bodyBold.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                   ),
                 ),
               ),
@@ -66,7 +67,7 @@ class GroupInvitationCard {
             ],
           ),
           title: Text(
-            'Inbjudan skickad',
+            context.l10n.groupInvitationSent,
             style: AppTextStyles.titleMedium.copyWith(
               color: Theme.of(context).colorScheme.tertiary,
             ),
@@ -74,8 +75,10 @@ class GroupInvitationCard {
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Skickat: ${invitation.timeAgoText}'),
-              Text('Går ut: ${invitation.expiresInText}'),
+              Text(
+                  '${context.l10n.groupInvitationSentDate}: ${invitation.timeAgoText}'),
+              Text(
+                  '${context.l10n.groupInvitationExpires}: ${invitation.expiresInText}'),
             ],
           ),
           trailing: PopupMenuButton<String>(
@@ -100,7 +103,7 @@ class GroupInvitationCard {
                     ),
                     const SizedBox(width: AppDimensions.spacingXs),
                     Text(
-                      'Avbryt inbjudan',
+                      context.l10n.groupCancelInvitation,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Theme.of(context).colorScheme.error,
                           ),
@@ -136,21 +139,21 @@ class GroupInvitationCard {
     final shouldCancel = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Avbryt inbjudan?'),
+        title: Text(context.l10n.groupCancelInvitationConfirm),
         content: Text(
-          'Vill du verkligen avbryta inbjudan till "${invitation.fromUserName}"?',
+          context.l10n.groupCancelInvitationMessage(invitation.fromUserName),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Nej'),
+            child: Text(context.l10n.commonNo),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Ja, avbryt'),
+            child: Text(context.l10n.groupYesCancel),
           ),
         ],
       ),
@@ -166,7 +169,7 @@ class GroupInvitationCard {
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Inbjudan avbruten'),
+            content: Text(context.l10n.groupInvitationCancelled),
             backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );
@@ -176,7 +179,8 @@ class GroupInvitationCard {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Fel: ${groupInvitationService.invitations.error}',
+              context.l10n.errorOccurredWithDetails(
+                  '${groupInvitationService.invitations.error}'),
             ),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),

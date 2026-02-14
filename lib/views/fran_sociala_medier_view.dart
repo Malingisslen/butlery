@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Text import view for parsing recipes from copied text.
 class FranSocialaMedierView extends StatelessWidget {
@@ -114,7 +115,7 @@ class _FranSocialaMedierViewContentState
     final viewModel = context.watch<TextImportViewModel>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Från sociala medier')),
+      appBar: AppBar(title: Text(context.l10n.importFromSocialMedia)),
       body: SafeArea(
         // ✅ RESPONSIVE: Center and constrain content on large screens
         child: Center(
@@ -149,13 +150,13 @@ class _FranSocialaMedierViewContentState
                   // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
                   UtilityComponents.primaryButton(
                     context,
-                    label: 'Förhandsgranska och redigera',
+                    label: context.l10n.importPreviewAndEdit,
                     icon: Icons.preview,
                     onPressed: viewModel.isParsing || !viewModel.canParse
                         ? null
                         : () => _parseAndNavigate(context),
                     isLoading: viewModel.isParsing,
-                    loadingText: 'Tolkar text...',
+                    loadingText: context.l10n.importParsingText,
                     isExpanded: true,
                   ),
 
@@ -196,7 +197,7 @@ class _FranSocialaMedierViewContentState
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                'Tips för bästa resultat',
+                context.l10n.importTipsTitle,
                 style: AppTextStyles.labelLarge.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -205,9 +206,7 @@ class _FranSocialaMedierViewContentState
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            '• Klistra in hela receptet inklusive ingredienser\n'
-            '• Se till att ingredienser kommer före instruktioner\n'
-            '• Texten kan komma från Instagram, TikTok, Facebook etc.',
+            context.l10n.importTipsContent,
             style: AppTextStyles.bodySmall,
           ),
         ],
@@ -234,15 +233,7 @@ class _FranSocialaMedierViewContentState
         controller: _textController,
         onChanged: viewModel.updateInputText,
         decoration: InputDecoration(
-          hintText: 'Klistra in recepttext här...\n\n'
-              'Exempel:\n'
-              'Ingredienser:\n'
-              '- 500g pasta\n'
-              '- 2 vitlöksklyftor\n'
-              '\n'
-              'Instruktioner:\n'
-              '1. Koka pastan enligt förpackningen\n'
-              '2. Hacka vitlöken fint...',
+          hintText: context.l10n.importPasteRecipeHint,
           hintMaxLines: 10,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),

@@ -6,6 +6,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// GroupSearchTab - Group search tab component
 /// Displays search results for filtering current groups.
@@ -17,9 +18,8 @@ class GroupSearchTab {
   ) {
     if (searchQuery.isEmpty) {
       return StateWidget.empty(
-        title: 'Sök bland dina grupper',
-        subtitle:
-            'Skriv ett gruppnamn i sökfältet ovan för att filtrera dina grupper.',
+        title: context.l10n.groupSearchGroups,
+        subtitle: context.l10n.groupSearchGroupsDescription,
         icon: Icons.search,
       );
     }

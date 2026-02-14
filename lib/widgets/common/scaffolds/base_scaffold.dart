@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 export 'loading_scaffold.dart';
 export 'error_scaffold.dart';
@@ -84,12 +84,12 @@ class BaseScaffold extends StatelessWidget {
     if (leading != null) return leading;
     if (showBackButton && Navigator.canPop(context)) {
       return Semantics(
-        label: 'Gå tillbaka',
+        label: context.l10n.accessibilityBackButton,
         button: true,
         child: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: onBackPressed ?? () => Navigator.pop(context),
-          tooltip: AppStrings.backButton,
+          tooltip: context.l10n.accessibilityBackButton,
         ),
       );
     }

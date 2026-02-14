@@ -12,9 +12,9 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -52,6 +52,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   List<Conversation> _filteredConversations = [];
   bool _isLoading = true;
   String _searchQuery = '';
+  bool _archivedExpanded = false;
 
   @override
   void initState() {
@@ -241,32 +242,146 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       }
     }
 
+    // Split into pinned, regular, and archived sections
+    final pinned = _filteredConversations
+        .where((c) => c.isPinned && !c.isArchived)
+        .toList();
+    final regular = _filteredConversations
+        .where((c) => !c.isPinned && !c.isArchived)
+        .toList();
+    final archived = _filteredConversations.where((c) => c.isArchived).toList();
+
     return RefreshIndicator(
       onRefresh: _refreshConversations,
-      child: ListView.separated(
+      child: ListView(
         padding: const EdgeInsets.symmetric(vertical: AppDimensions.paddingS),
-        itemCount: _filteredConversations.length,
-        separatorBuilder: (context, index) => Divider(
-          height: 1,
-          color: Theme.of(context).dividerColor,
-          indent: AppDimensions.spacingHuge, // Account for avatar width
-        ),
-        itemBuilder: (context, index) {
-          final conversation = _filteredConversations[index];
-
-          return AnimatedListItem(
-            index: index,
-            child: ConversationListItem(
-              key: ValueKey(conversation.id),
-              conversation: conversation,
-              currentUserId: _currentUserId ?? '',
-              onTap: () => _navigateToChat(conversation),
-              onLongPress: () => _showConversationActions(conversation),
+        children: [
+          // Pinned section
+          if (pinned.isNotEmpty) ...[
+            _buildSectionHeader(
+              icon: Icons.push_pin,
+              label: 'FÄSTA',
             ),
-          );
-        },
+            ...pinned.map((c) => _buildConversationItem(c)),
+            const Divider(height: 1, color: AppColors.divider),
+          ],
+
+          // Regular section (no header)
+          ...regular.map((c) => _buildConversationItem(c)),
+
+          // Archived section (collapsible)
+          if (archived.isNotEmpty) _buildArchivedSection(archived),
+        ],
       ),
     );
+  }
+
+  Widget _buildSectionHeader({
+    required IconData icon,
+    required String label,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingL,
+        vertical: AppDimensions.paddingS,
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: AppDimensions.iconSize14,
+            color: AppColors.textMedium,
+          ),
+          const SizedBox(width: AppDimensions.spacingXs),
+          Text(
+            label,
+            style: AppTextStyles.labelSmall.copyWith(
+              color: AppColors.textMedium,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildArchivedSection(List<Conversation> archived) {
+    return Column(
+      children: [
+        const Divider(height: 1, color: AppColors.divider),
+        InkWell(
+          onTap: () => setState(() => _archivedExpanded = !_archivedExpanded),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingL,
+              vertical: AppDimensions.paddingM,
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.archive,
+                  size: AppDimensions.iconSizeM,
+                  color: AppColors.textMedium,
+                ),
+                const SizedBox(width: AppDimensions.spacingSm),
+                Expanded(
+                  child: Text(
+                    'Arkiverade (${archived.length})',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textMedium,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _archivedExpanded ? Icons.expand_less : Icons.expand_more,
+                  color: AppColors.textMedium,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_archivedExpanded)
+          ...archived.map((c) => _buildConversationItem(c)),
+      ],
+    );
+  }
+
+  Widget _buildConversationItem(Conversation conversation) {
+    return Column(
+      children: [
+        ConversationListItem(
+          key: ValueKey(conversation.id),
+          conversation: conversation,
+          currentUserId: _currentUserId ?? '',
+          onTap: () => _navigateToChat(conversation),
+          onLongPress: () => _showConversationActions(conversation),
+          onPin: () => _togglePin(conversation),
+          onArchive: () => _toggleArchive(conversation),
+        ),
+        Divider(
+          height: 1,
+          color: Theme.of(context).dividerColor,
+          indent: AppDimensions.spacingHuge,
+        ),
+      ],
+    );
+  }
+
+  Future<void> _togglePin(Conversation conversation) async {
+    if (conversation.isPinned) {
+      await _messagingService.unpinConversation(conversation.id);
+    } else {
+      await _messagingService.pinConversation(conversation.id);
+    }
+  }
+
+  Future<void> _toggleArchive(Conversation conversation) async {
+    if (conversation.isArchived) {
+      await _messagingService.unarchiveConversation(conversation.id);
+    } else {
+      await _messagingService.archiveConversation(conversation.id);
+    }
   }
 
   void _showConversationActions(Conversation conversation) {
@@ -277,6 +392,28 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       child: ModalContentContainer(
         children: [
           ModalHeaderText(conversation.getDisplayTitle(_currentUserId ?? '')),
+          ListTile(
+            leading: Icon(
+              conversation.isPinned ? Icons.push_pin_outlined : Icons.push_pin,
+            ),
+            title: Text(conversation.isPinned ? 'Ta bort fäst' : 'Fäst'),
+            onTap: () {
+              Navigator.pop(context);
+              _togglePin(conversation);
+            },
+          ),
+          ListTile(
+            leading: Icon(
+              conversation.isArchived ? Icons.unarchive : Icons.archive,
+            ),
+            title: Text(
+              conversation.isArchived ? 'Avarkivera' : 'Arkivera',
+            ),
+            onTap: () {
+              Navigator.pop(context);
+              _toggleArchive(conversation);
+            },
+          ),
           ListTile(
             leading: const Icon(Icons.mark_chat_read),
             title: Text(l10n.messagingMarkAsRead),

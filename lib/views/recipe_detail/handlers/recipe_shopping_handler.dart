@@ -12,6 +12,7 @@ import 'package:butlery/widgets/common/dialogs/shopping_list_selection_dialog.da
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Recipe shopping list action handler
 /// Handles shopping list generation from recipe ingredients with portion scaling.
@@ -37,7 +38,7 @@ class RecipeShoppingHandler {
 
     if (shoppingItems.isEmpty) {
       showSnackBar(
-        'Receptet har inga ingredienser att lägga till',
+        context.l10n.shoppingNoIngredientsToAdd,
         backgroundColor: AppColors.warning,
       );
       return;
@@ -47,7 +48,7 @@ class RecipeShoppingHandler {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Lägg till i inköpslista'),
+        title: Text(context.l10n.shoppingAddToShoppingList),
         content: SizedBox(
           width: double.maxFinite,
           child: Column(
@@ -55,7 +56,8 @@ class RecipeShoppingHandler {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${shoppingItems.length} ingredienser från "${recipe.title}":',
+                context.l10n.shoppingIngredientsFromRecipe(
+                    shoppingItems.length, recipe.title),
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 12),
@@ -97,14 +99,14 @@ class RecipeShoppingHandler {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.forestGreen,
             ),
-            child: const Text('Lägg till'),
+            child: Text(context.l10n.commonAdd),
           ),
         ],
       ),
@@ -159,7 +161,7 @@ class RecipeShoppingHandler {
       if (shoppingItems.isEmpty) {
         if (!context.mounted) return;
         showSnackBar(
-          'Receptet har inga ingredienser att lägga till',
+          context.l10n.shoppingNoIngredientsToAdd,
           backgroundColor: AppColors.warning,
         );
         return;
@@ -170,8 +172,8 @@ class RecipeShoppingHandler {
       final selectedListResult = await showDialog<Map<String, dynamic>>(
         context: context,
         builder: (context) => ShoppingListSelectionDialog(
-          title: 'Välj inköpslista',
-          subtitle: 'Lägg till ingredienser från "${recipe.title}"',
+          title: context.l10n.shoppingSelectList,
+          subtitle: context.l10n.shoppingAddIngredientsFrom(recipe.title),
           shoppingService: shoppingService,
         ),
       );
@@ -197,7 +199,7 @@ class RecipeShoppingHandler {
       if (targetListId == null) {
         if (context.mounted) {
           showSnackBar(
-            'Kunde inte skapa eller välja inköpslista',
+            context.l10n.shoppingCouldNotCreateOrSelectList,
             backgroundColor: AppColors.error,
           );
         }
@@ -214,7 +216,7 @@ class RecipeShoppingHandler {
       if (!permissionService.canEditShoppingList(targetListId)) {
         if (context.mounted) {
           showSnackBar(
-            'Du har inte behörighet att redigera denna inköpslista',
+            context.l10n.shoppingNoEditPermission,
             backgroundColor: AppColors.error,
           );
         }
@@ -229,20 +231,21 @@ class RecipeShoppingHandler {
         final shouldNavigate = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Inköpslista skapad!'),
+            title: Text(context.l10n.shoppingListCreated(
+                targetListName ?? context.l10n.shoppingYourList)),
             content: Text(
-              '${shoppingItems.length} ingredienser har lagts till i "${targetListName ?? 'din inköpslista'}".\n\n'
-              'Vill du gå till inköpslistan nu?',
+              context.l10n.shoppingIngredientsAddedToList(shoppingItems.length,
+                  targetListName ?? context.l10n.shoppingYourList),
             ),
             actions: [
               ActionButtons.secondaryButton(
                 context,
-                label: 'Senare',
+                label: context.l10n.commonLater,
                 onPressed: () => Navigator.pop(context, false),
               ),
               ActionButtons.primaryButton(
                 context,
-                label: 'Visa lista',
+                label: context.l10n.shoppingViewList,
                 onPressed: () => Navigator.pop(context, true),
               ),
             ],
@@ -255,7 +258,7 @@ class RecipeShoppingHandler {
         }
       } else {
         showSnackBar(
-          'Kunde inte lägga till ingredienser i inköpslistan',
+          context.l10n.shoppingCouldNotAddIngredients,
           backgroundColor: AppColors.error,
         );
       }
@@ -265,12 +268,12 @@ class RecipeShoppingHandler {
       // Handle specific permission errors with clear Swedish messages
       if (e is PermissionDeniedException) {
         showSnackBar(
-          'Du har inte behörighet att redigera denna delade inköpslista',
+          context.l10n.shoppingNoEditPermissionShared,
           backgroundColor: AppColors.error,
         );
       } else {
         showSnackBar(
-          'Ett fel uppstod: ${e.toString()}',
+          context.l10n.errorOccurredWithDetails(e.toString()),
           backgroundColor: AppColors.error,
         );
       }

@@ -5,6 +5,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// GroupDetailStats - Group statistics component
 /// Displays group statistics like member count, activity, etc.
@@ -22,7 +23,7 @@ class GroupDetailStats {
             child: _buildStatItem(
               context: context,
               icon: Icons.people,
-              title: 'Medlemmar',
+              title: context.l10n.groupMembers,
               value: '${members.length}',
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -32,7 +33,7 @@ class GroupDetailStats {
             child: _buildStatItem(
               context: context,
               icon: Icons.calendar_today,
-              title: 'Dagar aktiv',
+              title: context.l10n.groupDaysActive,
               value: _calculateDaysActive(group.createdAt),
               color: Theme.of(context).colorScheme.secondary,
             ),

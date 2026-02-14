@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/tagging/tagging_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/allergen_preferences_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 
@@ -33,12 +40,12 @@ class _AllergenPreferencesContent extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Allergeninställningar'),
+        title: Text(context.l10n.allergenSettingsTitle),
         actions: [
           if (viewModel.hasChanges)
             TextButton(
               onPressed: viewModel.isLoading ? null : () => _save(context),
-              child: const Text('Spara'),
+              child: Text(context.l10n.commonSave),
             ),
         ],
       ),
@@ -56,6 +63,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
                   _buildDisplaySection(context, viewModel),
                   const SizedBox(height: AppDimensions.spacingXl),
                   _buildActionsSection(context, viewModel),
+                  const SizedBox(height: AppDimensions.spacingXl),
+                  _buildRetagSection(context),
                   if (viewModel.hasError) ...[
                     const SizedBox(height: AppDimensions.spacingL),
                     _buildErrorMessage(context, viewModel.error!),
@@ -83,14 +92,14 @@ class _AllergenPreferencesContent extends StatelessWidget {
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
                 Text(
-                  'Spåra allergener',
+                  context.l10n.allergenTrackAllergensTitle,
                   style: AppTextStyles.titleMedium,
                 ),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'Välj vilka allergener du vill se status för på recept.',
+              context.l10n.allergenTrackAllergensSubtitle,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textMedium,
               ),
@@ -137,14 +146,14 @@ class _AllergenPreferencesContent extends StatelessWidget {
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
                 Text(
-                  'Spåra specialkost',
+                  context.l10n.allergenTrackDietaryTitle,
                   style: AppTextStyles.titleMedium,
                 ),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'Välj vilka kostpreferenser du vill se status för.',
+              context.l10n.allergenTrackDietarySubtitle,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textMedium,
               ),
@@ -191,16 +200,15 @@ class _AllergenPreferencesContent extends StatelessWidget {
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
                 Text(
-                  'Visa på',
+                  context.l10n.allergenDisplayTitle,
                   style: AppTextStyles.titleMedium,
                 ),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingL),
             SwitchListTile(
-              title: const Text('Receptkort'),
-              subtitle:
-                  const Text('Visa allergenstatus på receptkort i listor'),
+              title: Text(context.l10n.allergenDisplayOnCardsTitle),
+              subtitle: Text(context.l10n.allergenDisplayOnCardsSubtitle),
               value: viewModel.showOnCards,
               onChanged: viewModel.setShowOnCards,
               activeTrackColor: AppColors.forestGreen
@@ -215,9 +223,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
             ),
             const Divider(),
             SwitchListTile(
-              title: const Text('Receptdetaljer'),
-              subtitle:
-                  const Text('Visa fullständig allergenstatus på receptsidan'),
+              title: Text(context.l10n.allergenDisplayOnDetailTitle),
+              subtitle: Text(context.l10n.allergenDisplayOnDetailSubtitle),
               value: viewModel.showOnDetail,
               onChanged: viewModel.setShowOnDetail,
               activeTrackColor: AppColors.forestGreen
@@ -232,9 +239,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
             ),
             const Divider(),
             SwitchListTile(
-              title: const Text('Täckningsindikator'),
-              subtitle:
-                  const Text('Visa hur stor andel ingredienser som är kända'),
+              title: Text(context.l10n.allergenDisplayCoverageTitle),
+              subtitle: Text(context.l10n.allergenDisplayCoverageSubtitle),
               value: viewModel.showCoverage,
               onChanged: viewModel.setShowCoverage,
               activeTrackColor: AppColors.forestGreen
@@ -259,7 +265,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         StyledButton.primary(
-          text: 'Spara inställningar',
+          text: context.l10n.allergenSaveSettings,
           onPressed: viewModel.hasChanges && !viewModel.isLoading
               ? () => _save(context)
               : null,
@@ -267,7 +273,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
         ),
         const SizedBox(height: AppDimensions.spacingM),
         StyledButton.secondary(
-          text: 'Återställ till standard',
+          text: context.l10n.allergenResetToDefaults,
           onPressed: viewModel.isLoading
               ? null
               : () => _confirmReset(context, viewModel),
@@ -302,13 +308,79 @@ class _AllergenPreferencesContent extends StatelessWidget {
     );
   }
 
+  Widget _buildRetagSection(BuildContext context) {
+    return StyledCard(
+      child: Padding(
+        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.sync,
+                  color: AppColors.forestGreen,
+                  size: AppDimensions.iconSizeAction,
+                ),
+                const SizedBox(width: AppDimensions.spacingM),
+                Text(
+                  'Omtagga alla recept',
+                  style: AppTextStyles.titleMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: AppDimensions.spacingS),
+            Text(
+              'Analysera alla recept med uppdaterade inställningar',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textMedium,
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingL),
+            SizedBox(
+              width: double.infinity,
+              child: StyledButton.secondary(
+                text: 'Uppdatera alla recept',
+                icon: const Icon(Icons.sync, size: AppDimensions.iconSizeM),
+                onPressed: () => _showRetagDialog(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRetagDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => RetagProgressDialog(
+        retagFunction: (onProgress) async {
+          final taggingService = ServiceLocator.get<TaggingService>();
+          final authService = ServiceLocator.get<AuthService>();
+          final recipeRepo = ServiceLocator.get<RecipeRepository>();
+          final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+
+          return await taggingService.retagUserRecipes(
+            userId: authService.currentUser!.uid,
+            getRecipes: () =>
+                recipeRepo.fetchAllUserRecipes(authService.currentUser!.uid),
+            saveRecipe: (recipe) => recipeService.personal.updateRecipe(recipe),
+            onProgress: onProgress,
+          );
+        },
+      ),
+    );
+  }
+
   Future<void> _save(BuildContext context) async {
     final viewModel = context.read<AllergenPreferencesViewModel>();
     final success = await viewModel.save();
     if (success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Inställningar sparade'),
+        SnackBar(
+          content: Text(context.l10n.allergenSettingsSaved),
           backgroundColor: AppColors.success,
         ),
       );
@@ -320,19 +392,19 @@ class _AllergenPreferencesContent extends StatelessWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Återställ inställningar?'),
-        content: const Text(
-          'Detta återställer alla allergen- och kostpreferenser till standardvärden.',
+        title: Text(context.l10n.allergenResetConfirm),
+        content: Text(
+          context.l10n.allergenResetMessage,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Återställ'),
+            child: Text(context.l10n.allergenReset),
           ),
         ],
       ),

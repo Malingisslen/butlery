@@ -47,7 +47,7 @@ class UserDisplayData {
   /// Optimerade factory constructors
   factory UserDisplayData.fromFirebaseUser(dynamic user) => UserDisplayData(
         id: user.uid,
-        displayName: user.displayName ?? 'Okänd användare',
+        displayName: user.displayName ?? 'Unknown',
         email: user.email,
         imageUrl: user.photoURL,
       );
@@ -100,8 +100,8 @@ class UserStatusHelper {
     return switch (status) {
       UserStatus.online => 'Online',
       UserStatus.offline => 'Offline',
-      UserStatus.away => 'Frånvarande',
-      UserStatus.busy => 'Upptagen',
+      UserStatus.away => 'Away',
+      UserStatus.busy => 'Busy',
     };
   }
 

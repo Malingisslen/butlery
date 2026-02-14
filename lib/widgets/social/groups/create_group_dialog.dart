@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/create_group_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -94,14 +95,16 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
       } else {
         if (mounted) {
           setState(() {
-            _error = 'Kunde inte skapa grupp. Försök igen.';
+            _error = context.l10n.errorCouldNotCreate(
+                context.l10n.socialGroupName.toLowerCase());
           });
         }
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Ett fel uppstod: ${e.toString()}';
+          _error = context.l10n.errorWithContext(
+              context.l10n.statusCreating.toLowerCase(), e.toString());
         });
       }
     } finally {
@@ -117,7 +120,9 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       child: Container(
-        constraints: const BoxConstraints(maxWidth: AppDimensions.dialogMaxWidthMedium, maxHeight: AppDimensions.dialogMaxHeightMedium),
+        constraints: const BoxConstraints(
+            maxWidth: AppDimensions.dialogMaxWidthMedium,
+            maxHeight: AppDimensions.dialogMaxHeightMedium),
         child: Form(
           key: _formKey,
           child: Column(
@@ -126,7 +131,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
             children: [
               // Header
               DialogHeader(
-                title: 'Skapa ny grupp',
+                title: context.l10n.groupCreateNew,
                 icon: Icons.group_add,
                 onClose: () => Navigator.of(context).pop(),
               ),
@@ -155,18 +160,20 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
 
                       // ✅ CONSOLIDATED: Group name using standardized form field
                       DialogFormFields.buildNameField(
+                        context: context,
                         controller: _nameController,
-                        labelText: 'Gruppnamn',
-                        hintText: 'T.ex. "Familjen", "Jobbet", "Bokklubben"',
+                        labelText: context.l10n.socialGroupName,
+                        hintText: context.l10n.groupNameHint,
                         prefixIcon: Icons.group,
                         maxLength: 50,
                       ),
 
                       // ✅ CONSOLIDATED: Description using standardized form field
                       DialogFormFields.buildDescriptionField(
+                        context: context,
                         controller: _descriptionController,
-                        labelText: 'Beskrivning (valfritt)',
-                        hintText: 'Vad handlar den här gruppen om?',
+                        labelText: context.l10n.groupDescriptionLabel,
+                        hintText: context.l10n.groupDescriptionHint,
                         maxLength: 200,
                         maxLines: 3,
                       ),
@@ -180,12 +187,13 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                       if (_selectedFriendIds.isNotEmpty) ...[
                         const SizedBox(height: AppDimensions.spacingM),
                         Text(
-                          'Valda medlemmar (${_selectedFriendIds.length})',
+                          context.l10n
+                              .groupSelectedMembers(_selectedFriendIds.length),
                           style: AppTextStyles.titleMedium,
                         ),
                         const SizedBox(height: AppDimensions.spacingS),
                         Text(
-                          'Dessa vänner kommer att få en inbjudan till gruppen.',
+                          context.l10n.groupInvitationNote,
                           style: AppTextStyles.bodySmall.copyWith(
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
@@ -205,8 +213,10 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
 
               // Actions
               DialogFooter(
-                primaryActionText: _isCreating ? 'Skapar...' : 'Skapa grupp',
-                secondaryActionText: 'Avbryt',
+                primaryActionText: _isCreating
+                    ? context.l10n.statusCreating
+                    : context.l10n.socialCreateGroup,
+                secondaryActionText: context.l10n.commonCancel,
                 onPrimaryAction: _isCreating ? null : _createGroup,
                 onSecondaryAction: () => Navigator.of(context).pop(),
                 isLoading: _isCreating,
@@ -235,12 +245,12 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
           return Column(
             children: [
               Text(
-                'Välj medlemmar',
+                context.l10n.groupSelectMembers,
                 style: AppTextStyles.titleMedium,
               ),
               const SizedBox(height: AppDimensions.spacingS),
               Text(
-                'Du har inga vänner att lägga till än. Lägg till vänner först för att skapa grupper med dem.',
+                context.l10n.groupNoFriendsToAdd,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -263,12 +273,12 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Välj medlemmar',
+              context.l10n.groupSelectMembers,
               style: AppTextStyles.titleMedium,
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
-              'Välj vänner som du vill bjuda in till gruppen:',
+              context.l10n.groupSelectFriendsToInvite,
               style: AppTextStyles.bodySmall.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -288,8 +298,8 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                   _onFriendSelectionChanged(selectedFriends);
                 },
                 showSelectAll: true,
-                selectAllText: 'Välj alla',
-                selectNoneText: 'Avmarkera alla',
+                selectAllText: context.l10n.commonSelectAll,
+                selectNoneText: context.l10n.commonDeselectAll,
               ),
             ),
           ],

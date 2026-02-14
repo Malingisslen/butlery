@@ -1,6 +1,7 @@
 // lib/widgets/common/social/social_collaborative_api.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/widgets/social/collaborative/collaborative_indicators.dart';
@@ -71,7 +72,7 @@ class SocialCollaborativeApi {
       context: context,
       contentId: contentId,
       recipe: recipe,
-      title: 'Redigera recept',
+      title: context.l10n.socialEditRecipe,
     );
   }
 
@@ -88,8 +89,8 @@ class SocialCollaborativeApi {
       context: context,
       contentId: contentId,
       recipe: recipe,
-      title: 'Du redigerar tillsammans med andra',
-      subtitle: 'Ändringar synkas automatiskt med andra deltagare',
+      title: context.l10n.socialEditingTogether,
+      subtitle: context.l10n.socialChangesSyncAutomatically,
     );
   }
 
@@ -104,8 +105,8 @@ class SocialCollaborativeApi {
     return CollaborativeIndicators.smartCollaborativeBanner(
       context: context,
       contentId: contentId,
-      title: 'Du redigerar tillsammans med andra',
-      subtitle: 'Ändringar synkas automatiskt med andra deltagare',
+      title: context.l10n.socialEditingTogether,
+      subtitle: context.l10n.socialChangesSyncAutomatically,
     );
   }
 

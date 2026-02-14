@@ -5,6 +5,7 @@ import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Dialog for viewing and managing all recipe tags.
 ///
@@ -91,7 +92,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
     // Don't add duplicates
     if (_effectiveTags.contains(newTag)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Taggen finns redan')),
+        SnackBar(content: Text(context.l10n.tagAlreadyExists)),
       );
       return;
     }
@@ -148,13 +149,14 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
                   Text(
-                    'Hantera taggar',
+                    context.l10n.tagManageTags,
                     style: AppTextStyles.titleLarge,
                   ),
                   const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.of(context).pop(),
+                    tooltip: context.l10n.commonClose,
                   ),
                 ],
               ),
@@ -169,7 +171,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                       // Active tags section
                       if (sortedTags.isNotEmpty) ...[
                         Text(
-                          'Aktiva taggar',
+                          context.l10n.tagActiveTags,
                           style: AppTextStyles.titleSmall,
                         ),
                         const SizedBox(height: AppDimensions.spacingS),
@@ -186,7 +188,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                       // Removed tags section (can be restored)
                       if (removedTagsList.isNotEmpty) ...[
                         Text(
-                          'Borttagna taggar',
+                          context.l10n.tagRemovedTags,
                           style: AppTextStyles.titleSmall.copyWith(
                             color: AppColors.textMedium,
                           ),
@@ -204,7 +206,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
 
                       // Add new tag
                       Text(
-                        'Lägg till ny tagg',
+                        context.l10n.tagAddNewTag,
                         style: AppTextStyles.titleSmall,
                       ),
                       const SizedBox(height: AppDimensions.spacingS),
@@ -216,7 +218,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                               child: TextFormField(
                                 controller: _newTagController,
                                 decoration: InputDecoration(
-                                  hintText: 'Skriv en tagg...',
+                                  hintText: context.l10n.tagWriteTagHint,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(
                                         AppDimensions.borderRadiusM),
@@ -228,10 +230,10 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                                 ),
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
-                                    return 'Ange en tagg';
+                                    return context.l10n.tagEnterTag;
                                   }
                                   if (value.trim().length < 2) {
-                                    return 'Minst 2 tecken';
+                                    return context.l10n.tagMinTwoChars;
                                   }
                                   return null;
                                 },
@@ -242,6 +244,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                             IconButton.filled(
                               onPressed: _addNewTag,
                               icon: const Icon(Icons.add),
+                              tooltip: context.l10n.tagAddTag,
                               style: IconButton.styleFrom(
                                 backgroundColor: AppColors.forestGreen,
                                 foregroundColor: AppColors.cardWhite,
@@ -265,12 +268,12 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Avbryt'),
+                    child: Text(context.l10n.commonCancel),
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
                   FilledButton(
                     onPressed: _save,
-                    child: const Text('Spara'),
+                    child: Text(context.l10n.commonSave),
                   ),
                 ],
               ),
@@ -308,7 +311,9 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
           ? const Icon(Icons.person,
               size: AppDimensions.iconSizeS, color: AppColors.forestGreen)
           : null,
-      tooltip: isUserAdded ? 'Manuellt tillagd' : 'Automatiskt genererad',
+      tooltip: isUserAdded
+          ? context.l10n.tagManuallyAdded
+          : context.l10n.tagAutoGenerated,
     );
   }
 
@@ -329,7 +334,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
       avatar: const Icon(Icons.undo,
           size: AppDimensions.iconSizeS, color: AppColors.textMedium),
       onPressed: () => _restoreTag(tag),
-      tooltip: 'Klicka för att återställa',
+      tooltip: context.l10n.tagClickToRestore,
     );
   }
 }

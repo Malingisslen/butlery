@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -115,13 +116,13 @@ class _SessionTimeoutWarningDialogState
         color: AppColors.warning,
         size: AppDimensions.iconSizeXxl,
       ),
-      title: const Text('Session utgår snart'),
+      title: Text(context.l10n.sessionExpiringTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Din session kommer att avslutas om:',
+            context.l10n.sessionExpiringMessage,
             style: AppTextStyles.bodyLarge,
           ),
           const SizedBox(height: AppDimensions.spacingM),
@@ -153,7 +154,7 @@ class _SessionTimeoutWarningDialogState
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
-            'Vill du fortsätta din session eller logga ut nu?',
+            context.l10n.sessionContinueOrLogout,
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -164,7 +165,7 @@ class _SessionTimeoutWarningDialogState
         TextButton(
           onPressed: _handleLogoutNow,
           child: Text(
-            'Logga ut nu',
+            context.l10n.commonLogoutNow,
             style: AppTextStyles.labelLarge.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -176,7 +177,7 @@ class _SessionTimeoutWarningDialogState
             backgroundColor: AppColors.forestGreen,
           ),
           child: Text(
-            'Fortsätt session',
+            context.l10n.sessionContinue,
             style: AppTextStyles.labelLarge.copyWith(
               color: AppColors.cardWhite,
             ),

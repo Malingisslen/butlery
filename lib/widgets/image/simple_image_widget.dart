@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/image_config.dart';
@@ -146,7 +147,7 @@ class SimpleImageWidget extends StatelessWidget {
     // Add tap handlers
     if (onTap != null || onLongPress != null) {
       image = Semantics(
-        label: 'Visa fullstorlek av bild',
+        label: context.l10n.a11yViewFullSizeImage,
         button: true,
         child: GestureDetector(
           onTap: onTap != null
@@ -179,15 +180,17 @@ class SimpleImageWidget extends StatelessWidget {
         ImageComponents.buildPlaceholder(
           config: config,
           child: onTap != null
-              ? Semantics(
-                  label: 'Lägg till bild',
-                  button: true,
-                  child: GestureDetector(
-                    onTap: onTap,
-                    child: const Center(
-                      child: Icon(
-                        Icons.add_photo_alternate_outlined,
-                        size: AppDimensions.iconSizeXl,
+              ? Builder(
+                  builder: (context) => Semantics(
+                    label: context.l10n.a11yAddImage,
+                    button: true,
+                    child: GestureDetector(
+                      onTap: onTap,
+                      child: const Center(
+                        child: Icon(
+                          Icons.add_photo_alternate_outlined,
+                          size: AppDimensions.iconSizeXl,
+                        ),
                       ),
                     ),
                   ),
@@ -269,7 +272,7 @@ class NetworkImageWidget extends StatelessWidget {
     // Add tap handlers
     if (onTap != null || onLongPress != null) {
       image = Semantics(
-        label: 'Visa fullstorlek av bild',
+        label: context.l10n.a11yViewFullSizeImage,
         button: true,
         child: GestureDetector(
           onTap: onTap != null
@@ -354,7 +357,9 @@ class _ExpandableImageWidgetState extends State<ExpandableImageWidget>
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: _isExpanded ? 'Förminska bild' : 'Förstora bild',
+      label: _isExpanded
+          ? context.l10n.a11yShrinkImage
+          : context.l10n.a11yEnlargeImage,
       button: true,
       child: GestureDetector(
         onTap: _toggleExpansion,
@@ -432,19 +437,20 @@ class _LazyImageWidgetState extends State<LazyImageWidget> {
   Widget build(BuildContext context) {
     if (!_shouldLoad) {
       return Semantics(
-        label: 'Ladda bild',
+        label: context.l10n.a11yLoadImage,
         button: true,
         child: GestureDetector(
           onTap: _loadImage,
           child: ImageComponents.buildPlaceholder(
             config: widget.config,
-            child: const Center(
+            child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.image_outlined, size: AppDimensions.iconSizeXl),
-                  SizedBox(height: AppDimensions.spacingSm),
-                  Text('Tap to load'),
+                  const Icon(Icons.image_outlined,
+                      size: AppDimensions.iconSizeXl),
+                  const SizedBox(height: AppDimensions.spacingSm),
+                  Text(context.l10n.imageTapToLoad),
                 ],
               ),
             ),

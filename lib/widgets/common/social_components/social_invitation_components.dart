@@ -179,8 +179,8 @@ class SocialInvitationComponents {
     List<InvitationTarget>? selectedTargets,
     Function(List<InvitationTarget>)? onSelectionChanged,
     bool showSelectAll = true,
-    String? selectAllText = 'Välj alla',
-    String? selectNoneText = 'Avmarkera alla',
+    String? selectAllText,
+    String? selectNoneText,
     ScrollPhysics? physics,
     EdgeInsets? padding,
   }) {
@@ -216,7 +216,7 @@ class SocialInvitationComponents {
   /// Build target search field
   static Widget targetSearchField({
     Function(String)? onSearchChanged,
-    String? hint = 'Sök målgrupper...',
+    String? hint,
     IconData prefixIcon = Icons.search,
     bool autofocus = false,
     TextEditingController? controller,
@@ -257,10 +257,10 @@ class SocialInvitationComponents {
     VoidCallback? onSelectNone,
     VoidCallback? onSelectFriends,
     VoidCallback? onSelectGroups,
-    String? selectAllText = 'Alla',
-    String? selectNoneText = 'Inga',
-    String? selectFriendsText = 'Vänner',
-    String? selectGroupsText = 'Grupper',
+    String? selectAllText,
+    String? selectNoneText,
+    String? selectFriendsText,
+    String? selectGroupsText,
     EdgeInsets? padding,
     MainAxisAlignment alignment = MainAxisAlignment.spaceEvenly,
   }) {
@@ -327,7 +327,8 @@ class SocialInvitationComponents {
   }
 
   /// Build detailed target card
-  static Widget detailedTargetCard({
+  static Widget detailedTargetCard(
+    BuildContext context, {
     required InvitationTarget target,
     VoidCallback? onTap,
     bool selected = false,
@@ -338,6 +339,7 @@ class SocialInvitationComponents {
     EdgeInsets? padding,
   }) {
     return InvitationDisplays.detailedTargetCard(
+      context,
       target: target,
       onTap: onTap,
       selected: selected,
@@ -355,7 +357,7 @@ class SocialInvitationComponents {
     Function(InvitationTarget)? onTargetTap,
     bool showIcons = true,
     int? maxItems,
-    String? moreItemsText = '+{count} till',
+    String? moreItemsText,
     ScrollPhysics? physics,
   }) {
     return InvitationDisplays.compactTargetList(
@@ -370,7 +372,7 @@ class SocialInvitationComponents {
 
   /// Build target list loading state.
   static Widget targetListLoading({
-    String? text = 'Laddar målgrupper...',
+    String? text,
   }) {
     return InvitationStates.targetListLoading(text: text);
   }
@@ -385,10 +387,10 @@ class SocialInvitationComponents {
   /// Build target loading error state
   static Widget targetLoadingError(
     BuildContext context, {
-    String? title = 'Kunde inte ladda målgrupper',
-    String? message = 'Kontrollera din internetanslutning och försök igen.',
+    String? title,
+    String? message,
     VoidCallback? onRetry,
-    String? retryText = 'Försök igen',
+    String? retryText,
     IconData errorIcon = Icons.error_outline,
   }) {
     return InvitationStates.targetLoadingError(
@@ -404,11 +406,11 @@ class SocialInvitationComponents {
   /// Build no targets available state
   static Widget noTargetsAvailable(
     BuildContext context, {
-    String? title = 'Inga målgrupper tillgängliga',
-    String? message = 'Du har inte lagt till några vänner eller grupper än.',
+    String? title,
+    String? message,
     IconData icon = Icons.group_outlined,
     VoidCallback? onAddTargets,
-    String? addButtonText = 'Lägg till vänner',
+    String? addButtonText,
     bool showAddButton = true,
   }) {
     return InvitationStates.noTargetsAvailable(
@@ -426,12 +428,11 @@ class SocialInvitationComponents {
   static Widget noSearchResults(
     BuildContext context, {
     String? query,
-    String? title = 'Inga sökresultat',
-    String? message =
-        'Prova att söka med andra ord eller kontrollera stavningen.',
+    String? title,
+    String? message,
     IconData icon = Icons.search_off,
     VoidCallback? onClearSearch,
-    String? clearButtonText = 'Rensa sökning',
+    String? clearButtonText,
     bool showClearButton = true,
   }) {
     return InvitationStates.noSearchResults(
@@ -450,11 +451,11 @@ class SocialInvitationComponents {
   static Widget targetsSelectedSuccess(
     BuildContext context, {
     required int selectedCount,
-    String? title = 'Målgrupper valda',
-    String? message = 'Du har valt {count} målgrupper för inbjudan.',
+    String? title,
+    String? message,
     IconData icon = Icons.check_circle_outline,
     VoidCallback? onContinue,
-    String? continueButtonText = 'Fortsätt',
+    String? continueButtonText,
     Color? successColor,
   }) {
     return InvitationStates.targetsSelectedSuccess(
@@ -476,7 +477,7 @@ class SocialInvitationComponents {
     required List<InvitationTarget> selectedTargets,
     VoidCallback? onClearAll,
     Function(InvitationTarget)? onRemoveTarget,
-    String? title = 'Valda målgrupper',
+    String? title,
     bool showClearAll = true,
     bool compact = false,
     EdgeInsets? padding,

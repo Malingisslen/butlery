@@ -12,6 +12,7 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Recipe social action handler
 /// Handles social features: sharing to friends/groups, comments, and user profile management.
@@ -65,7 +66,7 @@ class RecipeSocialHandler {
 
     if (currentUserId == null) {
       showSnackBar(
-        'Du måste vara inloggad för att kommentera',
+        context.l10n.socialMustBeLoggedInToComment,
         backgroundColor: AppColors.error,
       );
       return;
@@ -77,7 +78,7 @@ class RecipeSocialHandler {
       if (userProfile == null) {
         if (context.mounted) {
           showSnackBar(
-            'Kunde inte hämta användardata',
+            context.l10n.socialCouldNotFetchUserData,
             backgroundColor: AppColors.error,
           );
         }
@@ -88,10 +89,11 @@ class RecipeSocialHandler {
       await socialViewModel.postComment(recipeId);
       if (!context.mounted) return;
 
-      showSnackBar('Kommentar postad', backgroundColor: AppColors.success);
+      showSnackBar(context.l10n.socialCommentPosted,
+          backgroundColor: AppColors.success);
     } catch (e) {
       if (!context.mounted) return;
-      showSnackBar('Kunde inte posta kommentar',
+      showSnackBar(context.l10n.socialCouldNotPostComment,
           backgroundColor: AppColors.error);
     }
   }
@@ -112,7 +114,7 @@ class RecipeSocialHandler {
 
     // Get display name from UserService's current user profile or use a default
     final displayName =
-        userService.currentUserProfile?.displayName ?? 'Användare';
+        userService.currentUserProfile?.displayName ?? context.l10n.commonUser;
 
     try {
       await userService.createOrUpdateProfile(
@@ -121,10 +123,11 @@ class RecipeSocialHandler {
         allowEmailSearch: false,
       );
       if (!context.mounted) return;
-      showSnackBar('Användarprofil skapad', backgroundColor: AppColors.success);
+      showSnackBar(context.l10n.socialUserProfileCreated,
+          backgroundColor: AppColors.success);
     } catch (e) {
       if (!context.mounted) return;
-      showSnackBar('Kunde inte skapa användarprofil',
+      showSnackBar(context.l10n.socialCouldNotCreateProfile,
           backgroundColor: AppColors.error);
     }
   }

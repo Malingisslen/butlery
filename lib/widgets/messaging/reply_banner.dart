@@ -1,6 +1,7 @@
 // lib/widgets/messaging/reply_banner.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -61,7 +62,7 @@ class ReplyBanner extends StatelessWidget {
               children: [
                 // Sender name
                 Text(
-                  'Svarar till ${message.senderDisplayName}',
+                  context.l10n.messagingReplyingTo(message.senderDisplayName),
                   style: AppTextStyles.metadataEmphasized.copyWith(
                     color: AppColors.success,
                   ),
@@ -72,7 +73,7 @@ class ReplyBanner extends StatelessWidget {
 
                 // Original message content
                 Text(
-                  _getMessagePreview(),
+                  _getMessagePreview(context),
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -94,24 +95,27 @@ class ReplyBanner extends StatelessWidget {
               minHeight: 32,
             ),
             padding: EdgeInsets.zero,
-            tooltip: 'Avbryt svar',
+            tooltip: context.l10n.messagingCancelReply,
           ),
         ],
       ),
     );
   }
 
-  String _getMessagePreview() {
+  String _getMessagePreview(BuildContext context) {
     switch (message.type) {
       case MessageType.text:
         return message.content;
       case MessageType.image:
         // Caption is in content for image messages
-        return message.content.isNotEmpty ? '📷 ${message.content}' : '📷 Bild';
+        return message.content.isNotEmpty
+            ? '📷 ${message.content}'
+            : context.l10n.messagingImagePreview;
       case MessageType.recipeShare:
         // Recipe title is in metadata
         final title = message.metadata?['recipeTitle'] as String?;
-        return '🍳 ${title ?? "Recept"}';
+        return context.l10n
+            .messagingRecipePreview(title ?? context.l10n.recipeRecipe);
       default:
         return message.content;
     }

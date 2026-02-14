@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// ✨ UPPDATERAD ARKIV IMPORT VY - MIGRERAD TILL UtilityComponents
 class ImporteraFranArkivView extends StatelessWidget {
@@ -44,7 +45,8 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     if (context.mounted) {
       if (viewModel.error == null) {
         // ✅ MIGRERAD: Custom SnackBar → UtilityComponents.showSuccessSnackbar
-        UtilityComponents.showSuccessSnackbar(context, 'Recept importerade!');
+        UtilityComponents.showSuccessSnackbar(
+            context, context.l10n.importRecipesImported);
         Navigator.pop(context);
       } else {
         // ✅ MIGRERAD: Custom SnackBar → UtilityComponents.showErrorSnackbar
@@ -61,7 +63,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Importera från Butlerys arkiv'),
+        title: Text(context.l10n.importFromArchive),
         actions: [
           if (viewModel.hasError)
             IconButton(
@@ -71,7 +73,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                 UtilityComponents.showErrorSnackbar(context, viewModel.error!);
                 viewModel.clearError();
               },
-              tooltip: 'Visa fel',
+              tooltip: context.l10n.importShowError,
             ),
         ],
       ),
@@ -105,7 +107,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                               SearchFilterWidget.searchOnly(
                                 searchQuery: viewModel.searchQuery,
                                 onSearchChanged: viewModel.updateSearch,
-                                searchHint: 'Sök i arkiv...',
+                                searchHint: context.l10n.importSearchArchive,
                                 showStats: true,
                                 resultCount: viewModel.searchQuery.isNotEmpty
                                     ? viewModel.filteredRecipes.length
@@ -175,7 +177,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                 if (viewModel.isImporting)
                   UtilityComponents.loadingOverlay(
                     isLoading: true,
-                    loadingMessage: 'Importerar recept...',
+                    loadingMessage: context.l10n.importImportingRecipesProgress,
                   ),
               ],
             ),
@@ -193,7 +195,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
       spacing: AppDimensions.spacingS,
       children: [
         ChoiceChip(
-          label: const Text('Alla'),
+          label: Text(context.l10n.importFilterAll),
           selected: viewModel.timeFilter == TimeFilter.all,
           onSelected: (_) => viewModel.setTimeFilter(TimeFilter.all),
           backgroundColor: viewModel.timeFilter == TimeFilter.all
@@ -259,11 +261,12 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     final filterParts = <String>[];
 
     if (viewModel.selectedTags.isNotEmpty) {
-      filterParts.add('${viewModel.selectedTags.length} taggar');
+      filterParts
+          .add(context.l10n.importTagsCount(viewModel.selectedTags.length));
     }
 
     if (viewModel.timeFilter != TimeFilter.all) {
-      final timeLabel = _getTimeFilterLabel(viewModel.timeFilter);
+      final timeLabel = _getTimeFilterLabel(context, viewModel.timeFilter);
       filterParts.add(timeLabel);
     }
 
@@ -275,7 +278,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     );
   }
 
-  String _getTimeFilterLabel(TimeFilter filter) {
+  String _getTimeFilterLabel(BuildContext context, TimeFilter filter) {
     switch (filter) {
       case TimeFilter.under15:
         return '≤ 15 min';
@@ -284,7 +287,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
       case TimeFilter.under60:
         return '≤ 60 min';
       case TimeFilter.all:
-        return 'Alla tider';
+        return context.l10n.importFilterAllTimes;
     }
   }
 
@@ -296,8 +299,8 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
     if (recipes.isEmpty) {
       return StateWidget.empty(
-        title: 'Inga recept matchade filtren',
-        subtitle: 'Prova att justera sökning eller filter',
+        title: context.l10n.importNoRecipesMatchedFilters,
+        subtitle: context.l10n.importTryAdjustFilters,
         icon: Icons.search_off,
       );
     }
@@ -337,7 +340,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
             // ✅ MIGRERAD: ActionButton.outlined → UtilityComponents.outlinedButton
             child: UtilityComponents.outlinedButton(
               context,
-              label: 'Markera alla',
+              label: context.l10n.commonSelectAll,
               icon: Icons.select_all,
               onPressed:
                   viewModel.isImporting ? null : viewModel.toggleSelectAll,
@@ -350,14 +353,15 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
             child: UtilityComponents.primaryButton(
               context,
               label: viewModel.hasSelection
-                  ? 'Importera valda (${viewModel.selectedCount})'
-                  : 'Importera alla (${viewModel.archivedRecipes.length})',
+                  ? context.l10n.importSelectedCount(viewModel.selectedCount)
+                  : context.l10n
+                      .importAllCount(viewModel.archivedRecipes.length),
               icon: Icons.upload,
               onPressed: viewModel.isImporting
                   ? null
                   : () => _handleImport(context, viewModel),
               isLoading: viewModel.isImporting,
-              loadingText: 'Importerar...',
+              loadingText: context.l10n.importImporting,
             ),
           ),
         ],

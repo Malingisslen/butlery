@@ -5,6 +5,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Category Selection Widgets
 /// Handles ONLY category selection UI components and interaction widgets.
@@ -41,7 +42,6 @@ class CategorySelectionWidgets {
                 TextButton.icon(
                   onPressed: () {
                     if (allowMultipleSelection) {
-                      // Select all categories
                       for (final category in categories) {
                         if (!selectedCategoryIds.contains(category.id)) {
                           onCategoryToggled(category.id);
@@ -50,18 +50,17 @@ class CategorySelectionWidgets {
                     }
                   },
                   icon: const Icon(Icons.select_all),
-                  label: const Text('Välj alla'),
+                  label: Text(context.l10n.commonSelectAll),
                 ),
                 const SizedBox(width: AppDimensions.spacingMd),
                 TextButton.icon(
                   onPressed: () {
-                    // Clear all selections
                     for (final categoryId in selectedCategoryIds.toList()) {
                       onCategoryToggled(categoryId);
                     }
                   },
                   icon: const Icon(Icons.clear_all),
-                  label: const Text('Rensa alla'),
+                  label: Text(context.l10n.commonClearAll),
                 ),
               ],
             ),
@@ -85,7 +84,7 @@ class CategorySelectionWidgets {
               child: TextButton.icon(
                 onPressed: onCreateNew,
                 icon: const Icon(Icons.add),
-                label: const Text('Skapa ny kategori'),
+                label: Text(context.l10n.friendCreateNewCategory),
               ),
             ),
           ],
@@ -238,64 +237,68 @@ class CategorySelectionWidgets {
     final totalFriends = selectedCategories.fold<int>(
         0, (sum, cat) => sum + cat.friendUserIds.length);
 
-    return Container(
-      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
-      decoration: BoxDecoration(
-        color: AppColors.forestGreen
-            .withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(
+    return Builder(
+      builder: (context) => Container(
+        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
+        decoration: BoxDecoration(
           color: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+              .withValues(alpha: AppDimensions.opacityVeryLight),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          border: Border.all(
+            color: AppColors.forestGreen
+                .withValues(alpha: AppDimensions.opacityMediumLight),
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppDimensions.spacingXs),
-            decoration: BoxDecoration(
-              color: AppColors.forestGreen,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadius6),
-            ),
-            child: const Icon(
-              Icons.category,
-              color: AppColors.neutralLight,
-              size: AppDimensions.iconSizeS,
-            ),
-          ),
-          const SizedBox(width: AppDimensions.spacingMd),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Valda kategorier',
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.forestGreen,
-                  ),
-                ),
-                Text(
-                  '${selectedCategories.length} ${selectedCategories.length == 1 ? 'kategori' : 'kategorier'} ($totalFriends vänner)',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.forestGreen,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          TextButton.icon(
-            onPressed: onClear,
-            icon: const Icon(Icons.clear, size: AppDimensions.iconSize18),
-            label: const Text('Rensa'),
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.forestGreen,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingS,
-                vertical: AppDimensions.spacingXs,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppDimensions.spacingXs),
+              decoration: BoxDecoration(
+                color: AppColors.forestGreen,
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadius6),
+              ),
+              child: const Icon(
+                Icons.category,
+                color: AppColors.neutralLight,
+                size: AppDimensions.iconSizeS,
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: AppDimensions.spacingMd),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.l10n.friendSelectedCategories,
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: AppColors.forestGreen,
+                    ),
+                  ),
+                  Text(
+                    context.l10n.friendSelectedCategoriesSummary(
+                        selectedCategories.length, totalFriends),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.forestGreen,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            TextButton.icon(
+              onPressed: onClear,
+              icon: const Icon(Icons.clear, size: AppDimensions.iconSize18),
+              label: Text(context.l10n.commonClear),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.forestGreen,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingS,
+                  vertical: AppDimensions.spacingXs,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -305,33 +308,37 @@ class CategorySelectionWidgets {
     required List<FriendCategory> categories,
     required Set<String> selectedCategoryIds,
     required Function(String) onCategoryToggled,
-    String hint = 'Välj kategorier',
+    String? hint,
     double? width,
   }) {
-    return Container(
-      width: width,
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.textMedium),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-      ),
-      child: ExpansionTile(
-        title: Text(
-          selectedCategoryIds.isEmpty
-              ? hint
-              : '${selectedCategoryIds.length} kategorier valda',
-          style: AppTextStyles.bodyMedium,
+    return Builder(
+      builder: (context) => Container(
+        width: width,
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.textMedium),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         ),
-        children: categories.map((category) {
-          final isSelected = selectedCategoryIds.contains(category.id);
-          return CheckboxListTile(
-            value: isSelected,
-            onChanged: (_) => onCategoryToggled(category.id),
-            title: Text(category.name),
-            subtitle: Text('${category.friendUserIds.length} vänner'),
-            dense: true,
-            activeColor: AppColors.forestGreen,
-          );
-        }).toList(),
+        child: ExpansionTile(
+          title: Text(
+            selectedCategoryIds.isEmpty
+                ? (hint ?? context.l10n.friendSelectCategories)
+                : context.l10n
+                    .friendCategoriesSelected(selectedCategoryIds.length),
+            style: AppTextStyles.bodyMedium,
+          ),
+          children: categories.map((category) {
+            final isSelected = selectedCategoryIds.contains(category.id);
+            return CheckboxListTile(
+              value: isSelected,
+              onChanged: (_) => onCategoryToggled(category.id),
+              title: Text(category.name),
+              subtitle: Text(context.l10n
+                  .friendFriendsCount(category.friendUserIds.length)),
+              dense: true,
+              activeColor: AppColors.forestGreen,
+            );
+          }).toList(),
+        ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 // lib/widgets/import/components/add_item_field.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Text field for adding new items to a list.
@@ -61,7 +62,7 @@ class _AddItemFieldState extends State<AddItemField> {
             color: theme.colorScheme.primary,
           ),
           onPressed: _add,
-          tooltip: 'Lägg till',
+          tooltip: context.l10n.commonAdd,
         ),
       ),
       textCapitalization: TextCapitalization.sentences,

@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 import 'package:butlery/widgets/common/search_filter/filter_chips_widget.dart';
 import 'package:butlery/widgets/common/search_filter/personal_tag_filter_chips.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Animated filters panel with all filter groups
 class FiltersPanelWidget extends StatelessWidget {
@@ -89,7 +90,7 @@ class FiltersPanelWidget extends StatelessWidget {
                     children: [
                       // Time filters
                       FilterChipsWidget(
-                        title: 'Tillagningstid',
+                        title: context.l10n.filterCookingTime,
                         options: RecipeFilters.timeFilters,
                         activeFilters: activeTimeFilters,
                         onToggle: onTimeFilterToggle,
@@ -97,15 +98,15 @@ class FiltersPanelWidget extends StatelessWidget {
 
                       // Meal type filters
                       FilterChipsWidget(
-                        title: 'Måltidstyp',
-                        options: RecipeFilters.mealTypeFilters,
+                        title: context.l10n.filterMealType,
+                        options: RecipeFilters.mealTypeFilters(context),
                         activeFilters: activeMealTypeFilters,
                         onToggle: onMealTypeFilterToggle,
                       ),
 
                       // Rating filters
                       FilterChipsWidget(
-                        title: 'Betyg',
+                        title: context.l10n.filterRating,
                         options: RecipeFilters.ratingFilters,
                         activeFilters: activeRatingFilters,
                         onToggle: onRatingFilterToggle,
@@ -114,8 +115,8 @@ class FiltersPanelWidget extends StatelessWidget {
                       // Allergen-free filters
                       if (onAllergenFilterToggle != null)
                         FilterChipsWidget(
-                          title: 'Allergenfri',
-                          options: RecipeFilters.allergenFreeFilters,
+                          title: context.l10n.filterAllergenFree,
+                          options: RecipeFilters.allergenFreeFilters(context),
                           activeFilters: activeAllergenFilters,
                           onToggle: onAllergenFilterToggle!,
                         ),
@@ -123,8 +124,8 @@ class FiltersPanelWidget extends StatelessWidget {
                       // Dietary filters
                       if (onDietaryFilterToggle != null)
                         FilterChipsWidget(
-                          title: 'Specialkost',
-                          options: RecipeFilters.dietaryFilters,
+                          title: context.l10n.filterDietary,
+                          options: RecipeFilters.dietaryFilters(context),
                           activeFilters: activeDietaryFilters,
                           onToggle: onDietaryFilterToggle!,
                         ),
@@ -151,7 +152,7 @@ class FiltersPanelWidget extends StatelessWidget {
                               size: AppDimensions.iconSizeAction,
                             ),
                             label: Text(
-                              'Rensa alla filter',
+                              context.l10n.filterClearAll,
                               style: AppTextStyles.labelLarge,
                             ),
                             style: TextButton.styleFrom(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 // Import focused widget files
 import 'package:butlery/widgets/common/friends/category_selection_widgets.dart';
@@ -13,8 +14,8 @@ class FriendCategoryWidgets {
     required List<String> selectedFriendIds,
     required Function(List<String>) onSelectionChanged,
     bool allowMultipleCategories = true,
-    String title = 'Välj vänner',
-    String subtitle = 'Välj kategorier eller individuella vänner',
+    String? title,
+    String? subtitle,
   }) {
     return FriendCategoryManager(
       selectedFriendIds: selectedFriendIds,
@@ -36,8 +37,6 @@ class FriendCategoryWidgets {
       child: friendCategoryManager(
         selectedFriendIds: selectedFriendIds,
         onSelectionChanged: onSelectionChanged,
-        title: 'Välj vänner',
-        subtitle: 'Snabbval via kategorier',
       ),
     );
   }
@@ -120,10 +119,12 @@ class FriendCategoryWidgets {
 
   /// Build category statistics widget
   static Widget categoryStatistics({
+    required BuildContext context,
     required List<FriendCategory> categories,
     EdgeInsets? padding,
   }) {
     return CategoryDisplayWidgets.categoryStatistics(
+      context: context,
       categories: categories,
       padding: padding,
     );
@@ -165,17 +166,18 @@ class FriendCategoryWidgets {
 
   /// Build category multi-select dropdown
   static Widget categoryMultiSelectDropdown({
+    required BuildContext context,
     required List<FriendCategory> categories,
     required Set<String> selectedCategoryIds,
     required Function(String) onCategoryToggled,
-    String hint = 'Välj kategorier',
+    String? hint,
     double? width,
   }) {
     return CategorySelectionWidgets.categoryMultiSelectDropdown(
       categories: categories,
       selectedCategoryIds: selectedCategoryIds,
       onCategoryToggled: onCategoryToggled,
-      hint: hint,
+      hint: hint ?? context.l10n.friendSelectCategories,
       width: width,
     );
   }
@@ -199,6 +201,7 @@ class FriendCategoryWidgets {
 
   /// Build compact category card
   static Widget categoryCard({
+    required BuildContext context,
     required FriendCategory category,
     required VoidCallback onTap,
     bool showMemberCount = true,
@@ -207,6 +210,7 @@ class FriendCategoryWidgets {
     double? height,
   }) {
     return CategoryDisplayWidgets.categoryCard(
+      context: context,
       category: category,
       onTap: onTap,
       showMemberCount: showMemberCount,
@@ -233,11 +237,13 @@ class FriendCategoryWidgets {
 
   /// Build category summary row
   static Widget categorySummaryRow({
+    required BuildContext context,
     required List<FriendCategory> categories,
     bool showTotalMembers = true,
     EdgeInsets? padding,
   }) {
     return CategoryDisplayWidgets.categorySummaryRow(
+      context: context,
       categories: categories,
       showTotalMembers: showTotalMembers,
       padding: padding,
@@ -246,12 +252,14 @@ class FriendCategoryWidgets {
 
   /// Build empty categories state
   static Widget emptyState({
-    String title = 'Inga kategorier',
-    String subtitle = 'Skapa din första vänkategori',
+    required BuildContext context,
+    String? title,
+    String? subtitle,
     VoidCallback? onCreateCategory,
     EdgeInsets? padding,
   }) {
     return CategoryDisplayWidgets.emptyState(
+      context: context,
       title: title,
       subtitle: subtitle,
       onCreateCategory: onCreateCategory,

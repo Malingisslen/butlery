@@ -1,6 +1,7 @@
 // lib/widgets/common/content_cards/menu_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -48,21 +49,25 @@ class MenuCard extends StatelessWidget {
         margin: margin ?? _getDefaultMargin(),
         child: Material(
           color: AppColors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            onLongPress: onLongPress,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            child: Container(
-              padding: padding ?? _getDefaultPadding(),
-              decoration: BoxDecoration(
-                color: AppColors.backgroundLight,
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusM),
-                border: Border.all(
-                    color: AppColors.textLight,
-                    width: AppDimensions.borderWidthThin),
+          child: Semantics(
+            label: context.l10n.a11yMenu(_getMenuTitle()),
+            button: true,
+            child: InkWell(
+              onTap: onTap,
+              onLongPress: onLongPress,
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              child: Container(
+                padding: padding ?? _getDefaultPadding(),
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundLight,
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusM),
+                  border: Border.all(
+                      color: AppColors.textLight,
+                      width: AppDimensions.borderWidthThin),
+                ),
+                child: _buildContent(context),
               ),
-              child: _buildContent(context),
             ),
           ),
         ),
@@ -169,7 +174,7 @@ class MenuCard extends StatelessWidget {
 
     final metadata = <String>[];
     if (recipeCount > 0) {
-      metadata.add('$recipeCount recept');
+      metadata.add(context.l10n.menuCardRecipeCount(recipeCount));
     }
     if (duration != null) {
       metadata.add(duration);
@@ -204,7 +209,7 @@ class MenuCard extends StatelessWidget {
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
-              'Inga recept i menyn',
+              context.l10n.menuCardNoRecipes,
               style: AppTextStyles.metadataEmphasized,
             ),
           ],
@@ -218,7 +223,7 @@ class MenuCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Recept i menyn:',
+          context.l10n.menuCardRecipesInMenu,
           style: AppTextStyles.labelMediumMuted,
         ),
         const SizedBox(height: AppDimensions.spacingS),
@@ -250,7 +255,7 @@ class MenuCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
             child: Text(
-              '+ ${allRecipes.length - 3} fler recept',
+              context.l10n.menuCardMoreRecipes(allRecipes.length - 3),
               style: AppTextStyles.metadataEmphasized,
             ),
           ),
@@ -290,7 +295,9 @@ class MenuCard extends StatelessWidget {
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Text(
-            memberCount > 0 ? 'Delad med $memberCount personer' : 'Delad meny',
+            memberCount > 0
+                ? context.l10n.menuCardSharedWithCount(memberCount)
+                : context.l10n.menuCardSharedMenu,
             style: AppTextStyles.linkSmall,
           ),
         ],

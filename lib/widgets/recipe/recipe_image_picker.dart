@@ -1,7 +1,7 @@
 // lib/widgets/recipe/recipe_image_picker.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
@@ -36,7 +36,8 @@ class RecipeImagePicker {
       if (context.mounted) {
         UtilityComponents.showErrorSnackbar(
           context,
-          'Kunde inte välja bild. Kontrollera att appen har behörighet att använda kamera/galleri.',
+          context.l10n
+              .errorCouldNotLoad(context.l10n.commonImage.toLowerCase()),
         );
       }
     }
@@ -56,7 +57,7 @@ class RecipeImagePicker {
             Padding(
               padding: AppDimensions.paddingAll16,
               child: Text(
-                AppStrings.addImage,
+                context.l10n.imageAddImage,
                 style: AppTextStyles.titleMedium,
               ),
             ),
@@ -66,8 +67,8 @@ class RecipeImagePicker {
                 Icons.photo_camera,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              title: const Text(AppStrings.takePhoto),
-              subtitle: const Text(AppStrings.useCamera),
+              title: Text(context.l10n.imageTakePhoto),
+              subtitle: Text(context.l10n.imageUseCamera),
               onTap: () => Navigator.pop(context, 'camera'),
             ),
             ListTile(
@@ -75,21 +76,21 @@ class RecipeImagePicker {
                 Icons.photo_library,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              title: const Text(AppStrings.fromGallery),
+              title: Text(context.l10n.imageFromGallery),
               subtitle: Text(
                 viewModel.canAddMoreImages
-                    ? AppStrings.selectUpToImages(
+                    ? context.l10n.imageSelectUpTo(
                         RecipeFormViewModel.maxImages -
                             viewModel.imageUrls.length,
                       )
-                    : AppStrings.selectFromGallery,
+                    : context.l10n.imageSelectFromGallery,
               ),
               onTap: () => Navigator.pop(context, 'gallery'),
             ),
             const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.close),
-              title: const Text('Avbryt'),
+              title: Text(context.l10n.commonCancel),
               onTap: () => Navigator.pop(context),
             ),
           ],

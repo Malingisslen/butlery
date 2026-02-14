@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/group_dialogs.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
@@ -74,14 +75,14 @@ class GroupDialogs {
     BuildContext context, {
     required List<InvitationTarget> availableTargets,
     List<InvitationTarget> initialSelection = const [],
-    String title = 'Välj vem du vill dela med',
+    String? title,
     bool allowMultiple = true,
   }) {
     return _showTargetSelectionDialog(
       context,
       availableTargets: availableTargets,
       initialSelection: initialSelection,
-      title: title,
+      title: title ?? context.l10n.groupSelectShareTarget,
       allowMultiple: allowMultiple,
     );
   }
@@ -92,7 +93,7 @@ Future<List<InvitationTarget>?> _showTargetSelectionDialog(
   BuildContext context, {
   required List<InvitationTarget> availableTargets,
   List<InvitationTarget> initialSelection = const [],
-  String title = 'Välj vem du vill dela med',
+  required String title,
   bool allowMultiple = true,
 }) async {
   // Simple placeholder implementation
@@ -105,7 +106,7 @@ Future<List<InvitationTarget>?> _showTargetSelectionDialog(
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, null),
-          child: const Text('Avbryt'),
+          child: Text(context.l10n.commonCancel),
         ),
         TextButton(
           onPressed: () => Navigator.pop(context, initialSelection),

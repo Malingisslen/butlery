@@ -7,6 +7,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Dialog for handling MFA challenge during sign-in.
 /// Shows when a user with MFA enabled attempts to log in.
@@ -103,7 +104,7 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
   Future<void> _verifyCode() async {
     final code = _codeController.text.trim();
     if (code.isEmpty || _verificationId == null) {
-      setState(() => _errorMessage = 'Ange verifieringskoden');
+      setState(() => _errorMessage = context.l10n.mfaEnterCode);
       return;
     }
 
@@ -122,7 +123,8 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
       widget.onSuccess();
     } else {
       setState(() {
-        _errorMessage = _authService.errorMessage ?? 'Verifiering misslyckades';
+        _errorMessage =
+            _authService.errorMessage ?? context.l10n.mfaVerificationFailed;
         _isLoading = false;
       });
     }
@@ -131,15 +133,15 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
   String _mapErrorMessage(String code) {
     switch (code) {
       case 'invalid-verification-code':
-        return 'Ogiltig kod. Försök igen.';
+        return context.l10n.mfaInvalidCode;
       case 'session-expired':
-        return 'Sessionen har gått ut. Försök logga in igen.';
+        return context.l10n.mfaSessionExpired;
       case 'quota-exceeded':
-        return 'För många försök. Försök igen senare.';
+        return context.l10n.mfaQuotaExceeded;
       case 'no-phone-factor':
-        return 'Ingen telefonverifiering konfigurerad.';
+        return context.l10n.mfaNoPhoneFactor;
       default:
-        return 'Ett fel uppstod. Försök igen.';
+        return context.l10n.errorGeneric;
     }
   }
 
@@ -153,7 +155,7 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
             color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
-          const Text('Tvåfaktorsverifiering'),
+          Text(context.l10n.mfaTitle),
         ],
       ),
       content: SizedBox(
@@ -163,11 +165,11 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!_codeSent) ...[
-              const Text('Skickar verifieringskod...'),
+              Text(context.l10n.mfaSendingCode),
               if (_phoneHint != null) ...[
                 const SizedBox(height: AppDimensions.spacingSm),
                 Text(
-                  'Till: $_phoneHint',
+                  context.l10n.mfaSendingTo(_phoneHint!),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
@@ -177,7 +179,8 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
               ],
             ] else ...[
               Text(
-                'En verifieringskod har skickats till ${_phoneHint ?? "ditt telefonnummer"}.',
+                context.l10n
+                    .mfaCodeSentTo(_phoneHint ?? context.l10n.mfaYourPhone),
               ),
               const SizedBox(height: AppDimensions.spacingMd),
               TextField(
@@ -185,10 +188,10 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
                 keyboardType: TextInputType.number,
                 maxLength: 6,
                 autofocus: true,
-                decoration: const InputDecoration(
-                  labelText: '6-siffrig kod',
-                  prefixIcon: Icon(Icons.lock_outline),
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: context.l10n.mfaSixDigitCode,
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  border: const OutlineInputBorder(),
                   counterText: '',
                 ),
                 onSubmitted: (_) => _verifyCode(),
@@ -200,12 +203,14 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
                 padding: AppDimensions.paddingAll8,
                 decoration: BoxDecoration(
                   color: AppColors.errorContainer,
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: Row(
                   children: [
                     const Icon(Icons.error_outline,
-                        color: AppColors.onErrorContainer, size: AppDimensions.iconSizeM),
+                        color: AppColors.onErrorContainer,
+                        size: AppDimensions.iconSizeM),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       child: Text(
@@ -225,16 +230,16 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
       actions: [
         TextButton(
           onPressed: _isLoading ? null : widget.onCancel,
-          child: const Text('Avbryt'),
+          child: Text(context.l10n.commonCancel),
         ),
         if (_codeSent)
           TextButton(
             onPressed: _isLoading ? null : _startVerification,
-            child: const Text('Skicka igen'),
+            child: Text(context.l10n.mfaResend),
           ),
         if (_codeSent)
           StyledButton.primary(
-            text: 'Verifiera',
+            text: context.l10n.mfaVerify,
             onPressed: _isLoading ? null : _verifyCode,
             isLoading: _isLoading,
           ),

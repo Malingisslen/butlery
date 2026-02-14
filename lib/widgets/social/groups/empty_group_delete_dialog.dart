@@ -1,6 +1,7 @@
 // lib/widgets/social/groups/empty_group_delete_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -29,24 +30,24 @@ class EmptyGroupDeleteDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Gruppen är tom'),
+      title: Text(context.l10n.groupIsEmpty),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Du är den enda medlemmen i "${group.name}".'),
+          Text(context.l10n.groupOnlyMember(group.name)),
           const SizedBox(height: AppDimensions.spacingM),
-          const Text('Vill du ta bort gruppen när du lämnar den?'),
+          Text(context.l10n.groupDeleteWhenLeaving),
         ],
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Avbryt'),
+          child: Text(context.l10n.commonCancel),
         ),
         TextButton(
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('Ta bort gruppen'),
+          child: Text(context.l10n.groupDeleteTheGroup),
         ),
       ],
     );

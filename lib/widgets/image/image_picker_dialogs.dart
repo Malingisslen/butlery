@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -51,7 +52,7 @@ class ImagePickerDialogs {
               ),
             ),
             Text(
-              'Välj bildkälla',
+              context.l10n.imageSelectSource,
               style: AppTextStyles.displaySmall
                   .copyWith(fontWeight: FontWeight.bold),
             ),
@@ -59,8 +60,8 @@ class ImagePickerDialogs {
             ListTile(
               leading:
                   const Icon(Icons.camera_alt, size: AppDimensions.iconSizeL),
-              title: const Text('Ta foto'),
-              subtitle: const Text('Använd kameran för att ta en ny bild'),
+              title: Text(context.l10n.commonTakePhoto),
+              subtitle: Text(context.l10n.imageUseCameraForNewPhoto),
               onTap: () {
                 AppLogger.info('📷 Användaren valde kamera');
                 Navigator.pop(context, ImageSource.camera);
@@ -70,9 +71,9 @@ class ImagePickerDialogs {
             ListTile(
               leading: const Icon(Icons.photo_library,
                   size: AppDimensions.iconSizeL),
-              title: const Text('Välj från galleri'),
-              subtitle: const Text(
-                'Välj en befintlig bild från ditt galleri',
+              title: Text(context.l10n.commonSelectFromGallery),
+              subtitle: Text(
+                context.l10n.imageSelectExistingFromGallery,
               ),
               onTap: () {
                 AppLogger.info('🖼️ Användaren valde galleri');
@@ -94,21 +95,19 @@ class ImagePickerDialogs {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Behörighet krävs'),
+        title: Text(context.l10n.imagePermissionRequired),
         content: Text(
-          'Butlery behöver tillgång till din $permission för att kunna '
-          'lägga till bilder till recept. Gå till inställningar för att '
-          'ge behörighet.',
+          context.l10n.imagePermissionMessage(permission),
         ),
         actions: [
           ActionButtons.secondaryButton(
             context,
-            label: 'Avbryt',
+            label: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context, false),
           ),
           ActionButtons.primaryButton(
             context,
-            label: 'Inställningar',
+            label: context.l10n.commonSettings,
             onPressed: () async {
               await openAppSettings();
               if (context.mounted) {
@@ -149,7 +148,7 @@ class ImagePickerDialogs {
         canPop: false,
         child: StreamBuilder<UploadProgress>(
           stream: progressStream,
-          initialData: UploadProgress(0, 0, 'Förbereder...'),
+          initialData: UploadProgress(0, 0, context.l10n.imageUploadPreparing),
           builder: (context, snapshot) {
             final progress = snapshot.data!;
             final percentage = progress.total > 0
@@ -164,7 +163,7 @@ class ImagePickerDialogs {
             }
 
             return AlertDialog(
-              title: const Text('Laddar upp bilder'),
+              title: Text(context.l10n.imageUploadingImages),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

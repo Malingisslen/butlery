@@ -1,6 +1,7 @@
 // lib/widgets/common/dialogs/confirmation_dialogs.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -15,7 +16,7 @@ class ConfirmationDialogs {
     required String title,
     required String message,
     String confirmText = 'OK',
-    String cancelText = 'Avbryt',
+    String? cancelText,
     Color? confirmColor,
   }) async {
     return await ConfirmationDialog.show(
@@ -33,8 +34,8 @@ class ConfirmationDialogs {
     BuildContext context, {
     required String title,
     required String message,
-    String confirmText = 'Ta bort',
-    String cancelText = 'Avbryt',
+    String? confirmText,
+    String? cancelText,
   }) async {
     return await DestructiveConfirmationDialog.show(
           context,
@@ -52,8 +53,8 @@ class ConfirmationDialogs {
     BuildContext context, {
     required String title,
     required String message,
-    String confirmText = 'Fortsätt',
-    String cancelText = 'Avbryt',
+    String? confirmText,
+    String? cancelText,
   }) async {
     return await showDialog<bool>(
           context: context,
@@ -78,7 +79,7 @@ class ConfirmationDialogs {
                     ),
                     const SizedBox(width: AppDimensions.spacingM),
                     Text(
-                      'Detta kan ta en stund...',
+                      context.l10n.dialogMayTakeAWhile,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textMedium,
                       ),
@@ -90,11 +91,13 @@ class ConfirmationDialogs {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: Text(cancelText, style: AppTextStyles.labelLarge),
+                child: Text(cancelText ?? context.l10n.commonCancel,
+                    style: AppTextStyles.labelLarge),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: Text(confirmText, style: AppTextStyles.labelLarge),
+                child: Text(confirmText ?? context.l10n.commonContinue,
+                    style: AppTextStyles.labelLarge),
               ),
             ],
           ),
@@ -109,7 +112,7 @@ class ConfirmationDialogs {
     required List<T> items,
     required String Function(T) itemBuilder,
     String? message,
-    String cancelText = 'Avbryt',
+    String? cancelText,
   }) async {
     return await showDialog<int?>(
       context: context,
@@ -148,7 +151,8 @@ class ConfirmationDialogs {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(null),
-            child: Text(cancelText, style: AppTextStyles.labelLarge),
+            child: Text(cancelText ?? context.l10n.commonCancel,
+                style: AppTextStyles.labelLarge),
           ),
         ],
       ),
@@ -163,7 +167,7 @@ class ConfirmationDialogs {
     String? initialValue,
     String? hintText,
     String confirmText = 'OK',
-    String cancelText = 'Avbryt',
+    String? cancelText,
     bool isRequired = false,
     int? maxLength,
   }) async {
@@ -194,7 +198,8 @@ class ConfirmationDialogs {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(null),
-            child: Text(cancelText, style: AppTextStyles.labelLarge),
+            child: Text(cancelText ?? context.l10n.commonCancel,
+                style: AppTextStyles.labelLarge),
           ),
           TextButton(
             onPressed: () {

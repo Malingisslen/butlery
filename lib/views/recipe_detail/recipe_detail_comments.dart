@@ -12,6 +12,8 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 
 /// Recipe detail comments widget with expandable section.
 /// Uses extracted widgets from [CommentFormWidget] and [CommentItemWidgets].
@@ -111,11 +113,12 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Kommentarer', style: AppTextStyles.titleMedium),
+                  Text(context.l10n.socialComments,
+                      style: AppTextStyles.titleMedium),
                   if (vm.comments.isNotEmpty) ...[
                     const SizedBox(height: AppDimensions.spacingXs),
                     Text(
-                      '${vm.comments.length} kommentarer',
+                      context.l10n.socialCommentsCount(vm.comments.length),
                       style: AppTextStyles.titleMedium,
                     ),
                   ],
@@ -168,14 +171,14 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       child: Column(
         children: [
           Text(
-            'Du måste vara inloggad för att kommentera',
+            context.l10n.socialMustBeLoggedInToComment,
             style: AppTextStyles.bodyLarge,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppDimensions.spacingM),
           FilledButton(
             onPressed: () => Navigator.pushNamed(context, '/login'),
-            child: const Text('Logga in'),
+            child: Text(context.l10n.authLogIn),
           ),
         ],
       ),
@@ -184,7 +187,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
   Widget _buildCommentsList(SocialRecipeViewModel vm) {
     if (vm.isLoadingComments) {
-      return StateWidget.loading(message: 'Laddar kommentarer...');
+      return StateWidget.loading(message: context.l10n.socialLoadingComments);
     }
     if (vm.commentsError != null) {
       return StateWidget.error(message: vm.commentsError!);
@@ -193,8 +196,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       return Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: StateWidget.empty(
-          title: 'Inga kommentarer än',
-          subtitle: 'Var först med att kommentera detta recept!',
+          title: context.l10n.socialNoCommentsYet,
+          subtitle: context.l10n.socialBeFirstToComment,
           icon: Icons.comment_outlined,
         ),
       );
@@ -221,31 +224,59 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
   Widget _buildCommentWithReplies(dynamic comment, SocialRecipeViewModel vm) {
     final replies = vm.getReplies(comment.id);
+    final currentUserId = vm.currentUser?.uid;
+
     return CommentItemWidgets.buildCommentWithReplies(
       comment: comment,
       replies: replies,
-      commentBuilder: (c, depth) => CommentItemWidgets.buildCommentItem(
-        comment: c,
-        authorDisplayName: vm.getAuthorDisplayName(c.authorId),
-        authorAvatarUrl: vm.getAuthorAvatarUrl(c.authorId),
-        formattedTime: CommentItemWidgets.formatCommentTime(c.createdAt),
-        onReply: () => vm.setReplyTo(c.id),
-        onToggleLike: () => _toggleLike(c, vm),
-        onShowLikes: c.likeCount > 0 ? () => _showLikesDialog(c, vm) : null,
-        depth: depth,
-      ),
+      commentBuilder: (c, depth) {
+        final isOwn = currentUserId != null && c.authorId == currentUserId;
+        return CommentItemWidgets.buildCommentItem(
+          context: context,
+          comment: c,
+          authorDisplayName: vm.getAuthorDisplayName(c.authorId),
+          authorAvatarUrl: vm.getAuthorAvatarUrl(c.authorId),
+          formattedTime:
+              CommentItemWidgets.formatCommentTime(context, c.createdAt),
+          onReply: () => vm.setReplyTo(c.id),
+          onToggleLike: () => _toggleLike(c, vm),
+          onShowLikes: c.likeCount > 0 ? () => _showLikesDialog(c, vm) : null,
+          isOwnComment: isOwn,
+          onDelete: isOwn ? () => _deleteComment(c, vm) : null,
+          depth: depth,
+        );
+      },
     );
+  }
+
+  Future<void> _deleteComment(dynamic comment, SocialRecipeViewModel vm) async {
+    final confirmed = await CommonDialogActions.showDeleteConfirmation(
+      context: context,
+      itemName: comment.text.length > 40
+          ? '${comment.text.substring(0, 40)}...'
+          : comment.text,
+      itemType: 'kommentar',
+      icon: Icons.comment_outlined,
+    );
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await vm.deleteComment(widget.recipe.id, comment.id);
+    } catch (e) {
+      if (!mounted) return;
+      _showMessage('Kunde inte ta bort kommentaren', isError: true);
+    }
   }
 
   Future<void> _toggleLike(dynamic comment, SocialRecipeViewModel vm) async {
     if (vm.currentUser == null) {
-      _showMessage('Du måste vara inloggad för att gilla', isError: true);
+      _showMessage(context.l10n.socialMustBeLoggedInToLike, isError: true);
       return;
     }
     try {
       await vm.toggleCommentLike(comment.id);
     } catch (e) {
-      _showMessage('Kunde inte uppdatera gilla-markering', isError: true);
+      _showMessage(context.l10n.socialCouldNotUpdateLike, isError: true);
     }
   }
 
@@ -263,6 +294,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     showModalBottomSheet(
       context: context,
       builder: (_) => CommentItemWidgets.buildLikesDialog(
+        context: context,
         likeCount: comment.likeCount,
         likedByUserIds: likerIds,
         getDisplayName: vm.getAuthorDisplayName,

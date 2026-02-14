@@ -89,6 +89,10 @@ class SocialRecipeViewModel extends ChangeNotifier {
     _commentsManager.cancelReply();
   }
 
+  Future<void> deleteComment(String recipeId, String commentId) async {
+    await _commentsManager.deleteComment(recipeId, commentId);
+  }
+
   List<SocialComment> getReplies(String parentCommentId) {
     return _commentsManager.getReplies(parentCommentId);
   }

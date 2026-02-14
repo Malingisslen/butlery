@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 
 /// Dialog for adding/editing unified shopping items
@@ -33,28 +34,60 @@ class _AddUnifiedShoppingItemDialogState
   late String _selectedUnit;
   late String _selectedCategory;
 
-  // Units with correct dropdown-text and display-text
-  final List<Map<String, String>> _units = [
-    {'value': 'st', 'display': 'st', 'dropdown': 'st'},
-    {'value': 'liter', 'display': 'l', 'dropdown': 'liter'},
-    {'value': 'dl', 'display': 'dl', 'dropdown': 'dl'},
-    {'value': 'msk', 'display': 'msk', 'dropdown': 'msk'},
-    {'value': 'krm', 'display': 'krm', 'dropdown': 'krm'},
-    {'value': 'ml', 'display': 'ml', 'dropdown': 'ml'},
-    {'value': 'cl', 'display': 'cl', 'dropdown': 'cl'},
-    {'value': 'g', 'display': 'g', 'dropdown': 'g'},
-    {'value': 'kg', 'display': 'kg', 'dropdown': 'kg'},
-    {'value': 'förpackning', 'display': 'förp', 'dropdown': 'förpackning'},
-    {'value': 'tsk', 'display': 'tsk', 'dropdown': 'tsk'},
-    {'value': 'påse', 'display': 'påse', 'dropdown': 'påse'},
-    {'value': 'burk', 'display': 'burk', 'dropdown': 'burk'},
-    {'value': 'flaska', 'display': 'flaska', 'dropdown': 'flaska'},
-    {'value': 'bit', 'display': 'bit', 'dropdown': 'bit'},
-    {'value': 'klyfta', 'display': 'klyfta', 'dropdown': 'klyfta'},
-  ];
+  // Units: value is stored in Firestore, dropdown is displayed to user
+  List<Map<String, String>> _getUnits(BuildContext context) => [
+        {'value': 'st', 'display': 'st', 'dropdown': context.l10n.unitPieces},
+        {'value': 'liter', 'display': 'l', 'dropdown': context.l10n.unitLiter},
+        {'value': 'dl', 'display': 'dl', 'dropdown': 'dl'},
+        {
+          'value': 'msk',
+          'display': 'msk',
+          'dropdown': context.l10n.unitTablespoon
+        },
+        {'value': 'krm', 'display': 'krm', 'dropdown': context.l10n.unitPinch},
+        {'value': 'ml', 'display': 'ml', 'dropdown': 'ml'},
+        {'value': 'cl', 'display': 'cl', 'dropdown': 'cl'},
+        {'value': 'g', 'display': 'g', 'dropdown': 'g'},
+        {'value': 'kg', 'display': 'kg', 'dropdown': 'kg'},
+        {
+          'value': 'förpackning',
+          'display': context.l10n.unitPackageShort,
+          'dropdown': context.l10n.unitPackage
+        },
+        {
+          'value': 'tsk',
+          'display': 'tsk',
+          'dropdown': context.l10n.unitTeaspoon
+        },
+        {
+          'value': 'påse',
+          'display': context.l10n.unitBag,
+          'dropdown': context.l10n.unitBag
+        },
+        {
+          'value': 'burk',
+          'display': context.l10n.unitCan,
+          'dropdown': context.l10n.unitCan
+        },
+        {
+          'value': 'flaska',
+          'display': context.l10n.unitBottle,
+          'dropdown': context.l10n.unitBottle
+        },
+        {
+          'value': 'bit',
+          'display': context.l10n.unitPiece,
+          'dropdown': context.l10n.unitPiece
+        },
+        {
+          'value': 'klyfta',
+          'display': context.l10n.unitClove,
+          'dropdown': context.l10n.unitClove
+        },
+      ];
 
-  // Sorted categories for better grouping
-  final List<String> _categories = [
+  // Category values stored in Firestore → localized display labels
+  static const List<String> _categoryValues = [
     'Frukt & Grönt',
     'Mejeri',
     'Kött & Fisk',
@@ -66,6 +99,33 @@ class _AddUnifiedShoppingItemDialogState
     'Städ & Hygien',
     'Övrigt',
   ];
+
+  String _categoryLabel(BuildContext context, String value) {
+    switch (value) {
+      case 'Frukt & Grönt':
+        return context.l10n.categoryFruitVeg;
+      case 'Mejeri':
+        return context.l10n.categoryDairy;
+      case 'Kött & Fisk':
+        return context.l10n.categoryMeatFish;
+      case 'Bröd':
+        return context.l10n.categoryBread;
+      case 'Skafferi':
+        return context.l10n.categoryPantry;
+      case 'Fryst':
+        return context.l10n.categoryFrozen;
+      case 'Dryck':
+        return context.l10n.categoryBeverage;
+      case 'Snacks & Godis':
+        return context.l10n.categorySnacks;
+      case 'Städ & Hygien':
+        return context.l10n.categoryHygiene;
+      case 'Övrigt':
+        return context.l10n.categoryOther;
+      default:
+        return value;
+    }
+  }
 
   @override
   void initState() {
@@ -100,7 +160,9 @@ class _AddUnifiedShoppingItemDialogState
           ),
           const SizedBox(width: AppDimensions.spacingM),
           Text(
-            isEditing ? 'Redigera artikel' : 'Lägg till artikel',
+            isEditing
+                ? context.l10n.shoppingEditItem
+                : context.l10n.shoppingAddItem,
             style: AppTextStyles.headlineSmall,
           ),
         ],
@@ -116,8 +178,8 @@ class _AddUnifiedShoppingItemDialogState
               StyledInput(
                 controller: _nameController,
                 autofocus: true,
-                label: 'Artikel',
-                hint: 'T.ex. Mjölk',
+                label: context.l10n.shoppingItemName,
+                hint: context.l10n.shoppingItemHint,
                 prefixIcon: const Icon(
                   Icons.shopping_basket,
                   color: AppColors.forestGreen,
@@ -135,7 +197,7 @@ class _AddUnifiedShoppingItemDialogState
                     flex: 1,
                     child: StyledInput(
                       controller: _amountController,
-                      label: 'Antal',
+                      label: context.l10n.shoppingAmount,
                       hint: '1',
                       prefixIcon: const Icon(
                         Icons.numbers,
@@ -157,7 +219,7 @@ class _AddUnifiedShoppingItemDialogState
                       initialValue: _selectedUnit,
                       style: AppTextStyles.bodyLarge,
                       decoration: InputDecoration(
-                        labelText: 'Enhet',
+                        labelText: context.l10n.shoppingUnit,
                         labelStyle: AppTextStyles.labelLarge,
                         prefixIcon: const Icon(
                           Icons.straighten,
@@ -170,7 +232,7 @@ class _AddUnifiedShoppingItemDialogState
                       ),
                       isDense: true,
                       isExpanded: true,
-                      items: _units.map((unit) {
+                      items: _getUnits(context).map((unit) {
                         return DropdownMenuItem<String>(
                           value: unit['value'],
                           child: Text(
@@ -200,7 +262,7 @@ class _AddUnifiedShoppingItemDialogState
                 initialValue: _selectedCategory,
                 style: AppTextStyles.bodyLarge,
                 decoration: InputDecoration(
-                  labelText: 'Kategori',
+                  labelText: context.l10n.shoppingCategory,
                   labelStyle: AppTextStyles.labelLarge,
                   prefixIcon: const Icon(
                     Icons.category,
@@ -211,11 +273,11 @@ class _AddUnifiedShoppingItemDialogState
                   contentPadding: const EdgeInsets.all(AppDimensions.paddingM),
                 ),
                 isExpanded: true,
-                items: _categories.map((category) {
+                items: _categoryValues.map((category) {
                   return DropdownMenuItem<String>(
                     value: category,
                     child: Text(
-                      category,
+                      _categoryLabel(context, category),
                       style: AppTextStyles.bodyLarge,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -237,11 +299,11 @@ class _AddUnifiedShoppingItemDialogState
       ),
       actions: [
         StyledButton.secondary(
-          text: 'Avbryt',
+          text: context.l10n.commonCancel,
           onPressed: () => Navigator.pop(context),
         ),
         StyledButton.primary(
-          text: isEditing ? 'Spara' : 'Lägg till',
+          text: isEditing ? context.l10n.commonSave : context.l10n.commonAdd,
           icon: Icon(isEditing ? Icons.save : Icons.add),
           onPressed: _submitForm,
         ),

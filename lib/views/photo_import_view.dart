@@ -15,6 +15,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Photo import view with OCR processing for recipe extraction.
 class PhotoImportView extends StatelessWidget {
@@ -50,7 +51,7 @@ class _PhotoImportViewContent extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Välj bildkälla',
+                  context.l10n.importChooseImageSource,
                   style: AppTextStyles.headlineSmall,
                 ),
                 const SizedBox(height: AppDimensions.spacingXl),
@@ -62,8 +63,8 @@ class _PhotoImportViewContent extends StatelessWidget {
                     color: Theme.of(context).colorScheme.primary,
                     size: AppDimensions.iconSizeL,
                   ),
-                  title: const Text('Ta ett foto'),
-                  subtitle: const Text('Använd kameran för att fota receptet'),
+                  title: Text(context.l10n.importTakePhoto),
+                  subtitle: Text(context.l10n.importTakePhotoSubtitle),
                   onTap: () {
                     Navigator.pop(context);
                     viewModel.pickImageFromCamera();
@@ -77,8 +78,8 @@ class _PhotoImportViewContent extends StatelessWidget {
                     color: Theme.of(context).colorScheme.primary,
                     size: AppDimensions.iconSizeL,
                   ),
-                  title: const Text('Välj från galleri'),
-                  subtitle: const Text('Välj en befintlig bild från telefonen'),
+                  title: Text(context.l10n.importChooseFromGallery),
+                  subtitle: Text(context.l10n.importChooseFromGallerySubtitle),
                   onTap: () {
                     Navigator.pop(context);
                     viewModel.pickImageFromGallery();
@@ -126,7 +127,7 @@ class _PhotoImportViewContent extends StatelessWidget {
 
     return LayoutComponents.mainMenu(
       currentIndex: null,
-      title: 'Importera från foto',
+      title: context.l10n.importFromPhoto,
       body: SafeArea(
         // ✅ RESPONSIVE: Center and constrain content on large screens
         child: Center(
@@ -165,7 +166,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                         const SizedBox(width: AppDimensions.spacingS),
                         Expanded(
                           child: Text(
-                            'Ta bild av ett recept eller välj från galleriet för att importera text automatiskt',
+                            context.l10n.importPhotoDescription,
                             style: AppTextStyles.bodySmall,
                           ),
                         ),
@@ -177,7 +178,9 @@ class _PhotoImportViewContent extends StatelessWidget {
                   // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
                   UtilityComponents.primaryButton(
                     context,
-                    label: viewModel.hasImage ? 'Välj ny bild' : 'Välj bild',
+                    label: viewModel.hasImage
+                        ? context.l10n.importChooseNewImage
+                        : context.l10n.importChooseImage,
                     icon: Icons.add_photo_alternate,
                     onPressed: viewModel.isProcessing
                         ? null
@@ -199,12 +202,14 @@ class _PhotoImportViewContent extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(AppDimensions.paddingM),
                       decoration: BoxDecoration(
-                        color: AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
+                        color: AppColors.warning
+                            .withValues(alpha: AppDimensions.opacityVeryLight),
                         borderRadius: BorderRadius.circular(
                           AppDimensions.borderRadiusM,
                         ),
                         border: Border.all(
-                          color: AppColors.warning.withValues(alpha: AppDimensions.opacityMediumLight),
+                          color: AppColors.warning.withValues(
+                              alpha: AppDimensions.opacityMediumLight),
                           width: AppDimensions.borderWidthStandard,
                         ),
                       ),
@@ -221,7 +226,8 @@ class _PhotoImportViewContent extends StatelessWidget {
                               const SizedBox(width: AppDimensions.spacingS),
                               Expanded(
                                 child: Text(
-                                  'Bildkvaliteten är låg (${(viewModel.qualityScore! * 100).toInt()}%)',
+                                  context.l10n.importImageQualityLow(
+                                      (viewModel.qualityScore! * 100).toInt()),
                                   style: AppTextStyles.titleSmall.copyWith(
                                     color: AppColors.onWarningContainer,
                                   ),
@@ -233,7 +239,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                               viewModel.recommendations!.isNotEmpty) ...[
                             const SizedBox(height: AppDimensions.spacingSm),
                             Text(
-                              'Förbättringsförslag:',
+                              context.l10n.importImprovementSuggestions,
                               style: AppTextStyles.badgeLarge.copyWith(
                                 color: AppColors.onWarningContainer,
                               ),
@@ -268,7 +274,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                           ],
                           const SizedBox(height: AppDimensions.spacingSm),
                           Text(
-                            'OCR kan misslyckas eller ge dåliga resultat.',
+                            context.l10n.importOcrMayFail,
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.onWarningContainer,
                               fontStyle: FontStyle.italic,
@@ -295,7 +301,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                       // Retry OCR button
                       UtilityComponents.primaryButton(
                         context,
-                        label: 'Försök igen',
+                        label: context.l10n.commonRetry,
                         icon: Icons.refresh,
                         onPressed: viewModel.isProcessing
                             ? null
@@ -307,7 +313,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                       // Continue without OCR button (escape route)
                       UtilityComponents.secondaryButton(
                         context,
-                        label: 'Fortsätt utan OCR',
+                        label: context.l10n.importContinueWithoutOcr,
                         icon: Icons.edit,
                         onPressed: viewModel.isProcessing
                             ? null
@@ -324,7 +330,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          'Tolkad text:',
+                          context.l10n.importInterpretedText,
                           style: AppTextStyles.headlineSmall,
                         ),
                         const SizedBox(width: AppDimensions.spacingM),
@@ -342,7 +348,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                     // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
                     UtilityComponents.primaryButton(
                       context,
-                      label: 'Gå vidare till redigera',
+                      label: context.l10n.importProceedToEdit,
                       icon: Icons.arrow_forward,
                       onPressed: () =>
                           _navigateToTextImport(context, viewModel),
@@ -366,7 +372,7 @@ class _PhotoImportViewContent extends StatelessWidget {
   ) {
     if (viewModel.isProcessing) {
       return ImagePreviewCard.loading(
-        child: StateWidget.loading(message: 'Bearbetar bild...'),
+        child: StateWidget.loading(message: context.l10n.importProcessingImage),
       );
     }
 
@@ -392,7 +398,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                 right: AppDimensions.spacingS,
                 child: OverlayButton.remove(
                   onPressed: viewModel.clearPhoto,
-                  tooltip: 'Ta bort bild',
+                  tooltip: context.l10n.importRemoveImage,
                 ),
               ),
             ],
@@ -404,8 +410,8 @@ class _PhotoImportViewContent extends StatelessWidget {
     return ImagePreviewCard.empty(
       context: context,
       child: StateWidget.empty(
-        title: 'Ingen bild vald',
-        subtitle: 'Tryck på knappen ovan för att välja',
+        title: context.l10n.importNoImageSelected,
+        subtitle: context.l10n.importTapButtonToSelect,
         icon: Icons.add_photo_alternate,
       ),
     );
@@ -423,32 +429,38 @@ class _PhotoImportViewContent extends StatelessWidget {
 
     if (confidence >= 0.8) {
       // High confidence - Green
-      badgeBackgroundColor = AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight);
-      badgeBorderColor = AppColors.success.withValues(alpha: AppDimensions.opacityMediumLight);
+      badgeBackgroundColor =
+          AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight);
+      badgeBorderColor =
+          AppColors.success.withValues(alpha: AppDimensions.opacityMediumLight);
       badgeIconColor = AppColors.success;
       badgeTextColor = AppColors.onSuccessContainer;
       icon = Icons.check_circle;
-      label = 'Hög kvalitet';
+      label = context.l10n.importHighQuality;
     } else if (confidence >= 0.6) {
       // Medium confidence - Orange
-      badgeBackgroundColor = AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight);
-      badgeBorderColor = AppColors.warning.withValues(alpha: AppDimensions.opacityMediumLight);
+      badgeBackgroundColor =
+          AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight);
+      badgeBorderColor =
+          AppColors.warning.withValues(alpha: AppDimensions.opacityMediumLight);
       badgeIconColor = AppColors.warning;
       badgeTextColor = AppColors.onWarningContainer;
       icon = Icons.info;
-      label = 'God kvalitet';
+      label = context.l10n.importGoodQuality;
     } else {
       // Low confidence - Red
-      badgeBackgroundColor = AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight);
-      badgeBorderColor = AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight);
+      badgeBackgroundColor =
+          AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight);
+      badgeBorderColor =
+          AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight);
       badgeIconColor = AppColors.error;
       badgeTextColor = AppColors.onErrorContainer;
       icon = Icons.warning;
-      label = 'Låg kvalitet';
+      label = context.l10n.importLowQuality;
     }
 
     return Tooltip(
-      message: '$label: $percentage% säkerhet',
+      message: context.l10n.importConfidenceTooltip(label, percentage),
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingS,

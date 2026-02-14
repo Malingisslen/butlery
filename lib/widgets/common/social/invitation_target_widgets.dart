@@ -1,6 +1,7 @@
 // lib/widgets/common/social/invitation_target_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/social/social_helpers.dart';
@@ -185,6 +186,7 @@ class InvitationTargetWidgets {
 
   /// Build target search field
   static Widget targetSearchField({
+    required BuildContext context,
     required ValueChanged<String> onChanged,
     String? hint,
     String? initialValue,
@@ -194,7 +196,7 @@ class InvitationTargetWidgets {
       controller: controller,
       onChanged: onChanged,
       decoration: InputDecoration(
-        hintText: hint ?? 'Sök...',
+        hintText: hint ?? context.l10n.commonSearch,
         prefixIcon: const Icon(Icons.search),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),

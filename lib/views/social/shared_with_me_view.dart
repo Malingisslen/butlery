@@ -14,6 +14,7 @@ import 'package:butlery/core/utils/logger.dart';
 
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 // Import focused components
 import 'package:butlery/views/social/shared_with_me/shared_content_app_bar.dart';
@@ -132,7 +133,7 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
               ),
               const SizedBox(height: AppDimensions.spacingXl),
               Text(
-                'Laddar delat innehåll...',
+                context.l10n.sharedLoadingContent,
                 style: AppTextStyles.titleMedium,
               ),
             ],
@@ -153,11 +154,10 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     if (!viewModel.hasAnyContent) {
       return SliverFillRemaining(
         child: StateWidget.empty(
-          title: 'Inga delade recept än',
-          subtitle:
-              'När vänner delar recept eller menyer med dig kommer de att visas här.',
+          title: context.l10n.sharedNoContentYet,
+          subtitle: context.l10n.sharedContentWillAppearHere,
           icon: Icons.share_outlined,
-          actionLabel: 'Lägg till vänner',
+          actionLabel: context.l10n.socialAddFriends,
           onAction: () => Navigator.pushNamed(context, '/friends'),
         ),
       );
@@ -172,7 +172,7 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     if (!hasFilteredContent && hasSearchQuery) {
       return SliverFillRemaining(
         child: StateWidget.noSearchResults(
-          actionLabel: 'Rensa sökning',
+          actionLabel: context.l10n.commonClearSearch,
           onAction: () {
             _searchController.clear();
             viewModel.clearAllSearch();

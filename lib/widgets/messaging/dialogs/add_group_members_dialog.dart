@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
@@ -62,7 +63,7 @@ class _AddGroupMembersDialogState extends State<AddGroupMembersDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Lägg till medlemmar'),
+      title: Text(context.l10n.chatAddMembers),
       content: SizedBox(
         width: double.maxFinite,
         height: 400,
@@ -70,9 +71,9 @@ class _AddGroupMembersDialogState extends State<AddGroupMembersDialog> {
           children: [
             TextField(
               controller: _searchController,
-              decoration: const InputDecoration(
-                hintText: 'Sök vänner...',
-                prefixIcon: Icon(Icons.search),
+              decoration: InputDecoration(
+                hintText: context.l10n.chatSearchFriends,
+                prefixIcon: const Icon(Icons.search),
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -110,7 +111,7 @@ class _AddGroupMembersDialogState extends State<AddGroupMembersDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Avbryt'),
+          child: Text(context.l10n.commonCancel),
         ),
         TextButton(
           onPressed: _selectedIds.isEmpty
@@ -121,7 +122,7 @@ class _AddGroupMembersDialogState extends State<AddGroupMembersDialog> {
                       .toList();
                   Navigator.pop(context, selected);
                 },
-          child: Text('Lägg till (${_selectedIds.length})'),
+          child: Text(context.l10n.chatAddCount(_selectedIds.length)),
         ),
       ],
     );

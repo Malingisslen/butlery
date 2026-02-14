@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/core/events/group_events.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// GroupDetailActions - Group action methods
 /// Handles group-related actions like adding/removing members, editing, deleting.
@@ -38,10 +39,10 @@ class GroupDetailActions {
   ) async {
     final shouldRemove = await CommonDialogActions.showActionConfirmation(
       context: context,
-      title: 'Ta bort medlem',
+      title: context.l10n.groupRemoveMember,
       message:
-          'Vill du ta bort ${member.displayName} från gruppen "${group.name}"?',
-      confirmText: 'Ta bort',
+          context.l10n.groupRemoveMemberConfirm(member.displayName, group.name),
+      confirmText: context.l10n.commonRemove,
       icon: Icons.person_remove,
       isDangerous: true,
     );
@@ -59,7 +60,7 @@ class GroupDetailActions {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content:
-                  Text('${member.displayName} har tagits bort från gruppen'),
+                  Text(context.l10n.groupMemberRemoved(member.displayName)),
               backgroundColor: AppColors.success,
             ),
           );
@@ -70,7 +71,7 @@ class GroupDetailActions {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Kunde inte ta bort medlem: $e'),
+              content: Text(context.l10n.groupCouldNotRemoveMember('$e')),
               backgroundColor: AppColors.error,
             ),
           );
@@ -94,36 +95,36 @@ class GroupDetailActions {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Redigera grupp'),
+        title: Text(context.l10n.groupEditGroup),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               StyledInput(
                 controller: nameController,
-                label: 'Gruppnamn',
+                label: context.l10n.groupGroupName,
               ),
               const SizedBox(height: AppDimensions.spacingL),
               StyledInput(
                 controller: descriptionController,
-                label: 'Beskrivning',
+                label: context.l10n.commonDescription,
                 maxLines: 3,
               ),
               const SizedBox(height: AppDimensions.spacingL),
               StyledInput(
                 controller: emojiController,
-                label: 'Emoji',
+                label: context.l10n.groupEmoji,
               ),
             ],
           ),
         ),
         actions: [
           StyledButton.secondary(
-            text: 'Avbryt',
+            text: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context, false),
           ),
           StyledButton.primary(
-            text: 'Spara',
+            text: context.l10n.commonSave,
             onPressed: () => Navigator.pop(context, true),
           ),
         ],
@@ -141,8 +142,8 @@ class GroupDetailActions {
 
         if (success && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Gruppen har uppdaterats'),
+            SnackBar(
+              content: Text(context.l10n.groupUpdated),
               backgroundColor: AppColors.success,
             ),
           );
@@ -153,7 +154,7 @@ class GroupDetailActions {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Kunde inte uppdatera grupp: $e'),
+              content: Text(context.l10n.groupCouldNotUpdate('$e')),
               backgroundColor: AppColors.error,
             ),
           );
@@ -172,8 +173,8 @@ class GroupDetailActions {
     final shouldDelete = await CommonDialogActions.showDeleteConfirmation(
       context: context,
       itemName: group.name,
-      itemType: 'grupp',
-      warningMessage: 'Denna åtgärd kan inte ångras.',
+      itemType: context.l10n.groupItemType,
+      warningMessage: context.l10n.commonActionCannotBeUndone,
       icon: Icons.group,
     );
 
@@ -185,8 +186,8 @@ class GroupDetailActions {
 
         if (success && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Gruppen har tagits bort'),
+            SnackBar(
+              content: Text(context.l10n.groupDeleted(group.name)),
               backgroundColor: AppColors.success,
             ),
           );
@@ -199,7 +200,7 @@ class GroupDetailActions {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Kunde inte ta bort grupp: $e'),
+              content: Text(context.l10n.groupCouldNotDelete('$e')),
               backgroundColor: AppColors.error,
             ),
           );
@@ -217,10 +218,9 @@ class GroupDetailActions {
   ) async {
     final shouldLeave = await CommonDialogActions.showActionConfirmation(
       context: context,
-      title: 'Lämna grupp',
-      message:
-          'Vill du lämna gruppen "${group.name}"?\n\nDu kan bli inbjuden igen av andra medlemmar.',
-      confirmText: 'Lämna',
+      title: context.l10n.groupLeaveGroup,
+      message: context.l10n.groupLeaveGroupConfirm(group.name),
+      confirmText: context.l10n.groupLeave,
       icon: Icons.exit_to_app,
       isDangerous: true,
     );
@@ -240,8 +240,8 @@ class GroupDetailActions {
 
           if (success && context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Du har lämnat gruppen'),
+              SnackBar(
+                content: Text(context.l10n.groupLeftGroup),
                 backgroundColor: AppColors.success,
               ),
             );
@@ -255,7 +255,7 @@ class GroupDetailActions {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Kunde inte lämna grupp: $e'),
+              content: Text(context.l10n.groupCouldNotLeave('$e')),
               backgroundColor: AppColors.error,
             ),
           );

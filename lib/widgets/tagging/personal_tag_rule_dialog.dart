@@ -642,14 +642,14 @@ class _ConditionRow extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingSm),
           // Value field - dropdown for property, text field for others
           if (condition.type == ConditionType.property)
-            _buildPropertyDropdown()
+            _buildPropertyDropdown(context)
           else
             TextFormField(
               initialValue: condition.value,
               decoration: InputDecoration(
                 isDense: true,
                 contentPadding: AppDimensions.paddingAll12,
-                hintText: _getHintText(),
+                hintText: _getHintText(context),
                 border: const OutlineInputBorder(),
               ),
               enabled: enabled,
@@ -687,7 +687,7 @@ class _ConditionRow extends StatelessWidget {
     );
   }
 
-  String _getHintText() {
+  String _getHintText(BuildContext context) {
     switch (condition.type) {
       case ConditionType.ingredient:
         return context.l10n.ruleHintIngredient;
@@ -716,7 +716,7 @@ class _ConditionRow extends StatelessWidget {
     }
   }
 
-  Widget _buildPropertyDropdown() {
+  Widget _buildPropertyDropdown(BuildContext context) {
     // Organize properties by category for better UX
     final categories = <String, List<String>>{
       context.l10n.ruleCategoryAllergens: [
@@ -795,11 +795,11 @@ class _ConditionRow extends StatelessWidget {
               PropertyRegistry.isValid(condition.value)
           ? condition.value
           : null,
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         isDense: true,
         contentPadding: AppDimensions.paddingAll12,
         hintText: context.l10n.ruleSelectProperty,
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
       ),
       isExpanded: true,
       items: items,

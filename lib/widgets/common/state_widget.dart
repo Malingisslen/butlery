@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 // Import focused components
 import 'package:butlery/widgets/common/state/state_enums.dart';
@@ -85,7 +86,7 @@ class StateWidget extends StatelessWidget {
 
   /// Empty state for "no recipes".
   factory StateWidget.noRecipes({
-    String? actionLabel = 'Lägg till recept',
+    String? actionLabel,
     VoidCallback? onAction,
   }) {
     return StateWidget(
@@ -137,7 +138,7 @@ class StateWidget extends StatelessWidget {
 
   /// Empty state for "no menu".
   factory StateWidget.noMenu({
-    String? actionLabel = 'Generera meny',
+    String? actionLabel,
     VoidCallback? onAction,
   }) {
     return StateWidget(
@@ -150,7 +151,7 @@ class StateWidget extends StatelessWidget {
 
   /// Empty state for "no shopping list".
   factory StateWidget.noShoppingList({
-    String? actionLabel = 'Skapa veckomeny',
+    String? actionLabel,
     VoidCallback? onAction,
   }) {
     return StateWidget(
@@ -163,7 +164,7 @@ class StateWidget extends StatelessWidget {
 
   /// Empty state for "no friends".
   factory StateWidget.noFriends({
-    String? actionLabel = 'Lägg till vänner',
+    String? actionLabel,
     VoidCallback? onAction,
   }) {
     return StateWidget(
@@ -177,7 +178,7 @@ class StateWidget extends StatelessWidget {
   /// Error state with retry button.
   factory StateWidget.error({
     required String message,
-    String? actionLabel = 'Försök igen',
+    String? actionLabel,
     VoidCallback? onAction,
   }) {
     return StateWidget(
@@ -267,13 +268,15 @@ class StateWidget extends StatelessWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    // Resolve null actionLabel to l10n defaults for known variants
+    final resolvedActionLabel = actionLabel ?? _defaultActionLabel(context);
     return EmptyStates.buildEmptyState(
       context,
       variant: emptyVariant,
       title: title,
       subtitle: subtitle,
       icon: icon,
-      actionLabel: actionLabel,
+      actionLabel: resolvedActionLabel,
       onAction: onAction,
       customAction: customAction,
       iconColor: iconColor,
@@ -288,7 +291,8 @@ class StateWidget extends StatelessWidget {
       title: title,
       message: message,
       icon: icon,
-      actionLabel: actionLabel,
+      actionLabel:
+          actionLabel ?? (onAction != null ? context.l10n.commonRetry : null),
       onAction: onAction,
       iconColor: iconColor,
       iconSize: iconSize,
@@ -336,5 +340,22 @@ class StateWidget extends StatelessWidget {
       iconSize: iconSize,
       padding: padding,
     );
+  }
+
+  /// Resolve default action label for known empty state variants via l10n
+  String? _defaultActionLabel(BuildContext context) {
+    if (onAction == null) return null;
+    switch (emptyVariant) {
+      case EmptyStateVariant.noRecipes:
+        return context.l10n.stateAddRecipes;
+      case EmptyStateVariant.noMenu:
+        return context.l10n.stateGenerateMenu;
+      case EmptyStateVariant.noShoppingList:
+        return context.l10n.stateCreateWeeklyMenu;
+      case EmptyStateVariant.noFriends:
+        return context.l10n.shareAddFriends;
+      default:
+        return null;
+    }
   }
 }

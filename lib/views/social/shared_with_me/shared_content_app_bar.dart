@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// SharedContentAppBar - App bar for shared content view
 /// Handles the app bar with notification badges and refresh functionality.
@@ -12,7 +13,7 @@ class SharedContentAppBar {
   static Widget build(
       BuildContext context, SharedContentCoordinatorViewModel viewModel) {
     return SliverAppBar(
-      title: const Text('Delat innehåll'),
+      title: Text(context.l10n.sharedContent),
       floating: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
       elevation: 0,

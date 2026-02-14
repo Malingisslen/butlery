@@ -1,6 +1,7 @@
 // lib/widgets/styled/styled_button.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -279,11 +280,13 @@ class StyledButtons {
   /// Cancel button (typically used in dialogs)
   static Widget cancel({
     VoidCallback? onPressed,
-    String text = 'Avbryt',
+    String? text,
   }) {
-    return StyledButton.secondary(
-      text: text,
-      onPressed: onPressed,
+    return Builder(
+      builder: (context) => StyledButton.secondary(
+        text: text ?? context.l10n.commonCancel,
+        onPressed: onPressed,
+      ),
     );
   }
 
@@ -291,13 +294,15 @@ class StyledButtons {
   static Widget save({
     VoidCallback? onPressed,
     bool isLoading = false,
-    String text = 'Spara',
+    String? text,
   }) {
-    return StyledButton.primary(
-      text: text,
-      onPressed: onPressed,
-      isLoading: isLoading,
-      icon: const Icon(Icons.save),
+    return Builder(
+      builder: (context) => StyledButton.primary(
+        text: text ?? context.l10n.commonSave,
+        onPressed: onPressed,
+        isLoading: isLoading,
+        icon: const Icon(Icons.save),
+      ),
     );
   }
 
@@ -305,49 +310,57 @@ class StyledButtons {
   static Widget delete({
     VoidCallback? onPressed,
     bool isLoading = false,
-    String text = 'Ta bort',
+    String? text,
   }) {
-    return StyledButton.destructive(
-      text: text,
-      onPressed: onPressed,
-      isLoading: isLoading,
-      icon: const Icon(Icons.delete),
+    return Builder(
+      builder: (context) => StyledButton.destructive(
+        text: text ?? context.l10n.commonDelete,
+        onPressed: onPressed,
+        isLoading: isLoading,
+        icon: const Icon(Icons.delete),
+      ),
     );
   }
 
   /// Add button
   static Widget add({
     VoidCallback? onPressed,
-    String text = 'Lägg till',
+    String? text,
   }) {
-    return StyledButton.primary(
-      text: text,
-      onPressed: onPressed,
-      icon: const Icon(Icons.add),
+    return Builder(
+      builder: (context) => StyledButton.primary(
+        text: text ?? context.l10n.commonAdd,
+        onPressed: onPressed,
+        icon: const Icon(Icons.add),
+      ),
     );
   }
 
   /// Edit button
   static Widget edit({
     VoidCallback? onPressed,
-    String text = 'Redigera',
+    String? text,
   }) {
-    return StyledButton.secondary(
-      text: text,
-      onPressed: onPressed,
-      icon: const Icon(Icons.edit),
+    return Builder(
+      builder: (context) => StyledButton.secondary(
+        text: text ?? context.l10n.commonEdit,
+        onPressed: onPressed,
+        icon: const Icon(Icons.edit),
+      ),
     );
   }
 
   /// Share button
   static Widget share({
     VoidCallback? onPressed,
-    String text = 'Dela',
+    String? text,
   }) {
-    return StyledButton.secondary(
-      text: text,
-      onPressed: onPressed,
-      icon: const Icon(Icons.share),
+    return Builder(
+      builder: (context) => StyledButton.secondary(
+        text: text ?? context.l10n.commonShare,
+        onPressed: onPressed,
+        icon: const Icon(Icons.share),
+      ),
     );
   }
 }

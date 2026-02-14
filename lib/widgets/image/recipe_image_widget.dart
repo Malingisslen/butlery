@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/image_config.dart';
@@ -146,7 +147,8 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
                 end: Alignment.bottomCenter,
                 colors: [
                   AppColors.transparent,
-                  AppColors.cardWhite.withValues(alpha: AppDimensions.opacityVeryLight),
+                  AppColors.cardWhite
+                      .withValues(alpha: AppDimensions.opacityVeryLight),
                 ],
               ),
             ),
@@ -208,7 +210,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
 
     if (widget.onTap != null || widget.onImageTap != null) {
       image = Semantics(
-        label: 'Visa fullstorlek av bild',
+        label: context.l10n.a11yViewFullSizeImage,
         button: true,
         child: GestureDetector(
           onTap: () {
@@ -243,8 +245,8 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
           return RepaintBoundary(
             key: ValueKey('recipe_image_$imageUrl'),
             child: Semantics(
-              label:
-                  'Visa fullstorlek av bild ${index + 1} av ${widget.imageUrls.length}',
+              label: context.l10n
+                  .a11yViewFullSizeImageOf(index + 1, widget.imageUrls.length),
               button: true,
               child: GestureDetector(
                 onTap: () {
@@ -273,7 +275,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
       config: widget.config,
       child: widget.onTap != null
           ? Semantics(
-              label: 'Lägg till bild',
+              label: context.l10n.a11yAddImage,
               button: true,
               child: GestureDetector(
                 onTap: widget.onTap,
@@ -363,8 +365,8 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
               itemCount: widget.imageUrls.length,
               itemBuilder: (context, index) {
                 return Semantics(
-                  label:
-                      'Byt till bild ${index + 1} av ${widget.imageUrls.length}',
+                  label: context.l10n
+                      .a11ySwitchToImageOf(index + 1, widget.imageUrls.length),
                   button: true,
                   child: GestureDetector(
                     onTap: () {

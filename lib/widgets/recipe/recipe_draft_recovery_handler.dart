@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/dialogs/draft_recovery_dialog.dart';
@@ -61,7 +61,7 @@ class RecipeDraftRecoveryHandler {
 
     try {
       // Show loading state
-      SnackBarUtils.showLoading(context, AppStrings.restoringDraft);
+      SnackBarUtils.showLoading(context, context.l10n.draftRestoring);
 
       final viewModel = context.read<RecipeFormViewModel>();
       final success = await viewModel.loadFromDraft(draftId);
@@ -74,7 +74,7 @@ class RecipeDraftRecoveryHandler {
 
           UtilityComponents.showSuccessSnackbar(
             context,
-            AppStrings.draftRestoredWithCount(fieldCount),
+            context.l10n.draftRestoredWithCount(fieldCount),
           );
 
           AppLogger.info(
@@ -82,7 +82,7 @@ class RecipeDraftRecoveryHandler {
         } else {
           UtilityComponents.showErrorSnackbar(
             context,
-            AppStrings.couldNotRestoreDraft,
+            context.l10n.draftCouldNotRestore,
           );
 
           AppLogger.error('[$_logTag] Failed to restore draft: $draftId');
@@ -94,7 +94,7 @@ class RecipeDraftRecoveryHandler {
       if (context.mounted) {
         UtilityComponents.showErrorSnackbar(
           context,
-          AppStrings.couldNotRestoreDraft,
+          context.l10n.draftCouldNotRestore,
         );
       }
     }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -108,7 +109,9 @@ class InvitationLists {
             Padding(
               padding: const EdgeInsets.all(AppDimensions.spacingMd),
               child: Text(
-                type == InvitationTargetType.group ? 'Grupper' : 'Individer',
+                type == InvitationTargetType.group
+                    ? context.l10n.socialGroups
+                    : context.l10n.invitationIndividuals,
                 style: AppTextStyles.titleBold,
               ),
             ),
@@ -246,7 +249,7 @@ class InvitationLists {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.text14Medium,
+                    style: AppTextStyles.contentLabel,
                   ),
                   const SizedBox(height: AppDimensions.spacingXs),
                   Text(

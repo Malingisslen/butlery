@@ -14,6 +14,7 @@ import 'package:butlery/widgets/common/main_view_header.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Recipe addition view with simplified 2x2 grid of import options.
 class LaggTillReceptView extends StatelessWidget {
@@ -31,8 +32,8 @@ class LaggTillReceptView extends StatelessWidget {
       currentIndex:
           3, // UI Redesign: nav order is recept(0), meny(1), inköp(2), lägg till(3)
       // UI Redesign: Use MainViewHeader with lowercase title
-      appBar: const MainViewHeader(
-        title: 'lägg till\nrecept',
+      appBar: MainViewHeader(
+        title: context.l10n.addRecipeTitle,
       ),
       body: SafeArea(
         child: Center(
@@ -87,7 +88,7 @@ class LaggTillReceptView extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _AddRecipeButton(
-                    label: 'Importera länk',
+                    label: context.l10n.recipeImportLink,
                     icon: Icons.link,
                     color: AppColors.rust,
                     size: size,
@@ -95,7 +96,7 @@ class LaggTillReceptView extends StatelessWidget {
                   ),
                   const SizedBox(width: spacing),
                   _AddRecipeButton(
-                    label: 'Skriv manuellt',
+                    label: context.l10n.recipeWriteManually,
                     icon: Icons.edit,
                     color: AppColors.forestGreen,
                     size: size,
@@ -109,7 +110,7 @@ class LaggTillReceptView extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _AddRecipeButton(
-                    label: 'Från bild',
+                    label: context.l10n.recipeFromImage,
                     icon: Icons.image,
                     color: AppColors.rust,
                     size: size,
@@ -117,7 +118,7 @@ class LaggTillReceptView extends StatelessWidget {
                   ),
                   const SizedBox(width: spacing),
                   _AddRecipeButton(
-                    label: 'Från arkiv',
+                    label: context.l10n.recipeFromArchive,
                     icon: Icons.archive,
                     color: AppColors.forestGreen,
                     size: size,

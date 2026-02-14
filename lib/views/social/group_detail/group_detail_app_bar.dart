@@ -5,6 +5,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// GroupDetailAppBar - App bar component
 /// Provides group-specific app bar with menu actions based on permissions.
@@ -32,7 +33,7 @@ class GroupDetailAppBar {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: onRefresh,
-            tooltip: 'Uppdatera',
+            tooltip: context.l10n.commonRefresh,
           ),
         _buildPopupMenu(context, group, onMenuAction),
       ],
@@ -54,25 +55,25 @@ class GroupDetailAppBar {
       itemBuilder: (context) => [
         // Add members - admin only
         if (canAddMembers)
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'add_members',
             child: Row(
               children: [
-                Icon(Icons.person_add),
-                SizedBox(width: AppDimensions.spacingSm),
-                Text('Lägg till medlemmar'),
+                const Icon(Icons.person_add),
+                const SizedBox(width: AppDimensions.spacingSm),
+                Text(context.l10n.groupAddMembers),
               ],
             ),
           ),
         // Edit - admin only
         if (isAdmin)
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'edit',
             child: Row(
               children: [
-                Icon(Icons.edit),
-                SizedBox(width: AppDimensions.spacingSm),
-                Text('Redigera grupp'),
+                const Icon(Icons.edit),
+                const SizedBox(width: AppDimensions.spacingSm),
+                Text(context.l10n.groupEditGroup),
               ],
             ),
           ),
@@ -88,7 +89,7 @@ class GroupDetailAppBar {
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
-                  'Ta bort grupp',
+                  context.l10n.groupDeleteGroup,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.error,
                       ),
@@ -108,7 +109,7 @@ class GroupDetailAppBar {
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
-                  'Lämna grupp',
+                  context.l10n.groupLeaveGroup,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.tertiary,
                       ),

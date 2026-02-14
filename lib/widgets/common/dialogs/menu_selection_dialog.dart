@@ -1,6 +1,7 @@
 // lib/widgets/common/dialogs/menu_selection_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -89,7 +90,7 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _error = 'Kunde inte ladda menyer: $e';
+          _error = '${context.l10n.errorCouldNotLoad('menyer')}: $e';
         });
       }
     }
@@ -99,7 +100,7 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(
-        'Dela meny med ${widget.groupName}',
+        context.l10n.dialogShareMenuWith(widget.groupName),
         style: AppTextStyles.headlineSmall,
       ),
       contentPadding: EdgeInsets.zero,
@@ -111,7 +112,8 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text('Avbryt', style: AppTextStyles.labelLarge),
+          child:
+              Text(context.l10n.commonCancel, style: AppTextStyles.labelLarge),
         ),
       ],
     );
@@ -127,7 +129,7 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
             const CircularProgressIndicator(),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
-              'Laddar menyer...',
+              context.l10n.dialogLoadingMenus,
               style: AppTextStyles.bodyMedium,
             ),
           ],
@@ -139,7 +141,7 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
     if (_error != null) {
       return StateWidget.error(
         message: _error!,
-        actionLabel: 'Försök igen',
+        actionLabel: context.l10n.commonRetry,
         onAction: () {
           setState(() {
             _isLoading = true;
@@ -156,8 +158,8 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
     // Empty state
     if (menus.isEmpty) {
       return StateWidget.empty(
-        title: 'Inga menyer',
-        subtitle: 'Du har inga menyer att dela än',
+        title: context.l10n.dialogNoMenus,
+        subtitle: context.l10n.dialogNoMenusToShare,
         icon: Icons.calendar_today,
       );
     }
@@ -225,7 +227,7 @@ class _MenuListItem extends StatelessWidget {
             ),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
-            '${menu.totalRecipeCount} recept',
+            context.l10n.recipeCountBadge(menu.totalRecipeCount),
             style: AppTextStyles.metadataEmphasized.copyWith(
               color: AppColors.forestGreen,
             ),

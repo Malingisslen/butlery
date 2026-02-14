@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -98,28 +99,32 @@ class _ColorCircle extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorValue = PersonalTagColors.fromHex(color);
 
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: AppDimensions.animationDurationFast,
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: colorValue,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isSelected ? AppColors.textDark : AppColors.transparent,
-            width: isSelected ? 3 : 0,
+    return Semantics(
+      label: context.l10n.personalTagSelectColor,
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: AppDimensions.animationDurationFast,
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: colorValue,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: isSelected ? AppColors.textDark : AppColors.transparent,
+              width: isSelected ? 3 : 0,
+            ),
+            boxShadow: isSelected ? AppShadows.card : null,
           ),
-          boxShadow: isSelected ? AppShadows.card : null,
+          child: isSelected
+              ? const Icon(
+                  Icons.check,
+                  color: AppColors.cardWhite,
+                  size: AppDimensions.iconSizeM,
+                )
+              : null,
         ),
-        child: isSelected
-            ? const Icon(
-                Icons.check,
-                color: AppColors.cardWhite,
-                size: AppDimensions.iconSizeM,
-              )
-            : null,
       ),
     );
   }

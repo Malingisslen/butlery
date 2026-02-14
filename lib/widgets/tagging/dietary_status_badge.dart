@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -40,8 +41,8 @@ class DietaryStatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, icon) = _getStatusStyle();
-    final displayLabel = label ?? _getSwedishLabel();
-    final semanticLabel = _getSemanticLabel();
+    final displayLabel = label ?? _getDisplayLabel(context);
+    final semanticLabel = _getSemanticLabel(context);
 
     if (compact) {
       return _CompactBadge(
@@ -60,17 +61,17 @@ class DietaryStatusBadge extends StatelessWidget {
     );
   }
 
-  String _getSemanticLabel() {
+  String _getSemanticLabel(BuildContext context) {
     final entry = DietaryConfig.getByKey(diet);
     final dietName = entry?.tagSv ?? diet;
 
     switch (status) {
       case TriState.free:
-        return 'Passar för $dietName kost';
+        return context.l10n.dietaryStatusFreeA11y(dietName);
       case TriState.contains:
-        return 'Passar ej för $dietName kost';
+        return context.l10n.dietaryStatusContainsA11y(dietName);
       case TriState.unknown:
-        return '$dietName status okänd';
+        return context.l10n.dietaryStatusUnknownA11y(dietName);
     }
   }
 
@@ -90,7 +91,7 @@ class DietaryStatusBadge extends StatelessWidget {
     }
   }
 
-  String _getSwedishLabel() {
+  String _getDisplayLabel(BuildContext context) {
     final entry = DietaryConfig.getByKey(diet);
     final displayName = entry?.tagSv ?? diet;
 
@@ -98,7 +99,7 @@ class DietaryStatusBadge extends StatelessWidget {
       case TriState.free:
         return displayName;
       case TriState.contains:
-        return 'Ej $displayName';
+        return context.l10n.dietaryStatusNotLabel(displayName);
       case TriState.unknown:
         return '$displayName?';
     }
@@ -185,7 +186,10 @@ class _CompactBadge extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: AppDimensions.iconSize14, color: color, semanticLabel: null),
+            Icon(icon,
+                size: AppDimensions.iconSize14,
+                color: color,
+                semanticLabel: null),
             if (label != null) ...[
               const SizedBox(width: AppDimensions.spacingXs),
               ExcludeSemantics(

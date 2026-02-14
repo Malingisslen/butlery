@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/state/loading_states.dart';
 import 'package:butlery/widgets/common/state/empty_states.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Message stream widget with real-time updates (50 message limit)
 class ChatMessageStream extends StatefulWidget {
@@ -98,7 +99,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _error = 'Ett fel uppstod';
+          _error = context.l10n.errorGeneric;
         });
       }
     }
@@ -161,7 +162,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       AppLogger.error('Failed to refresh messages', e);
       if (mounted) {
         setState(() {
-          _error = 'Ett fel uppstod';
+          _error = context.l10n.errorGeneric;
         });
       }
     }
@@ -173,7 +174,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       return LoadingStates.buildLoadingState(
         context,
         variant: LoadingVariant.spinner,
-        message: 'Laddar meddelanden...',
+        message: context.l10n.chatLoadingMessages,
       );
     }
 
@@ -186,7 +187,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
             const SizedBox(height: AppDimensions.spacingL),
             ActionButtons.actionButton(
               context,
-              label: 'Försök igen',
+              label: context.l10n.commonRetry,
               onPressed: _refreshMessages,
               icon: Icons.refresh,
             ),
@@ -199,8 +200,8 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       return EmptyStates.buildEmptyState(
         context,
         variant: EmptyStateVariant.generic,
-        title: 'Inga meddelanden än',
-        subtitle: 'Skicka ett meddelande för att starta konversationen',
+        title: context.l10n.chatNoMessages,
+        subtitle: context.l10n.chatSendToStartConversation,
       );
     }
 

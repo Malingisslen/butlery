@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// View for managing Multi-Factor Authentication settings.
 /// Allows users to enroll or unenroll phone-based MFA.
@@ -59,7 +60,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   Future<void> _startEnrollment() async {
     final phone = _phoneController.text.trim();
     if (phone.isEmpty) {
-      setState(() => _errorMessage = 'Ange ett telefonnummer');
+      setState(() => _errorMessage = context.l10n.mfaEnterPhoneNumber);
       return;
     }
 
@@ -92,7 +93,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
           _isLoading = false;
         });
         _loadMfaStatus();
-        _showSuccessSnackBar('MFA aktiverat!');
+        _showSuccessSnackBar(context.l10n.mfaActivated);
       },
     );
   }
@@ -100,7 +101,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   Future<void> _completeEnrollment() async {
     final code = _codeController.text.trim();
     if (code.isEmpty || _verificationId == null) {
-      setState(() => _errorMessage = 'Ange verifieringskoden');
+      setState(() => _errorMessage = context.l10n.mfaEnterCode);
       return;
     }
 
@@ -125,7 +126,8 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       _showSuccessSnackBar('MFA aktiverat!');
     } else {
       setState(() {
-        _errorMessage = _authService.errorMessage ?? 'Verifiering misslyckades';
+        _errorMessage =
+            _authService.errorMessage ?? context.l10n.mfaVerificationFailed;
       });
     }
 
@@ -136,20 +138,17 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Ta bort MFA?'),
-        content: const Text(
-          'Är du säker på att du vill inaktivera tvåfaktorsautentisering? '
-          'Detta gör ditt konto mindre säkert.',
-        ),
+        title: Text(context.l10n.mfaRemoveTitle),
+        content: Text(context.l10n.mfaRemoveConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Avbryt'),
+            child: Text(context.l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Ta bort'),
+            child: Text(context.l10n.commonRemove),
           ),
         ],
       ),
@@ -163,10 +162,11 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
 
     if (success) {
       await _loadMfaStatus();
-      _showSuccessSnackBar('MFA inaktiverat');
+      _showSuccessSnackBar(context.l10n.mfaDeactivated);
     } else {
       setState(() {
-        _errorMessage = _authService.errorMessage ?? 'Kunde inte ta bort MFA';
+        _errorMessage =
+            _authService.errorMessage ?? context.l10n.mfaCouldNotRemove;
       });
     }
 
@@ -185,13 +185,13 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   String _mapErrorMessage(String code) {
     switch (code) {
       case 'invalid-phone-number':
-        return 'Ogiltigt telefonnummer. Ange med landskod (+46).';
+        return context.l10n.mfaInvalidPhoneNumber;
       case 'quota-exceeded':
-        return 'För många försök. Försök igen senare.';
+        return context.l10n.mfaQuotaExceeded;
       case 'invalid-verification-code':
-        return 'Ogiltig kod. Försök igen.';
+        return context.l10n.mfaInvalidCode;
       default:
-        return 'Ett fel uppstod. Försök igen.';
+        return context.l10n.errorGeneric;
     }
   }
 
@@ -199,7 +199,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tvåfaktorsautentisering'),
+        title: Text(context.l10n.mfaTitle),
       ),
       body: _isLoading && !_isEnrolling
           ? const Center(child: CircularProgressIndicator())
@@ -241,14 +241,16 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _hasMfa ? 'MFA aktiverat' : 'MFA inaktiverat',
+                    _hasMfa
+                        ? context.l10n.mfaEnabled
+                        : context.l10n.mfaDisabled,
                     style: AppTextStyles.titleBold,
                   ),
                   const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     _hasMfa
-                        ? 'Ditt konto är skyddat med tvåfaktorsautentisering.'
-                        : 'Aktivera MFA för extra säkerhet.',
+                        ? context.l10n.mfaAccountProtected
+                        : context.l10n.mfaEnableForSecurity,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -265,18 +267,19 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Registrerade metoder',
+          context.l10n.mfaRegisteredMethods,
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: AppDimensions.spacingSm),
         ..._enrolledFactors.map((factor) => Card(
               child: ListTile(
                 leading: const Icon(Icons.phone_android),
-                title: Text(factor.displayName ?? 'Telefon'),
-                subtitle: Text(
-                    'Registrerad: ${_formatEnrollmentTime(factor.enrollmentTimestamp)}'),
+                title: Text(factor.displayName ?? context.l10n.mfaPhone),
+                subtitle: Text(context.l10n.mfaRegistered(
+                    _formatEnrollmentTime(factor.enrollmentTimestamp))),
                 trailing: IconButton(
-                  icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                  icon:
+                      const Icon(Icons.delete_outline, color: AppColors.error),
                   onPressed: () => _unenrollMfa(factor),
                 ),
               ),
@@ -300,19 +303,17 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Lägg till telefonnummer',
+              context.l10n.mfaAddPhoneNumber,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppDimensions.spacingSm),
-            const Text(
-              'Vi skickar en verifieringskod via SMS när du loggar in.',
-            ),
+            Text(context.l10n.mfaSmsDescription),
             const SizedBox(height: AppDimensions.spacingMd),
             TextField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Telefonnummer',
+              decoration: InputDecoration(
+                labelText: context.l10n.mfaPhoneNumber,
                 hintText: '+46701234567',
                 prefixIcon: Icon(Icons.phone),
                 border: OutlineInputBorder(),
@@ -322,7 +323,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
             SizedBox(
               width: double.infinity,
               child: StyledButton.primary(
-                text: 'Skicka kod',
+                text: context.l10n.mfaSendCode,
                 onPressed: _isLoading ? null : _startEnrollment,
                 isLoading: _isLoading,
               ),
@@ -341,18 +342,18 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Ange verifieringskod',
+              context.l10n.mfaEnterVerificationCode,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppDimensions.spacingSm),
-            Text('En kod har skickats till ${_phoneController.text}'),
+            Text(context.l10n.mfaCodeSentTo(_phoneController.text)),
             const SizedBox(height: AppDimensions.spacingMd),
             TextField(
               controller: _codeController,
               keyboardType: TextInputType.number,
               maxLength: 6,
-              decoration: const InputDecoration(
-                labelText: '6-siffrig kod',
+              decoration: InputDecoration(
+                labelText: context.l10n.mfaSixDigitCode,
                 prefixIcon: Icon(Icons.lock),
                 border: OutlineInputBorder(),
               ),
@@ -362,7 +363,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
               children: [
                 Expanded(
                   child: StyledButton.secondary(
-                    text: 'Avbryt',
+                    text: context.l10n.commonCancel,
                     onPressed: () {
                       setState(() {
                         _isEnrolling = false;
@@ -375,7 +376,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                 const SizedBox(width: AppDimensions.spacingL),
                 Expanded(
                   child: StyledButton.primary(
-                    text: 'Verifiera',
+                    text: context.l10n.mfaVerify,
                     onPressed: _isLoading ? null : _completeEnrollment,
                     isLoading: _isLoading,
                   ),
@@ -412,7 +413,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   }
 
   String _formatEnrollmentTime(double? timestamp) {
-    if (timestamp == null) return 'Okänt';
+    if (timestamp == null) return context.l10n.commonUnknown;
     final date = DateTime.fromMillisecondsSinceEpoch(timestamp.toInt());
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }

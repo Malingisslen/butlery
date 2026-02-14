@@ -51,6 +51,9 @@ class RecipeListViewModel extends ChangeNotifier {
   /// Stores tag UUIDs matched against recipe.core.personalTagIds.
   final Set<String> _excludedPersonalTagFilters = {};
 
+  /// Whether to show only favorite recipes.
+  bool _favoritesOnly = false;
+
   /// Cached filtered recipe results for performance optimization and responsiveness.
   List<Recipe>? _cachedFilteredRecipes;
 
@@ -83,6 +86,9 @@ class RecipeListViewModel extends ChangeNotifier {
 
   /// Last excluded personal tag filters for cache validation.
   Set<String>? _lastExcludedPersonalTagFilters;
+
+  /// Last favorites-only state for cache validation.
+  bool? _lastFavoritesOnly;
 
   /// Initializes recipe list ViewModel with comprehensive service integration and reactive state coordination.
   /// [recipeService] Optional UnifiedRecipeService instance for dependency injection
@@ -173,6 +179,9 @@ class RecipeListViewModel extends ChangeNotifier {
   Set<String> get excludedPersonalTagFilters =>
       Set.unmodifiable(_excludedPersonalTagFilters);
 
+  /// Whether favorites-only filter is active.
+  bool get favoritesOnly => _favoritesOnly;
+
   /// Filter presence indicator for UI conditional display and filter management.
   /// Indicates whether any filters are currently active for UI conditional rendering
   /// of filter clear buttons and filter state indicators.
@@ -183,7 +192,8 @@ class RecipeListViewModel extends ChangeNotifier {
       _activeAllergenFilters.isNotEmpty ||
       _activeDietaryFilters.isNotEmpty ||
       _activePersonalTagFilters.isNotEmpty ||
-      _excludedPersonalTagFilters.isNotEmpty;
+      _excludedPersonalTagFilters.isNotEmpty ||
+      _favoritesOnly;
 
   /// Whether allergen or dietary filters are specifically active.
   /// These filters require tagResult to be present, so untagged recipes are excluded.
@@ -343,6 +353,13 @@ class RecipeListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Toggles favorites-only filter for quick access to favorite recipes.
+  void toggleFavoritesFilter() {
+    _favoritesOnly = !_favoritesOnly;
+    _invalidateCache();
+    notifyListeners();
+  }
+
   /// Clears all active filters with comprehensive state reset and performance optimization.
   /// Removes all time, meal type, rating, allergen, and dietary filters with automatic
   /// cache invalidation and UI notification for complete filter state reset.
@@ -354,6 +371,7 @@ class RecipeListViewModel extends ChangeNotifier {
     _activeDietaryFilters.clear();
     _activePersonalTagFilters.clear();
     _excludedPersonalTagFilters.clear();
+    _favoritesOnly = false;
     _invalidateCache();
     notifyListeners();
   }
@@ -411,7 +429,8 @@ class RecipeListViewModel extends ChangeNotifier {
         _setEquals(_lastDietaryFilters, _activeDietaryFilters) &&
         _setEquals(_lastPersonalTagFilters, _activePersonalTagFilters) &&
         _setEquals(
-            _lastExcludedPersonalTagFilters, _excludedPersonalTagFilters)) {
+            _lastExcludedPersonalTagFilters, _excludedPersonalTagFilters) &&
+        _lastFavoritesOnly == _favoritesOnly) {
       return _cachedFilteredRecipes!;
     }
 
@@ -455,6 +474,11 @@ class RecipeListViewModel extends ChangeNotifier {
       );
     }
 
+    // Applicera favoritfilter
+    if (_favoritesOnly) {
+      filtered = filtered.where((r) => r.isFavorite).toList();
+    }
+
     // Sök
     if (_searchQuery.isNotEmpty) {
       filtered = _searchService.searchRecipes(filtered, _searchQuery);
@@ -479,6 +503,7 @@ class RecipeListViewModel extends ChangeNotifier {
     _lastDietaryFilters = Set.from(_activeDietaryFilters);
     _lastPersonalTagFilters = Set.from(_activePersonalTagFilters);
     _lastExcludedPersonalTagFilters = Set.from(_excludedPersonalTagFilters);
+    _lastFavoritesOnly = _favoritesOnly;
 
     // PERFORMANCE FIX: Apply pagination limit to prevent UI performance issues
     return sorted.take(_displayLimit).toList();
@@ -578,14 +603,10 @@ class RecipeListViewModel extends ChangeNotifier {
       // Recipe must be free from ALL selected allergens (AND logic)
       // Uses effective status which respects user overrides
       for (final filterId in _activeAllergenFilters) {
-        final filterOption = RecipeFilters.allergenFreeFilters.firstWhere(
-          (f) => f.id == filterId,
-          orElse: () => const FilterOption(id: '', label: '', value: ''),
-        );
-        if (filterOption.value is String &&
-            (filterOption.value as String).isNotEmpty) {
+        final filterValue = RecipeFilters.allergenFilterValue(filterId);
+        if (filterValue != null) {
           final effectiveStatus = _tagEditingService.getEffectiveAllergenStatus(
-              recipe, filterOption.value as String);
+              recipe, filterValue);
           if (effectiveStatus != TriState.free) {
             return false;
           }
@@ -613,14 +634,10 @@ class RecipeListViewModel extends ChangeNotifier {
       // Recipe must be safe for ALL selected diets (AND logic)
       // Uses effective status which respects user overrides
       for (final filterId in _activeDietaryFilters) {
-        final filterOption = RecipeFilters.dietaryFilters.firstWhere(
-          (f) => f.id == filterId,
-          orElse: () => const FilterOption(id: '', label: '', value: ''),
-        );
-        if (filterOption.value is String &&
-            (filterOption.value as String).isNotEmpty) {
-          final effectiveStatus = _tagEditingService.getEffectiveDietaryStatus(
-              recipe, filterOption.value as String);
+        final filterValue = RecipeFilters.dietaryFilterValue(filterId);
+        if (filterValue != null) {
+          final effectiveStatus =
+              _tagEditingService.getEffectiveDietaryStatus(recipe, filterValue);
           if (effectiveStatus != TriState.free) {
             return false;
           }

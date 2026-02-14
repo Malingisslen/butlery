@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Header widget for main views with large title and count badge.
 ///
@@ -154,14 +155,14 @@ class ButlerySearchBox extends StatelessWidget {
   const ButlerySearchBox({
     required this.controller,
     this.onChanged,
-    this.hintText = 'sök bland recepten...',
+    this.hintText,
     this.onFilterTap,
     super.key,
   });
 
   final TextEditingController controller;
   final ValueChanged<String>? onChanged;
-  final String hintText;
+  final String? hintText;
   final VoidCallback? onFilterTap;
 
   @override
@@ -199,7 +200,7 @@ class ButlerySearchBox extends StatelessWidget {
                 color: AppColors.textDark,
               ),
               decoration: InputDecoration(
-                hintText: hintText,
+                hintText: hintText ?? context.l10n.searchRecipesHint,
                 hintStyle: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textLight,
                 ),

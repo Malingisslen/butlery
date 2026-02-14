@@ -184,7 +184,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
           // Portion scaler controls with background band
           Container(
             padding: const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingSm,
+              vertical: AppDimensions.paddingM,
+              horizontal: AppDimensions.paddingL,
             ),
             decoration: const BoxDecoration(
               color: AppColors.creamDarker,
@@ -540,7 +541,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
 
           // Image carousel
           Semantics(
-            label: 'Visa bild',
+            label: context.l10n.a11yShowImage,
             button: true,
             child: GestureDetector(
               onTap: () => onImageTap(viewModel.recipe.imageUrls, 0),
@@ -691,7 +692,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
 
   Widget _buildOverflowIndicator(int count) {
     return Semantics(
-      label: 'Visa $count till',
+      label: context.l10n.a11yShowMore(count),
       button: true,
       child: GestureDetector(
         onTap: () => setState(() => _isExpanded = true),

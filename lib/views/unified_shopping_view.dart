@@ -64,8 +64,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                 2, // UI Redesign: nav order is recept(0), meny(1), inköp(2), lägg till(3)
             // UI Redesign: Use MainViewHeader with line break title
             appBar: MainViewHeader(
-              title:
-                  'inköps-\nlista', // UI Redesign: forced line break per mockup
+              title: context.l10n
+                  .shoppingListTitle, // UI Redesign: forced line break per mockup
               countBadge: context.l10n.shoppingCountBadge(
                   itemCount, boughtCount), // UI Redesign: "X varor · X klara"
               actions: ShoppingAppBar.buildHeaderActions(

@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// ✨ UPPDATERAD IMPORT VIA URL VY MED SOURCEURL-STÖD
 class ImportViaUrlView extends StatelessWidget {
@@ -85,7 +86,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
 
     return LayoutComponents.mainMenu(
       currentIndex: null,
-      title: 'Import via URL',
+      title: context.l10n.importViaUrl,
       body: SafeArea(
         // ✅ RESPONSIVE: Center and constrain content on large screens
         child: Center(
@@ -106,7 +107,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                   StyledInput(
                     controller: _urlController,
                     enabled: !viewModel.isLoading,
-                    label: 'Klistra in recept-URL',
+                    label: context.l10n.importPasteRecipeUrl,
                     hint: 'https://example.com/recept',
                     keyboardType: TextInputType.url,
                     textInputAction: TextInputAction.done,
@@ -117,12 +118,12 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                   // Hämta-knapp
                   ActionButtons.primaryButton(
                     context,
-                    label: 'Hämta text',
+                    label: context.l10n.importFetchText,
                     onPressed: viewModel.canFetch && !viewModel.isLoading
                         ? _fetchPage
                         : null,
                     isLoading: viewModel.isLoading,
-                    loadingText: 'Hämtar...',
+                    loadingText: context.l10n.importFetching,
                     isExpanded: true,
                   ),
 
@@ -137,7 +138,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                   // Extraherad text (editable)
                   if (viewModel.hasExtractedText) ...[
                     const SizedBox(height: AppDimensions.spacingXl),
-                    Text('Extraherad text:',
+                    Text(context.l10n.importExtractedText,
                         style: AppTextStyles.headlineSmall),
                     const SizedBox(height: AppDimensions.spacingS),
                     Expanded(
@@ -146,15 +147,15 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                           ..text = viewModel.extractedText,
                         maxLines: null,
                         minLines: 10,
-                        label: 'Redigera text innan import',
-                        hint: 'Du kan redigera den extraherade texten här...',
+                        label: context.l10n.importEditTextBeforeImport,
+                        hint: context.l10n.importEditTextHint,
                         keyboardType: TextInputType.multiline,
                       ),
                     ),
                     const SizedBox(height: AppDimensions.spacingXl),
                     ActionButtons.primaryButton(
                       context,
-                      label: 'Gå vidare till klistra-in',
+                      label: context.l10n.importProceedToPaste,
                       onPressed: _navigateToTextImport,
                       isExpanded: true,
                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -10,13 +11,14 @@ import 'package:butlery/widgets/common/social/social_facade.dart';
 class SocialCollaborativeComponents {
   /// Build collaborative status badge.
   static Widget collaborativeStatusBadge({
-    String text = 'Delat',
+    BuildContext? context,
+    String? text,
     IconData icon = Icons.people,
     Color? color,
     EdgeInsets? padding,
   }) {
     return SocialFacade.collaborativeStatusBadge(
-      text: text,
+      text: text ?? context?.l10n.socialShared ?? 'Delat',
       icon: icon,
       color: color,
       padding: padding,
@@ -125,7 +127,7 @@ class SocialCollaborativeComponents {
           if (showText) ...[
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
-              'Aktiv',
+              context.l10n.socialActive,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: activeColor ?? AppColors.success,
                   ),
@@ -153,13 +155,13 @@ class SocialCollaborativeComponents {
           const Icon(Icons.people, size: AppDimensions.iconSizeS),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
-            'Deltagare',
+            context.l10n.socialParticipants,
             style: Theme.of(context).textTheme.bodySmall,
           ),
           if (onViewAll != null)
             TextButton(
               onPressed: onViewAll,
-              child: const Text('Visa alla'),
+              child: Text(context.l10n.socialViewAll),
             ),
         ],
       ),
@@ -176,8 +178,10 @@ class SocialCollaborativeComponents {
   }) {
     return collaborativeBanner(
       title: recipe.title,
-      subtitle:
-          'Delat recept • ${recipe.socialData?.memberPermissions?.length ?? 0} medlemmar',
+      subtitle: context != null
+          ? context.l10n.socialSharedRecipeMembers(
+              recipe.socialData?.memberPermissions?.length ?? 0)
+          : 'Delat recept \u2022 ${recipe.socialData?.memberPermissions?.length ?? 0} medlemmar',
       contentId: recipe.id,
       contentType: 'recipe',
       onTap: onTap,
@@ -198,7 +202,9 @@ class SocialCollaborativeComponents {
   }) {
     return collaborativeBanner(
       title: menuTitle,
-      subtitle: 'Delad meny • $memberCount medlemmar',
+      subtitle: context != null
+          ? context.l10n.socialSharedMenuMembers(memberCount)
+          : 'Delad meny \u2022 $memberCount medlemmar',
       contentId: menuId,
       contentType: 'menu',
       onTap: onTap,
@@ -211,7 +217,7 @@ class SocialCollaborativeComponents {
   /// Shows when collaboration is currently active
   static Widget collaborationActiveIndicator(
     BuildContext context, {
-    String text = 'Aktiv samarbete',
+    String? text,
     Color? color,
     IconData icon = Icons.sync,
   }) {
@@ -233,7 +239,7 @@ class SocialCollaborativeComponents {
               color: color ?? AppColors.success),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
-            text,
+            text ?? context.l10n.socialActiveCollaboration,
             style: AppTextStyles.metadataEmphasized.copyWith(
               color: color ?? AppColors.success,
             ),
@@ -247,7 +253,7 @@ class SocialCollaborativeComponents {
   /// Shows when collaboration is not active
   static Widget collaborationInactiveIndicator(
     BuildContext context, {
-    String text = 'Inte aktivt',
+    String? text,
     Color? color,
     IconData icon = Icons.pause_circle_outline,
   }) {
@@ -270,7 +276,7 @@ class SocialCollaborativeComponents {
               color: color ?? AppColors.textMedium),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
-            text,
+            text ?? context.l10n.socialInactive,
             style: AppTextStyles.metadataEmphasized.copyWith(
               color: color ?? AppColors.textMedium,
             ),
@@ -304,7 +310,7 @@ class SocialCollaborativeComponents {
         children: [
           if (showLabels)
             Text(
-              'Samarbetsstatistik',
+              context.l10n.socialCollaborationStatistics,
               style: AppTextStyles.titleBold,
             ),
           if (showLabels) const SizedBox(height: AppDimensions.spacingSm),
@@ -314,14 +320,14 @@ class SocialCollaborativeComponents {
                 context,
                 icon: Icons.people,
                 value: memberCount.toString(),
-                label: 'Medlemmar',
+                label: context.l10n.socialMembers,
               ),
               const SizedBox(width: AppDimensions.spacingMd),
               _buildMetricItem(
                 context,
                 icon: Icons.edit,
                 value: activeEditors.toString(),
-                label: 'Aktiva',
+                label: context.l10n.socialActiveEditors,
               ),
               if (totalEdits != null) ...[
                 const SizedBox(width: AppDimensions.spacingMd),
@@ -329,7 +335,7 @@ class SocialCollaborativeComponents {
                   context,
                   icon: Icons.history,
                   value: totalEdits.toString(),
-                  label: 'Ändringar',
+                  label: context.l10n.socialChanges,
                 ),
               ],
             ],
@@ -337,7 +343,8 @@ class SocialCollaborativeComponents {
           if (lastActivity != null) ...[
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
-              'Senast aktiv: ${_formatRelativeTime(lastActivity)}',
+              context.l10n
+                  .socialLastActive(_formatRelativeTime(context, lastActivity)),
               style: AppTextStyles.metadataEmphasized,
             ),
           ],
@@ -377,18 +384,18 @@ class SocialCollaborativeComponents {
   }
 
   /// Format relative time for last activity
-  static String _formatRelativeTime(DateTime dateTime) {
+  static String _formatRelativeTime(BuildContext context, DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
     if (difference.inMinutes < 1) {
-      return 'just nu';
+      return context.l10n.commonJustNow;
     } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes} min sedan';
+      return context.l10n.commonMinutesAgo(difference.inMinutes);
     } else if (difference.inHours < 24) {
-      return '${difference.inHours} timmar sedan';
+      return context.l10n.commonHoursAgo(difference.inHours);
     } else {
-      return '${difference.inDays} dagar sedan';
+      return context.l10n.commonDaysAgo(difference.inDays);
     }
   }
 
@@ -400,7 +407,7 @@ class SocialCollaborativeComponents {
     bool showText = true,
     Color? color,
   }) {
-    final config = _getPermissionConfig(permissionLevel);
+    final config = _getPermissionConfig(permissionLevel, context: context);
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -432,36 +439,37 @@ class SocialCollaborativeComponents {
   }
 
   /// Get permission configuration
-  static _PermissionConfig _getPermissionConfig(String permissionLevel) {
+  static _PermissionConfig _getPermissionConfig(String permissionLevel,
+      {BuildContext? context}) {
     switch (permissionLevel.toLowerCase()) {
       case 'owner':
-        return const _PermissionConfig(
+        return _PermissionConfig(
           icon: Icons.star,
-          label: 'Ägare',
+          label: context?.l10n.socialPermissionOwner ?? 'Ägare',
           color: AppColors.forestGreenDark,
         );
       case 'admin':
-        return const _PermissionConfig(
+        return _PermissionConfig(
           icon: Icons.admin_panel_settings,
-          label: 'Admin',
+          label: context?.l10n.socialPermissionAdmin ?? 'Admin',
           color: AppColors.forestGreen,
         );
       case 'editor':
-        return const _PermissionConfig(
+        return _PermissionConfig(
           icon: Icons.edit,
-          label: 'Redigera',
+          label: context?.l10n.socialPermissionEditor ?? 'Redigera',
           color: AppColors.forestGreen,
         );
       case 'viewer':
-        return const _PermissionConfig(
+        return _PermissionConfig(
           icon: Icons.visibility,
-          label: 'Läsa',
+          label: context?.l10n.socialPermissionViewer ?? 'Läsa',
           color: AppColors.textMedium,
         );
       default:
-        return const _PermissionConfig(
+        return _PermissionConfig(
           icon: Icons.help_outline,
-          label: 'Okänd',
+          label: context?.l10n.socialPermissionUnknown ?? 'Okänd',
           color: AppColors.textMedium,
         );
     }

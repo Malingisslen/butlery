@@ -17,6 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Builder widget that eliminates duplicated loading/error/empty state patterns
 /// This widget wraps the existing StateWidget with a convenient builder pattern
@@ -143,7 +144,7 @@ class LoadingStateBuilder<T> extends StatelessWidget {
       }
       return StateWidget.error(
         message: error!,
-        actionLabel: errorActionLabel ?? 'Försök igen',
+        actionLabel: errorActionLabel ?? context.l10n.commonRetry,
         onAction: onErrorRetry,
       );
     }
@@ -176,7 +177,7 @@ class LoadingStateBuilder<T> extends StatelessWidget {
 
       // Use generic empty state
       return StateWidget.empty(
-        title: emptyTitle ?? 'Inget innehåll',
+        title: emptyTitle ?? context.l10n.loadingNoContent,
         subtitle: emptySubtitle,
         icon: emptyIcon ?? Icons.inbox_outlined,
         actionLabel: emptyActionLabel,
@@ -195,7 +196,7 @@ class LoadingStateBuilder<T> extends StatelessWidget {
     }
 
     return StateWidget.empty(
-      title: emptyTitle ?? 'Inget innehåll',
+      title: emptyTitle ?? context.l10n.loadingNoContent,
       subtitle: emptySubtitle,
       icon: emptyIcon ?? Icons.inbox_outlined,
       actionLabel: emptyActionLabel,
@@ -269,12 +270,15 @@ class LoadingStateBuilder<T> extends StatelessWidget {
       case EmptyStateVariant.noTargets:
       case EmptyStateVariant.noSavedMenus:
       case EmptyStateVariant.generic:
-        return StateWidget.empty(
-          title: emptyTitle ?? 'Inget innehåll',
-          subtitle: emptySubtitle,
-          icon: emptyIcon ?? Icons.inbox_outlined,
-          actionLabel: emptyActionLabel,
-          onAction: onEmptyAction,
+        // Note: _buildPredefinedEmptyState is called from build() which has context
+        return Builder(
+          builder: (context) => StateWidget.empty(
+            title: emptyTitle ?? context.l10n.loadingNoContent,
+            subtitle: emptySubtitle,
+            icon: emptyIcon ?? Icons.inbox_outlined,
+            actionLabel: emptyActionLabel,
+            onAction: onEmptyAction,
+          ),
         );
     }
   }
@@ -348,10 +352,11 @@ class LoadingStateBuilderUtils {
     String? error,
     List<T>? recipes,
     required Widget Function(BuildContext context, List<T> recipes) builder,
-    String? loadingMessage = 'Laddar recept...',
+    String? loadingMessage,
     LoadingVariant loadingVariant = LoadingVariant.skeletonRecipeList,
     VoidCallback? onAddRecipe,
     VoidCallback? onErrorRetry,
+    String? emptyActionLabel,
   }) {
     return LoadingStateBuilder<List<T>>(
       isLoading: isLoading,
@@ -361,7 +366,7 @@ class LoadingStateBuilderUtils {
       loadingMessage: loadingMessage,
       loadingVariant: loadingVariant,
       emptyState: EmptyStateVariant.noRecipes,
-      emptyActionLabel: 'Lägg till recept',
+      emptyActionLabel: emptyActionLabel,
       onEmptyAction: onAddRecipe,
       onErrorRetry: onErrorRetry,
     );
@@ -373,10 +378,11 @@ class LoadingStateBuilderUtils {
     String? error,
     List<T>? friends,
     required Widget Function(BuildContext context, List<T> friends) builder,
-    String? loadingMessage = 'Laddar vänner...',
+    String? loadingMessage,
     LoadingVariant loadingVariant = LoadingVariant.spinner,
     VoidCallback? onAddFriend,
     VoidCallback? onErrorRetry,
+    String? emptyActionLabel,
   }) {
     return LoadingStateBuilder<List<T>>(
       isLoading: isLoading,
@@ -386,7 +392,7 @@ class LoadingStateBuilderUtils {
       loadingMessage: loadingMessage,
       loadingVariant: loadingVariant,
       emptyState: EmptyStateVariant.noFriends,
-      emptyActionLabel: 'Lägg till vänner',
+      emptyActionLabel: emptyActionLabel,
       onEmptyAction: onAddFriend,
       onErrorRetry: onErrorRetry,
     );
@@ -398,10 +404,11 @@ class LoadingStateBuilderUtils {
     String? error,
     T? menuData,
     required Widget Function(BuildContext context, T data) builder,
-    String? loadingMessage = 'Genererar meny...',
+    String? loadingMessage,
     LoadingVariant loadingVariant = LoadingVariant.spinner,
     VoidCallback? onGenerateMenu,
     VoidCallback? onErrorRetry,
+    String? emptyActionLabel,
   }) {
     return LoadingStateBuilder<T>(
       isLoading: isLoading,
@@ -411,7 +418,7 @@ class LoadingStateBuilderUtils {
       loadingMessage: loadingMessage,
       loadingVariant: loadingVariant,
       emptyState: EmptyStateVariant.noMenu,
-      emptyActionLabel: 'Generera meny',
+      emptyActionLabel: emptyActionLabel,
       onEmptyAction: onGenerateMenu,
       onErrorRetry: onErrorRetry,
     );
@@ -423,10 +430,11 @@ class LoadingStateBuilderUtils {
     String? error,
     List<T>? items,
     required Widget Function(BuildContext context, List<T> items) builder,
-    String? loadingMessage = 'Laddar inköpslista...',
+    String? loadingMessage,
     LoadingVariant loadingVariant = LoadingVariant.spinner,
     VoidCallback? onCreateMenu,
     VoidCallback? onErrorRetry,
+    String? emptyActionLabel,
   }) {
     return LoadingStateBuilder<List<T>>(
       isLoading: isLoading,
@@ -436,7 +444,7 @@ class LoadingStateBuilderUtils {
       loadingMessage: loadingMessage,
       loadingVariant: loadingVariant,
       emptyState: EmptyStateVariant.noShoppingList,
-      emptyActionLabel: 'Skapa veckomeny',
+      emptyActionLabel: emptyActionLabel,
       onEmptyAction: onCreateMenu,
       onErrorRetry: onErrorRetry,
     );

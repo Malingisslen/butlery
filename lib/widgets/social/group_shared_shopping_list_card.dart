@@ -10,6 +10,7 @@ import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/utils/shopping_list_formatter.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/social/group_shopping_list_actions.dart';
 
 /// Group Shared Shopping List Card - Card widget for shopping lists shared to groups
@@ -53,7 +54,8 @@ class GroupSharedShoppingListCard {
         Container(
           padding: const EdgeInsets.all(AppDimensions.spacingS),
           decoration: BoxDecoration(
-            color: AppColors.primaryContainer.withValues(alpha: AppDimensions.opacityMediumLight),
+            color: AppColors.primaryContainer
+                .withValues(alpha: AppDimensions.opacityMediumLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           ),
           child: const Icon(
@@ -78,7 +80,8 @@ class GroupSharedShoppingListCard {
                 Text(
                   shoppingList.description!,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
+                    color: AppColors.onSurface
+                        .withValues(alpha: AppDimensions.opacityDark),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -86,15 +89,16 @@ class GroupSharedShoppingListCard {
             ],
           ),
         ),
-        _buildSharedByInfo(shoppingList),
+        _buildSharedByInfo(context, shoppingList),
       ],
     );
   }
 
-  static Widget _buildSharedByInfo(UnifiedShoppingList shoppingList) {
+  static Widget _buildSharedByInfo(
+      BuildContext context, UnifiedShoppingList shoppingList) {
     final ownerName = shoppingList.ownerDisplayName.isNotEmpty
         ? shoppingList.ownerDisplayName
-        : 'Okand anvandare';
+        : context.l10n.avatarUnknownUser;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -106,9 +110,10 @@ class GroupSharedShoppingListCard {
         ),
         const SizedBox(height: AppDimensions.spacingXxs),
         Text(
-          'Delad av $ownerName',
+          context.l10n.shoppingSharedBy(ownerName),
           style: AppTextStyles.textXs.copyWith(
-            color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark),
+            color: AppColors.onSurface
+                .withValues(alpha: AppDimensions.opacityMediumDark),
           ),
         ),
       ],
@@ -123,7 +128,8 @@ class GroupSharedShoppingListCard {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant.withValues(alpha: AppDimensions.opacityMediumLight),
+        color: AppColors.surfaceVariant
+            .withValues(alpha: AppDimensions.opacityMediumLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Column(
@@ -134,13 +140,15 @@ class GroupSharedShoppingListCard {
               Icon(
                 Icons.list_alt,
                 size: AppDimensions.iconSizeS,
-                color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
+                color: AppColors.onSurface
+                    .withValues(alpha: AppDimensions.opacityDark),
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
-                'Inkopslista',
+                context.l10n.shoppingShoppingList,
                 style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityDark),
+                  color: AppColors.onSurface
+                      .withValues(alpha: AppDimensions.opacityDark),
                 ),
               ),
               const Spacer(),
@@ -151,12 +159,13 @@ class GroupSharedShoppingListCard {
                     vertical: AppDimensions.spacingXxs,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.info.withValues(alpha: AppDimensions.opacityVeryLight),
+                    color: AppColors.info
+                        .withValues(alpha: AppDimensions.opacityVeryLight),
                     borderRadius:
                         BorderRadius.circular(AppDimensions.borderRadiusS),
                   ),
                   child: Text(
-                    'Kollaborativ',
+                    context.l10n.shoppingCollaborative,
                     style: AppTextStyles.textXsBold.copyWith(
                       color: AppColors.info,
                     ),
@@ -167,7 +176,8 @@ class GroupSharedShoppingListCard {
           const SizedBox(height: AppDimensions.spacingS),
           LinearProgressIndicator(
             value: totalItems > 0 ? boughtItems / totalItems : 0,
-            backgroundColor: AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
+            backgroundColor:
+                AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
             valueColor: AlwaysStoppedAnimation<Color>(
               boughtItems == totalItems ? AppColors.success : AppColors.primary,
             ),
@@ -185,19 +195,20 @@ class GroupSharedShoppingListCard {
 
     return Row(
       children: [
-        _buildStatChip('$totalItems', 'totalt', Icons.format_list_numbered,
-            AppColors.primary),
+        _buildStatChip('$totalItems', context.l10n.shoppingTotal,
+            Icons.format_list_numbered, AppColors.primary),
         const SizedBox(width: AppDimensions.spacingS),
-        _buildStatChip(
-            '$boughtItems', 'kopta', Icons.check_circle, AppColors.success),
+        _buildStatChip('$boughtItems', context.l10n.shoppingBought,
+            Icons.check_circle, AppColors.success),
         const SizedBox(width: AppDimensions.spacingS),
-        _buildStatChip('$remainingItems', 'kvar', Icons.shopping_cart_outlined,
-            AppColors.warning),
+        _buildStatChip('$remainingItems', context.l10n.shoppingRemaining,
+            Icons.shopping_cart_outlined, AppColors.warning),
         const Spacer(),
         Text(
           ShoppingListFormatter.getShareTimeText(shoppingList),
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.onSurface.withValues(alpha: AppDimensions.opacityMediumDark),
+            color: AppColors.onSurface
+                .withValues(alpha: AppDimensions.opacityMediumDark),
           ),
         ),
       ],
@@ -208,7 +219,8 @@ class GroupSharedShoppingListCard {
       String value, String label, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingS, vertical: AppDimensions.spacingXs),
+          horizontal: AppDimensions.spacingS,
+          vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
         color: color.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -242,7 +254,7 @@ class GroupSharedShoppingListCard {
         Expanded(
           child: ActionButtons.secondaryButton(
             context,
-            label: 'Visa lista',
+            label: context.l10n.shoppingViewList,
             icon: Icons.visibility,
             onPressed: () => GroupShoppingListActions.viewShoppingList(
                 context, shoppingList),
@@ -252,7 +264,7 @@ class GroupSharedShoppingListCard {
         Expanded(
           child: ActionButtons.primaryButton(
             context,
-            label: 'Importera',
+            label: context.l10n.groupImport,
             icon: Icons.download,
             onPressed: () => GroupShoppingListActions.importShoppingList(
                 context, viewModel, shoppingList),
@@ -264,7 +276,8 @@ class GroupSharedShoppingListCard {
               context, viewModel, shoppingList),
           icon: const Icon(Icons.more_vert),
           style: IconButton.styleFrom(
-            backgroundColor: AppColors.surfaceVariant.withValues(alpha: AppDimensions.opacityHalf),
+            backgroundColor: AppColors.surfaceVariant
+                .withValues(alpha: AppDimensions.opacityHalf),
           ),
         ),
       ],

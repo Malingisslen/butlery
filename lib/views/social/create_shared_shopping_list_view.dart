@@ -10,7 +10,6 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
@@ -104,7 +103,7 @@ class _CreateSharedShoppingListViewState
       BuildContext context, CreateSharedListViewModel viewModel) {
     return AppBar(
       title: Text(
-          '${context.l10n.commonShare} ${AppStrings.shoppingList.toLowerCase()}'),
+          '${context.l10n.commonShare} ${context.l10n.shoppingList.toLowerCase()}'),
       leading: IconButton(
         icon: const Icon(Icons.close),
         onPressed: () => Navigator.pop(context),
@@ -182,7 +181,7 @@ class _CreateSharedShoppingListViewState
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Text(
-                'Skapa delad inköpslista',
+                context.l10n.shoppingCreateSharedList,
                 style: AppTextStyles.titleMedium.copyWith(
                   color: AppColors.forestGreen,
                 ),
@@ -191,7 +190,7 @@ class _CreateSharedShoppingListViewState
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            'Skapa en lista som du och dina vänner kan samarbeta kring i realtid.',
+            context.l10n.shoppingCreateSharedListDescription,
             style: AppTextStyles.titleMedium,
           ),
         ],
@@ -205,7 +204,7 @@ class _CreateSharedShoppingListViewState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Lista detaljer',
+          context.l10n.shoppingListDetails,
           style: AppTextStyles.headlineSmall,
         ),
         const SizedBox(height: AppDimensions.spacingXl),
@@ -214,8 +213,8 @@ class _CreateSharedShoppingListViewState
         TextFormField(
           controller: _titleController,
           decoration: InputDecoration(
-            labelText: 'Titel på delad lista',
-            hintText: 'T.ex. "Middag hos Anna", "Veckans handling"',
+            labelText: context.l10n.shoppingSharedListTitle,
+            hintText: context.l10n.shoppingSharedListTitleHint,
             prefixIcon: const Icon(Icons.title),
             errorText: viewModel.titleError,
           ),
@@ -226,8 +225,8 @@ class _CreateSharedShoppingListViewState
         // Beskrivning med validation
         StyledInput(
           controller: _descriptionController,
-          label: 'Beskrivning (valfri)',
-          hint: 'T.ex. "Handla till middagsmys på fredag"',
+          label: context.l10n.shoppingDescriptionOptional,
+          hint: context.l10n.shoppingDescriptionHint,
           maxLines: 3,
           minLines: 1,
           onChanged: viewModel.updateDescription,
@@ -242,7 +241,7 @@ class _CreateSharedShoppingListViewState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Välj vänner att dela med',
+          context.l10n.shoppingSelectFriendsToShare,
           style: AppTextStyles.headlineSmall,
         ),
         const SizedBox(height: AppDimensions.spacingXl),
@@ -283,7 +282,7 @@ class _CreateSharedShoppingListViewState
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Text(
-                'Vad händer när du delar?',
+                context.l10n.shoppingWhatHappensWhenSharing,
                 style: AppTextStyles.titleBold.copyWith(
                   color: AppColors.success,
                 ),
@@ -292,10 +291,7 @@ class _CreateSharedShoppingListViewState
           ),
           const SizedBox(height: AppDimensions.spacingM),
           Text(
-            '• Dina valda vänner får en notifikation\n'
-            '• De kan se listan, checka av artiklar och lägga till nya\n'
-            '• Alla ändringar synkroniseras i realtid\n'
-            '• Du kan hantera behörigheter senare',
+            context.l10n.shoppingShareInfoBullets,
             style: AppTextStyles.bodyLarge.copyWith(
               color: AppColors.success,
             ),

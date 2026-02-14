@@ -377,8 +377,8 @@ class _QuickTagChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       label: isSelected
-          ? '${tag.name}, vald. Dubbeltryck för att ta bort.'
-          : '${tag.name}. Dubbeltryck för att välja.',
+          ? context.l10n.a11yTagSelected(tag.name)
+          : context.l10n.a11yTagUnselected(tag.name),
       selected: isSelected,
       button: true,
       child: FilterChip(

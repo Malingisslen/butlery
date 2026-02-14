@@ -1,6 +1,7 @@
 // lib/widgets/common/share_dialog/share_dialog_header.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -13,7 +14,8 @@ class ShareDialogHeader {
     ShareContentType contentType,
     dynamic content,
   ) {
-    final (title, subtitle, icon) = _getHeaderInfo(contentType, content);
+    final (title, subtitle, icon) =
+        _getHeaderInfo(context, contentType, content);
 
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -69,6 +71,7 @@ class ShareDialogHeader {
   }
 
   static (String, String, IconData) _getHeaderInfo(
+    BuildContext context,
     ShareContentType contentType,
     dynamic content,
   ) {
@@ -76,7 +79,7 @@ class ShareDialogHeader {
       case ShareContentType.recipe:
         final recipe = content as Recipe;
         return (
-          'Dela recept med vänner',
+          context.l10n.shareRecipeWithFriends,
           recipe.title,
           Icons.restaurant_menu,
         );
@@ -85,14 +88,14 @@ class ShareDialogHeader {
         final totalRecipes =
             menu.values.fold(0, (sum, recipes) => sum + recipes.length);
         return (
-          'Dela veckomeny med vänner',
-          '$totalRecipes recept i ${menu.length} kategorier',
+          context.l10n.shareMenuWithFriends,
+          context.l10n.shareRecipesInCategories(totalRecipes, menu.length),
           Icons.restaurant,
         );
       case ShareContentType.shoppingList:
         final shoppingList = content as UnifiedShoppingList;
         return (
-          'Dela inköpslista',
+          context.l10n.shareShoppingListTitle,
           shoppingList.name,
           Icons.shopping_cart_outlined,
         );

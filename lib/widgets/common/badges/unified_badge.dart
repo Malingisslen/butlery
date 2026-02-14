@@ -6,6 +6,7 @@
 /// - Category labels
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -166,12 +167,16 @@ class UnifiedBadge extends StatelessWidget {
           ),
           if (onRemove != null) ...[
             SizedBox(width: dimensions.iconSpacing),
-            GestureDetector(
-              onTap: onRemove,
-              child: Icon(
-                Icons.close,
-                size: dimensions.iconSize,
-                color: textColor.withValues(alpha: 0.7),
+            Semantics(
+              label: context.l10n.commonRemoveLabel(label),
+              button: true,
+              child: GestureDetector(
+                onTap: onRemove,
+                child: Icon(
+                  Icons.close,
+                  size: dimensions.iconSize,
+                  color: textColor.withValues(alpha: 0.7),
+                ),
               ),
             ),
           ],
@@ -180,9 +185,13 @@ class UnifiedBadge extends StatelessWidget {
     );
 
     if (onTap != null) {
-      return GestureDetector(
-        onTap: onTap,
-        child: badge,
+      return Semantics(
+        label: label,
+        button: true,
+        child: GestureDetector(
+          onTap: onTap,
+          child: badge,
+        ),
       );
     }
 
