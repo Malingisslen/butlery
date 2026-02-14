@@ -469,7 +469,7 @@ class SocialCollaborativeComponents {
       default:
         return _PermissionConfig(
           icon: Icons.help_outline,
-          label: context?.l10n.socialPermissionUnknown ?? 'Okänd',
+          label: context?.l10n.socialPermissionUnknown ?? '?',
           color: AppColors.textMedium,
         );
     }

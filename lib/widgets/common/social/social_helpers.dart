@@ -7,7 +7,7 @@ import 'package:butlery/widgets/user/user_display_widgets.dart';
 class SocialHelpers {
   /// Format user display name.
   static String formatUserDisplayName(UserProfile? user,
-      {String fallback = 'Okänd användare'}) {
+      {String fallback = '?'}) {
     if (user == null) return fallback;
     return user.displayName.isNotEmpty ? user.displayName : user.email;
   }
