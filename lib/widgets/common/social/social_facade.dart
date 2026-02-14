@@ -500,7 +500,7 @@ class SocialFacade {
 
   // Helper functions
   static String formatUserDisplayName(UserProfile? user,
-          {String fallback = 'Okänd användare'}) =>
+          {String fallback = '?'}) =>
       SocialHelpers.formatUserDisplayName(user, fallback: fallback);
 
   static bool isUserOnline(UserProfile? user) =>
