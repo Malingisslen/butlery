@@ -168,7 +168,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                   Switch(
                     value: _allowMultiple,
                     onChanged: (v) => setState(() => _allowMultiple = v),
-                    activeColor: cs.primary,
+                    activeThumbColor: cs.primary,
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
                   Text(

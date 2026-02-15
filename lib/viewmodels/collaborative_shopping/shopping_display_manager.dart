@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Manages UI display helpers including colors, status text, and item formatting.
 class ShoppingDisplayManager {
@@ -11,16 +12,10 @@ class ShoppingDisplayManager {
       bool hasData, String statusText) {
     if (!hasData) return cs.onSurfaceVariant;
 
-    switch (statusText) {
-      case 'Klar':
-        return butleryColors.success;
-      case 'Pågående':
-        return butleryColors.warning;
-      case 'Tom lista':
-        return cs.onSurfaceVariant;
-      default:
-        return cs.onSurfaceVariant;
-    }
+    final l = AppLocale.current;
+    if (statusText == l.statusCompleted) return butleryColors.success;
+    if (statusText == l.statusInProgress) return butleryColors.warning;
+    return cs.onSurfaceVariant;
   }
 
   Color getProgressColor(ColorScheme cs, ButleryColors butleryColors,
@@ -46,7 +41,7 @@ class ShoppingDisplayManager {
     }
 
     if (item.bought) {
-      parts.add('✓ Inhandlad');
+      parts.add('✓ ${AppLocale.current.statusPurchased}');
     }
 
     return parts.isNotEmpty ? parts.join(' • ') : null;
@@ -57,19 +52,20 @@ class ShoppingDisplayManager {
   }
 
   String getStatusText(bool hasData, int totalItems, int completedItems) {
-    if (!hasData) return 'Laddar...';
-    if (totalItems == 0) return 'Tom lista';
-    if (completedItems == totalItems) return 'Klar';
-    return 'Pågående';
+    final l = AppLocale.current;
+    if (!hasData) return l.commonLoading;
+    if (totalItems == 0) return l.statusEmptyList;
+    if (completedItems == totalItems) return l.statusCompleted;
+    return l.statusInProgress;
   }
 
   String getMemberCountText(UnifiedShoppingList? currentList) {
     final count = currentList?.memberCount ?? 0;
-    return '$count ${count == 1 ? 'medlem' : 'medlemmar'}';
+    return AppLocale.current.labelMemberCount(count);
   }
 
   String getActivitySummary(String lastActivity, DateTime lastActivityTime) {
-    if (lastActivity.isEmpty) return 'Ingen aktivitet';
+    if (lastActivity.isEmpty) return AppLocale.current.statusNoActivity;
     final timeAgo = _getTimeAgo(lastActivityTime);
     return '$lastActivity $timeAgo';
   }
@@ -77,10 +73,13 @@ class ShoppingDisplayManager {
   String _getTimeAgo(DateTime time) {
     final now = DateTime.now();
     final difference = now.difference(time);
+    final l = AppLocale.current;
 
-    if (difference.inMinutes < 1) return 'just nu';
-    if (difference.inMinutes < 60) return '${difference.inMinutes}m sedan';
-    if (difference.inHours < 24) return '${difference.inHours}h sedan';
-    return '${difference.inDays}d sedan';
+    if (difference.inMinutes < 1) return l.timeJustNow;
+    if (difference.inMinutes < 60) {
+      return l.timeMinutesAgo(difference.inMinutes);
+    }
+    if (difference.inHours < 24) return l.timeHoursAgo(difference.inHours);
+    return l.dateDaysAgo(difference.inDays);
   }
 }

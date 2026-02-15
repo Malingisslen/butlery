@@ -241,7 +241,7 @@ class _ReviewEditStep extends StatelessWidget {
             decoration: InputDecoration(
               labelText: context.l10n.importRecipeNameRequired,
               hintText: context.l10n.importRecipeNameHint,
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
             ),
             onChanged: viewModel.setTitle,
             textCapitalization: TextCapitalization.sentences,
@@ -254,7 +254,7 @@ class _ReviewEditStep extends StatelessWidget {
             decoration: InputDecoration(
               labelText: context.l10n.recipeDescription,
               hintText: context.l10n.importDescriptionHint,
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
             ),
             onChanged: viewModel.setDescription,
             maxLines: 2,
@@ -270,7 +270,7 @@ class _ReviewEditStep extends StatelessWidget {
                   initialValue: viewModel.portions.toString(),
                   decoration: InputDecoration(
                     labelText: context.l10n.recipePortions,
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                     suffixText: 'st',
                   ),
                   keyboardType: TextInputType.number,
@@ -286,7 +286,7 @@ class _ReviewEditStep extends StatelessWidget {
                   initialValue: viewModel.timeMinutes.toString(),
                   decoration: InputDecoration(
                     labelText: context.l10n.recipeCookingTime,
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                     suffixText: 'min',
                   ),
                   keyboardType: TextInputType.number,

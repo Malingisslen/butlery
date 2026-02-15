@@ -3,6 +3,7 @@
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Menu operation types for analytics and logging
 enum MenuOperationType {
@@ -83,7 +84,7 @@ class MenuOperations {
     if (!isValidCategoryName(categoryName)) {
       throw MenuOperationError(
         operation: MenuOperationType.addRecipeToCategory,
-        message: 'Ogiltigt kategorinamn: $categoryName',
+        message: AppLocale.current.errorInvalidCategoryName(categoryName),
         resourceId: menu.id,
         categoryName: categoryName,
       );
@@ -111,7 +112,7 @@ class MenuOperations {
     if (!isValidCategoryName(categoryName)) {
       throw MenuOperationError(
         operation: MenuOperationType.removeRecipeFromCategory,
-        message: 'Ogiltigt kategorinamn: $categoryName',
+        message: AppLocale.current.errorInvalidCategoryName(categoryName),
         resourceId: menu.id,
         categoryName: categoryName,
       );
@@ -172,7 +173,7 @@ class MenuOperations {
     if (!isValidCategoryName(categoryName)) {
       throw MenuOperationError(
         operation: MenuOperationType.replaceRecipeInCategory,
-        message: 'Ogiltigt kategorinamn: $categoryName',
+        message: AppLocale.current.errorInvalidCategoryName(categoryName),
         resourceId: menu.id,
         categoryName: categoryName,
       );
@@ -200,7 +201,7 @@ class MenuOperations {
     if (!isValidCategoryName(categoryName)) {
       throw MenuOperationError(
         operation: MenuOperationType.clearCategory,
-        message: 'Ogiltigt kategorinamn: $categoryName',
+        message: AppLocale.current.errorInvalidCategoryName(categoryName),
         resourceId: menu.id,
         categoryName: categoryName,
       );
@@ -226,7 +227,7 @@ class MenuOperations {
     if (!isValidCategoryName(categoryName)) {
       throw MenuOperationError(
         operation: MenuOperationType.updateWholeCategory,
-        message: 'Ogiltigt kategorinamn: $categoryName',
+        message: AppLocale.current.errorInvalidCategoryName(categoryName),
         resourceId: menu.id,
         categoryName: categoryName,
       );
@@ -254,7 +255,7 @@ class MenuOperations {
     if (!isValidCategoryName(categoryName)) {
       throw MenuOperationError(
         operation: MenuOperationType.regenerateCategory,
-        message: 'Ogiltigt kategorinamn: $categoryName',
+        message: AppLocale.current.errorInvalidCategoryName(categoryName),
         resourceId: menu.id,
         categoryName: categoryName,
       );

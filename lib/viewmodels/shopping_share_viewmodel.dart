@@ -126,7 +126,8 @@ class ShoppingShareViewModel extends ChangeNotifier
       await _loadFriends();
       _initialized = true;
     } catch (e) {
-      _setError(AppLocale.current.errorCouldNotLoad('vänner'));
+      _setError(
+          AppLocale.current.errorCouldNotLoad(AppLocale.current.nounFriends));
     } finally {
       _setLoading(false);
     }
@@ -215,7 +216,8 @@ class ShoppingShareViewModel extends ChangeNotifier
     try {
       await _loadFriends();
     } catch (e) {
-      _setError(AppLocale.current.errorCouldNotLoad('vänlista'));
+      _setError(AppLocale.current
+          .errorCouldNotLoad(AppLocale.current.nounFriendList));
     } finally {
       _setLoading(false);
     }
@@ -230,7 +232,8 @@ class ShoppingShareViewModel extends ChangeNotifier
     try {
       _friends = _friendsService.management.getAllFriends();
     } catch (e) {
-      throw Exception(AppLocale.current.errorCouldNotLoad('vänner'));
+      throw Exception(
+          AppLocale.current.errorCouldNotLoad(AppLocale.current.nounFriends));
     }
   }
 

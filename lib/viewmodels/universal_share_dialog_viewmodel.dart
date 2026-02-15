@@ -54,8 +54,8 @@ class ShareValidationResult {
     final existingCount = existingIds.length;
     final newCount = newIds.length;
     final warningMessage = existingCount == 1
-        ? 'En vän har redan tillgång. $newCount nya inbjudningar kommer skickas.'
-        : '$existingCount vänner har redan tillgång. $newCount nya inbjudningar kommer skickas.';
+        ? AppLocale.current.sharePartialSuccessSingular(newCount)
+        : AppLocale.current.sharePartialSuccessPlural(existingCount, newCount);
 
     return ShareValidationResult(
       hasExistingCollaborators: true,
@@ -71,8 +71,8 @@ class ShareValidationResult {
       List<String> existingIds) {
     final count = existingIds.length;
     final errorMessage = count == 1
-        ? 'Den valda vännen har redan tillgång till listan'
-        : 'Alla valda vänner har redan tillgång till listan';
+        ? AppLocale.current.errorFriendAlreadyHasAccess
+        : AppLocale.current.errorAllFriendsAlreadyHaveAccess;
 
     return ShareValidationResult(
       hasExistingCollaborators: true,
@@ -332,7 +332,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
           shoppingList.id,
           'shopping_list',
           filteredFriendUserIds,
-          message ?? 'Vill dela denna inköpslista med dig!',
+          message ?? AppLocale.current.shareDefaultShoppingListMessage,
           _shoppingService,
         );
 
@@ -342,13 +342,13 @@ class UniversalShareDialogViewModel extends ChangeNotifier
             final invitedCount = filteredFriendUserIds.length;
             final skippedCount =
                 validationResult.existingCollaboratorIds.length;
-            _setError(
-                '$invitedCount inbjudningar skickade. $skippedCount vänner hoppades över (har redan tillgång).');
+            _setError(AppLocale.current
+                .shareInvitationsSentWithSkipped(invitedCount, skippedCount));
           }
 
           return true;
         } else {
-          throw Exception('Kunde inte skicka inbjudningar');
+          throw Exception(AppLocale.current.errorCouldNotSendInvitations);
         }
       } else {
         // Handle traditional copy-based sharing with filtered friends
@@ -357,7 +357,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
           shoppingList.id,
           'shopping_list',
           filteredFriendUserIds,
-          message ?? 'Vill dela denna inköpslista med dig!',
+          message ?? AppLocale.current.shareDefaultShoppingListMessage,
           _shoppingService,
         );
 
@@ -378,11 +378,12 @@ class UniversalShareDialogViewModel extends ChangeNotifier
               '✅ COPY MODE FIX: Inköpslista invitations sent successfully via invitation system');
           return true;
         } else {
-          throw Exception('Kunde inte skicka inbjudningar');
+          throw Exception(AppLocale.current.errorCouldNotSendInvitations);
         }
       }
     } catch (e) {
-      _setError(AppLocale.current.errorCouldNotUpdate('inköpslista'));
+      _setError(AppLocale.current
+          .errorCouldNotUpdate(AppLocale.current.nounShoppingList));
       return false;
     } finally {
       _setSharing(false);
@@ -413,7 +414,8 @@ class UniversalShareDialogViewModel extends ChangeNotifier
       final shareId = await personalTagService.shareTag(tagId);
 
       if (shareId == null) {
-        throw Exception(AppLocale.current.errorCouldNotCreate('delningslänk'));
+        throw Exception(AppLocale.current
+            .errorCouldNotCreate(AppLocale.current.nounShareLink));
       }
 
       AppLogger.info(

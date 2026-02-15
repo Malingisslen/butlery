@@ -106,7 +106,7 @@ class MessageDto {
   }
 
   /// Parse reactions map from Firestore data.
-  /// Converts Map<String, dynamic> where values are lists into Map<String, List<String>>.
+  /// Converts `Map<String, dynamic>` where values are lists into `Map<String, List<String>>`.
   static Map<String, List<String>> _parseReactions(dynamic raw) {
     if (raw == null) return const {};
     if (raw is! Map) return const {};

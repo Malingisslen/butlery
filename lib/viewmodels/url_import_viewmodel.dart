@@ -208,7 +208,7 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
   /// ```
   List<String> getUrlValidationErrors() {
     if (url.trim().isEmpty) {
-      return ['URL krävs'];
+      return [AppLocale.current.validationUrlRequired];
     }
 
     final errors = <String>[];
@@ -217,17 +217,18 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     try {
       final uri = Uri.parse(trimmedUrl);
 
+      final l = AppLocale.current;
       if (!uri.hasScheme) {
-        errors.add('URL måste inkludera http:// eller https://');
+        errors.add(l.errorUrlMissingScheme);
       } else if (uri.scheme != 'http' && uri.scheme != 'https') {
-        errors.add('Endast HTTP- och HTTPS-URL:er stöds');
+        errors.add(l.errorUrlUnsupportedScheme);
       }
 
       if (!uri.hasAuthority) {
-        errors.add('URL måste inkludera ett domännamn');
+        errors.add(l.errorUrlMissingDomain);
       }
     } catch (e) {
-      errors.add('Ogiltigt URL-format');
+      errors.add(AppLocale.current.errorInvalidUrlFormat);
     }
 
     return errors;
@@ -299,30 +300,29 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
 
     final suggestions = <String>[];
 
+    final l = AppLocale.current;
     if (isKnownRecipeSite()) {
-      suggestions.add('✅ URL från känd receptsida - bör fungera bra');
+      suggestions.add(l.urlSuggestionKnownSite);
     } else {
-      suggestions.add('ℹ️ Okänd sida - innehållsextraktion kan variera');
+      suggestions.add(l.urlSuggestionUnknownSite);
     }
 
     if (url.contains('recipe') || url.contains('recept')) {
-      suggestions.add('✅ URL innehåller receptnyckelord');
+      suggestions.add(l.urlSuggestionContainsRecipeKeyword);
     }
 
     if (url.length > 200) {
-      suggestions
-          .add('⚠️ Mycket lång URL - försök kopiera huvudreceptsidans URL');
+      suggestions.add(l.urlSuggestionTooLong);
     }
 
     if (url.contains('instagram.com') ||
         url.contains('facebook.com') ||
         url.contains('tiktok.com')) {
-      suggestions
-          .add('📱 Social media-länk - innehållsextraktion kan vara begränsad');
+      suggestions.add(l.urlSuggestionSocialMedia);
     }
 
     if (suggestions.length == 1 && isKnownRecipeSite()) {
-      suggestions.add('🚀 Optimal URL för receptimport');
+      suggestions.add(l.urlSuggestionOptimal);
     }
 
     return suggestions;
@@ -359,7 +359,7 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
       return {
         'quality': 'none',
         'score': 0,
-        'issues': ['Inget innehåll extraherat'],
+        'issues': [AppLocale.current.analysisNoContentExtracted],
       };
     }
 
@@ -371,9 +371,9 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     // Check for recipe indicators (Swedish and English)
     if (text.contains('ingrediens') || text.contains('ingredient')) {
       score += 25;
-      positives.add('Innehåller ingredienser');
+      positives.add(AppLocale.current.analysisContainsIngredients);
     } else {
-      issues.add('Ingen ingredienssektion hittades');
+      issues.add(AppLocale.current.analysisNoIngredientsFound);
     }
 
     if (text.contains('instruktion') ||
@@ -383,9 +383,9 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
         text.contains('gör så här') ||
         text.contains('method')) {
       score += 25;
-      positives.add('Innehåller instruktioner');
+      positives.add(AppLocale.current.analysisContainsInstructions);
     } else {
-      issues.add('Inga instruktioner hittades');
+      issues.add(AppLocale.current.analysisNoInstructionsFound);
     }
 
     if (text.contains('minut') ||
@@ -395,7 +395,7 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
         text.contains('tid') ||
         text.contains('time')) {
       score += 15;
-      positives.add('Innehåller tidsinformation');
+      positives.add(AppLocale.current.analysisContainsTimeInfo);
     }
 
     if (text.contains('portion') ||
@@ -403,21 +403,21 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
         text.contains('servering') ||
         text.contains('yield')) {
       score += 10;
-      positives.add('Innehåller portionsinformation');
+      positives.add(AppLocale.current.analysisContainsPortionInfo);
     }
 
     // Check content length
     if (extractedText.length > 500) {
       score += 15;
-      positives.add('Bra innehållslängd');
+      positives.add(AppLocale.current.analysisGoodContentLength);
     } else if (extractedText.length < 200) {
-      issues.add('Innehållet verkar för kort');
+      issues.add(AppLocale.current.analysisContentTooShort);
     }
 
     // Check for recipe title patterns
     if (text.contains('recipe') || text.contains('recept')) {
       score += 10;
-      positives.add('Innehåller receptnyckelord');
+      positives.add(AppLocale.current.analysisContainsRecipeKeywords);
     }
 
     String quality;

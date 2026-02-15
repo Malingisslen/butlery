@@ -31,6 +31,7 @@
 // lib/viewmodels/shared_content/shared_shopping_viewmodel.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/modules/social_shopping/social_shopping_coordinator.dart';
@@ -316,11 +317,16 @@ class SharedShoppingViewModel
         0; // Note: Would require loading items from subcollection
     final remainingItems = totalItems;
 
-    if (totalItems == 0) return 'Tom handlingslista';
-    if (remainingItems == 0) return 'Alla $totalItems artiklar klara';
-    if (checkedItems == 0) return '$totalItems artiklar att köpa';
+    if (totalItems == 0) return AppLocale.current.shoppingListEmpty;
+    if (remainingItems == 0) {
+      return AppLocale.current.shoppingListAllDone(totalItems);
+    }
+    if (checkedItems == 0) {
+      return AppLocale.current.shoppingListItemsToBuy(totalItems);
+    }
 
-    return '$remainingItems av $totalItems artiklar kvar';
+    return AppLocale.current
+        .shoppingListItemsRemaining(remainingItems, totalItems);
   }
 
   /// Get time ago text for shopping list
@@ -328,16 +334,17 @@ class SharedShoppingViewModel
     final now = DateTime.now();
     final difference = now.difference(list.sharedAt);
 
+    final l = AppLocale.current;
     if (difference.inMinutes < 1) {
-      return 'Nu';
+      return l.timeNow;
     } else if (difference.inHours < 1) {
-      return '${difference.inMinutes} min sedan';
+      return l.timeMinutesAgoLong(difference.inMinutes);
     } else if (difference.inDays < 1) {
-      return '${difference.inHours} tim sedan';
+      return l.timeHoursAgoLong(difference.inHours);
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} dagar sedan';
+      return l.timeDaysAgoLong(difference.inDays);
     } else {
-      return '${(difference.inDays / 7).floor()} veckor sedan';
+      return l.timeWeeksAgo((difference.inDays / 7).floor());
     }
   }
 

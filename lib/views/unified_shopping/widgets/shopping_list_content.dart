@@ -189,7 +189,7 @@ class ShoppingListContent {
                 child: Text(
                   category.toUpperCase(),
                   style: AppTextStyles.labelMedium.copyWith(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 2,
                   ),
@@ -204,14 +204,17 @@ class ShoppingListContent {
                   vertical: AppDimensions.spacingXxs,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onPrimary
+                      .withValues(alpha: 0.2),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: Text(
                   '${items.length}',
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

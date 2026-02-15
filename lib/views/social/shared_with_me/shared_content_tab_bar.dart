@@ -109,7 +109,7 @@ class SharedContentTabBar {
       child: Text(
         '$count',
         style: AppTextStyles.labelLarge.copyWith(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.onError,
         ),
       ),
     );

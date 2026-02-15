@@ -288,7 +288,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     try {
       await vm.toggleCommentLike(comment.id);
     } catch (e) {
-      _showMessage(context.l10n.socialCouldNotUpdateLike, isError: true);
+      if (mounted) {
+        _showMessage(context.l10n.socialCouldNotUpdateLike, isError: true);
+      }
     }
   }
 

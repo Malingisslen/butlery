@@ -73,7 +73,8 @@ class ParticipantTracker {
         if (userId == menu.ownerId) {
           _participantNames[userId] = menu.ownerDisplayName;
         } else {
-          _participantNames[userId] = 'Deltagare'; // Default fallback
+          _participantNames[userId] =
+              AppLocale.current.labelParticipantFallback;
         }
       }
     }

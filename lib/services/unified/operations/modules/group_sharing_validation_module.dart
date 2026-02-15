@@ -60,7 +60,7 @@ class GroupSharingValidationModule {
         final group = getCategoryById(groupId);
         return {
           'id': groupId,
-          'name': group?.name ?? 'Okänd grupp',
+          'name': group?.name ?? '?',
           'memberCount': group?.friendCount ?? 0,
           'accessible': group != null,
         };

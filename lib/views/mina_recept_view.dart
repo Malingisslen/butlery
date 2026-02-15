@@ -509,8 +509,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: AppDimensions.spacingLg),
                     color: Theme.of(context).colorScheme.primary,
-                    child: const Icon(Icons.edit,
-                        color: Colors.white, size: AppDimensions.iconSize28),
+                    child: Icon(Icons.edit,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        size: AppDimensions.iconSize28),
                   ),
                   secondaryBackground: Container(
                     // Left swipe background (delete) - red
@@ -518,8 +519,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: AppDimensions.spacingLg),
                     color: Theme.of(context).colorScheme.error,
-                    child: const Icon(Icons.delete,
-                        color: Colors.white, size: AppDimensions.iconSize28),
+                    child: Icon(Icons.delete,
+                        color: Theme.of(context).colorScheme.onError,
+                        size: AppDimensions.iconSize28),
                   ),
                   child: ContentCard(
                     key: ValueKey(recipe.id),

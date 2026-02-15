@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Status för realtidsmeny-operationer
 enum RealtimeMenuStatus {
@@ -175,7 +176,7 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
 
   /// Get menu title for display
   String get menuTitle {
-    return _currentMenu?.menuTitle ?? 'Namnlös meny';
+    return _currentMenu?.menuTitle ?? AppLocale.current.labelUntitledMenu;
   }
 
   /// Get menu creation date
@@ -191,20 +192,21 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
   /// Get formatted menu date for display
   String get menuDateDisplay {
     final date = _currentMenu?.createdForDate ?? _currentMenu?.createdAt;
-    if (date == null) return 'Inget datum';
+    final l = AppLocale.current;
+    if (date == null) return l.dateNoDate;
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final menuDate = DateTime(date.year, date.month, date.day);
 
     if (menuDate == today) {
-      return 'Idag';
+      return l.dateToday;
     } else if (menuDate.isAfter(today)) {
       final diff = menuDate.difference(today).inDays;
-      return diff == 1 ? 'Imorgon' : '$diff dagar framåt';
+      return diff == 1 ? l.dateTomorrow : l.dateDaysAhead(diff);
     } else {
       final diff = today.difference(menuDate).inDays;
-      return diff == 1 ? 'Igår' : '$diff dagar sedan';
+      return diff == 1 ? l.dateYesterday : l.dateDaysAgo(diff);
     }
   }
 

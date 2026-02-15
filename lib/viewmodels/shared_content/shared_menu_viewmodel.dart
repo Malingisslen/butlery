@@ -30,6 +30,7 @@
 // lib/viewmodels/shared_content/shared_menu_viewmodel.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
 import 'package:butlery/viewmodels/shared_content/base_shared_content_viewmodel.dart';
@@ -335,7 +336,7 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
 
   /// Get menu categories as display text
   String getMenuCategories(SharedMenu menu) {
-    if (menu.categories.isEmpty) return 'Inga kategorier';
+    if (menu.categories.isEmpty) return AppLocale.current.labelNoCategories;
     if (menu.categories.length == 1) return menu.categories.first;
 
     if (menu.categories.length <= 3) {

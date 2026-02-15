@@ -56,7 +56,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier
   }
 
   FriendCategory? get group => _group;
-  String get groupName => _group?.name ?? 'Grupp';
+  String get groupName => _group?.name ?? AppLocale.current.labelGroup;
 
   List<UserProfile> get availableFriends =>
       List.unmodifiable(_availableFriends);

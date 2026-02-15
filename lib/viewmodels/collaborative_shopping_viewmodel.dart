@@ -106,15 +106,16 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
 
       if (targetList != null) {
         _currentList = targetList;
-        _updateActivity('Lista laddad', DateTime.now());
+        _updateActivity(AppLocale.current.statusListLoaded, DateTime.now());
         AppLogger.success('✅ Kollaborativ lista laddad: ${targetList.name}');
       } else {
         AppLogger.error('❌ Kollaborativ lista inte hittad: $listId');
-        throw Exception('Lista hittades inte');
+        throw Exception(AppLocale.current.errorListNotFound);
       }
     } catch (e) {
       AppLogger.error('❌ Fel vid laddning av kollaborativ lista', e);
-      throw Exception('Kunde inte ladda lista: $e');
+      throw Exception(
+          AppLocale.current.errorCouldNotLoadListDetail(e.toString()));
     }
   }
 

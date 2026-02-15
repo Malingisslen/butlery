@@ -41,7 +41,7 @@ class MenuStorage {
   }) async {
     final permissionService = ServiceLocator.get<PermissionService>();
     final userId = permissionService.currentUserId;
-    final userName = permissionService.currentUserDisplayName ?? 'Unknown';
+    final userName = permissionService.currentUserDisplayName ?? '?';
 
     if (userId == null) {
       throw Exception('User not authenticated');

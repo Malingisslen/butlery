@@ -350,8 +350,8 @@ class CreateGroupViewModel extends ChangeNotifier
               if (friend.email.isNotEmpty && friend.email.contains('@')) {
                 await _friendsService.invitations.sendEmailInvitation(
                   email: friend.email,
-                  customMessage:
-                      'Hej! Jag bjuder in dig till min nya grupp "${createdGroup.name}". Välkommen! 😊',
+                  customMessage: AppLocale.current
+                      .groupInvitationMessage(createdGroup.name),
                 );
               }
             }

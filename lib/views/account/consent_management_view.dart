@@ -496,7 +496,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.check_circle, color: Colors.white),
+              Icon(Icons.check_circle, color: context.butleryColors.onSuccess),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(context.l10n.consentSaved),
             ],
@@ -538,7 +538,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.check_circle, color: Colors.white),
+                Icon(Icons.check_circle,
+                    color: context.butleryColors.onSuccess),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(context.l10n.consentAllRevoked),
               ],

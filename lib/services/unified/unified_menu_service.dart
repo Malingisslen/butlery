@@ -198,10 +198,10 @@ class UnifiedMenuService extends ChangeNotifier
                   id: doc.id,
                   menuSnapshot: _parseMenuSnapshot(menuSnapshotData),
                   menuTitle: menuSnapshotData['title'] as String? ??
-                      'Kollaborativ meny',
+                      AppLocale.current.labelCollaborativeMenu,
                   sharedByUserId: data['ownerId'] as String? ?? '',
                   sharedByDisplayName:
-                      data['ownerDisplayName'] as String? ?? 'Okänd',
+                      data['ownerDisplayName'] as String? ?? '?',
                   sharedAt: (data['createdAt'] as Timestamp?)?.toDate() ??
                       DateTime.now(),
                   allowCollaboration: true,

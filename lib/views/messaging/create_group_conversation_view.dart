@@ -354,6 +354,9 @@ class _CreateGroupConversationViewState
     // Capture context dependencies before async gap
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
+    final successMsg = context.l10n.messagingGroupCreated;
+    final successColor = context.butleryColors.success;
+    final errorColor = Theme.of(context).colorScheme.error;
 
     final conversationId = await viewModel.createGroupConversation();
 
@@ -363,8 +366,8 @@ class _CreateGroupConversationViewState
     if (conversationId != null) {
       scaffoldMessenger.showSnackBar(
         SnackBar(
-          content: Text(context.l10n.messagingGroupCreated),
-          backgroundColor: context.butleryColors.success,
+          content: Text(successMsg),
+          backgroundColor: successColor,
         ),
       );
 
@@ -380,7 +383,7 @@ class _CreateGroupConversationViewState
       scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Text(viewModel.error!),
-          backgroundColor: Theme.of(context).colorScheme.error,
+          backgroundColor: errorColor,
         ),
       );
     }

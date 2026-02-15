@@ -35,7 +35,7 @@ class FriendProfileView extends StatelessWidget {
       appBar: AppBar(
         title: Text(friend.displayName),
         backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
       ),
       body: SafeArea(
         // ✅ RESPONSIVE: Center and constrain content on large screens

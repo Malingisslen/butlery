@@ -256,7 +256,8 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
         // In production, this would come from the actual rate limiter
         final rateLimitResult = RateLimitDenied(
           limitType: LimitType.perDay,
-          message: result.errorMessage ?? 'Dagskvot uppnådd',
+          message:
+              result.errorMessage ?? AppLocale.current.errorDailyQuotaReached,
           retryAfter: const Duration(hours: 1),
           suggestedAction: FallbackAction.useUserAssisted,
         );

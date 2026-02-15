@@ -398,20 +398,23 @@ class SocialSharingViewModel extends ChangeNotifier
   /// Get friend selection summary
   String getFriendSelectionSummary() {
     if (_selectedFriendIds.isEmpty) {
-      return 'Inga vänner valda';
+      return AppLocale.current.selectionNoFriendsSelected;
     }
 
     if (_selectedFriendIds.length == 1) {
       final friend = selectedFriends.first;
-      return '1 vän vald: ${friend.displayName}';
+      return AppLocale.current
+          .selectionFriendSelectedWithName(friend.displayName);
     }
 
     if (_selectedFriendIds.length <= 3) {
       final names = selectedFriends.map((f) => f.displayName).join(', ');
-      return '${_selectedFriendIds.length} vänner valda: $names';
+      return AppLocale.current
+          .selectionFriendsSelectedWithNames(_selectedFriendIds.length, names);
     }
 
-    return '${_selectedFriendIds.length} vänner valda';
+    return AppLocale.current
+        .selectionFriendsSelectedCount(_selectedFriendIds.length);
   }
 
   /// Set sharing state (operation-specific)

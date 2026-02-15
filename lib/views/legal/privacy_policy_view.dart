@@ -305,7 +305,8 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.error_outline, color: Colors.white),
+            Icon(Icons.error_outline,
+                color: Theme.of(context).colorScheme.onError),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(child: Text(message)),
           ],

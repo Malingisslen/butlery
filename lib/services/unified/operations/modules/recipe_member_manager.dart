@@ -283,8 +283,7 @@ class RecipeMemberManager {
       final members = <Map<String, dynamic>>[];
       final permissions = recipe.socialData?.memberPermissions ?? {};
       final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
-      final ownerDisplayName =
-          recipe.socialData?.ownerDisplayName ?? 'Okänd användare';
+      final ownerDisplayName = recipe.socialData?.ownerDisplayName ?? '?';
 
       if (ownerId != null) {
         members.add({
@@ -302,7 +301,7 @@ class RecipeMemberManager {
         if (memberId != ownerId) {
           members.add({
             'userId': memberId,
-            'displayName': 'Okänd användare',
+            'displayName': '?',
             'permission': permission,
             'isOwner': false,
             'joinedAt': null,

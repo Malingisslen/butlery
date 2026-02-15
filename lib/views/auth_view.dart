@@ -387,12 +387,12 @@ class _AuthViewState extends State<AuthView> {
     final messenger = ScaffoldMessenger.of(context);
     // ignore: use_build_context_synchronously
     final theme = Theme.of(context);
+    // ignore: use_build_context_synchronously
+    final l10n = context.l10n;
     final primaryColor = theme.colorScheme.primary
         .withValues(alpha: AppDimensions.opacityVeryDark);
     final errorColor = theme.colorScheme.error;
 
-    // Use addPostFrameCallback to ensure dialog is fully unmounted
-    // before calling ViewModel (which triggers notifyListeners)
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
@@ -404,8 +404,8 @@ class _AuthViewState extends State<AuthView> {
         SnackBar(
           content: Text(
             success
-                ? context.l10n.authResetEmailSent
-                : viewModel.errorMessage ?? context.l10n.authResetEmailFailed,
+                ? l10n.authResetEmailSent
+                : viewModel.errorMessage ?? l10n.authResetEmailFailed,
           ),
           backgroundColor: success ? primaryColor : errorColor,
         ),

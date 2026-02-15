@@ -246,6 +246,88 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String get nounSettings => 'inställningar';
+
+  @override
+  String get nounGroupContent => 'gruppinnehåll';
+
+  @override
+  String get nounFriends => 'vänner';
+
+  @override
+  String get nounFriendList => 'vänlista';
+
+  @override
+  String groupInvitationMessage(String groupName) {
+    return 'Du har blivit inbjuden till gruppen $groupName!';
+  }
+
+  @override
+  String uploadTimeIn(String duration) {
+    return ' på $duration';
+  }
+
+  @override
+  String get autoSaveEnabled => 'Autospar aktiverat';
+
+  @override
+  String selectionFriendSelectedWithName(String name) {
+    return '$name vald';
+  }
+
+  @override
+  String selectionFriendsSelectedWithNames(int count, String names) {
+    return '$count valda: $names';
+  }
+
+  @override
+  String selectionFriendsSelectedCount(int count) {
+    return '$count vänner valda';
+  }
+
+  @override
+  String sharePartialSuccessSingular(int newCount) {
+    return '1 person är redan med. Bjuder in $newCount nya.';
+  }
+
+  @override
+  String sharePartialSuccessPlural(int existingCount, int newCount) {
+    return '$existingCount personer är redan med. Bjuder in $newCount nya.';
+  }
+
+  @override
+  String get nounShoppingList => 'inköpslista';
+
+  @override
+  String get nounShareLink => 'delningslänk';
+
+  @override
+  String get validationUrlRequired => 'URL krävs';
+
+  @override
+  String get urlSuggestionKnownSite =>
+      'Känd receptsida — bra chans att importera!';
+
+  @override
+  String get urlSuggestionUnknownSite =>
+      'Okänd sida — import kan vara begränsad';
+
+  @override
+  String get urlSuggestionContainsRecipeKeyword =>
+      'URL:en innehåller receptnyckelord';
+
+  @override
+  String get urlSuggestionTooLong =>
+      'URL:en är ovanligt lång — kontrollera att den är korrekt';
+
+  @override
+  String get urlSuggestionSocialMedia =>
+      'Sociala medier — import kräver ibland extra steg';
+
+  @override
+  String get urlSuggestionOptimal => 'Perfekt — redo att importera!';
+
+  @override
   String errorWithContext(String action, String error) {
     return 'Fel vid $action: $error';
   }
@@ -9979,7 +10061,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get messagingPoll => 'Omröstning';
 
   @override
-  String get shoppingListEmpty => 'Tom lista';
+  String get shoppingListEmpty => 'Tom handlingslista';
 
   @override
   String shoppingListAllBought(int count) {
@@ -10803,4 +10885,267 @@ class AppLocalizationsSv extends AppLocalizations {
   String recipeCopiedFrom(String title) {
     return 'Kopierat från: $title';
   }
+
+  @override
+  String get statusEmptyList => 'Tom lista';
+
+  @override
+  String get statusCompleted => 'Klar';
+
+  @override
+  String get statusInProgress => 'Pågående';
+
+  @override
+  String get statusNoActivity => 'Ingen aktivitet';
+
+  @override
+  String get statusPurchased => 'Inhandlad';
+
+  @override
+  String get timeJustNow => 'just nu';
+
+  @override
+  String timeMinutesAgo(int minutes) {
+    return '${minutes}m sedan';
+  }
+
+  @override
+  String timeHoursAgo(int hours) {
+    return '${hours}h sedan';
+  }
+
+  @override
+  String timeMinutesAgoLong(int minutes) {
+    return '$minutes min sedan';
+  }
+
+  @override
+  String timeHoursAgoLong(int hours) {
+    return '$hours tim sedan';
+  }
+
+  @override
+  String timeDaysAgoLong(int days) {
+    return '$days dagar sedan';
+  }
+
+  @override
+  String timeWeeksAgo(int weeks) {
+    return '$weeks veckor sedan';
+  }
+
+  @override
+  String get timeNow => 'Nu';
+
+  @override
+  String get dateTomorrow => 'Imorgon';
+
+  @override
+  String get dateNoDate => 'Inget datum';
+
+  @override
+  String dateDaysAhead(int days) {
+    return '$days dagar framåt';
+  }
+
+  @override
+  String labelMemberCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count medlemmar',
+      one: '1 medlem',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get labelParticipantFallback => 'Deltagare';
+
+  @override
+  String get labelRecipes => 'Recept';
+
+  @override
+  String get labelMenus => 'Menyer';
+
+  @override
+  String get labelShopping => 'Handla';
+
+  @override
+  String get labelCollaborativeMenu => 'Kollaborativ meny';
+
+  @override
+  String get errorInvalidUrlFormat => 'Ogiltigt URL-format';
+
+  @override
+  String get errorUrlMissingScheme =>
+      'URL måste inkludera http:// eller https://';
+
+  @override
+  String get errorUrlUnsupportedScheme => 'Endast HTTP- och HTTPS-URL:er stöds';
+
+  @override
+  String get errorUrlMissingDomain => 'URL måste inkludera ett domännamn';
+
+  @override
+  String errorInvalidCategoryName(String name) {
+    return 'Ogiltigt kategorinamn: $name';
+  }
+
+  @override
+  String get platformYouTube => 'YouTube-video';
+
+  @override
+  String get platformTikTok => 'TikTok-video';
+
+  @override
+  String get platformInstagram => 'Instagram-inlägg';
+
+  @override
+  String get platformWebsite => 'Webbsida';
+
+  @override
+  String get platformPastedText => 'Inklistrad text';
+
+  @override
+  String get selectionNoFriendsSelected => 'Inga vänner valda';
+
+  @override
+  String selectionFriendsSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count vänner valda',
+      one: '1 vän vald',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get selectionNoRecipesSelected => 'Inga recept valda';
+
+  @override
+  String selectionRecipesSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept valda',
+      one: '1 recept valt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get buttonCreating => 'Skapar...';
+
+  @override
+  String get buttonCreateAndShare => 'Skapa & Dela';
+
+  @override
+  String get analysisNoContentExtracted => 'Inget innehåll extraherat';
+
+  @override
+  String get analysisContainsIngredients => 'Innehåller ingredienser';
+
+  @override
+  String get analysisNoIngredientsFound => 'Ingen ingredienssektion hittades';
+
+  @override
+  String get analysisContainsInstructions => 'Innehåller instruktioner';
+
+  @override
+  String get analysisNoInstructionsFound => 'Inga instruktioner hittades';
+
+  @override
+  String get labelNoCategories => 'Inga kategorier';
+
+  @override
+  String get labelGroup => 'Grupp';
+
+  @override
+  String get labelYou => 'Du';
+
+  @override
+  String get validationSelectIngredient => 'Välj minst en ingrediens';
+
+  @override
+  String get statusListLoaded => 'Lista laddad';
+
+  @override
+  String errorCouldNotLoadListDetail(String detail) {
+    return 'Kunde inte ladda lista: $detail';
+  }
+
+  @override
+  String get labelUntitledMenu => 'Namnlös meny';
+
+  @override
+  String get labelUntitledList => 'Namnlös lista';
+
+  @override
+  String get labelUntitledRecipe => 'Namnlöst recept';
+
+  @override
+  String get labelUnknownContent => 'Okänt innehåll';
+
+  @override
+  String get analysisContainsTimeInfo => 'Innehåller tidsinformation';
+
+  @override
+  String get analysisContainsPortionInfo => 'Innehåller portionsinformation';
+
+  @override
+  String get analysisGoodContentLength => 'Bra innehållslängd';
+
+  @override
+  String get analysisContentTooShort => 'Innehållet verkar för kort';
+
+  @override
+  String get analysisContainsRecipeKeywords => 'Innehåller receptnyckelord';
+
+  @override
+  String get hintPasteOrTypeRecipe =>
+      'Klistra in eller skriv recepttext för att komma igång';
+
+  @override
+  String get errorFriendAlreadyHasAccess =>
+      'Den valda vännen har redan tillgång till listan';
+
+  @override
+  String get errorAllFriendsAlreadyHaveAccess =>
+      'Alla valda vänner har redan tillgång till listan';
+
+  @override
+  String shareInvitationsSentWithSkipped(int invitedCount, int skippedCount) {
+    return '$invitedCount inbjudningar skickade. $skippedCount vänner hoppades över (har redan tillgång).';
+  }
+
+  @override
+  String get errorCouldNotSendInvitations => 'Kunde inte skicka inbjudningar';
+
+  @override
+  String get shareDefaultShoppingListMessage =>
+      'Vill dela denna inköpslista med dig!';
+
+  @override
+  String shoppingListAllDone(int count) {
+    return 'Alla $count artiklar klara';
+  }
+
+  @override
+  String shoppingListItemsToBuy(int count) {
+    return '$count artiklar att köpa';
+  }
+
+  @override
+  String get errorDailyQuotaReached => 'Dagskvot uppnådd';
+
+  @override
+  String get errorGenericOccurred => 'Ett fel uppstod';
+
+  @override
+  String get fcmChannelGeneralTitle => 'Allmänna notiser';
+
+  @override
+  String get fcmChannelGeneralDescription => 'Generella notiser från Butlery';
 }

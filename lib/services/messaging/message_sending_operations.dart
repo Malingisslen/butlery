@@ -58,7 +58,7 @@ class MessageSendingOperations {
       final message = Message.text(
         conversationId: conversationId,
         senderId: currentUser.uid,
-        senderDisplayName: currentUser.displayName ?? 'Okänd användare',
+        senderDisplayName: currentUser.displayName ?? '?',
         senderAvatarUrl: currentUser.photoURL,
         content: content.trim(),
         replyToMessageId: replyToMessageId,
@@ -113,7 +113,7 @@ class MessageSendingOperations {
         id: uuid.v4(),
         conversationId: conversationId,
         senderId: currentUser.uid,
-        senderDisplayName: currentUser.displayName ?? 'Okänd användare',
+        senderDisplayName: currentUser.displayName ?? '?',
         senderAvatarUrl: currentUser.photoURL,
         content: caption ?? '',
         type: MessageType.image,
@@ -157,7 +157,7 @@ class MessageSendingOperations {
       final shareMessage = Message.recipeShare(
         conversationId: conversationId,
         senderId: currentUser.uid,
-        senderDisplayName: currentUser.displayName ?? 'Okänd användare',
+        senderDisplayName: currentUser.displayName ?? '?',
         senderAvatarUrl: currentUser.photoURL,
         recipeId: recipeId,
         recipeTitle: recipeTitle,
@@ -189,7 +189,7 @@ class MessageSendingOperations {
       final shareMessage = Message.menuShare(
         conversationId: conversationId,
         senderId: currentUser.uid,
-        senderDisplayName: currentUser.displayName ?? 'Okänd användare',
+        senderDisplayName: currentUser.displayName ?? '?',
         senderAvatarUrl: currentUser.photoURL,
         menuId: menuId,
         menuTitle: menuTitle,
@@ -221,7 +221,7 @@ class MessageSendingOperations {
       final shareMessage = Message.shoppingListShare(
         conversationId: conversationId,
         senderId: currentUser.uid,
-        senderDisplayName: currentUser.displayName ?? 'Okänd användare',
+        senderDisplayName: currentUser.displayName ?? '?',
         senderAvatarUrl: currentUser.photoURL,
         listId: listId,
         listTitle: listTitle,

@@ -157,7 +157,7 @@ class _IngredientsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Container(
+    return ColoredBox(
       color: cs.primary,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,7 +306,7 @@ class _InstructionsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Container(
+    return ColoredBox(
       color: cs.primary.withValues(alpha: 0.8),
       child: ListView.builder(
         padding: const EdgeInsets.all(AppDimensions.spacingLg),

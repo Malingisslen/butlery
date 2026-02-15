@@ -70,7 +70,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
               Text('Kategori', style: AppTextStyles.labelLarge),
               const SizedBox(height: AppDimensions.spacingSm),
               DropdownButtonFormField<FeedbackCategory>(
-                value: _category,
+                initialValue: _category,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.zero,

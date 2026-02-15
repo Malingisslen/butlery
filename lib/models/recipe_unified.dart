@@ -401,8 +401,9 @@ class RecipeCore with JsonSerializableMixin {
     final now = DateTime.now();
     final difference = now.difference(lastCookedAt!);
     if (difference.inDays == 0) return AppLocale.current.recipeLastCookedToday;
-    if (difference.inDays == 1)
+    if (difference.inDays == 1) {
       return AppLocale.current.recipeLastCookedYesterday;
+    }
     return AppLocale.current.recipeLastCookedDaysAgo(difference.inDays);
   }
 

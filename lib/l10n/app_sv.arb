@@ -144,6 +144,68 @@
       }
     }
   },
+  "nounSettings": "inställningar",
+  "nounGroupContent": "gruppinnehåll",
+  "nounFriends": "vänner",
+  "nounFriendList": "vänlista",
+  "groupInvitationMessage": "Du har blivit inbjuden till gruppen {groupName}!",
+  "@groupInvitationMessage": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadTimeIn": " på {duration}",
+  "@uploadTimeIn": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "autoSaveEnabled": "Autospar aktiverat",
+  "selectionFriendSelectedWithName": "{name} vald",
+  "@selectionFriendSelectedWithName": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "selectionFriendsSelectedWithNames": "{count} valda: {names}",
+  "@selectionFriendsSelectedWithNames": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "names": { "type": "String" }
+    }
+  },
+  "selectionFriendsSelectedCount": "{count} vänner valda",
+  "@selectionFriendsSelectedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sharePartialSuccessSingular": "1 person är redan med. Bjuder in {newCount} nya.",
+  "@sharePartialSuccessSingular": {
+    "placeholders": {
+      "newCount": { "type": "int" }
+    }
+  },
+  "sharePartialSuccessPlural": "{existingCount} personer är redan med. Bjuder in {newCount} nya.",
+  "@sharePartialSuccessPlural": {
+    "placeholders": {
+      "existingCount": { "type": "int" },
+      "newCount": { "type": "int" }
+    }
+  },
+  "nounShoppingList": "inköpslista",
+  "nounShareLink": "delningslänk",
+  "validationUrlRequired": "URL krävs",
+  "urlSuggestionKnownSite": "Känd receptsida — bra chans att importera!",
+  "urlSuggestionUnknownSite": "Okänd sida — import kan vara begränsad",
+  "urlSuggestionContainsRecipeKeyword": "URL:en innehåller receptnyckelord",
+  "urlSuggestionTooLong": "URL:en är ovanligt lång — kontrollera att den är korrekt",
+  "urlSuggestionSocialMedia": "Sociala medier — import kräver ibland extra steg",
+  "urlSuggestionOptimal": "Perfekt — redo att importera!",
   "errorWithContext": "Fel vid {action}: {error}",
   "@errorWithContext": {
     "placeholders": {
@@ -6834,5 +6896,111 @@
   "@collaborationMultipleActive": { "placeholders": { "count": {"type": "int"} } },
 
   "recipeCopiedFrom": "Kopierat från: {title}",
-  "@recipeCopiedFrom": { "placeholders": { "title": {"type": "String"} } }
+  "@recipeCopiedFrom": { "placeholders": { "title": {"type": "String"} } },
+
+  "statusEmptyList": "Tom lista",
+  "statusCompleted": "Klar",
+  "statusInProgress": "Pågående",
+  "statusNoActivity": "Ingen aktivitet",
+  "statusPurchased": "Inhandlad",
+
+  "timeJustNow": "just nu",
+  "timeMinutesAgo": "{minutes}m sedan",
+  "timeHoursAgo": "{hours}h sedan",
+  "@timeMinutesAgo": { "placeholders": { "minutes": {"type": "int"} } },
+  "@timeHoursAgo": { "placeholders": { "hours": {"type": "int"} } },
+  "timeMinutesAgoLong": "{minutes} min sedan",
+  "@timeMinutesAgoLong": { "placeholders": { "minutes": {"type": "int"} } },
+  "timeHoursAgoLong": "{hours} tim sedan",
+  "@timeHoursAgoLong": { "placeholders": { "hours": {"type": "int"} } },
+  "timeDaysAgoLong": "{days} dagar sedan",
+  "@timeDaysAgoLong": { "placeholders": { "days": {"type": "int"} } },
+  "timeWeeksAgo": "{weeks} veckor sedan",
+  "@timeWeeksAgo": { "placeholders": { "weeks": {"type": "int"} } },
+  "timeNow": "Nu",
+
+  "dateTomorrow": "Imorgon",
+  "dateNoDate": "Inget datum",
+  "dateDaysAhead": "{days} dagar framåt",
+  "@dateDaysAhead": { "placeholders": { "days": {"type": "int"} } },
+
+  "labelMemberCount": "{count, plural, =1{1 medlem} other{{count} medlemmar}}",
+  "@labelMemberCount": { "placeholders": { "count": {"type": "int"} } },
+  "labelParticipantFallback": "Deltagare",
+  "labelRecipes": "Recept",
+  "labelMenus": "Menyer",
+  "labelShopping": "Handla",
+  "labelCollaborativeMenu": "Kollaborativ meny",
+
+  "errorInvalidUrlFormat": "Ogiltigt URL-format",
+  "errorUrlMissingScheme": "URL måste inkludera http:// eller https://",
+  "errorUrlUnsupportedScheme": "Endast HTTP- och HTTPS-URL:er stöds",
+  "errorUrlMissingDomain": "URL måste inkludera ett domännamn",
+  "errorInvalidCategoryName": "Ogiltigt kategorinamn: {name}",
+  "@errorInvalidCategoryName": { "placeholders": { "name": {"type": "String"} } },
+
+  "platformYouTube": "YouTube-video",
+  "platformTikTok": "TikTok-video",
+  "platformInstagram": "Instagram-inlägg",
+  "platformWebsite": "Webbsida",
+  "platformPastedText": "Inklistrad text",
+
+  "selectionNoFriendsSelected": "Inga vänner valda",
+  "selectionFriendsSelected": "{count, plural, =1{1 vän vald} other{{count} vänner valda}}",
+  "@selectionFriendsSelected": { "placeholders": { "count": {"type": "int"} } },
+  "selectionNoRecipesSelected": "Inga recept valda",
+  "selectionRecipesSelected": "{count, plural, =1{1 recept valt} other{{count} recept valda}}",
+  "@selectionRecipesSelected": { "placeholders": { "count": {"type": "int"} } },
+
+  "buttonCreating": "Skapar...",
+  "buttonCreateAndShare": "Skapa & Dela",
+
+  "analysisNoContentExtracted": "Inget innehåll extraherat",
+  "analysisContainsIngredients": "Innehåller ingredienser",
+  "analysisNoIngredientsFound": "Ingen ingredienssektion hittades",
+  "analysisContainsInstructions": "Innehåller instruktioner",
+  "analysisNoInstructionsFound": "Inga instruktioner hittades",
+
+  "labelNoCategories": "Inga kategorier",
+  "labelGroup": "Grupp",
+  "labelYou": "Du",
+
+  "validationSelectIngredient": "Välj minst en ingrediens",
+  "statusListLoaded": "Lista laddad",
+  "errorListNotFound": "Lista hittades inte",
+  "errorCouldNotLoadListDetail": "Kunde inte ladda lista: {detail}",
+  "@errorCouldNotLoadListDetail": { "placeholders": { "detail": {"type": "String"} } },
+  "labelUntitledMenu": "Namnlös meny",
+  "labelUntitledList": "Namnlös lista",
+  "labelUntitledRecipe": "Namnlöst recept",
+  "labelUnknownContent": "Okänt innehåll",
+
+  "analysisContainsTimeInfo": "Innehåller tidsinformation",
+  "analysisContainsPortionInfo": "Innehåller portionsinformation",
+  "analysisGoodContentLength": "Bra innehållslängd",
+  "analysisContentTooShort": "Innehållet verkar för kort",
+  "analysisContainsRecipeKeywords": "Innehåller receptnyckelord",
+
+  "hintPasteOrTypeRecipe": "Klistra in eller skriv recepttext för att komma igång",
+
+  "errorFriendAlreadyHasAccess": "Den valda vännen har redan tillgång till listan",
+  "errorAllFriendsAlreadyHaveAccess": "Alla valda vänner har redan tillgång till listan",
+  "shareInvitationsSentWithSkipped": "{invitedCount} inbjudningar skickade. {skippedCount} vänner hoppades över (har redan tillgång).",
+  "@shareInvitationsSentWithSkipped": { "placeholders": { "invitedCount": {"type": "int"}, "skippedCount": {"type": "int"} } },
+  "errorCouldNotSendInvitations": "Kunde inte skicka inbjudningar",
+  "shareDefaultShoppingListMessage": "Vill dela denna inköpslista med dig!",
+
+  "shoppingListEmpty": "Tom handlingslista",
+  "shoppingListAllDone": "Alla {count} artiklar klara",
+  "@shoppingListAllDone": { "placeholders": { "count": {"type": "int"} } },
+  "shoppingListItemsToBuy": "{count} artiklar att köpa",
+  "@shoppingListItemsToBuy": { "placeholders": { "count": {"type": "int"} } },
+  "shoppingListItemsRemaining": "{remaining} av {total} artiklar kvar",
+  "@shoppingListItemsRemaining": { "placeholders": { "remaining": {"type": "int"}, "total": {"type": "int"} } },
+
+  "errorDailyQuotaReached": "Dagskvot uppnådd",
+  "errorGenericOccurred": "Ett fel uppstod",
+
+  "fcmChannelGeneralTitle": "Allmänna notiser",
+  "fcmChannelGeneralDescription": "Generella notiser från Butlery"
 }

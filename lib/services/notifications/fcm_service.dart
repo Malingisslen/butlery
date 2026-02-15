@@ -135,10 +135,10 @@ class FCMService {
       AppLogger.info('🔔 Initializing Android notification channels...');
 
       // Define notification channels
-      const generalChannel = AndroidNotificationChannel(
+      final generalChannel = AndroidNotificationChannel(
         _generalChannelId,
-        'Allmänna notiser',
-        description: 'Generella notiser från Butlery',
+        AppLocale.current.fcmChannelGeneralTitle,
+        description: AppLocale.current.fcmChannelGeneralDescription,
         importance: Importance.defaultImportance,
       );
 

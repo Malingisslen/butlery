@@ -161,9 +161,11 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
 
     final success = await _authService.unenrollMfa(factor);
 
+    if (!mounted) return;
+
     if (success) {
       await _loadMfaStatus();
-      _showSuccessSnackBar(context.l10n.mfaDeactivated);
+      if (mounted) _showSuccessSnackBar(context.l10n.mfaDeactivated);
     } else {
       setState(() {
         _errorMessage =
@@ -171,7 +173,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       });
     }
 
-    setState(() => _isLoading = false);
+    if (mounted) setState(() => _isLoading = false);
   }
 
   void _showSuccessSnackBar(String message) {
@@ -318,8 +320,8 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
               decoration: InputDecoration(
                 labelText: context.l10n.mfaPhoneNumber,
                 hintText: '+46701234567',
-                prefixIcon: Icon(Icons.phone),
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.phone),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: AppDimensions.spacingMd),
@@ -357,8 +359,8 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
               maxLength: 6,
               decoration: InputDecoration(
                 labelText: context.l10n.mfaSixDigitCode,
-                prefixIcon: Icon(Icons.lock),
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.lock),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: AppDimensions.spacingMd),

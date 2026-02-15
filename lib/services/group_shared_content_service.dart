@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/permission_service.dart' as perm_service;
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Model for shared content items displayed in group views
@@ -39,7 +40,7 @@ class SharedContentItem {
       title: _extractTitle(data, type),
       type: type,
       sharedByUserId: data['sharedByUserId'] ?? '',
-      sharedByDisplayName: data['sharedByDisplayName'] ?? 'Okänd',
+      sharedByDisplayName: data['sharedByDisplayName'] ?? '?',
       sharedByAvatarUrl: data['sharedByAvatarUrl'],
       sharedAt: (data['sharedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       data: data,
@@ -49,13 +50,19 @@ class SharedContentItem {
   static String _extractTitle(Map<String, dynamic> data, String type) {
     switch (type) {
       case 'shopping_list':
-        return data['title'] ?? data['listTitle'] ?? 'Namnlös lista';
+        return data['title'] ??
+            data['listTitle'] ??
+            AppLocale.current.labelUntitledList;
       case 'menu':
-        return data['title'] ?? data['menuTitle'] ?? 'Namnlös meny';
+        return data['title'] ??
+            data['menuTitle'] ??
+            AppLocale.current.labelUntitledMenu;
       case 'recipe':
-        return data['title'] ?? data['recipeTitle'] ?? 'Namnlöst recept';
+        return data['title'] ??
+            data['recipeTitle'] ??
+            AppLocale.current.labelUntitledRecipe;
       default:
-        return 'Okänt innehåll';
+        return AppLocale.current.labelUnknownContent;
     }
   }
 }

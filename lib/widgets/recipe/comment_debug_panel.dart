@@ -59,7 +59,7 @@ class CommentDebugPanel extends StatelessWidget {
                   allowEmailSearch: false,
                 );
 
-                if (profile != null) {
+                if (profile != null && context.mounted) {
                   onShowMessage(context.l10n.socialProfileCreatedRestart);
                 }
               },
