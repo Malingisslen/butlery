@@ -46,8 +46,9 @@ class CreateSharedListViewModel extends ChangeNotifier {
     if (_title.isEmpty) {
       return null; // Don't show error until user starts typing
     }
-    if (_title.trim().isEmpty)
+    if (_title.trim().isEmpty) {
       return AppLocale.current.errorTitleRequiredNotEmpty;
+    }
     if (_title.length > 100) return AppLocale.current.errorDescriptionTooLong;
     return null;
   }
@@ -60,8 +61,11 @@ class CreateSharedListViewModel extends ChangeNotifier {
   }
 
   String get selectedFriendsText {
-    if (_selectedFriendIds.isEmpty) return 'Inga vänner valda';
-    return '${_selectedFriendIds.length} ${_selectedFriendIds.length == 1 ? 'vän vald' : 'vänner valda'}';
+    if (_selectedFriendIds.isEmpty) {
+      return AppLocale.current.selectionNoFriendsSelected;
+    }
+    return AppLocale.current
+        .selectionFriendsSelected(_selectedFriendIds.length);
   }
 
   String get trimmedTitle => _title.trim();
@@ -69,7 +73,9 @@ class CreateSharedListViewModel extends ChangeNotifier {
 
   bool get hasDescription => trimmedDescription.isNotEmpty;
 
-  String get createButtonText => _isCreating ? 'Skapar...' : 'Skapa & Dela';
+  String get createButtonText => _isCreating
+      ? AppLocale.current.buttonCreating
+      : AppLocale.current.buttonCreateAndShare;
   void initialize({
     Map<String, List<Recipe>>? menu,
     String? defaultTitle,

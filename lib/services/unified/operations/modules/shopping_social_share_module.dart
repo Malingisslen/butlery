@@ -50,7 +50,7 @@ class ShoppingSocialShareModule {
       }
 
       final listData = listDoc.data()!;
-      final listTitle = listData['name'] ?? 'Namnlös inköpslista';
+      final listTitle = listData['name'] ?? '?';
 
       // Prepare shared list data for Firebase
       final sharedListData = {
@@ -257,9 +257,8 @@ class ShoppingSocialShareModule {
             listData['isActive'] == true) {
           sharedLists.add({
             'id': sharedListId,
-            'title': listData['title'] ?? 'Namnlös inköpslista',
-            'sharedByDisplayName':
-                listData['sharedByDisplayName'] ?? 'Okänd användare',
+            'title': listData['title'] ?? '?',
+            'sharedByDisplayName': listData['sharedByDisplayName'] ?? '?',
             'sharedByAvatarUrl': listData['sharedByAvatarUrl'],
             'sharedAt': receivedData['sharedAt'],
             'description': listData['description'],
@@ -295,7 +294,7 @@ class ShoppingSocialShareModule {
         final data = doc.data();
         return {
           'id': doc.id,
-          'title': data['title'] ?? 'Namnlös inköpslista',
+          'title': data['title'] ?? '?',
           'sharedAt': data['sharedAt'],
           'sharedWithCount': (data['sharedWithUserIds'] as List?)?.length ?? 0,
           'description': data['description'],

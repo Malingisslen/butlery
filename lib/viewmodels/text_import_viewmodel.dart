@@ -364,7 +364,7 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// ```
   List<String> getInputSuggestions() {
     if (!hasValidInput) {
-      return ['Klistra in eller skriv recepttext för att komma igång'];
+      return [AppLocale.current.hintPasteOrTypeRecipe];
     }
 
     final text = inputText.toLowerCase();

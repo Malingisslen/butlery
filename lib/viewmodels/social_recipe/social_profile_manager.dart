@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 class SocialProfileManager extends ChangeNotifier {
@@ -33,14 +34,14 @@ class SocialProfileManager extends ChangeNotifier {
 
   String getAuthorDisplayName(String authorId) {
     if (authorId == _currentUser?.uid) {
-      return _currentUser?.displayName ?? 'Du';
+      return _currentUser?.displayName ?? AppLocale.current.labelYou;
     }
 
     try {
       final friend = _friends.firstWhere((f) => f.uid == authorId);
       return friend.displayName;
     } catch (e) {
-      return 'Okänd användare';
+      return '?';
     }
   }
 

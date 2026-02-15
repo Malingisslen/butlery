@@ -37,8 +37,7 @@ class RecipeCommentsManager {
     _crudOperations = CommentCrudOperations();
   }
   String? get currentUserId => _parent.currentUserId;
-  String get currentUserDisplayName =>
-      _parent.currentUserDisplayName ?? 'Okänd användare';
+  String get currentUserDisplayName => _parent.currentUserDisplayName ?? '?';
   List<Recipe> get recipes => _parent.recipes;
 
   Recipe? _getRecipe(String recipeId) {

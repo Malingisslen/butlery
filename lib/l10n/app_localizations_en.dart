@@ -247,6 +247,87 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get nounSettings => 'settings';
+
+  @override
+  String get nounGroupContent => 'group content';
+
+  @override
+  String get nounFriends => 'friends';
+
+  @override
+  String get nounFriendList => 'friend list';
+
+  @override
+  String groupInvitationMessage(String groupName) {
+    return 'You have been invited to the group $groupName!';
+  }
+
+  @override
+  String uploadTimeIn(String duration) {
+    return ' in $duration';
+  }
+
+  @override
+  String get autoSaveEnabled => 'Auto-save enabled';
+
+  @override
+  String selectionFriendSelectedWithName(String name) {
+    return '$name selected';
+  }
+
+  @override
+  String selectionFriendsSelectedWithNames(int count, String names) {
+    return '$count selected: $names';
+  }
+
+  @override
+  String selectionFriendsSelectedCount(int count) {
+    return '$count friends selected';
+  }
+
+  @override
+  String sharePartialSuccessSingular(int newCount) {
+    return '1 person is already a member. Inviting $newCount new.';
+  }
+
+  @override
+  String sharePartialSuccessPlural(int existingCount, int newCount) {
+    return '$existingCount people are already members. Inviting $newCount new.';
+  }
+
+  @override
+  String get nounShoppingList => 'shopping list';
+
+  @override
+  String get nounShareLink => 'share link';
+
+  @override
+  String get validationUrlRequired => 'URL is required';
+
+  @override
+  String get urlSuggestionKnownSite =>
+      'Known recipe site — good chance of import!';
+
+  @override
+  String get urlSuggestionUnknownSite => 'Unknown site — import may be limited';
+
+  @override
+  String get urlSuggestionContainsRecipeKeyword =>
+      'URL contains recipe keyword';
+
+  @override
+  String get urlSuggestionTooLong =>
+      'URL is unusually long — verify it is correct';
+
+  @override
+  String get urlSuggestionSocialMedia =>
+      'Social media — import may require extra steps';
+
+  @override
+  String get urlSuggestionOptimal => 'Perfect — ready to import!';
+
+  @override
   String errorWithContext(String action, String error) {
     return 'Error during $action: $error';
   }
@@ -9954,7 +10035,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messagingPoll => 'Omröstning';
 
   @override
-  String get shoppingListEmpty => 'Tom lista';
+  String get shoppingListEmpty => 'Empty shopping list';
 
   @override
   String shoppingListAllBought(int count) {
@@ -9963,7 +10044,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String shoppingListItemsRemaining(int remaining, int total) {
-    return '$remaining av $total artiklar kvar';
+    return '$remaining of $total items remaining';
   }
 
   @override
@@ -10774,4 +10855,268 @@ class AppLocalizationsEn extends AppLocalizations {
   String recipeCopiedFrom(String title) {
     return 'Copied from: $title';
   }
+
+  @override
+  String get statusEmptyList => 'Empty list';
+
+  @override
+  String get statusCompleted => 'Done';
+
+  @override
+  String get statusInProgress => 'In progress';
+
+  @override
+  String get statusNoActivity => 'No activity';
+
+  @override
+  String get statusPurchased => 'Purchased';
+
+  @override
+  String get timeJustNow => 'just now';
+
+  @override
+  String timeMinutesAgo(int minutes) {
+    return '${minutes}m ago';
+  }
+
+  @override
+  String timeHoursAgo(int hours) {
+    return '${hours}h ago';
+  }
+
+  @override
+  String timeMinutesAgoLong(int minutes) {
+    return '$minutes min ago';
+  }
+
+  @override
+  String timeHoursAgoLong(int hours) {
+    return '$hours hrs ago';
+  }
+
+  @override
+  String timeDaysAgoLong(int days) {
+    return '$days days ago';
+  }
+
+  @override
+  String timeWeeksAgo(int weeks) {
+    return '$weeks weeks ago';
+  }
+
+  @override
+  String get timeNow => 'Now';
+
+  @override
+  String get dateTomorrow => 'Tomorrow';
+
+  @override
+  String get dateNoDate => 'No date';
+
+  @override
+  String dateDaysAhead(int days) {
+    return '$days days ahead';
+  }
+
+  @override
+  String labelMemberCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get labelParticipantFallback => 'Participant';
+
+  @override
+  String get labelRecipes => 'Recipes';
+
+  @override
+  String get labelMenus => 'Menus';
+
+  @override
+  String get labelShopping => 'Shopping';
+
+  @override
+  String get labelCollaborativeMenu => 'Collaborative menu';
+
+  @override
+  String get errorInvalidUrlFormat => 'Invalid URL format';
+
+  @override
+  String get errorUrlMissingScheme => 'URL must include http:// or https://';
+
+  @override
+  String get errorUrlUnsupportedScheme =>
+      'Only HTTP and HTTPS URLs are supported';
+
+  @override
+  String get errorUrlMissingDomain => 'URL must include a domain name';
+
+  @override
+  String errorInvalidCategoryName(String name) {
+    return 'Invalid category name: $name';
+  }
+
+  @override
+  String get platformYouTube => 'YouTube video';
+
+  @override
+  String get platformTikTok => 'TikTok video';
+
+  @override
+  String get platformInstagram => 'Instagram post';
+
+  @override
+  String get platformWebsite => 'Website';
+
+  @override
+  String get platformPastedText => 'Pasted text';
+
+  @override
+  String get selectionNoFriendsSelected => 'No friends selected';
+
+  @override
+  String selectionFriendsSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count friends selected',
+      one: '1 friend selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get selectionNoRecipesSelected => 'No recipes selected';
+
+  @override
+  String selectionRecipesSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes selected',
+      one: '1 recipe selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get buttonCreating => 'Creating...';
+
+  @override
+  String get buttonCreateAndShare => 'Create & Share';
+
+  @override
+  String get analysisNoContentExtracted => 'No content extracted';
+
+  @override
+  String get analysisContainsIngredients => 'Contains ingredients';
+
+  @override
+  String get analysisNoIngredientsFound => 'No ingredients section found';
+
+  @override
+  String get analysisContainsInstructions => 'Contains instructions';
+
+  @override
+  String get analysisNoInstructionsFound => 'No instructions found';
+
+  @override
+  String get labelNoCategories => 'No categories';
+
+  @override
+  String get labelGroup => 'Group';
+
+  @override
+  String get labelYou => 'You';
+
+  @override
+  String get validationSelectIngredient => 'Select at least one ingredient';
+
+  @override
+  String get statusListLoaded => 'List loaded';
+
+  @override
+  String errorCouldNotLoadListDetail(String detail) {
+    return 'Could not load list: $detail';
+  }
+
+  @override
+  String get labelUntitledMenu => 'Untitled menu';
+
+  @override
+  String get labelUntitledList => 'Untitled list';
+
+  @override
+  String get labelUntitledRecipe => 'Untitled recipe';
+
+  @override
+  String get labelUnknownContent => 'Unknown content';
+
+  @override
+  String get analysisContainsTimeInfo => 'Contains time information';
+
+  @override
+  String get analysisContainsPortionInfo => 'Contains portion information';
+
+  @override
+  String get analysisGoodContentLength => 'Good content length';
+
+  @override
+  String get analysisContentTooShort => 'Content seems too short';
+
+  @override
+  String get analysisContainsRecipeKeywords => 'Contains recipe keywords';
+
+  @override
+  String get hintPasteOrTypeRecipe =>
+      'Paste or type recipe text to get started';
+
+  @override
+  String get errorFriendAlreadyHasAccess =>
+      'The selected friend already has access to the list';
+
+  @override
+  String get errorAllFriendsAlreadyHaveAccess =>
+      'All selected friends already have access to the list';
+
+  @override
+  String shareInvitationsSentWithSkipped(int invitedCount, int skippedCount) {
+    return '$invitedCount invitations sent. $skippedCount friends skipped (already have access).';
+  }
+
+  @override
+  String get errorCouldNotSendInvitations => 'Could not send invitations';
+
+  @override
+  String get shareDefaultShoppingListMessage =>
+      'Want to share this shopping list with you!';
+
+  @override
+  String shoppingListAllDone(int count) {
+    return 'All $count items done';
+  }
+
+  @override
+  String shoppingListItemsToBuy(int count) {
+    return '$count items to buy';
+  }
+
+  @override
+  String get errorDailyQuotaReached => 'Daily quota reached';
+
+  @override
+  String get errorGenericOccurred => 'An error occurred';
+
+  @override
+  String get fcmChannelGeneralTitle => 'General notifications';
+
+  @override
+  String get fcmChannelGeneralDescription =>
+      'General notifications from Butlery';
 }

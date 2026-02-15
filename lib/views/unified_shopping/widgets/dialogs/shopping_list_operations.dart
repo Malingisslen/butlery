@@ -33,7 +33,7 @@ class ShoppingListOperations {
 
     if (name != null && name.isNotEmpty) {
       await viewModel.createPersonalList(name);
-      onSuccess(context.l10n.shoppingListCreated(name));
+      if (context.mounted) onSuccess(context.l10n.shoppingListCreated(name));
     }
   }
 
@@ -55,7 +55,7 @@ class ShoppingListOperations {
 
     if (confirmed == true) {
       await viewModel.clearBoughtItems();
-      onSuccess(context.l10n.shoppingPurchasedCleared);
+      if (context.mounted) onSuccess(context.l10n.shoppingPurchasedCleared);
     }
   }
 
@@ -126,10 +126,12 @@ class ShoppingListOperations {
 
     if (result != null && result != list.name) {
       final success = await viewModel.renameList(list.id, result);
-      if (success) {
-        onSuccess(context.l10n.shoppingListRenamed(result));
-      } else {
-        onError(context.l10n.shoppingCouldNotRenameList);
+      if (context.mounted) {
+        if (success) {
+          onSuccess(context.l10n.shoppingListRenamed(result));
+        } else {
+          onError(context.l10n.shoppingCouldNotRenameList);
+        }
       }
     }
   }
@@ -155,10 +157,12 @@ class ShoppingListOperations {
 
     if (confirmed == true) {
       final success = await viewModel.deleteList(list.id);
-      if (success) {
-        onSuccess(context.l10n.shoppingListDeleted(list.name));
-      } else {
-        onError(context.l10n.shoppingCouldNotDeleteList);
+      if (context.mounted) {
+        if (success) {
+          onSuccess(context.l10n.shoppingListDeleted(list.name));
+        } else {
+          onError(context.l10n.shoppingCouldNotDeleteList);
+        }
       }
     }
   }

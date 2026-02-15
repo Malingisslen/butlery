@@ -267,9 +267,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
               ? FloatingActionButton(
                   onPressed: () => _showCreateGroupDialog(viewModel),
                   tooltip: context.l10n.groupCreateGroup,
-                  child: Stack(
+                  child: const Stack(
                     children: [
-                      const Center(
+                      Center(
                         child: Icon(
                           Icons.groups,
                           size: AppDimensions.iconSizeL,

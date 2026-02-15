@@ -371,7 +371,7 @@ class DataExportView extends StatelessWidget {
             duration: const Duration(seconds: 4),
             action: SnackBarAction(
               label: 'OK',
-              textColor: Colors.white,
+              textColor: context.butleryColors.onSuccess,
               onPressed: () {},
             ),
           ),
@@ -395,6 +395,10 @@ class DataExportView extends StatelessWidget {
       BuildContext context, DataExportViewModel viewModel) async {
     if (viewModel.exportedData == null) return;
 
+    // Capture l10n before async gap
+    final shareSubject = context.l10n.dataExportShareSubject;
+    final shareText = context.l10n.dataExportShareText;
+
     try {
       // Create temporary file
       final directory = await getTemporaryDirectory();
@@ -412,8 +416,8 @@ class DataExportView extends StatelessWidget {
       // Share file
       await SharePlus.instance.share(ShareParams(
         files: [XFile(filePath)],
-        subject: context.l10n.dataExportShareSubject,
-        text: context.l10n.dataExportShareText,
+        subject: shareSubject,
+        text: shareText,
       ));
     } catch (e) {
       if (context.mounted) {

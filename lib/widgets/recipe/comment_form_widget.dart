@@ -98,11 +98,15 @@ class CommentFormWidget extends StatelessWidget {
                   ? () async {
                       try {
                         await socialViewModel.postComment(recipeId);
-                        onShowMessage(context.l10n.commentPosted);
+                        if (context.mounted) {
+                          onShowMessage(context.l10n.commentPosted);
+                        }
                         onCommentPosted?.call();
                       } catch (e) {
-                        onShowMessage(context.l10n.commentCouldNotPost,
-                            isError: true);
+                        if (context.mounted) {
+                          onShowMessage(context.l10n.commentCouldNotPost,
+                              isError: true);
+                        }
                       }
                     }
                   : null,

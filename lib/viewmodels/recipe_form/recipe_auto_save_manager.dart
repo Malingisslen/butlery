@@ -421,7 +421,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   static void showAutoSaveNotice(BuildContext context) {
     UtilityComponents.showSuccessSnackbar(
       context,
-      'Automatisk sparning aktiverad - dina ändringar sparas löpande',
+      AppLocale.current.autoSaveEnabled,
     );
   }
 

@@ -1,6 +1,7 @@
 // lib/viewmodels/recipe_form/contextual_error_handler.dart
 
 import 'package:butlery/core/errors/contextual_error_engine.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/core/utils/connectivity_check.dart';
@@ -40,7 +41,7 @@ class ContextualErrorHandler {
       // Fallback to basic error if contextual generation fails
       AppLogger.error('Failed to generate contextual error: $e');
       return AppStrings.actionSpecificError(actionContext.localizedDescription,
-          technicalDetails ?? 'Ett fel uppstod');
+          technicalDetails ?? AppLocale.current.errorGenericOccurred);
     }
   }
 

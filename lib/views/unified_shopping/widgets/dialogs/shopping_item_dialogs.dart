@@ -22,7 +22,7 @@ class ShoppingItemDialogs {
       builder: (context) => _AddItemDialog(viewModel: viewModel),
     );
 
-    if (result != null) {
+    if (result != null && context.mounted) {
       try {
         final success = await viewModel.addItemToActiveList(
           name: result.name,
@@ -34,13 +34,17 @@ class ShoppingItemDialogs {
           priority: result.priority,
         );
 
-        if (success) {
-          onSuccess(context.l10n.shoppingItemAdded(result.name));
-        } else {
-          onError(context.l10n.shoppingCouldNotAddItem(result.name));
+        if (context.mounted) {
+          if (success) {
+            onSuccess(context.l10n.shoppingItemAdded(result.name));
+          } else {
+            onError(context.l10n.shoppingCouldNotAddItem(result.name));
+          }
         }
       } catch (e) {
-        onError(context.l10n.shoppingErrorAdding(e.toString()));
+        if (context.mounted) {
+          onError(context.l10n.shoppingErrorAdding(e.toString()));
+        }
       }
     }
   }
@@ -57,7 +61,7 @@ class ShoppingItemDialogs {
       builder: (context) => _EditItemDialog(item: item, viewModel: viewModel),
     );
 
-    if (result != null) {
+    if (result != null && context.mounted) {
       try {
         final success = await viewModel.updateItem(
           itemId: item.id,
@@ -70,13 +74,17 @@ class ShoppingItemDialogs {
           priority: result.priority,
         );
 
-        if (success) {
-          onSuccess(context.l10n.shoppingItemUpdated(result.name));
-        } else {
-          onError(context.l10n.shoppingCouldNotUpdateItem(result.name));
+        if (context.mounted) {
+          if (success) {
+            onSuccess(context.l10n.shoppingItemUpdated(result.name));
+          } else {
+            onError(context.l10n.shoppingCouldNotUpdateItem(result.name));
+          }
         }
       } catch (e) {
-        onError(context.l10n.shoppingErrorUpdating(e.toString()));
+        if (context.mounted) {
+          onError(context.l10n.shoppingErrorUpdating(e.toString()));
+        }
       }
     }
   }

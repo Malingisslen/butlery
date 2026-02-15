@@ -60,7 +60,7 @@ class ConversationListItem extends StatelessWidget {
           color: context.butleryColors.info,
           child: Icon(
             conversation.isPinned ? Icons.push_pin_outlined : Icons.push_pin,
-            color: Colors.white,
+            color: context.butleryColors.onInfo,
           ),
         ),
         secondaryBackground: Container(
@@ -71,7 +71,7 @@ class ConversationListItem extends StatelessWidget {
           color: context.butleryColors.warning,
           child: Icon(
             conversation.isArchived ? Icons.unarchive : Icons.archive,
-            color: Colors.white,
+            color: context.butleryColors.onWarning,
           ),
         ),
         child: Semantics(
@@ -202,7 +202,7 @@ class ConversationListItem extends StatelessWidget {
                 color: context.butleryColors.success,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   width: 2,
                 ),
               ),

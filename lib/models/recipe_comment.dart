@@ -198,7 +198,7 @@ class RecipeComment {
     );
   }
 
-  /// Parses Firestore reactions map into typed Map<String, List<String>>.
+  /// Parses Firestore reactions map into typed `Map<String, List<String>>`.
   static Map<String, List<String>> _parseReactions(dynamic raw) {
     if (raw == null || raw is! Map) return const {};
     final result = <String, List<String>>{};

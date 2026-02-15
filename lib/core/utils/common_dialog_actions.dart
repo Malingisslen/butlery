@@ -217,7 +217,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
   final String itemType;
   final String? warningMessage;
   final IconData? icon;
-  _DeleteConfirmationDialog({
+  const _DeleteConfirmationDialog({
     required this.itemName,
     required this.itemType,
     this.warningMessage,

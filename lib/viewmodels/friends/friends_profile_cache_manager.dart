@@ -7,6 +7,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 class FriendsProfileCacheManager extends ChangeNotifier {
   final UserService _userService;
@@ -92,7 +93,7 @@ class FriendsProfileCacheManager extends ChangeNotifier {
   /// Gets display name with loading fallback
   String getDisplayNameForUser(String userId) {
     final profile = getUserProfile(userId);
-    return profile?.displayName ?? 'Laddar...';
+    return profile?.displayName ?? AppLocale.current.commonLoading;
   }
 
   /// Gets profile picture URL

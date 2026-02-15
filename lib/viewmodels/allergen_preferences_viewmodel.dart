@@ -88,8 +88,8 @@ class AllergenPreferencesViewModel extends BaseViewModel {
         if (success) {
           _hasChanges = false;
         } else {
-          throw Exception(
-              AppLocale.current.errorCouldNotUpdate('inställningar'));
+          throw Exception(AppLocale.current
+              .errorCouldNotUpdate(AppLocale.current.nounSettings));
         }
       },
       errorPrefix: AppLocale.current.errorCouldNotUpdateAllergenSettings,

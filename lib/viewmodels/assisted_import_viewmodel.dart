@@ -295,7 +295,7 @@ class AssistedImportViewModel extends ChangeNotifier {
     switch (_currentStep) {
       case AssistedImportStep.selectIngredients:
         if (_selectedIngredientIndices.isEmpty) {
-          return 'Välj minst en ingrediens';
+          return AppLocale.current.validationSelectIngredient;
         }
         return null;
 

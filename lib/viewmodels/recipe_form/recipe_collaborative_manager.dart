@@ -73,8 +73,9 @@ class RecipeCollaborativeManager extends ChangeNotifier
       final userId = _permissionService.currentUserId;
       final userDisplayName =
           _permissionService.currentUser?.displayName ?? '?';
-      if (userId == null)
+      if (userId == null) {
         throw Exception(AppLocale.current.errorNoUserLoggedIn);
+      }
 
       _realtimeRecipe = RealtimeRecipe.fromRecipe(
         recipe: recipe,

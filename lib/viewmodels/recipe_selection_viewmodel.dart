@@ -320,9 +320,11 @@ class RecipeSelectionViewModel extends ChangeNotifier
 
   /// Statusinformation för delning
   String getSelectionSummary() {
-    if (_selectedRecipeIds.isEmpty) return 'Inga recept valda';
-    if (_selectedRecipeIds.length == 1) return '1 recept valt';
-    return '${_selectedRecipeIds.length} recept valda';
+    if (_selectedRecipeIds.isEmpty) {
+      return AppLocale.current.selectionNoRecipesSelected;
+    }
+    return AppLocale.current
+        .selectionRecipesSelected(_selectedRecipeIds.length);
   }
 
   /// Få delningsmeddelande för valda recept

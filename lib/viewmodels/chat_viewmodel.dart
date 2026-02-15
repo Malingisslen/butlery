@@ -69,8 +69,9 @@ class ChatViewModel extends ChangeNotifier
 
   String get conversationTitle {
     if (_conversation == null) return AppLocale.current.commonLoading;
-    if (currentUserId == null)
+    if (currentUserId == null) {
       return _conversation!.title ?? AppLocale.current.labelChat;
+    }
     return _conversation!.getDisplayTitle(currentUserId!);
   }
 

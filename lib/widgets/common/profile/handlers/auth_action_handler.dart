@@ -69,8 +69,11 @@ class AuthActionHandler {
       final reauthSuccess =
           await authService.reauthenticateWithPassword(password);
       if (!reauthSuccess) {
-        throw Exception(authService.errorMessage ??
-            context.l10n.profileAuthenticationFailed);
+        final errorMsg = authService.errorMessage ??
+            (context.mounted
+                ? context.l10n.profileAuthenticationFailed
+                : 'Authentication failed');
+        throw Exception(errorMsg);
       }
 
       // Perform deletion using ProfileViewModel

@@ -294,7 +294,7 @@ class SocialMenuCoordinator
         await realtimeMenuService.addParticipant(
           resourceId: sharedMenu.realtimeMenuId!,
           userId: currentUserId!,
-          userDisplayName: currentUserDisplayName ?? 'Okänd',
+          userDisplayName: currentUserDisplayName ?? '?',
           permission: ResourcePermission.editor,
         );
         AppLogger.success('✅ Added user as participant to realtime menu');

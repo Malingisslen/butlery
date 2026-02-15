@@ -144,6 +144,68 @@
       }
     }
   },
+  "nounSettings": "settings",
+  "nounGroupContent": "group content",
+  "nounFriends": "friends",
+  "nounFriendList": "friend list",
+  "groupInvitationMessage": "You have been invited to the group {groupName}!",
+  "@groupInvitationMessage": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadTimeIn": " in {duration}",
+  "@uploadTimeIn": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "autoSaveEnabled": "Auto-save enabled",
+  "selectionFriendSelectedWithName": "{name} selected",
+  "@selectionFriendSelectedWithName": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "selectionFriendsSelectedWithNames": "{count} selected: {names}",
+  "@selectionFriendsSelectedWithNames": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "names": { "type": "String" }
+    }
+  },
+  "selectionFriendsSelectedCount": "{count} friends selected",
+  "@selectionFriendsSelectedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "sharePartialSuccessSingular": "1 person is already a member. Inviting {newCount} new.",
+  "@sharePartialSuccessSingular": {
+    "placeholders": {
+      "newCount": { "type": "int" }
+    }
+  },
+  "sharePartialSuccessPlural": "{existingCount} people are already members. Inviting {newCount} new.",
+  "@sharePartialSuccessPlural": {
+    "placeholders": {
+      "existingCount": { "type": "int" },
+      "newCount": { "type": "int" }
+    }
+  },
+  "nounShoppingList": "shopping list",
+  "nounShareLink": "share link",
+  "validationUrlRequired": "URL is required",
+  "urlSuggestionKnownSite": "Known recipe site — good chance of import!",
+  "urlSuggestionUnknownSite": "Unknown site — import may be limited",
+  "urlSuggestionContainsRecipeKeyword": "URL contains recipe keyword",
+  "urlSuggestionTooLong": "URL is unusually long — verify it is correct",
+  "urlSuggestionSocialMedia": "Social media — import may require extra steps",
+  "urlSuggestionOptimal": "Perfect — ready to import!",
   "errorWithContext": "Error during {action}: {error}",
   "@errorWithContext": {
     "placeholders": {
@@ -6355,5 +6417,111 @@
   "@collaborationMultipleActive": { "placeholders": { "count": {"type": "int"} } },
 
   "recipeCopiedFrom": "Copied from: {title}",
-  "@recipeCopiedFrom": { "placeholders": { "title": {"type": "String"} } }
+  "@recipeCopiedFrom": { "placeholders": { "title": {"type": "String"} } },
+
+  "statusEmptyList": "Empty list",
+  "statusCompleted": "Done",
+  "statusInProgress": "In progress",
+  "statusNoActivity": "No activity",
+  "statusPurchased": "Purchased",
+
+  "timeJustNow": "just now",
+  "timeMinutesAgo": "{minutes}m ago",
+  "@timeMinutesAgo": { "placeholders": { "minutes": {"type": "int"} } },
+  "timeHoursAgo": "{hours}h ago",
+  "@timeHoursAgo": { "placeholders": { "hours": {"type": "int"} } },
+  "timeMinutesAgoLong": "{minutes} min ago",
+  "@timeMinutesAgoLong": { "placeholders": { "minutes": {"type": "int"} } },
+  "timeHoursAgoLong": "{hours} hrs ago",
+  "@timeHoursAgoLong": { "placeholders": { "hours": {"type": "int"} } },
+  "timeDaysAgoLong": "{days} days ago",
+  "@timeDaysAgoLong": { "placeholders": { "days": {"type": "int"} } },
+  "timeWeeksAgo": "{weeks} weeks ago",
+  "@timeWeeksAgo": { "placeholders": { "weeks": {"type": "int"} } },
+  "timeNow": "Now",
+
+  "dateTomorrow": "Tomorrow",
+  "dateNoDate": "No date",
+  "dateDaysAhead": "{days} days ahead",
+  "@dateDaysAhead": { "placeholders": { "days": {"type": "int"} } },
+
+  "labelMemberCount": "{count, plural, =1{1 member} other{{count} members}}",
+  "@labelMemberCount": { "placeholders": { "count": {"type": "int"} } },
+  "labelParticipantFallback": "Participant",
+  "labelRecipes": "Recipes",
+  "labelMenus": "Menus",
+  "labelShopping": "Shopping",
+  "labelCollaborativeMenu": "Collaborative menu",
+
+  "errorInvalidUrlFormat": "Invalid URL format",
+  "errorUrlMissingScheme": "URL must include http:// or https://",
+  "errorUrlUnsupportedScheme": "Only HTTP and HTTPS URLs are supported",
+  "errorUrlMissingDomain": "URL must include a domain name",
+  "errorInvalidCategoryName": "Invalid category name: {name}",
+  "@errorInvalidCategoryName": { "placeholders": { "name": {"type": "String"} } },
+
+  "platformYouTube": "YouTube video",
+  "platformTikTok": "TikTok video",
+  "platformInstagram": "Instagram post",
+  "platformWebsite": "Website",
+  "platformPastedText": "Pasted text",
+
+  "selectionNoFriendsSelected": "No friends selected",
+  "selectionFriendsSelected": "{count, plural, =1{1 friend selected} other{{count} friends selected}}",
+  "@selectionFriendsSelected": { "placeholders": { "count": {"type": "int"} } },
+  "selectionNoRecipesSelected": "No recipes selected",
+  "selectionRecipesSelected": "{count, plural, =1{1 recipe selected} other{{count} recipes selected}}",
+  "@selectionRecipesSelected": { "placeholders": { "count": {"type": "int"} } },
+
+  "buttonCreating": "Creating...",
+  "buttonCreateAndShare": "Create & Share",
+
+  "analysisNoContentExtracted": "No content extracted",
+  "analysisContainsIngredients": "Contains ingredients",
+  "analysisNoIngredientsFound": "No ingredients section found",
+  "analysisContainsInstructions": "Contains instructions",
+  "analysisNoInstructionsFound": "No instructions found",
+
+  "labelNoCategories": "No categories",
+  "labelGroup": "Group",
+  "labelYou": "You",
+
+  "validationSelectIngredient": "Select at least one ingredient",
+  "statusListLoaded": "List loaded",
+  "errorListNotFound": "List not found",
+  "errorCouldNotLoadListDetail": "Could not load list: {detail}",
+  "@errorCouldNotLoadListDetail": { "placeholders": { "detail": {"type": "String"} } },
+  "labelUntitledMenu": "Untitled menu",
+  "labelUntitledList": "Untitled list",
+  "labelUntitledRecipe": "Untitled recipe",
+  "labelUnknownContent": "Unknown content",
+
+  "analysisContainsTimeInfo": "Contains time information",
+  "analysisContainsPortionInfo": "Contains portion information",
+  "analysisGoodContentLength": "Good content length",
+  "analysisContentTooShort": "Content seems too short",
+  "analysisContainsRecipeKeywords": "Contains recipe keywords",
+
+  "hintPasteOrTypeRecipe": "Paste or type recipe text to get started",
+
+  "errorFriendAlreadyHasAccess": "The selected friend already has access to the list",
+  "errorAllFriendsAlreadyHaveAccess": "All selected friends already have access to the list",
+  "shareInvitationsSentWithSkipped": "{invitedCount} invitations sent. {skippedCount} friends skipped (already have access).",
+  "@shareInvitationsSentWithSkipped": { "placeholders": { "invitedCount": {"type": "int"}, "skippedCount": {"type": "int"} } },
+  "errorCouldNotSendInvitations": "Could not send invitations",
+  "shareDefaultShoppingListMessage": "Want to share this shopping list with you!",
+
+  "shoppingListEmpty": "Empty shopping list",
+  "shoppingListAllDone": "All {count} items done",
+  "@shoppingListAllDone": { "placeholders": { "count": {"type": "int"} } },
+  "shoppingListItemsToBuy": "{count} items to buy",
+  "@shoppingListItemsToBuy": { "placeholders": { "count": {"type": "int"} } },
+  "shoppingListItemsRemaining": "{remaining} of {total} items remaining",
+  "@shoppingListItemsRemaining": { "placeholders": { "remaining": {"type": "int"}, "total": {"type": "int"} } },
+
+  "errorDailyQuotaReached": "Daily quota reached",
+  "errorGenericOccurred": "An error occurred",
+
+  "fcmChannelGeneralTitle": "General notifications",
+  "fcmChannelGeneralDescription": "General notifications from Butlery"
 }

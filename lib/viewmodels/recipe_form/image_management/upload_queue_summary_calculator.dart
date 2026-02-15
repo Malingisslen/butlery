@@ -194,8 +194,9 @@ class UploadQueueSummaryCalculator {
 
     final l = AppLocale.current;
     if (completed == total && failed == 0) {
-      final timeText =
-          elapsedTime != null ? ' på ${formatDuration(elapsedTime)}' : '';
+      final timeText = elapsedTime != null
+          ? l.uploadTimeIn(formatDuration(elapsedTime))
+          : '';
       return l.uploadAllSuccessWithTime(timeText);
     } else if (completed > 0 || failed > 0) {
       final completionText = l.uploadCompletionOf(completed, total);

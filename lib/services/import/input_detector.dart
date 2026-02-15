@@ -4,6 +4,8 @@
 /// the platform (YouTube, TikTok, Instagram, or generic website).
 library;
 
+import 'package:butlery/core/l10n/app_locale.dart';
+
 /// The type of input detected.
 enum InputType {
   url,
@@ -40,19 +42,20 @@ class InputDetectionResult {
   bool get isInstagram => platform == Platform.instagram;
   bool get isWebsite => platform == Platform.website;
 
-  /// Returns Swedish label for the platform.
+  /// Returns localized label for the platform.
   String get platformLabel {
+    final l = AppLocale.current;
     switch (platform) {
       case Platform.youtube:
-        return 'YouTube-video';
+        return l.platformYouTube;
       case Platform.tiktok:
-        return 'TikTok-video';
+        return l.platformTikTok;
       case Platform.instagram:
-        return 'Instagram-inlägg';
+        return l.platformInstagram;
       case Platform.website:
-        return 'Webbsida';
+        return l.platformWebsite;
       case Platform.unknown:
-        return 'Inklistrad text';
+        return l.platformPastedText;
     }
   }
 }

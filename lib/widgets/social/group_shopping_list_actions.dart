@@ -39,12 +39,13 @@ class GroupShoppingListActions {
       confirmText: context.l10n.groupImport,
     );
 
-    if (confirmed == true) {
+    if (confirmed == true && context.mounted) {
       try {
+        final listCopyName = context.l10n.groupListCopyName(shoppingList.name);
         final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
 
         final personalListId = await shoppingService.createPersonalList(
-          context.l10n.groupListCopyName(shoppingList.name),
+          listCopyName,
           items: shoppingList.items,
         );
 

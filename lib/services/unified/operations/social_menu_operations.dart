@@ -177,7 +177,7 @@ class SocialMenuOperations {
         final data = doc.data();
         return {
           'id': doc.id,
-          'title': data['title'] ?? 'Namnlös meny',
+          'title': data['title'] ?? '?',
           'sharedAt': data['sharedAt'],
           'totalRecipes': data['totalRecipes'] ?? 0,
           'sharedWithCount': (data['sharedWithUserIds'] as List?)?.length ?? 0,
@@ -220,9 +220,8 @@ class SocialMenuOperations {
           final menuData = menuDoc.data()!;
           sharedMenus.add({
             'id': sharedMenuId,
-            'title': menuData['title'] ?? 'Namnlös meny',
-            'sharedByDisplayName':
-                menuData['sharedByDisplayName'] ?? 'Okänd användare',
+            'title': menuData['title'] ?? '?',
+            'sharedByDisplayName': menuData['sharedByDisplayName'] ?? '?',
             'sharedByAvatarUrl': menuData['sharedByAvatarUrl'],
             'sharedAt': data['sharedAt'],
             'totalRecipes': menuData['totalRecipes'] ?? 0,
@@ -358,13 +357,12 @@ class SocialMenuOperations {
 
       return {
         'id': sharedMenuId,
-        'title': menuData['title'] ?? 'Namnlös meny',
+        'title': menuData['title'] ?? '?',
         'description': menuData['description'],
         'menu': menu,
         'totalRecipes': menuData['totalRecipes'] ?? 0,
         'sharedByUserId': menuData['sharedByUserId'],
-        'sharedByDisplayName':
-            menuData['sharedByDisplayName'] ?? 'Okänd användare',
+        'sharedByDisplayName': menuData['sharedByDisplayName'] ?? '?',
         'sharedByAvatarUrl': menuData['sharedByAvatarUrl'],
         'sharedAt': menuData['sharedAt'],
       };

@@ -6,6 +6,7 @@
 // lib/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_shopping_viewmodel.dart';
@@ -247,11 +248,11 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
   String getTabTitle(ContentTab tab) {
     switch (tab) {
       case ContentTab.recipes:
-        return 'Recept';
+        return AppLocale.current.labelRecipes;
       case ContentTab.menus:
-        return 'Menyer';
+        return AppLocale.current.labelMenus;
       case ContentTab.shoppingLists:
-        return 'Handla';
+        return AppLocale.current.labelShopping;
     }
   }
 

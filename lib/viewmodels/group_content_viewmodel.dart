@@ -170,7 +170,8 @@ class GroupContentViewModel extends ChangeNotifier
       });
     } catch (e) {
       AppLogger.error('❌ Failed to load group content', e);
-      setError(AppLocale.current.errorCouldNotLoad('gruppinnehåll'));
+      setError(AppLocale.current
+          .errorCouldNotLoad(AppLocale.current.nounGroupContent));
     }
   }
 
@@ -263,7 +264,8 @@ class GroupContentViewModel extends ChangeNotifier
       return true;
     } catch (e) {
       AppLogger.error('❌ Failed to share content to group', e);
-      setError(AppLocale.current.errorCouldNotUpdate('gruppinnehåll'));
+      setError(AppLocale.current
+          .errorCouldNotUpdate(AppLocale.current.nounGroupContent));
       return false;
     } finally {
       _setSharing(false);
