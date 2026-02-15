@@ -11,7 +11,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 
@@ -351,11 +350,12 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
 
   /// Build thumbnail layer with blur effect
   Widget _buildThumbnailLayer() {
+    final tintColor = Theme.of(context).colorScheme.surfaceContainerLow;
     return CachedNetworkImage(
       imageUrl: _thumbnailUrl!,
       fit: widget.fit,
-      placeholder: (_, __) => Container(color: AppColors.backgroundTint),
-      errorWidget: (_, __, ___) => Container(color: AppColors.backgroundTint),
+      placeholder: (_, __) => Container(color: tintColor),
+      errorWidget: (_, __, ___) => Container(color: tintColor),
       imageBuilder: (context, imageProvider) {
         return DecoratedBox(
           decoration: BoxDecoration(
@@ -440,13 +440,14 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
 
   /// Build default error widget
   Widget _buildDefaultErrorWidget() {
-    return const ColoredBox(
-      color: AppColors.backgroundTint,
+    final cs = Theme.of(context).colorScheme;
+    return ColoredBox(
+      color: cs.surfaceContainerLow,
       child: Center(
         child: Icon(
           Icons.broken_image,
           size: 48,
-          color: AppColors.textTertiary,
+          color: cs.outline,
         ),
       ),
     );

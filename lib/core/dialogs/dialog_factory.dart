@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart'
     show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 
@@ -34,7 +33,8 @@ class DialogFactory {
     final l10n = context.l10n;
     final effectiveConfirmText = confirmText ?? l10n.commonOk;
     final effectiveCancelText = cancelText ?? l10n.commonCancel;
-    final dangerColor = isDangerous ? AppColors.error : confirmColor;
+    final dangerColor =
+        isDangerous ? Theme.of(context).colorScheme.error : confirmColor;
 
     if (_isIOS) {
       return showCupertinoDialog<bool>(

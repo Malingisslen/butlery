@@ -1,5 +1,6 @@
 // lib/services/unified/modules/realtime_ingredient_operations.dart
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/unified/modules/realtime_edit_context.dart';
 import 'package:butlery/services/unified/modules/realtime_field_operations.dart';
 
@@ -14,7 +15,7 @@ class RealtimeIngredientOperations {
     int? index,
   }) async {
     if (ingredient.trim().isEmpty) {
-      context.setError('Ingrediens kan inte vara tom');
+      context.setError(AppLocale.current.realtimeIngredientEmptyError);
       return false;
     }
     return await RealtimeFieldOperations.makeRealtimeEdit(
@@ -37,11 +38,11 @@ class RealtimeIngredientOperations {
     required String newIngredient,
   }) async {
     if (newIngredient.trim().isEmpty) {
-      context.setError('Ingrediens kan inte vara tom');
+      context.setError(AppLocale.current.realtimeIngredientEmptyError);
       return false;
     }
     if (index < 0) {
-      context.setError('Ogiltigt ingrediens-index');
+      context.setError(AppLocale.current.realtimeIngredientInvalidIndex);
       return false;
     }
     return await RealtimeFieldOperations.makeRealtimeEdit(
@@ -63,7 +64,7 @@ class RealtimeIngredientOperations {
     required int index,
   }) async {
     if (index < 0) {
-      context.setError('Ogiltigt ingrediens-index');
+      context.setError(AppLocale.current.realtimeIngredientInvalidIndex);
       return false;
     }
     return await RealtimeFieldOperations.makeRealtimeEdit(

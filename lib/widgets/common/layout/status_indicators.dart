@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Status indicators for app state display
 /// This module provides widgets for displaying app status like
@@ -57,20 +57,20 @@ class OfflineIndicator extends StatelessWidget {
             horizontal: AppDimensions.spacingL,
             vertical: AppDimensions.spacingS,
           ),
-          color: backgroundColor ?? AppColors.warning,
+          color: backgroundColor ?? context.butleryColors.warning,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.wifi_off,
-                color: AppColors.neutralLight,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 size: AppDimensions.iconSizeM,
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Text(
                 message ?? context.l10n.indicatorOfflineMode,
                 style: AppTextStyles.contentTitle.copyWith(
-                  color: AppColors.neutralLight,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 ),
               ),
             ],
@@ -93,11 +93,12 @@ class OfflineStatusIcon extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        return const Padding(
-          padding: EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
+        return Padding(
+          padding:
+              const EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
           child: Icon(
             Icons.cloud_off,
-            color: AppColors.warning,
+            color: context.butleryColors.warning,
             size: AppDimensions.iconSizeAction,
           ),
         );

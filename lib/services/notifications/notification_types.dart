@@ -1,3 +1,5 @@
+import 'package:butlery/core/l10n/app_locale.dart';
+
 /// Comprehensive notification type system defining intelligent delivery strategies and priority management for cooking-focused notifications.
 /// This system implements sophisticated notification categorization with intelligent delivery strategies based on user
 /// interaction patterns and cooking workflow optimization. It provides comprehensive notification type definitions that
@@ -260,9 +262,10 @@ class NotificationTemplate {
     List<NotificationAction>? actions,
   }) {
     // Use Swedish by default (app is primarily Swedish)
-    final titleTemplate = strategy.localization['title_sv'] ?? 'Ny aktivitet';
-    final bodyTemplate =
-        strategy.localization['body_sv'] ?? 'Du har ny aktivitet i Butlery';
+    final titleTemplate = strategy.localization['title_sv'] ??
+        AppLocale.current.notificationDefaultTitle;
+    final bodyTemplate = strategy.localization['body_sv'] ??
+        AppLocale.current.notificationDefaultBody;
 
     // Substitute variables in templates
     String title = titleTemplate;
@@ -305,28 +308,28 @@ class NotificationAction {
   });
 
   /// Accept friend request action
-  static const acceptFriend = NotificationAction(
-    id: 'accept_friend',
-    title: 'Acceptera',
-  );
+  static NotificationAction get acceptFriend => NotificationAction(
+        id: 'accept_friend',
+        title: AppLocale.current.notificationActionAccept,
+      );
 
   /// Decline friend request action
-  static const declineFriend = NotificationAction(
-    id: 'decline_friend',
-    title: 'Avvisa',
-  );
+  static NotificationAction get declineFriend => NotificationAction(
+        id: 'decline_friend',
+        title: AppLocale.current.notificationActionDecline,
+      );
 
   /// View recipe action
-  static const viewRecipe = NotificationAction(
-    id: 'view_recipe',
-    title: 'Visa recept',
-  );
+  static NotificationAction get viewRecipe => NotificationAction(
+        id: 'view_recipe',
+        title: AppLocale.current.notificationActionViewRecipe,
+      );
 
   /// Join collaboration action
-  static const joinCollaboration = NotificationAction(
-    id: 'join_collaboration',
-    title: 'Gå med',
-  );
+  static NotificationAction get joinCollaboration => NotificationAction(
+        id: 'join_collaboration',
+        title: AppLocale.current.notificationActionJoin,
+      );
 }
 
 /// Notification batching configuration

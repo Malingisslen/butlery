@@ -52,6 +52,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/user_service.dart';
@@ -141,17 +142,17 @@ class FCMService {
         importance: Importance.defaultImportance,
       );
 
-      const socialChannel = AndroidNotificationChannel(
+      final socialChannel = AndroidNotificationChannel(
         _socialChannelId,
-        'Sociala notiser',
-        description: 'Vänförfrågningar, delningar och kommentarer',
+        AppLocale.current.fcmChannelSocialTitle,
+        description: AppLocale.current.fcmChannelSocialDescription,
         importance: Importance.high,
       );
 
-      const messagingChannel = AndroidNotificationChannel(
+      final messagingChannel = AndroidNotificationChannel(
         _messagingChannelId,
-        'Meddelanden',
-        description: 'Chattmeddelanden från vänner',
+        AppLocale.current.fcmChannelMessagingTitle,
+        description: AppLocale.current.fcmChannelMessagingDescription,
         importance: Importance.high,
         enableVibration: true,
         playSound: true,

@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Shared components for group dialogs
 /// Contains reusable UI components that are used across multiple group dialog types
@@ -123,19 +123,19 @@ class ErrorDisplayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color:
-            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        border: Border.all(color: AppColors.error),
+        border: Border.all(color: cs.error),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.error_outline,
-            color: AppColors.error,
+            color: cs.error,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingS),
@@ -143,7 +143,7 @@ class ErrorDisplayWidget extends StatelessWidget {
             child: Text(
               errorMessage,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.error,
+                color: cs.error,
               ),
             ),
           ),
@@ -164,22 +164,22 @@ class WarningDisplayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final warningColor = context.butleryColors.warning;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color:
-            AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: warningColor.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(
-          color: AppColors.warning
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+          color:
+              warningColor.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.info_outline,
-            color: AppColors.warning,
+            color: warningColor,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingS),
@@ -187,7 +187,7 @@ class WarningDisplayWidget extends StatelessWidget {
             child: Text(
               warningMessage,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.warning,
+                color: warningColor,
               ),
             ),
           ),
@@ -292,8 +292,8 @@ class DialogFooter extends StatelessWidget {
               style: primaryActionColor != null
                   ? FilledButton.styleFrom(
                       backgroundColor: primaryActionColor,
-                      foregroundColor:
-                          primaryActionForegroundColor ?? AppColors.cardWhite,
+                      foregroundColor: primaryActionForegroundColor ??
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
                     )
                   : null,
               icon: isLoading

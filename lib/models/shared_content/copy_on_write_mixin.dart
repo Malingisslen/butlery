@@ -1,3 +1,4 @@
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 
 /// Mixin providing copy-on-write collaboration support for shared content.
@@ -43,19 +44,20 @@ mixin CopyOnWriteSupport<TContent> on BaseSharedContentModel<TContent> {
   /// Swedish collaboration status summary for UI.
   String getCollaborationSummary() {
     if (!_allowsCollaboration()) {
-      return 'Ingen kollaboration tillåten';
+      return AppLocale.current.collaborationNotAllowed;
     }
 
     if (!copyOnWriteTriggered) {
-      return 'Redo för kollaboration';
+      return AppLocale.current.collaborationReady;
     }
 
     if (activeCollaboratorCount == 0) {
-      return 'Kollaborativ version skapad';
+      return AppLocale.current.collaborationVersionCreated;
     } else if (activeCollaboratorCount == 1) {
-      return '1 aktiv kollaboratör';
+      return AppLocale.current.collaborationOneActive;
     } else {
-      return '$activeCollaboratorCount aktiva kollaboratörer';
+      return AppLocale.current
+          .collaborationMultipleActive(activeCollaboratorCount);
     }
   }
 

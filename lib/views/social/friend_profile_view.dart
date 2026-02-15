@@ -5,7 +5,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/component_themes.dart';
@@ -35,8 +34,8 @@ class FriendProfileView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(friend.displayName),
-        backgroundColor: AppColors.forestGreen,
-        foregroundColor: AppColors.neutralLight,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
       ),
       body: SafeArea(
         // ✅ RESPONSIVE: Center and constrain content on large screens
@@ -135,7 +134,8 @@ class FriendProfileView extends StatelessWidget {
                           width: double.infinity,
                           child: OutlinedButton.icon(
                             onPressed: () => _showRemoveFriendDialog(context),
-                            style: ComponentThemes.deleteButtonStyle,
+                            style: ComponentThemes.deleteButtonStyle(
+                                Theme.of(context).colorScheme),
                             icon: const Icon(Icons.person_remove),
                             label: Text(context.l10n.socialRemoveFriend),
                           ),
@@ -230,24 +230,25 @@ class FriendProfileView extends StatelessWidget {
     String value,
     IconData icon,
   ) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       children: [
         Icon(
           icon,
-          color: AppColors.forestGreen,
+          color: cs.primary,
           size: AppDimensions.iconSizeXl,
         ),
         const SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
           style: AppTextStyles.headlineMedium.copyWith(
-            color: AppColors.forestGreen,
+            color: cs.primary,
           ),
         ),
         Text(
           label,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textMedium,
+            color: cs.onSurfaceVariant,
           ),
         ),
       ],

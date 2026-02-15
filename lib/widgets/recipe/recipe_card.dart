@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/components/input_themes.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
@@ -73,6 +73,8 @@ class RecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return RepaintBoundary(
       child: Semantics(
         label: 'Recipe: ${recipe.title}',
@@ -82,12 +84,12 @@ class RecipeCard extends StatelessWidget {
           // UI Redesign: Left green border + bottom rust border
           decoration: isSelected
               ? BoxDecoration(
-                  color: AppColors.forestGreen
+                  color: cs.primary
                       .withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusM),
                   border: Border.all(
-                    color: AppColors.forestGreen,
+                    color: cs.primary,
                     width: 2,
                   ),
                 )
@@ -137,7 +139,7 @@ class RecipeCard extends StatelessWidget {
             children: [
               // Recipe image
               if (showImage) ...[
-                _buildRecipeImage(),
+                _buildRecipeImage(context),
                 const SizedBox(width: AppDimensions.spacingMd),
               ],
               // Content area — compacts when no data
@@ -210,7 +212,7 @@ class RecipeCard extends StatelessWidget {
     return Row(
       children: [
         if (showImage) ...[
-          _buildRecipeImage(size: 60),
+          _buildRecipeImage(context, size: 60),
           const SizedBox(width: AppDimensions.spacingMd),
         ],
         Expanded(
@@ -241,7 +243,7 @@ class RecipeCard extends StatelessWidget {
       children: [
         // Image
         if (showImage) ...[
-          _buildRecipeImage(height: 150, width: double.infinity),
+          _buildRecipeImage(context, height: 150, width: double.infinity),
           const SizedBox(height: AppDimensions.spacingSm),
         ],
         // Title
@@ -254,7 +256,9 @@ class RecipeCard extends StatelessWidget {
     );
   }
 
-  Widget _buildRecipeImage({double? size, double? width, double? height}) {
+  Widget _buildRecipeImage(BuildContext context,
+      {double? size, double? width, double? height}) {
+    final cs = Theme.of(context).colorScheme;
     final imageUrls = recipe.imageUrls;
     final hasImage = imageUrls.isNotEmpty;
     final imageSize = size ?? 80.0;
@@ -264,7 +268,7 @@ class RecipeCard extends StatelessWidget {
       height: height ?? imageSize,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        color: AppColors.cream,
+        color: cs.surface,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -298,10 +302,12 @@ class RecipeCard extends StatelessWidget {
   }
 
   Widget _buildDescription(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Text(
       recipe.description,
       style: AppTextStyles.labelMedium.copyWith(
-        color: AppColors.textMedium,
+        color: cs.onSurfaceVariant,
         fontWeight: FontWeight.w400,
       ),
       maxLines: 2,
@@ -310,6 +316,7 @@ class RecipeCard extends StatelessWidget {
   }
 
   Widget _buildMetadataRow(BuildContext context, {bool compact = false}) {
+    final cs = Theme.of(context).colorScheme;
     // UI Redesign: Text+dots format with optional rating pill
     final parts = <String>[];
 
@@ -337,7 +344,7 @@ class RecipeCard extends StatelessWidget {
             child: Text(
               parts.join(' \u00B7 '),
               style: AppTextStyles.labelSmall.copyWith(
-                color: AppColors.textLight,
+                color: cs.outline,
                 fontWeight: FontWeight.w400,
               ),
               maxLines: 1,
@@ -346,23 +353,25 @@ class RecipeCard extends StatelessWidget {
           ),
         if (hasRating) ...[
           if (parts.isNotEmpty) const SizedBox(width: AppDimensions.spacingSm),
-          _buildRatingPill(),
+          _buildRatingPill(context),
         ],
       ],
     );
   }
 
-  Widget _buildRatingPill() {
+  Widget _buildRatingPill(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.forestGreen,
+        color: cs.primary,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
       ),
       child: Text(
         '\u2605 ${recipe.rating!.toStringAsFixed(1)}',
         style: AppTextStyles.badge.copyWith(
-          color: AppColors.cardWhite,
+          color: cs.onPrimary,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -375,34 +384,34 @@ class RecipeCard extends StatelessWidget {
       spacing: AppDimensions.spacingXs,
       runSpacing: AppDimensions.spacingXs,
       children: _topEffectiveTags
-          .map(
-              (tag) => _buildTag(tag, isUserAdded: userAddedTags.contains(tag)))
+          .map((tag) =>
+              _buildTag(context, tag, isUserAdded: userAddedTags.contains(tag)))
           .toList(),
     );
   }
 
-  Widget _buildTag(String tag, {bool isUserAdded = false}) {
+  Widget _buildTag(BuildContext context, String tag,
+      {bool isUserAdded = false}) {
+    final cs = Theme.of(context).colorScheme;
     final displayName = TagDisplayUtils.getDisplayName(tag);
     return Container(
       padding: AppDimensions.paddingSymmetric4x2,
       decoration: BoxDecoration(
         color: isUserAdded
-            ? AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityVeryLight)
-            : AppColors.cream,
+            ? cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)
+            : cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
         border: Border.all(
           color: isUserAdded
-              ? AppColors.forestGreen
-                  .withValues(alpha: AppDimensions.opacityMediumLight)
-              : AppColors.divider
+              ? cs.primary.withValues(alpha: AppDimensions.opacityMediumLight)
+              : cs.outlineVariant
                   .withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Text(
         displayName,
         style: AppTextStyles.labelSmall.copyWith(
-          color: isUserAdded ? AppColors.forestGreen : AppColors.textMedium,
+          color: isUserAdded ? cs.primary : cs.onSurfaceVariant,
         ),
       ),
     );
@@ -473,50 +482,51 @@ class RecipeCard extends StatelessWidget {
       spacing: AppDimensions.spacingXs,
       runSpacing: AppDimensions.spacingXs,
       children: [
-        ...names.take(displayCount).map(_buildPersonalTag),
-        if (overflow > 0) _buildOverflowChip(overflow),
+        ...names
+            .take(displayCount)
+            .map((name) => _buildPersonalTag(context, name)),
+        if (overflow > 0) _buildOverflowChip(context, overflow),
       ],
     );
   }
 
-  Widget _buildPersonalTag(String name) {
+  Widget _buildPersonalTag(BuildContext context, String name) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: AppDimensions.paddingSymmetric8x2,
       decoration: BoxDecoration(
-        color: AppColors.forestGreen
-            .withValues(alpha: AppDimensions.opacityLightSubtle),
+        color: cs.primary.withValues(alpha: AppDimensions.opacityLightSubtle),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Text(
         name,
         style: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.forestGreen,
+          color: cs.primary,
         ),
       ),
     );
   }
 
-  Widget _buildOverflowChip(int count) {
+  Widget _buildOverflowChip(BuildContext context, int count) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: AppDimensions.paddingSymmetric8x2,
       decoration: BoxDecoration(
-        color: AppColors.forestGreen
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityLight),
+          color: cs.primary.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: Text(
         '+$count',
         style: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityDark),
+          color: cs.primary.withValues(alpha: AppDimensions.opacityDark),
         ),
       ),
     );
@@ -524,6 +534,7 @@ class RecipeCard extends StatelessWidget {
 
   /// Builds untagged indicator for recipes pending analysis.
   Widget _buildUntaggedIndicator(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final tagResult = recipe.tagResult;
     final hasFailed = tagResult?.hasFailed ?? false;
 
@@ -534,7 +545,7 @@ class RecipeCard extends StatelessWidget {
       child: Container(
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
-          color: (hasFailed ? AppColors.error : AppColors.warning)
+          color: (hasFailed ? cs.error : context.butleryColors.warning)
               .withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         ),
@@ -544,7 +555,7 @@ class RecipeCard extends StatelessWidget {
             Icon(
               hasFailed ? Icons.error_outline : Icons.pending_outlined,
               size: 14,
-              color: hasFailed ? AppColors.error : AppColors.warning,
+              color: hasFailed ? cs.error : context.butleryColors.warning,
             ),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
@@ -552,7 +563,7 @@ class RecipeCard extends StatelessWidget {
                   ? context.l10n.recipeAnalysisFailed
                   : context.l10n.recipeAnalyzing,
               style: AppTextStyles.labelSmall.copyWith(
-                color: hasFailed ? AppColors.error : AppColors.warning,
+                color: hasFailed ? cs.error : context.butleryColors.warning,
               ),
             ),
           ],
@@ -562,10 +573,12 @@ class RecipeCard extends StatelessWidget {
   }
 
   Widget _buildContextMenuButton(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return PopupMenuButton<String>(
-      icon: const Icon(
+      icon: Icon(
         Icons.more_vert,
-        color: AppColors.textMedium,
+        color: cs.onSurfaceVariant,
       ),
       // Ensure minimum touch target size for accessibility
       constraints: const BoxConstraints(

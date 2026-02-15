@@ -39,7 +39,7 @@ class ContextualErrorHandler {
     } catch (e) {
       // Fallback to basic error if contextual generation fails
       AppLogger.error('Failed to generate contextual error: $e');
-      return AppStrings.actionSpecificError(actionContext.swedishDescription,
+      return AppStrings.actionSpecificError(actionContext.localizedDescription,
           technicalDetails ?? 'Ett fel uppstod');
     }
   }

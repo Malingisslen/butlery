@@ -31,7 +31,6 @@ import 'package:butlery/models/realtime/realtime_resource.dart';
 // Service type imports
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/models/recommendation.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 
 // Repository type imports
@@ -373,8 +372,6 @@ void registerAllFallbackValues() {
   registerFallbackValue(ReactionType.like);
   registerFallbackValue(ImportSourceType.text);
   registerFallbackValue(RecipeType.personal);
-  registerFallbackValue(FeedbackType.like);
-  registerFallbackValue(RecommendationType.similarToShared);
   registerFallbackValue(SyncErrorType.unknown);
   registerFallbackValue(ConnectionQuality.good);
   registerFallbackValue(RealtimeResourceType.recipe);

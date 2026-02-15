@@ -12,6 +12,7 @@ import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Import phases for the state machine.
 enum ImportPhase {
@@ -126,17 +127,17 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       case ImportPhase.idle:
         return '';
       case ImportPhase.fetching:
-        return 'Hämtar innehåll...';
+        return AppLocale.current.importPhaseFetching;
       case ImportPhase.analyzing:
-        return 'Analyserar recept...';
+        return AppLocale.current.importPhaseAnalyzing;
       case ImportPhase.creating:
-        return 'Skapar recept...';
+        return AppLocale.current.importPhaseCreating;
       case ImportPhase.complete:
-        return 'Klar!';
+        return AppLocale.current.importPhaseComplete;
       case ImportPhase.needsHelp:
-        return 'Behöver din hjälp';
+        return AppLocale.current.importPhaseNeedsHelp;
       case ImportPhase.error:
-        return error ?? 'Ett fel uppstod';
+        return error ?? AppLocale.current.importPhaseError;
     }
   }
 
@@ -197,7 +198,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   /// Start the import process.
   Future<SmartImportResult> startImport() async {
     if (!canImport || isImporting) {
-      return const ImportFailed('Ingen giltig indata');
+      return ImportFailed(AppLocale.current.errorImportConditionsNotMet);
     }
 
     clearError();
@@ -220,7 +221,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       return await _handleImportResult(result);
     } catch (e) {
       _setPhase(ImportPhase.error);
-      setError('Import misslyckades: $e');
+      setError(AppLocale.current.errorImportFailed);
       final failResult = ImportFailed('$e');
       _lastResult = failResult;
       return failResult;
@@ -268,8 +269,9 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     // Check for other errors
     if (!result.isSuccess) {
       _setPhase(ImportPhase.error);
-      setError(result.errorMessage ?? 'Okänt fel');
-      final failResult = ImportFailed(result.errorMessage ?? 'Okänt fel');
+      setError(result.errorMessage ?? AppLocale.current.errorUnknown);
+      final failResult =
+          ImportFailed(result.errorMessage ?? AppLocale.current.errorUnknown);
       _lastResult = failResult;
       return failResult;
     }
@@ -297,9 +299,10 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
       if (!saveResult.isSuccess) {
         _setPhase(ImportPhase.error);
-        setError(saveResult.errorMessage ?? 'Kunde inte spara receptet');
-        final failResult = ImportFailed(
-            saveResult.errorMessage ?? 'Kunde inte spara receptet');
+        setError(saveResult.errorMessage ??
+            AppLocale.current.errorCouldNotSaveRecipe);
+        final failResult = ImportFailed(saveResult.errorMessage ??
+            AppLocale.current.errorCouldNotSaveRecipe);
         _lastResult = failResult;
         return failResult;
       }
@@ -311,7 +314,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       return successResult;
     } catch (e) {
       _setPhase(ImportPhase.error);
-      setError('Kunde inte spara receptet: $e');
+      setError(AppLocale.current.errorCouldNotSaveRecipe);
       final failResult = ImportFailed('$e');
       _lastResult = failResult;
       return failResult;
@@ -321,7 +324,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   /// Retry import without LLM (for rate limit fallback).
   Future<SmartImportResult> retryWithoutLlm() async {
     if (!canImport) {
-      return const ImportFailed('Ingen giltig indata');
+      return ImportFailed(AppLocale.current.errorImportConditionsNotMet);
     }
 
     clearError();
@@ -343,7 +346,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       return await _handleImportResult(result);
     } catch (e) {
       _setPhase(ImportPhase.error);
-      setError('Import misslyckades: $e');
+      setError(AppLocale.current.errorImportFailed);
       final failResult = ImportFailed('$e');
       _lastResult = failResult;
       return failResult;

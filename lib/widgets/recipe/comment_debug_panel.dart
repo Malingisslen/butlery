@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -28,8 +28,8 @@ class CommentDebugPanel extends StatelessWidget {
 
     return Container(
       padding: AppDimensions.paddingAll3,
-      color:
-          AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: context.butleryColors.warning
+          .withValues(alpha: AppDimensions.opacityVeryLight),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

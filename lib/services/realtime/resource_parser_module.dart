@@ -6,6 +6,7 @@ import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Module handling resource parsing and fetching for realtime sync.
 /// Provides type-safe resource parsing, fetching, and DocumentReference helpers.
@@ -47,7 +48,7 @@ class ResourceParserModule {
         // return RealtimeShoppingList.fromFirestore(snapshot) as T;
         throw SyncError(
           type: SyncErrorType.firestoreError,
-          message: 'RealtimeShoppingList parsing inte implementerad än',
+          message: AppLocale.current.syncParsingNotImplemented,
           resourceId: snapshot.id,
         );
     }
@@ -62,7 +63,7 @@ class ResourceParserModule {
     if (!snapshot.exists) {
       throw SyncError(
         type: SyncErrorType.documentNotFound,
-        message: 'Resursen hittades inte',
+        message: AppLocale.current.errorResourceNotFound,
         resourceId: resourceId,
       );
     }

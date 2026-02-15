@@ -2,6 +2,7 @@
 
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Result of Instagram extraction.
 class InstagramExtractionResult {
@@ -57,7 +58,7 @@ class InstagramExtractionResult {
       hasRecipeContent: false,
       thumbnailUrl: thumbnailUrl,
       text: partialText,
-      error: 'Kunde inte hitta recept i inlagget. Ta en skarmbild av receptet.',
+      error: AppLocale.current.instagramCouldNotFindRecipe,
     );
   }
 }

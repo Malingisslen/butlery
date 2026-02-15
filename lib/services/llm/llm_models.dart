@@ -6,6 +6,8 @@
 
 import 'dart:typed_data';
 
+import 'package:butlery/core/l10n/app_locale.dart';
+
 /// Mode for structuring recipe text.
 enum StructureMode {
   /// Full extraction from raw text
@@ -228,7 +230,7 @@ class ExtractedRecipe {
 
   factory ExtractedRecipe.fromJson(Map<String, dynamic> json) {
     return ExtractedRecipe(
-      title: json['title'] as String? ?? 'Okänt recept',
+      title: json['title'] as String? ?? AppLocale.current.llmUnknownRecipe,
       description: json['description'] as String?,
       portions: json['portions'] as int?,
       prepTimeMinutes: json['prepTimeMinutes'] as int?,
@@ -347,32 +349,33 @@ class LlmException implements Exception {
   /// Create from Firebase Functions error.
   factory LlmException.fromFirebase(Object error) {
     final errorStr = error.toString();
+    final l = AppLocale.current;
 
     if (errorStr.contains('unauthenticated')) {
-      return const LlmException(
-        'Du måste vara inloggad för att använda AI-funktioner.',
+      return LlmException(
+        l.llmMustBeLoggedIn,
         code: 'unauthenticated',
       );
     }
 
     if (errorStr.contains('resource-exhausted')) {
-      return const LlmException(
-        'AI-tjänsten är tillfälligt överbelastad. Försök igen om en stund.',
+      return LlmException(
+        l.llmServiceOverloaded,
         code: 'resource-exhausted',
         isRateLimited: true,
-        retryAfter: Duration(minutes: 1),
+        retryAfter: const Duration(minutes: 1),
       );
     }
 
     if (errorStr.contains('invalid-argument')) {
       return LlmException(
-        'Ogiltigt argument: $errorStr',
+        l.llmInvalidArgument(errorStr),
         code: 'invalid-argument',
       );
     }
 
     return LlmException(
-      'Ett fel uppstod: $errorStr',
+      l.llmGenericError(errorStr),
       code: 'unknown',
     );
   }

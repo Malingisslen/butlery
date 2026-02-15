@@ -28,7 +28,6 @@ dependencies:
   firebase_crashlytics: ^5.0.4  # Updated for reporting improvements
   firebase_remote_config: ^6.0.4  # Feature flags and A/B testing
   flutter_local_notifications: ^20.0.0  # For Android notification channels
-  local_auth: ^3.0.0  # For biometric authentication (Face ID, Touch ID, fingerprint)
   device_info_plus: ^11.1.0  # For unique device identification
   flutter_jailbreak_detection: ^1.10.0  # Root/jailbreak detection
 
@@ -46,6 +45,7 @@ dependencies:
   # ==================== NAVIGATION & UI ====================
   go_router: ^17.0.0
   dynamic_color: ^1.7.0  # Material You dynamic color support (Android 12+)
+  wakelock_plus: ^1.2.8  # Keep screen awake during cooking mode
 
   # ==================== NETWORKING ====================
   http: ^1.2.2
@@ -138,6 +138,7 @@ flutter:
     - .env.staging
     - .env.production
     - assets/legal/
+    - assets/data/
     - assets/illustrations/
     - assets/illustrations/arta/
 

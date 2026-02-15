@@ -9,7 +9,6 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 
 // Core application
 import 'package:butlery/main.dart';
@@ -108,62 +107,66 @@ class _E2EMockErrorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'E2E Mock Error',
-      home: Scaffold(
-        backgroundColor: AppColors.errorContainer,
-        appBar: AppBar(
-          title: const Text('E2E Mock Error'),
-          backgroundColor: AppColors.error,
-          foregroundColor: AppColors.cardWhite,
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: AppDimensions.iconSizeXxl,
-                color: AppColors.error,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'E2E Mock Initialization Failed',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.error,
+      home: Builder(builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Scaffold(
+          backgroundColor: cs.errorContainer,
+          appBar: AppBar(
+            title: const Text('E2E Mock Error'),
+            backgroundColor: cs.error,
+            foregroundColor: cs.surfaceContainerHighest,
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingMd),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: AppDimensions.iconSizeXxl,
+                  color: cs.error,
                 ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'The E2E Mock application failed to start. This is likely a configuration issue.',
-                style: TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(AppDimensions.paddingM),
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundLight,
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                      border: Border.all(color: AppColors.divider),
-                    ),
-                    child: Text(
-                      message,
-                      style: const TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 12,
+                const SizedBox(height: 16),
+                Text(
+                  'E2E Mock Initialization Failed',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: cs.error,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'The E2E Mock application failed to start. This is likely a configuration issue.',
+                  style: TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(AppDimensions.paddingM),
+                      decoration: BoxDecoration(
+                        color: cs.surface,
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.borderRadiusM),
+                        border: Border.all(color: cs.outlineVariant),
+                      ),
+                      child: Text(
+                        message,
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 }

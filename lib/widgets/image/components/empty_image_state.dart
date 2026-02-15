@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -21,18 +20,19 @@ class EmptyImageState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: borderRadius,
         border: Border.all(
-          color: AppColors.divider
+          color: cs.outlineVariant
               .withValues(alpha: AppDimensions.opacityMediumLight),
           style: BorderStyle.solid,
         ),
-        color: AppColors.cardWhite,
+        color: cs.surfaceContainerHighest,
       ),
       child: Material(
-        color: AppColors.transparent,
+        color: Colors.transparent,
         child: InkWell(
           onTap: isLoading ? null : onTap,
           borderRadius: borderRadius,
@@ -52,21 +52,26 @@ class EmptyImageState extends StatelessWidget {
 
   List<Widget> _buildLoadingContent() {
     return [
-      const SizedBox(
-        width: AppDimensions.iconSizeXl,
-        height: AppDimensions.iconSizeXl,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
-        ),
-      ),
+      Builder(builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return SizedBox(
+          width: AppDimensions.iconSizeXl,
+          height: AppDimensions.iconSizeXl,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
+          ),
+        );
+      }),
       const SizedBox(height: AppDimensions.spacingSm),
       Builder(
         builder: (context) => Text(
           context.l10n.imageAddingImage,
           style: AppTextStyles.bodyMedium.copyWith(
-            color:
-                AppColors.textDark.withValues(alpha: AppDimensions.opacityDark),
+            color: Theme.of(context)
+                .colorScheme
+                .onSurface
+                .withValues(alpha: AppDimensions.opacityDark),
           ),
         ),
       ),
@@ -75,19 +80,21 @@ class EmptyImageState extends StatelessWidget {
 
   List<Widget> _buildIdleContent() {
     return [
-      Container(
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityVeryLight),
-        ),
-        child: const Icon(
-          Icons.add_photo_alternate_outlined,
-          size: AppDimensions.iconSizeXl,
-          color: AppColors.forestGreen,
-        ),
-      ),
+      Builder(builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Container(
+          padding: const EdgeInsets.all(AppDimensions.paddingM),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+          ),
+          child: Icon(
+            Icons.add_photo_alternate_outlined,
+            size: AppDimensions.iconSizeXl,
+            color: cs.primary,
+          ),
+        );
+      }),
       const SizedBox(height: AppDimensions.spacingSm),
       Builder(
         builder: (context) => Text(
@@ -100,8 +107,10 @@ class EmptyImageState extends StatelessWidget {
         builder: (context) => Text(
           context.l10n.imageTapToAddUpTo(maxImages),
           style: AppTextStyles.bodySmall.copyWith(
-            color:
-                AppColors.textDark.withValues(alpha: AppDimensions.opacityDark),
+            color: Theme.of(context)
+                .colorScheme
+                .onSurface
+                .withValues(alpha: AppDimensions.opacityDark),
           ),
           textAlign: TextAlign.center,
         ),

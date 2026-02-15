@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/social_components.dart';
@@ -47,6 +46,7 @@ class FriendCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return RepaintBoundary(
       child: Container(
         margin: margin ?? _getDefaultMargin(),
@@ -62,12 +62,11 @@ class FriendCard extends StatelessWidget {
               child: Container(
                 padding: padding ?? _getDefaultPadding(),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
+                  color: cs.surface,
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusM),
                   border: Border.all(
-                      color: AppColors.textLight,
-                      width: AppDimensions.borderWidthThin),
+                      color: cs.outline, width: AppDimensions.borderWidthThin),
                 ),
                 child: _buildContent(context),
               ),
@@ -264,11 +263,11 @@ class FriendRequestCard extends StatelessWidget {
             child: Container(
               padding: padding ?? const EdgeInsets.all(AppDimensions.spacingS),
               decoration: BoxDecoration(
-                color: AppColors.backgroundLight,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusM),
                 border: Border.all(
-                    color: AppColors.textLight,
+                    color: Theme.of(context).colorScheme.outline,
                     width: AppDimensions.borderWidthThin),
               ),
               child: _buildContent(context),
@@ -339,7 +338,8 @@ class FriendRequestCard extends StatelessWidget {
             child: OutlinedButton(
               onPressed: onDecline,
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.textMedium),
+                side: BorderSide(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
               child: Text(
                 context.l10n.friendDecline,

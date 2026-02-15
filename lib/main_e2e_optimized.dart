@@ -14,7 +14,6 @@ import 'package:butlery/views/mina_recept_view.dart';
 
 // Import theme system for consistent styling
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 // Import routing for navigation testing
@@ -203,25 +202,28 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
       return MaterialApp(
         title: 'Butlery E2E Initializing',
         theme: AppTheme.lightTheme,
-        home: const Scaffold(
-          backgroundColor: AppColors.cream,
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(color: AppColors.forestGreen),
-                SizedBox(height: AppDimensions.spacingL),
-                Text(
-                  'Initializing E2E Environment...',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppColors.textSecondary,
+        home: Builder(builder: (context) {
+          final cs = Theme.of(context).colorScheme;
+          return Scaffold(
+            backgroundColor: cs.surface,
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: cs.primary),
+                  const SizedBox(height: AppDimensions.spacingL),
+                  Text(
+                    'Initializing E2E Environment...',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: cs.onSurfaceVariant,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        }),
       );
     }
 

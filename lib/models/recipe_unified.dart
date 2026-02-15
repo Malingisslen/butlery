@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 import 'package:butlery/core/utils/logger.dart';
@@ -391,16 +392,18 @@ class RecipeCore with JsonSerializableMixin {
   // Helper getters
   bool get hasImages => imageUrls.isNotEmpty;
   String? get primaryImageUrl => imageUrls.isNotEmpty ? imageUrls.first : null;
-  String get cookTimeText =>
-      timeMinutes != null ? '${timeMinutes!} minuter' : '–';
+  String get cookTimeText => timeMinutes != null
+      ? AppLocale.current.recipeCookTimeMinutes(timeMinutes!)
+      : '–';
 
   String? get lastCookedText {
     if (lastCookedAt == null) return null;
     final now = DateTime.now();
     final difference = now.difference(lastCookedAt!);
-    if (difference.inDays == 0) return 'Tillagad idag';
-    if (difference.inDays == 1) return 'Tillagad igår';
-    return 'Tillagad för ${difference.inDays} dagar sedan';
+    if (difference.inDays == 0) return AppLocale.current.recipeLastCookedToday;
+    if (difference.inDays == 1)
+      return AppLocale.current.recipeLastCookedYesterday;
+    return AppLocale.current.recipeLastCookedDaysAgo(difference.inDays);
   }
 
   @override

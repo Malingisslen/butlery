@@ -22,6 +22,7 @@ class RecipeComment {
   final String? parentCommentId;
   final int replyCount;
   final bool isDeleted;
+  final Map<String, List<String>> reactions;
 
   RecipeComment({
     required this.id,
@@ -36,6 +37,7 @@ class RecipeComment {
     this.parentCommentId,
     this.replyCount = 0,
     this.isDeleted = false,
+    this.reactions = const {},
   }) : createdAt = createdAt ?? DateTime.now();
 
   factory RecipeComment.create({
@@ -69,6 +71,7 @@ class RecipeComment {
     int? likesCount,
     int? replyCount,
     bool? isDeleted,
+    Map<String, List<String>>? reactions,
   }) {
     return RecipeComment(
       id: id,
@@ -83,6 +86,7 @@ class RecipeComment {
       parentCommentId: parentCommentId,
       replyCount: replyCount ?? this.replyCount,
       isDeleted: isDeleted ?? this.isDeleted,
+      reactions: reactions ?? this.reactions,
     );
   }
 
@@ -165,6 +169,7 @@ class RecipeComment {
       'parentCommentId': parentCommentId,
       'replyCount': replyCount,
       'isDeleted': isDeleted,
+      'reactions': reactions,
     };
   }
 
@@ -189,7 +194,20 @@ class RecipeComment {
           SerializationUtils.safeNullableString(data, 'parentCommentId'),
       replyCount: SerializationUtils.safeInt(data, 'replyCount'),
       isDeleted: SerializationUtils.safeBool(data, 'isDeleted'),
+      reactions: _parseReactions(data['reactions']),
     );
+  }
+
+  /// Parses Firestore reactions map into typed Map<String, List<String>>.
+  static Map<String, List<String>> _parseReactions(dynamic raw) {
+    if (raw == null || raw is! Map) return const {};
+    final result = <String, List<String>>{};
+    for (final entry in (raw as Map<String, dynamic>).entries) {
+      if (entry.value is List) {
+        result[entry.key] = List<String>.from(entry.value as List);
+      }
+    }
+    return result;
   }
 
   /// Converts the recipe comment to JSON format for local caching.
@@ -207,6 +225,7 @@ class RecipeComment {
       'parentCommentId': parentCommentId,
       'replyCount': replyCount,
       'isDeleted': isDeleted,
+      'reactions': reactions,
     };
   }
 
@@ -227,6 +246,7 @@ class RecipeComment {
       parentCommentId: json['parentCommentId'] as String?,
       replyCount: json['replyCount'] as int? ?? 0,
       isDeleted: json['isDeleted'] as bool? ?? false,
+      reactions: _parseReactions(json['reactions']),
     );
   }
 

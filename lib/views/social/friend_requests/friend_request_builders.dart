@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 
 // Theme
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 // ViewModels
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
@@ -62,9 +62,9 @@ class FriendRequestsHeaderBuilder {
         // Batch actions for current tab
         if (tabController.index == 0 && selectedIncoming.isNotEmpty)
           PopupMenuButton<String>(
-            icon: const Icon(
+            icon: Icon(
               Icons.checklist,
-              color: AppColors.forestGreen,
+              color: Theme.of(context).colorScheme.primary,
             ),
             onSelected: (value) {
               if (value == 'accept_all') {
@@ -78,7 +78,8 @@ class FriendRequestsHeaderBuilder {
                 value: 'accept_all',
                 child: Row(
                   children: [
-                    const Icon(Icons.check_circle, color: AppColors.success),
+                    Icon(Icons.check_circle,
+                        color: context.butleryColors.success),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Text(context.l10n
                         .socialAcceptCount(selectedIncoming.length)),
@@ -89,7 +90,8 @@ class FriendRequestsHeaderBuilder {
                 value: 'reject_all',
                 child: Row(
                   children: [
-                    const Icon(Icons.cancel, color: AppColors.error),
+                    Icon(Icons.cancel,
+                        color: Theme.of(context).colorScheme.error),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Text(context.l10n
                         .socialDeclineCount(selectedIncoming.length)),
@@ -100,9 +102,9 @@ class FriendRequestsHeaderBuilder {
           ),
         if (tabController.index == 1 && selectedSent.isNotEmpty)
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.cancel,
-              color: AppColors.error,
+              color: Theme.of(context).colorScheme.error,
             ),
             onPressed: onCancelSelected,
             tooltip: context.l10n.socialCancelCount(selectedSent.length),
@@ -117,27 +119,26 @@ class FriendRequestsHeaderBuilder {
   ) {
     if (!viewModel.hasError) return const SizedBox.shrink();
 
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       margin: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color:
-            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.error
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.error.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.error),
+          Icon(Icons.error_outline, color: cs.error),
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
               viewModel.error!,
-              style: const TextStyle(color: AppColors.error),
+              style: TextStyle(color: cs.error),
             ),
           ),
           TextButton(

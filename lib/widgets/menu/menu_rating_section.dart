@@ -5,7 +5,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -109,22 +109,25 @@ class _MenuRatingSectionState extends State<MenuRatingSection> {
 
   void _showMessage(String message, {bool isError = false}) {
     if (!mounted) return;
+    final cs = Theme.of(context).colorScheme;
+    final bc = context.butleryColors;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? AppColors.error : AppColors.success,
+        backgroundColor: isError ? cs.error : bc.success,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        border: Border.all(color: AppColors.divider),
+        color: cs.surfaceContainerHighest,
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: _isLoading
           ? const Center(
@@ -139,9 +142,9 @@ class _MenuRatingSectionState extends State<MenuRatingSection> {
                 // Section header
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.star_outlined,
-                      color: AppColors.forestGreen,
+                      color: cs.primary,
                       size: AppDimensions.iconSizeAction,
                     ),
                     const SizedBox(width: AppDimensions.spacingM),
@@ -165,7 +168,7 @@ class _MenuRatingSectionState extends State<MenuRatingSection> {
                 if (_ratingCount > 0) ...[
                   _buildAverageRatingDisplay(),
                   const SizedBox(height: AppDimensions.spacingMd),
-                  const Divider(color: AppColors.divider),
+                  Divider(color: cs.outlineVariant),
                   const SizedBox(height: AppDimensions.spacingMd),
                 ],
 
@@ -177,13 +180,14 @@ class _MenuRatingSectionState extends State<MenuRatingSection> {
   }
 
   Widget _buildAverageRatingDisplay() {
+    final cs = Theme.of(context).colorScheme;
     return Row(
       children: [
         // Large average number
         Text(
           _averageRating.toStringAsFixed(1),
           style: AppTextStyles.headlineBold.copyWith(
-            color: AppColors.forestGreen,
+            color: cs.primary,
           ),
         ),
         const SizedBox(width: AppDimensions.spacingM),
@@ -281,11 +285,10 @@ class _MenuRatingSectionState extends State<MenuRatingSection> {
           icon = Icons.star_border;
         }
 
+        final cs = Theme.of(context).colorScheme;
         final star = Icon(
           icon,
-          color: isFilled || isHalfFilled
-              ? AppColors.accent
-              : AppColors.textMedium,
+          color: isFilled || isHalfFilled ? cs.secondary : cs.onSurfaceVariant,
           size: size,
         );
 

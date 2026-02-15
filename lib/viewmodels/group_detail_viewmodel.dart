@@ -11,6 +11,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// ViewModel for group conversation detail view with member management.
 /// Manages complete group detail display and management workflow including real-time
@@ -106,7 +107,7 @@ class GroupDetailViewModel extends ChangeNotifier
 
   /// Get group title
   String get groupTitle {
-    return _conversation?.title ?? 'Gruppkonversation';
+    return _conversation?.title ?? AppLocale.current.labelChat;
   }
 
   /// Get group creation date
@@ -143,7 +144,7 @@ class GroupDetailViewModel extends ChangeNotifier
       );
     } catch (e) {
       AppLogger.error('❌ Failed to initialize conversation stream', e);
-      _setError('Kunde inte ladda gruppinformation');
+      _setError(AppLocale.current.errorCouldNotLoadGroupInfo);
     }
   }
 
@@ -160,7 +161,7 @@ class GroupDetailViewModel extends ChangeNotifier
     } catch (e) {
       AppLogger.error('❌ Failed to load conversation', e);
       if (!_isDisposed) {
-        _setError('Kunde inte ladda gruppinformation');
+        _setError(AppLocale.current.errorCouldNotLoadGroupInfo);
       }
     }
   }
@@ -184,7 +185,7 @@ class GroupDetailViewModel extends ChangeNotifier
     if (_isDisposed) return;
 
     AppLogger.error('❌ Conversation stream error', error);
-    _setError('Kunde inte ladda gruppinformation');
+    _setError(AppLocale.current.errorCouldNotLoadGroupInfo);
   }
 
   /// Set error state
@@ -233,7 +234,7 @@ class GroupDetailViewModel extends ChangeNotifier
 
       if (_isDisposed) return false;
 
-      _error = 'Kunde inte lägga till medlemmar: ${e.toString()}';
+      _error = AppLocale.current.errorCouldNotAddMembers;
       _isAddingMembers = false;
       _safeNotifyListeners();
 
@@ -249,14 +250,14 @@ class GroupDetailViewModel extends ChangeNotifier
 
     // Verify admin permission
     if (!isAdmin) {
-      _error = 'Endast administratör kan ta bort medlemmar';
+      _error = AppLocale.current.errorOnlyAdminCanRemoveMembers;
       _safeNotifyListeners();
       return false;
     }
 
     // Prevent removing self this way (use leaveGroup instead)
     if (memberId == currentUserId) {
-      _error = 'Använd "Lämna grupp" för att lämna konversationen';
+      _error = AppLocale.current.errorUseLeaveGroupToLeave;
       _safeNotifyListeners();
       return false;
     }
@@ -286,7 +287,7 @@ class GroupDetailViewModel extends ChangeNotifier
 
       if (_isDisposed) return false;
 
-      _error = 'Kunde inte ta bort medlem: ${e.toString()}';
+      _error = AppLocale.current.errorCouldNotDelete('medlem');
       _isRemovingMember = false;
       _safeNotifyListeners();
 
@@ -327,7 +328,7 @@ class GroupDetailViewModel extends ChangeNotifier
 
       if (_isDisposed) return false;
 
-      _error = 'Kunde inte lämna grupp: ${e.toString()}';
+      _error = AppLocale.current.errorCouldNotLeaveGroup;
       _isLeavingGroup = false;
       _safeNotifyListeners();
 
@@ -343,13 +344,13 @@ class GroupDetailViewModel extends ChangeNotifier
 
     // Verify admin permission
     if (!isAdmin) {
-      _error = 'Endast administratör kan ändra gruppnamn';
+      _error = AppLocale.current.errorOnlyAdminCanChangeGroupName;
       _safeNotifyListeners();
       return false;
     }
 
     if (newTitle.trim().isEmpty) {
-      _error = 'Gruppnamn kan inte vara tomt';
+      _error = AppLocale.current.errorGroupNameCannotBeEmpty;
       _safeNotifyListeners();
       return false;
     }
@@ -379,7 +380,7 @@ class GroupDetailViewModel extends ChangeNotifier
 
       if (_isDisposed) return false;
 
-      _error = 'Kunde inte uppdatera gruppnamn: ${e.toString()}';
+      _error = AppLocale.current.errorCouldNotUpdate('gruppnamn');
       _isUpdatingTitle = false;
       _safeNotifyListeners();
 
@@ -405,7 +406,7 @@ class GroupDetailViewModel extends ChangeNotifier
 
   /// Get member display name by ID
   String getMemberDisplayName(String memberId) {
-    return _conversation?.participantDisplayNames[memberId] ?? 'Okänd';
+    return _conversation?.participantDisplayNames[memberId] ?? '?';
   }
 
   /// Get member avatar URL by ID

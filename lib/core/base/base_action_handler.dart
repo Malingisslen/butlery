@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Base action handler with executeAction, executeWithConfirmation, executeDeleteAction, navigation helpers, feedback methods, and validation utilities.
 abstract class BaseActionHandler {
@@ -270,7 +270,7 @@ abstract class BaseActionHandler {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.success,
+        backgroundColor: context.butleryColors.success,
         duration: const Duration(seconds: 3),
       ),
     );
@@ -281,7 +281,7 @@ abstract class BaseActionHandler {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.error,
+        backgroundColor: Theme.of(context).colorScheme.error,
         duration: const Duration(seconds: 4),
       ),
     );
@@ -292,7 +292,7 @@ abstract class BaseActionHandler {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.forestGreen,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         duration: const Duration(seconds: 3),
       ),
     );
@@ -303,7 +303,7 @@ abstract class BaseActionHandler {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.warning,
+        backgroundColor: context.butleryColors.warning,
         duration: const Duration(seconds: 4),
       ),
     );

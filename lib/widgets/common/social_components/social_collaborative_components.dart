@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
@@ -113,23 +113,23 @@ class SocialCollaborativeComponents {
           horizontal: AppDimensions.spacingSm,
           vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
-        color: (activeColor ?? AppColors.success)
+        color: (activeColor ?? context.butleryColors.success)
             .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-        border: Border.all(color: activeColor ?? AppColors.success),
+        border: Border.all(color: activeColor ?? context.butleryColors.success),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.sync,
               size: AppDimensions.iconSizeXs,
-              color: activeColor ?? AppColors.success),
+              color: activeColor ?? context.butleryColors.success),
           if (showText) ...[
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               context.l10n.socialActive,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: activeColor ?? AppColors.success,
+                    color: activeColor ?? context.butleryColors.success,
                   ),
             ),
           ],
@@ -227,21 +227,22 @@ class SocialCollaborativeComponents {
           vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
         color: color ??
-            AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
+            context.butleryColors.success
+                .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-        border: Border.all(color: color ?? AppColors.success),
+        border: Border.all(color: color ?? context.butleryColors.success),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon,
               size: AppDimensions.iconSizeXs,
-              color: color ?? AppColors.success),
+              color: color ?? context.butleryColors.success),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text ?? context.l10n.socialActiveCollaboration,
             style: AppTextStyles.metadataEmphasized.copyWith(
-              color: color ?? AppColors.success,
+              color: color ?? context.butleryColors.success,
             ),
           ),
         ],
@@ -257,28 +258,30 @@ class SocialCollaborativeComponents {
     Color? color,
     IconData icon = Icons.pause_circle_outline,
   }) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingSm,
           vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
         color: color?.withValues(alpha: AppDimensions.opacityVeryLight) ??
-            AppColors.textMedium
+            cs.onSurfaceVariant
                 .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-        border: Border.all(color: color ?? AppColors.textMedium),
+        border: Border.all(color: color ?? cs.onSurfaceVariant),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon,
               size: AppDimensions.iconSizeXs,
-              color: color ?? AppColors.textMedium),
+              color: color ?? cs.onSurfaceVariant),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text ?? context.l10n.socialInactive,
             style: AppTextStyles.metadataEmphasized.copyWith(
-              color: color ?? AppColors.textMedium,
+              color: color ?? cs.onSurfaceVariant,
             ),
           ),
         ],
@@ -296,12 +299,14 @@ class SocialCollaborativeComponents {
     DateTime? lastActivity,
     bool showLabels = true,
   }) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(
           (AppDimensions.spacingSm + AppDimensions.spacingXs)),
       decoration: BoxDecoration(
         border: Border.all(
-            color: AppColors.textMedium
+            color: cs.onSurfaceVariant
                 .withValues(alpha: AppDimensions.opacityMediumLight)),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
       ),
@@ -360,13 +365,15 @@ class SocialCollaborativeComponents {
     required String value,
     required String label,
   }) {
+    final cs = Theme.of(context).colorScheme;
+
     return Column(
       children: [
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon,
-                size: AppDimensions.iconSizeS, color: AppColors.textMedium),
+                size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               value,
@@ -441,36 +448,38 @@ class SocialCollaborativeComponents {
   /// Get permission configuration
   static _PermissionConfig _getPermissionConfig(String permissionLevel,
       {BuildContext? context}) {
+    final cs = context != null ? Theme.of(context).colorScheme : null;
+
     switch (permissionLevel.toLowerCase()) {
       case 'owner':
         return _PermissionConfig(
           icon: Icons.star,
           label: context?.l10n.socialPermissionOwner ?? 'Ägare',
-          color: AppColors.forestGreenDark,
+          color: cs?.primary ?? Colors.green,
         );
       case 'admin':
         return _PermissionConfig(
           icon: Icons.admin_panel_settings,
           label: context?.l10n.socialPermissionAdmin ?? 'Admin',
-          color: AppColors.forestGreen,
+          color: cs?.primary ?? Colors.green,
         );
       case 'editor':
         return _PermissionConfig(
           icon: Icons.edit,
           label: context?.l10n.socialPermissionEditor ?? 'Redigera',
-          color: AppColors.forestGreen,
+          color: cs?.primary ?? Colors.green,
         );
       case 'viewer':
         return _PermissionConfig(
           icon: Icons.visibility,
           label: context?.l10n.socialPermissionViewer ?? 'Läsa',
-          color: AppColors.textMedium,
+          color: cs?.onSurfaceVariant ?? Colors.grey,
         );
       default:
         return _PermissionConfig(
           icon: Icons.help_outline,
           label: context?.l10n.socialPermissionUnknown ?? '?',
-          color: AppColors.textMedium,
+          color: cs?.onSurfaceVariant ?? Colors.grey,
         );
     }
   }

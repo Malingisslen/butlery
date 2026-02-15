@@ -6,6 +6,7 @@ import 'package:butlery/models/social/social_comment.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 class SocialCommentsManager extends ChangeNotifier {
   final UnifiedRecipeService _recipeService;
@@ -47,7 +48,7 @@ class SocialCommentsManager extends ChangeNotifier {
           .toList();
       AppLogger.info('Comments refreshed successfully for recipe: $recipeId');
     } catch (e) {
-      _commentsError = 'Kunde inte ladda kommentarer: $e';
+      _commentsError = AppLocale.current.errorCouldNotLoad('kommentarer');
       AppLogger.error('Failed to refresh comments for recipe $recipeId: $e');
     } finally {
       _isLoadingComments = false;
@@ -84,14 +85,14 @@ class SocialCommentsManager extends ChangeNotifier {
               'Real-time comment update received: ${_comments.length} comments');
         },
         onError: (error) {
-          _commentsError = 'Kunde inte lyssna på kommentarer: $error';
+          _commentsError = AppLocale.current.errorCouldNotLoad('kommentarer');
           _isLoadingComments = false;
           notifyListeners();
           AppLogger.error('Comment stream error for recipe $recipeId: $error');
         },
       );
     } catch (e) {
-      _commentsError = 'Kunde inte starta kommentarströmning: $e';
+      _commentsError = AppLocale.current.errorCouldNotLoad('kommentarer');
       _isLoadingComments = false;
       notifyListeners();
       AppLogger.error(
@@ -138,7 +139,7 @@ class SocialCommentsManager extends ChangeNotifier {
         throw Exception('Failed to post comment - service returned null');
       }
     } catch (e) {
-      _commentsError = 'Kunde inte posta kommentar: $e';
+      _commentsError = AppLocale.current.errorGeneric;
       AppLogger.error('Failed to post comment for recipe $recipeId: $e');
     } finally {
       _isPostingComment = false;
@@ -168,7 +169,7 @@ class SocialCommentsManager extends ChangeNotifier {
         throw Exception('Service returned false for comment deletion');
       }
     } catch (e) {
-      _commentsError = 'Kunde inte ta bort kommentar: $e';
+      _commentsError = AppLocale.current.errorCouldNotDelete('kommentar');
       AppLogger.error('Failed to delete comment $commentId: $e');
       notifyListeners();
     }

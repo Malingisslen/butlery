@@ -53,6 +53,18 @@
         ]
       }
     ],
+    "PreToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash C:/Butlery/butlery/.claude/hooks/plan-review-gate.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "*",

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 import 'package:butlery/widgets/tagging/dietary_status_badge.dart';
 
@@ -73,6 +73,7 @@ class TagResultDisplay extends StatelessWidget {
 
   /// Renders allergen and dietary badges inline without card wrapper.
   Widget _buildInlineBadges(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final allergens = _getAllergensToShow();
     final diets = _getDietaryToShow();
 
@@ -80,7 +81,7 @@ class TagResultDisplay extends StatelessWidget {
       return Text(
         context.l10n.tagResultNoAllergens,
         style: AppTextStyles.bodySmall.copyWith(
-          color: AppColors.textMedium,
+          color: cs.onSurfaceVariant,
           fontStyle: FontStyle.italic,
         ),
       );
@@ -113,21 +114,22 @@ class TagResultDisplay extends StatelessWidget {
   }
 
   Widget _buildRetagIndicator(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final warningColor = context.butleryColors.warning;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingS),
       decoration: BoxDecoration(
-        color:
-            AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: warningColor.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-            color: AppColors.warning
-                .withValues(alpha: AppDimensions.opacityMediumLight)),
+            color: warningColor.withValues(
+                alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.update,
-            color: AppColors.warning,
+            color: warningColor,
             size: AppDimensions.iconSize18,
           ),
           const SizedBox(width: AppDimensions.spacingS),
@@ -135,7 +137,7 @@ class TagResultDisplay extends StatelessWidget {
             child: Text(
               context.l10n.tagResultOutdated,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.warning,
+                color: warningColor,
               ),
             ),
           ),
@@ -152,7 +154,7 @@ class TagResultDisplay extends StatelessWidget {
               child: Text(
                 context.l10n.commonUpdate,
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.forestGreen,
+                  color: cs.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -163,6 +165,7 @@ class TagResultDisplay extends StatelessWidget {
   }
 
   Widget _buildCoverageSection(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final coveragePercent = (tagResult.coverage * 100).round();
     final hasUnknowns = tagResult.hasUnknowns;
 
@@ -173,7 +176,7 @@ class TagResultDisplay extends StatelessWidget {
           children: [
             Icon(
               Icons.analytics_outlined,
-              color: AppColors.forestGreen,
+              color: cs.primary,
               size: compact
                   ? AppDimensions.iconSizeS
                   : AppDimensions.iconSizeAction,
@@ -196,8 +199,8 @@ class TagResultDisplay extends StatelessWidget {
                     BorderRadius.circular(AppDimensions.borderRadiusS),
                 child: LinearProgressIndicator(
                   value: tagResult.coverage,
-                  backgroundColor: AppColors.divider,
-                  color: _getCoverageColor(),
+                  backgroundColor: cs.outlineVariant,
+                  color: _getCoverageColor(context),
                   minHeight: 8,
                 ),
               ),
@@ -206,7 +209,7 @@ class TagResultDisplay extends StatelessWidget {
             Text(
               '$coveragePercent%',
               style: AppTextStyles.bodyBold.copyWith(
-                color: _getCoverageColor(),
+                color: _getCoverageColor(context),
               ),
             ),
           ],
@@ -221,10 +224,10 @@ class TagResultDisplay extends StatelessWidget {
               onTap: onUnknownIngredientsTap,
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.warning_amber_rounded,
                     size: AppDimensions.iconSizeS,
-                    color: AppColors.warning,
+                    color: context.butleryColors.warning,
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Expanded(
@@ -232,15 +235,15 @@ class TagResultDisplay extends StatelessWidget {
                       context.l10n.tagResultUnknownIngredients(
                           tagResult.unknownIngredients.length),
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.warning,
+                        color: context.butleryColors.warning,
                       ),
                     ),
                   ),
                   if (onUnknownIngredientsTap != null)
-                    const Icon(
+                    Icon(
                       Icons.chevron_right,
                       size: AppDimensions.iconSize18,
-                      color: AppColors.warning,
+                      color: context.butleryColors.warning,
                     ),
                 ],
               ),
@@ -251,10 +254,10 @@ class TagResultDisplay extends StatelessWidget {
     );
   }
 
-  Color _getCoverageColor() {
-    if (tagResult.coverage >= 1.0) return AppColors.success;
-    if (tagResult.coverage >= 0.8) return AppColors.warning;
-    return AppColors.error;
+  Color _getCoverageColor(BuildContext context) {
+    if (tagResult.coverage >= 1.0) return context.butleryColors.success;
+    if (tagResult.coverage >= 0.8) return context.butleryColors.warning;
+    return Theme.of(context).colorScheme.error;
   }
 
   List<String> _getAllergensToShow() {
@@ -283,11 +286,11 @@ class TagResultDisplay extends StatelessWidget {
       'vegetarisk',
       'vegansk',
       'pescetarian',
-      'barnvänlig',
-      'graviditetssäker',
+      'barnvanlig',
+      'graviditetssaker',
       'halalanpassad',
       'kosheranpassad',
-      'nötkötsfri',
+      'notkottsfri',
     ];
 
     return priorityOrder.where((diet) {
@@ -362,9 +365,9 @@ class CompactAllergenRow extends StatelessWidget {
 
   static const _defaultAllergens = {
     'gluten',
-    'mjölk',
-    'nötter',
-    'ägg',
+    'mjolk',
+    'notter',
+    'agg',
   };
 }
 
@@ -422,10 +425,10 @@ class CompactDietaryRow extends StatelessWidget {
     'vegetarisk',
     'vegansk',
     'pescetarian',
-    'barnvänlig',
-    'graviditetssäker',
+    'barnvanlig',
+    'graviditetssaker',
     'halalanpassad',
     'kosheranpassad',
-    'nötkötsfri',
+    'notkottsfri',
   ];
 }

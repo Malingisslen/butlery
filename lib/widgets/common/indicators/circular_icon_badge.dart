@@ -1,7 +1,6 @@
 // lib/widgets/common/indicators/circular_icon_badge.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Reusable circular icon badge component
@@ -26,24 +25,25 @@ class CircularIconBadge extends StatelessWidget {
     super.key,
     this.size,
   })  : icon = Icons.add,
-        backgroundColor = AppColors.forestGreen,
-        iconColor = AppColors.cardWhite;
+        backgroundColor = null,
+        iconColor = null;
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final badgeSize = size ?? AppDimensions.iconSizeS;
 
     return Container(
       width: badgeSize,
       height: badgeSize,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.forestGreen,
+        color: backgroundColor ?? cs.primary,
         shape: BoxShape.circle,
       ),
       child: Icon(
         icon,
         size: badgeSize,
-        color: iconColor ?? AppColors.cardWhite,
+        color: iconColor ?? cs.surfaceContainerHighest,
       ),
     );
   }

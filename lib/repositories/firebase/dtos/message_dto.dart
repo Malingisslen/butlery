@@ -101,7 +101,24 @@ class MessageDto {
       editedAt: data['editedAt'] != null
           ? (data['editedAt'] as Timestamp).toDate()
           : null,
+      reactions: _parseReactions(data['reactions']),
     );
+  }
+
+  /// Parse reactions map from Firestore data.
+  /// Converts Map<String, dynamic> where values are lists into Map<String, List<String>>.
+  static Map<String, List<String>> _parseReactions(dynamic raw) {
+    if (raw == null) return const {};
+    if (raw is! Map) return const {};
+    final result = <String, List<String>>{};
+    for (final entry in raw.entries) {
+      final key = entry.key.toString();
+      final value = entry.value;
+      if (value is List) {
+        result[key] = value.map((e) => e.toString()).toList();
+      }
+    }
+    return result;
   }
 
   /// Convert Message model to Firestore document
@@ -126,6 +143,7 @@ class MessageDto {
       'editedAt': message.editedAt != null
           ? Timestamp.fromDate(message.editedAt!)
           : null,
+      if (message.reactions.isNotEmpty) 'reactions': message.reactions,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     };
@@ -154,6 +172,7 @@ class MessageDto {
       'editedAt': message.editedAt != null
           ? Timestamp.fromDate(message.editedAt!)
           : null,
+      if (message.reactions.isNotEmpty) 'reactions': message.reactions,
     };
   }
 }

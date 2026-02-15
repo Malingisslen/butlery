@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
@@ -93,6 +93,8 @@ class ShareDialogActions {
           return context.l10n.shareMenuTitle;
         case ShareContentType.shoppingList:
           return context.l10n.shareShoppingListTitle;
+        case ShareContentType.personalTag:
+          return 'Dela tagg';
       }
     }
   }
@@ -103,33 +105,33 @@ class ShareDialogActions {
     String contentTypeName,
   ) {
     if (selectedCount == 0) {
+      final warningColor = context.butleryColors.warning;
       return Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingL,
           vertical: AppDimensions.spacingS,
         ),
         decoration: BoxDecoration(
-          color: AppColors.warning
-              .withValues(alpha: AppDimensions.opacityVeryLight),
+          color: warningColor.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           border: Border.all(
-            color: AppColors.warning
-                .withValues(alpha: AppDimensions.opacityMediumLight),
+            color: warningColor.withValues(
+                alpha: AppDimensions.opacityMediumLight),
           ),
         ),
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.info_outline,
               size: AppDimensions.iconSizeS,
-              color: AppColors.warning,
+              color: warningColor,
             ),
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Text(
                 context.l10n.shareSelectAtLeastOneFriend,
                 style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: AppColors.warning,
+                  color: warningColor,
                 ),
               ),
             ),
@@ -138,33 +140,33 @@ class ShareDialogActions {
       );
     }
 
+    final successColor = context.butleryColors.success;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
         vertical: AppDimensions.spacingS,
       ),
       decoration: BoxDecoration(
-        color:
-            AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: successColor.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.success
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+          color:
+              successColor.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.check_circle_outline,
             size: AppDimensions.iconSizeS,
-            color: AppColors.success,
+            color: successColor,
           ),
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
             child: Text(
               context.l10n.shareFriendsSelectedCount(selectedCount),
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: AppColors.success,
+                color: successColor,
               ),
             ),
           ),

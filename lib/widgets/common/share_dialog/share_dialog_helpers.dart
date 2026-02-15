@@ -14,6 +14,8 @@ class ShareDialogHelpers {
         return context.l10n.shareContentTypeMenu;
       case ShareContentType.shoppingList:
         return context.l10n.shareContentTypeShoppingList;
+      case ShareContentType.personalTag:
+        return 'tagg';
     }
   }
 
@@ -33,6 +35,8 @@ class ShareDialogHelpers {
           return context.l10n.shareMenu;
         case ShareContentType.shoppingList:
           return context.l10n.shareShoppingList;
+        case ShareContentType.personalTag:
+          return 'Dela tagg';
       }
     }
   }
@@ -43,6 +47,9 @@ class ShareDialogHelpers {
       case ShareContentType.menu:
       case ShareContentType.shoppingList:
         return true;
+      case ShareContentType.personalTag:
+        // Tags are always shared as static snapshots
+        return false;
     }
   }
 
@@ -58,6 +65,8 @@ class ShareDialogHelpers {
         return context.l10n.shareDefaultMessageMenu(contentName);
       case ShareContentType.shoppingList:
         return context.l10n.shareDefaultMessageShoppingList(contentName);
+      case ShareContentType.personalTag:
+        return 'Kolla in min tagg "$contentName"!';
     }
   }
 
@@ -85,6 +94,8 @@ class ShareDialogHelpers {
         return context.l10n.shareMenuWithFriends;
       case ShareContentType.shoppingList:
         return context.l10n.shareShoppingList;
+      case ShareContentType.personalTag:
+        return 'Dela tagg med vanner';
     }
   }
 

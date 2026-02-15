@@ -7,6 +7,7 @@
 library;
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/widgets/import/ingredient_line_detector.dart';
 
@@ -300,19 +301,19 @@ class AssistedImportViewModel extends ChangeNotifier {
 
       case AssistedImportStep.selectInstructions:
         if (_selectedInstructionIndices.isEmpty) {
-          return 'Välj minst en instruktion';
+          return AppLocale.current.assistedImportSelectInstructionsError;
         }
         return null;
 
       case AssistedImportStep.reviewEdit:
         if (_title.isEmpty) {
-          return 'Ange ett receptnamn';
+          return AppLocale.current.assistedImportEnterRecipeName;
         }
         if (_editedIngredients.isEmpty) {
-          return 'Lägg till minst en ingrediens';
+          return AppLocale.current.assistedImportAddIngredientError;
         }
         if (_editedInstructions.isEmpty) {
-          return 'Lägg till minst en instruktion';
+          return AppLocale.current.assistedImportAddInstructionError;
         }
         return null;
     }

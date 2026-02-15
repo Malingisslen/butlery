@@ -2,6 +2,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// ViewModel for managing user allergen and dietary preferences.
 ///
@@ -87,10 +88,11 @@ class AllergenPreferencesViewModel extends BaseViewModel {
         if (success) {
           _hasChanges = false;
         } else {
-          throw Exception('Kunde inte spara inställningar');
+          throw Exception(
+              AppLocale.current.errorCouldNotUpdate('inställningar'));
         }
       },
-      errorPrefix: 'Kunde inte spara allergeninställningar',
+      errorPrefix: AppLocale.current.errorCouldNotUpdateAllergenSettings,
     );
   }
 

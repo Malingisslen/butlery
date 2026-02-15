@@ -8,6 +8,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 // Focused modules
 import 'package:butlery/services/realtime/modules/recipe_content_operations.dart';
@@ -40,7 +41,8 @@ class RealtimeRecipeService extends ChangeNotifier
 
   /// Current user display name
   String get _currentUserDisplayName =>
-      _permissionService.currentUser?.displayName ?? 'Okänd användare';
+      _permissionService.currentUser?.displayName ??
+      AppLocale.current.displayUnknownUser;
 
   /// Create realtime recipe from existing recipe
   Future<RealtimeRecipe> createRealtimeRecipe({
@@ -51,7 +53,7 @@ class RealtimeRecipeService extends ChangeNotifier
     if (!_permissionService.isAuthenticated) {
       throw RecipeOperationError(
         operation: RecipeOperationType.createFromExisting,
-        message: 'Användare inte inloggad',
+        message: AppLocale.current.errorUserNotLoggedIn,
       );
     }
     final userId = _permissionService.currentUserId!;
@@ -80,7 +82,7 @@ class RealtimeRecipeService extends ChangeNotifier
     } catch (e) {
       _handleError(
         RecipeOperationType.createFromExisting,
-        'Kunde inte skapa realtidsrecept: $e',
+        AppLocale.current.errorCouldNotCreateRealtimeRecipe('$e'),
         originalError: e,
       );
       rethrow;
@@ -98,7 +100,7 @@ class RealtimeRecipeService extends ChangeNotifier
     } catch (e) {
       _handleError(
         RecipeOperationType.createFromExisting, // Generic operation
-        'Kunde inte starta watching av recept: $e',
+        AppLocale.current.errorCouldNotWatchRecipe('$e'),
         resourceId: resourceId,
         originalError: e,
       );
@@ -358,7 +360,7 @@ class RealtimeRecipeService extends ChangeNotifier
     if (!_permissionService.isAuthenticated) {
       throw RecipeOperationError(
         operation: RecipeOperationType.createFromExisting,
-        message: 'Användare inte inloggad',
+        message: AppLocale.current.errorUserNotLoggedIn,
         resourceId: realtimeRecipe.id,
       );
     }
@@ -390,7 +392,7 @@ class RealtimeRecipeService extends ChangeNotifier
     if (!_permissionService.isAuthenticated) {
       throw RecipeOperationError(
         operation: operation,
-        message: 'Användare inte inloggad',
+        message: AppLocale.current.errorUserNotLoggedIn,
         resourceId: resourceId,
       );
     }
@@ -408,7 +410,7 @@ class RealtimeRecipeService extends ChangeNotifier
       if (currentRecipe == null) {
         throw RecipeOperationError(
           operation: operation,
-          message: 'Receptet hittades inte',
+          message: AppLocale.current.errorRecipeNotFound,
           resourceId: resourceId,
         );
       }
@@ -417,7 +419,7 @@ class RealtimeRecipeService extends ChangeNotifier
       if (!_permissionService.canEditRecipe(resourceId)) {
         throw RecipeOperationError(
           operation: operation,
-          message: 'Ingen redigeringsbehörighet',
+          message: AppLocale.current.errorNoEditPermission,
           resourceId: resourceId,
         );
       }
@@ -430,7 +432,8 @@ class RealtimeRecipeService extends ChangeNotifier
 
       AppLogger.success('✅ $operationName slutförd för: $resourceId');
     } catch (e) {
-      _handleError(operation, 'Kunde inte $operationName: $e',
+      _handleError(operation,
+          AppLocale.current.errorCouldNotPerformOperation(operationName, '$e'),
           resourceId: resourceId, originalError: e);
       rethrow;
     } finally {
@@ -443,7 +446,7 @@ class RealtimeRecipeService extends ChangeNotifier
     if (!_permissionService.isAuthenticated) {
       throw RecipeOperationError(
         operation: RecipeOperationType.removeParticipant, // Closest operation
-        message: 'Användare inte inloggad',
+        message: AppLocale.current.errorUserNotLoggedIn,
         resourceId: resourceId,
       );
     }
@@ -459,7 +462,7 @@ class RealtimeRecipeService extends ChangeNotifier
     } catch (e) {
       _handleError(
         RecipeOperationType.removeParticipant, // Closest operation
-        'Kunde inte ta bort realtidsrecept: $e',
+        AppLocale.current.errorCouldNotDeleteRealtimeRecipe('$e'),
         resourceId: resourceId,
         originalError: e,
       );

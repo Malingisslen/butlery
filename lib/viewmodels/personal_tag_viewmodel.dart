@@ -13,6 +13,7 @@ import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// ViewModel for managing personal tags, groups, and automation rules.
 ///
@@ -150,7 +151,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
         return initialize();
       }
 
-      _setError('Kunde inte ladda taggar');
+      _setError(AppLocale.current.errorCouldNotLoadTags);
     } finally {
       _setLoading(false);
     }
@@ -166,7 +167,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
       },
       onError: (e) {
         AppLogger.error('Tags/groups stream error: $e');
-        _setError('Fel vid uppdatering av taggar');
+        _setError(AppLocale.current.errorTagUpdateFailed);
       },
     );
   }
@@ -205,7 +206,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError('Kunde inte skapa taggen');
+      _setError(AppLocale.current.errorCouldNotCreateTag);
     }
     return result ?? false;
   }
@@ -225,7 +226,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError('Kunde inte uppdatera taggen');
+      _setError(AppLocale.current.errorCouldNotUpdateTag);
     }
     return result ?? false;
   }
@@ -236,7 +237,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
     final tag = getTagById(tagId);
     if (tag == null) {
-      _setError('Taggen hittades inte');
+      _setError(AppLocale.current.errorTagNotFound);
       return false;
     }
 
@@ -251,7 +252,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError('Kunde inte ta bort taggen');
+      _setError(AppLocale.current.errorCouldNotDeleteTag);
     }
     return result ?? false;
   }
@@ -308,7 +309,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError('Kunde inte skapa gruppen');
+      _setError(AppLocale.current.errorCouldNotCreateGroup);
     }
     return result ?? false;
   }
@@ -328,7 +329,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError('Kunde inte uppdatera gruppen');
+      _setError(AppLocale.current.errorCouldNotUpdateGroup);
     }
     return result ?? false;
   }
@@ -339,7 +340,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
     final group = getGroupById(groupId);
     if (group == null) {
-      _setError('Gruppen hittades inte');
+      _setError(AppLocale.current.errorGroupNotFound);
       return false;
     }
 
@@ -354,7 +355,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError('Kunde inte ta bort gruppen');
+      _setError(AppLocale.current.errorCouldNotDeleteGroup);
     }
     return result ?? false;
   }
@@ -387,7 +388,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError('Kunde inte skapa regeln');
+      _setError(AppLocale.current.errorCouldNotCreateRule);
     }
     return result ?? false;
   }
@@ -407,7 +408,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError('Kunde inte uppdatera regeln');
+      _setError(AppLocale.current.errorCouldNotUpdateRule);
     }
     return result ?? false;
   }
@@ -427,7 +428,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError('Kunde inte ta bort regeln');
+      _setError(AppLocale.current.errorCouldNotDeleteRule);
     }
     return result ?? false;
   }

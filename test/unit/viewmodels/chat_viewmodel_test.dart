@@ -455,7 +455,7 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-        expect(viewModel.sendError, contains('Kunde inte skicka meddelandet'));
+        expect(viewModel.sendError, contains('Kunde inte skicka meddelande'));
         expect(viewModel.isSending, isFalse);
       });
 

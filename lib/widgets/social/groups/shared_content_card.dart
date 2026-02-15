@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 /// Card widget for displaying shared content items (recipes, menus, shopping lists)
@@ -34,16 +34,17 @@ class SharedContentCard extends StatelessWidget {
     }
   }
 
-  Color _getColorForType(String type) {
+  Color _getColorForType(BuildContext context, String type) {
+    final cs = Theme.of(context).colorScheme;
     switch (type) {
       case 'recipe':
-        return AppColors.forestGreen;
+        return cs.primary;
       case 'menu':
-        return AppColors.success;
+        return context.butleryColors.success;
       case 'shopping_list':
-        return AppColors.warning;
+        return context.butleryColors.warning;
       default:
-        return AppColors.textSecondary;
+        return cs.onSurfaceVariant;
     }
   }
 
@@ -62,7 +63,8 @@ class SharedContentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor = _getColorForType(item.type);
+    final cs = Theme.of(context).colorScheme;
+    final iconColor = _getColorForType(context, item.type);
 
     // Configure Swedish locale for timeago
     timeago.setLocaleMessages('sv', timeago.SvMessages());
@@ -133,14 +135,14 @@ class SharedContentCard extends StatelessWidget {
                     else
                       CircleAvatar(
                         radius: 12,
-                        backgroundColor: AppColors.forestGreen
+                        backgroundColor: cs.primary
                             .withValues(alpha: AppDimensions.opacityLight),
                         child: Text(
                           item.sharedByDisplayName.isNotEmpty
                               ? item.sharedByDisplayName[0].toUpperCase()
                               : '?',
                           style: AppTextStyles.textXs.copyWith(
-                            color: AppColors.forestGreen,
+                            color: cs.primary,
                           ),
                         ),
                       ),
@@ -149,7 +151,7 @@ class SharedContentCard extends StatelessWidget {
                       child: Text(
                         context.l10n.groupSharedBy(item.sharedByDisplayName),
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: cs.onSurfaceVariant,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -158,7 +160,7 @@ class SharedContentCard extends StatelessWidget {
                     Text(
                       timeago.format(item.sharedAt, locale: 'sv'),
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ],

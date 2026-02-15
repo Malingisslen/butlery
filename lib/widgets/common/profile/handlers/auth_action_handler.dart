@@ -1,7 +1,7 @@
 // lib/widgets/common/profile/handlers/auth_action_handler.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -37,7 +37,7 @@ class AuthActionHandler {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.profileLogoutFailed('$e')),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -92,7 +92,7 @@ class AuthActionHandler {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(context.l10n.profileAccountDeletedPermanently),
-              backgroundColor: AppColors.success,
+              backgroundColor: context.butleryColors.success,
             ),
           );
         } else {

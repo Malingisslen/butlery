@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Progress dialog for batch retagging all user recipes.
 ///
@@ -52,7 +52,7 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.retagRecipesRetagged(count)),
-          backgroundColor: AppColors.success,
+          backgroundColor: context.butleryColors.success,
         ),
       );
     } catch (e) {
@@ -70,9 +70,9 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
       shape: const RoundedRectangleBorder(),
       title: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.sync,
-            color: AppColors.forestGreen,
+            color: Theme.of(context).colorScheme.primary,
             size: AppDimensions.iconSizeL,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
@@ -88,7 +88,8 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
           if (_error != null) ...[
             Text(
               _error!,
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
+              style: AppTextStyles.bodySmall
+                  .copyWith(color: Theme.of(context).colorScheme.error),
             ),
             const SizedBox(height: AppDimensions.spacingSm),
           ] else ...[
@@ -101,16 +102,18 @@ class _RetagProgressDialogState extends State<RetagProgressDialog> {
               Text(
                 context.l10n.retagFetchingRecipes,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textMedium,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             const SizedBox(height: AppDimensions.spacingMd),
             LinearProgressIndicator(
               value: _total > 0 ? _current / _total : null,
-              backgroundColor: AppColors.forestGreen
+              backgroundColor: Theme.of(context)
+                  .colorScheme
+                  .primary
                   .withValues(alpha: AppDimensions.opacityVeryLight),
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                  Theme.of(context).colorScheme.primary),
             ),
           ],
         ],

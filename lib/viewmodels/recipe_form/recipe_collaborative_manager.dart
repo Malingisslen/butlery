@@ -15,6 +15,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Manages real-time collaborative editing for recipe forms.
 class RecipeCollaborativeManager extends ChangeNotifier
@@ -33,7 +34,7 @@ class RecipeCollaborativeManager extends ChangeNotifier
   final List<UserProfile> _collaborativeParticipants = [];
   final List<LiveEditor> _liveEditors = [];
   bool _isConnectedToFirebase = true;
-  String _connectionStatusText = 'Ansluten';
+  String _connectionStatusText = '';
   Timer? _presenceTimer;
   Timer? _saveDebounceTimer;
 
@@ -71,8 +72,9 @@ class RecipeCollaborativeManager extends ChangeNotifier
 
       final userId = _permissionService.currentUserId;
       final userDisplayName =
-          _permissionService.currentUser?.displayName ?? 'Okänd';
-      if (userId == null) throw Exception('Ingen inloggad användare');
+          _permissionService.currentUser?.displayName ?? '?';
+      if (userId == null)
+        throw Exception(AppLocale.current.errorNoUserLoggedIn);
 
       _realtimeRecipe = RealtimeRecipe.fromRecipe(
         recipe: recipe,
@@ -90,7 +92,7 @@ class RecipeCollaborativeManager extends ChangeNotifier
       notifyListeners();
     } catch (e) {
       AppLogger.error('Fel vid aktivering av Firebase collaborative mode: $e');
-      throw Exception('Kunde inte aktivera delning: $e');
+      throw Exception(AppLocale.current.errorGeneric);
     }
   }
 
@@ -107,7 +109,7 @@ class RecipeCollaborativeManager extends ChangeNotifier
       notifyListeners();
     } catch (e) {
       AppLogger.error('Fel vid inbjudning av användare: $e');
-      throw Exception('Kunde inte bjuda in användare: $e');
+      throw Exception(AppLocale.current.errorGeneric);
     }
   }
 
@@ -122,7 +124,7 @@ class RecipeCollaborativeManager extends ChangeNotifier
       notifyListeners();
     } catch (e) {
       AppLogger.error('Fel vid borttagning av användare: $e');
-      throw Exception('Kunde inte ta bort användare: $e');
+      throw Exception(AppLocale.current.errorGeneric);
     }
   }
 
@@ -174,7 +176,7 @@ class RecipeCollaborativeManager extends ChangeNotifier
       } catch (e) {
         AppLogger.error('Fel vid uppdatering av recipe data i Firebase: $e');
         _isConnectedToFirebase = false;
-        _connectionStatusText = 'Anslutningsfel';
+        _connectionStatusText = AppLocale.current.errorNetwork;
         notifyListeners();
       }
     });
@@ -194,7 +196,7 @@ class RecipeCollaborativeManager extends ChangeNotifier
       onError: (error) {
         AppLogger.error('Fel i realtime listener: $error');
         _isConnectedToFirebase = false;
-        _connectionStatusText = 'Anslutningsfel';
+        _connectionStatusText = AppLocale.current.errorNetwork;
         notifyListeners();
       },
     );
@@ -262,8 +264,7 @@ class RecipeCollaborativeManager extends ChangeNotifier
     if (!_isCollaborative || _realtimeRecipe == null) return;
 
     final userId = _permissionService.currentUserId;
-    final userDisplayName =
-        _permissionService.currentUser?.displayName ?? 'Okänd';
+    final userDisplayName = _permissionService.currentUser?.displayName ?? '?';
 
     if (userId == null) return;
 

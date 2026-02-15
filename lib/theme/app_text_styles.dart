@@ -4,9 +4,10 @@
 /// - Headers & Navigation: Josefin Sans (lowercase, with letter-spacing)
 /// - Body text: Space Grotesk
 ///
-/// **Usage:**
-/// - Use [headerFont] for app headers, navigation items
-/// - Use [bodyFont] for body text, labels, buttons
+/// **Dark Mode Strategy:**
+/// Base TextTheme styles omit explicit color so M3 applies `colorScheme.onSurface`
+/// automatically. Semantic variants (error, success, etc.) still set color explicitly.
+/// Widgets needing non-default text colors should use `.copyWith(color: cs.onSurfaceVariant)`.
 
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -15,7 +16,6 @@ import 'package:butlery/theme/app_colors.dart';
 
 /// Central repository for all text styles in the Butlery application.
 class AppTextStyles {
-  /// Private constructor
   AppTextStyles._();
 
   /// Header font family - Josefin Sans for headers and navigation
@@ -24,26 +24,23 @@ class AppTextStyles {
   /// Body font family - Space Grotesk for body text
   static const String bodyFont = 'SpaceGrotesk';
 
-  /// Primary font family for body text.
-  /// Uses Space Grotesk, falls back to system font on iOS.
   static String? get _primaryFontFamily {
     if (kIsWeb) return bodyFont;
     return Platform.isIOS ? null : bodyFont;
   }
 
-  /// Header font family for headers and navigation.
-  /// Uses Josefin Sans, falls back to system font on iOS.
   static String? get _headerFontFamily {
     if (kIsWeb) return headerFont;
     return Platform.isIOS ? null : headerFont;
   }
+
+  // ── TextTheme base styles (no explicit color → inherits from M3 theme) ──
 
   /// Display Small - For prominent section headlines (Josefin Sans)
   static TextStyle get displaySmall => TextStyle(
         fontFamily: _headerFontFamily,
         fontSize: 24,
         fontWeight: FontWeight.w600,
-        color: AppColors.textDark,
         letterSpacing: 0.5,
       );
 
@@ -52,7 +49,6 @@ class AppTextStyles {
         fontFamily: _headerFontFamily,
         fontSize: 24,
         fontWeight: FontWeight.w600,
-        color: AppColors.sectionHeader,
         letterSpacing: 0.5,
       );
 
@@ -61,7 +57,6 @@ class AppTextStyles {
         fontFamily: _headerFontFamily,
         fontSize: 22,
         fontWeight: FontWeight.w600,
-        color: AppColors.textDark,
         letterSpacing: 0.5,
       );
 
@@ -70,7 +65,6 @@ class AppTextStyles {
         fontFamily: _headerFontFamily,
         fontSize: 28,
         fontWeight: FontWeight.w600,
-        color: AppColors.textDark,
         letterSpacing: 0.5,
       );
 
@@ -79,7 +73,6 @@ class AppTextStyles {
         fontFamily: _primaryFontFamily,
         fontSize: 17,
         fontWeight: FontWeight.w500,
-        color: AppColors.textDark,
         height: 1.3,
       );
 
@@ -88,7 +81,6 @@ class AppTextStyles {
         fontFamily: _primaryFontFamily,
         fontSize: 15,
         fontWeight: FontWeight.w500,
-        color: AppColors.textDark,
         height: 1.3,
       );
 
@@ -100,7 +92,6 @@ class AppTextStyles {
         fontFamily: _primaryFontFamily,
         fontSize: 16,
         fontWeight: FontWeight.normal,
-        color: AppColors.textDark,
         height: 1.5,
       );
 
@@ -109,7 +100,6 @@ class AppTextStyles {
         fontFamily: _primaryFontFamily,
         fontSize: 14,
         fontWeight: FontWeight.normal,
-        color: AppColors.textMedium,
         height: 1.4,
       );
 
@@ -118,7 +108,6 @@ class AppTextStyles {
         fontFamily: _primaryFontFamily,
         fontSize: 13,
         fontWeight: FontWeight.normal,
-        color: AppColors.recipeMeta,
         height: 1.3,
       );
 
@@ -127,7 +116,6 @@ class AppTextStyles {
         fontFamily: _primaryFontFamily,
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: AppColors.textDark,
       );
 
   /// Label Medium - For standard buttons
@@ -135,7 +123,6 @@ class AppTextStyles {
         fontFamily: _primaryFontFamily,
         fontSize: 12,
         fontWeight: FontWeight.w500,
-        color: AppColors.textMedium,
       );
 
   /// Label Small - For small buttons and tags
@@ -143,8 +130,9 @@ class AppTextStyles {
         fontFamily: _primaryFontFamily,
         fontSize: 11,
         fontWeight: FontWeight.w500,
-        color: AppColors.textLight,
       );
+
+  // ── Semantic variants (keep explicit colors for status meaning) ──
 
   /// Recipe metadata style
   static TextStyle get recipeMeta => bodySmall.copyWith(
@@ -184,7 +172,6 @@ class AppTextStyles {
         fontFamily: _headerFontFamily,
         fontSize: 11,
         fontWeight: FontWeight.w500,
-        color: AppColors.navUnselectedItem,
         letterSpacing: 0.3,
       );
 
@@ -205,7 +192,6 @@ class AppTextStyles {
         fontFamily: _headerFontFamily,
         fontSize: 18,
         fontWeight: FontWeight.w600,
-        color: AppColors.headerForeground,
         letterSpacing: 0.5,
       );
 
@@ -232,97 +218,87 @@ class AppTextStyles {
         color: AppColors.textLight,
       );
 
-  /// Metadata emphasized - for timestamps, counts with emphasis (56 usages)
+  /// Metadata emphasized - for timestamps, counts with emphasis
   static TextStyle get metadataEmphasized => bodySmall.copyWith(
-        color: AppColors.textMedium,
         fontWeight: FontWeight.w500,
       );
 
-  /// Badge text style (7 usages)
+  /// Badge text style
   static TextStyle get badge => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 10,
         fontWeight: FontWeight.w600,
-        color: AppColors.textLight,
       );
 
-  /// Badge text style large (5 usages)
+  /// Badge text style large
   static TextStyle get badgeLarge => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 12,
         fontWeight: FontWeight.w600,
-        color: AppColors.textMedium,
       );
 
-  /// Title bold - for emphasized titles (52 usages)
+  /// Title bold - for emphasized titles
   static TextStyle get titleBold => titleMedium.copyWith(
         fontWeight: FontWeight.w700,
       );
 
-  /// Body bold - for emphasized body text (34 usages)
+  /// Body bold - for emphasized body text
   static TextStyle get bodyBold => bodyMedium.copyWith(
         fontWeight: FontWeight.w600,
       );
 
-  /// Body large bold (16 usages)
+  /// Body large bold
   static TextStyle get bodyLargeBold => bodyLarge.copyWith(
         fontWeight: FontWeight.w600,
       );
 
-  /// Small text - 10px for very small labels (5 usages)
+  /// Small text - 10px for very small labels
   static TextStyle get textXs => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 10,
         fontWeight: FontWeight.normal,
-        color: AppColors.textMedium,
       );
 
-  /// Small text emphasized - 10px bold (3 usages)
+  /// Small text emphasized - 10px bold
   static TextStyle get textXsBold => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 10,
         fontWeight: FontWeight.w600,
-        color: AppColors.textMedium,
       );
 
-  /// Medium small text - 11px (1 usage)
+  /// Medium small text - 11px
   static TextStyle get textSm => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 11,
         fontWeight: FontWeight.normal,
-        color: AppColors.textMedium,
       );
 
-  /// 14px regular text - for form options and rule conditions (5 usages)
+  /// 14px regular text - for form options and rule conditions
   static TextStyle get formOption => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 14,
         fontWeight: FontWeight.normal,
-        color: AppColors.textDark,
       );
 
-  /// 14px medium weight text - for content labels (19 usages)
+  /// 14px medium weight text - for content labels
   static TextStyle get contentLabel => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 14,
         fontWeight: FontWeight.w500,
-        color: AppColors.textDark,
       );
 
-  /// 16px medium weight text - for content titles (24 usages)
+  /// 16px medium weight text - for content titles
   static TextStyle get contentTitle => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 16,
         fontWeight: FontWeight.w500,
-        color: AppColors.textDark,
       );
 
-  /// 20px semibold text - for group titles (2 usages)
+  /// 20px semibold text - for group titles
   static TextStyle get groupTitle => TextStyle(
         fontFamily: _primaryFontFamily,
         fontSize: 20,
         fontWeight: FontWeight.w600,
-        color: AppColors.textDark,
       );
 
   /// Body medium with error color - for inline error messages
@@ -341,14 +317,10 @@ class AppTextStyles {
       );
 
   /// Body medium muted - for secondary/muted body text
-  static TextStyle get bodyMediumMuted => bodyMedium.copyWith(
-        color: AppColors.textMedium,
-      );
+  static TextStyle get bodyMediumMuted => bodyMedium;
 
   /// Title medium muted - for muted/disabled titles
-  static TextStyle get titleMediumMuted => titleMedium.copyWith(
-        color: AppColors.textMedium,
-      );
+  static TextStyle get titleMediumMuted => titleMedium;
 
   /// Label small success - for success badges/indicators
   static TextStyle get labelSmallSuccess => labelSmall.copyWith(
@@ -361,9 +333,7 @@ class AppTextStyles {
       );
 
   /// Muted label - for section headers in cards
-  static TextStyle get labelMediumMuted => labelMedium.copyWith(
-        color: AppColors.textMedium,
-      );
+  static TextStyle get labelMediumMuted => labelMedium;
 
   /// Light body large - for text on dark/overlay backgrounds
   static TextStyle get bodyLargeLight => bodyLarge.copyWith(
@@ -395,18 +365,14 @@ class AppTextStyles {
         fontFamily: _headerFontFamily,
         fontSize: 20,
         fontWeight: FontWeight.w600,
-        color: AppColors.headerForeground,
         letterSpacing: 0.5,
       );
 
   /// Main view header title - elegant style for main views (32px, Josefin Sans)
-  /// Used for "dina recept", "veckans meny", "inkopslista" headers
-  /// UI Redesign: 32px/w600 matching mockup .header-title
   static TextStyle get mainViewTitle => TextStyle(
         fontFamily: _headerFontFamily,
         fontSize: 32,
         fontWeight: FontWeight.w600,
-        color: AppColors.headerForeground,
         letterSpacing: 2,
         height: 1.1,
       );
@@ -416,7 +382,6 @@ class AppTextStyles {
         fontFamily: _primaryFontFamily,
         fontSize: 11,
         fontWeight: FontWeight.w600,
-        color: AppColors.forestGreenDark,
         letterSpacing: 1,
       );
 
@@ -444,19 +409,16 @@ class AppTextStyles {
         letterSpacing: 0.3,
       );
 
-  /// Empty state title (Josefin Sans, green-dark per mockup)
+  /// Empty state title (Josefin Sans)
   static TextStyle get emptyStateTitle => TextStyle(
         fontFamily: _headerFontFamily,
         fontSize: 20,
         fontWeight: FontWeight.w600,
-        color: AppColors.forestGreenDark,
         letterSpacing: 1.0,
       );
 
   /// Empty state body
-  static TextStyle get emptyStateBody => bodyMedium.copyWith(
-        color: AppColors.textMedium,
-      );
+  static TextStyle get emptyStateBody => bodyMedium;
 
   /// Recipe card title (15px/w600 per mockup)
   static TextStyle get recipeCardTitle => titleMedium.copyWith(
@@ -472,7 +434,7 @@ class AppTextStyles {
       );
 
   /// Creates a complete Material 3 TextTheme with platform-adaptive font family.
-  /// Uses Josefin Sans for headers, Space Grotesk for body.
+  /// Colors are omitted — M3 applies colorScheme.onSurface automatically.
   static TextTheme createTextTheme() {
     return TextTheme(
       displaySmall: displaySmall,

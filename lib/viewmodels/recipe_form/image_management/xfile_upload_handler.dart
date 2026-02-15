@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/services/permission_service.dart' as permission;
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -78,7 +79,8 @@ class XFileUploadHandler {
       final fileSize = await xFile.length();
       if (fileSize > maxSizeBytes) {
         final maxSizeMB = maxSizeBytes / (1024 * 1024);
-        return 'Bilden är för stor (max ${maxSizeMB.toStringAsFixed(0)}MB)';
+        return AppLocale.current
+            .imageUploadTooLarge(maxSizeMB.toStringAsFixed(0));
       }
       return null;
     } catch (e) {

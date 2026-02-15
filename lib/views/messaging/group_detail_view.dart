@@ -6,7 +6,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/group_detail_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -67,8 +66,8 @@ class GroupDetailView extends StatelessWidget {
         context.l10n.messagingGroupInfo,
         style: AppTextStyles.headlineSmall,
       ),
-      backgroundColor: AppColors.cream,
-      foregroundColor: AppColors.textDark,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      foregroundColor: Theme.of(context).colorScheme.onSurface,
       elevation: AppDimensions.elevationLow,
       actions: [
         if (viewModel.isAdmin)
@@ -197,7 +196,7 @@ class GroupDetailView extends StatelessWidget {
           Text(
             viewModel.error!,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.error,
+              color: Theme.of(context).colorScheme.error,
             ),
             textAlign: TextAlign.center,
           ),
@@ -345,7 +344,7 @@ class GroupDetailView extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.error,
+              foregroundColor: Theme.of(context).colorScheme.error,
             ),
             child: Text(context.l10n.messagingLeaveGroup),
           ),

@@ -10,6 +10,7 @@ import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 // Realtime modules
 import 'package:butlery/services/realtime/realtime_types.dart';
@@ -131,7 +132,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       return Stream.error(
         SyncError(
           type: SyncErrorType.permissionDenied,
-          message: 'Användare inte inloggad',
+          message: AppLocale.current.errorUserNotLoggedIn,
           resourceId: resourceId,
         ),
       );
@@ -145,7 +146,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       if (!snapshot.exists) {
         throw SyncError(
           type: SyncErrorType.documentNotFound,
-          message: 'Resursen hittades inte',
+          message: AppLocale.current.errorResourceNotFound,
           resourceId: resourceId,
         );
       }
@@ -164,7 +165,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
         AppLogger.error('❌ Kunde inte parsa resurs $resourceId', e);
         throw SyncError(
           type: SyncErrorType.firestoreError,
-          message: 'Fel vid parsing av resurs',
+          message: AppLocale.current.syncErrorParsingResource,
           resourceId: resourceId,
           originalError: e,
         );
@@ -172,7 +173,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     }).handleError((error) {
       _handleError(
         SyncErrorType.firestoreError,
-        'Fel vid watching av resurs $resourceId',
+        AppLocale.current.syncErrorWatchingResource(resourceId),
         resourceId: resourceId,
         originalError: error,
       );
@@ -184,7 +185,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     if (_currentUserId == null) {
       throw SyncError(
         type: SyncErrorType.permissionDenied,
-        message: 'Användare inte inloggad',
+        message: AppLocale.current.errorUserNotLoggedIn,
         resourceId: resource.id,
         resourceType: resource.type,
       );
@@ -198,7 +199,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       if (!resource.canUserEdit(_currentUserId!)) {
         throw SyncError(
           type: SyncErrorType.permissionDenied,
-          message: 'Ingen redigeringsbehörighet',
+          message: AppLocale.current.errorNoEditPermission,
           resourceId: resource.id,
           resourceType: resource.type,
         );
@@ -248,7 +249,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     if (_currentUserId == null) {
       throw SyncError(
         type: SyncErrorType.permissionDenied,
-        message: 'Användare inte inloggad',
+        message: AppLocale.current.errorUserNotLoggedIn,
         resourceId: resourceId,
         resourceType: type,
       );
@@ -264,7 +265,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       if (!resource.canUserDelete(_currentUserId!)) {
         throw SyncError(
           type: SyncErrorType.permissionDenied,
-          message: 'Ingen behörighet att ta bort resursen',
+          message: AppLocale.current.errorNoDeletePermission,
           resourceId: resourceId,
           resourceType: type,
         );

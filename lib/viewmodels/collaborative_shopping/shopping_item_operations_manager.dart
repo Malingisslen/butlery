@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Manages shopping item operations including adding, toggling completion, and error handling.
 class ShoppingItemOperationsManager extends ChangeNotifier {
@@ -46,21 +47,22 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
         name: itemName.trim(),
         amount: 1.0,
         unit: '',
-        category: 'Övrigt',
+        category: AppLocale.current.categoryOther,
       );
 
       if (success) {
         await onListRefresh();
-        onActivityUpdate('La till "$itemName"', DateTime.now());
+        onActivityUpdate(
+            AppLocale.current.shoppingItemAdded(itemName), DateTime.now());
         AppLogger.success('✅ Artikel tillagd: $itemName');
         return true;
       } else {
-        setError('Kunde inte lägga till artikel');
+        setError(AppLocale.current.errorCouldNotAddItem);
         AppLogger.error('❌ Kunde inte lägga till artikel: $itemName');
         return false;
       }
     } catch (e) {
-      setError('Fel vid tillägg av artikel: $e');
+      setError(AppLocale.current.errorCouldNotAddItem);
       AppLogger.error('❌ Exception vid tillägg av artikel', e);
       return false;
     } finally {
@@ -88,18 +90,20 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
       if (success) {
         await onListRefresh();
         onActivityUpdate(
-          item.bought ? 'Markerade som klar' : 'Markerade som ej klar',
+          item.bought
+              ? AppLocale.current.shoppingItemMarkedComplete
+              : AppLocale.current.shoppingItemMarkedIncomplete,
           DateTime.now(),
         );
         AppLogger.success('✅ Artikel status växlad: $itemId');
         return true;
       } else {
-        setError('Kunde inte uppdatera artikel');
+        setError(AppLocale.current.errorCouldNotUpdateItem);
         AppLogger.error('❌ Kunde inte växla artikel status: $itemId');
         return false;
       }
     } catch (e) {
-      setError('Fel vid uppdatering: $e');
+      setError(AppLocale.current.errorCouldNotUpdateItem);
       AppLogger.error('❌ Exception vid växling av artikel status', e);
       return false;
     }

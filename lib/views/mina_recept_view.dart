@@ -42,7 +42,6 @@ import 'package:butlery/services/offline_service.dart' as offline_service;
 import 'package:butlery/services/user_service.dart';
 
 // Theme system integration
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -258,6 +257,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
   /// Chip-styled sort button for the filter chips row.
   Widget _buildSortChip(RecipeListViewModel viewModel) {
+    final cs = Theme.of(context).colorScheme;
     return PopupMenuButton<SortCriteria>(
       onSelected: _onSortChanged,
       itemBuilder: (context) => SortMenuBuilder.buildItems(
@@ -271,26 +271,26 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           vertical: AppDimensions.spacingSm,
         ),
         decoration: BoxDecoration(
-          color: AppColors.cardWhite,
+          color: cs.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
           border: Border.all(
-            color: AppColors.divider,
+            color: cs.outlineVariant,
             width: 1.5,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.sort,
               size: AppDimensions.iconSizeS,
-              color: AppColors.textMedium,
+              color: cs.onSurfaceVariant,
             ),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               context.l10n.commonSort,
               style: AppTextStyles.labelMedium.copyWith(
-                color: AppColors.textDark,
+                color: cs.onSurface,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -508,7 +508,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     alignment: Alignment.centerLeft,
                     padding: const EdgeInsets.symmetric(
                         horizontal: AppDimensions.spacingLg),
-                    color: AppColors.forestGreen,
+                    color: Theme.of(context).colorScheme.primary,
                     child: const Icon(Icons.edit,
                         color: Colors.white, size: AppDimensions.iconSize28),
                   ),
@@ -517,7 +517,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.symmetric(
                         horizontal: AppDimensions.spacingLg),
-                    color: AppColors.error,
+                    color: Theme.of(context).colorScheme.error,
                     child: const Icon(Icons.delete,
                         color: Colors.white, size: AppDimensions.iconSize28),
                   ),

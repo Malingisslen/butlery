@@ -3,9 +3,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Warning dialog shown before session timeout
 /// Provides user with option to extend session or logout immediately
@@ -110,10 +110,12 @@ class _SessionTimeoutWarningDialogState
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final warningColor = context.butleryColors.warning;
     return AlertDialog(
-      icon: const Icon(
+      icon: Icon(
         Icons.timer_outlined,
-        color: AppColors.warning,
+        color: warningColor,
         size: AppDimensions.iconSizeXxl,
       ),
       title: Text(context.l10n.sessionExpiringTitle),
@@ -133,20 +135,20 @@ class _SessionTimeoutWarningDialogState
                 vertical: AppDimensions.spacingM,
               ),
               decoration: BoxDecoration(
-                color: AppColors.warning
-                    .withValues(alpha: AppDimensions.opacityVeryLight),
+                color: warningColor.withValues(
+                    alpha: AppDimensions.opacityVeryLight),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusM),
                 border: Border.all(
-                  color: AppColors.warning
-                      .withValues(alpha: AppDimensions.opacityMediumLight),
+                  color: warningColor.withValues(
+                      alpha: AppDimensions.opacityMediumLight),
                   width: 2,
                 ),
               ),
               child: Text(
                 _formatDuration(_remainingSeconds),
                 style: AppTextStyles.headlineBold.copyWith(
-                  color: AppColors.warning,
+                  color: warningColor,
                   fontFeatures: [const FontFeature.tabularFigures()],
                 ),
               ),
@@ -156,7 +158,7 @@ class _SessionTimeoutWarningDialogState
           Text(
             context.l10n.sessionContinueOrLogout,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ],
@@ -167,19 +169,19 @@ class _SessionTimeoutWarningDialogState
           child: Text(
             context.l10n.commonLogoutNow,
             style: AppTextStyles.labelLarge.copyWith(
-              color: AppColors.textSecondary,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ),
         FilledButton(
           onPressed: _handleExtendSession,
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.forestGreen,
+            backgroundColor: cs.primary,
           ),
           child: Text(
             context.l10n.sessionContinue,
             style: AppTextStyles.labelLarge.copyWith(
-              color: AppColors.cardWhite,
+              color: cs.surfaceContainerHighest,
             ),
           ),
         ),

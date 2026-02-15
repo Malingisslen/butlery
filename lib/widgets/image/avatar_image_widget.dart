@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/services/image_picker_service.dart';
@@ -99,6 +98,7 @@ class AvatarImageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final dimensions = config.getDimensions();
     final isEditable = onImageSelected != null;
 
@@ -111,7 +111,7 @@ class AvatarImageWidget extends StatelessWidget {
           height: dimensions.height,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: config.backgroundColor ?? AppColors.cardWhite,
+            color: config.backgroundColor ?? cs.surfaceContainerHighest,
             border: config.borderColor != null
                 ? Border.all(
                     color: config.borderColor!,
@@ -121,7 +121,7 @@ class AvatarImageWidget extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: config.effectiveBorderRadius,
-            child: _buildAvatarContent(),
+            child: _buildAvatarContent(context),
           ),
         ),
 
@@ -141,16 +141,16 @@ class AvatarImageWidget extends StatelessWidget {
               padding: const EdgeInsets.all(AppDimensions.spacingXs),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.forestGreen,
+                color: cs.primary,
                 border: Border.all(
-                  color: AppColors.cardWhite,
+                  color: cs.surfaceContainerHighest,
                   width: 2,
                 ),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.edit,
                 size: AppDimensions.iconSizeS,
-                color: AppColors.cardWhite,
+                color: cs.surfaceContainerHighest,
               ),
             ),
           ),
@@ -173,23 +173,24 @@ class AvatarImageWidget extends StatelessWidget {
   }
 
   /// Build avatar content (image or initials)
-  Widget _buildAvatarContent() {
+  Widget _buildAvatarContent(BuildContext context) {
     if (imageUrl != null && imageUrl!.isNotEmpty) {
       return CachedNetworkImage(
         imageUrl: imageUrl!,
         fit: BoxFit.cover,
-        placeholder: (context, url) => _buildInitialsAvatar(),
-        errorWidget: (context, url, error) => _buildInitialsAvatar(),
+        placeholder: (ctx, url) => _buildInitialsAvatar(ctx),
+        errorWidget: (ctx, url, error) => _buildInitialsAvatar(ctx),
         memCacheWidth: config.getDimensions().width.toInt(),
         memCacheHeight: config.getDimensions().height.toInt(),
       );
     } else {
-      return _buildInitialsAvatar();
+      return _buildInitialsAvatar(context);
     }
   }
 
   /// Build initials avatar fallback
-  Widget _buildInitialsAvatar() {
+  Widget _buildInitialsAvatar(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final dimensions = config.getDimensions();
     final initials = _getInitials();
 
@@ -200,9 +201,8 @@ class AvatarImageWidget extends StatelessWidget {
         shape: BoxShape.circle,
         gradient: LinearGradient(
           colors: [
-            AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityVeryDark),
-            AppColors.forestGreen,
+            cs.primary.withValues(alpha: AppDimensions.opacityVeryDark),
+            cs.primary,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -212,7 +212,7 @@ class AvatarImageWidget extends StatelessWidget {
         child: Text(
           initials,
           style: AppTextStyles.headlineMedium.copyWith(
-            color: AppColors.cardWhite,
+            color: cs.surfaceContainerHighest,
             fontWeight: FontWeight.w600,
             fontSize: _getFontSize(dimensions.width),
           ),
@@ -317,59 +317,65 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
 
         // Loading overlay
         if (_isLoading)
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.cardWhite
-                    .withValues(alpha: AppDimensions.opacityVeryDark),
-              ),
-              child: const Center(
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.forestGreen,
+          Builder(builder: (context) {
+            final cs = Theme.of(context).colorScheme;
+            return Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: cs.surfaceContainerHighest
+                      .withValues(alpha: AppDimensions.opacityVeryDark),
+                ),
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        cs.primary,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
+            );
+          }),
 
         // Remove button (if image exists)
         if (widget.imageUrl != null &&
             widget.imageUrl!.isNotEmpty &&
             widget.onImageRemoved != null)
-          Positioned(
-            top: -4,
-            right: -4,
-            child: Semantics(
-              label: context.l10n.a11yRemoveProfileImage,
-              button: true,
-              child: GestureDetector(
-                onTap: widget.onImageRemoved,
-                child: Container(
-                  padding: const EdgeInsets.all(AppDimensions.spacingXs),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.error,
-                    border: Border.all(
-                      color: AppColors.cardWhite,
-                      width: 2,
+          Builder(builder: (context) {
+            final cs = Theme.of(context).colorScheme;
+            return Positioned(
+              top: -4,
+              right: -4,
+              child: Semantics(
+                label: context.l10n.a11yRemoveProfileImage,
+                button: true,
+                child: GestureDetector(
+                  onTap: widget.onImageRemoved,
+                  child: Container(
+                    padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: cs.error,
+                      border: Border.all(
+                        color: cs.surfaceContainerHighest,
+                        width: 2,
+                      ),
                     ),
-                  ),
-                  child: const Icon(
-                    Icons.close,
-                    size: AppDimensions.iconSizeS,
-                    color: AppColors.cardWhite,
+                    child: Icon(
+                      Icons.close,
+                      size: AppDimensions.iconSizeS,
+                      color: cs.surfaceContainerHighest,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
+            );
+          }),
       ],
     );
   }

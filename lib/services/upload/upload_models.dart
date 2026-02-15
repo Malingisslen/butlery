@@ -9,6 +9,8 @@
 
 import 'dart:io';
 
+import 'package:butlery/core/l10n/app_locale.dart';
+
 /// Image upload state tracking for race condition prevention
 enum ImageUploadState {
   pending,
@@ -129,40 +131,42 @@ class ImageUploadStatus {
     }
   }
 
-  /// User-friendly Swedish status description
+  /// User-friendly status description
   String get statusDescription {
+    final l = AppLocale.current;
     switch (state) {
       case ImageUploadState.pending:
-        return 'Väntar på uppladdning...';
+        return l.uploadPreparing;
       case ImageUploadState.uploading:
         if (progressPercentage > 0) {
-          return 'Laddar upp ($progressPercentage%)...';
+          return l.uploadProgressPercent(progressPercentage);
         }
-        return 'Förbereder uppladdning...';
+        return l.uploadStatusPreparing;
       case ImageUploadState.retrying:
-        return 'Försöker igen (${retryAttempts + 1}/$maxRetryAttempts)...';
+        return l.uploadStatusRetrying(retryAttempts + 1, maxRetryAttempts);
       case ImageUploadState.completed:
-        return 'Uppladdning slutförd';
+        return l.uploadStatusComplete;
       case ImageUploadState.cancelled:
-        return 'Uppladdning avbruten';
+        return l.uploadStatusCancelled;
       case ImageUploadState.failed:
         return _getFailureDescription();
     }
   }
 
   String _getFailureDescription() {
+    final l = AppLocale.current;
     switch (errorType) {
       case ImageUploadErrorType.network:
-        return 'Nätverksfel - kontrollera anslutningen';
+        return l.uploadFailureNetwork;
       case ImageUploadErrorType.validation:
-        return 'Bilden kunde inte valideras';
+        return l.uploadFailureValidation;
       case ImageUploadErrorType.server:
-        return 'Serverfel - försök igen';
+        return l.uploadFailureServer;
       case ImageUploadErrorType.cancelled:
-        return 'Uppladdning avbruten';
+        return l.uploadFailureCancelled;
       case ImageUploadErrorType.unknown:
       case null:
-        return 'Uppladdning misslyckades';
+        return l.uploadFailureGeneric;
     }
   }
 
@@ -170,18 +174,19 @@ class ImageUploadStatus {
   String? get retryInstruction {
     if (!hasError || !canRetry) return null;
 
+    final l = AppLocale.current;
     switch (errorType) {
       case ImageUploadErrorType.network:
-        return 'Kontrollera internetanslutningen och tryck för att försöka igen';
+        return l.uploadRetryCheckInternet;
       case ImageUploadErrorType.validation:
-        return 'Kontrollera att bilden är giltig och inte för stor';
+        return l.uploadRetryCheckImage;
       case ImageUploadErrorType.server:
-        return 'Försök igen om en stund';
+        return l.uploadRetryTryLater;
       case ImageUploadErrorType.cancelled:
         return null; // No retry for cancelled uploads
       case ImageUploadErrorType.unknown:
       case null:
-        return 'Tryck för att försöka igen';
+        return l.uploadRetryTapToRetry;
     }
   }
 

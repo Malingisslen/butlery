@@ -1,9 +1,9 @@
 // lib/widgets/social/collaborative/components/collaborative_live_widgets.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Live editing indicators and animations for collaborative content
 class CollaborativeLiveWidgets {
@@ -17,12 +17,11 @@ class CollaborativeLiveWidgets {
   }) {
     if (!isVisible) return const SizedBox.shrink();
 
-    final indicatorColor = color ?? AppColors.warning;
-
     return TweenAnimationBuilder<double>(
       duration: animationDuration,
       tween: Tween<double>(begin: 0.0, end: isVisible ? 1.0 : 0.0),
       builder: (context, opacity, child) {
+        final indicatorColor = color ?? context.butleryColors.warning;
         return Opacity(
           opacity: opacity,
           child: Container(
@@ -31,10 +30,12 @@ class CollaborativeLiveWidgets {
               vertical: AppDimensions.spacingXs,
             ),
             decoration: BoxDecoration(
-              color: indicatorColor.withValues(alpha: AppDimensions.opacityVeryLight),
+              color: indicatorColor.withValues(
+                  alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
               border: Border.all(
-                color: indicatorColor.withValues(alpha: AppDimensions.opacityMediumLight),
+                color: indicatorColor.withValues(
+                    alpha: AppDimensions.opacityMediumLight),
               ),
             ),
             child: Row(

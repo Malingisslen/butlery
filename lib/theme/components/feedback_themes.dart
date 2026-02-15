@@ -1,26 +1,25 @@
 /// Feedback and interactive component themes.
 ///
 /// **UI Redesign:**
-/// - All interactive elements use forest green
-/// - Snackbar: Forest green dark background
-/// - Progress indicators: Forest green
+/// - All interactive elements use primary color
+/// - Snackbar: inverseSurface background
+/// - Progress indicators: Primary color
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Feedback component themes (snackbar, divider, switches, checkboxes, etc.).
+/// All methods accept [ColorScheme] for dark/light mode awareness.
 class FeedbackThemes {
-  /// Private constructor
   FeedbackThemes._();
 
-  /// Snackbar theme - Forest green dark background
-  static SnackBarThemeData get snackBarTheme {
+  /// Snackbar theme
+  static SnackBarThemeData snackBarTheme(ColorScheme cs) {
     return SnackBarThemeData(
-      backgroundColor: AppColors.forestGreenDark,
+      backgroundColor: cs.inverseSurface,
       contentTextStyle: AppTextStyles.snackbarText.copyWith(
-        color: AppColors.cardWhite,
+        color: cs.onInverseSurface,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -31,45 +30,44 @@ class FeedbackThemes {
   }
 
   /// Divider theme
-  static DividerThemeData get dividerTheme {
-    return const DividerThemeData(
-      color: AppColors.divider,
+  static DividerThemeData dividerTheme(ColorScheme cs) {
+    return DividerThemeData(
+      color: cs.outlineVariant,
       thickness: AppDimensions.borderWidthThin,
       space: AppDimensions.spacingL,
     );
   }
 
-  /// Switch theme - Forest green when selected
-  static SwitchThemeData get switchTheme {
+  /// Switch theme
+  static SwitchThemeData switchTheme(ColorScheme cs) {
     return SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.forestGreen;
+          return cs.primary;
         }
-        return AppColors.textLight;
+        return cs.outline;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityHalf);
+          return cs.primary.withValues(alpha: AppDimensions.opacityHalf);
         }
-        return AppColors.divider;
+        return cs.outlineVariant;
       }),
     );
   }
 
-  /// Checkbox theme - Forest green when selected
-  static CheckboxThemeData get checkboxTheme {
+  /// Checkbox theme
+  static CheckboxThemeData checkboxTheme(ColorScheme cs) {
     return CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.forestGreen;
+          return cs.primary;
         }
-        return AppColors.cardWhite;
+        return cs.surfaceContainerHighest;
       }),
-      checkColor: WidgetStateProperty.all(AppColors.cardWhite),
-      side: const BorderSide(
-        color: AppColors.textLight,
+      checkColor: WidgetStateProperty.all(cs.onPrimary),
+      side: BorderSide(
+        color: cs.outline,
         width: 1.5,
       ),
       shape: RoundedRectangleBorder(
@@ -78,39 +76,38 @@ class FeedbackThemes {
     );
   }
 
-  /// Radio theme - Forest green when selected
-  static RadioThemeData get radioTheme {
+  /// Radio theme
+  static RadioThemeData radioTheme(ColorScheme cs) {
     return RadioThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.forestGreen;
+          return cs.primary;
         }
-        return AppColors.textMedium;
+        return cs.onSurfaceVariant;
       }),
     );
   }
 
-  /// Slider theme - Forest green track and thumb
-  static SliderThemeData get sliderTheme {
+  /// Slider theme
+  static SliderThemeData sliderTheme(ColorScheme cs) {
     return SliderThemeData(
-      activeTrackColor: AppColors.forestGreen,
-      inactiveTrackColor: AppColors.divider,
-      thumbColor: AppColors.forestGreen,
-      overlayColor:
-          AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLight),
-      valueIndicatorColor: AppColors.forestGreen,
+      activeTrackColor: cs.primary,
+      inactiveTrackColor: cs.outlineVariant,
+      thumbColor: cs.primary,
+      overlayColor: cs.primary.withValues(alpha: AppDimensions.opacityLight),
+      valueIndicatorColor: cs.primary,
       valueIndicatorTextStyle: AppTextStyles.labelSmall.copyWith(
-        color: AppColors.cardWhite,
+        color: cs.onPrimary,
       ),
     );
   }
 
-  /// Progress indicator theme - Forest green
-  static ProgressIndicatorThemeData get progressIndicatorTheme {
-    return const ProgressIndicatorThemeData(
-      color: AppColors.forestGreen,
-      linearTrackColor: AppColors.divider,
-      circularTrackColor: AppColors.divider,
+  /// Progress indicator theme
+  static ProgressIndicatorThemeData progressIndicatorTheme(ColorScheme cs) {
+    return ProgressIndicatorThemeData(
+      color: cs.primary,
+      linearTrackColor: cs.outlineVariant,
+      circularTrackColor: cs.outlineVariant,
     );
   }
 }

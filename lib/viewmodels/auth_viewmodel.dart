@@ -58,6 +58,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Comprehensive authentication ViewModel providing advanced user authentication and state management for Flutter applications.
 /// Serves as the presentation layer coordinator for all authentication flows, providing reactive state management,
@@ -272,8 +273,9 @@ class AuthViewModel extends ChangeNotifier
   /// Performs comprehensive email validation including empty check and international character support
   /// using Unicode-aware regex patterns for global user base compatibility.
   bool _validateEmail(String email) {
+    final l = AppLocale.current;
     if (email.isEmpty) {
-      _setError('E-post kan inte vara tom');
+      _setError(l.errorFillRequiredFields);
       return false;
     }
 
@@ -282,7 +284,7 @@ class AuthViewModel extends ChangeNotifier
         r'^[\p{L}\p{N}._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$',
         unicode: true);
     if (!emailRegex.hasMatch(email)) {
-      _setError('Ogiltig e-postadress');
+      _setError(l.errorFillRequiredFieldsCorrectly);
       return false;
     }
 
@@ -295,13 +297,14 @@ class AuthViewModel extends ChangeNotifier
   /// Enforces minimum password length requirements and provides immediate user feedback
   /// for password security compliance during authentication flows.
   bool _validatePassword(String password) {
+    final l = AppLocale.current;
     if (password.isEmpty) {
-      _setError('Lösenord kan inte vara tomt');
+      _setError(l.errorPasswordCannotBeEmpty);
       return false;
     }
 
     if (password.length < 6) {
-      _setError('Lösenord måste vara minst 6 tecken');
+      _setError(l.errorPasswordMinSixChars);
       return false;
     }
 
@@ -314,13 +317,14 @@ class AuthViewModel extends ChangeNotifier
   /// Ensures minimum display name length for proper user identification and profile creation
   /// with immediate validation feedback for optimal user registration experience.
   bool _validateDisplayName(String displayName) {
+    final l = AppLocale.current;
     if (displayName.isEmpty) {
-      _setError('Visningsnamn kan inte vara tomt');
+      _setError(l.errorDisplayNameCannotBeEmpty);
       return false;
     }
 
     if (displayName.length < 2) {
-      _setError('Visningsnamn måste vara minst 2 tecken');
+      _setError(l.errorDisplayNameMinLength);
       return false;
     }
 

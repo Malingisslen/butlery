@@ -11,6 +11,7 @@ import 'package:butlery/services/unified/modules/cache_operations.dart';
 import 'package:butlery/services/unified/modules/firebase_sync_manager.dart';
 import 'package:butlery/services/unified/modules/debounced_sync_operations.dart';
 import 'package:butlery/services/unified/modules/cache_optimization.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Comprehensive recipe cache management module providing unified caching functionality with real-time synchronization.
 /// This module implements sophisticated recipe caching using facade pattern with focused specialized modules
@@ -175,7 +176,7 @@ class RecipeCacheModule {
       AppLogger.success('✅ Firebase sync started');
     } catch (e) {
       AppLogger.error('❌ Error starting Firebase sync: $e');
-      _setError('Kunde inte starta synkronisering: $e');
+      _setError(AppLocale.current.errorCouldNotStartSync);
     }
   }
 
@@ -232,7 +233,7 @@ class RecipeCacheModule {
   /// Handle sync errors
   void _handleSyncError(String syncType, dynamic error) {
     AppLogger.error('$syncType sync error: $error');
-    _setError('Synkroniseringsfel för $syncType: $error');
+    _setError(AppLocale.current.errorSyncErrorFor(syncType));
   }
 
   /// Schedule recipe for sync to Firebase (debounced)

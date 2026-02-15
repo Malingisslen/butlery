@@ -1,7 +1,6 @@
 // lib/widgets/common/buttons/overlay_button.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Reusable overlay button component
@@ -26,21 +25,25 @@ class OverlayButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     this.tooltip,
-  })  : child = const Icon(Icons.clear, color: AppColors.neutralLight),
+  })  : child = const Icon(Icons.clear),
         backgroundColor = null;
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: backgroundColor ??
-            AppColors.cream.withValues(alpha: AppDimensions.opacityVeryDark),
+            cs.surface.withValues(alpha: AppDimensions.opacityVeryDark),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: IconButton(
         onPressed: onPressed,
         tooltip: tooltip,
-        icon: child,
+        icon: IconTheme(
+          data: IconThemeData(color: cs.surfaceContainerHighest),
+          child: child,
+        ),
       ),
     );
   }

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
@@ -229,7 +228,7 @@ class NetworkImageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Remove unused theme variable
+    final cs = Theme.of(context).colorScheme;
 
     Widget image = CachedNetworkImage(
       imageUrl: imageUrl,
@@ -243,7 +242,7 @@ class NetworkImageWidget extends StatelessWidget {
           : (_, __) => Container(
                 width: width,
                 height: height,
-                color: AppColors.cardWhite,
+                color: cs.surfaceContainerHighest,
                 child: const Center(
                   child: CircularProgressIndicator(),
                 ),
@@ -253,10 +252,10 @@ class NetworkImageWidget extends StatelessWidget {
           : (_, __, ___) => Container(
                 width: width,
                 height: height,
-                color: AppColors.cardWhite,
-                child: const Icon(
+                color: cs.surfaceContainerHighest,
+                child: Icon(
                   Icons.error_outline,
-                  color: AppColors.error,
+                  color: cs.error,
                 ),
               ),
     );

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -187,8 +186,9 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Dialog(
-      backgroundColor: AppColors.cardWhite,
+      backgroundColor: cs.surfaceContainerHighest,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
       ),
@@ -227,11 +227,12 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
   }
 
   Widget _buildHeader() {
+    final cs = Theme.of(context).colorScheme;
     return Row(
       children: [
         Icon(
           _isEditing ? Icons.edit_outlined : Icons.add_circle_outline,
-          color: AppColors.forestGreen,
+          color: cs.primary,
           size: AppDimensions.iconSizeAction,
         ),
         const SizedBox(width: AppDimensions.spacingM),
@@ -294,6 +295,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
     final name = _nameController.text.trim();
     if (name.isEmpty) return const SizedBox.shrink();
 
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -305,21 +307,21 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
             vertical: AppDimensions.paddingS,
           ),
           decoration: BoxDecoration(
-            color: AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityLightSubtle),
+            color:
+                cs.primary.withValues(alpha: AppDimensions.opacityLightSubtle),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             border: Border.all(
-              color: AppColors.forestGreen
+              color: cs.primary
                   .withValues(alpha: AppDimensions.opacityMediumLight),
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.label,
                 size: AppDimensions.iconSizeS,
-                color: AppColors.forestGreen,
+                color: cs.primary,
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
@@ -345,12 +347,12 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
         FilledButton(
           onPressed: _isSaving || _isChecking ? null : _save,
           child: _isSaving
-              ? const SizedBox(
+              ? SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: AppColors.cardWhite,
+                    color: Theme.of(context).colorScheme.onPrimary,
                   ),
                 )
               : Text(_isEditing

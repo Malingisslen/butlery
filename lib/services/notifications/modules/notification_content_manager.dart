@@ -3,6 +3,7 @@
 import 'dart:math';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Specialized notification content generation and management module providing comprehensive message creation capabilities.
 /// This focused module implements sophisticated notification content generation following Single Responsibility Principle,
@@ -108,9 +109,11 @@ class NotificationContentManager {
           '🔔 Creating notification template for strategy: ${strategy.category.name}');
 
       // Use Swedish by default (app is primarily Swedish)
-      final titleTemplate = strategy.localization['title_sv'] ?? 'Ny aktivitet';
+      final l = AppLocale.current;
+      final titleTemplate =
+          strategy.localization['title_sv'] ?? l.notificationDefaultTitle;
       final bodyTemplate =
-          strategy.localization['body_sv'] ?? 'Du har ny aktivitet i Butlery';
+          strategy.localization['body_sv'] ?? l.notificationDefaultBody;
 
       // Substitute variables in templates
       final title = _substituteVariables(titleTemplate, variables);
@@ -241,12 +244,13 @@ class NotificationContentManager {
       AppLogger.info(
           '🔔 Building digest content for ${activityList.length} activities');
 
+      final l = AppLocale.current;
       if (activityList.isEmpty) {
         return {
-          'title': 'Daglig sammanfattning',
-          'body': 'Ingen ny aktivitet idag',
+          'title': l.notificationTitleDailySummary,
+          'body': l.notificationBodyNoActivityToday,
           'count': '0',
-          'summary': 'Ingen aktivitet att rapportera',
+          'summary': l.notificationBodyNoActivityToReport,
         };
       }
 
@@ -264,11 +268,12 @@ class NotificationContentManager {
       return digestContent;
     } catch (e) {
       AppLogger.error('❌ Failed to build digest content', e);
+      final l = AppLocale.current;
       return {
-        'title': 'Daglig sammanfattning',
-        'body': 'Problem med att ladda aktiviteter',
+        'title': l.notificationTitleDailySummary,
+        'body': l.notificationBodyProblemLoadingActivities,
         'count': activityList.length.toString(),
-        'summary': 'Kunde inte skapa sammanfattning',
+        'summary': l.notificationBodyCouldNotCreateSummary,
       };
     }
   }
@@ -288,8 +293,8 @@ class NotificationContentManager {
     Map<String, String> variables,
   ) {
     return NotificationTemplate(
-      title: 'Ny aktivitet',
-      body: 'Du har ny aktivitet i Butlery',
+      title: AppLocale.current.notificationDefaultTitle,
+      body: AppLocale.current.notificationDefaultBody,
       data: {
         'type': strategy.type.name,
         'category': strategy.category.name,
@@ -301,58 +306,60 @@ class NotificationContentManager {
 
   /// Generate batch content based on category and count
   Map<String, String> _generateBatchContent(String category, int count) {
+    final l = AppLocale.current;
     switch (category) {
       case 'recipes':
         return {
-          'title': 'Ny receptaktivitet',
-          'body': '$count nya händelser på dina recept',
+          'title': l.notificationTitleNewRecipeActivity,
+          'body': l.notificationBatchBodyRecipes(count),
         };
       case 'friends':
         return {
-          'title': 'Vänaktivitet',
-          'body': '$count nya aktiviteter från dina vänner',
+          'title': l.notificationTitleFriendActivity,
+          'body': l.notificationBatchBodyFriends(count),
         };
       case 'shopping':
         return {
-          'title': 'Inköpslistor',
-          'body': '$count uppdateringar av dina inköpslistor',
+          'title': l.notificationTitleShoppingLists,
+          'body': l.notificationBatchBodyShopping(count),
         };
       case 'collaboration':
         return {
-          'title': 'Samarbeten',
-          'body': '$count nya samarbetsaktiviteter',
+          'title': l.notificationTitleCollaborationActivity,
+          'body': l.notificationBatchBodyCollaboration(count),
         };
       default:
         return {
-          'title': 'Ny aktivitet',
-          'body': '$count nya händelser i Butlery',
+          'title': l.notificationDefaultTitle,
+          'body': l.notificationBatchBodyDefault(count),
         };
     }
   }
 
   /// Generate action buttons for batched notifications
   List<NotificationAction>? _generateBatchActions(String category) {
+    final l = AppLocale.current;
     switch (category) {
       case 'recipes':
         return [
-          const NotificationAction(
+          NotificationAction(
               id: 'view_recipes',
-              title: 'Visa recept',
-              data: {'action': 'navigate', 'destination': '/recipes'}),
+              title: l.notificationActionViewRecipes,
+              data: const {'action': 'navigate', 'destination': '/recipes'}),
         ];
       case 'friends':
         return [
-          const NotificationAction(
+          NotificationAction(
               id: 'view_friends',
-              title: 'Visa vänner',
-              data: {'action': 'navigate', 'destination': '/friends'}),
+              title: l.notificationActionViewFriends,
+              data: const {'action': 'navigate', 'destination': '/friends'}),
         ];
       default:
         return [
-          const NotificationAction(
+          NotificationAction(
               id: 'open_app',
-              title: 'Öppna app',
-              data: {'action': 'navigate', 'destination': '/home'}),
+              title: l.notificationActionOpenApp,
+              data: const {'action': 'navigate', 'destination': '/home'}),
         ];
     }
   }
@@ -360,21 +367,22 @@ class NotificationContentManager {
   /// Generate digest summary from category counts
   Map<String, String> _generateDigestSummary(
       Map<String, int> categoryCount, int totalCount) {
+    final l = AppLocale.current;
     final summaryParts = <String>[];
 
     categoryCount.forEach((category, itemCount) {
       switch (category) {
         case 'recipes':
-          summaryParts.add('$itemCount recept');
+          summaryParts.add(l.notificationDigestRecipes(itemCount));
           break;
         case 'friends':
-          summaryParts.add('$itemCount vänaktiviteter');
+          summaryParts.add(l.notificationDigestFriendActivities(itemCount));
           break;
         case 'shopping':
-          summaryParts.add('$itemCount inköpslistor');
+          summaryParts.add(l.notificationDigestShoppingLists(itemCount));
           break;
         case 'collaboration':
-          summaryParts.add('$itemCount samarbeten');
+          summaryParts.add(l.notificationDigestCollaborations(itemCount));
           break;
         default:
           summaryParts.add('$itemCount $category');
@@ -384,8 +392,8 @@ class NotificationContentManager {
     final summaryText = summaryParts.join(', ');
 
     return {
-      'title': 'Daglig sammanfattning',
-      'body': 'Du har $totalCount nya aktiviteter: $summaryText',
+      'title': l.notificationTitleDailySummary,
+      'body': l.notificationDigestBody(totalCount, summaryText),
       'count': totalCount.toString(),
       'summary': summaryText,
     };

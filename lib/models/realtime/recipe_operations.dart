@@ -1,4 +1,5 @@
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Recipe content operations (ingredients, instructions, validation).
 class RecipeOperations {
@@ -68,7 +69,8 @@ class RecipeOperations {
     required String editedByDisplayName,
   }) {
     if (index < 0 || index >= recipe.ingredients.length) {
-      throw ArgumentError('Ogiltigt ingrediensindex: $index');
+      throw ArgumentError(
+          AppLocale.current.validationInvalidIngredientIndex(index));
     }
 
     final updatedIngredients = List<String>.from(recipe.ingredients);
@@ -91,7 +93,8 @@ class RecipeOperations {
     required String editedByDisplayName,
   }) {
     if (index < 0 || index >= recipe.ingredients.length) {
-      throw ArgumentError('Ogiltigt ingrediensindex: $index');
+      throw ArgumentError(
+          AppLocale.current.validationInvalidIngredientIndex(index));
     }
 
     final updatedIngredients = List<String>.from(recipe.ingredients);
@@ -145,7 +148,8 @@ class RecipeOperations {
     required String editedByDisplayName,
   }) {
     if (index < 0 || index >= recipe.instructions.length) {
-      throw ArgumentError('Ogiltigt instruktionsindex: $index');
+      throw ArgumentError(
+          AppLocale.current.validationInvalidInstructionIndex(index));
     }
 
     final updatedInstructions = List<String>.from(recipe.instructions);
@@ -168,7 +172,8 @@ class RecipeOperations {
     required String editedByDisplayName,
   }) {
     if (index < 0 || index >= recipe.instructions.length) {
-      throw ArgumentError('Ogiltigt instruktionsindex: $index');
+      throw ArgumentError(
+          AppLocale.current.validationInvalidInstructionIndex(index));
     }
 
     final updatedInstructions = List<String>.from(recipe.instructions);
@@ -222,7 +227,7 @@ class RecipeOperations {
     required String editedByDisplayName,
   }) {
     if (index < 0 || index >= recipe.imageUrls.length) {
-      throw ArgumentError('Ogiltigt bildindex: $index');
+      throw ArgumentError(AppLocale.current.validationInvalidImageIndex(index));
     }
 
     final updatedImageUrls = List<String>.from(recipe.imageUrls);
@@ -245,30 +250,31 @@ class RecipeOperations {
 
   /// Get recipe validation errors
   static List<String> getValidationErrors(Recipe recipe) {
+    final l = AppLocale.current;
     final errors = <String>[];
 
     if (recipe.title.isEmpty) {
-      errors.add('Titel får inte vara tom');
+      errors.add(l.validationTitleCannotBeEmpty);
     }
 
     if (recipe.ingredients.isEmpty) {
-      errors.add('Minst en ingrediens krävs');
+      errors.add(l.validationIngredientRequired);
     }
 
     if (recipe.instructions.isEmpty) {
-      errors.add('Minst en instruktion krävs');
+      errors.add(l.validationInstructionRequired);
     }
 
     if (recipe.portions != null && recipe.portions! <= 0) {
-      errors.add('Portioner måste vara positiva');
+      errors.add(l.validationPortionsMustBePositive);
     }
 
     if (recipe.timeMinutes != null && recipe.timeMinutes! <= 0) {
-      errors.add('Tid måste vara positiv');
+      errors.add(l.validationTimeMustBePositive);
     }
 
     if (recipe.rating != null && (recipe.rating! < 0 || recipe.rating! > 5)) {
-      errors.add('Betyg måste vara mellan 0 och 5');
+      errors.add(l.validationRatingRange);
     }
 
     return errors;

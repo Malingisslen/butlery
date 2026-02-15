@@ -1,7 +1,6 @@
 // lib/widgets/common/content_cards/image_preview_card.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
 
@@ -35,7 +34,8 @@ class ImagePreviewCard extends StatelessWidget {
     super.key,
     required this.child,
     this.height,
-  })  : backgroundColor = AppColors.cardWhite,
+    required BuildContext context,
+  })  : backgroundColor = Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius = const BorderRadius.all(
             Radius.circular(AppDimensions.borderRadiusL)),
         boxShadow = AppShadows.card,

@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -97,14 +96,15 @@ class ModuleLoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: cs.surface,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(
-              color: AppColors.forestGreen,
+            CircularProgressIndicator(
+              color: cs.primary,
               strokeWidth: 3,
             ),
             const SizedBox(height: AppDimensions.spacingLg),
@@ -112,7 +112,7 @@ class ModuleLoadingScreen extends StatelessWidget {
               builder: (context) => Text(
                 context.l10n.loadingGeneric,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
             ),
@@ -138,13 +138,14 @@ class ModuleLoadErrorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: cs.surface,
       appBar: AppBar(
         title: Builder(
           builder: (context) => Text(context.l10n.errorTitle),
         ),
-        backgroundColor: AppColors.cream,
+        backgroundColor: cs.surface,
       ),
       body: Center(
         child: Padding(
@@ -152,10 +153,10 @@ class ModuleLoadErrorScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.error_outline,
                 size: AppDimensions.iconSizeXl,
-                color: AppColors.error,
+                color: cs.error,
               ),
               const SizedBox(height: AppDimensions.spacingXl),
               Text(
@@ -167,7 +168,7 @@ class ModuleLoadErrorScreen extends StatelessWidget {
               Text(
                 context.l10n.errorLoadingRetryOrGoBack,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: cs.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
               ),

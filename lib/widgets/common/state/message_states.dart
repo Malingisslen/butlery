@@ -3,11 +3,11 @@
 // UI Redesign: Error states now use red onion illustration
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// MessageStates - Error, Success, Info, and Warning state implementations
 /// Handles different message state variants with appropriate styling.
@@ -46,7 +46,7 @@ class MessageStates {
               Text(
                 title ?? 'Ett fel uppstod',
                 style: AppTextStyles.emptyStateTitle.copyWith(
-                  color: AppColors.rust,
+                  color: Theme.of(context).colorScheme.secondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -101,7 +101,7 @@ class MessageStates {
               Icon(
                 icon ?? Icons.check_circle_outline,
                 size: iconSize ?? AppDimensions.iconSizeXl,
-                color: iconColor ?? AppColors.success,
+                color: iconColor ?? context.butleryColors.success,
               ),
               const SizedBox(height: AppDimensions.spacingXl),
 
@@ -109,7 +109,7 @@ class MessageStates {
               Text(
                 title ?? 'Klart!',
                 style: AppTextStyles.headlineSmall.copyWith(
-                  color: AppColors.success,
+                  color: context.butleryColors.success,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -217,14 +217,14 @@ class MessageStates {
               Icon(
                 icon ?? Icons.warning_outlined,
                 size: iconSize ?? AppDimensions.iconSizeL,
-                color: iconColor ?? AppColors.warning,
+                color: iconColor ?? context.butleryColors.warning,
               ),
               const SizedBox(height: AppDimensions.spacingXl),
               if (title != null) ...[
                 Text(
                   title,
                   style: AppTextStyles.titleLarge.copyWith(
-                    color: AppColors.warning,
+                    color: context.butleryColors.warning,
                   ),
                   textAlign: TextAlign.center,
                 ),

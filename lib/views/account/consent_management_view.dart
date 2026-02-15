@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/settings/blocked_users_section.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -33,7 +33,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         centerTitle: true,
       ),
       body: SafeArea(
-        // ✅ RESPONSIVE: Center and constrain content on large screens
+        // RESPONSIVE: Center and constrain content on large screens
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -87,6 +87,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   }
 
   Widget _buildHeaderSection(ConsentViewModel viewModel) {
+    final cs = Theme.of(context).colorScheme;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingXl),
@@ -95,10 +97,10 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           children: [
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.privacy_tip_rounded,
                   size: 32,
-                  color: AppColors.primary,
+                  color: cs.primary,
                 ),
                 const SizedBox(width: AppDimensions.spacingL),
                 Expanded(
@@ -112,24 +114,25 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium
-                    ?.copyWith(color: AppColors.textMedium, height: 1.5)),
+                    ?.copyWith(color: cs.onSurfaceVariant, height: 1.5)),
             if (viewModel.hasConsent) ...[
               const SizedBox(height: AppDimensions.spacingL),
               Container(
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: AppColors.info
+                  color: context.butleryColors.info
                       .withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusM),
                   border: Border.all(
-                      color: AppColors.info
+                      color: context.butleryColors.info
                           .withValues(alpha: AppDimensions.opacityMediumLight)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline,
-                        color: AppColors.info, size: AppDimensions.iconSizeM),
+                    Icon(Icons.info_outline,
+                        color: context.butleryColors.info,
+                        size: AppDimensions.iconSizeM),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                         child: Text(
@@ -146,9 +149,11 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   }
 
   Widget _buildRequiredConsentsSection() {
+    final cs = Theme.of(context).colorScheme;
+
     return Card(
       elevation: 0,
-      color: AppColors.backgroundTint,
+      color: cs.surfaceContainerLow,
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingMd),
         child: Column(
@@ -156,8 +161,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           children: [
             Row(
               children: [
-                const Icon(Icons.lock,
-                    color: AppColors.textMedium, size: AppDimensions.iconSizeM),
+                Icon(Icons.lock,
+                    color: cs.onSurfaceVariant, size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(context.l10n.consentRequiredTitle,
                     style: AppTextStyles.titleBold),
@@ -186,10 +191,14 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
 
   Widget _buildRequiredConsentItem(
       String title, String description, IconData icon) {
+    final cs = Theme.of(context).colorScheme;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: AppDimensions.iconSizeM, color: AppColors.success),
+        Icon(icon,
+            size: AppDimensions.iconSizeM,
+            color: context.butleryColors.success),
         const SizedBox(width: AppDimensions.spacingL),
         Expanded(
           child: Column(
@@ -201,17 +210,20 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                   style: Theme.of(context)
                       .textTheme
                       .bodySmall
-                      ?.copyWith(color: AppColors.textMedium, height: 1.4)),
+                      ?.copyWith(color: cs.onSurfaceVariant, height: 1.4)),
             ],
           ),
         ),
-        const Icon(Icons.check_circle,
-            color: AppColors.success, size: AppDimensions.iconSizeM),
+        Icon(Icons.check_circle,
+            color: context.butleryColors.success,
+            size: AppDimensions.iconSizeM),
       ],
     );
   }
 
   Widget _buildOptionalConsentsSection(ConsentViewModel viewModel) {
+    final cs = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -226,7 +238,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               icon: const Icon(Icons.block, size: AppDimensions.iconSizeS),
               label: Text(context.l10n.consentRejectAll),
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.error,
+                foregroundColor: cs.error,
               ),
             ),
           ],
@@ -282,14 +294,16 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
     bool value,
     Function(bool) onChanged,
   ) {
+    final cs = Theme.of(context).colorScheme;
+
     return Card(
       elevation: value ? 2 : 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         side: BorderSide(
           color: value
-              ? AppColors.primary.withValues(alpha: AppDimensions.opacityHalf)
-              : AppColors.divider,
+              ? cs.primary.withValues(alpha: AppDimensions.opacityHalf)
+              : cs.outlineVariant,
           width: value ? 2 : 1,
         ),
       ),
@@ -301,16 +315,16 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               padding: AppDimensions.paddingAll8,
               decoration: BoxDecoration(
                 color: value
-                    ? AppColors.primary
+                    ? cs.primary
                         .withValues(alpha: AppDimensions.opacityVeryLight)
-                    : AppColors.backgroundTint,
+                    : cs.surfaceContainerLow,
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusM),
               ),
               child: Icon(
                 icon,
                 size: AppDimensions.iconSizeL,
-                color: value ? AppColors.primary : AppColors.textMedium,
+                color: value ? cs.primary : cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(width: AppDimensions.spacingL),
@@ -326,7 +340,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                   Text(
                     description,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textMedium,
+                          color: cs.onSurfaceVariant,
                           height: 1.4,
                         ),
                   ),
@@ -337,7 +351,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
             Switch(
               value: value,
               onChanged: viewModel.isSaving ? null : onChanged,
-              activeTrackColor: AppColors.primary,
+              activeTrackColor: cs.primary,
             ),
           ],
         ),
@@ -346,26 +360,27 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   }
 
   Widget _buildErrorMessage(ConsentViewModel viewModel) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color:
-            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-            color: AppColors.error
-                .withValues(alpha: AppDimensions.opacityMediumLight)),
+            color:
+                cs.error.withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline,
-              color: AppColors.error, size: AppDimensions.iconSizeM),
+          Icon(Icons.error_outline,
+              color: cs.error, size: AppDimensions.iconSizeM),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(
               viewModel.errorMessage!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.error,
+                    color: cs.error,
                   ),
             ),
           ),
@@ -375,24 +390,26 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   }
 
   Widget _buildActionButtons(ConsentViewModel viewModel) {
+    final cs = Theme.of(context).colorScheme;
+
     return ElevatedButton(
       onPressed:
           viewModel.isSaving ? null : () => _handleSaveConsent(viewModel),
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.cardWhite,
+        backgroundColor: cs.primary,
+        foregroundColor: cs.onPrimary,
         padding: AppDimensions.paddingVertical16,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         ),
       ),
       child: viewModel.isSaving
-          ? const SizedBox(
+          ? SizedBox(
               height: 20,
               width: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
+                valueColor: AlwaysStoppedAnimation<Color>(cs.onPrimary),
               ),
             )
           : Row(
@@ -403,7 +420,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 Text(
                   context.l10n.commonSaveChanges,
                   style: AppTextStyles.titleBold.copyWith(
-                    color: AppColors.cardWhite,
+                    color: cs.onPrimary,
                   ),
                 ),
               ],
@@ -413,8 +430,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
 
   Widget _buildInfoSection() {
     return Card(
-      color:
-          AppColors.info.withValues(alpha: AppDimensions.opacityExtraVeryLight),
+      color: context.butleryColors.info
+          .withValues(alpha: AppDimensions.opacityExtraVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingMd),
         child: Column(
@@ -422,8 +439,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           children: [
             Row(
               children: [
-                const Icon(Icons.info_outline,
-                    color: AppColors.info, size: AppDimensions.iconSizeM),
+                Icon(Icons.info_outline,
+                    color: context.butleryColors.info,
+                    size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   context.l10n.consentGoodToKnow,
@@ -443,6 +461,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   }
 
   Widget _buildInfoItem(String text) {
+    final cs = Theme.of(context).colorScheme;
+
     return Padding(
       padding: AppDimensions.paddingOnlyBottom8,
       child: Row(
@@ -451,14 +471,14 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           Text(
             '• ',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textMedium,
+                  color: cs.onSurfaceVariant,
                 ),
           ),
           Expanded(
             child: Text(
               text,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textMedium,
+                    color: cs.onSurfaceVariant,
                     height: 1.4,
                   ),
             ),
@@ -476,12 +496,12 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.check_circle, color: AppColors.cardWhite),
+              const Icon(Icons.check_circle, color: Colors.white),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(context.l10n.consentSaved),
             ],
           ),
-          backgroundColor: AppColors.success,
+          backgroundColor: context.butleryColors.success,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -489,6 +509,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   }
 
   Future<void> _handleRevokeAll(ConsentViewModel viewModel) async {
+    final cs = Theme.of(context).colorScheme;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -501,7 +523,7 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            style: TextButton.styleFrom(foregroundColor: cs.error),
             child: Text(context.l10n.consentRevokeAll),
           ),
         ],
@@ -516,12 +538,12 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.check_circle, color: AppColors.cardWhite),
+                const Icon(Icons.check_circle, color: Colors.white),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(context.l10n.consentAllRevoked),
               ],
             ),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
             behavior: SnackBarBehavior.floating,
           ),
         );

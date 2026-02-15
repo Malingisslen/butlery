@@ -11,6 +11,7 @@
 
 // lib/models/messaging/message.dart
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/messaging/message_type.dart';
 import 'package:uuid/uuid.dart';
 
@@ -99,6 +100,9 @@ class Message {
   /// and edit timeline displays for message management and conversation context.
   final DateTime? editedAt;
 
+  /// Emoji reactions on this message. Maps emoji string to list of user IDs who reacted.
+  final Map<String, List<String>> reactions;
+
   /// Creates a new message with comprehensive configuration and delivery tracking.
   /// This constructor provides complete message initialization with support for all message
   /// types, delivery status tracking, reply functionality, and metadata management. Used
@@ -118,6 +122,7 @@ class Message {
   /// [replyToMessageId] Optional parent message ID for reply threading
   /// [isEdited] Flag indicating edit status, defaults to false for new messages
   /// [editedAt] Optional edit timestamp for edit history tracking
+  /// [reactions] Map of emoji to list of user IDs who reacted with that emoji
   const Message({
     required this.id,
     required this.conversationId,
@@ -134,6 +139,7 @@ class Message {
     this.replyToMessageId,
     this.isEdited = false,
     this.editedAt,
+    this.reactions = const {},
   });
 
   /// Factory constructors for simplified message creation with specific content types.
@@ -198,7 +204,7 @@ class Message {
       senderId: senderId,
       senderDisplayName: senderDisplayName,
       senderAvatarUrl: senderAvatarUrl,
-      content: message ?? 'Delade ett recept: $recipeTitle',
+      content: message ?? AppLocale.current.messageSharedRecipe(recipeTitle),
       type: MessageType.recipeShare,
       status: MessageStatus.sending,
       sentAt: DateTime.now(),
@@ -228,7 +234,7 @@ class Message {
       senderId: senderId,
       senderDisplayName: senderDisplayName,
       senderAvatarUrl: senderAvatarUrl,
-      content: message ?? 'Delade en meny: $menuTitle',
+      content: message ?? AppLocale.current.messageSharedMenu(menuTitle),
       type: MessageType.menuShare,
       status: MessageStatus.sending,
       sentAt: DateTime.now(),
@@ -258,7 +264,8 @@ class Message {
       senderId: senderId,
       senderDisplayName: senderDisplayName,
       senderAvatarUrl: senderAvatarUrl,
-      content: message ?? 'Delade en inköpslista: $listTitle',
+      content:
+          message ?? AppLocale.current.messageSharedShoppingList(listTitle),
       type: MessageType.shoppingListShare,
       status: MessageStatus.sending,
       sentAt: DateTime.now(),
@@ -306,6 +313,7 @@ class Message {
     bool? isEdited,
     DateTime? editedAt,
     Map<String, dynamic>? metadata,
+    Map<String, List<String>>? reactions,
   }) {
     return Message(
       id: id,
@@ -323,6 +331,7 @@ class Message {
       replyToMessageId: replyToMessageId,
       isEdited: isEdited ?? this.isEdited,
       editedAt: editedAt ?? this.editedAt,
+      reactions: reactions ?? this.reactions,
     );
   }
 
@@ -349,6 +358,9 @@ class Message {
         return '${type.icon} Bild';
       case MessageType.voice:
         return '${type.icon} Röstmeddelande';
+      case MessageType.poll:
+        final pollData = metadata?['poll'] as Map<String, dynamic>?;
+        return '${type.icon} ${pollData?['question'] ?? content}';
     }
   }
 

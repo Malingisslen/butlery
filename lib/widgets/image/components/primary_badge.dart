@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -9,6 +8,7 @@ class PrimaryBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Positioned(
       top: AppDimensions.paddingM,
       left: AppDimensions.paddingM,
@@ -18,22 +18,22 @@ class PrimaryBadge extends StatelessWidget {
           vertical: AppDimensions.spacingXs,
         ),
         decoration: BoxDecoration(
-          color: AppColors.forestGreen,
+          color: cs.primary,
           borderRadius: BorderRadius.circular(AppDimensions.paddingM),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.star,
               size: AppDimensions.iconSizeS,
-              color: AppColors.cardWhite,
+              color: cs.onPrimary,
             ),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               'Primary',
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: AppColors.cardWhite,
+                color: cs.onPrimary,
               ),
             ),
           ],

@@ -9,6 +9,7 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Service for handling media (images) in messaging conversations.
 /// Provides comprehensive media upload and messaging integration including:
@@ -233,25 +234,26 @@ class MessagingMediaService extends BaseService {
   Future<String?> validateImage(String imagePath,
       {double maxSizeMB = 10.0}) async {
     try {
+      final l = AppLocale.current;
       final file = File(imagePath);
 
       if (!await file.exists()) {
-        return 'Bilden finns inte';
+        return l.validationImageDoesNotExist;
       }
 
       final sizeMB = await getImageSizeMB(imagePath);
       if (sizeMB == null) {
-        return 'Kunde inte läsa bildstorlek';
+        return l.validationCouldNotReadImageSize;
       }
 
       if (sizeMB > maxSizeMB) {
-        return 'Bilden är för stor (max ${maxSizeMB.toStringAsFixed(1)} MB)';
+        return l.validationImageTooLargeWithSize(maxSizeMB.toInt());
       }
 
       return null; // Valid
     } catch (e) {
       AppLogger.error('Failed to validate image', e);
-      return 'Kunde inte validera bild';
+      return AppLocale.current.validationCouldNotValidateImage;
     }
   }
 }

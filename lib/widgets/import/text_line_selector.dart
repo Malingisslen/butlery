@@ -6,7 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -86,7 +86,7 @@ class TextLineSelector extends StatelessWidget {
                       ? Icons.restaurant
                       : Icons.format_list_numbered,
                   size: AppDimensions.iconSizeM,
-                  color: _getModeColor(colorScheme),
+                  color: _getModeColor(context, colorScheme),
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
@@ -175,8 +175,8 @@ class TextLineSelector extends StatelessWidget {
         label: Text(
             context.l10n.importSelectAllHighlighted(highlightedIndices.length)),
         style: OutlinedButton.styleFrom(
-          foregroundColor: _getModeColor(colorScheme),
-          side: BorderSide(color: _getModeColor(colorScheme)),
+          foregroundColor: _getModeColor(context, colorScheme),
+          side: BorderSide(color: _getModeColor(context, colorScheme)),
         ),
       ),
     );
@@ -192,9 +192,9 @@ class TextLineSelector extends StatelessWidget {
     onSelectionChanged(newSelection);
   }
 
-  Color _getModeColor(ColorScheme colorScheme) {
+  Color _getModeColor(BuildContext context, ColorScheme colorScheme) {
     return mode == SelectionMode.ingredients
-        ? AppColors.success
+        ? context.butleryColors.success
         : colorScheme.primary;
   }
 }
@@ -226,7 +226,7 @@ class _LineItem extends StatelessWidget {
 
     // Determine colors based on state
     final modeColor = mode == SelectionMode.ingredients
-        ? AppColors.success
+        ? context.butleryColors.success
         : colorScheme.primary;
 
     Color backgroundColor;
@@ -244,7 +244,7 @@ class _LineItem extends StatelessWidget {
       borderColor = modeColor.withValues(alpha: AppDimensions.opacityHalf);
       borderStyle = BorderStyle.solid;
     } else {
-      backgroundColor = AppColors.transparent;
+      backgroundColor = Colors.transparent;
       borderColor = colorScheme.outlineVariant;
       borderStyle = BorderStyle.none;
     }
@@ -286,7 +286,7 @@ class _LineItem extends StatelessWidget {
                     height: 24,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isSelected ? modeColor : AppColors.transparent,
+                      color: isSelected ? modeColor : Colors.transparent,
                       border: Border.all(
                         color: isSelected
                             ? modeColor

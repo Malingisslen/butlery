@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -151,7 +150,9 @@ class _MenuTemplateBrowserState extends State<MenuTemplateBrowser> {
                             child: Text(
                               description,
                               style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.textMedium,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -180,11 +181,13 @@ class _MenuTemplateBrowserState extends State<MenuTemplateBrowser> {
                         value: 'delete',
                         child: Row(
                           children: [
-                            const Icon(Icons.delete, color: AppColors.error),
+                            Icon(Icons.delete,
+                                color: Theme.of(context).colorScheme.error),
                             const SizedBox(width: AppDimensions.spacingSm),
                             Text(
                               context.l10n.commonDelete,
-                              style: const TextStyle(color: AppColors.error),
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error),
                             ),
                           ],
                         ),
@@ -214,7 +217,7 @@ class _MenuTemplateBrowserState extends State<MenuTemplateBrowser> {
                   Text(
                     context.l10n.menuTemplateRecipes(totalRecipeCount),
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textMedium,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(width: AppDimensions.spacingL),
@@ -222,7 +225,7 @@ class _MenuTemplateBrowserState extends State<MenuTemplateBrowser> {
                     Text(
                       context.l10n.menuTemplateUsedCount(useCount),
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textMedium,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                 ],
@@ -246,22 +249,23 @@ class _MenuTemplateBrowserState extends State<MenuTemplateBrowser> {
 
     final label = count > 0 ? '$count $category' : category;
 
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingSm,
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.forestGreen.withValues(alpha: 0.08),
+        color: cs.primary.withValues(alpha: 0.08),
         border: Border.all(
-          color: AppColors.forestGreen.withValues(alpha: 0.3),
+          color: cs.primary.withValues(alpha: 0.3),
         ),
         borderRadius: BorderRadius.zero,
       ),
       child: Text(
         label,
         style: AppTextStyles.bodySmall.copyWith(
-          color: AppColors.forestGreenDark,
+          color: cs.primaryContainer,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -301,7 +305,7 @@ class _MenuTemplateBrowserState extends State<MenuTemplateBrowser> {
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
             child: Text(context.l10n.commonDelete),
           ),

@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_request.dart';
 
 // Theme
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 // ViewModels
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
@@ -73,7 +73,7 @@ class FriendRequestCard {
                             width: 12,
                             height: 12,
                             decoration: BoxDecoration(
-                              color: AppColors.success,
+                              color: context.butleryColors.success,
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: Theme.of(context).colorScheme.surface,
@@ -189,33 +189,34 @@ class FriendRequestCard {
     final avatarUrl = userProfile?.avatarUrl;
     final isOnline = userProfile?.isOnline ?? false;
 
+    final cs = Theme.of(context).colorScheme;
     Color statusColor;
     IconData statusIcon;
     String statusText;
 
     switch (request.status) {
       case FriendRequestStatus.pending:
-        statusColor = AppColors.warning;
+        statusColor = context.butleryColors.warning;
         statusIcon = Icons.schedule;
         statusText = context.l10n.socialPendingResponse;
         break;
       case FriendRequestStatus.accepted:
-        statusColor = AppColors.success;
+        statusColor = context.butleryColors.success;
         statusIcon = Icons.check_circle;
         statusText = context.l10n.socialAccepted;
         break;
       case FriendRequestStatus.rejected:
-        statusColor = AppColors.error;
+        statusColor = cs.error;
         statusIcon = Icons.cancel;
         statusText = context.l10n.socialDeclined;
         break;
       case FriendRequestStatus.expired:
-        statusColor = AppColors.neutralMedium;
+        statusColor = cs.onSurfaceVariant;
         statusIcon = Icons.timer_off;
         statusText = context.l10n.socialExpired;
         break;
       default:
-        statusColor = AppColors.neutralMedium;
+        statusColor = cs.onSurfaceVariant;
         statusIcon = Icons.help;
         statusText = context.l10n.socialUnknownStatus;
     }
@@ -263,7 +264,7 @@ class FriendRequestCard {
                         width: 12,
                         height: 12,
                         decoration: BoxDecoration(
-                          color: AppColors.success,
+                          color: context.butleryColors.success,
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: Theme.of(context).colorScheme.surface,
@@ -327,7 +328,7 @@ class FriendRequestCard {
                 IconButton(
                   onPressed: () =>
                       _cancelSentRequest(context, request, viewModel),
-                  icon: const Icon(Icons.cancel, color: AppColors.error),
+                  icon: Icon(Icons.cancel, color: cs.error),
                   tooltip: context.l10n.socialCancelRequest,
                 ),
             ],
@@ -349,7 +350,7 @@ class FriendRequestCard {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.socialFriendRequestAccepted),
-          backgroundColor: AppColors.success,
+          backgroundColor: context.butleryColors.success,
         ),
       );
     }
@@ -366,7 +367,7 @@ class FriendRequestCard {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.socialFriendRequestDeclined),
-          backgroundColor: AppColors.warning,
+          backgroundColor: context.butleryColors.warning,
         ),
       );
     }
@@ -383,7 +384,7 @@ class FriendRequestCard {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.socialRequestCancelled),
-          backgroundColor: AppColors.warning,
+          backgroundColor: context.butleryColors.warning,
         ),
       );
     }

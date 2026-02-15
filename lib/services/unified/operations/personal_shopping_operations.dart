@@ -2,6 +2,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Personal shopping operations interface providing individual shopping list management.
 /// Handles personal list CRUD, item management, recipe integration, import/export, and analytics.
@@ -76,11 +77,13 @@ class PersonalShoppingOperations {
     required String name,
     required double amount,
     String unit = '',
-    String category = 'Övrigt',
+    String? category,
     String? note,
     double? estimatedPrice,
     int priority = 3,
   }) async {
+    final resolvedCategory =
+        category ?? AppLocale.current.shoppingCategoryOther;
     if (listId != null) {
       final list = getListById(listId);
       if (list == null) {
@@ -96,7 +99,7 @@ class PersonalShoppingOperations {
         name: name,
         amount: amount,
         unit: unit,
-        category: category,
+        category: resolvedCategory,
         note: note,
         estimatedPrice: estimatedPrice,
         priority: priority,
@@ -115,7 +118,7 @@ class PersonalShoppingOperations {
       name: name,
       amount: amount,
       unit: unit,
-      category: category,
+      category: resolvedCategory,
       note: note,
       estimatedPrice: estimatedPrice,
       priority: priority,
@@ -286,7 +289,9 @@ class PersonalShoppingOperations {
     final categoryMap = <String, List<UnifiedShoppingItem>>{};
 
     for (final item in list.items) {
-      final category = item.category.isEmpty ? 'Övrigt' : item.category;
+      final category = item.category.isEmpty
+          ? AppLocale.current.shoppingCategoryOther
+          : item.category;
       if (!categoryMap.containsKey(category)) {
         categoryMap[category] = [];
       }
@@ -308,7 +313,7 @@ class PersonalShoppingOperations {
 
   String exportListAsText(String listId) {
     final list = getListById(listId);
-    if (list == null) return 'Lista hittades inte';
+    if (list == null) return AppLocale.current.shoppingListNotFound;
 
     final buffer = StringBuffer();
     buffer.writeln('📋 ${list.name}');
@@ -319,7 +324,7 @@ class PersonalShoppingOperations {
     final boughtItems = list.items.where((item) => item.bought).toList();
 
     if (activeItems.isNotEmpty) {
-      buffer.writeln('📝 Kvar att handla:');
+      buffer.writeln('📝 ${AppLocale.current.shoppingRemainingToBuy}');
       for (final item in activeItems) {
         buffer.writeln('☐ ${item.displayText}');
       }
@@ -327,22 +332,24 @@ class PersonalShoppingOperations {
     }
 
     if (boughtItems.isNotEmpty) {
-      buffer.writeln('✅ Inhandlat:');
+      buffer.writeln('✅ ${AppLocale.current.shoppingAlreadyBought}');
       for (final item in boughtItems) {
         buffer.writeln('☑ ${item.displayText}');
       }
     }
 
     buffer.writeln();
-    buffer.writeln('Skapad: ${list.createdAt.toString().split(' ')[0]}');
-    buffer.writeln('Uppdaterad: ${list.updatedAt.toString().split(' ')[0]}');
+    buffer.writeln(
+        '${AppLocale.current.shoppingCreatedLabel} ${list.createdAt.toString().split(' ')[0]}');
+    buffer.writeln(
+        '${AppLocale.current.shoppingUpdatedLabel} ${list.updatedAt.toString().split(' ')[0]}');
 
     return buffer.toString();
   }
 
   Map<String, dynamic> exportListAsData(String listId) {
     final list = getListById(listId);
-    if (list == null) return {'error': 'Lista hittades inte'};
+    if (list == null) return {'error': AppLocale.current.shoppingListNotFound};
 
     return {
       'format': 'personal_shopping_list',
@@ -421,7 +428,7 @@ class PersonalShoppingOperations {
           name: itemName,
           amount: amount,
           unit: unit,
-          category: 'Importerat',
+          category: AppLocale.current.shoppingCategoryImported,
         );
 
         itemsToAdd.add(item);
@@ -475,12 +482,12 @@ class PersonalShoppingOperations {
           name: name,
           amount: amount,
           unit: unit,
-          category: 'Recept',
+          category: AppLocale.current.shoppingCategoryRecipe,
         );
       }).toList();
 
       return await createList(
-        'Inköp för $recipeName',
+        AppLocale.current.shoppingPurchaseForRecipe(recipeName),
         items: items,
       );
     } catch (e) {

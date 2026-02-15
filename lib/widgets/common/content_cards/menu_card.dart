@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/shared_menu.dart';
@@ -44,11 +43,12 @@ class MenuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return RepaintBoundary(
       child: Container(
         margin: margin ?? _getDefaultMargin(),
         child: Material(
-          color: AppColors.transparent,
+          color: Colors.transparent,
           child: Semantics(
             label: context.l10n.a11yMenu(_getMenuTitle()),
             button: true,
@@ -59,12 +59,11 @@ class MenuCard extends StatelessWidget {
               child: Container(
                 padding: padding ?? _getDefaultPadding(),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
+                  color: cs.surface,
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusM),
                   border: Border.all(
-                      color: AppColors.textLight,
-                      width: AppDimensions.borderWidthThin),
+                      color: cs.outline, width: AppDimensions.borderWidthThin),
                 ),
                 child: _buildContent(context),
               ),
@@ -148,10 +147,10 @@ class MenuCard extends StatelessWidget {
     final title = _getMenuTitle();
     return Row(
       children: [
-        const Icon(
+        Icon(
           Icons.restaurant_menu,
           size: AppDimensions.iconSizeM,
-          color: AppColors.textMedium,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         const SizedBox(width: AppDimensions.spacingS),
         Expanded(
@@ -197,15 +196,15 @@ class MenuCard extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(AppDimensions.spacingM),
         decoration: BoxDecoration(
-          color: AppColors.backgroundTint,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         ),
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.info_outline,
               size: AppDimensions.iconSizeS,
-              color: AppColors.textMedium,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
@@ -234,8 +233,8 @@ class MenuCard extends StatelessWidget {
                   Container(
                     width: 4,
                     height: 4,
-                    decoration: const BoxDecoration(
-                      color: AppColors.textMedium,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -271,27 +270,26 @@ class MenuCard extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingM,
         vertical: AppDimensions.spacingS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.forestGreen
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
           width: AppDimensions.borderWidthThin,
         ),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.people,
             size: AppDimensions.iconSizeS,
-            color: AppColors.forestGreen,
+            color: cs.primary,
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Text(
@@ -312,16 +310,17 @@ class MenuCard extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingXs),
-      decoration: const BoxDecoration(
-        color: AppColors.forestGreen,
+      decoration: BoxDecoration(
+        color: cs.primary,
         shape: BoxShape.circle,
       ),
-      child: const Icon(
+      child: Icon(
         Icons.people,
         size: AppDimensions.iconSizeS,
-        color: AppColors.cardWhite,
+        color: cs.surfaceContainerHighest,
       ),
     );
   }

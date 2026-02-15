@@ -16,6 +16,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/llm/llm_models.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Service for LLM-based recipe extraction.
 ///
@@ -103,7 +104,7 @@ class LlmService extends BaseService {
       throw LlmException.fromFirebase(e);
     } catch (e) {
       AppLogger.error('LlmService: Unexpected error - $e');
-      throw LlmException('Ett oväntat fel uppstod: $e');
+      throw LlmException(AppLocale.current.llmUnexpectedError('$e'));
     }
   }
 
@@ -188,7 +189,7 @@ class LlmService extends BaseService {
       throw LlmException.fromFirebase(e);
     } catch (e) {
       AppLogger.error('LlmService: Unexpected error - $e');
-      throw LlmException('Ett oväntat fel uppstod: $e');
+      throw LlmException(AppLocale.current.llmUnexpectedError('$e'));
     }
   }
 

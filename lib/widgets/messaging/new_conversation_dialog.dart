@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -103,6 +102,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return AlertDialog(
       title: Text(context.l10n.conversationNew),
       content: SizedBox(
@@ -135,7 +135,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
               child: Text(
                 context.l10n.conversationSelectFriendForDM,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textMedium,
+                      color: cs.onSurfaceVariant,
                     ),
               ),
             ),
@@ -181,6 +181,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
   /// Friends list with actual friends from the friends service
   /// ✅ FIXED: Integrated with existing friends system
   Widget _buildFriendsList() {
+    final cs = Theme.of(context).colorScheme;
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(),
@@ -192,16 +193,16 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.people_outline,
               size: AppDimensions.iconSizeXxl,
-              color: AppColors.textMedium,
+              color: cs.onSurfaceVariant,
             ),
             const SizedBox(height: AppDimensions.paddingM),
             Text(
               context.l10n.conversationNoFriendsYet,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.textMedium,
+                    color: cs.onSurfaceVariant,
                   ),
             ),
             const SizedBox(height: AppDimensions.paddingS),
@@ -209,7 +210,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
               context.l10n.conversationAddFriendsFirst,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textLight,
+                    color: cs.outline,
                   ),
             ),
           ],
@@ -222,7 +223,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         child: Text(
           context.l10n.conversationNoFriendsMatch,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
         ),
       );
@@ -319,7 +320,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.conversationCreateError(e.toString())),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }

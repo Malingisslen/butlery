@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Sealed class hierarchy for import results.
 ///
@@ -303,33 +304,34 @@ enum ImportErrorCode {
 
 /// Extension for error code messages
 extension ImportErrorCodeExtension on ImportErrorCode {
-  /// Get Swedish user-friendly message
+  /// Get localized user-friendly message
   String get swedishMessage {
+    final l = AppLocale.current;
     switch (this) {
       case ImportErrorCode.unknown:
-        return 'Ett oväntat fel uppstod';
+        return l.importErrorUnexpected;
       case ImportErrorCode.network:
-        return 'Ingen internetanslutning';
+        return l.importErrorNoInternet;
       case ImportErrorCode.rateLimited:
-        return 'För många importer. Vänta en stund.';
+        return l.importErrorTooManyImports;
       case ImportErrorCode.llmQuotaExceeded:
-        return 'AI-kvoten är slut för idag';
+        return l.importErrorAiQuotaExhausted;
       case ImportErrorCode.invalidUrl:
-        return 'Ogiltig URL';
+        return l.importErrorInvalidUrl;
       case ImportErrorCode.urlNotAccessible:
-        return 'Kunde inte nå sidan';
+        return l.importErrorCouldNotReachPage;
       case ImportErrorCode.platformBlocked:
-        return 'Sidan kräver inloggning';
+        return l.importErrorLoginRequired;
       case ImportErrorCode.noRecipeContent:
-        return 'Inget recept hittades';
+        return l.importErrorNoRecipeFound;
       case ImportErrorCode.ocrFailed:
-        return 'Kunde inte läsa texten i bilden';
+        return l.importErrorCouldNotReadImage;
       case ImportErrorCode.parsingFailed:
-        return 'Kunde inte tolka receptet';
+        return l.importErrorCouldNotParseRecipe;
       case ImportErrorCode.saveFailed:
-        return 'Kunde inte spara receptet';
+        return l.importErrorCouldNotSaveRecipe;
       case ImportErrorCode.cancelled:
-        return 'Importen avbröts';
+        return l.importErrorCancelled;
     }
   }
 }

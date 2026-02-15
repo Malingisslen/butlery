@@ -3,8 +3,8 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Utility for displaying operation results via snackbars.
@@ -42,7 +42,9 @@ class ResultDisplayer {
       scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: success ? AppColors.success : AppColors.error,
+          backgroundColor: success
+              ? context.butleryColors.success
+              : Theme.of(context).colorScheme.error,
           duration: const Duration(seconds: 4),
         ),
       );

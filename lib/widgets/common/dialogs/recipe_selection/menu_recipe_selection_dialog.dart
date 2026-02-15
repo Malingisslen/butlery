@@ -7,7 +7,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -54,8 +53,9 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                 FilledButton.icon(
                   onPressed: () => _addSelectedRecipes(context, viewModel),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.forestGreen,
-                    foregroundColor: AppColors.neutralLight,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingL,
                       vertical: AppDimensions.paddingM,
@@ -182,14 +182,16 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
               vertical: AppDimensions.spacingXxs,
             ),
             decoration: BoxDecoration(
-              color: AppColors.forestGreen
+              color: Theme.of(context)
+                  .colorScheme
+                  .primary
                   .withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             ),
             child: Text(
               context.l10n.dialogSelectedCount(_selectedRecipeIds.length),
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: AppColors.forestGreen,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ),
@@ -245,9 +247,9 @@ class MenuRecipeListItem extends StatelessWidget {
                 height: AppDimensions.iconSizeDisplay,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) =>
-                    _buildPlaceholder(),
+                    _buildPlaceholder(context),
               )
-            : _buildPlaceholder(),
+            : _buildPlaceholder(context),
       ),
       title: Text(
         recipe.title,
@@ -255,11 +257,11 @@ class MenuRecipeListItem extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      subtitle: _buildSubtitle(),
+      subtitle: _buildSubtitle(context),
       trailing: Checkbox(
         value: isSelected,
         onChanged: (value) => onSelectionChanged(value ?? false),
-        activeColor: AppColors.forestGreen,
+        activeColor: Theme.of(context).colorScheme.primary,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS)),
       ),
@@ -267,14 +269,15 @@ class MenuRecipeListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildSubtitle() {
+  Widget _buildSubtitle(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           recipe.mealType,
           style: AppTextStyles.metadataEmphasized.copyWith(
-            color: AppColors.forestGreen,
+            color: cs.primary,
           ),
         ),
         if (recipe.description.isNotEmpty) ...[
@@ -290,10 +293,10 @@ class MenuRecipeListItem extends StatelessWidget {
         Row(
           children: [
             if (recipe.timeMinutes != null) ...[
-              const Icon(
+              Icon(
                 Icons.access_time,
                 size: AppDimensions.iconSizeM,
-                color: AppColors.textSecondary,
+                color: cs.onSurfaceVariant,
               ),
               const SizedBox(width: AppDimensions.spacingXxs),
               Text(
@@ -307,10 +310,10 @@ class MenuRecipeListItem extends StatelessWidget {
                 Text('•', style: AppTextStyles.bodySmall),
                 const SizedBox(width: AppDimensions.spacingS),
               ],
-              const Icon(
+              Icon(
                 Icons.people,
                 size: AppDimensions.iconSizeM,
-                color: AppColors.textSecondary,
+                color: cs.onSurfaceVariant,
               ),
               const SizedBox(width: AppDimensions.spacingXxs),
               Text(
@@ -324,18 +327,20 @@ class MenuRecipeListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder(BuildContext context) {
     return Container(
       width: AppDimensions.iconSizeDisplay,
       height: AppDimensions.iconSizeDisplay,
       decoration: BoxDecoration(
-        color: AppColors.forestGreen
+        color: Theme.of(context)
+            .colorScheme
+            .primary
             .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
-      child: const Icon(
+      child: Icon(
         Icons.restaurant_menu,
-        color: AppColors.forestGreen,
+        color: Theme.of(context).colorScheme.primary,
         size: AppDimensions.iconSizeAction,
       ),
     );

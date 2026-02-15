@@ -11,6 +11,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 class GroupInvitationsViewModel extends ChangeNotifier
     with ErrorHandlingMixin, StateNotifierMixin, AsyncOperationMixin {
@@ -82,7 +83,7 @@ class GroupInvitationsViewModel extends ChangeNotifier
 
         final currentUserId = _currentUserId;
         if (currentUserId == null) {
-          throw Exception('Ingen användare inloggad');
+          throw Exception(AppLocale.current.errorNoUserLoggedIn);
         }
 
         // Hämta alla grupper
@@ -189,7 +190,7 @@ class GroupInvitationsViewModel extends ChangeNotifier
   Future<void> joinGroup(String groupId) async {
     final currentUserId = _currentUserId;
     if (currentUserId == null) {
-      setError('Ingen användare inloggad');
+      setError(AppLocale.current.errorNoUserLoggedIn);
       return;
     }
 
@@ -205,7 +206,7 @@ class GroupInvitationsViewModel extends ChangeNotifier
 
       final group = _availableGroups.firstWhere(
         (g) => g.id == groupId,
-        orElse: () => throw Exception('Gruppen hittades inte'),
+        orElse: () => throw Exception(AppLocale.current.errorGroupNotFound),
       );
 
       AppLogger.info('🔄 Går med i grupp "${group.name}"...');
@@ -226,8 +227,8 @@ class GroupInvitationsViewModel extends ChangeNotifier
         // Logga analytics event
         _logJoinGroupEvent(group);
       } else {
-        final errorMessage =
-            _friendsService.error ?? 'Kunde inte gå med i gruppen';
+        final errorMessage = _friendsService.error ??
+            AppLocale.current.errorCouldNotUpdate('grupp');
         throw Exception(errorMessage);
       }
     } catch (e) {
@@ -254,7 +255,8 @@ class GroupInvitationsViewModel extends ChangeNotifier
 
       final invitation = _receivedInvitations.firstWhere(
         (inv) => inv.id == invitationId,
-        orElse: () => throw Exception('Inbjudan hittades inte'),
+        orElse: () =>
+            throw Exception(AppLocale.current.errorInvitationNotFound),
       );
 
       AppLogger.info(
@@ -278,8 +280,8 @@ class GroupInvitationsViewModel extends ChangeNotifier
         // Logga analytics event
         _logAcceptInvitationEvent(invitation);
       } else {
-        final errorMessage =
-            _friendsService.error ?? 'Kunde inte acceptera inbjudan';
+        final errorMessage = _friendsService.error ??
+            AppLocale.current.errorCouldNotUpdate('inbjudan');
         throw Exception(errorMessage);
       }
     } catch (e) {
@@ -306,7 +308,8 @@ class GroupInvitationsViewModel extends ChangeNotifier
 
       final invitation = _receivedInvitations.firstWhere(
         (inv) => inv.id == invitationId,
-        orElse: () => throw Exception('Inbjudan hittades inte'),
+        orElse: () =>
+            throw Exception(AppLocale.current.errorInvitationNotFound),
       );
 
       AppLogger.info(
@@ -325,8 +328,8 @@ class GroupInvitationsViewModel extends ChangeNotifier
         // Logga analytics event
         _logRejectInvitationEvent(invitation);
       } else {
-        final errorMessage =
-            _friendsService.error ?? 'Kunde inte avvisa inbjudan';
+        final errorMessage = _friendsService.error ??
+            AppLocale.current.errorCouldNotDelete('inbjudan');
         throw Exception(errorMessage);
       }
     } catch (e) {

@@ -43,6 +43,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Comprehensive recipe selection ViewModel providing advanced recipe sharing through service integration.
 /// Manages recipe selection state enabling social recipe sharing with multi-recipe selection, sharing status tracking,
@@ -168,7 +169,7 @@ class RecipeSelectionViewModel extends ChangeNotifier
       });
     } catch (e) {
       AppLogger.error('❌ Fel vid laddning av recept', e);
-      setError('Kunde inte ladda recept');
+      setError(AppLocale.current.errorCouldNotLoad('recept'));
     }
   }
 
@@ -251,7 +252,7 @@ class RecipeSelectionViewModel extends ChangeNotifier
         final shareResult = success != null;
 
         if (!shareResult) {
-          throw Exception('Kunde inte dela recept: ${recipe.title}');
+          throw Exception(AppLocale.current.errorCouldNotUpdate('recept'));
         }
       }
 
@@ -264,7 +265,7 @@ class RecipeSelectionViewModel extends ChangeNotifier
       return true;
     } catch (e) {
       AppLogger.error('❌ Fel vid delning av recept', e);
-      setError('Kunde inte dela recept. Försök igen.');
+      setError(AppLocale.current.errorCouldNotUpdate('recept'));
       _setSharing(false);
       return false;
     }

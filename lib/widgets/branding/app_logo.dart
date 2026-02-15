@@ -12,7 +12,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_shadows.dart';
 
@@ -61,9 +60,10 @@ class AppLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final logoSize = size ?? AppDimensions.imageSizeLarge;
-    final bgColor = backgroundColor ?? AppColors.forestGreen;
-    final iconCol = iconColor ?? AppColors.neutralLight;
+    final bgColor = backgroundColor ?? cs.primary;
+    final iconCol = iconColor ?? cs.outlineVariant;
     final logoIcon = icon ?? Icons.restaurant_menu;
 
     return Container(

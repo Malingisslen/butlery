@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 class InvitationTargetStates {
   /// Build target list loading state
@@ -33,16 +33,16 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.error_outline,
             size: 48,
-            color: AppColors.error,
+            color: Theme.of(context).colorScheme.error,
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             message ?? context.l10n.invitationCouldNotLoadTargets,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.error,
+                  color: Theme.of(context).colorScheme.error,
                 ),
           ),
           if (onRetry != null) ...[
@@ -68,16 +68,16 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.people_outline,
             size: 48,
-            color: AppColors.textMedium,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             message ?? context.l10n.invitationNoTargetsAvailable,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textMedium,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
           ),
           if (onAction != null && actionLabel != null) ...[
@@ -102,10 +102,10 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.search_off,
             size: 48,
-            color: AppColors.textMedium,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
@@ -113,7 +113,7 @@ class InvitationTargetStates {
                 ? context.l10n.invitationNoResultsFor(searchQuery)
                 : context.l10n.invitationNoSearchResults,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textMedium,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
           ),
           if (onClearSearch != null) ...[
@@ -138,16 +138,16 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.check_circle,
             size: 48,
-            color: AppColors.success,
+            color: context.butleryColors.success,
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             context.l10n.invitationTargetsSelectedCount(count),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.success,
+                  color: context.butleryColors.success,
                 ),
           ),
           if (onContinue != null) ...[
@@ -174,7 +174,7 @@ class InvitationTargetStates {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: AppColors.neutralLight,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadius20),
               ),
@@ -183,7 +183,7 @@ class InvitationTargetStates {
               height: 16,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: AppColors.neutralLight,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadius8),
               ),
@@ -192,7 +192,7 @@ class InvitationTargetStates {
               height: 14,
               width: 100,
               decoration: BoxDecoration(
-                color: AppColors.neutralLight,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadius7),
               ),
@@ -214,16 +214,16 @@ class InvitationTargetStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.checklist,
             size: 48,
-            color: AppColors.textMedium,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             message ?? context.l10n.invitationNoSelectionsMade,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textMedium,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
           ),
           if (onAction != null && actionLabel != null) ...[

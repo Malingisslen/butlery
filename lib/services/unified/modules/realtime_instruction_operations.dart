@@ -1,5 +1,6 @@
 // lib/services/unified/modules/realtime_instruction_operations.dart
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/unified/modules/realtime_edit_context.dart';
 import 'package:butlery/services/unified/modules/realtime_field_operations.dart';
 
@@ -14,7 +15,7 @@ class RealtimeInstructionOperations {
     int? index,
   }) async {
     if (instruction.trim().isEmpty) {
-      context.setError('Instruktion kan inte vara tom');
+      context.setError(AppLocale.current.realtimeInstructionEmptyError);
       return false;
     }
     return await RealtimeFieldOperations.makeRealtimeEdit(
@@ -37,11 +38,11 @@ class RealtimeInstructionOperations {
     required String newInstruction,
   }) async {
     if (newInstruction.trim().isEmpty) {
-      context.setError('Instruktion kan inte vara tom');
+      context.setError(AppLocale.current.realtimeInstructionEmptyError);
       return false;
     }
     if (index < 0) {
-      context.setError('Ogiltigt instruktions-index');
+      context.setError(AppLocale.current.realtimeInstructionInvalidIndex);
       return false;
     }
     return await RealtimeFieldOperations.makeRealtimeEdit(
@@ -63,7 +64,7 @@ class RealtimeInstructionOperations {
     required int index,
   }) async {
     if (index < 0) {
-      context.setError('Ogiltigt instruktions-index');
+      context.setError(AppLocale.current.realtimeInstructionInvalidIndex);
       return false;
     }
     return await RealtimeFieldOperations.makeRealtimeEdit(

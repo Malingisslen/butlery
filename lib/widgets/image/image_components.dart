@@ -3,8 +3,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -103,11 +103,12 @@ class ImageComponents {
           return placeholder ??
               buildPlaceholder(
                 config: config,
-                child: const Icon(
-                  Icons.image_outlined,
-                  size: AppDimensions.iconSizeXl,
-                  color: AppColors.textTertiary,
-                ),
+                child: Builder(
+                    builder: (ctx) => Icon(
+                          Icons.image_outlined,
+                          size: AppDimensions.iconSizeXl,
+                          color: Theme.of(ctx).colorScheme.outline,
+                        )),
               );
         }
       },
@@ -174,27 +175,29 @@ class ImageComponents {
   }) {
     final dimensions = config.getDimensions();
 
-    return Container(
-      width: dimensions.width == double.infinity ? null : dimensions.width,
-      height: dimensions.height == double.infinity ? null : dimensions.height,
-      decoration: BoxDecoration(
-        color:
-            backgroundColor ?? AppColors.backgroundTint, // Lighter background
-        borderRadius: config.effectiveBorderRadius,
-        border: config.borderColor != null
-            ? Border.all(
-                color: config.borderColor!,
-                width: config.borderWidth ?? 1.0,
-              )
-            : null,
-      ),
-      child: child ??
-          const Icon(
-            Icons.restaurant_menu, // More contextual for recipe images
-            size: AppDimensions.iconSizeM, // Much smaller, more elegant
-            color: AppColors.textTertiary, // Lighter icon color
-          ),
-    );
+    return Builder(builder: (context) {
+      final cs = Theme.of(context).colorScheme;
+      return Container(
+        width: dimensions.width == double.infinity ? null : dimensions.width,
+        height: dimensions.height == double.infinity ? null : dimensions.height,
+        decoration: BoxDecoration(
+          color: backgroundColor ?? cs.surface,
+          borderRadius: config.effectiveBorderRadius,
+          border: config.borderColor != null
+              ? Border.all(
+                  color: config.borderColor!,
+                  width: config.borderWidth ?? 1.0,
+                )
+              : null,
+        ),
+        child: child ??
+            Icon(
+              Icons.restaurant_menu,
+              size: AppDimensions.iconSizeM,
+              color: cs.outline,
+            ),
+      );
+    });
   }
 
   /// Build loading placeholder with spinner
@@ -205,18 +208,21 @@ class ImageComponents {
     return buildPlaceholder(
       config: config,
       backgroundColor: backgroundColor,
-      child: const Center(
-        child: SizedBox(
-          width: AppDimensions.iconSizeM,
-          height: AppDimensions.iconSizeM,
-          child: CircularProgressIndicator(
-            strokeWidth: AppDimensions.strokeWidth2,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              AppColors.forestGreen,
+      child: Builder(builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Center(
+          child: SizedBox(
+            width: AppDimensions.iconSizeM,
+            height: AppDimensions.iconSizeM,
+            child: CircularProgressIndicator(
+              strokeWidth: AppDimensions.strokeWidth2,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                cs.primary,
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 
@@ -227,16 +233,15 @@ class ImageComponents {
     Color? backgroundColor,
     String? errorMessage,
   }) {
-    // Show graceful placeholder instead of intimidating red error icon
-    // This provides better user experience with elegant degradation
     return buildPlaceholder(
       config: config,
       backgroundColor: backgroundColor,
-      child: const Icon(
-        Icons.image_outlined,
-        size: AppDimensions.iconSizeL,
-        color: AppColors.textTertiary,
-      ),
+      child: Builder(
+          builder: (context) => Icon(
+                Icons.image_outlined,
+                size: AppDimensions.iconSizeL,
+                color: Theme.of(context).colorScheme.outline,
+              )),
     );
   }
 
@@ -247,40 +252,43 @@ class ImageComponents {
   }) {
     if (imageCount <= 1) return const SizedBox.shrink();
 
-    return Positioned(
-      top: AppDimensions.spacingSm,
-      right: AppDimensions.spacingSm,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingTight,
-            vertical: AppDimensions.spacingXxs),
-        decoration: BoxDecoration(
-          color: AppColors.cardWhite
-              .withValues(alpha: AppDimensions.opacityExtraDark),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
-          border: Border.all(
-            color: AppColors.divider,
+    return Builder(builder: (context) {
+      final cs = Theme.of(context).colorScheme;
+      return Positioned(
+        top: AppDimensions.spacingSm,
+        right: AppDimensions.spacingSm,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingTight,
+              vertical: AppDimensions.spacingXxs),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerHighest
+                .withValues(alpha: AppDimensions.opacityExtraDark),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
+            border: Border.all(
+              color: cs.outlineVariant,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.collections_outlined,
+                size: AppDimensions.iconSizeXs,
+                color: cs.onSurface,
+              ),
+              const SizedBox(width: AppDimensions.spacingXxs),
+              Text(
+                '$imageCount',
+                style: AppTextStyles.textXsBold.copyWith(
+                  color: cs.onSurface,
+                ),
+              ),
+            ],
           ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.collections_outlined,
-              size: AppDimensions.iconSizeXs,
-              color: AppColors.textDark,
-            ),
-            const SizedBox(width: AppDimensions.spacingXxs),
-            Text(
-              '$imageCount',
-              style: AppTextStyles.textXsBold.copyWith(
-                color: AppColors.textDark,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+      );
+    });
   }
 
   /// Build image counter for carousels
@@ -291,29 +299,32 @@ class ImageComponents {
   }) {
     if (totalImages <= 1) return const SizedBox.shrink();
 
-    return Positioned(
-      top: AppDimensions.spacingMd,
-      right: AppDimensions.spacingMd,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingSm,
-            vertical: AppDimensions.spacingXs),
-        decoration: BoxDecoration(
-          color: AppColors.cardWhite
-              .withValues(alpha: AppDimensions.opacityExtraDark),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-          border: Border.all(
-            color: AppColors.divider,
+    return Builder(builder: (context) {
+      final cs = Theme.of(context).colorScheme;
+      return Positioned(
+        top: AppDimensions.spacingMd,
+        right: AppDimensions.spacingMd,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingSm,
+              vertical: AppDimensions.spacingXs),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerHighest
+                .withValues(alpha: AppDimensions.opacityExtraDark),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+            border: Border.all(
+              color: cs.outlineVariant,
+            ),
+          ),
+          child: Text(
+            '${currentIndex + 1}/$totalImages',
+            style: AppTextStyles.metadataEmphasized.copyWith(
+              color: cs.onSurface,
+            ),
           ),
         ),
-        child: Text(
-          '${currentIndex + 1}/$totalImages',
-          style: AppTextStyles.metadataEmphasized.copyWith(
-            color: AppColors.textDark,
-          ),
-        ),
-      ),
-    );
+      );
+    });
   }
 
   /// Build navigation dots for carousels
@@ -325,41 +336,44 @@ class ImageComponents {
   }) {
     if (totalImages <= 1) return const SizedBox.shrink();
 
-    return Positioned(
-      bottom: AppDimensions.spacingMd,
-      left: 0,
-      right: 0,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(
-          totalImages,
-          (index) => Semantics(
-            label: 'Bild ${index + 1}',
-            button: onDotTap != null,
-            child: GestureDetector(
-              onTap: onDotTap != null ? () => onDotTap(index) : null,
-              child: Container(
-                width: AppDimensions.dotSize,
-                height: AppDimensions.dotSize,
-                margin: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingXs),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: index == currentIndex
-                      ? AppColors.forestGreen
-                      : AppColors.cardWhite
-                          .withValues(alpha: AppDimensions.opacityMediumDark),
-                  border: Border.all(
-                    color: AppColors.divider,
-                    width: AppDimensions.strokeWidth05,
+    return Builder(builder: (context) {
+      final cs = Theme.of(context).colorScheme;
+      return Positioned(
+        bottom: AppDimensions.spacingMd,
+        left: 0,
+        right: 0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            totalImages,
+            (index) => Semantics(
+              label: 'Bild ${index + 1}',
+              button: onDotTap != null,
+              child: GestureDetector(
+                onTap: onDotTap != null ? () => onDotTap(index) : null,
+                child: Container(
+                  width: AppDimensions.dotSize,
+                  height: AppDimensions.dotSize,
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.spacingXs),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: index == currentIndex
+                        ? cs.primary
+                        : cs.surfaceContainerHighest
+                            .withValues(alpha: AppDimensions.opacityMediumDark),
+                    border: Border.all(
+                      color: cs.outlineVariant,
+                      width: AppDimensions.strokeWidth05,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   /// Build status indicator for avatars
@@ -372,27 +386,29 @@ class ImageComponents {
     final dimensions = config.getDimensions();
     // Handle infinite dimensions gracefully - use reasonable default size
     final indicatorSize = dimensions.width == double.infinity
-        ? AppDimensions.spacingMd +
-            AppDimensions
-                .spacingXs // Default indicator size for infinite/large avatars (20px)
+        ? AppDimensions.spacingMd + AppDimensions.spacingXs
         : dimensions.width * 0.25;
 
-    return Positioned(
-      bottom: 0,
-      right: 0,
-      child: Container(
-        width: indicatorSize,
-        height: indicatorSize,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: isOnline ? AppColors.success : AppColors.textSecondary,
-          border: Border.all(
-            color: AppColors.cardWhite,
-            width: AppDimensions.strokeWidth2,
+    return Builder(builder: (context) {
+      final cs = Theme.of(context).colorScheme;
+      return Positioned(
+        bottom: 0,
+        right: 0,
+        child: Container(
+          width: indicatorSize,
+          height: indicatorSize,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color:
+                isOnline ? context.butleryColors.success : cs.onSurfaceVariant,
+            border: Border.all(
+              color: cs.surfaceContainerHighest,
+              width: AppDimensions.strokeWidth2,
+            ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   /// Wrap widget with tap handler

@@ -7,7 +7,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/components/input_themes.dart';
@@ -125,6 +124,7 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return AnimatedContainer(
       duration: AppDimensions.animationDurationFast,
       decoration: _isFocused
@@ -136,25 +136,25 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
         autofocus: widget.autofocus,
         enabled: widget.enabled,
         style: AppTextStyles.bodyMedium.copyWith(
-          color: AppColors.textDark,
+          color: cs.onSurface,
         ),
         decoration: InputDecoration(
           hintText: widget.hintText ?? context.l10n.searchHint,
           hintStyle: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textLight,
+            color: cs.outline,
           ),
           prefixIcon: widget.prefixIcon ??
               Icon(
                 Icons.search,
-                color: _isFocused ? AppColors.forestGreen : AppColors.textLight,
+                color: _isFocused ? cs.primary : cs.outline,
                 size: AppDimensions.iconSizeM,
               ),
           suffixIcon: widget.suffixIcon ??
               (_hasText
                   ? IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.close,
-                        color: AppColors.textLight,
+                        color: cs.outline,
                         size: AppDimensions.iconSizeM,
                       ),
                       onPressed: _clearText,
@@ -216,6 +216,7 @@ class ButleryHeaderSearchBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
@@ -233,16 +234,16 @@ class ButleryHeaderSearchBox extends StatelessWidget {
                     vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.cardWhite.withValues(alpha: 0.9),
+                    color: cs.surfaceContainerHighest.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(
                       AppDimensions.borderRadius8,
                     ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.search,
-                        color: AppColors.textLight,
+                        color: cs.outline,
                         size: AppDimensions.iconSizeM,
                       ),
                       const SizedBox(width: AppDimensions.spacingSm),
@@ -250,7 +251,7 @@ class ButleryHeaderSearchBox extends StatelessWidget {
                         child: Text(
                           hintText ?? context.l10n.searchHint,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textLight,
+                            color: cs.outline,
                           ),
                         ),
                       ),

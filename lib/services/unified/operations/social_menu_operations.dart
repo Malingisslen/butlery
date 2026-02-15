@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -61,7 +62,8 @@ class SocialMenuOperations {
       // Calculate menu statistics
       final totalRecipes =
           menu.values.fold(0, (total, recipes) => total + recipes.length);
-      final menuTitle = customTitle ?? 'Meny från ${currentUser.displayName}';
+      final menuTitle = customTitle ??
+          AppLocale.current.menuDefaultTitle(currentUser.displayName);
 
       // Prepare menu data for Firebase
       final menuData = {
@@ -139,8 +141,9 @@ class SocialMenuOperations {
       // Use existing shareMenuWithFriends method
       final categoryName =
           _friendsService.categories.getCategoryById(categoryId)?.name ??
-              'Grupp';
-      final enhancedTitle = customTitle ?? 'Meny för $categoryName';
+              AppLocale.current.menuShareGroupFallback;
+      final enhancedTitle =
+          customTitle ?? AppLocale.current.menuShareGroupTitle(categoryName);
 
       return await shareMenuWithFriends(
         menu: menu,

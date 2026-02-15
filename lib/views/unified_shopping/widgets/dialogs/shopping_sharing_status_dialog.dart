@@ -1,7 +1,6 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -27,6 +26,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final permissionService = ServiceLocator.get<PermissionService>();
     final userService = ServiceLocator.get<UserService>();
     final currentUserId = permissionService.currentUser?.uid;
@@ -36,7 +36,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
         children: [
           Icon(
             _getListTypeIcon(),
-            color: _getListTypeColor(),
+            color: _getListTypeColor(cs),
             size: AppDimensions.iconSizeAction,
           ),
           const SizedBox(width: AppDimensions.spacingM),
@@ -95,9 +95,11 @@ class ShoppingShareStatusDialog extends StatelessWidget {
   }
 
   Widget _buildListInfoSection(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Card(
-      color:
-          _getListTypeColor().withValues(alpha: AppDimensions.opacityVeryLight),
+      color: _getListTypeColor(cs)
+          .withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -106,7 +108,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             Text(
               context.l10n.shoppingListInfo,
               style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.forestGreen,
+                color: cs.primary,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -120,6 +122,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
   }
 
   Widget _buildPermissionSection(BuildContext context, String currentUserId) {
+    final cs = Theme.of(context).colorScheme;
     final userPermission = list.memberPermissions[currentUserId];
     final isOwner = list.ownerId == currentUserId;
 
@@ -132,7 +135,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
       permissionLabel = context.l10n.shoppingAdminOwner;
       permissionDescription = context.l10n.shoppingAdminOwnerDescription;
       permissionIcon = Icons.admin_panel_settings;
-      permissionColor = AppColors.forestGreen;
+      permissionColor = cs.primary;
     } else {
       switch (userPermission) {
         case SharedListPermission.view:
@@ -140,28 +143,28 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           permissionDescription =
               context.l10n.shoppingPermissionViewDescription;
           permissionIcon = Icons.visibility;
-          permissionColor = AppColors.textMedium;
+          permissionColor = cs.onSurfaceVariant;
           break;
         case SharedListPermission.edit:
           permissionLabel = context.l10n.shoppingPermissionEdit;
           permissionDescription =
               context.l10n.shoppingPermissionEditDescription;
           permissionIcon = Icons.edit;
-          permissionColor = AppColors.accent;
+          permissionColor = cs.secondary;
           break;
         case SharedListPermission.admin:
           permissionLabel = context.l10n.shoppingPermissionAdministrator;
           permissionDescription =
               context.l10n.shoppingPermissionAdminDescription;
           permissionIcon = Icons.admin_panel_settings;
-          permissionColor = AppColors.forestGreen;
+          permissionColor = cs.primary;
           break;
         default:
           permissionLabel = context.l10n.shoppingPermissionUnspecified;
           permissionDescription =
               context.l10n.shoppingPermissionUnspecifiedDescription;
           permissionIcon = Icons.help;
-          permissionColor = AppColors.textMedium;
+          permissionColor = cs.onSurfaceVariant;
       }
     }
 
@@ -180,7 +183,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                 Text(
                   context.l10n.shoppingYourPermission,
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: AppColors.forestGreen,
+                    color: cs.primary,
                   ),
                 ),
               ],
@@ -202,6 +205,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
   }
 
   Widget _buildMembersSection(BuildContext context, UserService userService) {
+    final cs = Theme.of(context).colorScheme;
     final allMembers = <String, SharedListPermission>{};
 
     if (!list.memberPermissions.containsKey(list.ownerId)) {
@@ -211,8 +215,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     allMembers.addAll(list.memberPermissions);
 
     return Card(
-      color: AppColors.forestGreen
-          .withValues(alpha: AppDimensions.opacityVeryLight),
+      color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -220,14 +223,13 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.people,
-                    color: AppColors.forestGreen,
-                    size: AppDimensions.iconSizeM),
+                Icon(Icons.people,
+                    color: cs.primary, size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
                   context.l10n.shoppingMembersCount(allMembers.length),
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: AppColors.forestGreen,
+                    color: cs.primary,
                   ),
                 ),
               ],
@@ -245,6 +247,7 @@ class ShoppingShareStatusDialog extends StatelessWidget {
 
   Widget _buildMemberRow(BuildContext context, String userId,
       SharedListPermission permission, bool isOwner) {
+    final cs = Theme.of(context).colorScheme;
     final String displayName =
         userDisplayNames[userId] ?? context.l10n.shoppingUnknownUser;
 
@@ -255,23 +258,23 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     if (isOwner) {
       permissionLabel = context.l10n.shoppingPermissionOwner;
       permissionIcon = Icons.admin_panel_settings;
-      permissionColor = AppColors.forestGreen;
+      permissionColor = cs.primary;
     } else {
       switch (permission) {
         case SharedListPermission.view:
           permissionLabel = context.l10n.shoppingPermissionView;
           permissionIcon = Icons.visibility;
-          permissionColor = AppColors.textMedium;
+          permissionColor = cs.onSurfaceVariant;
           break;
         case SharedListPermission.edit:
           permissionLabel = context.l10n.shoppingPermissionEdit;
           permissionIcon = Icons.edit;
-          permissionColor = AppColors.accent;
+          permissionColor = cs.secondary;
           break;
         case SharedListPermission.admin:
           permissionLabel = context.l10n.shoppingPermissionAdmin;
           permissionIcon = Icons.admin_panel_settings;
-          permissionColor = AppColors.forestGreen;
+          permissionColor = cs.primary;
           break;
       }
     }
@@ -282,12 +285,12 @@ class ShoppingShareStatusDialog extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityVeryLight),
+            backgroundColor:
+                cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
             child: Text(
               displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
               style: AppTextStyles.labelLarge.copyWith(
-                color: AppColors.forestGreen,
+                color: cs.primary,
               ),
             ),
           ),
@@ -323,9 +326,10 @@ class ShoppingShareStatusDialog extends StatelessWidget {
   }
 
   Widget _buildActivitySection(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Card(
-      color: AppColors.forestGreen
-          .withValues(alpha: AppDimensions.opacityVeryLight),
+      color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingM),
         child: Column(
@@ -333,14 +337,13 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.history,
-                    color: AppColors.forestGreen,
-                    size: AppDimensions.iconSizeM),
+                Icon(Icons.history,
+                    color: cs.primary, size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
                   context.l10n.shoppingRecentActivity,
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: AppColors.forestGreen,
+                    color: cs.primary,
                   ),
                 ),
               ],
@@ -394,14 +397,14 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     }
   }
 
-  Color _getListTypeColor() {
+  Color _getListTypeColor(ColorScheme cs) {
     switch (list.type) {
       case ListType.personal:
-        return AppColors.forestGreen;
+        return cs.primary;
       case ListType.collaborative:
-        return AppColors.forestGreen;
+        return cs.primary;
       case ListType.template:
-        return AppColors.textMedium;
+        return cs.onSurfaceVariant;
     }
   }
 
@@ -445,11 +448,12 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     } catch (e) {
       AppLogger.error('Error loading friends for member management: $e');
       if (context.mounted) {
+        final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content:
                 Text(context.l10n.shoppingCouldNotLoadFriends(e.toString())),
-            backgroundColor: AppColors.error,
+            backgroundColor: cs.error,
           ),
         );
       }

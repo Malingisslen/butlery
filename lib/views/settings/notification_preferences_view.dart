@@ -4,7 +4,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -52,10 +51,11 @@ class _NotificationPreferencesViewState
       await service.updatePreferences(updated);
     } catch (e) {
       if (mounted) {
+        final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.notificationSaveError),
-            backgroundColor: AppColors.error,
+            backgroundColor: cs.error,
           ),
         );
       }
@@ -92,6 +92,8 @@ class _NotificationPreferencesViewState
   }
 
   Widget _buildMasterToggle() {
+    final cs = Theme.of(context).colorScheme;
+
     return SwitchListTile(
       title: Text(
         context.l10n.notificationEnableTitle,
@@ -99,24 +101,23 @@ class _NotificationPreferencesViewState
       ),
       subtitle: Text(
         context.l10n.notificationEnableSubtitle,
-        style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+        style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
       ),
       secondary: Icon(
         _preferences.enabled
             ? Icons.notifications_active_outlined
             : Icons.notifications_off_outlined,
-        color: AppColors.forestGreen,
+        color: cs.primary,
         size: AppDimensions.iconSizeL,
       ),
       value: _preferences.enabled,
       onChanged: (value) => _savePreferences(
         _copyPreferences(enabled: value),
       ),
-      activeTrackColor:
-          AppColors.forestGreen.withValues(alpha: AppDimensions.opacityHalf),
+      activeTrackColor: cs.primary.withValues(alpha: AppDimensions.opacityHalf),
       thumbColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.forestGreen;
+          return cs.primary;
         }
         return null;
       }),
@@ -137,6 +138,7 @@ class _NotificationPreferencesViewState
   }
 
   Widget _buildCategoryTile(_CategoryItem item) {
+    final cs = Theme.of(context).colorScheme;
     final isEnabled = _preferences.categorySettings[item.category] ?? true;
 
     return Opacity(
@@ -146,7 +148,7 @@ class _NotificationPreferencesViewState
         title: Text(item.label, style: AppTextStyles.titleMedium),
         secondary: Icon(
           item.icon,
-          color: AppColors.forestGreen,
+          color: cs.primary,
           size: AppDimensions.iconSizeL,
         ),
         value: isEnabled,
@@ -161,10 +163,10 @@ class _NotificationPreferencesViewState
               }
             : null,
         activeTrackColor:
-            AppColors.forestGreen.withValues(alpha: AppDimensions.opacityHalf),
+            cs.primary.withValues(alpha: AppDimensions.opacityHalf),
         thumbColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return AppColors.forestGreen;
+            return cs.primary;
           }
           return null;
         }),
@@ -174,6 +176,7 @@ class _NotificationPreferencesViewState
   }
 
   Widget _buildQuietHoursSection() {
+    final cs = Theme.of(context).colorScheme;
     final hasQuietHours = _preferences.quietHoursStart != null &&
         _preferences.quietHoursEnd != null;
 
@@ -190,12 +193,11 @@ class _NotificationPreferencesViewState
           ),
           subtitle: Text(
             context.l10n.notificationQuietHoursSubtitle,
-            style:
-                AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+            style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
           ),
-          secondary: const Icon(
+          secondary: Icon(
             Icons.do_not_disturb_on_outlined,
-            color: AppColors.forestGreen,
+            color: cs.primary,
             size: AppDimensions.iconSizeL,
           ),
           value: hasQuietHours,
@@ -215,11 +217,11 @@ class _NotificationPreferencesViewState
               );
             }
           },
-          activeTrackColor: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityHalf),
+          activeTrackColor:
+              cs.primary.withValues(alpha: AppDimensions.opacityHalf),
           thumbColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
-              return AppColors.forestGreen;
+              return cs.primary;
             }
             return null;
           }),
@@ -248,9 +250,11 @@ class _NotificationPreferencesViewState
             onTap: () => _pickTime(isStart: true),
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingSm),
-          child: Icon(Icons.arrow_forward, color: AppColors.textMedium),
+        Padding(
+          padding:
+              const EdgeInsets.symmetric(horizontal: AppDimensions.spacingSm),
+          child: Icon(Icons.arrow_forward,
+              color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         Expanded(
           child: _buildTimeTile(
@@ -268,25 +272,27 @@ class _NotificationPreferencesViewState
     required String time,
     required VoidCallback onTap,
   }) {
+    final cs = Theme.of(context).colorScheme;
+
     return InkWell(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.divider),
+          border: Border.all(color: cs.outlineVariant),
         ),
         child: Column(
           children: [
             Text(
               label,
               style:
-                  AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+                  AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
               time,
               style: AppTextStyles.headlineSmall.copyWith(
-                color: AppColors.forestGreen,
+                color: cs.primary,
               ),
             ),
           ],
@@ -319,6 +325,8 @@ class _NotificationPreferencesViewState
   }
 
   Widget _buildSoundVibrationSection() {
+    final cs = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -329,18 +337,18 @@ class _NotificationPreferencesViewState
             _preferences.soundEnabled
                 ? Icons.volume_up_outlined
                 : Icons.volume_off_outlined,
-            color: AppColors.forestGreen,
+            color: cs.primary,
             size: AppDimensions.iconSizeL,
           ),
           value: _preferences.soundEnabled,
           onChanged: (value) => _savePreferences(
             _copyPreferences(soundEnabled: value),
           ),
-          activeTrackColor: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityHalf),
+          activeTrackColor:
+              cs.primary.withValues(alpha: AppDimensions.opacityHalf),
           thumbColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
-              return AppColors.forestGreen;
+              return cs.primary;
             }
             return null;
           }),
@@ -350,20 +358,20 @@ class _NotificationPreferencesViewState
         SwitchListTile(
           title: Text(context.l10n.notificationVibration,
               style: AppTextStyles.titleMedium),
-          secondary: const Icon(
+          secondary: Icon(
             Icons.vibration_outlined,
-            color: AppColors.forestGreen,
+            color: cs.primary,
             size: AppDimensions.iconSizeL,
           ),
           value: _preferences.vibrationEnabled,
           onChanged: (value) => _savePreferences(
             _copyPreferences(vibrationEnabled: value),
           ),
-          activeTrackColor: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityHalf),
+          activeTrackColor:
+              cs.primary.withValues(alpha: AppDimensions.opacityHalf),
           thumbColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
-              return AppColors.forestGreen;
+              return cs.primary;
             }
             return null;
           }),

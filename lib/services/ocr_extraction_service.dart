@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/network/ssl_pinning_service.dart';
 import 'package:butlery/services/ocr/ocr_usage_tracker.dart';
@@ -505,18 +506,18 @@ class OCRExtractionService extends BaseService {
     final issues = <String>[], recommendations = <String>[];
     double qualityScore = 1.0;
     if (imageBytes.length > _maxImageSize) {
-      issues.add('Bilden är för stor');
-      recommendations.add('Komprimera bilden');
+      issues.add(AppLocale.current.ocrImageTooLarge);
+      recommendations.add(AppLocale.current.ocrCompressImage);
       qualityScore -= 0.2;
     }
     if (imageBytes.length < 50 * 1024) {
-      issues.add('Bilden är för liten');
-      recommendations.add('Använd högre upplösning');
+      issues.add(AppLocale.current.ocrImageTooSmall);
+      recommendations.add(AppLocale.current.ocrUseHigherResolution);
       qualityScore -= 0.3;
     }
     if (!_isValidImageFormat(imageBytes)) {
-      issues.add('Bildformat stöds inte optimalt');
-      recommendations.add('Använd JPEG eller PNG');
+      issues.add(AppLocale.current.ocrImageFormatNotOptimal);
+      recommendations.add(AppLocale.current.ocrUseJpegOrPng);
       qualityScore -= 0.1;
     }
     return ImageQualityAssessment(

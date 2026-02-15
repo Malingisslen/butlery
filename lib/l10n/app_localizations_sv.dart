@@ -227,22 +227,22 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String errorCouldNotCreate(String itemType) {
-    return 'Kunde inte skapa $itemType. Försök igen.';
+    return 'Kunde inte skapa $itemType';
   }
 
   @override
   String errorCouldNotUpdate(String itemType) {
-    return 'Kunde inte uppdatera $itemType. Försök igen.';
+    return 'Kunde inte uppdatera $itemType';
   }
 
   @override
   String errorCouldNotDelete(String itemType) {
-    return 'Kunde inte ta bort $itemType. Försök igen.';
+    return 'Kunde inte ta bort $itemType';
   }
 
   @override
   String errorCouldNotLoad(String itemType) {
-    return 'Kunde inte ladda $itemType. Försök igen.';
+    return 'Kunde inte ladda $itemType';
   }
 
   @override
@@ -6891,8 +6891,8 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String shoppingItemAdded(String name) {
-    return '$name tillagd';
+  String shoppingItemAdded(String itemName) {
+    return 'La till \"$itemName\"';
   }
 
   @override
@@ -8186,5 +8186,2621 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String instructionLabel(int number) {
     return 'Instruktion $number';
+  }
+
+  @override
+  String get onboardingSkip => 'Hoppa over';
+
+  @override
+  String get onboardingBack => 'Tillbaka';
+
+  @override
+  String get onboardingNext => 'Nasta';
+
+  @override
+  String get onboardingComplete => 'Slutfor';
+
+  @override
+  String get onboardingWelcomeTitle => 'Valkommen till Butlery!';
+
+  @override
+  String get onboardingWelcomeDescription =>
+      'Lat oss stalla in dina preferenser sa att du far den basta upplevelsen fran borjan.';
+
+  @override
+  String get onboardingWelcomeNote =>
+      'Du kan alltid andra dessa i installningarna senare.';
+
+  @override
+  String get onboardingAllergenTitle => 'Allergier & intoleranser';
+
+  @override
+  String get onboardingAllergenDescription =>
+      'Valj de allergener du vill spara och filtrera recept efter.';
+
+  @override
+  String get onboardingAllergenGluten => 'Gluten';
+
+  @override
+  String get onboardingAllergenMilk => 'Mjolk';
+
+  @override
+  String get onboardingAllergenNuts => 'Notter';
+
+  @override
+  String get onboardingAllergenEgg => 'Agg';
+
+  @override
+  String get onboardingAllergenSoy => 'Soja';
+
+  @override
+  String get onboardingAllergenFish => 'Fisk';
+
+  @override
+  String get onboardingAllergenShellfish => 'Skaldjur';
+
+  @override
+  String get onboardingAllergenSesame => 'Sesam';
+
+  @override
+  String get onboardingDietaryTitle => 'Kostreferenser';
+
+  @override
+  String get onboardingDietaryDescription =>
+      'Har du nagra kostreferenser? Vi kan filtrera recept at dig.';
+
+  @override
+  String get onboardingDietaryVegetarian => 'Vegetarian';
+
+  @override
+  String get onboardingDietaryVegan => 'Vegan';
+
+  @override
+  String get onboardingDietaryPescetarian => 'Pescetarian';
+
+  @override
+  String get onboardingDietaryVegetarianDesc =>
+      'Inga kott- eller fiskprodukter';
+
+  @override
+  String get onboardingDietaryVeganDesc => 'Inga animaliska produkter';
+
+  @override
+  String get onboardingDietaryPescetarianDesc => 'Fisk men inget kott';
+
+  @override
+  String get onboardingImportTitle => 'Importera ditt forsta recept';
+
+  @override
+  String get onboardingImportDescription =>
+      'Kom igang snabbt genom att importera ett recept fran webben eller ett foto.';
+
+  @override
+  String get onboardingImportUrlTitle => 'Fran en webbadress';
+
+  @override
+  String get onboardingImportUrlDescription =>
+      'Klistra in en lank till ett recept';
+
+  @override
+  String get onboardingImportPhotoTitle => 'Importera fran foto';
+
+  @override
+  String get onboardingImportPhotoDescription =>
+      'Ta ett foto eller valj fran galleriet';
+
+  @override
+  String get onboardingImportSkipNote =>
+      'Du kan hoppa over detta steg och importera senare.';
+
+  @override
+  String get cookingModePortions => 'Portioner';
+
+  @override
+  String get faqTitle => 'Vanliga fragor';
+
+  @override
+  String get faqImportQuestion => 'Hur importerar jag recept?';
+
+  @override
+  String get faqImportAnswer =>
+      'Du kan importera recept pa flera satt: klistra in en URL fran en receptsida, ta ett foto av ett recept, eller klistra in recepttext direkt. Tryck pa \"Lagg till\" pa startsidan och valj metod.';
+
+  @override
+  String get faqShareQuestion => 'Hur delar jag recept med vanner?';
+
+  @override
+  String get faqShareAnswer =>
+      'Oppna ett recept och tryck pa dela-ikonen. Du kan skicka receptet till vanner som anvander Butlery, eller dela en lank. Dina vanner kan sedan spara receptet till sin egen samling.';
+
+  @override
+  String get faqMenuQuestion => 'Hur anvander jag veckomeny?';
+
+  @override
+  String get faqMenuAnswer =>
+      'Ga till veckomeny via navigeringen. Dar kan du planera veckans maltider genom att lagga till recept fran din samling. Ingredienser fran menyn kan skickas direkt till inkopslistan.';
+
+  @override
+  String get faqTagsQuestion => 'Hur skapar jag personliga taggar?';
+
+  @override
+  String get faqTagsAnswer =>
+      'Ga till profilen och valj \"Mina taggar\". Dar kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept for enkel filtrering.';
+
+  @override
+  String get faqReportQuestion => 'Hur rapporterar jag problem?';
+
+  @override
+  String get faqReportAnswer =>
+      'Tryck pa \"!\"-knappen som syns langst ner till hoger pa varje sida. Dar kan du beskriva problemet, valja kategori och bifoga en skarmavbild. Vi laser all feedback!';
+
+  @override
+  String get feedbackSendLabel => 'Skicka feedback';
+
+  @override
+  String get feedbackCategoryLabel => 'Kategori';
+
+  @override
+  String get feedbackCategoryBug => 'Bugg';
+
+  @override
+  String get feedbackCategoryFeatureRequest => 'Onskemol';
+
+  @override
+  String get feedbackCategoryGeneral => 'Ovrigt';
+
+  @override
+  String get feedbackDescriptionLabel => 'Beskrivning';
+
+  @override
+  String get feedbackDescriptionHint => 'Beskriv vad du upplevde...';
+
+  @override
+  String get feedbackEmailLabel => 'E-post (valfritt)';
+
+  @override
+  String get feedbackScreenshotLabel => 'Skarmavbild';
+
+  @override
+  String get feedbackRemoveScreenshot => 'Ta bort skarmavbild';
+
+  @override
+  String get feedbackSendButton => 'Skicka';
+
+  @override
+  String get feedbackValidationEmpty => 'Ange en beskrivning';
+
+  @override
+  String get feedbackSuccessMessage => 'Tack for din feedback!';
+
+  @override
+  String get feedbackErrorMessage => 'Kunde inte skicka feedback. Forsok igen.';
+
+  @override
+  String get substitutionEmptyState => 'Inga ersattningar hittades';
+
+  @override
+  String get pollCreateTitle => 'Skapa omröstning';
+
+  @override
+  String get pollQuestionLabel => 'Fråga';
+
+  @override
+  String get pollQuestionHint => 'Vad vill du fråga?';
+
+  @override
+  String pollOptionLabel(int number) {
+    return 'Alternativ $number';
+  }
+
+  @override
+  String get pollRemoveOption => 'Ta bort alternativ';
+
+  @override
+  String get pollAddOption => 'Lägg till alternativ';
+
+  @override
+  String get pollAllowMultiple => 'Tillåt flera val';
+
+  @override
+  String get pollCancel => 'Avbryt';
+
+  @override
+  String get pollCreate => 'Skapa';
+
+  @override
+  String pollVoteCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count röster',
+      one: '1 röst',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pollEnded => 'Avslutad';
+
+  @override
+  String get pollClose => 'Stäng omröstning';
+
+  @override
+  String get messageTypeText => 'Textmeddelande';
+
+  @override
+  String get messageTypeRecipeShare => 'Receptdelning';
+
+  @override
+  String get messageTypeMenuShare => 'Menydelning';
+
+  @override
+  String get messageTypeShoppingListShare => 'Inköpslistedelning';
+
+  @override
+  String get messageTypeSystem => 'Systemmeddelande';
+
+  @override
+  String get messageTypeImage => 'Bild';
+
+  @override
+  String get messageTypeVoice => 'Röstmeddelande';
+
+  @override
+  String get messageTypePoll => 'Omröstning';
+
+  @override
+  String get messageStatusSending => 'Skickar...';
+
+  @override
+  String get messageStatusSent => 'Skickat';
+
+  @override
+  String get messageStatusDelivered => 'Levererat';
+
+  @override
+  String get messageStatusRead => 'Läst';
+
+  @override
+  String get messageStatusFailed => 'Misslyckades';
+
+  @override
+  String get errorDnsResolution =>
+      'Anslutningsproblem upptäckts. Försöker återansluta...';
+
+  @override
+  String get errorServiceUnavailable =>
+      'Tjänsten är tillfälligt otillgänglig. Försök igen senare.';
+
+  @override
+  String get errorNoItemsFound => 'Inga objekt hittades.';
+
+  @override
+  String get errorNetworkCheckConnection =>
+      'Nätverksfel. Kontrollera din internetanslutning.';
+
+  @override
+  String get errorNoUserLoggedIn => 'Ingen användare är inloggad';
+
+  @override
+  String get errorReauthRequired =>
+      'Du måste logga in igen för att ta bort ditt konto';
+
+  @override
+  String get errorCouldNotRemoveMfa => 'Kunde inte ta bort MFA';
+
+  @override
+  String get errorEmailAlreadyInUse =>
+      'Email-adressen används redan av ett annat konto.';
+
+  @override
+  String get errorInvalidEmailAddress => 'Ogiltig email-adress.';
+
+  @override
+  String get errorUserNotFoundByEmail =>
+      'Ingen användare hittades med denna email.';
+
+  @override
+  String get errorWrongPassword => 'Fel lösenord.';
+
+  @override
+  String get errorInvalidCredentials =>
+      'Fel email eller lösenord. Kontrollera dina uppgifter.';
+
+  @override
+  String get errorAccountDisabled => 'Detta konto har inaktiverats.';
+
+  @override
+  String get errorTooManyAttempts =>
+      'För många försök. Vänta en stund och försök igen.';
+
+  @override
+  String get errorInvalidVerificationCode =>
+      'Ogiltig verifieringskod. Försök igen.';
+
+  @override
+  String get errorSessionExpired => 'Sessionen har gått ut. Försök igen.';
+
+  @override
+  String get errorTooManySmsAttempts =>
+      'För många SMS-försök. Försök igen senare.';
+
+  @override
+  String get errorPhoneNumberMissing => 'Telefonnummer saknas.';
+
+  @override
+  String get errorMustBeLoggedIn => 'Du måste vara inloggad';
+
+  @override
+  String get errorMustBeLoggedInToImport =>
+      'Du måste vara inloggad för att importera recept';
+
+  @override
+  String get errorMustBeLoggedInToExport =>
+      'Du måste vara inloggad för att exportera data';
+
+  @override
+  String get errorMustBeLoggedInToManageConsent =>
+      'Du måste vara inloggad för att hantera samtycken';
+
+  @override
+  String get errorRecipeNameEmpty => 'Receptnamn kan inte vara tomt';
+
+  @override
+  String get errorCanOnlyUpdatePersonalRecipes =>
+      'Kan bara uppdatera personliga recept';
+
+  @override
+  String get errorRecipeNotFound => 'Recept hittades inte';
+
+  @override
+  String get errorNoPermissionToEdit =>
+      'Du har inte behörighet att redigera detta recept';
+
+  @override
+  String get errorNotInRealtimeMode => 'Inte i realtidsredigeringsläge';
+
+  @override
+  String get errorTitleCannotBeEmpty => 'Titel kan inte vara tom';
+
+  @override
+  String get errorPortionsMustBePositive => 'Portioner måste vara större än 0';
+
+  @override
+  String get errorTimeMustBePositive => 'Tid måste vara större än 0 minuter';
+
+  @override
+  String get errorIngredientCannotBeEmpty => 'Ingrediens kan inte vara tom';
+
+  @override
+  String get errorInstructionCannotBeEmpty => 'Instruktion kan inte vara tom';
+
+  @override
+  String get errorRecipeNeedsIngredient =>
+      'Recept måste ha minst en ingrediens';
+
+  @override
+  String get errorRecipeNeedsInstruction =>
+      'Recept måste ha minst en instruktion';
+
+  @override
+  String get errorNoPermissionToShare =>
+      'Du har inte behörighet att dela detta recept';
+
+  @override
+  String get errorCouldNotSaveRecipe => 'Kunde inte spara recept';
+
+  @override
+  String get errorNoGroupMembersFound => 'Inga gruppmedlemmar hittades';
+
+  @override
+  String get errorRecipeNotShared => 'Receptet är inte delat';
+
+  @override
+  String get errorOnlyOwnerCanUnshare =>
+      'Endast ägaren kan sluta dela receptet';
+
+  @override
+  String get errorCouldNotUnshareRecipe => 'Kunde inte sluta dela recept';
+
+  @override
+  String get errorCouldNotLoadTags => 'Kunde inte ladda taggar';
+
+  @override
+  String get errorTagUpdateFailed => 'Fel vid uppdatering av taggar';
+
+  @override
+  String get errorCouldNotCreateTag => 'Kunde inte skapa taggen';
+
+  @override
+  String get errorCouldNotUpdateTag => 'Kunde inte uppdatera taggen';
+
+  @override
+  String get errorTagNotFound => 'Taggen hittades inte';
+
+  @override
+  String get errorCouldNotDeleteTag => 'Kunde inte ta bort taggen';
+
+  @override
+  String get errorCouldNotCreateGroup => 'Kunde inte skapa gruppen';
+
+  @override
+  String get errorCouldNotUpdateGroup => 'Kunde inte uppdatera gruppen';
+
+  @override
+  String get errorGroupNotFound => 'Gruppen hittades inte';
+
+  @override
+  String get errorCouldNotDeleteGroup => 'Kunde inte ta bort gruppen';
+
+  @override
+  String get errorCouldNotCreateRule => 'Kunde inte skapa regeln';
+
+  @override
+  String get errorCouldNotUpdateRule => 'Kunde inte uppdatera regeln';
+
+  @override
+  String get errorCouldNotDeleteRule => 'Kunde inte ta bort regeln';
+
+  @override
+  String get errorNoImageToProcess => 'Ingen bild att behandla';
+
+  @override
+  String get errorPleaseEnterText => 'Vänligen ange text att tolka';
+
+  @override
+  String get errorPleaseEnterTextToImport => 'Vänligen ange text att importera';
+
+  @override
+  String get errorTextTooShort =>
+      'Texten är för kort för att innehålla ett recept';
+
+  @override
+  String get errorPleaseEnterValidUrl => 'Vänligen ange en giltig URL';
+
+  @override
+  String get errorNoRecipeToValidate => 'Inget recept att validera';
+
+  @override
+  String get errorRecipeTitleRequired => 'Recepttitel krävs';
+
+  @override
+  String get errorRecipeMustHaveIngredient =>
+      'Receptet måste ha minst en ingrediens';
+
+  @override
+  String get errorRecipeMustHaveInstruction =>
+      'Receptet måste ha minst en instruktion';
+
+  @override
+  String get errorImportConditionsNotMet => 'Importvillkor inte uppfyllda';
+
+  @override
+  String get errorSelectAtLeastOneIngredient => 'Välj minst en ingrediens';
+
+  @override
+  String get errorSelectAtLeastOneInstruction => 'Välj minst en instruktion';
+
+  @override
+  String get errorEnterRecipeName => 'Ange ett receptnamn';
+
+  @override
+  String get errorAddAtLeastOneIngredient => 'Lägg till minst en ingrediens';
+
+  @override
+  String get errorAddAtLeastOneInstruction => 'Lägg till minst en instruktion';
+
+  @override
+  String get errorImportFailed => 'Import misslyckades';
+
+  @override
+  String get errorNoRecipesSelected => 'Inga recept valda';
+
+  @override
+  String get errorEnterMenuDescription => 'Ange vad du vill ha för meny';
+
+  @override
+  String get errorNoMoreRecipesForSwap =>
+      'Inga fler recept tillgängliga för byte';
+
+  @override
+  String get errorNoMenuToSave => 'Ingen meny att spara';
+
+  @override
+  String get errorEnterMenuName => 'Ange ett namn för menyn';
+
+  @override
+  String get errorMenuNotFound => 'Menyn kunde inte hittas';
+
+  @override
+  String get errorNoMenuToSaveAsTemplate => 'Ingen meny att spara som mall';
+
+  @override
+  String get errorCouldNotSaveTemplate => 'Kunde inte spara mall';
+
+  @override
+  String get errorNoMenuLoaded => 'Ingen meny laddad';
+
+  @override
+  String get errorNoEditPermission => 'Ingen redigeringsbehörighet';
+
+  @override
+  String get errorNoInternetConnection => 'Ingen internetanslutning';
+
+  @override
+  String get errorNoRecipesAvailable =>
+      'Inga recept tillgängliga. Lägg till recept först.';
+
+  @override
+  String get errorNoMenuToShare => 'Ingen meny att dela';
+
+  @override
+  String get errorCouldNotAddItem => 'Kunde inte lägga till artikel';
+
+  @override
+  String get errorCouldNotUpdateItem => 'Kunde inte uppdatera artikel';
+
+  @override
+  String get errorListNotFound => 'Lista hittades inte';
+
+  @override
+  String get errorCouldNotLoadGroupInfo => 'Kunde inte ladda gruppinformation';
+
+  @override
+  String get errorCouldNotAddMembers => 'Kunde inte lägga till medlemmar';
+
+  @override
+  String get errorCouldNotLeaveGroup => 'Kunde inte lämna grupp';
+
+  @override
+  String get errorCouldNotLoadConversation => 'Kunde inte ladda konversation';
+
+  @override
+  String get errorCouldNotLoadMessages => 'Kunde inte ladda meddelanden';
+
+  @override
+  String get errorCouldNotStartConversation => 'Kunde inte starta konversation';
+
+  @override
+  String get errorMessageCannotBeEmpty => 'Meddelandet kan inte vara tomt';
+
+  @override
+  String get errorNoFriendsOrGroupsSelected =>
+      'Inga vänner eller grupper valda';
+
+  @override
+  String get errorNoRecipientsFound => 'Inga mottagare hittades';
+
+  @override
+  String get errorFormIncomplete => 'Formuläret är inte komplett';
+
+  @override
+  String get errorMustCreateProfileFirst => 'Du måste skapa en profil först';
+
+  @override
+  String get errorTitleRequiredNotEmpty => 'Titel krävs och får inte vara tom';
+
+  @override
+  String get errorDescriptionTooLong => 'Beskrivning för lång';
+
+  @override
+  String get errorMustSelectAtLeastOneFriend =>
+      'Du måste välja minst en vän att dela med';
+
+  @override
+  String get errorGroupNameRequired => 'Gruppnamn krävs';
+
+  @override
+  String get errorGroupNameExists => 'Det här gruppnamnet finns redan';
+
+  @override
+  String get errorOnlyAdminCanRemoveMembers =>
+      'Endast administratör kan ta bort medlemmar';
+
+  @override
+  String get errorUseLeaveGroupToLeave =>
+      'Använd \"Lämna grupp\" för att lämna konversationen';
+
+  @override
+  String get errorOnlyAdminCanChangeGroupName =>
+      'Endast administratör kan ändra gruppnamn';
+
+  @override
+  String get errorGroupNameCannotBeEmpty => 'Gruppnamn kan inte vara tomt';
+
+  @override
+  String get errorFillRequiredFields => 'Fyll i alla obligatoriska fält';
+
+  @override
+  String get errorNoPermissionToSave =>
+      'Du har inte behörighet att spara detta recept';
+
+  @override
+  String get errorNoRecipeToFork => 'Inget recept att forka';
+
+  @override
+  String get errorCouldNotForkRecipe => 'Kunde inte forka recept';
+
+  @override
+  String get errorNoRecipeToDelete => 'Inget recept att ta bort';
+
+  @override
+  String get errorNoPermissionToDelete =>
+      'Du har inte behörighet att ta bort detta recept';
+
+  @override
+  String get errorPasswordCannotBeEmpty => 'Lösenord kan inte vara tomt';
+
+  @override
+  String get errorPasswordMinSixChars => 'Lösenord måste vara minst 6 tecken';
+
+  @override
+  String get errorDisplayNameCannotBeEmpty => 'Visningsnamn kan inte vara tomt';
+
+  @override
+  String get errorDisplayNameMinLength =>
+      'Visningsnamn måste vara minst 2 tecken';
+
+  @override
+  String get errorSomeSharesFailed => 'Vissa delningar misslyckades';
+
+  @override
+  String get errorNoFriendsToShareWith => 'Du har inga vänner att dela med';
+
+  @override
+  String get errorSelectAtLeastOneFriend => 'Välj minst en vän att dela med';
+
+  @override
+  String get errorFillRequiredFieldsCorrectly =>
+      'Fyll i alla obligatoriska fält korrekt';
+
+  @override
+  String get errorNameAlreadyTaken => 'Detta namn är redan taget';
+
+  @override
+  String get errorNameRequired => 'Namn krävs';
+
+  @override
+  String get errorNameInvalidCharacters => 'Namnet innehåller ogiltiga tecken';
+
+  @override
+  String get errorNoPermissionToManageParticipants =>
+      'Ingen behörighet att hantera deltagare';
+
+  @override
+  String get errorCannotRemoveSelf =>
+      'Kan inte ta bort sig själv som deltagare';
+
+  @override
+  String get errorCannotChangeOwnPermissions =>
+      'Kan inte ändra sina egna behörigheter';
+
+  @override
+  String get errorNoUserIdAvailable => 'Ingen användar-ID tillgänglig';
+
+  @override
+  String get errorInvitationNotFound => 'Inbjudan hittades inte';
+
+  @override
+  String get errorNoInternetCheckConnection =>
+      'Ingen internetanslutning. Kontrollera din anslutning och försök igen.';
+
+  @override
+  String get errorPermissionDeniedRetry =>
+      'Behörighet nekad. Försök logga in igen.';
+
+  @override
+  String get errorExportFailed =>
+      'Ett fel uppstod vid export av data. Försök igen.';
+
+  @override
+  String errorTagNameExists(String name) {
+    return 'En tagg med namnet \"$name\" finns redan';
+  }
+
+  @override
+  String get errorGroupDoesNotExist => 'Gruppen finns inte';
+
+  @override
+  String get errorTagDoesNotExist => 'Taggen finns inte';
+
+  @override
+  String get errorRuleDoesNotExist => 'Regeln finns inte';
+
+  @override
+  String get errorSharedTagNotFound => 'Delad tagg hittades inte';
+
+  @override
+  String get errorCannotRemoveOwner => 'Kan inte ta bort ägaren från resursen';
+
+  @override
+  String get errorOwnerMustKeepPermission =>
+      'Ägaren måste behålla owner-behörighet';
+
+  @override
+  String get errorCouldNotLoadRecipes => 'Kunde inte ladda recept';
+
+  @override
+  String get errorCouldNotDeleteRecipe => 'Kunde inte ta bort recept';
+
+  @override
+  String get errorCouldNotValidateImage => 'Kunde inte validera bild';
+
+  @override
+  String get errorCouldNotReadImageSize => 'Kunde inte läsa bildstorlek';
+
+  @override
+  String get errorImageDoesNotExist => 'Bilden finns inte';
+
+  @override
+  String get actionRecipeSaving => 'sparar recept';
+
+  @override
+  String get actionRecipeUploading => 'laddar upp recept';
+
+  @override
+  String get actionRecipeLoading => 'laddar recept';
+
+  @override
+  String get actionRecipeDeleting => 'tar bort recept';
+
+  @override
+  String get actionRecipeValidation => 'validerar recept';
+
+  @override
+  String get actionRecipeCollaborativeSync => 'synkroniserar delat recept';
+
+  @override
+  String get actionRecipeDraftRestore => 'återställer utkast';
+
+  @override
+  String get actionRecipeImageUpload => 'laddar upp bilder';
+
+  @override
+  String get actionRecipeImageProcessing => 'bearbetar bilder';
+
+  @override
+  String get actionRecipeImageDelete => 'tar bort bild';
+
+  @override
+  String get actionShoppingListCreate => 'skapar inköpslista';
+
+  @override
+  String get actionShoppingItemAdd => 'lägger till vara';
+
+  @override
+  String get actionShoppingListSync => 'synkroniserar inköpslista';
+
+  @override
+  String get actionShoppingListShare => 'delar inköpslista';
+
+  @override
+  String get actionShoppingListDelete => 'tar bort inköpslista';
+
+  @override
+  String get actionFriendInvite => 'skickar väninvitation';
+
+  @override
+  String get actionGroupCreate => 'skapar grupp';
+
+  @override
+  String get actionMessagesSend => 'skickar meddelande';
+
+  @override
+  String get actionSocialSync => 'synkroniserar socialt innehåll';
+
+  @override
+  String get actionUserProfileUpdate => 'uppdaterar profil';
+
+  @override
+  String get actionPermissionRequest => 'begär behörighet';
+
+  @override
+  String get actionAppStartup => 'startar app';
+
+  @override
+  String get actionDataSync => 'synkroniserar data';
+
+  @override
+  String get actionBackgroundUpload => 'bakgrundsuppladdning';
+
+  @override
+  String get actionOffline => 'offline-operation';
+
+  @override
+  String errorNetworkNoConnection(String action) {
+    return 'Ingen internetanslutning medan $action. Ändringar sparas lokalt och synkroniseras automatiskt när du är online igen.';
+  }
+
+  @override
+  String errorNetworkLimited(String action) {
+    return 'Begränsad internetanslutning medan $action. Vissa funktioner kan vara otillgängliga.';
+  }
+
+  @override
+  String errorNetworkDegraded(String action) {
+    return 'Anslutningsproblem medan $action. DNS-problem upptäckta, kontrollerar anslutningen automatiskt.';
+  }
+
+  @override
+  String errorNetworkTemporary(String action) {
+    return 'Tillfälligt nätverksfel medan $action. Kontrollerar anslutningen och försöker igen automatiskt.';
+  }
+
+  @override
+  String errorNetworkUnknownStatus(String action) {
+    return 'Okänd anslutningsstatus medan $action. Kontrollera internetanslutningen och försök igen.';
+  }
+
+  @override
+  String errorAuthNoPermissionFor(String action) {
+    return 'Du saknar behörighet för $action';
+  }
+
+  @override
+  String errorAuthNotLoggedInWhile(String base) {
+    return '$base eftersom du inte är inloggad.';
+  }
+
+  @override
+  String errorAuthViewerOnly(String base) {
+    return '$base. Du har endast läsrättigheter för detta innehåll.';
+  }
+
+  @override
+  String errorAuthEditorRequired(String base) {
+    return '$base. Redigeringsrättigheter krävs för denna åtgärd.';
+  }
+
+  @override
+  String errorAuthNotShared(String base) {
+    return '$base. Du har inte delats detta innehåll.';
+  }
+
+  @override
+  String errorAuthOwnerOnly(String base, String owner) {
+    return '$base. Endast ägaren ($owner) kan utföra denna åtgärd.';
+  }
+
+  @override
+  String errorAuthContactOwner(String base) {
+    return '$base. Kontakta innehållsägaren för utökade rättigheter.';
+  }
+
+  @override
+  String errorNotFoundRecipe(String action) {
+    return 'Receptet kunde inte hittas medan $action. Det kan ha blivit raderat eller flyttat av ägaren.';
+  }
+
+  @override
+  String errorNotFoundShoppingList(String action) {
+    return 'Inköpslistan kunde inte hittas medan $action. Den kan ha blivit raderad eller du har inte längre åtkomst.';
+  }
+
+  @override
+  String errorNotFoundImage(String action) {
+    return 'Bilden kunde inte hittas medan $action. Den kan ha blivit raderad eller flyttad.';
+  }
+
+  @override
+  String errorNotFoundGeneric(String action) {
+    return 'Det begärda innehållet kunde inte hittas medan $action. Det kan ha blivit raderat eller du har inte längre åtkomst.';
+  }
+
+  @override
+  String errorServiceMaintenance(String action) {
+    return 'Tjänsten är temporärt otillgänglig för underhåll medan $action. Försök igen om några minuter.';
+  }
+
+  @override
+  String errorServiceSync(String action) {
+    return 'Synkroniseringstjänsten är temporärt otillgänglig medan $action. Ändringar sparas lokalt och synkroniseras automatiskt senare.';
+  }
+
+  @override
+  String errorServiceTemporary(String action) {
+    return 'Tjänsten är temporärt otillgänglig medan $action. Försök igen om ett par minuter.';
+  }
+
+  @override
+  String errorDnsConnection(String action) {
+    return 'Kunde inte ansluta till servern medan $action. Kontrollera internetanslutningen eller försök igen senare.';
+  }
+
+  @override
+  String errorUnknownWhileAction(String action) {
+    return 'Ett oväntat fel uppstod medan $action. Försök igen eller kontakta support om problemet kvarstår.';
+  }
+
+  @override
+  String errorUnknownWithTechnical(String action, String techInfo) {
+    return 'Ett oväntat fel uppstod medan $action. Försök igen eller kontakta support om problemet kvarstår. (Teknisk information: $techInfo)';
+  }
+
+  @override
+  String errorFallbackWhileAction(String action) {
+    return 'Ett fel uppstod medan $action. Försök igen.';
+  }
+
+  @override
+  String get suggestionLabel => 'Förslag:';
+
+  @override
+  String get suggestionSavedLocally =>
+      'Receptet sparas lokalt och synkroniseras automatiskt';
+
+  @override
+  String get suggestionCheckLoggedIn => 'Kontrollera att du är inloggad';
+
+  @override
+  String get suggestionRequestPermission =>
+      'Be om redigeringsrättigheter från receptägaren';
+
+  @override
+  String get suggestionImageSavedLocally =>
+      'Bilderna sparas lokalt och laddas upp automatiskt senare';
+
+  @override
+  String get suggestionImageSizeLimit =>
+      'Kontrollera att bilderna är mindre än 10MB';
+
+  @override
+  String get suggestionImageFormat => 'Använd JPG, PNG eller HEIC format';
+
+  @override
+  String get suggestionSelectAnotherDraft =>
+      'Välj ett annat utkast från listan';
+
+  @override
+  String get suggestionCreateNewRecipe =>
+      'Börja skapa ett nytt recept istället';
+
+  @override
+  String get suggestionUpdateAccountSettings =>
+      'Uppdatera dina kontoinställningar';
+
+  @override
+  String get suggestionCheckConnection => 'Kontrollera internetanslutningen';
+
+  @override
+  String get suggestionRetryWhenStable =>
+      'Försök igen när anslutningen är stabil';
+
+  @override
+  String get suggestionLoginAgain => 'Logga in på nytt';
+
+  @override
+  String get suggestionRetryInMinutes => 'Försök igen om några minuter';
+
+  @override
+  String get suggestionRetryOrContactSupport =>
+      'Försök igen eller kontakta support';
+
+  @override
+  String get statusConnected => 'Ansluten';
+
+  @override
+  String get statusFirebaseUnavailable => 'Firebase otillgänglig';
+
+  @override
+  String get statusNoInternet => 'Ingen internetanslutning';
+
+  @override
+  String get statusDisconnected => 'Frånkopplad';
+
+  @override
+  String get statusCheckingConnection => 'Kontrollerar anslutning...';
+
+  @override
+  String get statusReconnecting => 'Återansluter...';
+
+  @override
+  String get statusFetchingContent => 'Hämtar innehåll...';
+
+  @override
+  String get statusAnalyzingRecipe => 'Analyserar recept...';
+
+  @override
+  String get statusCreatingRecipe => 'Skapar recept...';
+
+  @override
+  String get statusDone => 'Klar!';
+
+  @override
+  String get statusNeedsHelp => 'Behöver din hjälp';
+
+  @override
+  String get displayUnknownContent => 'Okänt innehåll';
+
+  @override
+  String get displayEmptyList => 'Tom lista';
+
+  @override
+  String get displayOnlyYou => 'Bara du';
+
+  @override
+  String get displayNoDate => 'Inget datum';
+
+  @override
+  String get displayUnknownUser => 'Okänd användare';
+
+  @override
+  String get displayUntitledRecipe => 'Namnlöst recept';
+
+  @override
+  String get displayNoConsent => 'Inget samtycke';
+
+  @override
+  String get displayNoActivity => 'Ingen aktivitet';
+
+  @override
+  String get resourceTypeRecipe => 'Recept';
+
+  @override
+  String get resourceTypeMenu => 'Meny';
+
+  @override
+  String get resourceTypeShoppingList => 'Inköpslista';
+
+  @override
+  String get permissionOwner => 'Ägare';
+
+  @override
+  String get permissionAdmin => 'Administratör';
+
+  @override
+  String get permissionEditor => 'Redigerare';
+
+  @override
+  String get permissionWriter => 'Skrivare';
+
+  @override
+  String get permissionViewer => 'Betraktare';
+
+  @override
+  String get permissionReader => 'Läsare';
+
+  @override
+  String get permissionUnknown => 'Okänd behörighet';
+
+  @override
+  String get activityJustNow => 'Just nu';
+
+  @override
+  String get activityActiveNow => 'Aktiv nu';
+
+  @override
+  String get activityActiveThisWeek => 'Aktiv denna veckan';
+
+  @override
+  String get activityInactive => 'Inaktiv';
+
+  @override
+  String get validationTitleCannotBeEmpty => 'Titel får inte vara tom';
+
+  @override
+  String get validationIngredientRequired => 'Minst en ingrediens krävs';
+
+  @override
+  String get validationInstructionRequired => 'Minst en instruktion krävs';
+
+  @override
+  String get validationPortionsMustBePositive =>
+      'Portioner måste vara positiva';
+
+  @override
+  String get validationTimeMustBePositive => 'Tid måste vara positiv';
+
+  @override
+  String get validationRatingRange => 'Betyg måste vara mellan 0 och 5';
+
+  @override
+  String validationInvalidIngredientIndex(int index) {
+    return 'Ogiltigt ingrediensindex: $index';
+  }
+
+  @override
+  String validationInvalidInstructionIndex(int index) {
+    return 'Ogiltigt instruktionsindex: $index';
+  }
+
+  @override
+  String validationInvalidImageIndex(int index) {
+    return 'Ogiltigt bildindex: $index';
+  }
+
+  @override
+  String get notificationTitleSuccess => 'Lyckades!';
+
+  @override
+  String get notificationTitleError => 'Fel uppstod';
+
+  @override
+  String get notificationTitleNewRecipeActivity => 'Ny receptaktivitet';
+
+  @override
+  String get notificationTitleFriendActivity => 'Vänaktivitet';
+
+  @override
+  String get notificationTitleCollaborationActivity => 'Samarbetsaktivitet';
+
+  @override
+  String get notificationTitleShoppingLists => 'Inköpslistor';
+
+  @override
+  String get notificationTitleSocialActivity => 'Social aktivitet';
+
+  @override
+  String get notificationTitleNewActivity => 'Ny aktivitet';
+
+  @override
+  String get errorWeakPassword =>
+      'Lösenordet är för svagt. Använd minst 6 tecken.';
+
+  @override
+  String get errorLoginFailed => 'Inloggning misslyckades. Försök igen.';
+
+  @override
+  String get errorCouldNotLogOut => 'Kunde inte logga ut';
+
+  @override
+  String get errorCouldNotDeleteAccount => 'Kunde inte ta bort konto';
+
+  @override
+  String get errorCouldNotCompleteMfa => 'Kunde inte slutföra MFA-registrering';
+
+  @override
+  String get errorMfaVerificationFailed => 'MFA-verifiering misslyckades';
+
+  @override
+  String get errorInvalidPhoneNumber =>
+      'Ogiltigt telefonnummer. Ange med landskod (+46).';
+
+  @override
+  String get errorCouldNotSaveRecipeCheckConnection =>
+      'Kunde inte spara receptet. Kontrollera din internetanslutning.';
+
+  @override
+  String get errorCouldNotUpdateRecipeCheckConnection =>
+      'Kunde inte uppdatera receptet. Kontrollera din internetanslutning.';
+
+  @override
+  String get errorCouldNotDeleteFromServer =>
+      'Kunde inte ta bort recept från servern';
+
+  @override
+  String errorRateLimitExceeded(int seconds) {
+    return 'För många förfrågningar. Försök igen om $seconds sekunder.';
+  }
+
+  @override
+  String get errorCouldNotImportRecipes => 'Kunde inte importera recept';
+
+  @override
+  String get errorCouldNotExportRecipes => 'Kunde inte exportera recept';
+
+  @override
+  String get errorCouldNotMarkAsCooked =>
+      'Kunde inte markera recept som tillagat';
+
+  @override
+  String get errorCouldNotAddIngredient => 'Kunde inte lägga till ingrediens';
+
+  @override
+  String get errorCouldNotUpdateIngredient => 'Kunde inte uppdatera ingrediens';
+
+  @override
+  String get errorCouldNotRemoveIngredient => 'Kunde inte ta bort ingrediens';
+
+  @override
+  String get errorCouldNotAddInstruction => 'Kunde inte lägga till instruktion';
+
+  @override
+  String get errorCouldNotUpdateInstruction =>
+      'Kunde inte uppdatera instruktion';
+
+  @override
+  String get errorCouldNotRemoveInstruction => 'Kunde inte ta bort instruktion';
+
+  @override
+  String get errorCouldNotStartRealtimeEditing =>
+      'Kunde inte starta realtidsredigering';
+
+  @override
+  String get errorRealtimeSyncFailed => 'Realtidssynkronisering misslyckades';
+
+  @override
+  String get errorCouldNotApplyRealtimeEdit =>
+      'Kunde inte genomföra realtidsändring';
+
+  @override
+  String get errorCouldNotStartSync => 'Kunde inte starta synkronisering';
+
+  @override
+  String errorSyncErrorFor(String syncType) {
+    return 'Synkroniseringsfel för $syncType';
+  }
+
+  @override
+  String get errorCouldNotUpdateNotificationToken =>
+      'Kunde inte uppdatera notifikationstoken';
+
+  @override
+  String get errorCouldNotUpdateNotificationSettings =>
+      'Kunde inte uppdatera notifikationsinställningar';
+
+  @override
+  String get errorCouldNotUpdateAllergenSettings =>
+      'Kunde inte uppdatera allergeninställningar';
+
+  @override
+  String get errorCouldNotLoadProfile => 'Kunde inte ladda profil';
+
+  @override
+  String get errorCouldNotUpdateRecipes => 'Kunde inte uppdatera recept';
+
+  @override
+  String get errorNetworkCheckInternet =>
+      'Nätverksfel - kontrollera din internetanslutning';
+
+  @override
+  String get errorPermissionMissing => 'Behörighet saknas';
+
+  @override
+  String get errorTimeout => 'Tidsgräns överskriden';
+
+  @override
+  String get errorTechnical => 'Tekniskt fel';
+
+  @override
+  String get permissionCanViewRecipe => 'Kan visa recept';
+
+  @override
+  String get permissionCanComment => 'Kan skriva kommentarer';
+
+  @override
+  String get permissionCanEditRecipe => 'Kan redigera recept';
+
+  @override
+  String get permissionCanManageMembers => 'Kan hantera medlemmar';
+
+  @override
+  String get permissionOwnerOfRecipe => 'Ägare av recept';
+
+  @override
+  String errorGroupNameExistsWithName(String name) {
+    return 'En grupp med namnet \"$name\" finns redan';
+  }
+
+  @override
+  String get errorUserNotLoggedIn => 'Användare inte inloggad';
+
+  @override
+  String get errorResourceNotFound => 'Resursen hittades inte';
+
+  @override
+  String get errorNoDeletePermission => 'Ingen behörighet att ta bort resursen';
+
+  @override
+  String get errorCannotRemoveResourceOwner =>
+      'Kan inte ta bort ägaren från resursen';
+
+  @override
+  String get validationRecipeTitleCannotBeEmpty =>
+      'Recepttitel kan inte vara tom';
+
+  @override
+  String get validationCookingTimeCannotBeNegative =>
+      'Tillagningstid kan inte vara negativ';
+
+  @override
+  String get validationIngredientCannotBeEmpty =>
+      'Ingrediens kan inte vara tom';
+
+  @override
+  String get validationInstructionCannotBeEmpty =>
+      'Instruktion kan inte vara tom';
+
+  @override
+  String get validationAtLeastOneIngredient => 'Minst en ingrediens krävs';
+
+  @override
+  String get validationAtLeastOneInstruction => 'Minst en instruktion krävs';
+
+  @override
+  String get validationImageUrlCannotBeEmpty => 'Bild-URL kan inte vara tom';
+
+  @override
+  String get validationInvalidImageUrlFormat => 'Ogiltig bild-URL format';
+
+  @override
+  String get validationMaxImagesReached => 'Maximalt 5 bilder tillåtna';
+
+  @override
+  String get validationRecipeTitleMissing => 'Recepttitel saknas';
+
+  @override
+  String get validationRecipeNoIngredients => 'Recept har inga ingredienser';
+
+  @override
+  String get validationRecipeNoInstructions => 'Recept har inga instruktioner';
+
+  @override
+  String get validationRecipeDescriptionEmpty => 'Receptbeskrivning saknas';
+
+  @override
+  String get validationUserIdCannotBeEmpty => 'Användar-ID kan inte vara tomt';
+
+  @override
+  String get validationUsernameCannotBeEmpty =>
+      'Användarnamn kan inte vara tomt';
+
+  @override
+  String validationUserAlreadyParticipant(String name) {
+    return 'Användaren är redan deltagare: $name';
+  }
+
+  @override
+  String get validationMaxParticipantsReached =>
+      'Maxgräns för deltagare nådd (50)';
+
+  @override
+  String get validationCannotRemoveRecipeOwner =>
+      'Kan inte ta bort receptägaren';
+
+  @override
+  String get validationCannotRemoveMenuOwner => 'Kan inte ta bort menyägaren';
+
+  @override
+  String validationUserNotParticipant(String id) {
+    return 'Användaren är inte deltagare: $id';
+  }
+
+  @override
+  String get validationCannotChangeOwnerPermission =>
+      'Kan inte ändra ägarens behörighet';
+
+  @override
+  String get validationCannotAssignOwnerPermission =>
+      'Kan inte tilldela ägarbehörighet till annan användare';
+
+  @override
+  String get validationRecipeMissingOwner => 'Recept saknar ägare';
+
+  @override
+  String get validationRecipeOwnerMissingName =>
+      'Receptägare saknar visningsnamn';
+
+  @override
+  String get validationParticipantEmptyUserId =>
+      'Deltagare har tomt användar-ID';
+
+  @override
+  String get validationTagNameRequired => 'Taggnamn krävs';
+
+  @override
+  String get validationTagNameTooLong => 'Taggnamn för långt (max 50 tecken)';
+
+  @override
+  String get validationTagNameNoCommas =>
+      'Taggnamn får inte innehålla kommatecken';
+
+  @override
+  String get validationTagNameReserved =>
+      'Detta namn är reserverat för systemtaggar';
+
+  @override
+  String get validationGroupNameRequired => 'Gruppnamn krävs';
+
+  @override
+  String get validationGroupNameTooLong =>
+      'Gruppnamn för långt (max 50 tecken)';
+
+  @override
+  String get validationRuleMustBeLinked => 'Regel måste kopplas till en tagg';
+
+  @override
+  String get validationRuleNameRequired => 'Regelnamn krävs';
+
+  @override
+  String get validationRuleMustHaveCondition =>
+      'Regel måste ha minst ett villkor';
+
+  @override
+  String get validationAllConditionsMustHaveValue =>
+      'Alla villkor måste ha ett värde';
+
+  @override
+  String get validationImageDoesNotExist => 'Bilden finns inte';
+
+  @override
+  String get validationCouldNotReadImageSize => 'Kunde inte läsa bildstorlek';
+
+  @override
+  String validationImageTooLargeWithSize(int size) {
+    return 'Bilden är för stor (max $size MB)';
+  }
+
+  @override
+  String get validationCouldNotValidateImage => 'Kunde inte validera bild';
+
+  @override
+  String get difficultyVeryEasy => 'Mycket lätt';
+
+  @override
+  String get difficultyEasy => 'Lätt';
+
+  @override
+  String get difficultyMedium => 'Medel';
+
+  @override
+  String get difficultyHard => 'Svår';
+
+  @override
+  String get difficultyVeryHard => 'Mycket svår';
+
+  @override
+  String get difficultyUnknown => 'Okänd';
+
+  @override
+  String contentSummaryIngredients(int count) {
+    return '$count ingredienser';
+  }
+
+  @override
+  String contentSummarySteps(int count) {
+    return '$count steg';
+  }
+
+  @override
+  String contentSummaryMinutes(int count) {
+    return '$count minuter';
+  }
+
+  @override
+  String contentSummaryPortions(int count) {
+    return '$count portioner';
+  }
+
+  @override
+  String get collaborationPrivateRecipe => 'Privat recept';
+
+  @override
+  String collaborationCollaborativeEditorsViewers(int editors, int viewers) {
+    return 'Kollaborativt ($editors redigerare, $viewers betraktare)';
+  }
+
+  @override
+  String collaborationCollaborativeEditors(int editors) {
+    return 'Kollaborativt ($editors redigerare)';
+  }
+
+  @override
+  String collaborationSharedViewers(int viewers) {
+    return 'Delat ($viewers betraktare)';
+  }
+
+  @override
+  String get collaborationSharedRecipe => 'Delat recept';
+
+  @override
+  String participantOwnerOnly(String name) {
+    return 'Endast ägare: $name';
+  }
+
+  @override
+  String participantSummary(String owner, int count) {
+    return 'Ägare: $owner, Deltagare: ${count}st';
+  }
+
+  @override
+  String activityMinutesAgo(int count) {
+    return '$count min sedan';
+  }
+
+  @override
+  String activityHoursAgo(int count) {
+    return '$count tim sedan';
+  }
+
+  @override
+  String activityDaysAgo(int count) {
+    return '$count dagar sedan';
+  }
+
+  @override
+  String activityWeeksAgo(int count) {
+    return '$count veckor sedan';
+  }
+
+  @override
+  String resourceCreatedBy(String name) {
+    return 'Skapades av $name';
+  }
+
+  @override
+  String resourceLastEditedBy(String name, String timeAgo) {
+    return 'Senast redigerad av $name $timeAgo';
+  }
+
+  @override
+  String get syncParsingNotImplemented =>
+      'RealtimeShoppingList parsing inte implementerad än';
+
+  @override
+  String get backupNoRecipesToExport => 'Inga recept att exportera';
+
+  @override
+  String get backupPlatformNotSupported => 'Plattformen stöds inte';
+
+  @override
+  String get backupSavedAndroid => 'Backup sparad i Android/data/.../Butlery';
+
+  @override
+  String get backupSavedIos => 'Backup sparad i Filer-appen';
+
+  @override
+  String get backupCouldNotFindStorageDir => 'Kunde inte hitta lagringsmapp';
+
+  @override
+  String backupCouldNotSaveFile(String error) {
+    return 'Kunde inte spara fil: $error';
+  }
+
+  @override
+  String get backupCouldNotReadFile => 'Kunde inte läsa filen';
+
+  @override
+  String get backupInvalidFile => 'Ogiltig backup-fil - inte från Butlery';
+
+  @override
+  String get backupUnknownRecipe => 'Okänt recept';
+
+  @override
+  String backupImportedFromBackup(String date) {
+    return 'Importerat från backup $date';
+  }
+
+  @override
+  String backupExportFailed(String error) {
+    return 'Export misslyckades: $error';
+  }
+
+  @override
+  String backupImportFailed(String error) {
+    return 'Import misslyckades: $error';
+  }
+
+  @override
+  String get syncAlreadyInProgress => 'Synkronisering pågår redan';
+
+  @override
+  String get syncMustBeOnline => 'Du måste vara online för att synkronisera';
+
+  @override
+  String get syncNoUserLoggedIn => 'Ingen användare inloggad';
+
+  @override
+  String get syncNoPendingChanges => 'Inga väntande ändringar';
+
+  @override
+  String syncAllSynced(int count) {
+    return 'Alla $count ändringar synkade!';
+  }
+
+  @override
+  String syncPartialSuccess(int synced, int total, int remaining) {
+    return '$synced av $total synkade, $remaining kvar';
+  }
+
+  @override
+  String get syncFailedRetryLater =>
+      'Synkronisering misslyckades, försöker igen senare';
+
+  @override
+  String get instagramCouldNotFindRecipe =>
+      'Kunde inte hitta recept i inlagget. Ta en skärmbild av receptet.';
+
+  @override
+  String get uploadNotificationComplete => 'Uppladdning slutförd';
+
+  @override
+  String get uploadNotificationCompleteBody =>
+      'Bilden har laddats upp framgångsrikt';
+
+  @override
+  String get uploadNotificationFailed => 'Uppladdning misslyckades';
+
+  @override
+  String get uploadNotificationFailedBody =>
+      'Kunde inte ladda upp bilden efter flera försök';
+
+  @override
+  String uploadStatusWaiting(int pending) {
+    return 'Väntar på att ladda upp $pending bilder...';
+  }
+
+  @override
+  String uploadStatusUploading(int active, int progress, int pending) {
+    return 'Laddar upp $active bilder ($progress% klart, $pending väntar)';
+  }
+
+  @override
+  String get uploadStatusPreparing => 'Förbereder uppladdning...';
+
+  @override
+  String uploadStatusRetrying(int attempt, int max) {
+    return 'Försöker igen ($attempt/$max)...';
+  }
+
+  @override
+  String get uploadStatusComplete => 'Uppladdning slutförd';
+
+  @override
+  String get uploadStatusCancelled => 'Uppladdning avbruten';
+
+  @override
+  String get uploadFailureNetwork => 'Nätverksfel - kontrollera anslutningen';
+
+  @override
+  String get uploadFailureValidation => 'Bilden kunde inte valideras';
+
+  @override
+  String get uploadFailureServer => 'Serverfel - försök igen';
+
+  @override
+  String get uploadFailureCancelled => 'Uppladdning avbruten';
+
+  @override
+  String get uploadFailureGeneric => 'Uppladdning misslyckades';
+
+  @override
+  String get uploadRetryCheckInternet =>
+      'Kontrollera internetanslutningen och tryck för att försöka igen';
+
+  @override
+  String get uploadRetryCheckImage =>
+      'Kontrollera att bilden är giltig och inte för stor';
+
+  @override
+  String get uploadRetryTryLater => 'Försök igen om en stund';
+
+  @override
+  String get uploadRetryTapToRetry => 'Tryck för att försöka igen';
+
+  @override
+  String llmUnexpectedError(String error) {
+    return 'Ett oväntat fel uppstod: $error';
+  }
+
+  @override
+  String get llmUnknownRecipe => 'Okänt recept';
+
+  @override
+  String get llmMustBeLoggedIn =>
+      'Du måste vara inloggad för att använda AI-funktioner.';
+
+  @override
+  String get llmServiceOverloaded =>
+      'AI-tjänsten är tillfälligt överbelastad. Försök igen om en stund.';
+
+  @override
+  String llmInvalidArgument(String error) {
+    return 'Ogiltigt argument: $error';
+  }
+
+  @override
+  String llmGenericError(String error) {
+    return 'Ett fel uppstod: $error';
+  }
+
+  @override
+  String get tiktokCouldNotFetchDescription =>
+      'Kunde inte hämta videobeskrivningen. Ta en skärmbild av receptet.';
+
+  @override
+  String get tiktokAiQuotaExhausted =>
+      'AI-kvoten är slut. Markera receptdelar manuellt.';
+
+  @override
+  String get tiktokCouldNotExtractRecipe =>
+      'Kunde inte extrahera receptet automatiskt. Markera receptdelar manuellt.';
+
+  @override
+  String get tiktokNoRecipeInDescription =>
+      'Videobeskrivningen innehåller inget recept. Ta en skärmbild av receptet.';
+
+  @override
+  String rateLimitTooFast(int seconds) {
+    return 'Du importerar för snabbt. Vänta $seconds sekunder.';
+  }
+
+  @override
+  String rateLimitHourly(int minutes) {
+    return 'Du har nått timgränsen. Försök igen om $minutes minuter.';
+  }
+
+  @override
+  String get rateLimitDaily =>
+      'Du har nått dagens gräns för importer. Försök igen imorgon.';
+
+  @override
+  String get rateLimitAiDaily =>
+      'AI-kvoten för idag är slut. Försök igen imorgon.';
+
+  @override
+  String get rateLimitAiMonthly => 'AI-kvoten för månaden är slut.';
+
+  @override
+  String get rateLimitBudgetDaily =>
+      'Dagens AI-budget är förbrukad. Försök igen imorgon.';
+
+  @override
+  String get rateLimitBudgetMonthly => 'Månadens AI-budget är förbrukad.';
+
+  @override
+  String get importErrorUnexpected => 'Ett oväntat fel uppstod';
+
+  @override
+  String get importErrorNoInternet => 'Ingen internetanslutning';
+
+  @override
+  String get importErrorTooManyImports =>
+      'För många importer på kort tid. Vänta en stund.';
+
+  @override
+  String get importErrorAiQuotaExhausted => 'AI-kvoten är slut för idag';
+
+  @override
+  String get importErrorInvalidUrl => 'Ogiltig URL';
+
+  @override
+  String get importErrorCouldNotReachPage => 'Kunde inte nå sidan';
+
+  @override
+  String get importErrorLoginRequired => 'Sidan kräver inloggning';
+
+  @override
+  String get importErrorNoRecipeFound => 'Inget recept hittades';
+
+  @override
+  String get importErrorCouldNotReadImage => 'Kunde inte läsa texten i bilden';
+
+  @override
+  String get importErrorCouldNotParseRecipe => 'Kunde inte tolka receptet';
+
+  @override
+  String get importErrorCouldNotSaveRecipe => 'Kunde inte spara receptet';
+
+  @override
+  String get importErrorCancelled => 'Importen avbröts';
+
+  @override
+  String get messagingPoll => 'Omröstning';
+
+  @override
+  String get shoppingListEmpty => 'Tom lista';
+
+  @override
+  String shoppingListAllBought(int count) {
+    return 'Alla $count artiklar köpta';
+  }
+
+  @override
+  String shoppingListItemsRemaining(int remaining, int total) {
+    return '$remaining av $total artiklar kvar';
+  }
+
+  @override
+  String get shoppingListNoActivity => 'Ingen aktivitet';
+
+  @override
+  String get shoppingListActivityNow => 'nu';
+
+  @override
+  String shoppingListActivityMinAgo(int count) {
+    return '$count min sedan';
+  }
+
+  @override
+  String shoppingListActivityHoursAgo(int count) {
+    return '$count tim sedan';
+  }
+
+  @override
+  String shoppingListActivityDaysAgo(int count) {
+    return '$count dagar sedan';
+  }
+
+  @override
+  String shoppingListLastActivityBy(String name, String time) {
+    return 'Senaste aktivitet av $name $time';
+  }
+
+  @override
+  String unknownResourceType(String value) {
+    return 'Okänd RealtimeResourceType: $value';
+  }
+
+  @override
+  String get notificationTitleDailySummary => 'Daglig sammanfattning';
+
+  @override
+  String get notificationBodyNoActivityToday => 'Ingen ny aktivitet idag';
+
+  @override
+  String get notificationBodyNoActivityToReport =>
+      'Ingen aktivitet att rapportera';
+
+  @override
+  String get notificationBodyProblemLoadingActivities =>
+      'Problem med att ladda aktiviteter';
+
+  @override
+  String get notificationBodyCouldNotCreateSummary =>
+      'Kunde inte skapa sammanfattning';
+
+  @override
+  String get notificationActionViewRecipes => 'Visa recept';
+
+  @override
+  String get notificationActionViewFriends => 'Visa vänner';
+
+  @override
+  String get notificationActionOpenApp => 'Öppna app';
+
+  @override
+  String get notificationDefaultTitle => 'Ny aktivitet';
+
+  @override
+  String get notificationDefaultBody => 'Du har ny aktivitet i Butlery';
+
+  @override
+  String notificationDigestRecipes(int count) {
+    return '$count recept';
+  }
+
+  @override
+  String notificationDigestFriendActivities(int count) {
+    return '$count vänaktiviteter';
+  }
+
+  @override
+  String notificationDigestShoppingLists(int count) {
+    return '$count inköpslistor';
+  }
+
+  @override
+  String notificationDigestCollaborations(int count) {
+    return '$count samarbeten';
+  }
+
+  @override
+  String get conditionTypeIngredient => 'Ingrediens';
+
+  @override
+  String get conditionTypeProperty => 'Egenskap';
+
+  @override
+  String get conditionTypeKeyword => 'Nyckelord';
+
+  @override
+  String get conditionTypeSource => 'Källa';
+
+  @override
+  String get conditionTypeCuisine => 'Kök';
+
+  @override
+  String get conditionTypeDiet => 'Kost';
+
+  @override
+  String get conditionTypeTime => 'Tid';
+
+  @override
+  String get conditionTypeRating => 'Betyg';
+
+  @override
+  String get conditionTypeRecent => 'Nyligen';
+
+  @override
+  String get conditionTypeOwnership => 'Ägarskap';
+
+  @override
+  String get conditionTypeHasImage => 'Har bild';
+
+  @override
+  String get conditionTypeCompleteness => 'Fullständighet';
+
+  @override
+  String get operatorContains => 'innehåller';
+
+  @override
+  String get operatorExact => 'är exakt';
+
+  @override
+  String get operatorStartsWith => 'börjar med';
+
+  @override
+  String get operatorNotContains => 'innehåller inte';
+
+  @override
+  String get operatorNotExact => 'är inte';
+
+  @override
+  String get operatorHas => 'har';
+
+  @override
+  String get operatorNotHas => 'har inte';
+
+  @override
+  String get operatorLessThan => 'mindre än';
+
+  @override
+  String get operatorAtMost => 'högst';
+
+  @override
+  String get operatorGreaterThan => 'mer än';
+
+  @override
+  String get operatorAtLeast => 'minst';
+
+  @override
+  String get operatorWithinDays => 'inom dagar';
+
+  @override
+  String get errorAuthenticationPleaseLogin =>
+      'Autentiseringsfel. Logga in igen.';
+
+  @override
+  String get errorCouldNotShareRecipeWithGroups =>
+      'Kunde inte dela recept med grupper';
+
+  @override
+  String get shoppingListNotFound => 'Lista hittades inte';
+
+  @override
+  String get shoppingRemainingToBuy => 'Kvar att handla:';
+
+  @override
+  String get shoppingAlreadyBought => 'Inhandlat:';
+
+  @override
+  String get shoppingCreatedLabel => 'Skapad:';
+
+  @override
+  String get shoppingUpdatedLabel => 'Uppdaterad:';
+
+  @override
+  String shoppingPurchaseForRecipe(String recipeName) {
+    return 'Inköp för $recipeName';
+  }
+
+  @override
+  String get shoppingCategoryImported => 'Importerat';
+
+  @override
+  String get shoppingCategoryRecipe => 'Recept';
+
+  @override
+  String get labelChat => 'Chatt';
+
+  @override
+  String labelParticipantCount(int count) {
+    return '$count deltagare';
+  }
+
+  @override
+  String errorCouldNotSend(String itemType) {
+    return 'Kunde inte skicka $itemType';
+  }
+
+  @override
+  String errorCouldNotShare(String itemType) {
+    return 'Kunde inte dela $itemType';
+  }
+
+  @override
+  String notificationBatchBodyRecipes(int count) {
+    return '$count nya händelser på dina recept';
+  }
+
+  @override
+  String notificationBatchBodyFriends(int count) {
+    return '$count nya aktiviteter från dina vänner';
+  }
+
+  @override
+  String notificationBatchBodyShopping(int count) {
+    return '$count uppdateringar av dina inköpslistor';
+  }
+
+  @override
+  String notificationBatchBodyCollaboration(int count) {
+    return '$count nya samarbetsaktiviteter';
+  }
+
+  @override
+  String notificationBatchBodyDefault(int count) {
+    return '$count nya händelser i Butlery';
+  }
+
+  @override
+  String notificationDigestBody(int totalCount, String summary) {
+    return 'Du har $totalCount nya aktiviteter: $summary';
+  }
+
+  @override
+  String uploadStatusUploadingNoPending(int active, int progress) {
+    return 'Laddar upp $active bilder ($progress% klart)';
+  }
+
+  @override
+  String uploadStatusPartialFailure(int completed, int total, int failed) {
+    return '$completed av $total bilder uppladdade, $failed misslyckades';
+  }
+
+  @override
+  String uploadStatusAllFailed(int failed, int total) {
+    return '$failed av $total bilder misslyckades - tryck för att försöka igen';
+  }
+
+  @override
+  String uploadStatusAllSuccess(int total) {
+    return 'Alla $total bilder uppladdade framgångsrikt';
+  }
+
+  @override
+  String uploadProgressWithTime(int progress, String time) {
+    return '$progress% klart - $time kvar';
+  }
+
+  @override
+  String uploadProgressPercent(int progress) {
+    return '$progress% klart';
+  }
+
+  @override
+  String get uploadComplete => 'Uppladdning slutförd';
+
+  @override
+  String uploadAllSuccessWithTime(String time) {
+    return 'Alla bilder uppladdade$time (100% framgång)';
+  }
+
+  @override
+  String uploadCompletionOf(int completed, int total) {
+    return '$completed av $total slutförda';
+  }
+
+  @override
+  String uploadFailureCount(int failed) {
+    return ', $failed misslyckades';
+  }
+
+  @override
+  String uploadSuccessRate(int rate) {
+    return ' ($rate% framgång)';
+  }
+
+  @override
+  String get uploadPreparing => 'Förbereder uppladdning...';
+
+  @override
+  String get errorNoImageSelected => 'Ingen bild vald';
+
+  @override
+  String get errorImageFormatUnsupported =>
+      'Bildformatet stöds inte. Använd JPEG eller PNG-format.';
+
+  @override
+  String errorImageTooLarge(String size) {
+    return 'Bilden är för stor ($size MB). Använd en mindre bild eller komprimera den.';
+  }
+
+  @override
+  String errorImageQualityTooLow(int quality) {
+    return 'Bildkvaliteten är för låg för OCR ($quality%).';
+  }
+
+  @override
+  String get errorOcrServicesUnavailable =>
+      'OCR-tjänsterna är tillfälligt otillgängliga. Försök igen om några minuter.';
+
+  @override
+  String get errorNoTextExtracted => 'Ingen text kunde extraheras från bilden.';
+
+  @override
+  String get labelImprovementSuggestions => 'Förbättringsförslag:';
+
+  @override
+  String get ocrQualityTips =>
+      'Tips för bättre resultat:\n• Se till att bilden är välbelyst och skarp\n• Undvik skuggor och reflektioner\n• Håll kameran rakt mot texten';
+
+  @override
+  String get ocrRetryOrManual =>
+      'Du kan försöka igen med en ny bild eller fortsätta med manuell inmatning.';
+
+  @override
+  String get errorAiEnhancementFailed => 'AI-förbättring misslyckades.';
+
+  @override
+  String errorCouldNotCreateRealtimeRecipe(String error) {
+    return 'Kunde inte skapa realtidsrecept: $error';
+  }
+
+  @override
+  String errorCouldNotWatchRecipe(String error) {
+    return 'Kunde inte starta watching av recept: $error';
+  }
+
+  @override
+  String errorCouldNotPerformOperation(String operation, String error) {
+    return 'Kunde inte $operation: $error';
+  }
+
+  @override
+  String errorCouldNotDeleteRealtimeRecipe(String error) {
+    return 'Kunde inte ta bort realtidsrecept: $error';
+  }
+
+  @override
+  String errorCouldNotCreateRealtimeMenu(String error) {
+    return 'Kunde inte skapa realtidsmeny: $error';
+  }
+
+  @override
+  String errorCouldNotWatchMenu(String error) {
+    return 'Kunde inte starta watching av meny: $error';
+  }
+
+  @override
+  String errorCouldNotDeleteRealtimeMenu(String error) {
+    return 'Kunde inte ta bort realtidsmeny: $error';
+  }
+
+  @override
+  String get ocrImageTooLarge => 'Bilden är för stor';
+
+  @override
+  String get ocrCompressImage => 'Komprimera bilden';
+
+  @override
+  String get ocrImageTooSmall => 'Bilden är för liten';
+
+  @override
+  String get ocrUseHigherResolution => 'Använd högre upplösning';
+
+  @override
+  String get ocrImageFormatNotOptimal => 'Bildformat stöds inte optimalt';
+
+  @override
+  String get ocrUseJpegOrPng => 'Använd JPEG eller PNG';
+
+  @override
+  String get syncErrorParsingResource => 'Fel vid parsing av resurs';
+
+  @override
+  String syncErrorWatchingResource(String resourceId) {
+    return 'Fel vid watching av resurs $resourceId';
+  }
+
+  @override
+  String get notificationActionAccept => 'Acceptera';
+
+  @override
+  String get notificationActionDecline => 'Avvisa';
+
+  @override
+  String get notificationActionViewRecipe => 'Visa recept';
+
+  @override
+  String get notificationActionJoin => 'Gå med';
+
+  @override
+  String get fcmChannelSocialTitle => 'Sociala notiser';
+
+  @override
+  String get fcmChannelSocialDescription =>
+      'Vänförfrågningar, delningar och kommentarer';
+
+  @override
+  String get fcmChannelMessagingTitle => 'Meddelanden';
+
+  @override
+  String get fcmChannelMessagingDescription => 'Chattmeddelanden från vänner';
+
+  @override
+  String get tagValidationEmpty => 'Taggnamn kan inte vara tomt';
+
+  @override
+  String get tagValidationTooShort => 'Taggnamn måste vara minst 2 tecken';
+
+  @override
+  String get tagValidationTooLong => 'Taggnamn får vara max 50 tecken';
+
+  @override
+  String get tagValidationReserved =>
+      'Detta namn är reserverat för systemtaggar';
+
+  @override
+  String menuAttributionText(String displayName) {
+    return 'Inspirerat av meny från $displayName';
+  }
+
+  @override
+  String get llmEnhancementNotEnoughData =>
+      'Inte tillräckligt med data för AI-förbättring.';
+
+  @override
+  String get realtimeIngredientEmptyError => 'Ingrediens kan inte vara tom';
+
+  @override
+  String get realtimeIngredientInvalidIndex => 'Ogiltigt ingrediens-index';
+
+  @override
+  String get realtimeInstructionEmptyError => 'Instruktion kan inte vara tom';
+
+  @override
+  String get realtimeInstructionInvalidIndex => 'Ogiltigt instruktions-index';
+
+  @override
+  String menuDefaultTitle(String displayName) {
+    return 'Meny från $displayName';
+  }
+
+  @override
+  String get menuShareGroupFallback => 'Grupp';
+
+  @override
+  String menuShareGroupTitle(String categoryName) {
+    return 'Meny för $categoryName';
+  }
+
+  @override
+  String get menuTitleEmpty => 'Tom meny';
+
+  @override
+  String menuTitleSingleCategory(String category, int count) {
+    return '$category meny ($count recept)';
+  }
+
+  @override
+  String menuTitleMultiCategory(String categories, int count) {
+    return 'Veckomeny med $categories ($count recept)';
+  }
+
+  @override
+  String recipeAttributionText(String displayName) {
+    return 'Inspirerat av recept från $displayName';
+  }
+
+  @override
+  String get tiktokOriginalText => 'Originaltext från TikTok:';
+
+  @override
+  String get tiktokIdentifiedIngredients => 'Identifierade ingredienser:';
+
+  @override
+  String groupShareWarningManyGroups(int count) {
+    return 'Delning till många grupper ($count) kan ta lång tid';
+  }
+
+  @override
+  String groupShareWarningManyItems(int count) {
+    return 'Delning av mycket innehåll ($count objekt) kan ta lång tid';
+  }
+
+  @override
+  String groupShareWarningLargeOperation(int count) {
+    return 'Stor operation ($count delningar) - överväg att dela upp den';
+  }
+
+  @override
+  String get textImportSourceUrl => 'Importerat från text';
+
+  @override
+  String get assistedImportSelectInstructionsError =>
+      'Välj minst en instruktion';
+
+  @override
+  String get assistedImportEnterRecipeName => 'Ange ett receptnamn';
+
+  @override
+  String get assistedImportAddIngredientError =>
+      'Lägg till minst en ingrediens';
+
+  @override
+  String get assistedImportAddInstructionError =>
+      'Lägg till minst en instruktion';
+
+  @override
+  String get formValidationIngredientRequired => 'Ingrediens krävs';
+
+  @override
+  String get formValidationIngredientTooLong =>
+      'Ingrediens för lång (max 200 tecken)';
+
+  @override
+  String get formValidationInstructionRequired => 'Instruktion krävs';
+
+  @override
+  String get formValidationInstructionTooLong =>
+      'Instruktion för lång (max 500 tecken)';
+
+  @override
+  String get formValidationTagTooLong => 'Tagg för lång (max 50 tecken)';
+
+  @override
+  String get formValidationTagNoCommas =>
+      'Taggar får inte innehålla kommatecken';
+
+  @override
+  String get shoppingItemMarkedComplete => 'Markerade som klar';
+
+  @override
+  String get shoppingItemMarkedIncomplete => 'Markerade som ej klar';
+
+  @override
+  String get menuSuggestionVegetarian => 'Vegetarisk veckomeny för 2 personer';
+
+  @override
+  String get menuSuggestionQuickDinners => 'Snabba middagar för hela veckan';
+
+  @override
+  String get menuSuggestionMeatFish => 'Kött och fisk varierad meny';
+
+  @override
+  String get menuSuggestionFamily => 'Familjevänlig veckomeny';
+
+  @override
+  String get menuSuggestionHealthy => 'Hälsosam och näringsrik meny';
+
+  @override
+  String get menuSuggestionBudget => 'Budgetvänlig veckomeny';
+
+  @override
+  String get menuSuggestionItalian => 'Italiensk temameny';
+
+  @override
+  String get menuSuggestionAsian => 'Asiatisk inspirerad veckomeny';
+
+  @override
+  String recipeAutoTitleWithIngredient(String ingredient) {
+    return 'Recept med $ingredient';
+  }
+
+  @override
+  String get recipeAutoTitleUntitled => 'Namnlöst recept';
+
+  @override
+  String get importPhaseFetching => 'Hämtar innehåll...';
+
+  @override
+  String get importPhaseAnalyzing => 'Analyserar recept...';
+
+  @override
+  String get importPhaseCreating => 'Skapar recept...';
+
+  @override
+  String get importPhaseComplete => 'Klar!';
+
+  @override
+  String get importPhaseNeedsHelp => 'Behöver din hjälp';
+
+  @override
+  String get importPhaseError => 'Ett fel uppstod';
+
+  @override
+  String shoppingSharingSummary(String friendNames) {
+    return 'Dela med: $friendNames';
+  }
+
+  @override
+  String imageUploadTooLarge(String maxSize) {
+    return 'Bilden är för stor (max ${maxSize}MB)';
+  }
+
+  @override
+  String shareMessageRecipeWithTitle(String title) {
+    return 'Kolla in detta recept: \"$title\"! 👩‍🍳';
+  }
+
+  @override
+  String get shareMessageRecipeDefault =>
+      'Jag hittade ett fantastiskt recept som jag ville dela med dig! 👩‍🍳';
+
+  @override
+  String shareMessageMenuWithTitle(String title) {
+    return 'Här är min veckomeny: \"$title\" 📋';
+  }
+
+  @override
+  String get shareMessageMenuDefault =>
+      'Här är min veckomeny som kanske kan inspirera dig! 📋';
+
+  @override
+  String shareMessageShoppingListWithTitle(String title) {
+    return 'Vill du hjälpa mig med inköpslistan: \"$title\"? 🛒';
+  }
+
+  @override
+  String get shareMessageShoppingListDefault =>
+      'Vill du hjälpa mig med inköpen denna vecka? 🛒';
+
+  @override
+  String get textImportSuggestionIngredients =>
+      'Inkludera ingredienslista för bättre tolkning';
+
+  @override
+  String get textImportSuggestionInstructions =>
+      'Inkludera tillagningsinstruktioner eller steg';
+
+  @override
+  String get textImportSuggestionTime =>
+      'Inkludera tillagningstid om tillgänglig';
+
+  @override
+  String get textImportSuggestionPortions =>
+      'Inkludera antal portioner om känt';
+
+  @override
+  String get textImportSuggestionLooksGood =>
+      'Texten ser bra ut för recepttolkning';
+
+  @override
+  String get recipeFormPermissionsError => 'Fel vid laddning av permissions';
+
+  @override
+  String createSharedListError(String error) {
+    return 'Fel vid skapande av delad lista: $error';
+  }
+
+  @override
+  String get userStatusOnline => 'Online';
+
+  @override
+  String get userStatusJustActive => 'Aktiv nyss';
+
+  @override
+  String userStatusActiveMinutesAgo(int minutes) {
+    return 'Aktiv för $minutes min sedan';
+  }
+
+  @override
+  String userStatusActiveHoursAgo(int hours) {
+    return 'Aktiv för $hours tim sedan';
+  }
+
+  @override
+  String userStatusActiveDaysAgo(int days) {
+    return 'Aktiv för $days dagar sedan';
+  }
+
+  @override
+  String userStatusActiveWeeksAgo(int weeks) {
+    return 'Aktiv för $weeks veckor sedan';
+  }
+
+  @override
+  String recipeCookTimeMinutes(int minutes) {
+    return '$minutes minuter';
+  }
+
+  @override
+  String get recipeLastCookedToday => 'Tillagad idag';
+
+  @override
+  String get recipeLastCookedYesterday => 'Tillagad igår';
+
+  @override
+  String recipeLastCookedDaysAgo(int days) {
+    return 'Tillagad för $days dagar sedan';
+  }
+
+  @override
+  String messageSharedRecipe(String title) {
+    return 'Delade ett recept: $title';
+  }
+
+  @override
+  String messageSharedMenu(String title) {
+    return 'Delade en meny: $title';
+  }
+
+  @override
+  String messageSharedShoppingList(String title) {
+    return 'Delade en inköpslista: $title';
+  }
+
+  @override
+  String get conversationNoMessagesYet => 'Inga meddelanden än';
+
+  @override
+  String sharedRecipeAttributionText(String displayName) {
+    return 'Inspirerat av recept från $displayName';
+  }
+
+  @override
+  String realtimeRecipeCopyTitle(String title) {
+    return 'Kopia av $title';
+  }
+
+  @override
+  String realtimeRecipeSharedFrom(String displayName) {
+    return 'Delat från $displayName';
+  }
+
+  @override
+  String get friendCategoryDefaultFriends => 'Vänner';
+
+  @override
+  String get friendCategoryDefaultFriendsDesc => 'Nära vänner';
+
+  @override
+  String get friendCategoryDefaultNeighbors => 'Grannar';
+
+  @override
+  String get friendCategoryDefaultNeighborsDesc => 'Grannar och lokalområdet';
+
+  @override
+  String get friendCategoryDefaultWork => 'Jobbet';
+
+  @override
+  String get friendCategoryDefaultWorkDesc => 'Kollegor och arbetskompisar';
+
+  @override
+  String get friendCategoryDefaultFoodGroup => 'Matgrupp';
+
+  @override
+  String get friendCategoryDefaultFoodGroupDesc =>
+      'Personer som älskar att laga mat';
+
+  @override
+  String get friendCategoryDefaultFamily => 'Familj';
+
+  @override
+  String get friendCategoryDefaultFamilyDesc => 'Familjemedlemmar';
+
+  @override
+  String get friendSummaryNoFriends => 'Inga vänner';
+
+  @override
+  String get friendSummaryOneFriend => '1 vän';
+
+  @override
+  String friendSummaryCount(int count) {
+    return '$count vänner';
+  }
+
+  @override
+  String shoppingListSharedBy(String displayName) {
+    return 'Delad av $displayName';
+  }
+
+  @override
+  String shoppingListOriginallySharedBy(String displayName) {
+    return 'Ursprungligen delad av $displayName';
+  }
+
+  @override
+  String get collaborationNotAllowed => 'Ingen kollaboration tillåten';
+
+  @override
+  String get collaborationReady => 'Redo för kollaboration';
+
+  @override
+  String get collaborationVersionCreated => 'Kollaborativ version skapad';
+
+  @override
+  String get collaborationOneActive => '1 aktiv kollaboratör';
+
+  @override
+  String collaborationMultipleActive(int count) {
+    return '$count aktiva kollaboratörer';
+  }
+
+  @override
+  String recipeCopiedFrom(String title) {
+    return 'Kopierat från: $title';
   }
 }

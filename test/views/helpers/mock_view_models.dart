@@ -45,7 +45,6 @@ import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 // import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart'; // Interface not formally implemented
-import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 
 // Import models for state management
 import 'package:butlery/models/recipe_unified.dart';
@@ -877,124 +876,6 @@ class TestableCollaborativeShoppingViewModel extends MockBaseViewModel {
   // These would be implemented based on the actual CollaborativeShoppingViewModel interface
 }
 
-// ==================== DISCOVERY DASHBOARD VIEWMODEL ====================
-
-/// Testable DiscoveryDashboardViewModel with tab and scroll controller simulation.
-class TestableDiscoveryDashboardViewModel extends TestableViewModelBase
-    implements DiscoveryDashboardViewModel {
-  int _activeTabIndex = 0;
-  bool _isLoading = false;
-  bool _isLoadingMore = false;
-  bool _hasMoreContent = true;
-
-  // Tab-specific content
-  final Map<int, List<dynamic>> _tabContent = {
-    0: [], // Recommendations
-    1: [], // Friends Activity
-    2: [], // Trending
-  };
-
-  // Scroll state
-  bool _isScrolledToTop = true;
-  double _scrollOffset = 0.0;
-
-  // ==================== DASHBOARD STATE ====================
-
-  int get activeTabIndex => _activeTabIndex;
-
-  @override
-  bool get isLoading => _isLoading;
-
-  @override
-  bool get isLoadingMore => _isLoadingMore;
-
-  @override
-  bool get hasMoreContent => _hasMoreContent;
-  bool get isScrolledToTop => _isScrolledToTop;
-  double get scrollOffset => _scrollOffset;
-
-  /// Set dashboard state for testing.
-  void setDashboardState({
-    int? activeTabIndex,
-    bool? isLoading,
-    bool? isLoadingMore,
-    bool? hasMoreContent,
-  }) {
-    if (activeTabIndex != null) {
-      _activeTabIndex = activeTabIndex;
-      _recordStateTransition('tab_changed_$activeTabIndex');
-    }
-    if (isLoading != null) {
-      _isLoading = isLoading;
-      _recordStateTransition('loading_$isLoading');
-    }
-    if (isLoadingMore != null) {
-      _isLoadingMore = isLoadingMore;
-      _recordStateTransition('loading_more_$isLoadingMore');
-    }
-    if (hasMoreContent != null) {
-      _hasMoreContent = hasMoreContent;
-    }
-    notifyListeners();
-  }
-
-  /// Simulate tab controller initialization and synchronization.
-  void simulateTabControllerSync({
-    required int tabCount,
-    int initialTab = 0,
-  }) {
-    _activeTabIndex = initialTab;
-
-    // Initialize tab content
-    for (int i = 0; i < tabCount; i++) {
-      _tabContent[i] = [];
-    }
-
-    _recordStateTransition('tab_controller_initialized_${tabCount}_tabs');
-    notifyListeners();
-  }
-
-  /// Simulate scroll controller setup and infinite loading.
-  void simulateScrollControllerSetup() {
-    _isScrolledToTop = true;
-    _scrollOffset = 0.0;
-    _recordStateTransition('scroll_controller_initialized');
-    notifyListeners();
-  }
-
-  /// Simulate infinite scroll loading.
-  Future<void> simulateLoadMore({
-    Duration delay = const Duration(milliseconds: 800),
-    bool hasMoreAfterLoad = true,
-  }) async {
-    return _measureStateChange('load_more_content', () async {
-      setDashboardState(isLoadingMore: true);
-
-      await Future.delayed(delay);
-
-      // Add mock content to active tab
-      final currentContent = _tabContent[_activeTabIndex] ?? [];
-      _tabContent[_activeTabIndex] = [
-        ...currentContent,
-        ...List.generate(10, (i) => 'Content ${currentContent.length + i}')
-      ];
-
-      setDashboardState(
-        isLoadingMore: false,
-        hasMoreContent: hasMoreAfterLoad,
-      );
-    });
-  }
-
-  /// Simulate scroll position changes.
-  void simulateScrollChange(double offset) {
-    _scrollOffset = offset;
-    _isScrolledToTop = offset <= 0;
-    _recordStateTransition('scroll_offset_${offset.toInt()}');
-    notifyListeners();
-  }
-}
-
 // ==================== COLLABORATIVE CONFLICT TYPES ====================
 
 /// Types of collaborative editing conflicts for testing scenarios.
@@ -1120,20 +1001,6 @@ class TestableViewModelFactory {
       );
     }
 
-    return viewModel;
-  }
-
-  /// Create testable DiscoveryDashboardViewModel for dashboard tests.
-  static TestableDiscoveryDashboardViewModel createDiscoveryDashboardViewModel({
-    int tabCount = 3,
-    int initialTab = 0,
-  }) {
-    final viewModel = TestableDiscoveryDashboardViewModel();
-    viewModel.simulateTabControllerSync(
-      tabCount: tabCount,
-      initialTab: initialTab,
-    );
-    viewModel.simulateScrollControllerSetup();
     return viewModel;
   }
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -15,6 +14,9 @@ import 'package:butlery/core/router/modules/messaging_deferred_module.dart';
 
 // Auth view (eager - always needed)
 import 'package:butlery/views/auth_view.dart';
+
+// Onboarding (eager - needed before home screen for new users)
+import 'package:butlery/views/onboarding/onboarding_view.dart';
 
 // Core recipe views (eager - needed on home screen)
 import 'package:butlery/views/mina_recept_view.dart';
@@ -33,6 +35,12 @@ import 'package:butlery/views/unified_shopping_view.dart';
 import 'package:butlery/views/settings/allergen_preferences_view.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
 import 'package:butlery/views/personal_tags_view.dart';
+
+// Cooking mode
+import 'package:butlery/views/cooking_mode_view.dart';
+
+// Help
+import 'package:butlery/views/faq_view.dart';
 
 // Models (needed for route arguments)
 import 'package:butlery/models/recipe_unified.dart';
@@ -137,6 +145,10 @@ class AppRouter {
           return _buildRoute(
               const AuthView(), settings, Routes.getAnimationType(routeName));
 
+        case Routes.onboarding:
+          return _buildRoute(const OnboardingView(), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.laggTill:
           return _buildRoute(const LaggTillReceptView(), settings,
               Routes.getAnimationType(routeName));
@@ -231,6 +243,14 @@ class AppRouter {
           return _buildRoute(const UnifiedShoppingView(), settings,
               Routes.getAnimationType(routeName));
 
+        case Routes.cookingMode:
+          final recipe = settings.arguments as Recipe?;
+          if (recipe == null) {
+            return _errorRoute('Recipe argument missing for cooking mode');
+          }
+          return _buildRoute(CookingModeView(recipe: recipe), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.settingsAllergens:
           return _buildRoute(const AllergenPreferencesView(), settings,
               RouteAnimationType.slideFromRight);
@@ -242,6 +262,10 @@ class AppRouter {
         case Routes.settingsNotifications:
           return _buildRoute(const NotificationPreferencesView(), settings,
               RouteAnimationType.slideFromRight);
+
+        case Routes.faq:
+          return _buildRoute(
+              const FaqView(), settings, RouteAnimationType.slideFromRight);
 
         default:
           return _errorRoute('Unknown route: ${settings.name}');
@@ -334,8 +358,9 @@ class AppRouter {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline,
-                  size: AppDimensions.iconSizeXl, color: AppColors.error),
+              Icon(Icons.error_outline,
+                  size: AppDimensions.iconSizeXl,
+                  color: Theme.of(context).colorScheme.error),
               const SizedBox(height: AppDimensions.spacingXl),
               Text(
                 message ?? 'Sidan kunde inte hittas',

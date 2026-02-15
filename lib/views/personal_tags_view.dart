@@ -19,14 +19,19 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
+import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/views/tag_detail_view.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 /// Sort order for personal tags.
 enum TagSortOrder {
@@ -277,9 +282,10 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           PopupMenuItem(
             value: 'delete',
             child: ListTile(
-              leading: const Icon(Icons.delete, color: AppColors.error),
+              leading: Icon(Icons.delete,
+                  color: Theme.of(context).colorScheme.error),
               title: Text(context.l10n.personalTagDeleteGroup,
-                  style: const TextStyle(color: AppColors.error)),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
               contentPadding: EdgeInsets.zero,
             ),
           ),
@@ -362,14 +368,15 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             children: [
               CircleAvatar(
                 backgroundColor: hasActiveRules
-                    ? AppColors.success
+                    ? context.butleryColors.success
                         .withValues(alpha: AppDimensions.opacityLight)
                     : colorScheme.primary
                         .withValues(alpha: AppDimensions.opacityLight),
                 child: Icon(
                   Icons.label,
-                  color:
-                      hasActiveRules ? AppColors.success : colorScheme.primary,
+                  color: hasActiveRules
+                      ? context.butleryColors.success
+                      : colorScheme.primary,
                   size: AppDimensions.iconSizeM,
                 ),
               ),
@@ -380,17 +387,17 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                   child: Container(
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
-                      color: AppColors.success,
+                      color: context.butleryColors.success,
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: colorScheme.surface,
                         width: 1.5,
                       ),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.auto_awesome,
                       size: 10,
-                      color: AppColors.cardWhite,
+                      color: colorScheme.surfaceContainerHighest,
                     ),
                   ),
                 ),
@@ -512,7 +519,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             ),
             if (hasRules && !allRulesEnabled)
               ListTile(
-                leading: const Icon(Icons.play_arrow, color: AppColors.success),
+                leading: Icon(Icons.play_arrow,
+                    color: context.butleryColors.success),
                 title: Text(context.l10n.personalTagEnableAllRules),
                 subtitle: Text(context.l10n.personalTagRulesDisabled(
                     tag.rules.length - enabledRuleCount)),
@@ -523,7 +531,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
               ),
             if (hasRules && !allRulesDisabled)
               ListTile(
-                leading: const Icon(Icons.pause, color: AppColors.warning),
+                leading:
+                    Icon(Icons.pause, color: context.butleryColors.warning),
                 title: Text(context.l10n.personalTagDisableAllRules),
                 subtitle:
                     Text(context.l10n.personalTagRulesActive(enabledRuleCount)),
@@ -532,6 +541,14 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                   _toggleAllRules(context, tag, enable: false);
                 },
               ),
+            ListTile(
+              leading: const Icon(Icons.share),
+              title: const Text('Dela'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _shareTag(context, tag);
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.folder),
               title: Text(context.l10n.personalTagMoveToGroup),
@@ -542,9 +559,10 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: const Icon(Icons.delete, color: AppColors.error),
+              leading: Icon(Icons.delete,
+                  color: Theme.of(context).colorScheme.error),
               title: Text(context.l10n.personalTagDeleteTag,
-                  style: const TextStyle(color: AppColors.error)),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _deleteTag(context, tag);
@@ -555,6 +573,36 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         ),
       ),
     );
+  }
+
+  Future<void> _shareTag(BuildContext context, PersonalTag tag) async {
+    try {
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+      final friends = friendsService.friends;
+      final groups = friendsService.categoriesList;
+
+      final viewModel = UniversalShareDialogViewModel(
+        socialRecipeCoordinator: ServiceLocator.get<SocialRecipeCoordinator>(),
+        shoppingService: ServiceLocator.get<UnifiedShoppingService>(),
+      );
+
+      if (!context.mounted) return;
+
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => UniversalShareDialog.personalTag(
+          tagId: tag.id,
+          tagName: tag.name,
+          viewModel: viewModel,
+          availableFriends: friends,
+          availableGroups: groups,
+        ),
+      );
+    } catch (e) {
+      if (context.mounted) {
+        SnackBarUtils.showError(context, 'Kunde inte dela taggen');
+      }
+    }
   }
 
   Future<void> _toggleAllRules(
@@ -783,7 +831,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
             onPressed: () => Navigator.pop(context, true),
             child: Text(context.l10n.commonDelete),
@@ -991,7 +1039,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                 child: Text(context.l10n.commonCancel),
               ),
               FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+                style: FilledButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.error),
                 onPressed: () => Navigator.pop(context, true),
                 child: Text(context.l10n.commonDelete),
               ),

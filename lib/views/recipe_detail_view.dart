@@ -11,7 +11,6 @@ import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_metadata.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_comments.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -22,6 +21,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:butlery/core/constants/routes.dart';
 
 /// Recipe Detail View - Complete recipe display with metadata, actions, and social features
 /// This view provides comprehensive recipe details including:
@@ -89,6 +89,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Consumer<RecipeDetailViewModel>(
       builder: (context, viewModel, child) {
         // Loading state (if deleting)
@@ -96,9 +98,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           return Scaffold(
             appBar: AppBar(
               title: Text(context.l10n.recipeDeleting),
-              backgroundColor: AppColors.cream,
+              backgroundColor: cs.surface,
             ),
-            backgroundColor: AppColors.cream,
+            backgroundColor: cs.surface,
             body: const Center(
               child: CircularProgressIndicator(),
             ),
@@ -109,13 +111,13 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         final bottomPadding = MediaQuery.of(context).padding.bottom;
 
         return Scaffold(
-          backgroundColor: AppColors.cream,
+          backgroundColor: cs.surface,
           bottomNavigationBar: ButleryBottomNavigation(
             currentIndex: 0,
             items: ButleryAdaptiveNavigation.getNavigationItems(context),
-            backgroundColor: AppColors.creamDarker,
-            selectedItemColor: AppColors.forestGreenDark,
-            unselectedItemColor: AppColors.greenMuted,
+            backgroundColor: cs.surfaceContainerHigh,
+            selectedItemColor: cs.primary,
+            unselectedItemColor: cs.onSurfaceVariant,
             onTap: (index) {
               final route =
                   ButleryAdaptiveNavigation.getNavigationItems(context)[index]
@@ -130,14 +132,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             child: FloatingActionButton(
               onPressed: () => _actions.showAddToCartConfirmation(context),
               tooltip: context.l10n.shoppingAddToList,
-              backgroundColor: AppColors.forestGreen,
+              backgroundColor: cs.primary,
               elevation: 2,
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.zero,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.shopping_cart_outlined,
-                color: AppColors.cardWhite,
+                color: cs.onPrimary,
                 size: AppDimensions.iconSizeM,
               ),
             ),
@@ -150,8 +152,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 expandedHeight: 200.0,
                 floating: false,
                 pinned: true,
-                backgroundColor: Theme.of(context).colorScheme.surface,
-                foregroundColor: AppColors.textDark,
+                backgroundColor: cs.surface,
+                foregroundColor: cs.onSurface,
                 // UI Redesign: Custom leading widget (back button)
                 leading: Padding(
                   padding: const EdgeInsets.all(8),
@@ -173,8 +175,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  AppColors.transparent,
-                                  AppColors.textDark.withValues(
+                                  Colors.transparent,
+                                  cs.onSurface.withValues(
                                       alpha: AppDimensions.opacityMediumLight),
                                 ],
                               ),
@@ -182,19 +184,19 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             child: CachedNetworkImage(
                               imageUrl: recipe.imageUrls.first,
                               fit: BoxFit.cover,
-                              placeholder: (context, url) => const ColoredBox(
-                                color: AppColors.cardWhite,
-                                child: Center(
+                              placeholder: (context, url) => ColoredBox(
+                                color: cs.surfaceContainerHighest,
+                                child: const Center(
                                   child: CircularProgressIndicator(),
                                 ),
                               ),
                               errorWidget: (context, url, error) {
-                                return const ColoredBox(
-                                  color: AppColors.cardWhite,
+                                return ColoredBox(
+                                  color: cs.surfaceContainerHighest,
                                   child: Icon(
                                     Icons.restaurant,
                                     size: AppDimensions.iconSizeHero,
-                                    color: AppColors.textSecondary,
+                                    color: cs.onSurfaceVariant,
                                   ),
                                 );
                               },
@@ -202,7 +204,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           ),
                         )
                       : ColoredBox(
-                          color: AppColors.greenPale,
+                          color: cs.primaryContainer,
                           child: Center(
                             child: VegetableIllustration(
                               type: VegetableIllustration.randomForRecipe(
@@ -215,6 +217,19 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 ),
                 // UI Redesign: Hero action buttons with cream background
                 actions: [
+                  // Start cooking mode
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: _HeroButton(
+                      icon: Icons.restaurant,
+                      onPressed: () => Navigator.pushNamed(
+                        context,
+                        Routes.cookingMode,
+                        arguments: recipe,
+                      ),
+                      tooltip: 'Borja laga',
+                    ),
+                  ),
                   // Favorite toggle
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -251,88 +266,91 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     padding: const EdgeInsets.only(top: 8, bottom: 8, right: 8),
                     child: _HeroMenuButton(
                       icon: Icons.more_horiz,
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              const Icon(Icons.edit_outlined,
-                                  size: AppDimensions.iconSizeM,
-                                  color: AppColors.forestGreen),
-                              const SizedBox(width: AppDimensions.spacingM),
-                              Text(context.l10n.recipeEdit),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 'fork',
-                          child: Row(
-                            children: [
-                              const Icon(Icons.content_copy_outlined,
-                                  size: AppDimensions.iconSizeM,
-                                  color: AppColors.forestGreen),
-                              const SizedBox(width: AppDimensions.spacingM),
-                              Text(context.l10n.recipeCreateCopy),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 'generate_shopping_list',
-                          child: Row(
-                            children: [
-                              const Icon(Icons.shopping_cart_outlined,
-                                  size: AppDimensions.iconSizeM,
-                                  color: AppColors.forestGreen),
-                              const SizedBox(width: AppDimensions.spacingM),
-                              Text(context.l10n.recipeCreateShoppingList),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 're_tag',
-                          child: Row(
-                            children: [
-                              const Icon(Icons.local_offer_outlined,
-                                  size: AppDimensions.iconSizeM,
-                                  color: AppColors.forestGreen),
-                              const SizedBox(width: AppDimensions.spacingM),
-                              Text(context.l10n.recipeUpdateTags),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              const Icon(Icons.delete_outlined,
-                                  size: AppDimensions.iconSizeM,
-                                  color: AppColors.error),
-                              const SizedBox(width: AppDimensions.spacingM),
-                              Text(context.l10n.recipeDelete,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                        color: AppColors.error,
-                                      )),
-                            ],
-                          ),
-                        ),
-                        if (recipe.sourceUrl != null &&
-                            recipe.sourceUrl!.isNotEmpty)
+                      itemBuilder: (context) {
+                        final menuCs = Theme.of(context).colorScheme;
+                        return [
                           PopupMenuItem(
-                            value: 'source',
+                            value: 'edit',
                             child: Row(
                               children: [
-                                const Icon(Icons.link_outlined,
+                                Icon(Icons.edit_outlined,
                                     size: AppDimensions.iconSizeM,
-                                    color: AppColors.forestGreen),
+                                    color: menuCs.primary),
                                 const SizedBox(width: AppDimensions.spacingM),
-                                Text(context.l10n.recipeViewSource),
+                                Text(context.l10n.recipeEdit),
                               ],
                             ),
                           ),
-                      ],
+                          PopupMenuItem(
+                            value: 'fork',
+                            child: Row(
+                              children: [
+                                Icon(Icons.content_copy_outlined,
+                                    size: AppDimensions.iconSizeM,
+                                    color: menuCs.primary),
+                                const SizedBox(width: AppDimensions.spacingM),
+                                Text(context.l10n.recipeCreateCopy),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'generate_shopping_list',
+                            child: Row(
+                              children: [
+                                Icon(Icons.shopping_cart_outlined,
+                                    size: AppDimensions.iconSizeM,
+                                    color: menuCs.primary),
+                                const SizedBox(width: AppDimensions.spacingM),
+                                Text(context.l10n.recipeCreateShoppingList),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 're_tag',
+                            child: Row(
+                              children: [
+                                Icon(Icons.local_offer_outlined,
+                                    size: AppDimensions.iconSizeM,
+                                    color: menuCs.primary),
+                                const SizedBox(width: AppDimensions.spacingM),
+                                Text(context.l10n.recipeUpdateTags),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete_outlined,
+                                    size: AppDimensions.iconSizeM,
+                                    color: menuCs.error),
+                                const SizedBox(width: AppDimensions.spacingM),
+                                Text(context.l10n.recipeDelete,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: menuCs.error,
+                                        )),
+                              ],
+                            ),
+                          ),
+                          if (recipe.sourceUrl != null &&
+                              recipe.sourceUrl!.isNotEmpty)
+                            PopupMenuItem(
+                              value: 'source',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.link_outlined,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.primary),
+                                  const SizedBox(width: AppDimensions.spacingM),
+                                  Text(context.l10n.recipeViewSource),
+                                ],
+                              ),
+                            ),
+                        ];
+                      },
                       onSelected: (value) =>
                           _handleMenuAction(context, value, viewModel, recipe),
                     ),
@@ -340,7 +358,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 ],
               ),
 
-              // Recipe content - ✅ RESPONSIVE: Center and constrain on large screens
+              // Recipe content - RESPONSIVE: Center and constrain on large screens
               SliverToBoxAdapter(
                 child: Center(
                   child: ConstrainedBox(
@@ -360,11 +378,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           width: double.infinity,
                           padding:
                               AppDimensions.responsiveContentPadding(context),
-                          decoration: const BoxDecoration(
-                            color: AppColors.cardWhite,
+                          decoration: BoxDecoration(
+                            color: cs.surfaceContainerHighest,
                             border: Border(
                               bottom: BorderSide(
-                                color: AppColors.forestGreen,
+                                color: cs.primary,
                                 width: 3,
                               ),
                             ),
@@ -378,7 +396,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 style: AppTextStyles.titleLarge.copyWith(
                                   fontSize: 24,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.forestGreenDark,
+                                  color: cs.primary,
                                   letterSpacing: 1,
                                 ),
                               ),
@@ -393,7 +411,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                         Uri.tryParse(recipe.sourceUrl!)?.host ??
                                             recipe.sourceUrl!),
                                     style: AppTextStyles.bodyMedium.copyWith(
-                                      color: AppColors.textMedium,
+                                      color: cs.onSurfaceVariant,
                                       decoration: TextDecoration.underline,
                                     ),
                                   ),
@@ -442,7 +460,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   child: Text(
                                     recipe.description,
                                     style: AppTextStyles.bodyMedium.copyWith(
-                                      color: AppColors.textMedium,
+                                      color: cs.onSurfaceVariant,
                                     ),
                                   ),
                                 ),
@@ -576,8 +594,10 @@ class _HeroButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     final button = Material(
-      color: AppColors.cream,
+      color: cs.surface,
       borderRadius: BorderRadius.zero,
       child: InkWell(
         onTap: onPressed,
@@ -586,7 +606,7 @@ class _HeroButton extends StatelessWidget {
           height: 40,
           child: Icon(
             icon,
-            color: AppColors.forestGreen,
+            color: cs.primary,
             size: AppDimensions.iconSizeM,
           ),
         ),
@@ -614,17 +634,19 @@ class _HeroMenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return SizedBox(
       width: 40,
       height: 40,
       child: Material(
-        color: AppColors.cream,
+        color: cs.surface,
         borderRadius: BorderRadius.zero,
         child: PopupMenuButton<String>(
           padding: EdgeInsets.zero,
           icon: Icon(
             icon,
-            color: AppColors.forestGreen,
+            color: cs.primary,
             size: AppDimensions.iconSizeM,
           ),
           itemBuilder: itemBuilder,

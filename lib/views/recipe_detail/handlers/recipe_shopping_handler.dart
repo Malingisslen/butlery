@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -39,7 +39,7 @@ class RecipeShoppingHandler {
     if (shoppingItems.isEmpty) {
       showSnackBar(
         context.l10n.shoppingNoIngredientsToAdd,
-        backgroundColor: AppColors.warning,
+        backgroundColor: context.butleryColors.warning,
       );
       return;
     }
@@ -76,7 +76,7 @@ class RecipeShoppingHandler {
                             width: 8,
                             height: 8,
                             decoration: BoxDecoration(
-                              color: AppColors.forestGreen,
+                              color: Theme.of(context).colorScheme.primary,
                               borderRadius: BorderRadius.circular(0),
                             ),
                           ),
@@ -104,7 +104,7 @@ class RecipeShoppingHandler {
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.forestGreen,
+              backgroundColor: Theme.of(context).colorScheme.primary,
             ),
             child: Text(context.l10n.commonAdd),
           ),
@@ -162,7 +162,7 @@ class RecipeShoppingHandler {
         if (!context.mounted) return;
         showSnackBar(
           context.l10n.shoppingNoIngredientsToAdd,
-          backgroundColor: AppColors.warning,
+          backgroundColor: context.butleryColors.warning,
         );
         return;
       }
@@ -200,7 +200,7 @@ class RecipeShoppingHandler {
         if (context.mounted) {
           showSnackBar(
             context.l10n.shoppingCouldNotCreateOrSelectList,
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           );
         }
         return;
@@ -217,7 +217,7 @@ class RecipeShoppingHandler {
         if (context.mounted) {
           showSnackBar(
             context.l10n.shoppingNoEditPermission,
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           );
         }
         return;
@@ -259,7 +259,7 @@ class RecipeShoppingHandler {
       } else {
         showSnackBar(
           context.l10n.shoppingCouldNotAddIngredients,
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         );
       }
     } catch (e) {
@@ -269,12 +269,12 @@ class RecipeShoppingHandler {
       if (e is PermissionDeniedException) {
         showSnackBar(
           context.l10n.shoppingNoEditPermissionShared,
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         );
       } else {
         showSnackBar(
           context.l10n.errorOccurredWithDetails(e.toString()),
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         );
       }
     }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Invitation target state widgets.
 class InvitationStates {
@@ -83,7 +83,8 @@ class InvitationStates {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(errorIcon,
-              size: AppDimensions.iconSizeXXXl, color: AppColors.error),
+              size: AppDimensions.iconSizeXXXl,
+              color: Theme.of(context).colorScheme.error),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(title ?? context.l10n.invitationCouldNotLoadTargets,
               style: AppTextStyles.titleBold),
@@ -131,8 +132,9 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.lock,
-              size: AppDimensions.iconSizeXXXl, color: AppColors.warning),
+          Icon(Icons.lock,
+              size: AppDimensions.iconSizeXXXl,
+              color: context.butleryColors.warning),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(title ?? context.l10n.invitationNoAccessTitle,
               style: AppTextStyles.titleBold),
@@ -165,7 +167,8 @@ class InvitationStates {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon,
-              size: AppDimensions.iconSizeXXXl, color: AppColors.textMedium),
+              size: AppDimensions.iconSizeXXXl,
+              color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(title ?? context.l10n.invitationNoTargetsAvailable,
               style: AppTextStyles.titleBold),
@@ -199,7 +202,8 @@ class InvitationStates {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon,
-              size: AppDimensions.iconSizeXXXl, color: AppColors.textMedium),
+              size: AppDimensions.iconSizeXXXl,
+              color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(title ?? context.l10n.invitationNoSearchResults,
               style: AppTextStyles.titleBold),
@@ -236,7 +240,8 @@ class InvitationStates {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon,
-              size: AppDimensions.iconSizeXXXl, color: AppColors.textMedium),
+              size: AppDimensions.iconSizeXXXl,
+              color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(title ?? context.l10n.invitationNoSelectedTargets,
               style: AppTextStyles.titleBold),
@@ -264,7 +269,7 @@ class InvitationStates {
         children: [
           Icon(icon,
               size: AppDimensions.iconSizeXXXl,
-              color: successColor ?? AppColors.success),
+              color: successColor ?? context.butleryColors.success),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(title ?? context.l10n.invitationTargetsLoaded,
               style: AppTextStyles.titleBold),
@@ -304,7 +309,7 @@ class InvitationStates {
         children: [
           Icon(icon,
               size: AppDimensions.iconSizeXXXl,
-              color: successColor ?? AppColors.success),
+              color: successColor ?? context.butleryColors.success),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(title ?? context.l10n.invitationsSentTitle,
               style: AppTextStyles.titleBold),

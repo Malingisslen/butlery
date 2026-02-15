@@ -3,6 +3,7 @@ import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// ViewModel for managing user data export UI state and operations
 /// Handles the GDPR data portability feature, allowing users to export
@@ -62,14 +63,15 @@ class DataExportViewModel extends ChangeNotifier
     final now = DateTime.now();
     final difference = now.difference(_exportTimestamp!);
 
+    final l = AppLocale.current;
     if (difference.inMinutes < 1) {
-      return 'Just nu';
+      return l.commonJustNow;
     } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes} minuter sedan';
+      return '${difference.inMinutes} min';
     } else if (difference.inHours < 24) {
-      return '${difference.inHours} timmar sedan';
+      return '${difference.inHours} h';
     } else {
-      return '${difference.inDays} dagar sedan';
+      return '${difference.inDays} d';
     }
   }
 
@@ -132,17 +134,17 @@ class DataExportViewModel extends ChangeNotifier
 
   String _formatErrorMessage(Object error) {
     final errorStr = error.toString();
+    final l = AppLocale.current;
 
-    // User-friendly Swedish error messages
     if (errorStr.contains('No authenticated user')) {
-      return 'Du måste vara inloggad för att exportera data';
+      return l.errorMustBeLoggedInToExport;
     } else if (errorStr.contains('network') ||
         errorStr.contains('connection')) {
-      return 'Ingen internetanslutning. Kontrollera din anslutning och försök igen.';
+      return l.errorNoInternetCheckConnection;
     } else if (errorStr.contains('permission')) {
-      return 'Behörighet nekad. Försök logga in igen.';
+      return l.errorPermissionDeniedRetry;
     } else {
-      return 'Ett fel uppstod vid export av data. Försök igen.';
+      return l.errorExportFailed;
     }
   }
 

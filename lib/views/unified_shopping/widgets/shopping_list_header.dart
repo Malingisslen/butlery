@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
@@ -22,11 +21,13 @@ class ShoppingListHeader {
     VoidCallback onDeleteList, {
     VoidCallback? onConvertList,
   }) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
+        color: cs.surfaceContainerHighest,
         boxShadow: AppShadows.subtle,
       ),
       child: Column(
@@ -53,6 +54,8 @@ class ShoppingListHeader {
     VoidCallback onDeleteList,
     VoidCallback? onConvertList,
   ) {
+    final cs = Theme.of(context).colorScheme;
+
     return Row(
       children: [
         // Dropdown container
@@ -60,17 +63,16 @@ class ShoppingListHeader {
           child: Container(
             padding: AppDimensions.paddingSymmetric16x12,
             decoration: BoxDecoration(
-              color: AppColors.cream,
+              color: cs.surface,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-              border: Border.all(color: AppColors.divider),
+              border: Border.all(color: cs.outlineVariant),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: viewModel.activeList?.id,
                 hint: Text(context.l10n.shoppingSelectList),
                 isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down,
-                    color: AppColors.textMedium),
+                icon: Icon(Icons.arrow_drop_down, color: cs.onSurfaceVariant),
                 onChanged: (listId) {
                   if (listId != null) {
                     viewModel.setActiveList(listId);
@@ -94,18 +96,16 @@ class ShoppingListHeader {
           // Rename button
           DecoratedBox(
             decoration: BoxDecoration(
-              color: AppColors.cream,
+              color: cs.surface,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-              border: Border.all(color: AppColors.divider),
+              border: Border.all(color: cs.outlineVariant),
             ),
             child: IconButton(
               onPressed: onRenameList,
               icon: Icon(
                 Icons.edit,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: AppDimensions.opacityDark),
+                color:
+                    cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
                 size: AppDimensions.iconSizeAction,
               ),
               tooltip: context.l10n.shoppingRenameList,
@@ -122,19 +122,17 @@ class ShoppingListHeader {
             const SizedBox(width: AppDimensions.spacingXs),
             DecoratedBox(
               decoration: BoxDecoration(
-                color: AppColors.cream,
+                color: cs.surface,
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadius12),
-                border: Border.all(color: AppColors.divider),
+                border: Border.all(color: cs.outlineVariant),
               ),
               child: IconButton(
                 onPressed: onConvertList,
                 icon: Icon(
                   Icons.swap_horiz,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: AppDimensions.opacityDark),
+                  color:
+                      cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
                   size: AppDimensions.iconSizeAction,
                 ),
                 tooltip: viewModel.activeList?.isPersonal == true
@@ -154,18 +152,16 @@ class ShoppingListHeader {
           // Delete button
           DecoratedBox(
             decoration: BoxDecoration(
-              color: AppColors.cream,
+              color: cs.surface,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
-              border: Border.all(color: AppColors.divider),
+              border: Border.all(color: cs.outlineVariant),
             ),
             child: IconButton(
               onPressed: onDeleteList,
               icon: Icon(
                 Icons.delete,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: AppDimensions.opacityDark),
+                color:
+                    cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
                 size: AppDimensions.iconSizeAction,
               ),
               tooltip: context.l10n.shoppingDeleteList,
@@ -187,6 +183,8 @@ class ShoppingListHeader {
     VoidCallback onClearCompleted,
     VoidCallback onUncheckAll,
   ) {
+    final cs = Theme.of(context).colorScheme;
+
     if (viewModel.activeList == null) return const SizedBox.shrink();
 
     return Row(
@@ -199,15 +197,15 @@ class ShoppingListHeader {
               style: OutlinedButton.styleFrom(
                 padding: AppDimensions.paddingVertical8,
                 side: BorderSide(
-                    color: AppColors.textMedium
+                    color: cs.onSurfaceVariant
                         .withValues(alpha: AppDimensions.opacityHalf)),
               ),
-              icon: const Icon(Icons.clear,
-                  size: AppDimensions.iconSizeS, color: AppColors.textMedium),
+              icon: Icon(Icons.clear,
+                  size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),
               label: Text(
                 context.l10n.shoppingClearCount(viewModel.boughtItems),
                 style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: AppColors.textMedium,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
             ),
@@ -225,15 +223,15 @@ class ShoppingListHeader {
               style: OutlinedButton.styleFrom(
                 padding: AppDimensions.paddingVertical8,
                 side: BorderSide(
-                    color: AppColors.forestGreen
+                    color: cs.primary
                         .withValues(alpha: AppDimensions.opacityHalf)),
               ),
-              icon: const Icon(Icons.check_box_outline_blank,
-                  size: AppDimensions.iconSizeS, color: AppColors.forestGreen),
+              icon: Icon(Icons.check_box_outline_blank,
+                  size: AppDimensions.iconSizeS, color: cs.primary),
               label: Text(
                 context.l10n.shoppingUncheckAll,
                 style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: AppColors.forestGreen,
+                  color: cs.primary,
                 ),
               ),
             ),
@@ -245,6 +243,7 @@ class ShoppingListHeader {
   /// Build enhanced dropdown item with sharing status indicators
   static Widget _buildListDropdownItem(
       BuildContext context, UnifiedShoppingList list) {
+    final cs = Theme.of(context).colorScheme;
     final permissionService = ServiceLocator.get<PermissionService>();
     final currentUserId = permissionService.currentUser?.uid;
 
@@ -256,7 +255,7 @@ class ShoppingListHeader {
     switch (list.type) {
       case ListType.personal:
         sharingIcon = Icons.person;
-        sharingColor = AppColors.forestGreen;
+        sharingColor = cs.primary;
         break;
       case ListType.collaborative:
         if (currentUserId != null) {
@@ -265,40 +264,40 @@ class ShoppingListHeader {
 
           if (isOwner) {
             sharingIcon = Icons.admin_panel_settings;
-            sharingColor = AppColors.forestGreen;
+            sharingColor = cs.primary;
             permissionText = context.l10n.shoppingPermissionOwner;
           } else {
             switch (userPermission) {
               case SharedListPermission.view:
                 sharingIcon = Icons.visibility;
-                sharingColor = AppColors.textMedium;
+                sharingColor = cs.onSurfaceVariant;
                 permissionText = context.l10n.shoppingPermissionView;
                 break;
               case SharedListPermission.edit:
                 sharingIcon = Icons.edit;
-                sharingColor = AppColors.accent;
+                sharingColor = cs.secondary;
                 permissionText = context.l10n.shoppingPermissionEdit;
                 break;
               case SharedListPermission.admin:
                 sharingIcon = Icons.admin_panel_settings;
-                sharingColor = AppColors.forestGreen;
+                sharingColor = cs.primary;
                 permissionText = context.l10n.shoppingPermissionAdmin;
                 break;
               default:
                 sharingIcon = Icons.people;
-                sharingColor = AppColors.forestGreen;
+                sharingColor = cs.primary;
                 permissionText = context.l10n.shoppingPermissionShared;
             }
           }
         } else {
           sharingIcon = Icons.people;
-          sharingColor = AppColors.secondaryPurple;
+          sharingColor = cs.tertiary;
           permissionText = context.l10n.shoppingPermissionShared;
         }
         break;
       case ListType.template:
         sharingIcon = Icons.bookmark;
-        sharingColor = AppColors.textMedium;
+        sharingColor = cs.onSurfaceVariant;
         permissionText = context.l10n.shoppingPermissionTemplate;
         break;
     }
@@ -327,7 +326,7 @@ class ShoppingListHeader {
                   Text(
                     context.l10n.shoppingItemCount(list.items.length),
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textMedium,
+                      color: cs.onSurfaceVariant,
                     ),
                   ),
                   if (permissionText != null) ...[

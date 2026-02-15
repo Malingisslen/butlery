@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 abstract class ImportBaseViewModel extends BaseViewModel
     with AsyncOperationMixin {
@@ -95,22 +96,22 @@ abstract class ImportBaseViewModel extends BaseViewModel
   @protected
   bool validateImportData() {
     if (_parsedRecipe == null) {
-      setError('Inget recept att validera');
+      setError(AppLocale.current.errorNoRecipeToValidate);
       return false;
     }
 
     if (_parsedRecipe!.title.trim().isEmpty) {
-      setError('Recepttitel krävs');
+      setError(AppLocale.current.errorRecipeTitleRequired);
       return false;
     }
 
     if (_parsedRecipe!.ingredients.isEmpty) {
-      setError('Receptet måste ha minst en ingrediens');
+      setError(AppLocale.current.errorRecipeMustHaveIngredient);
       return false;
     }
 
     if (_parsedRecipe!.instructions.isEmpty) {
-      setError('Receptet måste ha minst en instruktion');
+      setError(AppLocale.current.errorRecipeMustHaveInstruction);
       return false;
     }
 
@@ -119,7 +120,7 @@ abstract class ImportBaseViewModel extends BaseViewModel
 
   Future<bool> completeImport() async {
     if (!canImport) {
-      setError('Importvillkor inte uppfyllda');
+      setError(AppLocale.current.errorImportConditionsNotMet);
       return false;
     }
 

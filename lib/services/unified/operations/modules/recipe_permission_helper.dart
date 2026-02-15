@@ -5,6 +5,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/operations/modules/legacy_recipe_ownership_resolver.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Recipe permission checking module handling access validation, user capabilities, legacy compatibility, and permission level determination.
 class RecipePermissionHelper {
@@ -346,20 +347,21 @@ class RecipePermissionHelper {
   }
 
   String getPermissionDescription(ResourcePermission permission) {
+    final l = AppLocale.current;
     if (permission == ResourcePermission.read) {
-      return 'Ingen åtkomst';
+      return l.permissionNoAccess;
     } else if (permission == ResourcePermission.viewer) {
-      return 'Kan visa recept';
+      return l.permissionCanViewRecipe;
     } else if (permission == ResourcePermission.write) {
-      return 'Kan skriva kommentarer';
+      return l.permissionCanComment;
     } else if (permission == ResourcePermission.editor) {
-      return 'Kan redigera recept';
+      return l.permissionCanEditRecipe;
     } else if (permission == ResourcePermission.admin) {
-      return 'Kan hantera medlemmar';
+      return l.permissionCanManageMembers;
     } else if (permission == ResourcePermission.owner) {
-      return 'Ägare av recept';
+      return l.permissionOwnerOfRecipe;
     } else {
-      return 'Okänd behörighet';
+      return l.permissionUnknown;
     }
   }
 

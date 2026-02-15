@@ -6,8 +6,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -35,7 +35,7 @@ class RecipeTaggingHandler {
       message: context.l10n.taggingUpdateTagsMessage(viewModel.recipe.title),
       confirmText: context.l10n.commonUpdate,
       icon: Icons.local_offer,
-      confirmColor: AppColors.forestGreen,
+      confirmColor: Theme.of(context).colorScheme.primary,
     );
 
     if (confirmed != true || !context.mounted) return;
@@ -75,7 +75,7 @@ class RecipeTaggingHandler {
       if (tagResult == null) {
         showSnackBar(
           context.l10n.taggingCouldNotAnalyze,
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         );
         return;
       }
@@ -101,7 +101,7 @@ class RecipeTaggingHandler {
       final coverage = (tagResult.coverage * 100).toInt();
       showSnackBar(
         context.l10n.taggingTagsGenerated(tagResult.tags.length, coverage),
-        backgroundColor: AppColors.success,
+        backgroundColor: context.butleryColors.success,
       );
     } catch (e) {
       if (!context.mounted) return;
@@ -109,7 +109,7 @@ class RecipeTaggingHandler {
       Navigator.of(context).pop();
       showSnackBar(
         context.l10n.taggingError(e.toString()),
-        backgroundColor: AppColors.error,
+        backgroundColor: Theme.of(context).colorScheme.error,
       );
     }
   }

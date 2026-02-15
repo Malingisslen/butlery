@@ -15,6 +15,7 @@ import 'package:butlery/core/utils/retry_helper.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/offline/sync_result.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Handles sync operations for offline service
 /// Now uses Drift database instead of Hive
@@ -229,29 +230,30 @@ class OfflineSyncManager {
 
   /// Manual synchronization with user feedback
   Future<SyncResult> syncNow({required bool isOnline}) async {
+    final l = AppLocale.current;
     if (_isSyncing) {
       AppLogger.info('🔄 Synkronisering pågår redan...');
-      return const SyncResult(
+      return SyncResult(
         success: false,
-        message: 'Synkronisering pågår redan',
+        message: l.syncAlreadyInProgress,
         isRetry: false,
       );
     }
 
     if (!isOnline) {
       AppLogger.warning('⚠️ Kan inte synka offline');
-      return const SyncResult(
+      return SyncResult(
         success: false,
-        message: 'Du måste vara online för att synkronisera',
+        message: l.syncMustBeOnline,
         isRetry: false,
       );
     }
 
     final userId = _authRepository.currentUserId;
     if (userId == null) {
-      return const SyncResult(
+      return SyncResult(
         success: false,
-        message: 'Ingen användare inloggad',
+        message: l.syncNoUserLoggedIn,
         isRetry: false,
       );
     }
@@ -259,9 +261,9 @@ class OfflineSyncManager {
     final hasPending = await _syncQueueDao.hasPending(userId);
     if (!hasPending) {
       AppLogger.info('✅ Inga ändringar att synkronisera');
-      return const SyncResult(
+      return SyncResult(
         success: true,
-        message: 'Inga väntande ändringar',
+        message: l.syncNoPendingChanges,
         isRetry: false,
       );
     }
@@ -277,19 +279,19 @@ class OfflineSyncManager {
     if (remainingItems == 0) {
       return SyncResult(
         success: true,
-        message: 'Alla $syncedItems ändringar synkade!',
+        message: l.syncAllSynced(syncedItems),
         isRetry: false,
       );
     } else if (syncedItems > 0) {
       return SyncResult(
         success: true,
-        message: '$syncedItems av $itemsToSync synkade, $remainingItems kvar',
+        message: l.syncPartialSuccess(syncedItems, itemsToSync, remainingItems),
         isRetry: remainingItems > 0,
       );
     } else {
-      return const SyncResult(
+      return SyncResult(
         success: false,
-        message: 'Synkronisering misslyckades, försöker igen senare',
+        message: l.syncFailedRetryLater,
         isRetry: true,
       );
     }

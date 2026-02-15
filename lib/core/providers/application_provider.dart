@@ -109,7 +109,6 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
 
 /// Comprehensive application provider widget that enables widget-friendly dependency injection access throughout the application.
@@ -267,7 +266,7 @@ class ApplicationReadyBuilder extends StatelessWidget {
 
     if (provider == null) {
       // No provider found - return error widget
-      return _buildErrorWidget('ApplicationProvider not found');
+      return _buildErrorWidget(context, 'ApplicationProvider not found');
     }
 
     if (!provider.isReady) {
@@ -299,15 +298,15 @@ class ApplicationReadyBuilder extends StatelessWidget {
     );
   }
 
-  Widget _buildErrorWidget(String message) {
+  Widget _buildErrorWidget(BuildContext context, String message) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.error_outline,
             size: 48,
-            color: AppColors.error,
+            color: Theme.of(context).colorScheme.error,
           ),
           const SizedBox(height: 16),
           const Text(

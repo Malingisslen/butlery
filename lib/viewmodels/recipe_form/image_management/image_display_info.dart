@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/services/upload/upload_models.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Comprehensive image display information for immediate UI feedback
 class ImageDisplayInfo {
@@ -31,20 +31,20 @@ class ImageDisplayInfo {
   });
 
   /// Get color indicator for upload state
-  Color getStateColor() {
+  Color getStateColor(ColorScheme cs, ButleryColors butleryColors) {
     switch (state) {
       case ImageUploadState.pending:
-        return AppColors.info;
+        return butleryColors.info;
       case ImageUploadState.uploading:
-        return AppColors.warning;
+        return butleryColors.warning;
       case ImageUploadState.retrying:
-        return AppColors.starGold;
+        return butleryColors.starGold;
       case ImageUploadState.completed:
-        return AppColors.success;
+        return butleryColors.success;
       case ImageUploadState.failed:
-        return AppColors.error;
+        return cs.error;
       case ImageUploadState.cancelled:
-        return AppColors.textMedium;
+        return cs.onSurfaceVariant;
     }
   }
 

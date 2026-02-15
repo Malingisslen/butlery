@@ -22,9 +22,9 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/add_members_to_group_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/cards/selection_card.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -121,8 +121,8 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             ),
         ],
       ),
-      backgroundColor: AppColors.cream,
-      foregroundColor: AppColors.textDark,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      foregroundColor: Theme.of(context).colorScheme.onSurface,
       elevation: AppDimensions.elevationLow,
       actions: [
         if (viewModel.hasSelectedFriends)
@@ -215,10 +215,10 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       padding: const EdgeInsets.all(AppDimensions.paddingL).copyWith(top: 0),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.info_outline,
             size: AppDimensions.iconSizeS,
-            color: AppColors.textMedium,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(width: AppDimensions.spacingM),
           Expanded(
@@ -289,17 +289,17 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
       switch (invitationStatus) {
         case 'sent':
-          statusColor = AppColors.success;
+          statusColor = context.butleryColors.success;
           statusIcon = Icons.check_circle;
           statusText = context.l10n.groupInvitationSent;
           break;
         case 'failed':
-          statusColor = AppColors.error;
+          statusColor = Theme.of(context).colorScheme.error;
           statusIcon = Icons.error;
           statusText = context.l10n.commonFailed;
           break;
         default:
-          statusColor = AppColors.warning;
+          statusColor = context.butleryColors.warning;
           statusIcon = Icons.schedule;
           statusText = context.l10n.commonPending;
       }
@@ -322,7 +322,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       onChanged: (value) {
         viewModel.toggleFriendSelection(friend.uid);
       },
-      activeColor: AppColors.forestGreen,
+      activeColor: Theme.of(context).colorScheme.primary,
     );
   }
 
@@ -336,35 +336,38 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (viewModel.invitationError != null) ...[
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
-              decoration: BoxDecoration(
-                color: AppColors.error
-                    .withValues(alpha: AppDimensions.opacityVeryLight),
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusM),
-                border: Border.all(color: AppColors.error),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    color: AppColors.error,
-                    size: AppDimensions.iconSizeM,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingM),
-                  Expanded(
-                    child: Text(
-                      viewModel.invitationError!,
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        color: AppColors.error,
+            Builder(builder: (context) {
+              final cs = Theme.of(context).colorScheme;
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                decoration: BoxDecoration(
+                  color: cs.error
+                      .withValues(alpha: AppDimensions.opacityVeryLight),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusM),
+                  border: Border.all(color: cs.error),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      color: cs.error,
+                      size: AppDimensions.iconSizeM,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingM),
+                    Expanded(
+                      child: Text(
+                        viewModel.invitationError!,
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          color: cs.error,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
+                  ],
+                ),
+              );
+            }),
             const SizedBox(height: AppDimensions.spacingM),
           ],
           ActionButtons.primaryButton(
@@ -383,7 +386,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                           content: Text(
                             context.l10n.groupInvitationsSent(invitationCount),
                           ),
-                          backgroundColor: AppColors.success,
+                          backgroundColor: context.butleryColors.success,
                           behavior: SnackBarBehavior.floating,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(

@@ -3,6 +3,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Enumeration defining comprehensive realtime resource types for collaborative system classification and routing.
 enum RealtimeResourceType {
@@ -25,19 +26,20 @@ enum RealtimeResourceType {
       case 'shopping_list':
         return RealtimeResourceType.shoppingList;
       default:
-        throw ArgumentError('Okänd RealtimeResourceType: $value');
+        throw ArgumentError('${AppLocale.current.unknownResourceType}: $value');
     }
   }
 
-  /// Få användarläsbar namn
+  /// Get user-readable name
   String get displayName {
+    final l = AppLocale.current;
     switch (this) {
       case RealtimeResourceType.recipe:
-        return 'Recept';
+        return l.resourceTypeRecipe;
       case RealtimeResourceType.menu:
-        return 'Meny';
+        return l.resourceTypeMenu;
       case RealtimeResourceType.shoppingList:
-        return 'Inköpslista';
+        return l.resourceTypeShoppingList;
     }
   }
 
@@ -227,19 +229,20 @@ abstract class RealtimeResource {
   /// Hur länge sedan resursen redigerades
   Duration get timeSinceLastEdit => DateTime.now().difference(lastEditedAt);
 
-  /// Text för "senast redigerad"
+  /// Text for "last edited"
   String get lastEditedTimeAgo {
+    final l = AppLocale.current;
     final duration = timeSinceLastEdit;
     if (duration.inMinutes < 1) {
-      return 'Just nu';
+      return l.activityJustNow;
     } else if (duration.inHours < 1) {
-      return '${duration.inMinutes} min sedan';
+      return l.activityMinutesAgo(duration.inMinutes);
     } else if (duration.inDays < 1) {
-      return '${duration.inHours} tim sedan';
+      return l.activityHoursAgo(duration.inHours);
     } else if (duration.inDays < 7) {
-      return '${duration.inDays} dagar sedan';
+      return l.activityDaysAgo(duration.inDays);
     } else {
-      return '${(duration.inDays / 7).floor()} veckor sedan';
+      return l.activityWeeksAgo((duration.inDays / 7).floor());
     }
   }
 
@@ -254,44 +257,47 @@ abstract class RealtimeResource {
     return lastEditedAt.isAfter(timestamp);
   }
 
-  /// Få sammanfattning av senaste ändringar för UI
+  /// Get summary of recent changes for UI
   String getChangesSummary() {
+    final l = AppLocale.current;
     if (editCount == 0) {
-      return 'Skapades av $ownerDisplayName';
+      return l.resourceCreatedBy(ownerDisplayName);
     } else {
-      return 'Senast redigerad av $lastEditedByDisplayName $lastEditedTimeAgo';
+      return l.resourceLastEditedBy(lastEditedByDisplayName, lastEditedTimeAgo);
     }
   }
 
-  /// Få aktivitetstext för UI
+  /// Get activity text for UI
   String get activityText {
+    final l = AppLocale.current;
     if (hasRecentActivity) {
-      return 'Aktiv nu';
+      return l.activityActiveNow;
     } else if (hasWeeklyActivity) {
-      return 'Aktiv denna veckan';
+      return l.activityActiveThisWeek;
     } else {
-      return 'Inaktiv';
+      return l.activityInactive;
     }
   }
 
-  /// Få användares permission som text
+  /// Get user's permission as text
   String? getUserPermissionText(String userId) {
+    final l = AppLocale.current;
     final permission = participants[userId];
     if (permission == null) return null;
     if (permission == ResourcePermission.owner) {
-      return 'Ägare';
+      return l.permissionOwner;
     } else if (permission == ResourcePermission.admin) {
-      return 'Administratör';
+      return l.permissionAdmin;
     } else if (permission == ResourcePermission.editor) {
-      return 'Redigerare';
+      return l.permissionEditor;
     } else if (permission == ResourcePermission.write) {
-      return 'Skrivare';
+      return l.permissionWriter;
     } else if (permission == ResourcePermission.viewer) {
-      return 'Betraktare';
+      return l.permissionViewer;
     } else if (permission == ResourcePermission.read) {
-      return 'Läsare';
+      return l.permissionReader;
     } else {
-      return 'Okänd behörighet';
+      return l.permissionUnknown;
     }
   }
 
@@ -436,7 +442,7 @@ abstract class RealtimeResource {
   /// Ta bort deltagare
   RealtimeResource removeParticipant(String userId) {
     if (userId == ownerId) {
-      throw ArgumentError('Kan inte ta bort ägaren från resursen');
+      throw ArgumentError(AppLocale.current.errorCannotRemoveResourceOwner);
     }
 
     final updatedParticipants =
@@ -463,7 +469,7 @@ abstract class RealtimeResource {
     ResourcePermission newPermission,
   ) {
     if (userId == ownerId && newPermission != ResourcePermission.owner) {
-      throw ArgumentError('Ägaren måste behålla owner-behörighet');
+      throw ArgumentError(AppLocale.current.errorOwnerMustKeepPermission);
     }
 
     final updatedParticipants =

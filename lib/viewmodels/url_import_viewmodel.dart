@@ -69,6 +69,7 @@ import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
 import 'package:butlery/services/extraction/platform_detector.dart' as pd;
 import 'package:butlery/services/social_media_extractor.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Comprehensive URL import ViewModel providing advanced web content extraction through HTTP coordination.
 /// Specializes in URL-based recipe importing from web sources including recipe blogs, cooking websites, social media,
@@ -111,7 +112,7 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
   /// ```
   Future<void> fetchAndParse() async {
     if (!canFetch) {
-      setError('Vänligen ange en giltig URL');
+      setError(AppLocale.current.errorPleaseEnterValidUrl);
       return;
     }
 
@@ -178,8 +179,8 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
       if (extractionResult.success && extractionResult.extractedText != null) {
         return extractionResult.extractedText!;
       } else {
-        throw Exception(extractionResult.error ??
-            'Kunde inte extrahera innehåll från sidan');
+        throw Exception(
+            extractionResult.error ?? AppLocale.current.errorGeneric);
       }
     } finally {
       // Always dispose WebScraper to prevent memory leaks

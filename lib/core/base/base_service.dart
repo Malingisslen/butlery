@@ -10,6 +10,7 @@
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 
 /// Abstract base class for all services in the Butlery application.
@@ -119,18 +120,18 @@ abstract class BaseService with ErrorHandlingMixin {
 
     // Pre-flight checks
     if (requiresAuth && !await _isAuthenticated()) {
-      _handleUserError('Autentiseringsfel. Logga in igen.');
+      _handleUserError(AppLocale.current.errorAuthentication);
       return defaultValue;
     }
 
     if (requiresNetwork && !await _isNetworkAvailable()) {
-      _handleUserError('Nätverksfel. Kontrollera din internetanslutning.');
+      _handleUserError(AppLocale.current.errorNetwork);
       return defaultValue;
     }
 
     if (requiresPermission && requiredPermission != null) {
       if (!await _hasPermission(requiredPermission)) {
-        _handleUserError('Du har inte behörighet för denna åtgärd.');
+        _handleUserError(AppLocale.current.errorPermissionDenied);
         return defaultValue;
       }
     }
@@ -156,12 +157,12 @@ abstract class BaseService with ErrorHandlingMixin {
 
     // Pre-flight checks
     if (requiresAuth && !await _isAuthenticated()) {
-      _handleUserError('Autentiseringsfel. Logga in igen.');
+      _handleUserError(AppLocale.current.errorAuthentication);
       return [];
     }
 
     if (requiresNetwork && !await _isNetworkAvailable()) {
-      _handleUserError('Nätverksfel. Kontrollera din internetanslutning.');
+      _handleUserError(AppLocale.current.errorNetwork);
       return [];
     }
 
@@ -236,7 +237,7 @@ abstract class BaseService with ErrorHandlingMixin {
     T? defaultValue,
   }) async {
     if (!await checkPermission(permission)) {
-      _handleUserError('Du har inte behörighet för denna åtgärd.');
+      _handleUserError(AppLocale.current.errorPermissionDenied);
       return defaultValue;
     }
 
@@ -253,7 +254,8 @@ abstract class BaseService with ErrorHandlingMixin {
     for (final field in requiredFields) {
       final value = inputs[field];
       if (value == null || (value is String && value.isEmpty)) {
-        _handleUserError('${field.capitalize()} krävs');
+        _handleUserError(
+            AppLocale.current.validationFieldRequired(field.capitalize()));
         return false;
       }
     }
@@ -361,7 +363,7 @@ mixin UserContextMixin on BaseService {
   }) async {
     final userId = await getCurrentUserId();
     if (userId == null) {
-      _handleUserError('Autentiseringsfel. Logga in igen.');
+      _handleUserError(AppLocale.current.errorAuthentication);
       return defaultValue;
     }
 
@@ -400,7 +402,7 @@ mixin NotificationMixin on BaseService {
   /// Send success notification
   Future<void> notifySuccess(String message, {String? userId}) async {
     await sendNotification(
-      title: 'Lyckades!',
+      title: AppLocale.current.notificationTitleSuccess,
       message: message,
       userId: userId,
     );
@@ -409,7 +411,7 @@ mixin NotificationMixin on BaseService {
   /// Send error notification
   Future<void> notifyError(String message, {String? userId}) async {
     await sendNotification(
-      title: 'Fel uppstod',
+      title: AppLocale.current.notificationTitleError,
       message: message,
       userId: userId,
     );

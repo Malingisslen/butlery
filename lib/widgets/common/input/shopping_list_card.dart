@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/widgets/common/input/shopping_list_actions.dart';
@@ -33,6 +33,8 @@ class ShoppingListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingL,
@@ -42,8 +44,7 @@ class ShoppingListCard extends StatelessWidget {
         elevation: AppDimensions.elevationMedium,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         color: isSelected
-            ? AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityVeryLight)
+            ? cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)
             : null,
         child: InkWell(
           onTap: onTap,
@@ -76,14 +77,14 @@ class ShoppingListCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(AppDimensions.spacingXs),
           decoration: BoxDecoration(
-            color: _getListTypeColor()
+            color: _getListTypeColor(context)
                 .withValues(alpha: AppDimensions.opacityVeryLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
           child: Icon(
             _getListTypeIcon(),
             size: AppDimensions.iconSizeAction,
-            color: _getListTypeColor(),
+            color: _getListTypeColor(context),
           ),
         ),
         const SizedBox(width: AppDimensions.spacingM),
@@ -127,6 +128,8 @@ class ShoppingListCard extends StatelessWidget {
 
   /// Build list metadata (items count, type, etc.)
   Widget _buildListMetadata(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Wrap(
       spacing: AppDimensions.spacingS,
       runSpacing: AppDimensions.spacingXs,
@@ -136,7 +139,7 @@ class ShoppingListCard extends StatelessWidget {
           context,
           Icons.shopping_cart,
           '${list.itemCount} ${context.l10n.shoppingItems}',
-          AppColors.textMedium,
+          cs.onSurfaceVariant,
         ),
 
         // List type
@@ -144,7 +147,7 @@ class ShoppingListCard extends StatelessWidget {
           context,
           _getListTypeIcon(),
           _getListTypeLabel(context),
-          _getListTypeColor(),
+          _getListTypeColor(context),
         ),
 
         // Collaboration info
@@ -153,7 +156,7 @@ class ShoppingListCard extends StatelessWidget {
             context,
             Icons.people,
             context.l10n.friendMemberCount(list.memberCount),
-            AppColors.forestGreen,
+            cs.primary,
           ),
           // User permission badge
           ..._buildUserPermissionBadge(context),
@@ -165,7 +168,7 @@ class ShoppingListCard extends StatelessWidget {
             context,
             Icons.access_time,
             context.l10n.shoppingActive,
-            AppColors.warning,
+            context.butleryColors.warning,
           ),
         ],
       ],
@@ -174,12 +177,13 @@ class ShoppingListCard extends StatelessWidget {
 
   /// Build list preview showing first few items
   Widget _buildListPreview(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final previewItems = list.items.take(3).toList();
 
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingS),
       decoration: BoxDecoration(
-        color: AppColors.backgroundLight,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Column(
@@ -201,8 +205,8 @@ class ShoppingListCard extends StatelessWidget {
                           : Icons.radio_button_unchecked,
                       size: AppDimensions.iconSizeM,
                       color: item.isCompleted
-                          ? AppColors.success
-                          : AppColors.textMedium,
+                          ? context.butleryColors.success
+                          : cs.onSurfaceVariant,
                     ),
                     const SizedBox(height: AppDimensions.spacingXs),
                     Expanded(
@@ -295,19 +299,21 @@ class ShoppingListCard extends StatelessWidget {
   }
 
   /// Get list type color
-  Color _getListTypeColor() {
+  Color _getListTypeColor(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     switch (list.type) {
       case ShoppingListType.personal:
-        return AppColors.forestGreen;
+        return cs.primary;
       case ShoppingListType.collaborative:
-        return AppColors.forestGreen;
+        return cs.primary;
       case ShoppingListType.template:
-        return AppColors.warning;
+        return context.butleryColors.warning;
     }
   }
 
   /// Build user permission badge for collaborative lists
   List<Widget> _buildUserPermissionBadge(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     if (!list.isCollaborative) return [];
 
     final permissionService = ServiceLocator.get<PermissionService>();
@@ -324,28 +330,28 @@ class ShoppingListCard extends StatelessWidget {
     if (isOwner) {
       permissionLabel = context.l10n.shoppingOwner;
       permissionIcon = Icons.admin_panel_settings;
-      permissionColor = AppColors.forestGreen;
+      permissionColor = cs.primary;
     } else {
       switch (userPermission) {
         case SharedListPermission.view:
           permissionLabel = context.l10n.shoppingCanView;
           permissionIcon = Icons.visibility;
-          permissionColor = AppColors.warning;
+          permissionColor = context.butleryColors.warning;
           break;
         case SharedListPermission.edit:
           permissionLabel = context.l10n.shoppingCanEdit;
           permissionIcon = Icons.edit;
-          permissionColor = AppColors.success;
+          permissionColor = context.butleryColors.success;
           break;
         case SharedListPermission.admin:
           permissionLabel = context.l10n.shoppingAdmin;
           permissionIcon = Icons.admin_panel_settings;
-          permissionColor = AppColors.forestGreen;
+          permissionColor = cs.primary;
           break;
         default:
           permissionLabel = context.l10n.shoppingCanEdit;
           permissionIcon = Icons.edit;
-          permissionColor = AppColors.success;
+          permissionColor = context.butleryColors.success;
       }
     }
 
@@ -371,21 +377,23 @@ class ShoppingListEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingXl),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.shopping_cart_outlined,
             size: AppDimensions.iconSizeXxl,
-            color: AppColors.textLight,
+            color: cs.outline,
           ),
           const SizedBox(height: AppDimensions.spacingXl),
           Text(
             context.l10n.shoppingCreateFirstList,
             style: AppTextStyles.titleLarge.copyWith(
-              color: AppColors.textLight,
+              color: cs.outline,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingM),

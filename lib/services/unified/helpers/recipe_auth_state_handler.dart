@@ -5,6 +5,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Helper class for handling auth state changes in recipe service.
 /// Manages recipe reloading and cache clearing when users log in/out.
@@ -111,7 +112,7 @@ class RecipeAuthStateHandler {
       notifyListeners();
     } catch (e) {
       AppLogger.error('🔍 [UnifiedRecipeService] ❌ Recipe reload failed: $e');
-      setError('Kunde inte ladda recept: $e');
+      setError(AppLocale.current.errorCouldNotLoadRecipes);
       setLoading(false);
       notifyListeners();
     }

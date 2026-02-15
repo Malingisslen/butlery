@@ -5,9 +5,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/widgets/tagging/personal_tag_edit_dialog.dart';
 import 'package:butlery/widgets/tagging/personal_tag_rule_dialog.dart';
@@ -109,25 +109,28 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
   Future<void> _deleteTag(PersonalTag tag) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.personalTagDeleteTagConfirm),
-        content: Text(
-          context.l10n.personalTagDeleteTagMessage(tag.name),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(context.l10n.commonCancel),
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return AlertDialog(
+          title: Text(context.l10n.personalTagDeleteTagConfirm),
+          content: Text(
+            context.l10n.personalTagDeleteTagMessage(tag.name),
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(context.l10n.commonCancel),
             ),
-            child: Text(context.l10n.commonDelete),
-          ),
-        ],
-      ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: cs.error,
+              ),
+              child: Text(context.l10n.commonDelete),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirm == true && mounted) {
@@ -162,25 +165,28 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
   Future<void> _deleteRule(String tagId, PersonalTagRule rule) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.tagDetailDeleteRuleConfirm),
-        content: Text(
-          context.l10n.tagDetailDeleteRuleMessage(rule.name),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(context.l10n.commonCancel),
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return AlertDialog(
+          title: Text(context.l10n.tagDetailDeleteRuleConfirm),
+          content: Text(
+            context.l10n.tagDetailDeleteRuleMessage(rule.name),
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(context.l10n.commonCancel),
             ),
-            child: Text(context.l10n.commonDelete),
-          ),
-        ],
-      ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: cs.error,
+              ),
+              child: Text(context.l10n.commonDelete),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirm == true && mounted) {
@@ -190,8 +196,9 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Dialog(
-      backgroundColor: AppColors.cardWhite,
+      backgroundColor: cs.surfaceContainerHighest,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
       ),
@@ -220,9 +227,9 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
               ),
               child: TabBar(
                 controller: _tabController,
-                labelColor: AppColors.forestGreen,
-                unselectedLabelColor: AppColors.textMedium,
-                indicatorColor: AppColors.forestGreen,
+                labelColor: cs.primary,
+                unselectedLabelColor: cs.onSurfaceVariant,
+                indicatorColor: cs.primary,
                 tabs: [
                   Tab(text: context.l10n.personalTagSectionTags),
                   Tab(text: context.l10n.personalTagManagerRulesTab),
@@ -249,11 +256,12 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
   }
 
   Widget _buildHeader() {
+    final cs = Theme.of(context).colorScheme;
     return Row(
       children: [
-        const Icon(
+        Icon(
           Icons.local_offer_outlined,
-          color: AppColors.forestGreen,
+          color: cs.primary,
           size: AppDimensions.iconSizeAction,
         ),
         const SizedBox(width: AppDimensions.spacingM),
@@ -298,6 +306,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
   }
 
   Widget _buildTagsEmptyState() {
+    final cs = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -306,7 +315,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           children: [
             Icon(
               Icons.label_outline,
-              color: AppColors.textMedium
+              color: cs.onSurfaceVariant
                   .withValues(alpha: AppDimensions.opacityHalf),
               size: AppDimensions.iconSizeXXXl,
             ),
@@ -314,14 +323,14 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             Text(
               context.l10n.personalTagEmptyTitle,
               style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
               context.l10n.personalTagEmptySubtitle,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
@@ -350,6 +359,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
   }
 
   Widget _buildTagTile(PersonalTag tag) {
+    final cs = Theme.of(context).colorScheme;
     final viewModel = context.watch<PersonalTagViewModel>();
     final usageCount = viewModel.getUsageCount(tag.name);
 
@@ -362,13 +372,12 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityLightSubtle),
+          color: cs.primary.withValues(alpha: AppDimensions.opacityLightSubtle),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
-        child: const Center(
+        child: Center(
           child: Icon(Icons.label,
-              size: AppDimensions.iconSizeM, color: AppColors.forestGreen),
+              size: AppDimensions.iconSizeM, color: cs.primary),
         ),
       ),
       title: Row(
@@ -383,14 +392,14 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             Container(
               padding: AppDimensions.paddingSymmetric8x2,
               decoration: BoxDecoration(
-                color: AppColors.cream,
+                color: cs.surface,
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusL),
               ),
               child: Text(
                 context.l10n.personalTagRecipeCount(usageCount),
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: AppColors.textMedium,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
             ),
@@ -405,13 +414,13 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
         children: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            color: AppColors.forestGreen,
+            color: cs.primary,
             onPressed: () => _editTag(tag),
             tooltip: context.l10n.commonEdit,
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline),
-            color: AppColors.error,
+            color: cs.error,
             onPressed: () => _deleteTag(tag),
             tooltip: context.l10n.commonDelete,
           ),
@@ -477,29 +486,30 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
   }
 
   Widget _buildNoTagsForRules() {
+    final cs = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.warning_amber_outlined,
-              color: AppColors.warning,
+              color: context.butleryColors.warning,
               size: AppDimensions.iconSizeXxl,
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Text(
               context.l10n.personalTagCreateTagFirst,
               style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
               context.l10n.personalTagNeedTagForRules,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
@@ -519,6 +529,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
   }
 
   Widget _buildRulesEmptyState() {
+    final cs = Theme.of(context).colorScheme;
     final viewModel = context.watch<PersonalTagViewModel>();
 
     return Center(
@@ -529,7 +540,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           children: [
             Icon(
               Icons.auto_awesome_outlined,
-              color: AppColors.textMedium
+              color: cs.onSurfaceVariant
                   .withValues(alpha: AppDimensions.opacityHalf),
               size: AppDimensions.iconSizeXXXl,
             ),
@@ -537,14 +548,14 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
             Text(
               context.l10n.tagDetailRulesEmptyTitle,
               style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingS),
             Text(
               context.l10n.tagDetailRulesEmptySubtitle,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
@@ -565,12 +576,13 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
         label: Text(context.l10n.personalTagCreateRuleForTag),
       ),
       itemBuilder: (context) => tags.map((tag) {
+        final cs = Theme.of(context).colorScheme;
         return PopupMenuItem<String>(
           value: tag.id,
           child: Row(
             children: [
-              const Icon(Icons.label,
-                  size: AppDimensions.iconSizeXs, color: AppColors.forestGreen),
+              Icon(Icons.label,
+                  size: AppDimensions.iconSizeXs, color: cs.primary),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(tag.name),
             ],
@@ -593,6 +605,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
   }
 
   Widget _buildRuleGroup(PersonalTag tag, List<PersonalTagRule> rules) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -610,15 +623,14 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: AppColors.forestGreen
+                  color: cs.primary
                       .withValues(alpha: AppDimensions.opacityLightSubtle),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(Icons.label,
-                      size: AppDimensions.iconSize14,
-                      color: AppColors.forestGreen),
+                      size: AppDimensions.iconSize14, color: cs.primary),
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingS),
@@ -631,7 +643,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
               // Add rule button for this tag
               IconButton(
                 icon: const Icon(Icons.add, size: AppDimensions.iconSizeM),
-                color: AppColors.forestGreen,
+                color: cs.primary,
                 onPressed: () => _createRule(tag.id),
                 tooltip: context.l10n.personalTagAddRule,
               ),
@@ -646,6 +658,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
   }
 
   Widget _buildRuleTile(String tagId, PersonalTagRule rule) {
+    final cs = Theme.of(context).colorScheme;
     final viewModel = context.read<PersonalTagViewModel>();
 
     return ListTile(
@@ -654,18 +667,18 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
       ),
       leading: Icon(
         rule.isEnabled ? Icons.check_circle : Icons.pause_circle_outline,
-        color: rule.isEnabled ? AppColors.success : AppColors.textLight,
+        color: rule.isEnabled ? context.butleryColors.success : cs.outline,
       ),
       title: Text(
         rule.name,
         style: AppTextStyles.bodyMedium.copyWith(
-          color: rule.isEnabled ? null : AppColors.textMedium,
+          color: rule.isEnabled ? null : cs.onSurfaceVariant,
         ),
       ),
       subtitle: Text(
         _buildRuleSummary(rule),
         style: AppTextStyles.bodySmall.copyWith(
-          color: AppColors.textMedium,
+          color: cs.onSurfaceVariant,
         ),
       ),
       trailing: Row(
@@ -675,14 +688,14 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           Switch(
             value: rule.isEnabled,
             onChanged: (_) => viewModel.toggleRuleEnabled(tagId, rule.id),
-            activeTrackColor: AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityHalf),
-            activeThumbColor: AppColors.forestGreen,
+            activeTrackColor:
+                cs.primary.withValues(alpha: AppDimensions.opacityHalf),
+            activeThumbColor: cs.primary,
           ),
           IconButton(
             icon:
                 const Icon(Icons.edit_outlined, size: AppDimensions.iconSizeM),
-            color: AppColors.forestGreen,
+            color: cs.primary,
             onPressed: () => _editRule(tagId, rule),
             tooltip: context.l10n.commonEdit,
             constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -690,7 +703,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
           IconButton(
             icon:
                 const Icon(Icons.delete_outline, size: AppDimensions.iconSizeM),
-            color: AppColors.error,
+            color: cs.error,
             onPressed: () => _deleteRule(tagId, rule),
             tooltip: context.l10n.commonDelete,
             constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
@@ -822,7 +835,8 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
                       result.tagsApplied, result.recipesModified)
                   : context.l10n.tagDetailNoRecipesMatched,
             ),
-            backgroundColor: result.hasChanges ? AppColors.success : null,
+            backgroundColor:
+                result.hasChanges ? context.butleryColors.success : null,
           ),
         );
       }
@@ -835,7 +849,7 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.tagDetailCouldNotApplyRules),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -843,15 +857,16 @@ class _PersonalTagManagerDialogState extends State<PersonalTagManagerDialog>
   }
 
   Widget _buildError(String error, VoidCallback onRetry) {
+    final cs = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline,
-              color: AppColors.error,
+              color: cs.error,
               size: AppDimensions.iconSizeXxl,
             ),
             const SizedBox(height: AppDimensions.spacingM),

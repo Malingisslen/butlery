@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -202,21 +201,21 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
               Container(
                 padding: AppDimensions.paddingAll8,
                 decoration: BoxDecoration(
-                  color: AppColors.errorContainer,
+                  color: Theme.of(context).colorScheme.errorContainer,
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline,
-                        color: AppColors.onErrorContainer,
+                    Icon(Icons.error_outline,
+                        color: Theme.of(context).colorScheme.onErrorContainer,
                         size: AppDimensions.iconSizeM),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       child: Text(
                         _errorMessage!,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.onErrorContainer,
+                          color: Theme.of(context).colorScheme.onErrorContainer,
                         ),
                       ),
                     ),

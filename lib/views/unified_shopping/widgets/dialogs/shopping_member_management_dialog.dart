@@ -1,7 +1,6 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -97,12 +96,13 @@ class _ShoppingMemberManagementDialogState
         });
 
         if (mounted) {
+          final cs = Theme.of(context).colorScheme;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(context.l10n.shoppingPermissionUpdated(
                   widget.userDisplayNames[userId] ??
                       context.l10n.shoppingUnknownUser)),
-              backgroundColor: AppColors.forestGreen,
+              backgroundColor: cs.primary,
               duration: const Duration(seconds: 2),
             ),
           );
@@ -166,10 +166,11 @@ class _ShoppingMemberManagementDialogState
         });
 
         if (mounted) {
+          final cs = Theme.of(context).colorScheme;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(context.l10n.shoppingMemberRemoved(userName)),
-              backgroundColor: AppColors.forestGreen,
+              backgroundColor: cs.primary,
               duration: const Duration(seconds: 2),
             ),
           );
@@ -230,11 +231,12 @@ class _ShoppingMemberManagementDialogState
 
       if (mounted) {
         if (addedMembers.isNotEmpty) {
+          final cs = Theme.of(context).colorScheme;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content:
                   Text(context.l10n.shoppingMembersAdded(addedMembers.length)),
-              backgroundColor: AppColors.forestGreen,
+              backgroundColor: cs.primary,
               duration: const Duration(seconds: 2),
             ),
           );
@@ -257,6 +259,7 @@ class _ShoppingMemberManagementDialogState
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final allMembers =
         Map<String, SharedListPermission>.from(_localPermissions);
 
@@ -283,7 +286,7 @@ class _ShoppingMemberManagementDialogState
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
-                  color: AppColors.error
+                  color: cs.error
                       .withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -304,7 +307,7 @@ class _ShoppingMemberManagementDialogState
               flex: 2,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.divider),
+                  border: Border.all(color: cs.outlineVariant),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),
@@ -343,7 +346,7 @@ class _ShoppingMemberManagementDialogState
               flex: 1,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.divider),
+                  border: Border.all(color: cs.outlineVariant),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),
@@ -354,7 +357,7 @@ class _ShoppingMemberManagementDialogState
                               ? context.l10n.shoppingNoFriendsFound
                               : context.l10n.shoppingAllFriendsAreMembers,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textMedium,
+                            color: cs.onSurfaceVariant,
                           ),
                         ),
                       )
@@ -397,15 +400,17 @@ class _ShoppingMemberManagementDialogState
 
   Widget _buildMemberListTile(String userId, String userName,
       SharedListPermission permission, bool isOwner) {
+    final cs = Theme.of(context).colorScheme;
+
     return ListTile(
       leading: CircleAvatar(
         radius: 20,
-        backgroundColor: AppColors.forestGreen
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        backgroundColor:
+            cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
         child: Text(
           userName.isNotEmpty ? userName[0].toUpperCase() : '?',
           style: AppTextStyles.labelLarge.copyWith(
-            color: AppColors.forestGreen,
+            color: cs.primary,
           ),
         ),
       ),
@@ -430,9 +435,9 @@ class _ShoppingMemberManagementDialogState
                   value: SharedListPermission.view,
                   child: Row(
                     children: [
-                      const Icon(Icons.visibility,
+                      Icon(Icons.visibility,
                           size: AppDimensions.iconSizeS,
-                          color: AppColors.textMedium),
+                          color: cs.onSurfaceVariant),
                       const SizedBox(width: AppDimensions.spacingXs),
                       Text(context.l10n.shoppingPermissionView),
                     ],
@@ -442,9 +447,8 @@ class _ShoppingMemberManagementDialogState
                   value: SharedListPermission.edit,
                   child: Row(
                     children: [
-                      const Icon(Icons.edit,
-                          size: AppDimensions.iconSizeS,
-                          color: AppColors.accent),
+                      Icon(Icons.edit,
+                          size: AppDimensions.iconSizeS, color: cs.secondary),
                       const SizedBox(width: AppDimensions.spacingXs),
                       Text(context.l10n.shoppingPermissionEdit),
                     ],
@@ -454,9 +458,8 @@ class _ShoppingMemberManagementDialogState
                   value: SharedListPermission.admin,
                   child: Row(
                     children: [
-                      const Icon(Icons.admin_panel_settings,
-                          size: AppDimensions.iconSizeS,
-                          color: AppColors.forestGreen),
+                      Icon(Icons.admin_panel_settings,
+                          size: AppDimensions.iconSizeS, color: cs.primary),
                       const SizedBox(width: AppDimensions.spacingXs),
                       Text(context.l10n.shoppingPermissionAdmin),
                     ],
@@ -468,7 +471,7 @@ class _ShoppingMemberManagementDialogState
           ? IconButton(
               onPressed:
                   _isLoading ? null : () => _removeMember(userId, userName),
-              icon: const Icon(Icons.person_remove, color: AppColors.error),
+              icon: Icon(Icons.person_remove, color: cs.error),
               tooltip: context.l10n.shoppingRemoveMember,
             )
           : null,
@@ -476,19 +479,20 @@ class _ShoppingMemberManagementDialogState
   }
 
   Widget _buildFriendListTile(UserProfile friend) {
+    final cs = Theme.of(context).colorScheme;
     final isSelected = _selectedFriends.contains(friend.uid);
 
     return CheckboxListTile(
       secondary: CircleAvatar(
         radius: 20,
-        backgroundColor: AppColors.forestGreen
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        backgroundColor:
+            cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
         child: Text(
           friend.displayName.isNotEmpty
               ? friend.displayName[0].toUpperCase()
               : '?',
           style: AppTextStyles.labelLarge.copyWith(
-            color: AppColors.forestGreen,
+            color: cs.primary,
           ),
         ),
       ),
@@ -499,7 +503,7 @@ class _ShoppingMemberManagementDialogState
       subtitle: Text(
         context.l10n.shoppingAddedWithEditPermission,
         style: AppTextStyles.bodySmall.copyWith(
-          color: AppColors.textMedium,
+          color: cs.onSurfaceVariant,
         ),
       ),
       value: isSelected,

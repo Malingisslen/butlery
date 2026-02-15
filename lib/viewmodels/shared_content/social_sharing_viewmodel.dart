@@ -5,6 +5,7 @@
 // lib/viewmodels/shared_content/social_sharing_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/user_profile.dart';
 // Removed unused imports
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -214,21 +215,22 @@ class SocialSharingViewModel extends ChangeNotifier
     switch (contentType) {
       case ShareableContentType.recipe:
         if (contentTitle != null) {
-          return 'Kolla in detta recept: "$contentTitle"! 👩‍🍳';
+          return AppLocale.current.shareMessageRecipeWithTitle(contentTitle);
         }
-        return 'Jag hittade ett fantastiskt recept som jag ville dela med dig! 👩‍🍳';
+        return AppLocale.current.shareMessageRecipeDefault;
 
       case ShareableContentType.menu:
         if (contentTitle != null) {
-          return 'Här är min veckomeny: "$contentTitle" 📋';
+          return AppLocale.current.shareMessageMenuWithTitle(contentTitle);
         }
-        return 'Här är min veckomeny som kanske kan inspirera dig! 📋';
+        return AppLocale.current.shareMessageMenuDefault;
 
       case ShareableContentType.shoppingList:
         if (contentTitle != null) {
-          return 'Vill du hjälpa mig med inköpslistan: "$contentTitle"? 🛒';
+          return AppLocale.current
+              .shareMessageShoppingListWithTitle(contentTitle);
         }
-        return 'Vill du hjälpa mig med inköpen denna vecka? 🛒';
+        return AppLocale.current.shareMessageShoppingListDefault;
     }
   }
 

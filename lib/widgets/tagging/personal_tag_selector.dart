@@ -8,7 +8,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
@@ -110,6 +109,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Column(
@@ -132,7 +132,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
                       size: AppDimensions.iconSize18),
                   label: Text(context.l10n.personalTagManage),
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.forestGreen,
+                    foregroundColor: cs.primary,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingS,
                     ),
@@ -176,18 +176,19 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
   }
 
   Widget _buildEmptyState() {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.cream,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
         children: [
           Icon(
             Icons.label_outline,
-            color: AppColors.textMedium
+            color: cs.onSurfaceVariant
                 .withValues(alpha: AppDimensions.opacityHalf),
           ),
           const SizedBox(width: AppDimensions.spacingM),
@@ -195,7 +196,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
             child: Text(
               context.l10n.personalTagEmptyTitle,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
             ),
           ),
@@ -210,21 +211,21 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
 
   /// HIGH-7: Error state with retry button.
   Widget _buildErrorState(String message) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color:
-            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-            color: AppColors.error
-                .withValues(alpha: AppDimensions.opacityMediumLight)),
+            color:
+                cs.error.withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.error_outline,
-            color: AppColors.error,
+            color: cs.error,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingM),
@@ -232,7 +233,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
             child: Text(
               message,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.error,
+                color: cs.error,
               ),
             ),
           ),
@@ -274,6 +275,7 @@ class _PersonalTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     // MED-12: Accessibility label for screen readers
     return Semantics(
       label: isSelected
@@ -285,21 +287,20 @@ class _PersonalTagChip extends StatelessWidget {
         label: Text(tag.name),
         selected: isSelected,
         onSelected: (_) => onTap(),
-        backgroundColor: AppColors.cream,
-        selectedColor:
-            AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLight),
-        checkmarkColor: AppColors.forestGreen,
+        backgroundColor: cs.surface,
+        selectedColor: cs.primary.withValues(alpha: AppDimensions.opacityLight),
+        checkmarkColor: cs.primary,
         side: BorderSide(
-          color: isSelected ? AppColors.forestGreen : AppColors.divider,
+          color: isSelected ? cs.primary : cs.outlineVariant,
         ),
         labelStyle: AppTextStyles.bodySmall.copyWith(
-          color: isSelected ? AppColors.forestGreen : AppColors.textDark,
+          color: isSelected ? cs.primary : cs.onSurface,
           fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
         ),
         avatar: isSelected
             ? null
-            : const Icon(Icons.label_outline,
-                size: AppDimensions.iconSize14, color: AppColors.forestGreen),
+            : Icon(Icons.label_outline,
+                size: AppDimensions.iconSize14, color: cs.primary),
         showCheckmark: isSelected,
       ),
     );
@@ -328,6 +329,7 @@ class PersonalTagDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     if (tagIds.isEmpty) return const SizedBox.shrink();
 
     final tags = tagIds
@@ -353,7 +355,7 @@ class PersonalTagDisplay extends StatelessWidget {
                 horizontal: AppDimensions.paddingS,
                 vertical: AppDimensions.spacingXs),
             decoration: BoxDecoration(
-              color: AppColors.cream,
+              color: cs.surface,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
             ),
             child: Text(
@@ -373,6 +375,7 @@ class _MiniTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     // MED-12: Accessibility label for screen readers
     return Semantics(
       label: context.l10n.personalTagA11yLabel(tag.name),
@@ -381,24 +384,23 @@ class _MiniTagChip extends StatelessWidget {
             horizontal: AppDimensions.paddingS,
             vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
-          color: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityLightSubtle),
+          color: cs.primary.withValues(alpha: AppDimensions.opacityLightSubtle),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           border: Border.all(
-            color: AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityMediumLight),
+            color:
+                cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.label,
-                size: AppDimensions.iconSizeXs, color: AppColors.forestGreen),
+            Icon(Icons.label,
+                size: AppDimensions.iconSizeXs, color: cs.primary),
             const SizedBox(width: AppDimensions.spacingXxs),
             Text(
               tag.name,
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: AppColors.forestGreen,
+                color: cs.primary,
               ),
             ),
           ],
@@ -418,6 +420,7 @@ class _SimpleTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     // MED-12: Accessibility label for screen readers
     return Semantics(
       label: context.l10n.personalTagA11yLabel(name),
@@ -426,24 +429,23 @@ class _SimpleTagChip extends StatelessWidget {
             horizontal: AppDimensions.paddingS,
             vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
-          color: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityVeryLight),
+          color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
           border: Border.all(
-            color: AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityMediumLight),
+            color:
+                cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.label_outline,
-                size: AppDimensions.iconSizeXs, color: AppColors.forestGreen),
+            Icon(Icons.label_outline,
+                size: AppDimensions.iconSizeXs, color: cs.primary),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               name,
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: AppColors.forestGreen,
+                color: cs.primary,
               ),
             ),
           ],
@@ -580,6 +582,7 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
   }
 
   Widget _buildSimpleChips() {
+    final cs = Theme.of(context).colorScheme;
     final displayIds =
         widget.maxDisplay != null && widget.tagIds.length > widget.maxDisplay!
             ? widget.tagIds.take(widget.maxDisplay!).toList()
@@ -599,7 +602,7 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
                 horizontal: AppDimensions.paddingS,
                 vertical: AppDimensions.spacingXs),
             decoration: BoxDecoration(
-              color: AppColors.cream,
+              color: cs.surface,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
             ),
             child: Text(

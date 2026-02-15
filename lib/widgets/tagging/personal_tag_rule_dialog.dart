@@ -8,7 +8,6 @@ import 'package:butlery/services/tagging/config/operator_registry.dart';
 import 'package:butlery/services/tagging/config/property_registry.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -371,8 +370,9 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
           value: tag.id,
           child: Row(
             children: [
-              const Icon(Icons.label,
-                  size: AppDimensions.iconSizeS, color: AppColors.forestGreen),
+              Icon(Icons.label,
+                  size: AppDimensions.iconSizeS,
+                  color: Theme.of(context).colorScheme.primary),
               const SizedBox(width: AppDimensions.spacingSm),
               Text(tag.name),
             ],
@@ -400,7 +400,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
         Text(
           context.l10n.ruleMatchModeLabel,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textMedium,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: AppDimensions.spacingS),
@@ -439,7 +439,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
             Text(
               context.l10n.ruleConditionsLabel,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textMedium,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const Spacer(),
@@ -511,20 +511,20 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
   }
 
   Widget _buildError() {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color:
-            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-            color: AppColors.error
-                .withValues(alpha: AppDimensions.opacityMediumLight)),
+            color:
+                cs.error.withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline,
-              color: AppColors.error, size: AppDimensions.iconSizeM),
+          Icon(Icons.error_outline,
+              color: cs.error, size: AppDimensions.iconSizeM),
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
@@ -585,12 +585,13 @@ class _ConditionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.cream,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         children: [

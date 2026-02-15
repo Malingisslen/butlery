@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/time_format_utils.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
@@ -62,6 +62,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
   }
 
   Widget _buildMetadata(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final recipe = widget.viewModel.recipe;
 
     final metadataWidgets = <Widget>[];
@@ -71,13 +72,12 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       metadataWidgets.add(Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.access_time, size: 16, color: AppColors.forestGreen),
+          Icon(Icons.access_time, size: 16, color: cs.primary),
           const SizedBox(width: 4),
           Text(
             TimeFormatUtils.formatCookingTime(recipe.timeMinutes!),
             style: AppTextStyles.bodySmall.copyWith(
-              color:
-                  widget.isScaled ? AppColors.forestGreen : AppColors.textDark,
+              color: widget.isScaled ? cs.primary : cs.onSurface,
               fontWeight: widget.isScaled ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
@@ -90,14 +90,12 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       metadataWidgets.add(Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.person_outline,
-              size: 16, color: AppColors.forestGreen),
+          Icon(Icons.person_outline, size: 16, color: cs.primary),
           const SizedBox(width: 4),
           Text(
             '${widget.currentPortions} ${widget.currentPortions == 1 ? context.l10n.recipePortionSingular : context.l10n.recipePortionAbbreviation}',
             style: AppTextStyles.bodySmall.copyWith(
-              color:
-                  widget.isScaled ? AppColors.forestGreen : AppColors.textDark,
+              color: widget.isScaled ? cs.primary : cs.onSurface,
               fontWeight: widget.isScaled ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
@@ -110,21 +108,21 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       metadataWidgets.add(Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildStarRating(recipe.rating ?? 0),
+          _buildStarRating(context, recipe.rating ?? 0),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             recipe.rating!.toStringAsFixed(1),
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textDark),
+            style: AppTextStyles.bodySmall.copyWith(color: cs.onSurface),
           ),
           // Remove own rating — only when the user has rated
           if (_checkedUserRating && _hasUserRating) ...[
             const SizedBox(width: AppDimensions.spacingXs),
             GestureDetector(
               onTap: () => _removeMyRating(context),
-              child: const Icon(
+              child: Icon(
                 Icons.close,
                 size: 14,
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
             ),
           ],
@@ -140,8 +138,8 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         label: Text(context.l10n.recipeCookedToday,
             style: AppTextStyles.labelSmall),
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.success,
-          side: const BorderSide(color: AppColors.success, width: 0.5),
+          foregroundColor: context.butleryColors.success,
+          side: BorderSide(color: context.butleryColors.success, width: 0.5),
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingSm,
             vertical: 2,
@@ -163,7 +161,8 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     );
   }
 
-  Widget _buildStarRating(double rating) {
+  Widget _buildStarRating(BuildContext context, double rating) {
+    final cs = Theme.of(context).colorScheme;
     final fullStars = rating.floor();
     final hasHalfStar = rating - fullStars >= 0.5;
     final emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
@@ -174,26 +173,26 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         // Full stars
         ...List.generate(
             fullStars,
-            (index) => const Icon(
+            (index) => Icon(
                   Icons.star,
-                  color: AppColors.warning,
+                  color: context.butleryColors.starGold,
                   size: AppDimensions.iconSizeM,
                 )),
 
         // Half star
         if (hasHalfStar)
-          const Icon(
+          Icon(
             Icons.star_half,
-            color: AppColors.warning,
+            color: context.butleryColors.starGold,
             size: AppDimensions.iconSizeM,
           ),
 
         // Empty stars
         ...List.generate(
             emptyStars,
-            (index) => const Icon(
+            (index) => Icon(
                   Icons.star_border,
-                  color: AppColors.textMedium,
+                  color: cs.onSurfaceVariant,
                   size: AppDimensions.iconSizeM,
                 )),
       ],
@@ -230,32 +229,16 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     try {
       await widget.viewModel.markAsCooked();
       if (!context.mounted) return;
-      _showSnackBarSafely(
+      SnackBarUtils.showSuccess(
         context,
         context.l10n.recipeCookedTodaySuccess,
-        backgroundColor: AppColors.success,
       );
     } catch (e) {
       if (!context.mounted) return;
-      _showSnackBarSafely(
+      SnackBarUtils.showError(
         context,
         context.l10n.recipeCookedTodayError,
-        backgroundColor: AppColors.error,
       );
-    }
-  }
-
-  void _showSnackBarSafely(
-    BuildContext context,
-    String message, {
-    Color? backgroundColor,
-  }) {
-    if (context.mounted) {
-      if (backgroundColor == AppColors.error) {
-        SnackBarUtils.showError(context, message);
-      } else {
-        SnackBarUtils.showSuccess(context, message);
-      }
     }
   }
 }

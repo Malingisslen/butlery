@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Floating action buttons for image editing operations
@@ -69,10 +68,11 @@ class _EditActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Tooltip(
       message: tooltip,
       child: Material(
-        color: isDestructive ? AppColors.error : AppColors.cardWhite,
+        color: isDestructive ? cs.error : cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         child: InkWell(
           onTap: onTap,
@@ -82,7 +82,7 @@ class _EditActionButton extends StatelessWidget {
             child: Icon(
               icon,
               size: AppDimensions.iconSizeM,
-              color: isDestructive ? AppColors.cardWhite : AppColors.textDark,
+              color: isDestructive ? cs.surfaceContainerHighest : cs.onSurface,
             ),
           ),
         ),

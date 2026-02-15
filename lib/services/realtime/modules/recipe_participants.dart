@@ -3,6 +3,7 @@
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/realtime/modules/recipe_content_operations.dart';
 
 /// Focused module for recipe participant management
@@ -20,10 +21,11 @@ class RecipeParticipants {
     required String userDisplayName,
     required ResourcePermission permission,
   }) {
+    final l = AppLocale.current;
     if (userId.trim().isEmpty) {
       throw RecipeOperationError(
         operation: RecipeOperationType.addParticipant,
-        message: 'Användar-ID kan inte vara tomt',
+        message: l.validationUserIdCannotBeEmpty,
         resourceId: recipe.id,
       );
     }
@@ -31,7 +33,7 @@ class RecipeParticipants {
     if (userDisplayName.trim().isEmpty) {
       throw RecipeOperationError(
         operation: RecipeOperationType.addParticipant,
-        message: 'Användarnamn kan inte vara tomt',
+        message: l.validationUsernameCannotBeEmpty,
         resourceId: recipe.id,
       );
     }
@@ -40,7 +42,7 @@ class RecipeParticipants {
     if (isParticipant(recipe, userId)) {
       throw RecipeOperationError(
         operation: RecipeOperationType.addParticipant,
-        message: 'Användaren är redan deltagare: $userDisplayName',
+        message: l.validationUserAlreadyParticipant(userDisplayName),
         resourceId: recipe.id,
       );
     }
@@ -49,7 +51,7 @@ class RecipeParticipants {
     if (recipe.participants.length >= 50) {
       throw RecipeOperationError(
         operation: RecipeOperationType.addParticipant,
-        message: 'Maxgräns för deltagare nådd (50)',
+        message: l.validationMaxParticipantsReached,
         resourceId: recipe.id,
       );
     }
@@ -65,10 +67,11 @@ class RecipeParticipants {
     RealtimeRecipe recipe, {
     required String userId,
   }) {
+    final l = AppLocale.current;
     if (userId.trim().isEmpty) {
       throw RecipeOperationError(
         operation: RecipeOperationType.removeParticipant,
-        message: 'Användar-ID kan inte vara tomt',
+        message: l.validationUserIdCannotBeEmpty,
         resourceId: recipe.id,
       );
     }
@@ -77,7 +80,7 @@ class RecipeParticipants {
     if (userId == recipe.ownerId) {
       throw RecipeOperationError(
         operation: RecipeOperationType.removeParticipant,
-        message: 'Kan inte ta bort receptägaren',
+        message: l.validationCannotRemoveRecipeOwner,
         resourceId: recipe.id,
       );
     }
@@ -86,7 +89,7 @@ class RecipeParticipants {
     if (!isParticipant(recipe, userId)) {
       throw RecipeOperationError(
         operation: RecipeOperationType.removeParticipant,
-        message: 'Användaren är inte deltagare: $userId',
+        message: l.validationUserNotParticipant(userId),
         resourceId: recipe.id,
       );
     }
@@ -102,10 +105,11 @@ class RecipeParticipants {
     required String userId,
     required ResourcePermission newPermission,
   }) {
+    final l = AppLocale.current;
     if (userId.trim().isEmpty) {
       throw RecipeOperationError(
         operation: RecipeOperationType.updatePermissions,
-        message: 'Användar-ID kan inte vara tomt',
+        message: l.validationUserIdCannotBeEmpty,
         resourceId: recipe.id,
       );
     }
@@ -114,7 +118,7 @@ class RecipeParticipants {
     if (!isParticipant(recipe, userId)) {
       throw RecipeOperationError(
         operation: RecipeOperationType.updatePermissions,
-        message: 'Användaren är inte deltagare: $userId',
+        message: l.validationUserNotParticipant(userId),
         resourceId: recipe.id,
       );
     }
@@ -123,7 +127,7 @@ class RecipeParticipants {
     if (userId == recipe.ownerId) {
       throw RecipeOperationError(
         operation: RecipeOperationType.updatePermissions,
-        message: 'Kan inte ändra ägarens behörighet',
+        message: l.validationCannotChangeOwnerPermission,
         resourceId: recipe.id,
       );
     }
@@ -234,19 +238,20 @@ class RecipeParticipants {
   static List<String> validateParticipantState(RealtimeRecipe recipe) {
     final errors = <String>[];
 
+    final l = AppLocale.current;
     // Check owner exists
     if (recipe.ownerId.trim().isEmpty) {
-      errors.add('Recept saknar ägare');
+      errors.add(l.validationRecipeMissingOwner);
     }
 
     if (recipe.ownerDisplayName.trim().isEmpty) {
-      errors.add('Receptägare saknar visningsnamn');
+      errors.add(l.validationRecipeOwnerMissingName);
     }
 
     // Check participants (Map<String, ResourcePermission>)
     for (final entry in recipe.participants.entries) {
       if (entry.key.trim().isEmpty) {
-        errors.add('Deltagare har tomt användar-ID');
+        errors.add(l.validationParticipantEmptyUserId);
       }
 
       // Note: Display names are not stored in participants map,
@@ -287,7 +292,7 @@ class RecipeParticipants {
   /// Get formatted participant list for display (IDs only, names cached elsewhere)
   static String getParticipantListString(RealtimeRecipe recipe) {
     if (!hasParticipants(recipe)) {
-      return 'Endast ägare: ${recipe.ownerDisplayName}';
+      return AppLocale.current.participantOwnerOnly(recipe.ownerDisplayName);
     }
 
     final participantIds = recipe.participants.keys
@@ -295,7 +300,8 @@ class RecipeParticipants {
             (id) => id != recipe.ownerId) // Exclude owner from participant list
         .toList();
 
-    return 'Ägare: ${recipe.ownerDisplayName}, Deltagare: ${participantIds.length}st';
+    return AppLocale.current
+        .participantSummary(recipe.ownerDisplayName, participantIds.length);
   }
 
   /// Find participant permission by user ID
@@ -338,22 +344,24 @@ class RecipeParticipants {
 
   /// Get collaboration status for recipe
   static String getCollaborationStatus(RealtimeRecipe recipe) {
+    final l = AppLocale.current;
     if (!hasParticipants(recipe)) {
-      return 'Privat recept';
+      return l.collaborationPrivateRecipe;
     }
 
     final editorCount = getEditorIds(recipe).length;
     final viewerCount = getViewerIds(recipe).length;
 
     if (editorCount > 0 && viewerCount > 0) {
-      return 'Kollaborativt ($editorCount redigerare, $viewerCount betraktare)';
+      return l.collaborationCollaborativeEditorsViewers(
+          editorCount, viewerCount);
     } else if (editorCount > 0) {
-      return 'Kollaborativt ($editorCount redigerare)';
+      return l.collaborationCollaborativeEditors(editorCount);
     } else if (viewerCount > 0) {
-      return 'Delat ($viewerCount betraktare)';
+      return l.collaborationSharedViewers(viewerCount);
     }
 
-    return 'Delat recept';
+    return l.collaborationSharedRecipe;
   }
 
   /// Check if user can invite others

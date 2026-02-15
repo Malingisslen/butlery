@@ -9,6 +9,7 @@ library;
 import 'dart:typed_data';
 
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/llm/llm_models.dart';
@@ -45,7 +46,7 @@ class LlmEnhancementService extends BaseService {
     if (!partial.canEnhance) {
       AppLogger.warning('LlmEnhancementService: Not enough data to enhance');
       return ImportFailure(
-        message: 'Inte tillräckligt med data för AI-förbättring.',
+        message: AppLocale.current.llmEnhancementNotEnoughData,
         errorCode: ImportErrorCode.parsingFailed,
         pipeline: partial.pipeline,
         tier: partial.tier,
@@ -81,7 +82,7 @@ class LlmEnhancementService extends BaseService {
           'LlmEnhancementService: Enhancement failed - ${response.error}',
         );
         return ImportFailure(
-          message: response.error ?? 'AI-förbättring misslyckades.',
+          message: response.error ?? AppLocale.current.errorAiEnhancementFailed,
           errorCode: ImportErrorCode.parsingFailed,
           pipeline: partial.pipeline,
           tier: partial.tier,
@@ -194,7 +195,7 @@ class LlmEnhancementService extends BaseService {
       }
 
       return ImportFailure(
-        message: response.error ?? 'Kunde inte läsa recept från bilden.',
+        message: response.error ?? AppLocale.current.errorGeneric,
         errorCode: ImportErrorCode.ocrFailed,
         pipeline: 'photo',
         tier: 4,

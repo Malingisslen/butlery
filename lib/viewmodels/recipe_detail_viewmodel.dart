@@ -63,6 +63,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Comprehensive recipe detail ViewModel providing advanced recipe interaction and management for Flutter applications.
 /// Serves as the presentation layer coordinator for individual recipe operations, providing detailed display coordination,
@@ -219,8 +220,8 @@ class RecipeDetailViewModel extends ChangeNotifier
 
           return true;
         } else {
-          final errorMessage =
-              _recipeService.error ?? 'Kunde inte ta bort recept';
+          final errorMessage = _recipeService.error ??
+              AppLocale.current.errorCouldNotDeleteRecipe;
           throw Exception(errorMessage);
         }
       });
@@ -274,7 +275,7 @@ class RecipeDetailViewModel extends ChangeNotifier
 
         return true;
       } else {
-        throw Exception('Kunde inte uppdatera recept');
+        throw Exception(AppLocale.current.errorCouldNotUpdate('recept'));
       }
     });
   }
@@ -299,7 +300,7 @@ class RecipeDetailViewModel extends ChangeNotifier
         notifyListeners();
         return true;
       } else {
-        throw Exception('Kunde inte ta bort betyg');
+        throw Exception(AppLocale.current.errorCouldNotDelete('betyg'));
       }
     });
   }

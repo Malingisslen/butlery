@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Focused module for real-time editing session management
 /// This module handles ONLY session lifecycle operations:
@@ -51,7 +52,7 @@ class RealtimeSessionManager {
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not start real-time editing: $e');
-      setError('Kunde inte starta realtidsredigering: $e');
+      setError(AppLocale.current.errorCouldNotStartRealtimeEditing);
       return false;
     }
   }
@@ -177,12 +178,12 @@ class RealtimeSessionManager {
     required void Function(String) setError,
   }) {
     if (currentUserId == null) {
-      setError('Du måste vara inloggad');
+      setError(AppLocale.current.errorMustBeLoggedIn);
       return false;
     }
 
     if (!activeEditingSessions.containsKey(recipeId)) {
-      setError('Inte i realtidsredigeringsläge');
+      setError(AppLocale.current.errorNotInRealtimeMode);
       return false;
     }
 

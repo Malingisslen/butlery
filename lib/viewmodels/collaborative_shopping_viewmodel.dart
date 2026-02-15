@@ -14,6 +14,8 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_permission_manager.dart';
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_item_operations_manager.dart';
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_display_manager.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 class CollaborativeShoppingViewModel extends ChangeNotifier
     with StateNotifierMixin, AsyncOperationMixin {
@@ -54,7 +56,7 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   bool get hasData => _currentList != null;
 
   // List properties
-  String get listTitle => _currentList?.name ?? 'Laddar...';
+  String get listTitle => _currentList?.name ?? AppLocale.current.commonLoading;
   String get listDescription => _currentList?.description ?? '';
   bool get hasDescription => listDescription.isNotEmpty;
 
@@ -142,9 +144,10 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   }
 
   // UI display helpers - delegate to display manager
-  Color getStatusColor() => _displayManager.getStatusColor(hasData, statusText);
-  Color getProgressColor() =>
-      _displayManager.getProgressColor(completionPercentage);
+  Color getStatusColor(ColorScheme cs, ButleryColors butleryColors) =>
+      _displayManager.getStatusColor(cs, butleryColors, hasData, statusText);
+  Color getProgressColor(ColorScheme cs, ButleryColors butleryColors) =>
+      _displayManager.getProgressColor(cs, butleryColors, completionPercentage);
   String? getItemSubtitle(UnifiedShoppingItem item) =>
       _displayManager.getItemSubtitle(item);
   List<Widget> getItemTrailingWidgets(UnifiedShoppingItem item) =>

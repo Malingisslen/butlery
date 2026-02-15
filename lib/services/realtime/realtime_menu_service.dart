@@ -10,6 +10,7 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 // Focused modules
 import 'package:butlery/services/realtime/modules/menu_operations.dart';
@@ -50,7 +51,7 @@ class RealtimeMenuService extends ChangeNotifier
   /// Current user display name
   String get _currentUserDisplayName =>
       ServiceLocator.get<PermissionService>().currentUser?.displayName ??
-      'Okänd användare';
+      AppLocale.current.displayUnknownUser;
 
   /// Get category names from current menu
   List<String> get categoryNames => _currentMenu?.categories ?? [];
@@ -70,7 +71,7 @@ class RealtimeMenuService extends ChangeNotifier
     if (userId == null) {
       throw MenuOperationError(
         operation: MenuOperationType.createFromExisting,
-        message: 'Användare inte inloggad',
+        message: AppLocale.current.errorUserNotLoggedIn,
       );
     }
 
@@ -100,7 +101,7 @@ class RealtimeMenuService extends ChangeNotifier
     } catch (e) {
       _handleError(
         MenuOperationType.createFromExisting,
-        'Kunde inte skapa realtidsmeny: $e',
+        AppLocale.current.errorCouldNotCreateRealtimeMenu('$e'),
         originalError: e,
       );
       rethrow;
@@ -121,7 +122,7 @@ class RealtimeMenuService extends ChangeNotifier
     } catch (e) {
       _handleError(
         MenuOperationType.createFromExisting, // Generic operation
-        'Kunde inte starta watching av meny: $e',
+        AppLocale.current.errorCouldNotWatchMenu('$e'),
         resourceId: resourceId,
         originalError: e,
       );
@@ -359,7 +360,7 @@ class RealtimeMenuService extends ChangeNotifier
     if (userId == null) {
       throw MenuOperationError(
         operation: MenuOperationType.createFromExisting,
-        message: 'Användare inte inloggad',
+        message: AppLocale.current.errorUserNotLoggedIn,
         resourceId: realtimeMenu.id,
       );
     }
@@ -388,7 +389,7 @@ class RealtimeMenuService extends ChangeNotifier
     if (userId == null) {
       throw MenuOperationError(
         operation: operation,
-        message: 'Användare inte inloggad',
+        message: AppLocale.current.errorUserNotLoggedIn,
         resourceId: resourceId,
       );
     }
@@ -402,7 +403,7 @@ class RealtimeMenuService extends ChangeNotifier
       if (currentMenu == null) {
         throw MenuOperationError(
           operation: operation,
-          message: 'Menyn hittades inte',
+          message: AppLocale.current.errorMenuNotFound,
           resourceId: resourceId,
         );
       }
@@ -410,7 +411,7 @@ class RealtimeMenuService extends ChangeNotifier
       if (!MenuParticipants.canUserEdit(currentMenu, userId)) {
         throw MenuOperationError(
           operation: operation,
-          message: 'Ingen redigeringsbehörighet',
+          message: AppLocale.current.errorNoEditPermission,
           resourceId: resourceId,
         );
       }
@@ -422,7 +423,8 @@ class RealtimeMenuService extends ChangeNotifier
       _currentMenu = updatedMenu;
       AppLogger.success('✅ $operationName slutförd för: $resourceId');
     } catch (e) {
-      _handleError(operation, 'Kunde inte $operationName: $e',
+      _handleError(operation,
+          AppLocale.current.errorCouldNotPerformOperation(operationName, '$e'),
           resourceId: resourceId, originalError: e);
       rethrow;
     } finally {
@@ -436,7 +438,7 @@ class RealtimeMenuService extends ChangeNotifier
     if (userId == null) {
       throw MenuOperationError(
         operation: MenuOperationType.removeParticipant, // Closest operation
-        message: 'Användare inte inloggad',
+        message: AppLocale.current.errorUserNotLoggedIn,
         resourceId: resourceId,
       );
     }
@@ -452,7 +454,7 @@ class RealtimeMenuService extends ChangeNotifier
     } catch (e) {
       _handleError(
         MenuOperationType.removeParticipant, // Closest operation
-        'Kunde inte ta bort realtidsmeny: $e',
+        AppLocale.current.errorCouldNotDeleteRealtimeMenu('$e'),
         resourceId: resourceId,
         originalError: e,
       );

@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/upload/upload_models.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Manages upload progress notifications and error reporting for recipe images.
 /// **Responsibilities:**
@@ -65,11 +66,10 @@ class ImageUploadNotificationManager {
       return; // Already sent
     }
 
-    final imageText = totalImages == 1 ? 'bild' : 'bilder';
     sendNotificationEvent(UploadNotificationEvent(
       trigger: UploadNotificationTrigger.allCompleted,
-      title: 'Uppladdning slutförd!',
-      message: 'Alla $totalImages $imageText har laddats upp framgångsrikt',
+      title: AppLocale.current.statusDone,
+      message: AppLocale.current.statusDone,
       priority: NotificationPriority.medium,
       data: {'totalImages': totalImages},
       timestamp: DateTime.now(),
@@ -86,9 +86,8 @@ class ImageUploadNotificationManager {
     if (failedCount >= 2 || (totalCount > 1 && failedCount >= totalCount / 2)) {
       sendNotificationEvent(UploadNotificationEvent(
         trigger: UploadNotificationTrigger.majorFailure,
-        title: 'Uppladdningsproblem',
-        message:
-            '$failedCount av $totalCount bilder misslyckades - kontrollera din internetanslutning',
+        title: AppLocale.current.errorGeneric,
+        message: AppLocale.current.errorNoInternetCheckConnection,
         priority: NotificationPriority.high,
         data: {'failedCount': failedCount, 'totalCount': totalCount},
         timestamp: DateTime.now(),
@@ -100,8 +99,8 @@ class ImageUploadNotificationManager {
   void triggerRetrySuccessNotification(String imagePath) {
     sendNotificationEvent(UploadNotificationEvent(
       trigger: UploadNotificationTrigger.retrySuccess,
-      title: 'Uppladdning lyckades!',
-      message: 'Bilden laddades upp efter omförsök',
+      title: AppLocale.current.statusDone,
+      message: AppLocale.current.statusDone,
       priority: NotificationPriority.low,
       data: {'imagePath': imagePath},
       timestamp: DateTime.now(),
@@ -113,8 +112,8 @@ class ImageUploadNotificationManager {
     if (_notificationTriggers.isNotEmpty && totalProcessed == 0) {
       sendNotificationEvent(UploadNotificationEvent(
         trigger: UploadNotificationTrigger.queueCleared,
-        title: 'Uppladdningskö rensad',
-        message: 'Alla uppladdningar har hanterats',
+        title: AppLocale.current.commonDone,
+        message: AppLocale.current.commonDone,
         priority: NotificationPriority.low,
         data: {'totalProcessed': totalProcessed},
         timestamp: DateTime.now(),
@@ -133,8 +132,8 @@ class ImageUploadNotificationManager {
     if (milestones.contains(currentPercentage)) {
       sendNotificationEvent(UploadNotificationEvent(
         trigger: UploadNotificationTrigger.significantProgress,
-        title: 'Uppladdning pågår',
-        message: '$completed av $total bilder uppladdade ($currentPercentage%)',
+        title: AppLocale.current.commonLoading,
+        message: '$completed/$total ($currentPercentage%)',
         priority: NotificationPriority.low,
         data: {
           'completed': completed,

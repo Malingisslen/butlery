@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -86,10 +85,10 @@ class BottomActionContainer extends StatelessWidget {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.cream,
+        color: backgroundColor ?? Theme.of(context).colorScheme.surface,
         border: Border(
           top: BorderSide(
-            color: borderColor ?? AppColors.divider,
+            color: borderColor ?? Theme.of(context).colorScheme.outlineVariant,
             width: 1,
           ),
         ),

@@ -3,7 +3,6 @@
 // UI Redesign: Updated to use ButleryHeader and new navigation
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/butlery_header.dart';
 
@@ -133,9 +132,11 @@ class _SimpleLayout extends StatelessWidget {
           ? ButleryBottomNavigation(
               currentIndex: bottomNavIndex,
               items: ButleryAdaptiveNavigation.getNavigationItems(context),
-              backgroundColor: AppColors.creamDarker,
-              selectedItemColor: AppColors.forestGreenDark,
-              unselectedItemColor: AppColors.greenMuted,
+              backgroundColor:
+                  Theme.of(context).colorScheme.surfaceContainerHighest,
+              selectedItemColor: Theme.of(context).colorScheme.primaryContainer,
+              unselectedItemColor:
+                  Theme.of(context).colorScheme.onSurfaceVariant,
               onTap: (index) {
                 final route =
                     ButleryAdaptiveNavigation.getNavigationItems(context)[index]

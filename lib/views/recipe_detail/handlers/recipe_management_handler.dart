@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -39,11 +39,11 @@ class RecipeManagementHandler {
       if (success) {
         popNavigation();
         showSnackBar(context.l10n.recipeDeleted,
-            backgroundColor: AppColors.success);
+            backgroundColor: context.butleryColors.success);
         onSuccess();
       } else {
         showSnackBar(context.l10n.recipeCouldNotDelete,
-            backgroundColor: AppColors.error);
+            backgroundColor: Theme.of(context).colorScheme.error);
       }
     }
   }
@@ -67,7 +67,7 @@ class RecipeManagementHandler {
     } catch (e) {
       if (!context.mounted) return;
       showSnackBar(context.l10n.recipeCouldNotOpenEditor,
-          backgroundColor: AppColors.error);
+          backgroundColor: Theme.of(context).colorScheme.error);
     }
   }
 
@@ -85,11 +85,11 @@ class RecipeManagementHandler {
       await viewModel.markAsCooked();
       if (!context.mounted) return;
       showSnackBar(context.l10n.recipeMarkedAsCooked,
-          backgroundColor: AppColors.success);
+          backgroundColor: context.butleryColors.success);
     } catch (e) {
       if (!context.mounted) return;
       showSnackBar(context.l10n.recipeCouldNotMarkAsCooked,
-          backgroundColor: AppColors.error);
+          backgroundColor: Theme.of(context).colorScheme.error);
     }
   }
 
@@ -108,11 +108,11 @@ class RecipeManagementHandler {
       await shareService.shareRecipe(viewModel.recipe);
       if (!context.mounted) return;
       showSnackBar(context.l10n.recipeShared,
-          backgroundColor: AppColors.success);
+          backgroundColor: context.butleryColors.success);
     } catch (e) {
       if (!context.mounted) return;
       showSnackBar(context.l10n.recipeCouldNotShare,
-          backgroundColor: AppColors.error);
+          backgroundColor: Theme.of(context).colorScheme.error);
     }
   }
 
@@ -150,7 +150,7 @@ class RecipeManagementHandler {
     if (friends.isEmpty) {
       showSnackBar(
         context.l10n.collaborationNoFriends,
-        backgroundColor: AppColors.error,
+        backgroundColor: Theme.of(context).colorScheme.error,
       );
       return;
     }
@@ -160,47 +160,50 @@ class RecipeManagementHandler {
     if (!context.mounted) return;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          shape: const RoundedRectangleBorder(),
-          title: Text(context.l10n.collaborationEnableTitle),
-          content: SizedBox(
-            width: double.maxFinite,
-            height: 300,
-            child: ListView(
-              children: friends
-                  .map(
-                    (friend) => CheckboxListTile(
-                      title: Text(friend.displayName),
-                      subtitle:
-                          friend.email.isNotEmpty ? Text(friend.email) : null,
-                      value: selectedIds.contains(friend.uid),
-                      activeColor: AppColors.forestGreen,
-                      onChanged: (v) => setDialogState(() {
-                        if (v == true) {
-                          selectedIds.add(friend.uid);
-                        } else {
-                          selectedIds.remove(friend.uid);
-                        }
-                      }),
-                    ),
-                  )
-                  .toList(),
+      builder: (ctx) {
+        final dialogCs = Theme.of(ctx).colorScheme;
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
+            shape: const RoundedRectangleBorder(),
+            title: Text(context.l10n.collaborationEnableTitle),
+            content: SizedBox(
+              width: double.maxFinite,
+              height: 300,
+              child: ListView(
+                children: friends
+                    .map(
+                      (friend) => CheckboxListTile(
+                        title: Text(friend.displayName),
+                        subtitle:
+                            friend.email.isNotEmpty ? Text(friend.email) : null,
+                        value: selectedIds.contains(friend.uid),
+                        activeColor: dialogCs.primary,
+                        onChanged: (v) => setDialogState(() {
+                          if (v == true) {
+                            selectedIds.add(friend.uid);
+                          } else {
+                            selectedIds.remove(friend.uid);
+                          }
+                        }),
+                      ),
+                    )
+                    .toList(),
+              ),
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(context.l10n.commonCancel),
+              ),
+              TextButton(
+                onPressed:
+                    selectedIds.isEmpty ? null : () => Navigator.pop(ctx, true),
+                child: Text(context.l10n.commonEnable),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(context.l10n.commonCancel),
-            ),
-            TextButton(
-              onPressed:
-                  selectedIds.isEmpty ? null : () => Navigator.pop(ctx, true),
-              child: Text(context.l10n.commonEnable),
-            ),
-          ],
-        ),
-      ),
+        );
+      },
     );
 
     if (confirmed == true && selectedIds.isNotEmpty) {
@@ -212,12 +215,12 @@ class RecipeManagementHandler {
       if (success) {
         showSnackBar(
           context.l10n.collaborationEnabled,
-          backgroundColor: AppColors.success,
+          backgroundColor: context.butleryColors.success,
         );
       } else {
         showSnackBar(
           context.l10n.collaborationCouldNotEnable,
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         );
       }
     }
@@ -258,12 +261,12 @@ class RecipeManagementHandler {
       if (success) {
         showSnackBar(
           context.l10n.collaborationDeactivated,
-          backgroundColor: AppColors.success,
+          backgroundColor: context.butleryColors.success,
         );
       } else {
         showSnackBar(
           context.l10n.collaborationCouldNotDeactivate,
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         );
       }
     }

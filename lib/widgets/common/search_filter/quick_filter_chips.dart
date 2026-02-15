@@ -4,7 +4,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -139,6 +138,7 @@ class _QuickChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -151,10 +151,10 @@ class _QuickChip extends StatelessWidget {
             vertical: AppDimensions.spacingSm,
           ),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.forestGreen : AppColors.cardWhite,
+            color: isSelected ? cs.primary : cs.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
             border: Border.all(
-              color: isSelected ? AppColors.forestGreen : AppColors.divider,
+              color: isSelected ? cs.primary : cs.outlineVariant,
               width: 1.5,
             ),
           ),
@@ -165,15 +165,16 @@ class _QuickChip extends StatelessWidget {
                 Icon(
                   icon,
                   size: AppDimensions.iconSizeS,
-                  color:
-                      isSelected ? AppColors.cardWhite : AppColors.textMedium,
+                  color: isSelected
+                      ? cs.surfaceContainerHighest
+                      : cs.onSurfaceVariant,
                 ),
                 const SizedBox(width: AppDimensions.spacingXs),
               ],
               Text(
                 label,
                 style: AppTextStyles.labelMedium.copyWith(
-                  color: isSelected ? AppColors.cardWhite : AppColors.textDark,
+                  color: isSelected ? cs.surfaceContainerHighest : cs.onSurface,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),

@@ -1,7 +1,6 @@
 // lib/widgets/common/indicators/emoji_avatar.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Reusable emoji avatar component
@@ -39,7 +38,9 @@ class EmojiAvatar extends StatelessWidget {
       height: avatarSize,
       decoration: BoxDecoration(
         color: backgroundColor ??
-            AppColors.forestGreen
+            Theme.of(context)
+                .colorScheme
+                .primary
                 .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),

@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -21,40 +20,44 @@ class LoadingWidgets {
       return child ?? const SizedBox.shrink();
     }
 
-    final overlay = ColoredBox(
-      color: overlayColor ??
-          AppColors.neutralDark
-              .withValues(alpha: AppDimensions.opacityMediumLight),
-      child: Center(
-        child: Container(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          decoration: BoxDecoration(
-            color: AppColors.cardWhite,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(
-                width: AppDimensions.iconSizeM,
-                height: AppDimensions.iconSizeM,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
-                ),
+    final overlay = Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return ColoredBox(
+          color: overlayColor ??
+              cs.onSurface.withValues(alpha: AppDimensions.opacityMediumLight),
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest,
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusL),
               ),
-              if (loadingMessage != null) ...[
-                const SizedBox(height: AppDimensions.spacingM),
-                Text(
-                  loadingMessage,
-                  style: AppTextStyles.titleMedium,
-                ),
-              ],
-            ],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: AppDimensions.iconSizeM,
+                    height: AppDimensions.iconSizeM,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
+                    ),
+                  ),
+                  if (loadingMessage != null) ...[
+                    const SizedBox(height: AppDimensions.spacingM),
+                    Text(
+                      loadingMessage,
+                      style: AppTextStyles.titleMedium,
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
 
     if (child != null) {
@@ -81,23 +84,26 @@ class LoadingWidgets {
               Center(
                 child: Padding(
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
-                  child: Container(
-                    padding: const EdgeInsets.all(AppDimensions.paddingM),
-                    decoration: BoxDecoration(
-                      color: AppColors.error
-                          .withValues(alpha: AppDimensions.opacityVeryLight),
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.borderRadiusM),
-                      border: Border.all(
-                          color: AppColors.error.withValues(
-                              alpha: AppDimensions.opacityMediumLight)),
-                    ),
-                    child: Builder(
-                      builder: (context) => Text(
-                        context.l10n.errorUnexpected,
-                        style: AppTextStyles.bodyMediumError,
-                      ),
-                    ),
+                  child: Builder(
+                    builder: (ctx) {
+                      final cs = Theme.of(ctx).colorScheme;
+                      return Container(
+                        padding: const EdgeInsets.all(AppDimensions.paddingM),
+                        decoration: BoxDecoration(
+                          color: cs.error.withValues(
+                              alpha: AppDimensions.opacityVeryLight),
+                          borderRadius: BorderRadius.circular(
+                              AppDimensions.borderRadiusM),
+                          border: Border.all(
+                              color: cs.error.withValues(
+                                  alpha: AppDimensions.opacityMediumLight)),
+                        ),
+                        child: Text(
+                          ctx.l10n.errorUnexpected,
+                          style: AppTextStyles.bodyMediumError,
+                        ),
+                      );
+                    },
                   ),
                 ),
               );

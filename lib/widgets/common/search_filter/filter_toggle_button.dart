@@ -1,7 +1,6 @@
 // lib/widgets/common/search_filter/filter_toggle_button.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -20,6 +19,7 @@ class FilterToggleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Stack(
       children: [
         IconButton(
@@ -27,7 +27,7 @@ class FilterToggleButton extends StatelessWidget {
           icon: Icon(
             Icons.tune,
             size: AppDimensions.iconSizeAction,
-            color: showFilters ? AppColors.forestGreen : AppColors.textMedium,
+            color: showFilters ? cs.primary : cs.onSurfaceVariant,
           ),
           tooltip:
               showFilters ? context.l10n.filterHide : context.l10n.filterShow,
@@ -40,8 +40,8 @@ class FilterToggleButton extends StatelessWidget {
             child: Container(
               width: 8,
               height: 8,
-              decoration: const BoxDecoration(
-                color: AppColors.rust,
+              decoration: BoxDecoration(
+                color: cs.secondary,
                 shape: BoxShape.circle,
               ),
             ),

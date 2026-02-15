@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -81,7 +81,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         ],
       ),
       body: SafeArea(
-        // ✅ RESPONSIVE: Center and constrain content on large screens
+        // RESPONSIVE: Center and constrain content on large screens
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -116,6 +116,8 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   }
 
   Widget _buildLoadingState() {
+    final cs = Theme.of(context).colorScheme;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -125,7 +127,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
           Text(
             context.l10n.privacyLoading,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textMedium,
+                  color: cs.onSurfaceVariant,
                 ),
           ),
         ],
@@ -134,16 +136,18 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   }
 
   Widget _buildErrorState() {
+    final cs = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingLg),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline,
               size: 64,
-              color: AppColors.error,
+              color: cs.error,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
@@ -157,8 +161,8 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
               icon: const Icon(Icons.refresh),
               label: Text(context.l10n.commonRetry),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.cardWhite,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
               ),
             ),
           ],
@@ -168,11 +172,13 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   }
 
   Widget _buildEmptyState() {
+    final cs = Theme.of(context).colorScheme;
+
     return Center(
       child: Text(
         context.l10n.privacyNotAvailable,
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppColors.textMedium,
+              color: cs.onSurfaceVariant,
             ),
       ),
     );
@@ -203,10 +209,11 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: AppColors.info.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.butleryColors.info
+            .withValues(alpha: AppDimensions.opacityVeryLight),
         border: Border(
           bottom: BorderSide(
-            color: AppColors.info
+            color: context.butleryColors.info
                 .withValues(alpha: AppDimensions.opacityMediumLight),
             width: 1,
           ),
@@ -214,14 +221,14 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline,
-              color: AppColors.info, size: AppDimensions.iconSizeM),
+          Icon(Icons.info_outline,
+              color: context.butleryColors.info, size: AppDimensions.iconSizeM),
           const SizedBox(width: AppDimensions.spacingL),
           Expanded(
             child: Text(
               context.l10n.privacyGdprCompliant,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.info,
+                    color: context.butleryColors.info,
                   ),
             ),
           ),
@@ -231,14 +238,16 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   }
 
   Widget _buildContactButton() {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.spacingMd),
-      decoration: const BoxDecoration(
-        color: AppColors.backgroundTint,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLow,
         border: Border(
           top: BorderSide(
-            color: AppColors.divider,
+            color: cs.outlineVariant,
             width: 1,
           ),
         ),
@@ -257,8 +266,8 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
             icon: const Icon(Icons.email_rounded),
             label: Text(context.l10n.privacyContactUs),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.cardWhite,
+              backgroundColor: cs.primary,
+              foregroundColor: cs.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
           ),
@@ -290,16 +299,18 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   }
 
   void _showError(String message) {
+    final cs = Theme.of(context).colorScheme;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.error_outline, color: AppColors.cardWhite),
+            const Icon(Icons.error_outline, color: Colors.white),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: AppColors.error,
+        backgroundColor: cs.error,
         behavior: SnackBarBehavior.floating,
       ),
     );

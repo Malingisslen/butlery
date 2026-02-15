@@ -10,7 +10,6 @@ import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/source_url_display.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -181,9 +180,9 @@ class _FranSocialaMedierViewContentState
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppColors.backgroundTint,
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,7 +238,7 @@ class _FranSocialaMedierViewContentState
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
           filled: true,
-          fillColor: AppColors.backgroundTint,
+          fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
         ),
         keyboardType: TextInputType.multiline,
         maxLines: null,

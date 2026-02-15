@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
@@ -95,16 +95,16 @@ class ShareDialogStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.error_outline,
             size: 64,
-            color: AppColors.error,
+            color: Theme.of(context).colorScheme.error,
           ),
           const SizedBox(height: AppDimensions.spacingLg),
           Text(
             context.l10n.shareErrorOccurred,
             style: AppTextStyles.titleMedium.copyWith(
-              color: AppColors.error,
+              color: Theme.of(context).colorScheme.error,
             ),
             textAlign: TextAlign.center,
           ),
@@ -123,8 +123,8 @@ class ShareDialogStates {
               icon: const Icon(Icons.refresh),
               label: Text(context.l10n.commonRetry),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.error,
-                foregroundColor: AppColors.cardWhite,
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingLg,
                   vertical: AppDimensions.spacingL,
@@ -147,16 +147,16 @@ class ShareDialogStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.check_circle,
             size: 64,
-            color: AppColors.success,
+            color: context.butleryColors.success,
           ),
           const SizedBox(height: AppDimensions.spacingLg),
           Text(
             context.l10n.shareSucceeded,
             style: AppTextStyles.titleMedium.copyWith(
-              color: AppColors.success,
+              color: context.butleryColors.success,
             ),
             textAlign: TextAlign.center,
           ),
@@ -173,8 +173,8 @@ class ShareDialogStates {
             ElevatedButton(
               onPressed: onClose,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.success,
-                foregroundColor: AppColors.cardWhite,
+                backgroundColor: context.butleryColors.success,
+                foregroundColor: context.butleryColors.onSuccess,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingLg,
                   vertical: AppDimensions.spacingL,

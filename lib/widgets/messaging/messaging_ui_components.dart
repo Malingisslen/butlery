@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -18,7 +17,7 @@ class ErrorText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(color: AppColors.error),
+      style: TextStyle(color: Theme.of(context).colorScheme.error),
     );
   }
 }
@@ -39,7 +38,7 @@ class ErrorListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.error),
+      leading: Icon(icon, color: Theme.of(context).colorScheme.error),
       title: ErrorText(title),
       onTap: onTap,
     );
@@ -122,7 +121,7 @@ class SearchBarContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
-      color: AppColors.cream,
+      color: Theme.of(context).colorScheme.surface,
       child: child,
     );
   }

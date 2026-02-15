@@ -5,9 +5,9 @@
 /// ```
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -113,7 +113,7 @@ class CommonDialogActions {
       message: 'Vill du verkligen lämna gruppen "$groupName"?',
       confirmText: 'Lämna grupp',
       icon: AdaptiveIcons.exitToApp,
-      confirmColor: AppColors.warning,
+      confirmColor: context.butleryColors.warning,
       isDangerous: true,
     );
   }
@@ -128,7 +128,7 @@ class CommonDialogActions {
       message: 'Du har osparade ändringar. Vill du verkligen avbryta?',
       confirmText: 'Avbryt utan att spara',
       icon: AdaptiveIcons.warning,
-      confirmColor: AppColors.warning,
+      confirmColor: context.butleryColors.warning,
       isDangerous: true,
     );
   }
@@ -149,7 +149,7 @@ class CommonDialogActions {
       message: 'Vill du dela $itemType med $recipients?',
       confirmText: context.l10n.commonShare,
       icon: AdaptiveIcons.share,
-      confirmColor: AppColors.forestGreen,
+      confirmColor: Theme.of(context).colorScheme.primary,
     );
   }
 
@@ -166,7 +166,7 @@ class CommonDialogActions {
         title: title,
         message: message,
         icon: icon ?? AdaptiveIcons.checkCircle,
-        color: AppColors.success,
+        color: context.butleryColors.success,
         buttonText: dialogContext.l10n.commonOk,
       ),
     );
@@ -185,7 +185,7 @@ class CommonDialogActions {
         title: title,
         message: message,
         icon: icon ?? AdaptiveIcons.warning,
-        color: AppColors.warning,
+        color: context.butleryColors.warning,
         buttonText: dialogContext.l10n.commonOk,
       ),
     );
@@ -204,7 +204,7 @@ class CommonDialogActions {
         title: title,
         message: message,
         icon: icon ?? AdaptiveIcons.error,
-        color: AppColors.error,
+        color: Theme.of(context).colorScheme.error,
         buttonText: dialogContext.l10n.commonOk,
       ),
     );
@@ -257,7 +257,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
           Text(
             warningMessage!,
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.warning,
+              color: context.butleryColors.warning,
             ),
           ),
         ],
@@ -301,14 +301,14 @@ class _ActionConfirmationDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final buttonColor =
-        isDangerous ? AppColors.error : (confirmColor ?? AppColors.forestGreen);
+    final cs = Theme.of(context).colorScheme;
+    final buttonColor = isDangerous ? cs.error : (confirmColor ?? cs.primary);
 
     return AlertDialog(
       icon: icon != null
           ? Icon(
               icon,
-              color: isDangerous ? AppColors.error : buttonColor,
+              color: isDangerous ? cs.error : buttonColor,
               size: 48,
             )
           : null,
@@ -326,7 +326,7 @@ class _ActionConfirmationDialog extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(true),
           style: FilledButton.styleFrom(
             backgroundColor: buttonColor,
-            foregroundColor: AppColors.textOnPrimary,
+            foregroundColor: cs.onPrimary,
           ),
           child: Text(primaryActionText),
         ),
@@ -353,6 +353,7 @@ class _InfoDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return AlertDialog(
       icon: Icon(
         icon,
@@ -369,7 +370,7 @@ class _InfoDialog extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
           style: FilledButton.styleFrom(
             backgroundColor: color,
-            foregroundColor: AppColors.textOnPrimary,
+            foregroundColor: cs.onPrimary,
           ),
           child: Text(buttonText),
         ),

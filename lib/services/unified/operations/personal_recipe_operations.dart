@@ -2,6 +2,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Specialized personal recipe operations interface providing comprehensive CRUD functionality for individual recipe management.
 /// This operations interface implements sophisticated personal recipe management following Single Responsibility Principle,
@@ -103,17 +104,18 @@ class PersonalRecipeOperations {
 
       if (successCount == recipes.length) {
         return RecipeOperationResult.success(
-            'Alla ${recipes.length} recept importerade');
+            '${recipes.length} recipes imported');
       } else if (successCount > 0) {
         return RecipeOperationResult.success(
-            '$successCount av ${recipes.length} recept importerade. Fel: ${failures.join(', ')}');
+            '$successCount/${recipes.length} recipes imported. Errors: ${failures.join(', ')}');
       } else {
         return RecipeOperationResult.failure(
-            'Kunde inte importera några recept. Fel: ${failures.join(', ')}');
+            AppLocale.current.errorCouldNotImportRecipes);
       }
     } catch (e) {
       AppLogger.error('Failed to add multiple unified recipes', e);
-      return RecipeOperationResult.failure('Batch import fel: $e');
+      return RecipeOperationResult.failure(
+          AppLocale.current.errorCouldNotImportRecipes);
     }
   }
 

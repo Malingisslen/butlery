@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
@@ -552,8 +553,8 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
       } else {
         // V2 shares: Use contentSnapshot (minimal recipe from denormalized fields)
         final contentRecipe = sharedRecipe.contentSnapshot;
-        final attributionText =
-            'Inspirerat av recept från ${sharedRecipe.sharedByDisplayName}';
+        final attributionText = AppLocale.current
+            .recipeAttributionText(sharedRecipe.sharedByDisplayName);
         importedRecipe = contentRecipe.copyWith(sourceUrl: attributionText);
       }
 

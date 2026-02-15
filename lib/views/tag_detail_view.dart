@@ -12,12 +12,16 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
+import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
+import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/widgets/tagging/rule_builder_sheet.dart';
 import 'package:butlery/widgets/tagging/tag_detail_header.dart';
 import 'package:butlery/widgets/tagging/tag_detail_rules_section.dart';
@@ -177,6 +181,11 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       title: Text(tag.name),
       actions: [
         IconButton(
+          icon: const Icon(Icons.share),
+          tooltip: 'Dela',
+          onPressed: () => _shareTag(context, tag),
+        ),
+        IconButton(
           icon: const Icon(Icons.edit),
           tooltip: context.l10n.commonEdit,
           onPressed: () => _enterEditMode(tag),
@@ -196,9 +205,11 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
             PopupMenuItem(
               value: 'delete',
               child: ListTile(
-                leading: const Icon(Icons.delete, color: AppColors.error),
+                leading: Icon(Icons.delete,
+                    color: Theme.of(context).colorScheme.error),
                 title: Text(context.l10n.commonDelete,
-                    style: const TextStyle(color: AppColors.error)),
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error)),
                 contentPadding: EdgeInsets.zero,
               ),
             ),
@@ -285,6 +296,36 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         },
       ),
     );
+  }
+
+  Future<void> _shareTag(BuildContext context, PersonalTag tag) async {
+    try {
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+      final friends = friendsService.friends;
+      final groups = friendsService.categoriesList;
+
+      final viewModel = UniversalShareDialogViewModel(
+        socialRecipeCoordinator: ServiceLocator.get<SocialRecipeCoordinator>(),
+        shoppingService: ServiceLocator.get<UnifiedShoppingService>(),
+      );
+
+      if (!context.mounted) return;
+
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => UniversalShareDialog.personalTag(
+          tagId: tag.id,
+          tagName: tag.name,
+          viewModel: viewModel,
+          availableFriends: friends,
+          availableGroups: groups,
+        ),
+      );
+    } catch (e) {
+      if (context.mounted) {
+        SnackBarUtils.showError(context, 'Kunde inte dela taggen');
+      }
+    }
   }
 
   Future<void> _addRule(BuildContext context, PersonalTag tag) async {
@@ -375,7 +416,8 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
             child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error),
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(context.l10n.commonDelete),
           ),
@@ -469,7 +511,8 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
             child: Text(context.l10n.commonCancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error),
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(context.l10n.commonDelete),
           ),

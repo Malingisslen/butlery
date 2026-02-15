@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Invitation target display widgets.
 class InvitationDisplays {
@@ -131,22 +131,24 @@ class InvitationDisplays {
     EdgeInsets? padding,
   }) {
     // Simple implementation since SocialFacade doesn't have this method
-    return Container(
-      padding: padding,
-      child: Row(
-        children: [
-          Expanded(
-            child: invitationTargetDisplay(
-              target: target,
-              onTap: onTap,
+    return Builder(
+      builder: (context) => Container(
+        padding: padding,
+        child: Row(
+          children: [
+            Expanded(
+              child: invitationTargetDisplay(
+                target: target,
+                onTap: onTap,
+              ),
             ),
-          ),
-          if (status != null && showStatusIcon)
-            Icon(
-              _getStatusIcon(status),
-              color: statusColor ?? _getStatusColor(status),
-            ),
-        ],
+            if (status != null && showStatusIcon)
+              Icon(
+                _getStatusIcon(status),
+                color: statusColor ?? _getStatusColor(status, context),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -240,16 +242,17 @@ class InvitationDisplays {
     }
   }
 
-  static Color _getStatusColor(String status) {
+  static Color _getStatusColor(String status, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     switch (status.toLowerCase()) {
       case 'accepted':
-        return AppColors.success;
+        return context.butleryColors.success;
       case 'declined':
-        return AppColors.error;
+        return cs.error;
       case 'expired':
-        return AppColors.warning;
+        return context.butleryColors.warning;
       default:
-        return AppColors.forestGreen;
+        return cs.primary;
     }
   }
 

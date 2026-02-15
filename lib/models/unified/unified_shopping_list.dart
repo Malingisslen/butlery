@@ -57,6 +57,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Enumeration defining synchronization status for shopping list data management.
 /// Provides comprehensive sync state tracking for offline-first shopping list functionality
@@ -348,9 +349,10 @@ class UnifiedShoppingList {
       totalItems == 0 ? 0.0 : (boughtItems / totalItems) * 100;
 
   String get summary {
-    if (isEmpty) return 'Tom lista';
-    if (allItemsBought) return 'Alla $totalItems artiklar köpta ✓';
-    return '$unboughtItems av $totalItems artiklar kvar';
+    final l = AppLocale.current;
+    if (isEmpty) return l.shoppingListEmpty;
+    if (allItemsBought) return l.shoppingListAllBought(totalItems);
+    return l.shoppingListItemsRemaining(unboughtItems, totalItems);
   }
 
   String get syncStatusEmoji {
@@ -369,24 +371,25 @@ class UnifiedShoppingList {
   }
 
   String get activitySummary {
+    final l = AppLocale.current;
     if (lastActivityAt == null || lastActivityByDisplayName == null) {
-      return 'Ingen aktivitet';
+      return l.shoppingListNoActivity;
     }
 
     final timeDiff = DateTime.now().difference(lastActivityAt!);
     String timeText;
 
     if (timeDiff.inMinutes < 1) {
-      timeText = 'nu';
+      timeText = l.shoppingListActivityNow;
     } else if (timeDiff.inHours < 1) {
-      timeText = '${timeDiff.inMinutes} min sedan';
+      timeText = l.shoppingListActivityMinAgo(timeDiff.inMinutes);
     } else if (timeDiff.inDays < 1) {
-      timeText = '${timeDiff.inHours} tim sedan';
+      timeText = l.shoppingListActivityHoursAgo(timeDiff.inHours);
     } else {
-      timeText = '${timeDiff.inDays} dagar sedan';
+      timeText = l.shoppingListActivityDaysAgo(timeDiff.inDays);
     }
 
-    return 'Senaste aktivitet av $lastActivityByDisplayName $timeText';
+    return l.shoppingListLastActivityBy(lastActivityByDisplayName!, timeText);
   }
 
   bool get hasRecentActivity {

@@ -509,25 +509,25 @@ abstract class AppLocalizations {
   /// No description provided for @errorCouldNotCreate.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte skapa {itemType}. Försök igen.'**
+  /// **'Kunde inte skapa {itemType}'**
   String errorCouldNotCreate(String itemType);
 
   /// No description provided for @errorCouldNotUpdate.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte uppdatera {itemType}. Försök igen.'**
+  /// **'Kunde inte uppdatera {itemType}'**
   String errorCouldNotUpdate(String itemType);
 
   /// No description provided for @errorCouldNotDelete.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ta bort {itemType}. Försök igen.'**
+  /// **'Kunde inte ta bort {itemType}'**
   String errorCouldNotDelete(String itemType);
 
   /// No description provided for @errorCouldNotLoad.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ladda {itemType}. Försök igen.'**
+  /// **'Kunde inte ladda {itemType}'**
   String errorCouldNotLoad(String itemType);
 
   /// No description provided for @errorWithContext.
@@ -12042,8 +12042,8 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingItemAdded.
   ///
   /// In sv, this message translates to:
-  /// **'{name} tillagd'**
-  String shoppingItemAdded(String name);
+  /// **'La till \"{itemName}\"'**
+  String shoppingItemAdded(String itemName);
 
   /// No description provided for @shoppingItemCountText.
   ///
@@ -14222,6 +14222,4398 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Instruktion {number}'**
   String instructionLabel(int number);
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hoppa over'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingBack.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillbaka'**
+  String get onboardingBack;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nasta'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingComplete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slutfor'**
+  String get onboardingComplete;
+
+  /// No description provided for @onboardingWelcomeTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Valkommen till Butlery!'**
+  String get onboardingWelcomeTitle;
+
+  /// No description provided for @onboardingWelcomeDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lat oss stalla in dina preferenser sa att du far den basta upplevelsen fran borjan.'**
+  String get onboardingWelcomeDescription;
+
+  /// No description provided for @onboardingWelcomeNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan alltid andra dessa i installningarna senare.'**
+  String get onboardingWelcomeNote;
+
+  /// No description provided for @onboardingAllergenTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergier & intoleranser'**
+  String get onboardingAllergenTitle;
+
+  /// No description provided for @onboardingAllergenDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Valj de allergener du vill spara och filtrera recept efter.'**
+  String get onboardingAllergenDescription;
+
+  /// No description provided for @onboardingAllergenGluten.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gluten'**
+  String get onboardingAllergenGluten;
+
+  /// No description provided for @onboardingAllergenMilk.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mjolk'**
+  String get onboardingAllergenMilk;
+
+  /// No description provided for @onboardingAllergenNuts.
+  ///
+  /// In sv, this message translates to:
+  /// **'Notter'**
+  String get onboardingAllergenNuts;
+
+  /// No description provided for @onboardingAllergenEgg.
+  ///
+  /// In sv, this message translates to:
+  /// **'Agg'**
+  String get onboardingAllergenEgg;
+
+  /// No description provided for @onboardingAllergenSoy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Soja'**
+  String get onboardingAllergenSoy;
+
+  /// No description provided for @onboardingAllergenFish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fisk'**
+  String get onboardingAllergenFish;
+
+  /// No description provided for @onboardingAllergenShellfish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skaldjur'**
+  String get onboardingAllergenShellfish;
+
+  /// No description provided for @onboardingAllergenSesame.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sesam'**
+  String get onboardingAllergenSesame;
+
+  /// No description provided for @onboardingDietaryTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kostreferenser'**
+  String get onboardingDietaryTitle;
+
+  /// No description provided for @onboardingDietaryDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Har du nagra kostreferenser? Vi kan filtrera recept at dig.'**
+  String get onboardingDietaryDescription;
+
+  /// No description provided for @onboardingDietaryVegetarian.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vegetarian'**
+  String get onboardingDietaryVegetarian;
+
+  /// No description provided for @onboardingDietaryVegan.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vegan'**
+  String get onboardingDietaryVegan;
+
+  /// No description provided for @onboardingDietaryPescetarian.
+  ///
+  /// In sv, this message translates to:
+  /// **'Pescetarian'**
+  String get onboardingDietaryPescetarian;
+
+  /// No description provided for @onboardingDietaryVegetarianDesc.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga kott- eller fiskprodukter'**
+  String get onboardingDietaryVegetarianDesc;
+
+  /// No description provided for @onboardingDietaryVeganDesc.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga animaliska produkter'**
+  String get onboardingDietaryVeganDesc;
+
+  /// No description provided for @onboardingDietaryPescetarianDesc.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fisk men inget kott'**
+  String get onboardingDietaryPescetarianDesc;
+
+  /// No description provided for @onboardingImportTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importera ditt forsta recept'**
+  String get onboardingImportTitle;
+
+  /// No description provided for @onboardingImportDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kom igang snabbt genom att importera ett recept fran webben eller ett foto.'**
+  String get onboardingImportDescription;
+
+  /// No description provided for @onboardingImportUrlTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fran en webbadress'**
+  String get onboardingImportUrlTitle;
+
+  /// No description provided for @onboardingImportUrlDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klistra in en lank till ett recept'**
+  String get onboardingImportUrlDescription;
+
+  /// No description provided for @onboardingImportPhotoTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importera fran foto'**
+  String get onboardingImportPhotoTitle;
+
+  /// No description provided for @onboardingImportPhotoDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta ett foto eller valj fran galleriet'**
+  String get onboardingImportPhotoDescription;
+
+  /// No description provided for @onboardingImportSkipNote.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan hoppa over detta steg och importera senare.'**
+  String get onboardingImportSkipNote;
+
+  /// No description provided for @cookingModePortions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Portioner'**
+  String get cookingModePortions;
+
+  /// No description provided for @faqTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vanliga fragor'**
+  String get faqTitle;
+
+  /// No description provided for @faqImportQuestion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur importerar jag recept?'**
+  String get faqImportQuestion;
+
+  /// No description provided for @faqImportAnswer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan importera recept pa flera satt: klistra in en URL fran en receptsida, ta ett foto av ett recept, eller klistra in recepttext direkt. Tryck pa \"Lagg till\" pa startsidan och valj metod.'**
+  String get faqImportAnswer;
+
+  /// No description provided for @faqShareQuestion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur delar jag recept med vanner?'**
+  String get faqShareQuestion;
+
+  /// No description provided for @faqShareAnswer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Oppna ett recept och tryck pa dela-ikonen. Du kan skicka receptet till vanner som anvander Butlery, eller dela en lank. Dina vanner kan sedan spara receptet till sin egen samling.'**
+  String get faqShareAnswer;
+
+  /// No description provided for @faqMenuQuestion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur anvander jag veckomeny?'**
+  String get faqMenuQuestion;
+
+  /// No description provided for @faqMenuAnswer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ga till veckomeny via navigeringen. Dar kan du planera veckans maltider genom att lagga till recept fran din samling. Ingredienser fran menyn kan skickas direkt till inkopslistan.'**
+  String get faqMenuAnswer;
+
+  /// No description provided for @faqTagsQuestion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur skapar jag personliga taggar?'**
+  String get faqTagsQuestion;
+
+  /// No description provided for @faqTagsAnswer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ga till profilen och valj \"Mina taggar\". Dar kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept for enkel filtrering.'**
+  String get faqTagsAnswer;
+
+  /// No description provided for @faqReportQuestion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur rapporterar jag problem?'**
+  String get faqReportQuestion;
+
+  /// No description provided for @faqReportAnswer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tryck pa \"!\"-knappen som syns langst ner till hoger pa varje sida. Dar kan du beskriva problemet, valja kategori och bifoga en skarmavbild. Vi laser all feedback!'**
+  String get faqReportAnswer;
+
+  /// No description provided for @feedbackSendLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka feedback'**
+  String get feedbackSendLabel;
+
+  /// No description provided for @feedbackCategoryLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kategori'**
+  String get feedbackCategoryLabel;
+
+  /// No description provided for @feedbackCategoryBug.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bugg'**
+  String get feedbackCategoryBug;
+
+  /// No description provided for @feedbackCategoryFeatureRequest.
+  ///
+  /// In sv, this message translates to:
+  /// **'Onskemol'**
+  String get feedbackCategoryFeatureRequest;
+
+  /// No description provided for @feedbackCategoryGeneral.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ovrigt'**
+  String get feedbackCategoryGeneral;
+
+  /// No description provided for @feedbackDescriptionLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beskrivning'**
+  String get feedbackDescriptionLabel;
+
+  /// No description provided for @feedbackDescriptionHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beskriv vad du upplevde...'**
+  String get feedbackDescriptionHint;
+
+  /// No description provided for @feedbackEmailLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'E-post (valfritt)'**
+  String get feedbackEmailLabel;
+
+  /// No description provided for @feedbackScreenshotLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skarmavbild'**
+  String get feedbackScreenshotLabel;
+
+  /// No description provided for @feedbackRemoveScreenshot.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort skarmavbild'**
+  String get feedbackRemoveScreenshot;
+
+  /// No description provided for @feedbackSendButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka'**
+  String get feedbackSendButton;
+
+  /// No description provided for @feedbackValidationEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange en beskrivning'**
+  String get feedbackValidationEmpty;
+
+  /// No description provided for @feedbackSuccessMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tack for din feedback!'**
+  String get feedbackSuccessMessage;
+
+  /// No description provided for @feedbackErrorMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte skicka feedback. Forsok igen.'**
+  String get feedbackErrorMessage;
+
+  /// No description provided for @substitutionEmptyState.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga ersattningar hittades'**
+  String get substitutionEmptyState;
+
+  /// No description provided for @pollCreateTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa omröstning'**
+  String get pollCreateTitle;
+
+  /// No description provided for @pollQuestionLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fråga'**
+  String get pollQuestionLabel;
+
+  /// No description provided for @pollQuestionHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad vill du fråga?'**
+  String get pollQuestionHint;
+
+  /// No description provided for @pollOptionLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alternativ {number}'**
+  String pollOptionLabel(int number);
+
+  /// No description provided for @pollRemoveOption.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort alternativ'**
+  String get pollRemoveOption;
+
+  /// No description provided for @pollAddOption.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till alternativ'**
+  String get pollAddOption;
+
+  /// No description provided for @pollAllowMultiple.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillåt flera val'**
+  String get pollAllowMultiple;
+
+  /// No description provided for @pollCancel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avbryt'**
+  String get pollCancel;
+
+  /// No description provided for @pollCreate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa'**
+  String get pollCreate;
+
+  /// No description provided for @pollVoteCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 röst} other{{count} röster}}'**
+  String pollVoteCount(int count);
+
+  /// No description provided for @pollEnded.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avslutad'**
+  String get pollEnded;
+
+  /// No description provided for @pollClose.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng omröstning'**
+  String get pollClose;
+
+  /// No description provided for @messageTypeText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Textmeddelande'**
+  String get messageTypeText;
+
+  /// No description provided for @messageTypeRecipeShare.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptdelning'**
+  String get messageTypeRecipeShare;
+
+  /// No description provided for @messageTypeMenuShare.
+  ///
+  /// In sv, this message translates to:
+  /// **'Menydelning'**
+  String get messageTypeMenuShare;
+
+  /// No description provided for @messageTypeShoppingListShare.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inköpslistedelning'**
+  String get messageTypeShoppingListShare;
+
+  /// No description provided for @messageTypeSystem.
+  ///
+  /// In sv, this message translates to:
+  /// **'Systemmeddelande'**
+  String get messageTypeSystem;
+
+  /// No description provided for @messageTypeImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bild'**
+  String get messageTypeImage;
+
+  /// No description provided for @messageTypeVoice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Röstmeddelande'**
+  String get messageTypeVoice;
+
+  /// No description provided for @messageTypePoll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omröstning'**
+  String get messageTypePoll;
+
+  /// No description provided for @messageStatusSending.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickar...'**
+  String get messageStatusSending;
+
+  /// No description provided for @messageStatusSent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skickat'**
+  String get messageStatusSent;
+
+  /// No description provided for @messageStatusDelivered.
+  ///
+  /// In sv, this message translates to:
+  /// **'Levererat'**
+  String get messageStatusDelivered;
+
+  /// No description provided for @messageStatusRead.
+  ///
+  /// In sv, this message translates to:
+  /// **'Läst'**
+  String get messageStatusRead;
+
+  /// No description provided for @messageStatusFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Misslyckades'**
+  String get messageStatusFailed;
+
+  /// No description provided for @errorDnsResolution.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anslutningsproblem upptäckts. Försöker återansluta...'**
+  String get errorDnsResolution;
+
+  /// No description provided for @errorServiceUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tjänsten är tillfälligt otillgänglig. Försök igen senare.'**
+  String get errorServiceUnavailable;
+
+  /// No description provided for @errorNoItemsFound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga objekt hittades.'**
+  String get errorNoItemsFound;
+
+  /// No description provided for @errorNetworkCheckConnection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nätverksfel. Kontrollera din internetanslutning.'**
+  String get errorNetworkCheckConnection;
+
+  /// No description provided for @errorNoUserLoggedIn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen användare är inloggad'**
+  String get errorNoUserLoggedIn;
+
+  /// No description provided for @errorReauthRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du måste logga in igen för att ta bort ditt konto'**
+  String get errorReauthRequired;
+
+  /// No description provided for @errorCouldNotRemoveMfa.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort MFA'**
+  String get errorCouldNotRemoveMfa;
+
+  /// No description provided for @errorEmailAlreadyInUse.
+  ///
+  /// In sv, this message translates to:
+  /// **'Email-adressen används redan av ett annat konto.'**
+  String get errorEmailAlreadyInUse;
+
+  /// No description provided for @errorInvalidEmailAddress.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltig email-adress.'**
+  String get errorInvalidEmailAddress;
+
+  /// No description provided for @errorUserNotFoundByEmail.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen användare hittades med denna email.'**
+  String get errorUserNotFoundByEmail;
+
+  /// No description provided for @errorWrongPassword.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fel lösenord.'**
+  String get errorWrongPassword;
+
+  /// No description provided for @errorInvalidCredentials.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fel email eller lösenord. Kontrollera dina uppgifter.'**
+  String get errorInvalidCredentials;
+
+  /// No description provided for @errorAccountDisabled.
+  ///
+  /// In sv, this message translates to:
+  /// **'Detta konto har inaktiverats.'**
+  String get errorAccountDisabled;
+
+  /// No description provided for @errorTooManyAttempts.
+  ///
+  /// In sv, this message translates to:
+  /// **'För många försök. Vänta en stund och försök igen.'**
+  String get errorTooManyAttempts;
+
+  /// No description provided for @errorInvalidVerificationCode.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltig verifieringskod. Försök igen.'**
+  String get errorInvalidVerificationCode;
+
+  /// No description provided for @errorSessionExpired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sessionen har gått ut. Försök igen.'**
+  String get errorSessionExpired;
+
+  /// No description provided for @errorTooManySmsAttempts.
+  ///
+  /// In sv, this message translates to:
+  /// **'För många SMS-försök. Försök igen senare.'**
+  String get errorTooManySmsAttempts;
+
+  /// No description provided for @errorPhoneNumberMissing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Telefonnummer saknas.'**
+  String get errorPhoneNumberMissing;
+
+  /// No description provided for @errorMustBeLoggedIn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du måste vara inloggad'**
+  String get errorMustBeLoggedIn;
+
+  /// No description provided for @errorMustBeLoggedInToImport.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du måste vara inloggad för att importera recept'**
+  String get errorMustBeLoggedInToImport;
+
+  /// No description provided for @errorMustBeLoggedInToExport.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du måste vara inloggad för att exportera data'**
+  String get errorMustBeLoggedInToExport;
+
+  /// No description provided for @errorMustBeLoggedInToManageConsent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du måste vara inloggad för att hantera samtycken'**
+  String get errorMustBeLoggedInToManageConsent;
+
+  /// No description provided for @errorRecipeNameEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptnamn kan inte vara tomt'**
+  String get errorRecipeNameEmpty;
+
+  /// No description provided for @errorCanOnlyUpdatePersonalRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan bara uppdatera personliga recept'**
+  String get errorCanOnlyUpdatePersonalRecipes;
+
+  /// No description provided for @errorRecipeNotFound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept hittades inte'**
+  String get errorRecipeNotFound;
+
+  /// No description provided for @errorNoPermissionToEdit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inte behörighet att redigera detta recept'**
+  String get errorNoPermissionToEdit;
+
+  /// No description provided for @errorNotInRealtimeMode.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte i realtidsredigeringsläge'**
+  String get errorNotInRealtimeMode;
+
+  /// No description provided for @errorTitleCannotBeEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Titel kan inte vara tom'**
+  String get errorTitleCannotBeEmpty;
+
+  /// No description provided for @errorPortionsMustBePositive.
+  ///
+  /// In sv, this message translates to:
+  /// **'Portioner måste vara större än 0'**
+  String get errorPortionsMustBePositive;
+
+  /// No description provided for @errorTimeMustBePositive.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tid måste vara större än 0 minuter'**
+  String get errorTimeMustBePositive;
+
+  /// No description provided for @errorIngredientCannotBeEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingrediens kan inte vara tom'**
+  String get errorIngredientCannotBeEmpty;
+
+  /// No description provided for @errorInstructionCannotBeEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Instruktion kan inte vara tom'**
+  String get errorInstructionCannotBeEmpty;
+
+  /// No description provided for @errorRecipeNeedsIngredient.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept måste ha minst en ingrediens'**
+  String get errorRecipeNeedsIngredient;
+
+  /// No description provided for @errorRecipeNeedsInstruction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept måste ha minst en instruktion'**
+  String get errorRecipeNeedsInstruction;
+
+  /// No description provided for @errorNoPermissionToShare.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inte behörighet att dela detta recept'**
+  String get errorNoPermissionToShare;
+
+  /// No description provided for @errorCouldNotSaveRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara recept'**
+  String get errorCouldNotSaveRecipe;
+
+  /// No description provided for @errorNoGroupMembersFound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga gruppmedlemmar hittades'**
+  String get errorNoGroupMembersFound;
+
+  /// No description provided for @errorRecipeNotShared.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet är inte delat'**
+  String get errorRecipeNotShared;
+
+  /// No description provided for @errorOnlyOwnerCanUnshare.
+  ///
+  /// In sv, this message translates to:
+  /// **'Endast ägaren kan sluta dela receptet'**
+  String get errorOnlyOwnerCanUnshare;
+
+  /// No description provided for @errorCouldNotUnshareRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte sluta dela recept'**
+  String get errorCouldNotUnshareRecipe;
+
+  /// No description provided for @errorCouldNotLoadTags.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda taggar'**
+  String get errorCouldNotLoadTags;
+
+  /// No description provided for @errorTagUpdateFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fel vid uppdatering av taggar'**
+  String get errorTagUpdateFailed;
+
+  /// No description provided for @errorCouldNotCreateTag.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte skapa taggen'**
+  String get errorCouldNotCreateTag;
+
+  /// No description provided for @errorCouldNotUpdateTag.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte uppdatera taggen'**
+  String get errorCouldNotUpdateTag;
+
+  /// No description provided for @errorTagNotFound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggen hittades inte'**
+  String get errorTagNotFound;
+
+  /// No description provided for @errorCouldNotDeleteTag.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort taggen'**
+  String get errorCouldNotDeleteTag;
+
+  /// No description provided for @errorCouldNotCreateGroup.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte skapa gruppen'**
+  String get errorCouldNotCreateGroup;
+
+  /// No description provided for @errorCouldNotUpdateGroup.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte uppdatera gruppen'**
+  String get errorCouldNotUpdateGroup;
+
+  /// No description provided for @errorGroupNotFound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppen hittades inte'**
+  String get errorGroupNotFound;
+
+  /// No description provided for @errorCouldNotDeleteGroup.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort gruppen'**
+  String get errorCouldNotDeleteGroup;
+
+  /// No description provided for @errorCouldNotCreateRule.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte skapa regeln'**
+  String get errorCouldNotCreateRule;
+
+  /// No description provided for @errorCouldNotUpdateRule.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte uppdatera regeln'**
+  String get errorCouldNotUpdateRule;
+
+  /// No description provided for @errorCouldNotDeleteRule.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort regeln'**
+  String get errorCouldNotDeleteRule;
+
+  /// No description provided for @errorNoImageToProcess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen bild att behandla'**
+  String get errorNoImageToProcess;
+
+  /// No description provided for @errorPleaseEnterText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänligen ange text att tolka'**
+  String get errorPleaseEnterText;
+
+  /// No description provided for @errorPleaseEnterTextToImport.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänligen ange text att importera'**
+  String get errorPleaseEnterTextToImport;
+
+  /// No description provided for @errorTextTooShort.
+  ///
+  /// In sv, this message translates to:
+  /// **'Texten är för kort för att innehålla ett recept'**
+  String get errorTextTooShort;
+
+  /// No description provided for @errorPleaseEnterValidUrl.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänligen ange en giltig URL'**
+  String get errorPleaseEnterValidUrl;
+
+  /// No description provided for @errorNoRecipeToValidate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget recept att validera'**
+  String get errorNoRecipeToValidate;
+
+  /// No description provided for @errorRecipeTitleRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recepttitel krävs'**
+  String get errorRecipeTitleRequired;
+
+  /// No description provided for @errorRecipeMustHaveIngredient.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet måste ha minst en ingrediens'**
+  String get errorRecipeMustHaveIngredient;
+
+  /// No description provided for @errorRecipeMustHaveInstruction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet måste ha minst en instruktion'**
+  String get errorRecipeMustHaveInstruction;
+
+  /// No description provided for @errorImportConditionsNotMet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importvillkor inte uppfyllda'**
+  String get errorImportConditionsNotMet;
+
+  /// No description provided for @errorSelectAtLeastOneIngredient.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj minst en ingrediens'**
+  String get errorSelectAtLeastOneIngredient;
+
+  /// No description provided for @errorSelectAtLeastOneInstruction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj minst en instruktion'**
+  String get errorSelectAtLeastOneInstruction;
+
+  /// No description provided for @errorEnterRecipeName.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange ett receptnamn'**
+  String get errorEnterRecipeName;
+
+  /// No description provided for @errorAddAtLeastOneIngredient.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till minst en ingrediens'**
+  String get errorAddAtLeastOneIngredient;
+
+  /// No description provided for @errorAddAtLeastOneInstruction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till minst en instruktion'**
+  String get errorAddAtLeastOneInstruction;
+
+  /// No description provided for @errorImportFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Import misslyckades'**
+  String get errorImportFailed;
+
+  /// No description provided for @errorNoRecipesSelected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga recept valda'**
+  String get errorNoRecipesSelected;
+
+  /// No description provided for @errorEnterMenuDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange vad du vill ha för meny'**
+  String get errorEnterMenuDescription;
+
+  /// No description provided for @errorNoMoreRecipesForSwap.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga fler recept tillgängliga för byte'**
+  String get errorNoMoreRecipesForSwap;
+
+  /// No description provided for @errorNoMenuToSave.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen meny att spara'**
+  String get errorNoMenuToSave;
+
+  /// No description provided for @errorEnterMenuName.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange ett namn för menyn'**
+  String get errorEnterMenuName;
+
+  /// No description provided for @errorMenuNotFound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Menyn kunde inte hittas'**
+  String get errorMenuNotFound;
+
+  /// No description provided for @errorNoMenuToSaveAsTemplate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen meny att spara som mall'**
+  String get errorNoMenuToSaveAsTemplate;
+
+  /// No description provided for @errorCouldNotSaveTemplate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara mall'**
+  String get errorCouldNotSaveTemplate;
+
+  /// No description provided for @errorNoMenuLoaded.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen meny laddad'**
+  String get errorNoMenuLoaded;
+
+  /// No description provided for @errorNoEditPermission.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen redigeringsbehörighet'**
+  String get errorNoEditPermission;
+
+  /// No description provided for @errorNoInternetConnection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen internetanslutning'**
+  String get errorNoInternetConnection;
+
+  /// No description provided for @errorNoRecipesAvailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga recept tillgängliga. Lägg till recept först.'**
+  String get errorNoRecipesAvailable;
+
+  /// No description provided for @errorNoMenuToShare.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen meny att dela'**
+  String get errorNoMenuToShare;
+
+  /// No description provided for @errorCouldNotAddItem.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte lägga till artikel'**
+  String get errorCouldNotAddItem;
+
+  /// No description provided for @errorCouldNotUpdateItem.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte uppdatera artikel'**
+  String get errorCouldNotUpdateItem;
+
+  /// No description provided for @errorListNotFound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lista hittades inte'**
+  String get errorListNotFound;
+
+  /// No description provided for @errorCouldNotLoadGroupInfo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda gruppinformation'**
+  String get errorCouldNotLoadGroupInfo;
+
+  /// No description provided for @errorCouldNotAddMembers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte lägga till medlemmar'**
+  String get errorCouldNotAddMembers;
+
+  /// No description provided for @errorCouldNotLeaveGroup.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte lämna grupp'**
+  String get errorCouldNotLeaveGroup;
+
+  /// No description provided for @errorCouldNotLoadConversation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda konversation'**
+  String get errorCouldNotLoadConversation;
+
+  /// No description provided for @errorCouldNotLoadMessages.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda meddelanden'**
+  String get errorCouldNotLoadMessages;
+
+  /// No description provided for @errorCouldNotStartConversation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte starta konversation'**
+  String get errorCouldNotStartConversation;
+
+  /// No description provided for @errorMessageCannotBeEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meddelandet kan inte vara tomt'**
+  String get errorMessageCannotBeEmpty;
+
+  /// No description provided for @errorNoFriendsOrGroupsSelected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga vänner eller grupper valda'**
+  String get errorNoFriendsOrGroupsSelected;
+
+  /// No description provided for @errorNoRecipientsFound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga mottagare hittades'**
+  String get errorNoRecipientsFound;
+
+  /// No description provided for @errorFormIncomplete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Formuläret är inte komplett'**
+  String get errorFormIncomplete;
+
+  /// No description provided for @errorMustCreateProfileFirst.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du måste skapa en profil först'**
+  String get errorMustCreateProfileFirst;
+
+  /// No description provided for @errorTitleRequiredNotEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Titel krävs och får inte vara tom'**
+  String get errorTitleRequiredNotEmpty;
+
+  /// No description provided for @errorDescriptionTooLong.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beskrivning för lång'**
+  String get errorDescriptionTooLong;
+
+  /// No description provided for @errorMustSelectAtLeastOneFriend.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du måste välja minst en vän att dela med'**
+  String get errorMustSelectAtLeastOneFriend;
+
+  /// No description provided for @errorGroupNameRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppnamn krävs'**
+  String get errorGroupNameRequired;
+
+  /// No description provided for @errorGroupNameExists.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här gruppnamnet finns redan'**
+  String get errorGroupNameExists;
+
+  /// No description provided for @errorOnlyAdminCanRemoveMembers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Endast administratör kan ta bort medlemmar'**
+  String get errorOnlyAdminCanRemoveMembers;
+
+  /// No description provided for @errorUseLeaveGroupToLeave.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd \"Lämna grupp\" för att lämna konversationen'**
+  String get errorUseLeaveGroupToLeave;
+
+  /// No description provided for @errorOnlyAdminCanChangeGroupName.
+  ///
+  /// In sv, this message translates to:
+  /// **'Endast administratör kan ändra gruppnamn'**
+  String get errorOnlyAdminCanChangeGroupName;
+
+  /// No description provided for @errorGroupNameCannotBeEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppnamn kan inte vara tomt'**
+  String get errorGroupNameCannotBeEmpty;
+
+  /// No description provided for @errorFillRequiredFields.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fyll i alla obligatoriska fält'**
+  String get errorFillRequiredFields;
+
+  /// No description provided for @errorNoPermissionToSave.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inte behörighet att spara detta recept'**
+  String get errorNoPermissionToSave;
+
+  /// No description provided for @errorNoRecipeToFork.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget recept att forka'**
+  String get errorNoRecipeToFork;
+
+  /// No description provided for @errorCouldNotForkRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte forka recept'**
+  String get errorCouldNotForkRecipe;
+
+  /// No description provided for @errorNoRecipeToDelete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget recept att ta bort'**
+  String get errorNoRecipeToDelete;
+
+  /// No description provided for @errorNoPermissionToDelete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inte behörighet att ta bort detta recept'**
+  String get errorNoPermissionToDelete;
+
+  /// No description provided for @errorPasswordCannotBeEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenord kan inte vara tomt'**
+  String get errorPasswordCannotBeEmpty;
+
+  /// No description provided for @errorPasswordMinSixChars.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenord måste vara minst 6 tecken'**
+  String get errorPasswordMinSixChars;
+
+  /// No description provided for @errorDisplayNameCannotBeEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visningsnamn kan inte vara tomt'**
+  String get errorDisplayNameCannotBeEmpty;
+
+  /// No description provided for @errorDisplayNameMinLength.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visningsnamn måste vara minst 2 tecken'**
+  String get errorDisplayNameMinLength;
+
+  /// No description provided for @errorSomeSharesFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vissa delningar misslyckades'**
+  String get errorSomeSharesFailed;
+
+  /// No description provided for @errorNoFriendsToShareWith.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inga vänner att dela med'**
+  String get errorNoFriendsToShareWith;
+
+  /// No description provided for @errorSelectAtLeastOneFriend.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj minst en vän att dela med'**
+  String get errorSelectAtLeastOneFriend;
+
+  /// No description provided for @errorFillRequiredFieldsCorrectly.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fyll i alla obligatoriska fält korrekt'**
+  String get errorFillRequiredFieldsCorrectly;
+
+  /// No description provided for @errorNameAlreadyTaken.
+  ///
+  /// In sv, this message translates to:
+  /// **'Detta namn är redan taget'**
+  String get errorNameAlreadyTaken;
+
+  /// No description provided for @errorNameRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Namn krävs'**
+  String get errorNameRequired;
+
+  /// No description provided for @errorNameInvalidCharacters.
+  ///
+  /// In sv, this message translates to:
+  /// **'Namnet innehåller ogiltiga tecken'**
+  String get errorNameInvalidCharacters;
+
+  /// No description provided for @errorNoPermissionToManageParticipants.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen behörighet att hantera deltagare'**
+  String get errorNoPermissionToManageParticipants;
+
+  /// No description provided for @errorCannotRemoveSelf.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan inte ta bort sig själv som deltagare'**
+  String get errorCannotRemoveSelf;
+
+  /// No description provided for @errorCannotChangeOwnPermissions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan inte ändra sina egna behörigheter'**
+  String get errorCannotChangeOwnPermissions;
+
+  /// No description provided for @errorNoUserIdAvailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen användar-ID tillgänglig'**
+  String get errorNoUserIdAvailable;
+
+  /// No description provided for @errorInvitationNotFound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inbjudan hittades inte'**
+  String get errorInvitationNotFound;
+
+  /// No description provided for @errorNoInternetCheckConnection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen internetanslutning. Kontrollera din anslutning och försök igen.'**
+  String get errorNoInternetCheckConnection;
+
+  /// No description provided for @errorPermissionDeniedRetry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behörighet nekad. Försök logga in igen.'**
+  String get errorPermissionDeniedRetry;
+
+  /// No description provided for @errorExportFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett fel uppstod vid export av data. Försök igen.'**
+  String get errorExportFailed;
+
+  /// No description provided for @errorTagNameExists.
+  ///
+  /// In sv, this message translates to:
+  /// **'En tagg med namnet \"{name}\" finns redan'**
+  String errorTagNameExists(String name);
+
+  /// No description provided for @errorGroupDoesNotExist.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppen finns inte'**
+  String get errorGroupDoesNotExist;
+
+  /// No description provided for @errorTagDoesNotExist.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggen finns inte'**
+  String get errorTagDoesNotExist;
+
+  /// No description provided for @errorRuleDoesNotExist.
+  ///
+  /// In sv, this message translates to:
+  /// **'Regeln finns inte'**
+  String get errorRuleDoesNotExist;
+
+  /// No description provided for @errorSharedTagNotFound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delad tagg hittades inte'**
+  String get errorSharedTagNotFound;
+
+  /// No description provided for @errorCannotRemoveOwner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan inte ta bort ägaren från resursen'**
+  String get errorCannotRemoveOwner;
+
+  /// No description provided for @errorOwnerMustKeepPermission.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägaren måste behålla owner-behörighet'**
+  String get errorOwnerMustKeepPermission;
+
+  /// No description provided for @errorCouldNotLoadRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda recept'**
+  String get errorCouldNotLoadRecipes;
+
+  /// No description provided for @errorCouldNotDeleteRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort recept'**
+  String get errorCouldNotDeleteRecipe;
+
+  /// No description provided for @errorCouldNotValidateImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte validera bild'**
+  String get errorCouldNotValidateImage;
+
+  /// No description provided for @errorCouldNotReadImageSize.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte läsa bildstorlek'**
+  String get errorCouldNotReadImageSize;
+
+  /// No description provided for @errorImageDoesNotExist.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden finns inte'**
+  String get errorImageDoesNotExist;
+
+  /// No description provided for @actionRecipeSaving.
+  ///
+  /// In sv, this message translates to:
+  /// **'sparar recept'**
+  String get actionRecipeSaving;
+
+  /// No description provided for @actionRecipeUploading.
+  ///
+  /// In sv, this message translates to:
+  /// **'laddar upp recept'**
+  String get actionRecipeUploading;
+
+  /// No description provided for @actionRecipeLoading.
+  ///
+  /// In sv, this message translates to:
+  /// **'laddar recept'**
+  String get actionRecipeLoading;
+
+  /// No description provided for @actionRecipeDeleting.
+  ///
+  /// In sv, this message translates to:
+  /// **'tar bort recept'**
+  String get actionRecipeDeleting;
+
+  /// No description provided for @actionRecipeValidation.
+  ///
+  /// In sv, this message translates to:
+  /// **'validerar recept'**
+  String get actionRecipeValidation;
+
+  /// No description provided for @actionRecipeCollaborativeSync.
+  ///
+  /// In sv, this message translates to:
+  /// **'synkroniserar delat recept'**
+  String get actionRecipeCollaborativeSync;
+
+  /// No description provided for @actionRecipeDraftRestore.
+  ///
+  /// In sv, this message translates to:
+  /// **'återställer utkast'**
+  String get actionRecipeDraftRestore;
+
+  /// No description provided for @actionRecipeImageUpload.
+  ///
+  /// In sv, this message translates to:
+  /// **'laddar upp bilder'**
+  String get actionRecipeImageUpload;
+
+  /// No description provided for @actionRecipeImageProcessing.
+  ///
+  /// In sv, this message translates to:
+  /// **'bearbetar bilder'**
+  String get actionRecipeImageProcessing;
+
+  /// No description provided for @actionRecipeImageDelete.
+  ///
+  /// In sv, this message translates to:
+  /// **'tar bort bild'**
+  String get actionRecipeImageDelete;
+
+  /// No description provided for @actionShoppingListCreate.
+  ///
+  /// In sv, this message translates to:
+  /// **'skapar inköpslista'**
+  String get actionShoppingListCreate;
+
+  /// No description provided for @actionShoppingItemAdd.
+  ///
+  /// In sv, this message translates to:
+  /// **'lägger till vara'**
+  String get actionShoppingItemAdd;
+
+  /// No description provided for @actionShoppingListSync.
+  ///
+  /// In sv, this message translates to:
+  /// **'synkroniserar inköpslista'**
+  String get actionShoppingListSync;
+
+  /// No description provided for @actionShoppingListShare.
+  ///
+  /// In sv, this message translates to:
+  /// **'delar inköpslista'**
+  String get actionShoppingListShare;
+
+  /// No description provided for @actionShoppingListDelete.
+  ///
+  /// In sv, this message translates to:
+  /// **'tar bort inköpslista'**
+  String get actionShoppingListDelete;
+
+  /// No description provided for @actionFriendInvite.
+  ///
+  /// In sv, this message translates to:
+  /// **'skickar väninvitation'**
+  String get actionFriendInvite;
+
+  /// No description provided for @actionGroupCreate.
+  ///
+  /// In sv, this message translates to:
+  /// **'skapar grupp'**
+  String get actionGroupCreate;
+
+  /// No description provided for @actionMessagesSend.
+  ///
+  /// In sv, this message translates to:
+  /// **'skickar meddelande'**
+  String get actionMessagesSend;
+
+  /// No description provided for @actionSocialSync.
+  ///
+  /// In sv, this message translates to:
+  /// **'synkroniserar socialt innehåll'**
+  String get actionSocialSync;
+
+  /// No description provided for @actionUserProfileUpdate.
+  ///
+  /// In sv, this message translates to:
+  /// **'uppdaterar profil'**
+  String get actionUserProfileUpdate;
+
+  /// No description provided for @actionPermissionRequest.
+  ///
+  /// In sv, this message translates to:
+  /// **'begär behörighet'**
+  String get actionPermissionRequest;
+
+  /// No description provided for @actionAppStartup.
+  ///
+  /// In sv, this message translates to:
+  /// **'startar app'**
+  String get actionAppStartup;
+
+  /// No description provided for @actionDataSync.
+  ///
+  /// In sv, this message translates to:
+  /// **'synkroniserar data'**
+  String get actionDataSync;
+
+  /// No description provided for @actionBackgroundUpload.
+  ///
+  /// In sv, this message translates to:
+  /// **'bakgrundsuppladdning'**
+  String get actionBackgroundUpload;
+
+  /// No description provided for @actionOffline.
+  ///
+  /// In sv, this message translates to:
+  /// **'offline-operation'**
+  String get actionOffline;
+
+  /// No description provided for @errorNetworkNoConnection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen internetanslutning medan {action}. Ändringar sparas lokalt och synkroniseras automatiskt när du är online igen.'**
+  String errorNetworkNoConnection(String action);
+
+  /// No description provided for @errorNetworkLimited.
+  ///
+  /// In sv, this message translates to:
+  /// **'Begränsad internetanslutning medan {action}. Vissa funktioner kan vara otillgängliga.'**
+  String errorNetworkLimited(String action);
+
+  /// No description provided for @errorNetworkDegraded.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anslutningsproblem medan {action}. DNS-problem upptäckta, kontrollerar anslutningen automatiskt.'**
+  String errorNetworkDegraded(String action);
+
+  /// No description provided for @errorNetworkTemporary.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillfälligt nätverksfel medan {action}. Kontrollerar anslutningen och försöker igen automatiskt.'**
+  String errorNetworkTemporary(String action);
+
+  /// No description provided for @errorNetworkUnknownStatus.
+  ///
+  /// In sv, this message translates to:
+  /// **'Okänd anslutningsstatus medan {action}. Kontrollera internetanslutningen och försök igen.'**
+  String errorNetworkUnknownStatus(String action);
+
+  /// No description provided for @errorAuthNoPermissionFor.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du saknar behörighet för {action}'**
+  String errorAuthNoPermissionFor(String action);
+
+  /// No description provided for @errorAuthNotLoggedInWhile.
+  ///
+  /// In sv, this message translates to:
+  /// **'{base} eftersom du inte är inloggad.'**
+  String errorAuthNotLoggedInWhile(String base);
+
+  /// No description provided for @errorAuthViewerOnly.
+  ///
+  /// In sv, this message translates to:
+  /// **'{base}. Du har endast läsrättigheter för detta innehåll.'**
+  String errorAuthViewerOnly(String base);
+
+  /// No description provided for @errorAuthEditorRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'{base}. Redigeringsrättigheter krävs för denna åtgärd.'**
+  String errorAuthEditorRequired(String base);
+
+  /// No description provided for @errorAuthNotShared.
+  ///
+  /// In sv, this message translates to:
+  /// **'{base}. Du har inte delats detta innehåll.'**
+  String errorAuthNotShared(String base);
+
+  /// No description provided for @errorAuthOwnerOnly.
+  ///
+  /// In sv, this message translates to:
+  /// **'{base}. Endast ägaren ({owner}) kan utföra denna åtgärd.'**
+  String errorAuthOwnerOnly(String base, String owner);
+
+  /// No description provided for @errorAuthContactOwner.
+  ///
+  /// In sv, this message translates to:
+  /// **'{base}. Kontakta innehållsägaren för utökade rättigheter.'**
+  String errorAuthContactOwner(String base);
+
+  /// No description provided for @errorNotFoundRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet kunde inte hittas medan {action}. Det kan ha blivit raderat eller flyttat av ägaren.'**
+  String errorNotFoundRecipe(String action);
+
+  /// No description provided for @errorNotFoundShoppingList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inköpslistan kunde inte hittas medan {action}. Den kan ha blivit raderad eller du har inte längre åtkomst.'**
+  String errorNotFoundShoppingList(String action);
+
+  /// No description provided for @errorNotFoundImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden kunde inte hittas medan {action}. Den kan ha blivit raderad eller flyttad.'**
+  String errorNotFoundImage(String action);
+
+  /// No description provided for @errorNotFoundGeneric.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det begärda innehållet kunde inte hittas medan {action}. Det kan ha blivit raderat eller du har inte längre åtkomst.'**
+  String errorNotFoundGeneric(String action);
+
+  /// No description provided for @errorServiceMaintenance.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tjänsten är temporärt otillgänglig för underhåll medan {action}. Försök igen om några minuter.'**
+  String errorServiceMaintenance(String action);
+
+  /// No description provided for @errorServiceSync.
+  ///
+  /// In sv, this message translates to:
+  /// **'Synkroniseringstjänsten är temporärt otillgänglig medan {action}. Ändringar sparas lokalt och synkroniseras automatiskt senare.'**
+  String errorServiceSync(String action);
+
+  /// No description provided for @errorServiceTemporary.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tjänsten är temporärt otillgänglig medan {action}. Försök igen om ett par minuter.'**
+  String errorServiceTemporary(String action);
+
+  /// No description provided for @errorDnsConnection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ansluta till servern medan {action}. Kontrollera internetanslutningen eller försök igen senare.'**
+  String errorDnsConnection(String action);
+
+  /// No description provided for @errorUnknownWhileAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett oväntat fel uppstod medan {action}. Försök igen eller kontakta support om problemet kvarstår.'**
+  String errorUnknownWhileAction(String action);
+
+  /// No description provided for @errorUnknownWithTechnical.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett oväntat fel uppstod medan {action}. Försök igen eller kontakta support om problemet kvarstår. (Teknisk information: {techInfo})'**
+  String errorUnknownWithTechnical(String action, String techInfo);
+
+  /// No description provided for @errorFallbackWhileAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett fel uppstod medan {action}. Försök igen.'**
+  String errorFallbackWhileAction(String action);
+
+  /// No description provided for @suggestionLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslag:'**
+  String get suggestionLabel;
+
+  /// No description provided for @suggestionSavedLocally.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet sparas lokalt och synkroniseras automatiskt'**
+  String get suggestionSavedLocally;
+
+  /// No description provided for @suggestionCheckLoggedIn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontrollera att du är inloggad'**
+  String get suggestionCheckLoggedIn;
+
+  /// No description provided for @suggestionRequestPermission.
+  ///
+  /// In sv, this message translates to:
+  /// **'Be om redigeringsrättigheter från receptägaren'**
+  String get suggestionRequestPermission;
+
+  /// No description provided for @suggestionImageSavedLocally.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilderna sparas lokalt och laddas upp automatiskt senare'**
+  String get suggestionImageSavedLocally;
+
+  /// No description provided for @suggestionImageSizeLimit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontrollera att bilderna är mindre än 10MB'**
+  String get suggestionImageSizeLimit;
+
+  /// No description provided for @suggestionImageFormat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd JPG, PNG eller HEIC format'**
+  String get suggestionImageFormat;
+
+  /// No description provided for @suggestionSelectAnotherDraft.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj ett annat utkast från listan'**
+  String get suggestionSelectAnotherDraft;
+
+  /// No description provided for @suggestionCreateNewRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Börja skapa ett nytt recept istället'**
+  String get suggestionCreateNewRecipe;
+
+  /// No description provided for @suggestionUpdateAccountSettings.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppdatera dina kontoinställningar'**
+  String get suggestionUpdateAccountSettings;
+
+  /// No description provided for @suggestionCheckConnection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontrollera internetanslutningen'**
+  String get suggestionCheckConnection;
+
+  /// No description provided for @suggestionRetryWhenStable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök igen när anslutningen är stabil'**
+  String get suggestionRetryWhenStable;
+
+  /// No description provided for @suggestionLoginAgain.
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in på nytt'**
+  String get suggestionLoginAgain;
+
+  /// No description provided for @suggestionRetryInMinutes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök igen om några minuter'**
+  String get suggestionRetryInMinutes;
+
+  /// No description provided for @suggestionRetryOrContactSupport.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök igen eller kontakta support'**
+  String get suggestionRetryOrContactSupport;
+
+  /// No description provided for @statusConnected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ansluten'**
+  String get statusConnected;
+
+  /// No description provided for @statusFirebaseUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Firebase otillgänglig'**
+  String get statusFirebaseUnavailable;
+
+  /// No description provided for @statusNoInternet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen internetanslutning'**
+  String get statusNoInternet;
+
+  /// No description provided for @statusDisconnected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Frånkopplad'**
+  String get statusDisconnected;
+
+  /// No description provided for @statusCheckingConnection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontrollerar anslutning...'**
+  String get statusCheckingConnection;
+
+  /// No description provided for @statusReconnecting.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återansluter...'**
+  String get statusReconnecting;
+
+  /// No description provided for @statusFetchingContent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar innehåll...'**
+  String get statusFetchingContent;
+
+  /// No description provided for @statusAnalyzingRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Analyserar recept...'**
+  String get statusAnalyzingRecipe;
+
+  /// No description provided for @statusCreatingRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapar recept...'**
+  String get statusCreatingRecipe;
+
+  /// No description provided for @statusDone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klar!'**
+  String get statusDone;
+
+  /// No description provided for @statusNeedsHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behöver din hjälp'**
+  String get statusNeedsHelp;
+
+  /// No description provided for @displayUnknownContent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Okänt innehåll'**
+  String get displayUnknownContent;
+
+  /// No description provided for @displayEmptyList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tom lista'**
+  String get displayEmptyList;
+
+  /// No description provided for @displayOnlyYou.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bara du'**
+  String get displayOnlyYou;
+
+  /// No description provided for @displayNoDate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget datum'**
+  String get displayNoDate;
+
+  /// No description provided for @displayUnknownUser.
+  ///
+  /// In sv, this message translates to:
+  /// **'Okänd användare'**
+  String get displayUnknownUser;
+
+  /// No description provided for @displayUntitledRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Namnlöst recept'**
+  String get displayUntitledRecipe;
+
+  /// No description provided for @displayNoConsent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget samtycke'**
+  String get displayNoConsent;
+
+  /// No description provided for @displayNoActivity.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen aktivitet'**
+  String get displayNoActivity;
+
+  /// No description provided for @resourceTypeRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get resourceTypeRecipe;
+
+  /// No description provided for @resourceTypeMenu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meny'**
+  String get resourceTypeMenu;
+
+  /// No description provided for @resourceTypeShoppingList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inköpslista'**
+  String get resourceTypeShoppingList;
+
+  /// No description provided for @permissionOwner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägare'**
+  String get permissionOwner;
+
+  /// No description provided for @permissionAdmin.
+  ///
+  /// In sv, this message translates to:
+  /// **'Administratör'**
+  String get permissionAdmin;
+
+  /// No description provided for @permissionEditor.
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigerare'**
+  String get permissionEditor;
+
+  /// No description provided for @permissionWriter.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skrivare'**
+  String get permissionWriter;
+
+  /// No description provided for @permissionViewer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betraktare'**
+  String get permissionViewer;
+
+  /// No description provided for @permissionReader.
+  ///
+  /// In sv, this message translates to:
+  /// **'Läsare'**
+  String get permissionReader;
+
+  /// No description provided for @permissionUnknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Okänd behörighet'**
+  String get permissionUnknown;
+
+  /// No description provided for @activityJustNow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Just nu'**
+  String get activityJustNow;
+
+  /// No description provided for @activityActiveNow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktiv nu'**
+  String get activityActiveNow;
+
+  /// No description provided for @activityActiveThisWeek.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktiv denna veckan'**
+  String get activityActiveThisWeek;
+
+  /// No description provided for @activityInactive.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inaktiv'**
+  String get activityInactive;
+
+  /// No description provided for @validationTitleCannotBeEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Titel får inte vara tom'**
+  String get validationTitleCannotBeEmpty;
+
+  /// No description provided for @validationIngredientRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Minst en ingrediens krävs'**
+  String get validationIngredientRequired;
+
+  /// No description provided for @validationInstructionRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Minst en instruktion krävs'**
+  String get validationInstructionRequired;
+
+  /// No description provided for @validationPortionsMustBePositive.
+  ///
+  /// In sv, this message translates to:
+  /// **'Portioner måste vara positiva'**
+  String get validationPortionsMustBePositive;
+
+  /// No description provided for @validationTimeMustBePositive.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tid måste vara positiv'**
+  String get validationTimeMustBePositive;
+
+  /// No description provided for @validationRatingRange.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyg måste vara mellan 0 och 5'**
+  String get validationRatingRange;
+
+  /// No description provided for @validationInvalidIngredientIndex.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltigt ingrediensindex: {index}'**
+  String validationInvalidIngredientIndex(int index);
+
+  /// No description provided for @validationInvalidInstructionIndex.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltigt instruktionsindex: {index}'**
+  String validationInvalidInstructionIndex(int index);
+
+  /// No description provided for @validationInvalidImageIndex.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltigt bildindex: {index}'**
+  String validationInvalidImageIndex(int index);
+
+  /// No description provided for @notificationTitleSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lyckades!'**
+  String get notificationTitleSuccess;
+
+  /// No description provided for @notificationTitleError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fel uppstod'**
+  String get notificationTitleError;
+
+  /// No description provided for @notificationTitleNewRecipeActivity.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny receptaktivitet'**
+  String get notificationTitleNewRecipeActivity;
+
+  /// No description provided for @notificationTitleFriendActivity.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänaktivitet'**
+  String get notificationTitleFriendActivity;
+
+  /// No description provided for @notificationTitleCollaborationActivity.
+  ///
+  /// In sv, this message translates to:
+  /// **'Samarbetsaktivitet'**
+  String get notificationTitleCollaborationActivity;
+
+  /// No description provided for @notificationTitleShoppingLists.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inköpslistor'**
+  String get notificationTitleShoppingLists;
+
+  /// No description provided for @notificationTitleSocialActivity.
+  ///
+  /// In sv, this message translates to:
+  /// **'Social aktivitet'**
+  String get notificationTitleSocialActivity;
+
+  /// No description provided for @notificationTitleNewActivity.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny aktivitet'**
+  String get notificationTitleNewActivity;
+
+  /// No description provided for @errorWeakPassword.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet är för svagt. Använd minst 6 tecken.'**
+  String get errorWeakPassword;
+
+  /// No description provided for @errorLoginFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggning misslyckades. Försök igen.'**
+  String get errorLoginFailed;
+
+  /// No description provided for @errorCouldNotLogOut.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte logga ut'**
+  String get errorCouldNotLogOut;
+
+  /// No description provided for @errorCouldNotDeleteAccount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort konto'**
+  String get errorCouldNotDeleteAccount;
+
+  /// No description provided for @errorCouldNotCompleteMfa.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte slutföra MFA-registrering'**
+  String get errorCouldNotCompleteMfa;
+
+  /// No description provided for @errorMfaVerificationFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'MFA-verifiering misslyckades'**
+  String get errorMfaVerificationFailed;
+
+  /// No description provided for @errorInvalidPhoneNumber.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltigt telefonnummer. Ange med landskod (+46).'**
+  String get errorInvalidPhoneNumber;
+
+  /// No description provided for @errorCouldNotSaveRecipeCheckConnection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara receptet. Kontrollera din internetanslutning.'**
+  String get errorCouldNotSaveRecipeCheckConnection;
+
+  /// No description provided for @errorCouldNotUpdateRecipeCheckConnection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte uppdatera receptet. Kontrollera din internetanslutning.'**
+  String get errorCouldNotUpdateRecipeCheckConnection;
+
+  /// No description provided for @errorCouldNotDeleteFromServer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort recept från servern'**
+  String get errorCouldNotDeleteFromServer;
+
+  /// No description provided for @errorRateLimitExceeded.
+  ///
+  /// In sv, this message translates to:
+  /// **'För många förfrågningar. Försök igen om {seconds} sekunder.'**
+  String errorRateLimitExceeded(int seconds);
+
+  /// No description provided for @errorCouldNotImportRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte importera recept'**
+  String get errorCouldNotImportRecipes;
+
+  /// No description provided for @errorCouldNotExportRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte exportera recept'**
+  String get errorCouldNotExportRecipes;
+
+  /// No description provided for @errorCouldNotMarkAsCooked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte markera recept som tillagat'**
+  String get errorCouldNotMarkAsCooked;
+
+  /// No description provided for @errorCouldNotAddIngredient.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte lägga till ingrediens'**
+  String get errorCouldNotAddIngredient;
+
+  /// No description provided for @errorCouldNotUpdateIngredient.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte uppdatera ingrediens'**
+  String get errorCouldNotUpdateIngredient;
+
+  /// No description provided for @errorCouldNotRemoveIngredient.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort ingrediens'**
+  String get errorCouldNotRemoveIngredient;
+
+  /// No description provided for @errorCouldNotAddInstruction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte lägga till instruktion'**
+  String get errorCouldNotAddInstruction;
+
+  /// No description provided for @errorCouldNotUpdateInstruction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte uppdatera instruktion'**
+  String get errorCouldNotUpdateInstruction;
+
+  /// No description provided for @errorCouldNotRemoveInstruction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort instruktion'**
+  String get errorCouldNotRemoveInstruction;
+
+  /// No description provided for @errorCouldNotStartRealtimeEditing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte starta realtidsredigering'**
+  String get errorCouldNotStartRealtimeEditing;
+
+  /// No description provided for @errorRealtimeSyncFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Realtidssynkronisering misslyckades'**
+  String get errorRealtimeSyncFailed;
+
+  /// No description provided for @errorCouldNotApplyRealtimeEdit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte genomföra realtidsändring'**
+  String get errorCouldNotApplyRealtimeEdit;
+
+  /// No description provided for @errorCouldNotStartSync.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte starta synkronisering'**
+  String get errorCouldNotStartSync;
+
+  /// No description provided for @errorSyncErrorFor.
+  ///
+  /// In sv, this message translates to:
+  /// **'Synkroniseringsfel för {syncType}'**
+  String errorSyncErrorFor(String syncType);
+
+  /// No description provided for @errorCouldNotUpdateNotificationToken.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte uppdatera notifikationstoken'**
+  String get errorCouldNotUpdateNotificationToken;
+
+  /// No description provided for @errorCouldNotUpdateNotificationSettings.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte uppdatera notifikationsinställningar'**
+  String get errorCouldNotUpdateNotificationSettings;
+
+  /// No description provided for @errorCouldNotUpdateAllergenSettings.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte uppdatera allergeninställningar'**
+  String get errorCouldNotUpdateAllergenSettings;
+
+  /// No description provided for @errorCouldNotLoadProfile.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda profil'**
+  String get errorCouldNotLoadProfile;
+
+  /// No description provided for @errorCouldNotUpdateRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte uppdatera recept'**
+  String get errorCouldNotUpdateRecipes;
+
+  /// No description provided for @errorNetworkCheckInternet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nätverksfel - kontrollera din internetanslutning'**
+  String get errorNetworkCheckInternet;
+
+  /// No description provided for @errorPermissionMissing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behörighet saknas'**
+  String get errorPermissionMissing;
+
+  /// No description provided for @errorTimeout.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tidsgräns överskriden'**
+  String get errorTimeout;
+
+  /// No description provided for @errorTechnical.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tekniskt fel'**
+  String get errorTechnical;
+
+  /// No description provided for @permissionCanViewRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan visa recept'**
+  String get permissionCanViewRecipe;
+
+  /// No description provided for @permissionCanComment.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan skriva kommentarer'**
+  String get permissionCanComment;
+
+  /// No description provided for @permissionCanEditRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan redigera recept'**
+  String get permissionCanEditRecipe;
+
+  /// No description provided for @permissionCanManageMembers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan hantera medlemmar'**
+  String get permissionCanManageMembers;
+
+  /// No description provided for @permissionOwnerOfRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägare av recept'**
+  String get permissionOwnerOfRecipe;
+
+  /// No description provided for @errorGroupNameExistsWithName.
+  ///
+  /// In sv, this message translates to:
+  /// **'En grupp med namnet \"{name}\" finns redan'**
+  String errorGroupNameExistsWithName(String name);
+
+  /// No description provided for @errorUserNotLoggedIn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Användare inte inloggad'**
+  String get errorUserNotLoggedIn;
+
+  /// No description provided for @errorResourceNotFound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Resursen hittades inte'**
+  String get errorResourceNotFound;
+
+  /// No description provided for @errorNoDeletePermission.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen behörighet att ta bort resursen'**
+  String get errorNoDeletePermission;
+
+  /// No description provided for @errorCannotRemoveResourceOwner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan inte ta bort ägaren från resursen'**
+  String get errorCannotRemoveResourceOwner;
+
+  /// No description provided for @validationRecipeTitleCannotBeEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recepttitel kan inte vara tom'**
+  String get validationRecipeTitleCannotBeEmpty;
+
+  /// No description provided for @validationCookingTimeCannotBeNegative.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillagningstid kan inte vara negativ'**
+  String get validationCookingTimeCannotBeNegative;
+
+  /// No description provided for @validationIngredientCannotBeEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingrediens kan inte vara tom'**
+  String get validationIngredientCannotBeEmpty;
+
+  /// No description provided for @validationInstructionCannotBeEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Instruktion kan inte vara tom'**
+  String get validationInstructionCannotBeEmpty;
+
+  /// No description provided for @validationAtLeastOneIngredient.
+  ///
+  /// In sv, this message translates to:
+  /// **'Minst en ingrediens krävs'**
+  String get validationAtLeastOneIngredient;
+
+  /// No description provided for @validationAtLeastOneInstruction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Minst en instruktion krävs'**
+  String get validationAtLeastOneInstruction;
+
+  /// No description provided for @validationImageUrlCannotBeEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bild-URL kan inte vara tom'**
+  String get validationImageUrlCannotBeEmpty;
+
+  /// No description provided for @validationInvalidImageUrlFormat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltig bild-URL format'**
+  String get validationInvalidImageUrlFormat;
+
+  /// No description provided for @validationMaxImagesReached.
+  ///
+  /// In sv, this message translates to:
+  /// **'Maximalt 5 bilder tillåtna'**
+  String get validationMaxImagesReached;
+
+  /// No description provided for @validationRecipeTitleMissing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recepttitel saknas'**
+  String get validationRecipeTitleMissing;
+
+  /// No description provided for @validationRecipeNoIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept har inga ingredienser'**
+  String get validationRecipeNoIngredients;
+
+  /// No description provided for @validationRecipeNoInstructions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept har inga instruktioner'**
+  String get validationRecipeNoInstructions;
+
+  /// No description provided for @validationRecipeDescriptionEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptbeskrivning saknas'**
+  String get validationRecipeDescriptionEmpty;
+
+  /// No description provided for @validationUserIdCannotBeEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Användar-ID kan inte vara tomt'**
+  String get validationUserIdCannotBeEmpty;
+
+  /// No description provided for @validationUsernameCannotBeEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Användarnamn kan inte vara tomt'**
+  String get validationUsernameCannotBeEmpty;
+
+  /// No description provided for @validationUserAlreadyParticipant.
+  ///
+  /// In sv, this message translates to:
+  /// **'Användaren är redan deltagare: {name}'**
+  String validationUserAlreadyParticipant(String name);
+
+  /// No description provided for @validationMaxParticipantsReached.
+  ///
+  /// In sv, this message translates to:
+  /// **'Maxgräns för deltagare nådd (50)'**
+  String get validationMaxParticipantsReached;
+
+  /// No description provided for @validationCannotRemoveRecipeOwner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan inte ta bort receptägaren'**
+  String get validationCannotRemoveRecipeOwner;
+
+  /// No description provided for @validationCannotRemoveMenuOwner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan inte ta bort menyägaren'**
+  String get validationCannotRemoveMenuOwner;
+
+  /// No description provided for @validationUserNotParticipant.
+  ///
+  /// In sv, this message translates to:
+  /// **'Användaren är inte deltagare: {id}'**
+  String validationUserNotParticipant(String id);
+
+  /// No description provided for @validationCannotChangeOwnerPermission.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan inte ändra ägarens behörighet'**
+  String get validationCannotChangeOwnerPermission;
+
+  /// No description provided for @validationCannotAssignOwnerPermission.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kan inte tilldela ägarbehörighet till annan användare'**
+  String get validationCannotAssignOwnerPermission;
+
+  /// No description provided for @validationRecipeMissingOwner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept saknar ägare'**
+  String get validationRecipeMissingOwner;
+
+  /// No description provided for @validationRecipeOwnerMissingName.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptägare saknar visningsnamn'**
+  String get validationRecipeOwnerMissingName;
+
+  /// No description provided for @validationParticipantEmptyUserId.
+  ///
+  /// In sv, this message translates to:
+  /// **'Deltagare har tomt användar-ID'**
+  String get validationParticipantEmptyUserId;
+
+  /// No description provided for @validationTagNameRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggnamn krävs'**
+  String get validationTagNameRequired;
+
+  /// No description provided for @validationTagNameTooLong.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggnamn för långt (max 50 tecken)'**
+  String get validationTagNameTooLong;
+
+  /// No description provided for @validationTagNameNoCommas.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggnamn får inte innehålla kommatecken'**
+  String get validationTagNameNoCommas;
+
+  /// No description provided for @validationTagNameReserved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Detta namn är reserverat för systemtaggar'**
+  String get validationTagNameReserved;
+
+  /// No description provided for @validationGroupNameRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppnamn krävs'**
+  String get validationGroupNameRequired;
+
+  /// No description provided for @validationGroupNameTooLong.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppnamn för långt (max 50 tecken)'**
+  String get validationGroupNameTooLong;
+
+  /// No description provided for @validationRuleMustBeLinked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Regel måste kopplas till en tagg'**
+  String get validationRuleMustBeLinked;
+
+  /// No description provided for @validationRuleNameRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Regelnamn krävs'**
+  String get validationRuleNameRequired;
+
+  /// No description provided for @validationRuleMustHaveCondition.
+  ///
+  /// In sv, this message translates to:
+  /// **'Regel måste ha minst ett villkor'**
+  String get validationRuleMustHaveCondition;
+
+  /// No description provided for @validationAllConditionsMustHaveValue.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla villkor måste ha ett värde'**
+  String get validationAllConditionsMustHaveValue;
+
+  /// No description provided for @validationImageDoesNotExist.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden finns inte'**
+  String get validationImageDoesNotExist;
+
+  /// No description provided for @validationCouldNotReadImageSize.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte läsa bildstorlek'**
+  String get validationCouldNotReadImageSize;
+
+  /// No description provided for @validationImageTooLargeWithSize.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden är för stor (max {size} MB)'**
+  String validationImageTooLargeWithSize(int size);
+
+  /// No description provided for @validationCouldNotValidateImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte validera bild'**
+  String get validationCouldNotValidateImage;
+
+  /// No description provided for @difficultyVeryEasy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mycket lätt'**
+  String get difficultyVeryEasy;
+
+  /// No description provided for @difficultyEasy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lätt'**
+  String get difficultyEasy;
+
+  /// No description provided for @difficultyMedium.
+  ///
+  /// In sv, this message translates to:
+  /// **'Medel'**
+  String get difficultyMedium;
+
+  /// No description provided for @difficultyHard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Svår'**
+  String get difficultyHard;
+
+  /// No description provided for @difficultyVeryHard.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mycket svår'**
+  String get difficultyVeryHard;
+
+  /// No description provided for @difficultyUnknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Okänd'**
+  String get difficultyUnknown;
+
+  /// No description provided for @contentSummaryIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} ingredienser'**
+  String contentSummaryIngredients(int count);
+
+  /// No description provided for @contentSummarySteps.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} steg'**
+  String contentSummarySteps(int count);
+
+  /// No description provided for @contentSummaryMinutes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} minuter'**
+  String contentSummaryMinutes(int count);
+
+  /// No description provided for @contentSummaryPortions.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} portioner'**
+  String contentSummaryPortions(int count);
+
+  /// No description provided for @collaborationPrivateRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Privat recept'**
+  String get collaborationPrivateRecipe;
+
+  /// No description provided for @collaborationCollaborativeEditorsViewers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kollaborativt ({editors} redigerare, {viewers} betraktare)'**
+  String collaborationCollaborativeEditorsViewers(int editors, int viewers);
+
+  /// No description provided for @collaborationCollaborativeEditors.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kollaborativt ({editors} redigerare)'**
+  String collaborationCollaborativeEditors(int editors);
+
+  /// No description provided for @collaborationSharedViewers.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delat ({viewers} betraktare)'**
+  String collaborationSharedViewers(int viewers);
+
+  /// No description provided for @collaborationSharedRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delat recept'**
+  String get collaborationSharedRecipe;
+
+  /// No description provided for @participantOwnerOnly.
+  ///
+  /// In sv, this message translates to:
+  /// **'Endast ägare: {name}'**
+  String participantOwnerOnly(String name);
+
+  /// No description provided for @participantSummary.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägare: {owner}, Deltagare: {count}st'**
+  String participantSummary(String owner, int count);
+
+  /// No description provided for @activityMinutesAgo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} min sedan'**
+  String activityMinutesAgo(int count);
+
+  /// No description provided for @activityHoursAgo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} tim sedan'**
+  String activityHoursAgo(int count);
+
+  /// No description provided for @activityDaysAgo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} dagar sedan'**
+  String activityDaysAgo(int count);
+
+  /// No description provided for @activityWeeksAgo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} veckor sedan'**
+  String activityWeeksAgo(int count);
+
+  /// No description provided for @resourceCreatedBy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapades av {name}'**
+  String resourceCreatedBy(String name);
+
+  /// No description provided for @resourceLastEditedBy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Senast redigerad av {name} {timeAgo}'**
+  String resourceLastEditedBy(String name, String timeAgo);
+
+  /// No description provided for @syncParsingNotImplemented.
+  ///
+  /// In sv, this message translates to:
+  /// **'RealtimeShoppingList parsing inte implementerad än'**
+  String get syncParsingNotImplemented;
+
+  /// No description provided for @backupNoRecipesToExport.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga recept att exportera'**
+  String get backupNoRecipesToExport;
+
+  /// No description provided for @backupPlatformNotSupported.
+  ///
+  /// In sv, this message translates to:
+  /// **'Plattformen stöds inte'**
+  String get backupPlatformNotSupported;
+
+  /// No description provided for @backupSavedAndroid.
+  ///
+  /// In sv, this message translates to:
+  /// **'Backup sparad i Android/data/.../Butlery'**
+  String get backupSavedAndroid;
+
+  /// No description provided for @backupSavedIos.
+  ///
+  /// In sv, this message translates to:
+  /// **'Backup sparad i Filer-appen'**
+  String get backupSavedIos;
+
+  /// No description provided for @backupCouldNotFindStorageDir.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hitta lagringsmapp'**
+  String get backupCouldNotFindStorageDir;
+
+  /// No description provided for @backupCouldNotSaveFile.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara fil: {error}'**
+  String backupCouldNotSaveFile(String error);
+
+  /// No description provided for @backupCouldNotReadFile.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte läsa filen'**
+  String get backupCouldNotReadFile;
+
+  /// No description provided for @backupInvalidFile.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltig backup-fil - inte från Butlery'**
+  String get backupInvalidFile;
+
+  /// No description provided for @backupUnknownRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Okänt recept'**
+  String get backupUnknownRecipe;
+
+  /// No description provided for @backupImportedFromBackup.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importerat från backup {date}'**
+  String backupImportedFromBackup(String date);
+
+  /// No description provided for @backupExportFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Export misslyckades: {error}'**
+  String backupExportFailed(String error);
+
+  /// No description provided for @backupImportFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Import misslyckades: {error}'**
+  String backupImportFailed(String error);
+
+  /// No description provided for @syncAlreadyInProgress.
+  ///
+  /// In sv, this message translates to:
+  /// **'Synkronisering pågår redan'**
+  String get syncAlreadyInProgress;
+
+  /// No description provided for @syncMustBeOnline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du måste vara online för att synkronisera'**
+  String get syncMustBeOnline;
+
+  /// No description provided for @syncNoUserLoggedIn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen användare inloggad'**
+  String get syncNoUserLoggedIn;
+
+  /// No description provided for @syncNoPendingChanges.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga väntande ändringar'**
+  String get syncNoPendingChanges;
+
+  /// No description provided for @syncAllSynced.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla {count} ändringar synkade!'**
+  String syncAllSynced(int count);
+
+  /// No description provided for @syncPartialSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'{synced} av {total} synkade, {remaining} kvar'**
+  String syncPartialSuccess(int synced, int total, int remaining);
+
+  /// No description provided for @syncFailedRetryLater.
+  ///
+  /// In sv, this message translates to:
+  /// **'Synkronisering misslyckades, försöker igen senare'**
+  String get syncFailedRetryLater;
+
+  /// No description provided for @instagramCouldNotFindRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hitta recept i inlagget. Ta en skärmbild av receptet.'**
+  String get instagramCouldNotFindRecipe;
+
+  /// No description provided for @uploadNotificationComplete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppladdning slutförd'**
+  String get uploadNotificationComplete;
+
+  /// No description provided for @uploadNotificationCompleteBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden har laddats upp framgångsrikt'**
+  String get uploadNotificationCompleteBody;
+
+  /// No description provided for @uploadNotificationFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppladdning misslyckades'**
+  String get uploadNotificationFailed;
+
+  /// No description provided for @uploadNotificationFailedBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ladda upp bilden efter flera försök'**
+  String get uploadNotificationFailedBody;
+
+  /// No description provided for @uploadStatusWaiting.
+  ///
+  /// In sv, this message translates to:
+  /// **'Väntar på att ladda upp {pending} bilder...'**
+  String uploadStatusWaiting(int pending);
+
+  /// No description provided for @uploadStatusUploading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Laddar upp {active} bilder ({progress}% klart, {pending} väntar)'**
+  String uploadStatusUploading(int active, int progress, int pending);
+
+  /// No description provided for @uploadStatusPreparing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förbereder uppladdning...'**
+  String get uploadStatusPreparing;
+
+  /// No description provided for @uploadStatusRetrying.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försöker igen ({attempt}/{max})...'**
+  String uploadStatusRetrying(int attempt, int max);
+
+  /// No description provided for @uploadStatusComplete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppladdning slutförd'**
+  String get uploadStatusComplete;
+
+  /// No description provided for @uploadStatusCancelled.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppladdning avbruten'**
+  String get uploadStatusCancelled;
+
+  /// No description provided for @uploadFailureNetwork.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nätverksfel - kontrollera anslutningen'**
+  String get uploadFailureNetwork;
+
+  /// No description provided for @uploadFailureValidation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden kunde inte valideras'**
+  String get uploadFailureValidation;
+
+  /// No description provided for @uploadFailureServer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Serverfel - försök igen'**
+  String get uploadFailureServer;
+
+  /// No description provided for @uploadFailureCancelled.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppladdning avbruten'**
+  String get uploadFailureCancelled;
+
+  /// No description provided for @uploadFailureGeneric.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppladdning misslyckades'**
+  String get uploadFailureGeneric;
+
+  /// No description provided for @uploadRetryCheckInternet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontrollera internetanslutningen och tryck för att försöka igen'**
+  String get uploadRetryCheckInternet;
+
+  /// No description provided for @uploadRetryCheckImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontrollera att bilden är giltig och inte för stor'**
+  String get uploadRetryCheckImage;
+
+  /// No description provided for @uploadRetryTryLater.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök igen om en stund'**
+  String get uploadRetryTryLater;
+
+  /// No description provided for @uploadRetryTapToRetry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tryck för att försöka igen'**
+  String get uploadRetryTapToRetry;
+
+  /// No description provided for @llmUnexpectedError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett oväntat fel uppstod: {error}'**
+  String llmUnexpectedError(String error);
+
+  /// No description provided for @llmUnknownRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Okänt recept'**
+  String get llmUnknownRecipe;
+
+  /// No description provided for @llmMustBeLoggedIn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du måste vara inloggad för att använda AI-funktioner.'**
+  String get llmMustBeLoggedIn;
+
+  /// No description provided for @llmServiceOverloaded.
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-tjänsten är tillfälligt överbelastad. Försök igen om en stund.'**
+  String get llmServiceOverloaded;
+
+  /// No description provided for @llmInvalidArgument.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltigt argument: {error}'**
+  String llmInvalidArgument(String error);
+
+  /// No description provided for @llmGenericError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett fel uppstod: {error}'**
+  String llmGenericError(String error);
+
+  /// No description provided for @tiktokCouldNotFetchDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta videobeskrivningen. Ta en skärmbild av receptet.'**
+  String get tiktokCouldNotFetchDescription;
+
+  /// No description provided for @tiktokAiQuotaExhausted.
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-kvoten är slut. Markera receptdelar manuellt.'**
+  String get tiktokAiQuotaExhausted;
+
+  /// No description provided for @tiktokCouldNotExtractRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte extrahera receptet automatiskt. Markera receptdelar manuellt.'**
+  String get tiktokCouldNotExtractRecipe;
+
+  /// No description provided for @tiktokNoRecipeInDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Videobeskrivningen innehåller inget recept. Ta en skärmbild av receptet.'**
+  String get tiktokNoRecipeInDescription;
+
+  /// No description provided for @rateLimitTooFast.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du importerar för snabbt. Vänta {seconds} sekunder.'**
+  String rateLimitTooFast(int seconds);
+
+  /// No description provided for @rateLimitHourly.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har nått timgränsen. Försök igen om {minutes} minuter.'**
+  String rateLimitHourly(int minutes);
+
+  /// No description provided for @rateLimitDaily.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har nått dagens gräns för importer. Försök igen imorgon.'**
+  String get rateLimitDaily;
+
+  /// No description provided for @rateLimitAiDaily.
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-kvoten för idag är slut. Försök igen imorgon.'**
+  String get rateLimitAiDaily;
+
+  /// No description provided for @rateLimitAiMonthly.
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-kvoten för månaden är slut.'**
+  String get rateLimitAiMonthly;
+
+  /// No description provided for @rateLimitBudgetDaily.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dagens AI-budget är förbrukad. Försök igen imorgon.'**
+  String get rateLimitBudgetDaily;
+
+  /// No description provided for @rateLimitBudgetMonthly.
+  ///
+  /// In sv, this message translates to:
+  /// **'Månadens AI-budget är förbrukad.'**
+  String get rateLimitBudgetMonthly;
+
+  /// No description provided for @importErrorUnexpected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett oväntat fel uppstod'**
+  String get importErrorUnexpected;
+
+  /// No description provided for @importErrorNoInternet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen internetanslutning'**
+  String get importErrorNoInternet;
+
+  /// No description provided for @importErrorTooManyImports.
+  ///
+  /// In sv, this message translates to:
+  /// **'För många importer på kort tid. Vänta en stund.'**
+  String get importErrorTooManyImports;
+
+  /// No description provided for @importErrorAiQuotaExhausted.
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-kvoten är slut för idag'**
+  String get importErrorAiQuotaExhausted;
+
+  /// No description provided for @importErrorInvalidUrl.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltig URL'**
+  String get importErrorInvalidUrl;
+
+  /// No description provided for @importErrorCouldNotReachPage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte nå sidan'**
+  String get importErrorCouldNotReachPage;
+
+  /// No description provided for @importErrorLoginRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sidan kräver inloggning'**
+  String get importErrorLoginRequired;
+
+  /// No description provided for @importErrorNoRecipeFound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget recept hittades'**
+  String get importErrorNoRecipeFound;
+
+  /// No description provided for @importErrorCouldNotReadImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte läsa texten i bilden'**
+  String get importErrorCouldNotReadImage;
+
+  /// No description provided for @importErrorCouldNotParseRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte tolka receptet'**
+  String get importErrorCouldNotParseRecipe;
+
+  /// No description provided for @importErrorCouldNotSaveRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara receptet'**
+  String get importErrorCouldNotSaveRecipe;
+
+  /// No description provided for @importErrorCancelled.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importen avbröts'**
+  String get importErrorCancelled;
+
+  /// No description provided for @messagingPoll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omröstning'**
+  String get messagingPoll;
+
+  /// No description provided for @shoppingListEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tom lista'**
+  String get shoppingListEmpty;
+
+  /// No description provided for @shoppingListAllBought.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla {count} artiklar köpta'**
+  String shoppingListAllBought(int count);
+
+  /// No description provided for @shoppingListItemsRemaining.
+  ///
+  /// In sv, this message translates to:
+  /// **'{remaining} av {total} artiklar kvar'**
+  String shoppingListItemsRemaining(int remaining, int total);
+
+  /// No description provided for @shoppingListNoActivity.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen aktivitet'**
+  String get shoppingListNoActivity;
+
+  /// No description provided for @shoppingListActivityNow.
+  ///
+  /// In sv, this message translates to:
+  /// **'nu'**
+  String get shoppingListActivityNow;
+
+  /// No description provided for @shoppingListActivityMinAgo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} min sedan'**
+  String shoppingListActivityMinAgo(int count);
+
+  /// No description provided for @shoppingListActivityHoursAgo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} tim sedan'**
+  String shoppingListActivityHoursAgo(int count);
+
+  /// No description provided for @shoppingListActivityDaysAgo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} dagar sedan'**
+  String shoppingListActivityDaysAgo(int count);
+
+  /// No description provided for @shoppingListLastActivityBy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Senaste aktivitet av {name} {time}'**
+  String shoppingListLastActivityBy(String name, String time);
+
+  /// No description provided for @unknownResourceType.
+  ///
+  /// In sv, this message translates to:
+  /// **'Okänd RealtimeResourceType: {value}'**
+  String unknownResourceType(String value);
+
+  /// No description provided for @notificationTitleDailySummary.
+  ///
+  /// In sv, this message translates to:
+  /// **'Daglig sammanfattning'**
+  String get notificationTitleDailySummary;
+
+  /// No description provided for @notificationBodyNoActivityToday.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen ny aktivitet idag'**
+  String get notificationBodyNoActivityToday;
+
+  /// No description provided for @notificationBodyNoActivityToReport.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen aktivitet att rapportera'**
+  String get notificationBodyNoActivityToReport;
+
+  /// No description provided for @notificationBodyProblemLoadingActivities.
+  ///
+  /// In sv, this message translates to:
+  /// **'Problem med att ladda aktiviteter'**
+  String get notificationBodyProblemLoadingActivities;
+
+  /// No description provided for @notificationBodyCouldNotCreateSummary.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte skapa sammanfattning'**
+  String get notificationBodyCouldNotCreateSummary;
+
+  /// No description provided for @notificationActionViewRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa recept'**
+  String get notificationActionViewRecipes;
+
+  /// No description provided for @notificationActionViewFriends.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa vänner'**
+  String get notificationActionViewFriends;
+
+  /// No description provided for @notificationActionOpenApp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna app'**
+  String get notificationActionOpenApp;
+
+  /// No description provided for @notificationDefaultTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny aktivitet'**
+  String get notificationDefaultTitle;
+
+  /// No description provided for @notificationDefaultBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har ny aktivitet i Butlery'**
+  String get notificationDefaultBody;
+
+  /// No description provided for @notificationDigestRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept'**
+  String notificationDigestRecipes(int count);
+
+  /// No description provided for @notificationDigestFriendActivities.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} vänaktiviteter'**
+  String notificationDigestFriendActivities(int count);
+
+  /// No description provided for @notificationDigestShoppingLists.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} inköpslistor'**
+  String notificationDigestShoppingLists(int count);
+
+  /// No description provided for @notificationDigestCollaborations.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} samarbeten'**
+  String notificationDigestCollaborations(int count);
+
+  /// No description provided for @conditionTypeIngredient.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingrediens'**
+  String get conditionTypeIngredient;
+
+  /// No description provided for @conditionTypeProperty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Egenskap'**
+  String get conditionTypeProperty;
+
+  /// No description provided for @conditionTypeKeyword.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nyckelord'**
+  String get conditionTypeKeyword;
+
+  /// No description provided for @conditionTypeSource.
+  ///
+  /// In sv, this message translates to:
+  /// **'Källa'**
+  String get conditionTypeSource;
+
+  /// No description provided for @conditionTypeCuisine.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kök'**
+  String get conditionTypeCuisine;
+
+  /// No description provided for @conditionTypeDiet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kost'**
+  String get conditionTypeDiet;
+
+  /// No description provided for @conditionTypeTime.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tid'**
+  String get conditionTypeTime;
+
+  /// No description provided for @conditionTypeRating.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyg'**
+  String get conditionTypeRating;
+
+  /// No description provided for @conditionTypeRecent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nyligen'**
+  String get conditionTypeRecent;
+
+  /// No description provided for @conditionTypeOwnership.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägarskap'**
+  String get conditionTypeOwnership;
+
+  /// No description provided for @conditionTypeHasImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Har bild'**
+  String get conditionTypeHasImage;
+
+  /// No description provided for @conditionTypeCompleteness.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fullständighet'**
+  String get conditionTypeCompleteness;
+
+  /// No description provided for @operatorContains.
+  ///
+  /// In sv, this message translates to:
+  /// **'innehåller'**
+  String get operatorContains;
+
+  /// No description provided for @operatorExact.
+  ///
+  /// In sv, this message translates to:
+  /// **'är exakt'**
+  String get operatorExact;
+
+  /// No description provided for @operatorStartsWith.
+  ///
+  /// In sv, this message translates to:
+  /// **'börjar med'**
+  String get operatorStartsWith;
+
+  /// No description provided for @operatorNotContains.
+  ///
+  /// In sv, this message translates to:
+  /// **'innehåller inte'**
+  String get operatorNotContains;
+
+  /// No description provided for @operatorNotExact.
+  ///
+  /// In sv, this message translates to:
+  /// **'är inte'**
+  String get operatorNotExact;
+
+  /// No description provided for @operatorHas.
+  ///
+  /// In sv, this message translates to:
+  /// **'har'**
+  String get operatorHas;
+
+  /// No description provided for @operatorNotHas.
+  ///
+  /// In sv, this message translates to:
+  /// **'har inte'**
+  String get operatorNotHas;
+
+  /// No description provided for @operatorLessThan.
+  ///
+  /// In sv, this message translates to:
+  /// **'mindre än'**
+  String get operatorLessThan;
+
+  /// No description provided for @operatorAtMost.
+  ///
+  /// In sv, this message translates to:
+  /// **'högst'**
+  String get operatorAtMost;
+
+  /// No description provided for @operatorGreaterThan.
+  ///
+  /// In sv, this message translates to:
+  /// **'mer än'**
+  String get operatorGreaterThan;
+
+  /// No description provided for @operatorAtLeast.
+  ///
+  /// In sv, this message translates to:
+  /// **'minst'**
+  String get operatorAtLeast;
+
+  /// No description provided for @operatorWithinDays.
+  ///
+  /// In sv, this message translates to:
+  /// **'inom dagar'**
+  String get operatorWithinDays;
+
+  /// No description provided for @errorAuthenticationPleaseLogin.
+  ///
+  /// In sv, this message translates to:
+  /// **'Autentiseringsfel. Logga in igen.'**
+  String get errorAuthenticationPleaseLogin;
+
+  /// No description provided for @errorCouldNotShareRecipeWithGroups.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte dela recept med grupper'**
+  String get errorCouldNotShareRecipeWithGroups;
+
+  /// No description provided for @shoppingListNotFound.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lista hittades inte'**
+  String get shoppingListNotFound;
+
+  /// No description provided for @shoppingRemainingToBuy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kvar att handla:'**
+  String get shoppingRemainingToBuy;
+
+  /// No description provided for @shoppingAlreadyBought.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inhandlat:'**
+  String get shoppingAlreadyBought;
+
+  /// No description provided for @shoppingCreatedLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapad:'**
+  String get shoppingCreatedLabel;
+
+  /// No description provided for @shoppingUpdatedLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppdaterad:'**
+  String get shoppingUpdatedLabel;
+
+  /// No description provided for @shoppingPurchaseForRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inköp för {recipeName}'**
+  String shoppingPurchaseForRecipe(String recipeName);
+
+  /// No description provided for @shoppingCategoryImported.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importerat'**
+  String get shoppingCategoryImported;
+
+  /// No description provided for @shoppingCategoryRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get shoppingCategoryRecipe;
+
+  /// No description provided for @labelChat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Chatt'**
+  String get labelChat;
+
+  /// No description provided for @labelParticipantCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} deltagare'**
+  String labelParticipantCount(int count);
+
+  /// No description provided for @errorCouldNotSend.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte skicka {itemType}'**
+  String errorCouldNotSend(String itemType);
+
+  /// No description provided for @errorCouldNotShare.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte dela {itemType}'**
+  String errorCouldNotShare(String itemType);
+
+  /// No description provided for @notificationBatchBodyRecipes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} nya händelser på dina recept'**
+  String notificationBatchBodyRecipes(int count);
+
+  /// No description provided for @notificationBatchBodyFriends.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} nya aktiviteter från dina vänner'**
+  String notificationBatchBodyFriends(int count);
+
+  /// No description provided for @notificationBatchBodyShopping.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} uppdateringar av dina inköpslistor'**
+  String notificationBatchBodyShopping(int count);
+
+  /// No description provided for @notificationBatchBodyCollaboration.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} nya samarbetsaktiviteter'**
+  String notificationBatchBodyCollaboration(int count);
+
+  /// No description provided for @notificationBatchBodyDefault.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} nya händelser i Butlery'**
+  String notificationBatchBodyDefault(int count);
+
+  /// No description provided for @notificationDigestBody.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har {totalCount} nya aktiviteter: {summary}'**
+  String notificationDigestBody(int totalCount, String summary);
+
+  /// No description provided for @uploadStatusUploadingNoPending.
+  ///
+  /// In sv, this message translates to:
+  /// **'Laddar upp {active} bilder ({progress}% klart)'**
+  String uploadStatusUploadingNoPending(int active, int progress);
+
+  /// No description provided for @uploadStatusPartialFailure.
+  ///
+  /// In sv, this message translates to:
+  /// **'{completed} av {total} bilder uppladdade, {failed} misslyckades'**
+  String uploadStatusPartialFailure(int completed, int total, int failed);
+
+  /// No description provided for @uploadStatusAllFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'{failed} av {total} bilder misslyckades - tryck för att försöka igen'**
+  String uploadStatusAllFailed(int failed, int total);
+
+  /// No description provided for @uploadStatusAllSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla {total} bilder uppladdade framgångsrikt'**
+  String uploadStatusAllSuccess(int total);
+
+  /// No description provided for @uploadProgressWithTime.
+  ///
+  /// In sv, this message translates to:
+  /// **'{progress}% klart - {time} kvar'**
+  String uploadProgressWithTime(int progress, String time);
+
+  /// No description provided for @uploadProgressPercent.
+  ///
+  /// In sv, this message translates to:
+  /// **'{progress}% klart'**
+  String uploadProgressPercent(int progress);
+
+  /// No description provided for @uploadComplete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppladdning slutförd'**
+  String get uploadComplete;
+
+  /// No description provided for @uploadAllSuccessWithTime.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla bilder uppladdade{time} (100% framgång)'**
+  String uploadAllSuccessWithTime(String time);
+
+  /// No description provided for @uploadCompletionOf.
+  ///
+  /// In sv, this message translates to:
+  /// **'{completed} av {total} slutförda'**
+  String uploadCompletionOf(int completed, int total);
+
+  /// No description provided for @uploadFailureCount.
+  ///
+  /// In sv, this message translates to:
+  /// **', {failed} misslyckades'**
+  String uploadFailureCount(int failed);
+
+  /// No description provided for @uploadSuccessRate.
+  ///
+  /// In sv, this message translates to:
+  /// **' ({rate}% framgång)'**
+  String uploadSuccessRate(int rate);
+
+  /// No description provided for @uploadPreparing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förbereder uppladdning...'**
+  String get uploadPreparing;
+
+  /// No description provided for @errorNoImageSelected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen bild vald'**
+  String get errorNoImageSelected;
+
+  /// No description provided for @errorImageFormatUnsupported.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bildformatet stöds inte. Använd JPEG eller PNG-format.'**
+  String get errorImageFormatUnsupported;
+
+  /// No description provided for @errorImageTooLarge.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden är för stor ({size} MB). Använd en mindre bild eller komprimera den.'**
+  String errorImageTooLarge(String size);
+
+  /// No description provided for @errorImageQualityTooLow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bildkvaliteten är för låg för OCR ({quality}%).'**
+  String errorImageQualityTooLow(int quality);
+
+  /// No description provided for @errorOcrServicesUnavailable.
+  ///
+  /// In sv, this message translates to:
+  /// **'OCR-tjänsterna är tillfälligt otillgängliga. Försök igen om några minuter.'**
+  String get errorOcrServicesUnavailable;
+
+  /// No description provided for @errorNoTextExtracted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen text kunde extraheras från bilden.'**
+  String get errorNoTextExtracted;
+
+  /// No description provided for @labelImprovementSuggestions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förbättringsförslag:'**
+  String get labelImprovementSuggestions;
+
+  /// No description provided for @ocrQualityTips.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tips för bättre resultat:\n• Se till att bilden är välbelyst och skarp\n• Undvik skuggor och reflektioner\n• Håll kameran rakt mot texten'**
+  String get ocrQualityTips;
+
+  /// No description provided for @ocrRetryOrManual.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan försöka igen med en ny bild eller fortsätta med manuell inmatning.'**
+  String get ocrRetryOrManual;
+
+  /// No description provided for @errorAiEnhancementFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'AI-förbättring misslyckades.'**
+  String get errorAiEnhancementFailed;
+
+  /// No description provided for @errorCouldNotCreateRealtimeRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte skapa realtidsrecept: {error}'**
+  String errorCouldNotCreateRealtimeRecipe(String error);
+
+  /// No description provided for @errorCouldNotWatchRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte starta watching av recept: {error}'**
+  String errorCouldNotWatchRecipe(String error);
+
+  /// No description provided for @errorCouldNotPerformOperation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte {operation}: {error}'**
+  String errorCouldNotPerformOperation(String operation, String error);
+
+  /// No description provided for @errorCouldNotDeleteRealtimeRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort realtidsrecept: {error}'**
+  String errorCouldNotDeleteRealtimeRecipe(String error);
+
+  /// No description provided for @errorCouldNotCreateRealtimeMenu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte skapa realtidsmeny: {error}'**
+  String errorCouldNotCreateRealtimeMenu(String error);
+
+  /// No description provided for @errorCouldNotWatchMenu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte starta watching av meny: {error}'**
+  String errorCouldNotWatchMenu(String error);
+
+  /// No description provided for @errorCouldNotDeleteRealtimeMenu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort realtidsmeny: {error}'**
+  String errorCouldNotDeleteRealtimeMenu(String error);
+
+  /// No description provided for @ocrImageTooLarge.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden är för stor'**
+  String get ocrImageTooLarge;
+
+  /// No description provided for @ocrCompressImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Komprimera bilden'**
+  String get ocrCompressImage;
+
+  /// No description provided for @ocrImageTooSmall.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden är för liten'**
+  String get ocrImageTooSmall;
+
+  /// No description provided for @ocrUseHigherResolution.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd högre upplösning'**
+  String get ocrUseHigherResolution;
+
+  /// No description provided for @ocrImageFormatNotOptimal.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bildformat stöds inte optimalt'**
+  String get ocrImageFormatNotOptimal;
+
+  /// No description provided for @ocrUseJpegOrPng.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd JPEG eller PNG'**
+  String get ocrUseJpegOrPng;
+
+  /// No description provided for @syncErrorParsingResource.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fel vid parsing av resurs'**
+  String get syncErrorParsingResource;
+
+  /// No description provided for @syncErrorWatchingResource.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fel vid watching av resurs {resourceId}'**
+  String syncErrorWatchingResource(String resourceId);
+
+  /// No description provided for @notificationActionAccept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Acceptera'**
+  String get notificationActionAccept;
+
+  /// No description provided for @notificationActionDecline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avvisa'**
+  String get notificationActionDecline;
+
+  /// No description provided for @notificationActionViewRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa recept'**
+  String get notificationActionViewRecipe;
+
+  /// No description provided for @notificationActionJoin.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gå med'**
+  String get notificationActionJoin;
+
+  /// No description provided for @fcmChannelSocialTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sociala notiser'**
+  String get fcmChannelSocialTitle;
+
+  /// No description provided for @fcmChannelSocialDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänförfrågningar, delningar och kommentarer'**
+  String get fcmChannelSocialDescription;
+
+  /// No description provided for @fcmChannelMessagingTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meddelanden'**
+  String get fcmChannelMessagingTitle;
+
+  /// No description provided for @fcmChannelMessagingDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Chattmeddelanden från vänner'**
+  String get fcmChannelMessagingDescription;
+
+  /// No description provided for @tagValidationEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggnamn kan inte vara tomt'**
+  String get tagValidationEmpty;
+
+  /// No description provided for @tagValidationTooShort.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggnamn måste vara minst 2 tecken'**
+  String get tagValidationTooShort;
+
+  /// No description provided for @tagValidationTooLong.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggnamn får vara max 50 tecken'**
+  String get tagValidationTooLong;
+
+  /// No description provided for @tagValidationReserved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Detta namn är reserverat för systemtaggar'**
+  String get tagValidationReserved;
+
+  /// No description provided for @menuAttributionText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inspirerat av meny från {displayName}'**
+  String menuAttributionText(String displayName);
+
+  /// No description provided for @llmEnhancementNotEnoughData.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte tillräckligt med data för AI-förbättring.'**
+  String get llmEnhancementNotEnoughData;
+
+  /// No description provided for @realtimeIngredientEmptyError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingrediens kan inte vara tom'**
+  String get realtimeIngredientEmptyError;
+
+  /// No description provided for @realtimeIngredientInvalidIndex.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltigt ingrediens-index'**
+  String get realtimeIngredientInvalidIndex;
+
+  /// No description provided for @realtimeInstructionEmptyError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Instruktion kan inte vara tom'**
+  String get realtimeInstructionEmptyError;
+
+  /// No description provided for @realtimeInstructionInvalidIndex.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltigt instruktions-index'**
+  String get realtimeInstructionInvalidIndex;
+
+  /// No description provided for @menuDefaultTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meny från {displayName}'**
+  String menuDefaultTitle(String displayName);
+
+  /// No description provided for @menuShareGroupFallback.
+  ///
+  /// In sv, this message translates to:
+  /// **'Grupp'**
+  String get menuShareGroupFallback;
+
+  /// No description provided for @menuShareGroupTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meny för {categoryName}'**
+  String menuShareGroupTitle(String categoryName);
+
+  /// No description provided for @menuTitleEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tom meny'**
+  String get menuTitleEmpty;
+
+  /// No description provided for @menuTitleSingleCategory.
+  ///
+  /// In sv, this message translates to:
+  /// **'{category} meny ({count} recept)'**
+  String menuTitleSingleCategory(String category, int count);
+
+  /// No description provided for @menuTitleMultiCategory.
+  ///
+  /// In sv, this message translates to:
+  /// **'Veckomeny med {categories} ({count} recept)'**
+  String menuTitleMultiCategory(String categories, int count);
+
+  /// No description provided for @recipeAttributionText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inspirerat av recept från {displayName}'**
+  String recipeAttributionText(String displayName);
+
+  /// No description provided for @tiktokOriginalText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Originaltext från TikTok:'**
+  String get tiktokOriginalText;
+
+  /// No description provided for @tiktokIdentifiedIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Identifierade ingredienser:'**
+  String get tiktokIdentifiedIngredients;
+
+  /// No description provided for @groupShareWarningManyGroups.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delning till många grupper ({count}) kan ta lång tid'**
+  String groupShareWarningManyGroups(int count);
+
+  /// No description provided for @groupShareWarningManyItems.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delning av mycket innehåll ({count} objekt) kan ta lång tid'**
+  String groupShareWarningManyItems(int count);
+
+  /// No description provided for @groupShareWarningLargeOperation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stor operation ({count} delningar) - överväg att dela upp den'**
+  String groupShareWarningLargeOperation(int count);
+
+  /// No description provided for @textImportSourceUrl.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importerat från text'**
+  String get textImportSourceUrl;
+
+  /// No description provided for @assistedImportSelectInstructionsError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj minst en instruktion'**
+  String get assistedImportSelectInstructionsError;
+
+  /// No description provided for @assistedImportEnterRecipeName.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange ett receptnamn'**
+  String get assistedImportEnterRecipeName;
+
+  /// No description provided for @assistedImportAddIngredientError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till minst en ingrediens'**
+  String get assistedImportAddIngredientError;
+
+  /// No description provided for @assistedImportAddInstructionError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till minst en instruktion'**
+  String get assistedImportAddInstructionError;
+
+  /// No description provided for @formValidationIngredientRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingrediens krävs'**
+  String get formValidationIngredientRequired;
+
+  /// No description provided for @formValidationIngredientTooLong.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingrediens för lång (max 200 tecken)'**
+  String get formValidationIngredientTooLong;
+
+  /// No description provided for @formValidationInstructionRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Instruktion krävs'**
+  String get formValidationInstructionRequired;
+
+  /// No description provided for @formValidationInstructionTooLong.
+  ///
+  /// In sv, this message translates to:
+  /// **'Instruktion för lång (max 500 tecken)'**
+  String get formValidationInstructionTooLong;
+
+  /// No description provided for @formValidationTagTooLong.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tagg för lång (max 50 tecken)'**
+  String get formValidationTagTooLong;
+
+  /// No description provided for @formValidationTagNoCommas.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggar får inte innehålla kommatecken'**
+  String get formValidationTagNoCommas;
+
+  /// No description provided for @shoppingItemMarkedComplete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Markerade som klar'**
+  String get shoppingItemMarkedComplete;
+
+  /// No description provided for @shoppingItemMarkedIncomplete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Markerade som ej klar'**
+  String get shoppingItemMarkedIncomplete;
+
+  /// No description provided for @menuSuggestionVegetarian.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vegetarisk veckomeny för 2 personer'**
+  String get menuSuggestionVegetarian;
+
+  /// No description provided for @menuSuggestionQuickDinners.
+  ///
+  /// In sv, this message translates to:
+  /// **'Snabba middagar för hela veckan'**
+  String get menuSuggestionQuickDinners;
+
+  /// No description provided for @menuSuggestionMeatFish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kött och fisk varierad meny'**
+  String get menuSuggestionMeatFish;
+
+  /// No description provided for @menuSuggestionFamily.
+  ///
+  /// In sv, this message translates to:
+  /// **'Familjevänlig veckomeny'**
+  String get menuSuggestionFamily;
+
+  /// No description provided for @menuSuggestionHealthy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hälsosam och näringsrik meny'**
+  String get menuSuggestionHealthy;
+
+  /// No description provided for @menuSuggestionBudget.
+  ///
+  /// In sv, this message translates to:
+  /// **'Budgetvänlig veckomeny'**
+  String get menuSuggestionBudget;
+
+  /// No description provided for @menuSuggestionItalian.
+  ///
+  /// In sv, this message translates to:
+  /// **'Italiensk temameny'**
+  String get menuSuggestionItalian;
+
+  /// No description provided for @menuSuggestionAsian.
+  ///
+  /// In sv, this message translates to:
+  /// **'Asiatisk inspirerad veckomeny'**
+  String get menuSuggestionAsian;
+
+  /// No description provided for @recipeAutoTitleWithIngredient.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept med {ingredient}'**
+  String recipeAutoTitleWithIngredient(String ingredient);
+
+  /// No description provided for @recipeAutoTitleUntitled.
+  ///
+  /// In sv, this message translates to:
+  /// **'Namnlöst recept'**
+  String get recipeAutoTitleUntitled;
+
+  /// No description provided for @importPhaseFetching.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar innehåll...'**
+  String get importPhaseFetching;
+
+  /// No description provided for @importPhaseAnalyzing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Analyserar recept...'**
+  String get importPhaseAnalyzing;
+
+  /// No description provided for @importPhaseCreating.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapar recept...'**
+  String get importPhaseCreating;
+
+  /// No description provided for @importPhaseComplete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klar!'**
+  String get importPhaseComplete;
+
+  /// No description provided for @importPhaseNeedsHelp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behöver din hjälp'**
+  String get importPhaseNeedsHelp;
+
+  /// No description provided for @importPhaseError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ett fel uppstod'**
+  String get importPhaseError;
+
+  /// No description provided for @shoppingSharingSummary.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela med: {friendNames}'**
+  String shoppingSharingSummary(String friendNames);
+
+  /// No description provided for @imageUploadTooLarge.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilden är för stor (max {maxSize}MB)'**
+  String imageUploadTooLarge(String maxSize);
+
+  /// No description provided for @shareMessageRecipeWithTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kolla in detta recept: \"{title}\"! 👩‍🍳'**
+  String shareMessageRecipeWithTitle(String title);
+
+  /// No description provided for @shareMessageRecipeDefault.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag hittade ett fantastiskt recept som jag ville dela med dig! 👩‍🍳'**
+  String get shareMessageRecipeDefault;
+
+  /// No description provided for @shareMessageMenuWithTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Här är min veckomeny: \"{title}\" 📋'**
+  String shareMessageMenuWithTitle(String title);
+
+  /// No description provided for @shareMessageMenuDefault.
+  ///
+  /// In sv, this message translates to:
+  /// **'Här är min veckomeny som kanske kan inspirera dig! 📋'**
+  String get shareMessageMenuDefault;
+
+  /// No description provided for @shareMessageShoppingListWithTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vill du hjälpa mig med inköpslistan: \"{title}\"? 🛒'**
+  String shareMessageShoppingListWithTitle(String title);
+
+  /// No description provided for @shareMessageShoppingListDefault.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vill du hjälpa mig med inköpen denna vecka? 🛒'**
+  String get shareMessageShoppingListDefault;
+
+  /// No description provided for @textImportSuggestionIngredients.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inkludera ingredienslista för bättre tolkning'**
+  String get textImportSuggestionIngredients;
+
+  /// No description provided for @textImportSuggestionInstructions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inkludera tillagningsinstruktioner eller steg'**
+  String get textImportSuggestionInstructions;
+
+  /// No description provided for @textImportSuggestionTime.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inkludera tillagningstid om tillgänglig'**
+  String get textImportSuggestionTime;
+
+  /// No description provided for @textImportSuggestionPortions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inkludera antal portioner om känt'**
+  String get textImportSuggestionPortions;
+
+  /// No description provided for @textImportSuggestionLooksGood.
+  ///
+  /// In sv, this message translates to:
+  /// **'Texten ser bra ut för recepttolkning'**
+  String get textImportSuggestionLooksGood;
+
+  /// No description provided for @recipeFormPermissionsError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fel vid laddning av permissions'**
+  String get recipeFormPermissionsError;
+
+  /// No description provided for @createSharedListError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fel vid skapande av delad lista: {error}'**
+  String createSharedListError(String error);
+
+  /// No description provided for @userStatusOnline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Online'**
+  String get userStatusOnline;
+
+  /// No description provided for @userStatusJustActive.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktiv nyss'**
+  String get userStatusJustActive;
+
+  /// No description provided for @userStatusActiveMinutesAgo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktiv för {minutes} min sedan'**
+  String userStatusActiveMinutesAgo(int minutes);
+
+  /// No description provided for @userStatusActiveHoursAgo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktiv för {hours} tim sedan'**
+  String userStatusActiveHoursAgo(int hours);
+
+  /// No description provided for @userStatusActiveDaysAgo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktiv för {days} dagar sedan'**
+  String userStatusActiveDaysAgo(int days);
+
+  /// No description provided for @userStatusActiveWeeksAgo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktiv för {weeks} veckor sedan'**
+  String userStatusActiveWeeksAgo(int weeks);
+
+  /// No description provided for @recipeCookTimeMinutes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{minutes} minuter'**
+  String recipeCookTimeMinutes(int minutes);
+
+  /// No description provided for @recipeLastCookedToday.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillagad idag'**
+  String get recipeLastCookedToday;
+
+  /// No description provided for @recipeLastCookedYesterday.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillagad igår'**
+  String get recipeLastCookedYesterday;
+
+  /// No description provided for @recipeLastCookedDaysAgo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillagad för {days} dagar sedan'**
+  String recipeLastCookedDaysAgo(int days);
+
+  /// No description provided for @messageSharedRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delade ett recept: {title}'**
+  String messageSharedRecipe(String title);
+
+  /// No description provided for @messageSharedMenu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delade en meny: {title}'**
+  String messageSharedMenu(String title);
+
+  /// No description provided for @messageSharedShoppingList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delade en inköpslista: {title}'**
+  String messageSharedShoppingList(String title);
+
+  /// No description provided for @conversationNoMessagesYet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga meddelanden än'**
+  String get conversationNoMessagesYet;
+
+  /// No description provided for @sharedRecipeAttributionText.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inspirerat av recept från {displayName}'**
+  String sharedRecipeAttributionText(String displayName);
+
+  /// No description provided for @realtimeRecipeCopyTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopia av {title}'**
+  String realtimeRecipeCopyTitle(String title);
+
+  /// No description provided for @realtimeRecipeSharedFrom.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delat från {displayName}'**
+  String realtimeRecipeSharedFrom(String displayName);
+
+  /// No description provided for @friendCategoryDefaultFriends.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner'**
+  String get friendCategoryDefaultFriends;
+
+  /// No description provided for @friendCategoryDefaultFriendsDesc.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nära vänner'**
+  String get friendCategoryDefaultFriendsDesc;
+
+  /// No description provided for @friendCategoryDefaultNeighbors.
+  ///
+  /// In sv, this message translates to:
+  /// **'Grannar'**
+  String get friendCategoryDefaultNeighbors;
+
+  /// No description provided for @friendCategoryDefaultNeighborsDesc.
+  ///
+  /// In sv, this message translates to:
+  /// **'Grannar och lokalområdet'**
+  String get friendCategoryDefaultNeighborsDesc;
+
+  /// No description provided for @friendCategoryDefaultWork.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jobbet'**
+  String get friendCategoryDefaultWork;
+
+  /// No description provided for @friendCategoryDefaultWorkDesc.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kollegor och arbetskompisar'**
+  String get friendCategoryDefaultWorkDesc;
+
+  /// No description provided for @friendCategoryDefaultFoodGroup.
+  ///
+  /// In sv, this message translates to:
+  /// **'Matgrupp'**
+  String get friendCategoryDefaultFoodGroup;
+
+  /// No description provided for @friendCategoryDefaultFoodGroupDesc.
+  ///
+  /// In sv, this message translates to:
+  /// **'Personer som älskar att laga mat'**
+  String get friendCategoryDefaultFoodGroupDesc;
+
+  /// No description provided for @friendCategoryDefaultFamily.
+  ///
+  /// In sv, this message translates to:
+  /// **'Familj'**
+  String get friendCategoryDefaultFamily;
+
+  /// No description provided for @friendCategoryDefaultFamilyDesc.
+  ///
+  /// In sv, this message translates to:
+  /// **'Familjemedlemmar'**
+  String get friendCategoryDefaultFamilyDesc;
+
+  /// No description provided for @friendSummaryNoFriends.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga vänner'**
+  String get friendSummaryNoFriends;
+
+  /// No description provided for @friendSummaryOneFriend.
+  ///
+  /// In sv, this message translates to:
+  /// **'1 vän'**
+  String get friendSummaryOneFriend;
+
+  /// No description provided for @friendSummaryCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} vänner'**
+  String friendSummaryCount(int count);
+
+  /// No description provided for @shoppingListSharedBy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delad av {displayName}'**
+  String shoppingListSharedBy(String displayName);
+
+  /// No description provided for @shoppingListOriginallySharedBy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ursprungligen delad av {displayName}'**
+  String shoppingListOriginallySharedBy(String displayName);
+
+  /// No description provided for @collaborationNotAllowed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen kollaboration tillåten'**
+  String get collaborationNotAllowed;
+
+  /// No description provided for @collaborationReady.
+  ///
+  /// In sv, this message translates to:
+  /// **'Redo för kollaboration'**
+  String get collaborationReady;
+
+  /// No description provided for @collaborationVersionCreated.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kollaborativ version skapad'**
+  String get collaborationVersionCreated;
+
+  /// No description provided for @collaborationOneActive.
+  ///
+  /// In sv, this message translates to:
+  /// **'1 aktiv kollaboratör'**
+  String get collaborationOneActive;
+
+  /// No description provided for @collaborationMultipleActive.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} aktiva kollaboratörer'**
+  String collaborationMultipleActive(int count);
+
+  /// No description provided for @recipeCopiedFrom.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopierat från: {title}'**
+  String recipeCopiedFrom(String title);
 }
 
 class _AppLocalizationsDelegate

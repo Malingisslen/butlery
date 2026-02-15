@@ -1,7 +1,6 @@
 // lib/views/social/shared_with_me/shared_content_tab_bar.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
@@ -94,7 +93,7 @@ class SharedContentTabBar {
           ),
           labelColor: Theme.of(context).colorScheme.onPrimary,
           unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
-          dividerColor: AppColors.transparent,
+          dividerColor: Colors.transparent,
         ),
       ),
     );
@@ -104,13 +103,13 @@ class SharedContentTabBar {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.error,
+        color: Theme.of(context).colorScheme.error,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
       ),
       child: Text(
         '$count',
         style: AppTextStyles.labelLarge.copyWith(
-          color: AppColors.neutralLight,
+          color: Colors.white,
         ),
       ),
     );

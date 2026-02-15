@@ -10,13 +10,12 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/bottom_action_bar.dart';
 import 'package:butlery/widgets/common/filter_status_chip.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
-/// ✨ UPPDATERAD ARKIV IMPORT VY - MIGRERAD TILL UtilityComponents
+/// UPPDATERAD ARKIV IMPORT VY - MIGRERAD TILL UtilityComponents
 class ImporteraFranArkivView extends StatelessWidget {
   const ImporteraFranArkivView({super.key});
 
@@ -44,12 +43,10 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
     if (context.mounted) {
       if (viewModel.error == null) {
-        // ✅ MIGRERAD: Custom SnackBar → UtilityComponents.showSuccessSnackbar
         UtilityComponents.showSuccessSnackbar(
             context, context.l10n.importRecipesImported);
         Navigator.pop(context);
       } else {
-        // ✅ MIGRERAD: Custom SnackBar → UtilityComponents.showErrorSnackbar
         UtilityComponents.showErrorSnackbar(context, viewModel.error!);
         viewModel.clearError();
       }
@@ -58,6 +55,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final viewModel = context.watch<ArchiveImportViewModel>();
     final allTags = viewModel.availableTags.toList()..sort();
 
@@ -67,9 +65,8 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
         actions: [
           if (viewModel.hasError)
             IconButton(
-              icon: const Icon(Icons.error, color: AppColors.error),
+              icon: Icon(Icons.error, color: cs.error),
               onPressed: () {
-                // ✅ MIGRERAD: Custom SnackBar → UtilityComponents.showErrorSnackbar
                 UtilityComponents.showErrorSnackbar(context, viewModel.error!);
                 viewModel.clearError();
               },
@@ -78,7 +75,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        // ✅ RESPONSIVE: Center and constrain content on large screens (Wide layout for batch processing)
+        // RESPONSIVE: Center and constrain content on large screens (Wide layout for batch processing)
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -127,12 +124,11 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                                           viewModel.selectedTags.contains(tag),
                                       onSelected: (_) =>
                                           viewModel.toggleTag(tag),
-                                      backgroundColor: AppColors.cardWhite,
-                                      selectedColor: AppColors.forestGreen
-                                          .withValues(
-                                              alpha:
-                                                  AppDimensions.opacityLight),
-                                      checkmarkColor: AppColors.forestGreen,
+                                      backgroundColor:
+                                          cs.surfaceContainerHighest,
+                                      selectedColor: cs.primary.withValues(
+                                          alpha: AppDimensions.opacityLight),
+                                      checkmarkColor: cs.primary,
                                     );
                                   }).toList(),
                                 ),
@@ -147,7 +143,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                       ),
                     ),
 
-                    // Divider mellan filter och innehåll
+                    // Divider mellan filter och innehall
                     const Divider(height: 1),
 
                     // Avancerad filter-statistik
@@ -173,7 +169,7 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                   ],
                 ),
 
-                // Loading overlay - ✅ MIGRERAD: Custom overlay → UtilityComponents.loadingOverlay
+                // Loading overlay
                 if (viewModel.isImporting)
                   UtilityComponents.loadingOverlay(
                     isLoading: true,
@@ -191,6 +187,8 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     BuildContext context,
     ArchiveImportViewModel viewModel,
   ) {
+    final cs = Theme.of(context).colorScheme;
+
     return Wrap(
       spacing: AppDimensions.spacingS,
       children: [
@@ -199,55 +197,55 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
           selected: viewModel.timeFilter == TimeFilter.all,
           onSelected: (_) => viewModel.setTimeFilter(TimeFilter.all),
           backgroundColor: viewModel.timeFilter == TimeFilter.all
-              ? AppColors.forestGreen
-              : AppColors.cardWhite,
-          selectedColor: AppColors.forestGreen,
+              ? cs.primary
+              : cs.surfaceContainerHighest,
+          selectedColor: cs.primary,
           labelStyle: AppTextStyles.labelSmall.copyWith(
             color: viewModel.timeFilter == TimeFilter.all
-                ? AppColors.neutralLight
-                : AppColors.textDark,
+                ? cs.onPrimary
+                : cs.onSurface,
           ),
         ),
         ChoiceChip(
-          label: const Text('≤ 15 min'),
+          label: const Text('<= 15 min'),
           selected: viewModel.timeFilter == TimeFilter.under15,
           onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under15),
           backgroundColor: viewModel.timeFilter == TimeFilter.under15
-              ? AppColors.forestGreen
-              : AppColors.cardWhite,
-          selectedColor: AppColors.forestGreen,
+              ? cs.primary
+              : cs.surfaceContainerHighest,
+          selectedColor: cs.primary,
           labelStyle: AppTextStyles.labelSmall.copyWith(
             color: viewModel.timeFilter == TimeFilter.under15
-                ? AppColors.neutralLight
-                : AppColors.textDark,
+                ? cs.onPrimary
+                : cs.onSurface,
           ),
         ),
         ChoiceChip(
-          label: const Text('≤ 30 min'),
+          label: const Text('<= 30 min'),
           selected: viewModel.timeFilter == TimeFilter.under30,
           onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under30),
           backgroundColor: viewModel.timeFilter == TimeFilter.under30
-              ? AppColors.forestGreen
-              : AppColors.cardWhite,
-          selectedColor: AppColors.forestGreen,
+              ? cs.primary
+              : cs.surfaceContainerHighest,
+          selectedColor: cs.primary,
           labelStyle: AppTextStyles.labelSmall.copyWith(
             color: viewModel.timeFilter == TimeFilter.under30
-                ? AppColors.neutralLight
-                : AppColors.textDark,
+                ? cs.onPrimary
+                : cs.onSurface,
           ),
         ),
         ChoiceChip(
-          label: const Text('≤ 60 min'),
+          label: const Text('<= 60 min'),
           selected: viewModel.timeFilter == TimeFilter.under60,
           onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under60),
           backgroundColor: viewModel.timeFilter == TimeFilter.under60
-              ? AppColors.forestGreen
-              : AppColors.cardWhite,
-          selectedColor: AppColors.forestGreen,
+              ? cs.primary
+              : cs.surfaceContainerHighest,
+          selectedColor: cs.primary,
           labelStyle: AppTextStyles.labelSmall.copyWith(
             color: viewModel.timeFilter == TimeFilter.under60
-                ? AppColors.neutralLight
-                : AppColors.textDark,
+                ? cs.onPrimary
+                : cs.onSurface,
           ),
         ),
       ],
@@ -281,11 +279,11 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
   String _getTimeFilterLabel(BuildContext context, TimeFilter filter) {
     switch (filter) {
       case TimeFilter.under15:
-        return '≤ 15 min';
+        return '<= 15 min';
       case TimeFilter.under30:
-        return '≤ 30 min';
+        return '<= 30 min';
       case TimeFilter.under60:
-        return '≤ 60 min';
+        return '<= 60 min';
       case TimeFilter.all:
         return context.l10n.importFilterAllTimes;
     }
@@ -337,7 +335,6 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            // ✅ MIGRERAD: ActionButton.outlined → UtilityComponents.outlinedButton
             child: UtilityComponents.outlinedButton(
               context,
               label: context.l10n.commonSelectAll,
@@ -349,7 +346,6 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             flex: 2,
-            // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
             child: UtilityComponents.primaryButton(
               context,
               label: viewModel.hasSelection

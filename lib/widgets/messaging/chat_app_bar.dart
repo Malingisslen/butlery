@@ -6,7 +6,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/conversation.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -36,10 +35,11 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return AppBar(
       title: _buildTitle(),
-      backgroundColor: AppColors.forestGreen,
-      foregroundColor: AppColors.cardWhite,
+      backgroundColor: cs.primary,
+      foregroundColor: cs.surfaceContainerHighest,
       actions: [
         PopupMenuButton<String>(
           onSelected: _handleMenuAction,
@@ -77,7 +77,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.exit_to_app, color: AppColors.error),
+                  Icon(Icons.exit_to_app, color: cs.error),
                   const SizedBox(width: AppDimensions.spacingS),
                   Flexible(
                     child: Text(context.l10n.chatLeaveConversation),
@@ -94,6 +94,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget _buildTitle() {
     return Builder(
       builder: (context) {
+        final cs = Theme.of(context).colorScheme;
         if (conversation == null) {
           return Text(context.l10n.chatTitle);
         }
@@ -111,7 +112,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 context.l10n
                     .chatParticipantCount(conversation!.participantIds.length),
                 style: AppTextStyles.labelMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
           ],

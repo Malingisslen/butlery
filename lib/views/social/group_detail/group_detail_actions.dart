@@ -8,7 +8,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/core/events/group_events.dart';
@@ -61,7 +61,7 @@ class GroupDetailActions {
             SnackBar(
               content:
                   Text(context.l10n.groupMemberRemoved(member.displayName)),
-              backgroundColor: AppColors.success,
+              backgroundColor: context.butleryColors.success,
             ),
           );
           GroupEventBus.memberRemoved();
@@ -72,7 +72,7 @@ class GroupDetailActions {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(context.l10n.groupCouldNotRemoveMember('$e')),
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -144,7 +144,7 @@ class GroupDetailActions {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(context.l10n.groupUpdated),
-              backgroundColor: AppColors.success,
+              backgroundColor: context.butleryColors.success,
             ),
           );
           GroupEventBus.groupUpdated();
@@ -155,7 +155,7 @@ class GroupDetailActions {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(context.l10n.groupCouldNotUpdate('$e')),
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -188,7 +188,7 @@ class GroupDetailActions {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(context.l10n.groupDeleted(group.name)),
-              backgroundColor: AppColors.success,
+              backgroundColor: context.butleryColors.success,
             ),
           );
           GroupEventBus.groupDeleted();
@@ -201,7 +201,7 @@ class GroupDetailActions {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(context.l10n.groupCouldNotDelete('$e')),
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -242,7 +242,7 @@ class GroupDetailActions {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(context.l10n.groupLeftGroup),
-                backgroundColor: AppColors.success,
+                backgroundColor: context.butleryColors.success,
               ),
             );
             GroupEventBus.memberRemoved();
@@ -256,7 +256,7 @@ class GroupDetailActions {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(context.l10n.groupCouldNotLeave('$e')),
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }

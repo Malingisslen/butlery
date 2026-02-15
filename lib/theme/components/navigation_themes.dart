@@ -1,70 +1,71 @@
 /// Navigation and container theme configurations.
 ///
 /// **UI Redesign:**
-/// - AppBar: Forest green background with rust bottom accent
-/// - Bottom Nav: Forest green with rust selected indicator
-/// - Tab Bar: Forest green indicator on cream background
-/// - Dialogs/Sheets: Cream/white with green accents
+/// - AppBar: Primary background with onPrimary text
+/// - Bottom Nav: Primary background
+/// - Tab Bar: Primary indicator
+/// - Dialogs/Sheets: Surface with proper elevation
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Navigation, app bar, dialog, and container component themes.
+/// All methods accept [ColorScheme] for dark/light mode awareness.
 class NavigationThemes {
-  /// Private constructor
   NavigationThemes._();
 
-  /// App bar theme - Forest green with white text
-  static AppBarTheme get appBarTheme {
+  /// App bar theme
+  static AppBarTheme appBarTheme(ColorScheme cs) {
     return AppBarTheme(
-      backgroundColor: AppColors.headerBackground,
-      foregroundColor: AppColors.headerForeground,
-      elevation: 0, // Flat design, accent bar provides visual separation
+      backgroundColor: cs.primary,
+      foregroundColor: cs.onPrimary,
+      elevation: 0,
       shadowColor: Colors.transparent,
       centerTitle: false,
-      titleTextStyle: AppTextStyles.appBarTitle,
-      iconTheme: const IconThemeData(
-        color: AppColors.headerForeground,
+      titleTextStyle: AppTextStyles.appBarTitle.copyWith(
+        color: cs.onPrimary,
+      ),
+      iconTheme: IconThemeData(
+        color: cs.onPrimary,
         size: AppDimensions.iconSizeL,
       ),
-      actionsIconTheme: const IconThemeData(
-        color: AppColors.headerForeground,
+      actionsIconTheme: IconThemeData(
+        color: cs.onPrimary,
         size: AppDimensions.iconSizeL,
       ),
     );
   }
 
-  /// Bottom navigation bar theme - Forest green with rust indicator
-  static BottomNavigationBarThemeData get bottomNavigationBarTheme {
+  /// Bottom navigation bar theme
+  static BottomNavigationBarThemeData bottomNavigationBarTheme(ColorScheme cs) {
     return BottomNavigationBarThemeData(
-      backgroundColor: AppColors.navBackground,
-      selectedItemColor: AppColors.navSelectedItem,
-      unselectedItemColor: AppColors.navUnselectedItem,
+      backgroundColor: cs.primary,
+      selectedItemColor: cs.onPrimary,
+      unselectedItemColor: cs.onPrimary.withValues(alpha: 0.7),
       selectedLabelStyle: AppTextStyles.navLabel.copyWith(
-        color: AppColors.navSelectedItem,
+        color: cs.onPrimary,
       ),
       unselectedLabelStyle: AppTextStyles.navLabel.copyWith(
-        color: AppColors.navUnselectedItem,
+        color: cs.onPrimary.withValues(alpha: 0.7),
       ),
       type: BottomNavigationBarType.fixed,
-      elevation: 0, // Flat design
+      elevation: 0,
     );
   }
 
-  /// Tab bar theme - Forest green indicator
-  static TabBarThemeData get tabBarTheme {
+  /// Tab bar theme
+  static TabBarThemeData tabBarTheme(ColorScheme cs) {
     return TabBarThemeData(
-      labelColor: AppColors.forestGreen,
-      unselectedLabelColor: AppColors.textMedium,
+      labelColor: cs.primary,
+      unselectedLabelColor: cs.onSurfaceVariant,
       labelStyle: AppTextStyles.tabText.copyWith(
         fontWeight: FontWeight.w600,
       ),
       unselectedLabelStyle: AppTextStyles.tabText,
-      indicator: const UnderlineTabIndicator(
+      indicator: UnderlineTabIndicator(
         borderSide: BorderSide(
-          color: AppColors.forestGreen,
+          color: cs.primary,
           width: AppDimensions.borderWidthThick,
         ),
       ),
@@ -72,34 +73,36 @@ class NavigationThemes {
     );
   }
 
-  /// Dialog theme - Cream/white with rounded corners
-  static DialogThemeData get dialogTheme {
+  /// Dialog theme
+  static DialogThemeData dialogTheme(ColorScheme cs) {
     return DialogThemeData(
-      backgroundColor: AppColors.cardWhite,
+      backgroundColor: cs.surfaceContainerHighest,
       elevation: 8,
-      shadowColor: AppColors.lightColorScheme.shadow,
+      shadowColor: cs.shadow,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
       ),
       titleTextStyle: AppTextStyles.dialogTitle.copyWith(
-        color: AppColors.textDark,
+        color: cs.onSurface,
       ),
-      contentTextStyle: AppTextStyles.dialogContent,
+      contentTextStyle: AppTextStyles.dialogContent.copyWith(
+        color: cs.onSurface,
+      ),
     );
   }
 
-  /// Bottom sheet theme - Cream background
-  static BottomSheetThemeData get bottomSheetTheme {
+  /// Bottom sheet theme
+  static BottomSheetThemeData bottomSheetTheme(ColorScheme cs) {
     return BottomSheetThemeData(
-      backgroundColor: AppColors.cream,
+      backgroundColor: cs.surface,
       elevation: 16,
-      shadowColor: AppColors.lightColorScheme.shadow,
+      shadowColor: cs.shadow,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppDimensions.borderRadius16),
         ),
       ),
-      modalBackgroundColor: AppColors.cream,
+      modalBackgroundColor: cs.surface,
       modalElevation: 16,
     );
   }

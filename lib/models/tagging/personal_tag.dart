@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/services/tagging/config/reserved_tags.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// A user-defined personal tag for custom recipe categorization.
 ///
@@ -196,18 +197,19 @@ class PersonalTag {
   /// Validates the tag name.
   /// Returns null if valid, error message if invalid.
   static String? validateName(String? name) {
+    final l = AppLocale.current;
     if (name == null || name.trim().isEmpty) {
-      return 'Taggnamn krävs';
+      return l.validationTagNameRequired;
     }
     final trimmed = name.trim();
     if (trimmed.length > 50) {
-      return 'Taggnamn för långt (max 50 tecken)';
+      return l.validationTagNameTooLong;
     }
     if (trimmed.contains(',')) {
-      return 'Taggnamn får inte innehålla kommatecken';
+      return l.validationTagNameNoCommas;
     }
     if (ReservedTags.isReserved(trimmed)) {
-      return 'Detta namn är reserverat för systemtaggar';
+      return l.validationTagNameReserved;
     }
     return null;
   }

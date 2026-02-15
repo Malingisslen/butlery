@@ -3,8 +3,8 @@ import 'package:butlery/services/import/file_import_strategy.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -290,8 +290,9 @@ class _FileImportViewState extends State<FileImportView> {
           left: AppDimensions.spacingM, bottom: AppDimensions.spacingXs),
       child: Row(
         children: [
-          const Icon(Icons.check,
-              size: AppDimensions.iconSizeS, color: AppColors.success),
+          Icon(Icons.check,
+              size: AppDimensions.iconSizeS,
+              color: context.butleryColors.success),
           const SizedBox(width: AppDimensions.spacingS),
           Text(text, style: AppTextStyles.bodySmall),
         ],

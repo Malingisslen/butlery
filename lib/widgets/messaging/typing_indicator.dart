@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
@@ -85,6 +84,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
       return const SizedBox.shrink();
     }
 
+    final cs = Theme.of(context).colorScheme;
     return FadeTransition(
       opacity: _fadeAnimation,
       child: Container(
@@ -92,7 +92,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
           horizontal: AppDimensions.paddingM,
           vertical: AppDimensions.paddingS,
         ),
-        color: AppColors.cream,
+        color: cs.surface,
         child: Row(
           children: [
             // Avatar placeholder
@@ -100,14 +100,14 @@ class _TypingIndicatorState extends State<TypingIndicator>
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: AppColors.accent
-                    .withValues(alpha: AppDimensions.opacityLight),
+                color:
+                    cs.secondary.withValues(alpha: AppDimensions.opacityLight),
                 shape: BoxShape.circle,
               ),
-              child: const Center(
+              child: Center(
                 child: Icon(
                   Icons.more_horiz,
-                  color: AppColors.forestGreen,
+                  color: cs.primary,
                   size: AppDimensions.iconSizeS,
                 ),
               ),
@@ -122,7 +122,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                 vertical: AppDimensions.paddingS,
               ),
               decoration: BoxDecoration(
-                color: AppColors.cardWhite,
+                color: cs.surfaceContainerHighest,
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusM),
                 boxShadow: AppShadows.subtle,
@@ -133,12 +133,12 @@ class _TypingIndicatorState extends State<TypingIndicator>
                   Text(
                     _getTypingText(),
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.textMedium,
+                      color: cs.onSurfaceVariant,
                       fontStyle: FontStyle.italic,
                     ),
                   ),
                   const SizedBox(width: AppDimensions.paddingS),
-                  _buildAnimatedDots(),
+                  _buildAnimatedDots(cs),
                 ],
               ),
             ),
@@ -148,29 +148,29 @@ class _TypingIndicatorState extends State<TypingIndicator>
     );
   }
 
-  Widget _buildAnimatedDots() {
+  Widget _buildAnimatedDots(ColorScheme cs) {
     return SizedBox(
       width: 24,
       height: 16,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildDot(0),
-          _buildDot(1),
-          _buildDot(2),
+          _buildDot(0, cs),
+          _buildDot(1, cs),
+          _buildDot(2, cs),
         ],
       ),
     );
   }
 
-  Widget _buildDot(int index) {
+  Widget _buildDot(int index, ColorScheme cs) {
     // Show static dots when reduced motion is enabled
     if (_reduceMotion) {
       return Container(
         width: 4,
         height: 4,
-        decoration: const BoxDecoration(
-          color: AppColors.textMedium,
+        decoration: BoxDecoration(
+          color: cs.onSurfaceVariant,
           shape: BoxShape.circle,
         ),
       );
@@ -188,7 +188,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
           width: 4,
           height: 4,
           decoration: BoxDecoration(
-            color: AppColors.textMedium.withValues(alpha: opacity),
+            color: cs.onSurfaceVariant.withValues(alpha: opacity),
             shape: BoxShape.circle,
           ),
         );

@@ -1,7 +1,6 @@
 // lib/widgets/common/profile/dialogs/profile_dialogs.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -26,7 +25,7 @@ class ProfileDialogs {
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
             child: Text(l10n.profileLogout),
           ),
@@ -62,8 +61,8 @@ class ProfileDialogs {
               Text(
                 l10n.profileDeleteIrreversible,
                 style: AppTextStyles.bodyBold.copyWith(
-                      color: AppColors.error,
-                    ),
+                  color: Theme.of(context).colorScheme.error,
+                ),
               ),
             ],
           ),
@@ -76,7 +75,7 @@ class ProfileDialogs {
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
             child: Text(l10n.profileDeleteConfirmButton),
           ),
@@ -117,7 +116,7 @@ class ProfileDialogs {
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, controller.text),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
             child: Text(l10n.profileConfirm),
           ),

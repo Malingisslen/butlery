@@ -8,9 +8,9 @@ import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
 import 'package:butlery/views/veckomeny_view.dart';
 import 'package:butlery/widgets/social/groups/shared_content_card.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Section widget displaying shared content (recipes, menus, shopping lists) for a group
@@ -97,7 +97,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.groupViewNotImplemented(item.title)),
-            backgroundColor: AppColors.info,
+            backgroundColor: context.butleryColors.info,
           ),
         );
     }
@@ -119,7 +119,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.groupImportNotImplemented(item.title)),
-            backgroundColor: AppColors.warning,
+            backgroundColor: context.butleryColors.warning,
           ),
         );
     }
@@ -137,7 +137,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.groupCouldNotFetchMenu),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
         return;
@@ -155,7 +155,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.groupErrorOpeningMenu(e.toString())),
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
@@ -166,7 +166,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(context.l10n.groupRecipeViewComingSoon(item.title)),
-        backgroundColor: AppColors.info,
+        backgroundColor: context.butleryColors.info,
       ),
     );
   }
@@ -176,7 +176,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(context.l10n.groupShoppingListViewComingSoon(item.title)),
-        backgroundColor: AppColors.info,
+        backgroundColor: context.butleryColors.info,
       ),
     );
   }
@@ -186,7 +186,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(context.l10n.groupImportingMenuComingSoon(item.title)),
-        backgroundColor: AppColors.success,
+        backgroundColor: context.butleryColors.success,
       ),
     );
   }
@@ -196,7 +196,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(context.l10n.groupImportingRecipeComingSoon(item.title)),
-        backgroundColor: AppColors.success,
+        backgroundColor: context.butleryColors.success,
       ),
     );
   }
@@ -207,7 +207,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
       SnackBar(
         content:
             Text(context.l10n.groupImportingShoppingListComingSoon(item.title)),
-        backgroundColor: AppColors.success,
+        backgroundColor: context.butleryColors.success,
       ),
     );
   }
@@ -256,63 +256,69 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                         ),
                         if (totalItems > 0) ...[
                           const SizedBox(width: AppDimensions.spacingS),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppDimensions.paddingS,
-                              vertical: AppDimensions.spacingXs,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.forestGreen.withValues(
-                                  alpha: AppDimensions.opacityVeryLight),
-                              borderRadius: BorderRadius.circular(
-                                  AppDimensions.borderRadiusS),
-                            ),
-                            child: Text(
-                              totalItems.toString(),
-                              style: AppTextStyles.labelLarge.copyWith(
-                                color: AppColors.forestGreen,
+                          Builder(builder: (context) {
+                            final cs = Theme.of(context).colorScheme;
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppDimensions.paddingS,
+                                vertical: AppDimensions.spacingXs,
                               ),
-                            ),
-                          ),
+                              decoration: BoxDecoration(
+                                color: cs.primary.withValues(
+                                    alpha: AppDimensions.opacityVeryLight),
+                                borderRadius: BorderRadius.circular(
+                                    AppDimensions.borderRadiusS),
+                              ),
+                              child: Text(
+                                totalItems.toString(),
+                                style: AppTextStyles.labelLarge.copyWith(
+                                  color: cs.primary,
+                                ),
+                              ),
+                            );
+                          }),
                         ],
                       ],
                     ),
                     const SizedBox(height: AppDimensions.spacingM),
 
                     // Tab bar
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: AppColors.cardWhite,
-                        borderRadius:
-                            BorderRadius.circular(AppDimensions.borderRadiusM),
-                      ),
-                      child: TabBar(
-                        controller: _tabController,
-                        indicatorColor: AppColors.forestGreen,
-                        labelColor: AppColors.forestGreen,
-                        unselectedLabelColor: AppColors.textSecondary,
-                        tabs: [
-                          Tab(
-                            icon: const Icon(Icons.restaurant_menu,
-                                size: AppDimensions.iconSizeM),
-                            text:
-                                '${context.l10n.groupContentTypeRecipe} (${recipes.length})',
-                          ),
-                          Tab(
-                            icon: const Icon(Icons.calendar_today,
-                                size: AppDimensions.iconSizeM),
-                            text:
-                                '${context.l10n.groupTabMenus} (${menus.length})',
-                          ),
-                          Tab(
-                            icon: const Icon(Icons.shopping_cart,
-                                size: AppDimensions.iconSizeM),
-                            text:
-                                '${context.l10n.groupTabLists} (${shoppingLists.length})',
-                          ),
-                        ],
-                      ),
-                    ),
+                    Builder(builder: (context) {
+                      final cs = Theme.of(context).colorScheme;
+                      return DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: cs.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(
+                              AppDimensions.borderRadiusM),
+                        ),
+                        child: TabBar(
+                          controller: _tabController,
+                          indicatorColor: cs.primary,
+                          labelColor: cs.primary,
+                          unselectedLabelColor: cs.onSurfaceVariant,
+                          tabs: [
+                            Tab(
+                              icon: const Icon(Icons.restaurant_menu,
+                                  size: AppDimensions.iconSizeM),
+                              text:
+                                  '${context.l10n.groupContentTypeRecipe} (${recipes.length})',
+                            ),
+                            Tab(
+                              icon: const Icon(Icons.calendar_today,
+                                  size: AppDimensions.iconSizeM),
+                              text:
+                                  '${context.l10n.groupTabMenus} (${menus.length})',
+                            ),
+                            Tab(
+                              icon: const Icon(Icons.shopping_cart,
+                                  size: AppDimensions.iconSizeM),
+                              text:
+                                  '${context.l10n.groupTabLists} (${shoppingLists.length})',
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
                     const SizedBox(height: AppDimensions.spacingM),
 
                     // Tab content

@@ -217,38 +217,27 @@ class AppColors {
     surfaceTint: forestGreen,
   );
 
-  // Dark mode not in scope for redesign, but keep for compatibility
-  static const ColorScheme darkColorScheme = ColorScheme(
-    brightness: Brightness.dark,
-    primary: forestGreenLight,
-    onPrimary: Color(0xFF1A3D24),
-    primaryContainer: forestGreen,
-    onPrimaryContainer: Color(0xFFD4E8D9),
-    secondary: rustLight,
-    onSecondary: Color(0xFF3D2517),
-    secondaryContainer: rust,
-    onSecondaryContainer: Color(0xFFF5E6DC),
-    tertiary: Color(0xFFFFD54F),
-    onTertiary: Color(0xFF333333),
-    tertiaryContainer: Color(0xFFFF8F00),
-    onTertiaryContainer: Color(0xFFFFF8E1),
-    error: Color(0xFFFFAB91),
-    onError: Color(0xFFBF360C),
-    errorContainer: Color(0xFFD84315),
-    onErrorContainer: Color(0xFFFFCCBC),
-    surface: Color(0xFF1E1E1E),
-    onSurface: Color(0xFFE0E0E0),
-    surfaceContainerHighest: Color(0xFF424242),
-    onSurfaceVariant: Color(0xFFBDBDBD),
-    outline: Color(0xFF616161),
-    outlineVariant: Color(0xFF424242),
-    shadow: Colors.black,
-    scrim: Colors.black87,
-    inverseSurface: Color(0xFFE0E0E0),
-    onInverseSurface: Color(0xFF121212),
-    inversePrimary: forestGreen,
-    surfaceTint: forestGreenLight,
-  );
+  /// M3-compliant dark color scheme using seed generation with brand overrides.
+  /// Uses ColorScheme.fromSeed for proper tonal palette, surface containers,
+  /// and tonal elevation, then overrides secondary (rust) and error slots.
+  static ColorScheme get darkColorScheme {
+    final base = ColorScheme.fromSeed(
+      seedColor: forestGreen,
+      brightness: Brightness.dark,
+    );
+    return base.copyWith(
+      // Override secondary toward rust (seed ignores this)
+      secondary: const Color(0xFFD4A88A), // rust tone 80
+      onSecondary: const Color(0xFF3D2517),
+      secondaryContainer: const Color(0xFF6B4630),
+      onSecondaryContainer: const Color(0xFFF5DCC8),
+      // Override error (ensure proper red, not orange)
+      error: const Color(0xFFFFB4AB), // M3 error tone 80
+      onError: const Color(0xFF690005),
+      errorContainer: const Color(0xFF93000A),
+      onErrorContainer: const Color(0xFFFFDAD6),
+    );
+  }
 
   // Legacy compatibility (use new names in new code)
   static const Color shadowColor = Color(0x1A000000);

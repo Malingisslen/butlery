@@ -15,9 +15,9 @@ import 'package:butlery/services/content_detector_service.dart'
 import 'package:butlery/services/social_media_extractor.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/common/content_cards/text_display_card.dart';
 import 'package:butlery/widgets/common/indicators/status_indicator.dart';
@@ -300,17 +300,17 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
       case content_detector.ContentType.socialMediaUrl:
         icon = Icons.link;
         title = context.l10n.importUrlFromPlatform(_getPlatformName());
-        color = AppColors.forestGreen;
+        color = Theme.of(context).colorScheme.primary;
         break;
       case content_detector.ContentType.recipeText:
         icon = Icons.restaurant_menu;
         title = context.l10n.importRecipeTextDetected;
-        color = AppColors.success;
+        color = context.butleryColors.success;
         break;
       case content_detector.ContentType.recipeUrl:
         icon = Icons.public;
         title = context.l10n.importRecipeLinkDetected;
-        color = AppColors.forestGreen;
+        color = Theme.of(context).colorScheme.primary;
         break;
       default:
         icon = Icons.text_fields;
@@ -368,32 +368,35 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
         return Column(
           children: [
             if (_extractionError != null) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
-                decoration: BoxDecoration(
-                  color: AppColors.error
-                      .withValues(alpha: AppDimensions.opacityVeryLight),
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusM,
+              Builder(builder: (context) {
+                final cs = Theme.of(context).colorScheme;
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppDimensions.paddingL),
+                  decoration: BoxDecoration(
+                    color: cs.error
+                        .withValues(alpha: AppDimensions.opacityVeryLight),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusM,
+                    ),
+                    border: Border.all(color: cs.error),
                   ),
-                  border: Border.all(color: AppColors.error),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.error_outline, color: AppColors.error),
-                    const SizedBox(width: AppDimensions.spacingS),
-                    Expanded(
-                      child: Text(
-                        _extractionError!,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.error,
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: cs.error),
+                      const SizedBox(width: AppDimensions.spacingS),
+                      Expanded(
+                        child: Text(
+                          _extractionError!,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: cs.error,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                    ],
+                  ),
+                );
+              }),
               const SizedBox(height: AppDimensions.spacingL),
             ],
             ElevatedButton.icon(
@@ -404,7 +407,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
                     ? context.l10n.commonRetry
                     : context.l10n.importFetchAutomatically,
               ),
-              style: ComponentThemes.primaryButtonStyle,
+              style: ComponentThemes.primaryButtonStyle(
+                  Theme.of(context).colorScheme),
             ),
             const SizedBox(height: AppDimensions.spacingL),
             Text(context.l10n.commonOr, style: AppTextStyles.bodySmall),
@@ -413,7 +417,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
               onPressed: _handleManualCopy,
               icon: const Icon(Icons.content_paste),
               label: Text(context.l10n.importCopyManually),
-              style: ComponentThemes.outlinedButtonStyle,
+              style: ComponentThemes.outlinedButtonStyle(
+                  Theme.of(context).colorScheme),
             ),
           ],
         );
@@ -432,7 +437,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
               onPressed: _navigateToUrlImport,
               icon: const Icon(Icons.download),
               label: Text(context.l10n.importFetchFromWebsite),
-              style: ComponentThemes.primaryButtonStyle,
+              style: ComponentThemes.primaryButtonStyle(
+                  Theme.of(context).colorScheme),
             ),
           ],
         );
@@ -441,38 +447,43 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
         // Ren recepttext - perfekt!
         return Column(
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
-              decoration: BoxDecoration(
-                color: AppColors.success
-                    .withValues(alpha: AppDimensions.opacityVeryLight),
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.borderRadiusM,
+            Builder(builder: (context) {
+              final cs = Theme.of(context).colorScheme;
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                decoration: BoxDecoration(
+                  color: context.butleryColors.success
+                      .withValues(alpha: AppDimensions.opacityVeryLight),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusM,
+                  ),
+                  border: Border.all(color: cs.outlineVariant),
                 ),
-                border: Border.all(color: AppColors.divider),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.check_circle, color: AppColors.success),
-                  const SizedBox(width: AppDimensions.spacingS),
-                  Expanded(
-                    child: Text(
-                      context.l10n.importRecipeTextCanImport,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.success,
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle,
+                        color: context.butleryColors.success),
+                    const SizedBox(width: AppDimensions.spacingS),
+                    Expanded(
+                      child: Text(
+                        context.l10n.importRecipeTextCanImport,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: context.butleryColors.success,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
+                  ],
+                ),
+              );
+            }),
             const SizedBox(height: AppDimensions.spacingL),
             ElevatedButton.icon(
               onPressed: _navigateToTextImport,
               icon: const Icon(Icons.arrow_forward),
               label: Text(context.l10n.importContinueWithImport),
-              style: ComponentThemes.primaryButtonStyle,
+              style: ComponentThemes.primaryButtonStyle(
+                  Theme.of(context).colorScheme),
             ),
           ],
         );
@@ -491,7 +502,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
               onPressed: _navigateToTextImport,
               icon: const Icon(Icons.edit),
               label: Text(context.l10n.importTryAnyway),
-              style: ComponentThemes.outlinedButtonStyle,
+              style: ComponentThemes.outlinedButtonStyle(
+                  Theme.of(context).colorScheme),
             ),
           ],
         );

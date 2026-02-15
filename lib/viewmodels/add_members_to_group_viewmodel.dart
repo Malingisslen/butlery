@@ -12,6 +12,7 @@ import 'package:butlery/viewmodels/add_members_to_group/member_search_manager.da
 import 'package:butlery/viewmodels/add_members_to_group/member_selection_manager.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// ViewModel managing group member addition with friend search, selection, and invitation sending.
 /// Uses AsyncOperationMixin for general loading state while maintaining operation-specific
@@ -88,7 +89,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier
         // Hämta gruppinformation
         _group = _friendsService.categories.getCategoryById(groupId);
         if (_group == null) {
-          throw Exception('Gruppen hittades inte');
+          throw Exception(AppLocale.current.errorGroupNotFound);
         }
 
         // Hämta tillgängliga vänner (som inte redan är medlemmar)
@@ -100,7 +101,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier
     } catch (e) {
       AppLogger.error(
           '❌ Fel vid initialisering av AddMembersToGroupViewModel', e);
-      setError('Kunde inte ladda data: $e');
+      setError(AppLocale.current.errorGeneric);
     }
   }
 
@@ -217,8 +218,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier
           _setInvitationError(_friendsService.error!);
         } else if (successCount == 0 && failureCount > 0) {
           // All invitations failed
-          _setInvitationError(
-              'Kunde inte skicka gruppinbjudningar. Försök igen senare.');
+          _setInvitationError(AppLocale.current.errorGeneric);
         }
       }
 
@@ -233,7 +233,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier
       return successCount > 0;
     } catch (e) {
       AppLogger.error('❌ Kritiskt fel vid sändning av gruppinbjudningar', e);
-      _setInvitationError('Fel vid sändning av gruppinbjudningar: $e');
+      _setInvitationError(AppLocale.current.errorGeneric);
       return false;
     } finally {
       _isSendingInvitations = false;

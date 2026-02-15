@@ -6,7 +6,6 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -195,19 +194,24 @@ class _MenuListItem extends StatelessWidget {
         horizontal: AppDimensions.paddingL,
         vertical: AppDimensions.paddingM,
       ),
-      leading: Container(
-        width: AppDimensions.iconSizeXl,
-        height: AppDimensions.iconSizeXl,
-        decoration: BoxDecoration(
-          color: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        ),
-        child: const Icon(
-          Icons.calendar_today,
-          color: AppColors.forestGreen,
-          size: AppDimensions.iconSizeAction,
-        ),
+      leading: Builder(
+        builder: (context) {
+          final cs = Theme.of(context).colorScheme;
+          return Container(
+            width: AppDimensions.iconSizeXl,
+            height: AppDimensions.iconSizeXl,
+            decoration: BoxDecoration(
+              color:
+                  cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            ),
+            child: Icon(
+              Icons.calendar_today,
+              color: cs.primary,
+              size: AppDimensions.iconSizeAction,
+            ),
+          );
+        },
       ),
       title: Text(
         menu.menuTitle,
@@ -229,7 +233,7 @@ class _MenuListItem extends StatelessWidget {
           Text(
             context.l10n.recipeCountBadge(menu.totalRecipeCount),
             style: AppTextStyles.metadataEmphasized.copyWith(
-              color: AppColors.forestGreen,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
         ],

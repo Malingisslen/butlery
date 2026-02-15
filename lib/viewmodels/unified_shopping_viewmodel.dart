@@ -28,6 +28,7 @@ import 'package:butlery/viewmodels/shopping/shopping_analytics_manager.dart';
 import 'package:butlery/viewmodels/shopping/shopping_item_operations_manager.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Unified shopping ViewModel coordinating shopping operations through service delegation.
 class UnifiedShoppingViewModel extends ChangeNotifier
@@ -94,7 +95,8 @@ class UnifiedShoppingViewModel extends ChangeNotifier
       (activeList?.completionPercentage).orZero();
 
   /// Active list summary
-  String get listSummary => activeList?.summary ?? 'Ingen aktiv lista';
+  String get listSummary =>
+      activeList?.summary ?? AppLocale.current.errorNotFound;
 
   /// Complete shopping indicator
   bool get allItemsBought => (activeList?.allItemsBought).orFalse();

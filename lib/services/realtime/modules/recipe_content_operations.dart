@@ -3,6 +3,7 @@
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Recipe operation types for analytics and logging
 enum RecipeOperationType {
@@ -66,7 +67,7 @@ class RecipeContentOperations {
     if (title != null && title.trim().isEmpty) {
       throw RecipeOperationError(
         operation: RecipeOperationType.updateBasicInfo,
-        message: 'Recepttitel kan inte vara tom',
+        message: AppLocale.current.validationRecipeTitleCannotBeEmpty,
         resourceId: recipe.id,
       );
     }
@@ -75,7 +76,7 @@ class RecipeContentOperations {
     if (timeMinutes != null && timeMinutes < 0) {
       throw RecipeOperationError(
         operation: RecipeOperationType.updateBasicInfo,
-        message: 'Tillagningstid kan inte vara negativ',
+        message: AppLocale.current.validationCookingTimeCannotBeNegative,
         resourceId: recipe.id,
       );
     }
@@ -105,7 +106,7 @@ class RecipeContentOperations {
     if (ingredient.trim().isEmpty) {
       throw RecipeOperationError(
         operation: RecipeOperationType.addIngredient,
-        message: 'Ingrediens kan inte vara tom',
+        message: AppLocale.current.validationIngredientCannotBeEmpty,
         resourceId: recipe.id,
       );
     }
@@ -129,7 +130,8 @@ class RecipeContentOperations {
     if (index < 0 || index >= recipe.ingredientsCount) {
       throw RecipeOperationError(
         operation: RecipeOperationType.removeIngredient,
-        message: 'Ogiltigt ingrediensindex: $index',
+        message:
+            '${AppLocale.current.validationInvalidIngredientIndex}: $index',
         resourceId: recipe.id,
       );
     }
@@ -157,7 +159,7 @@ class RecipeContentOperations {
     if (validIngredients.isEmpty) {
       throw RecipeOperationError(
         operation: RecipeOperationType.updateIngredients,
-        message: 'Minst en ingrediens krävs',
+        message: AppLocale.current.validationAtLeastOneIngredient,
         resourceId: recipe.id,
       );
     }
@@ -181,7 +183,7 @@ class RecipeContentOperations {
     if (instruction.trim().isEmpty) {
       throw RecipeOperationError(
         operation: RecipeOperationType.addInstruction,
-        message: 'Instruktion kan inte vara tom',
+        message: AppLocale.current.validationInstructionCannotBeEmpty,
         resourceId: recipe.id,
       );
     }
@@ -205,7 +207,8 @@ class RecipeContentOperations {
     if (index < 0 || index >= recipe.instructionsCount) {
       throw RecipeOperationError(
         operation: RecipeOperationType.removeInstruction,
-        message: 'Ogiltigt instruktionsindex: $index',
+        message:
+            '${AppLocale.current.validationInvalidInstructionIndex}: $index',
         resourceId: recipe.id,
       );
     }
@@ -233,7 +236,7 @@ class RecipeContentOperations {
     if (validInstructions.isEmpty) {
       throw RecipeOperationError(
         operation: RecipeOperationType.updateInstructions,
-        message: 'Minst en instruktion krävs',
+        message: AppLocale.current.validationAtLeastOneInstruction,
         resourceId: recipe.id,
       );
     }
@@ -257,7 +260,7 @@ class RecipeContentOperations {
     if (imageUrl.trim().isEmpty) {
       throw RecipeOperationError(
         operation: RecipeOperationType.addImage,
-        message: 'Bild-URL kan inte vara tom',
+        message: AppLocale.current.validationImageUrlCannotBeEmpty,
         resourceId: recipe.id,
       );
     }
@@ -267,7 +270,7 @@ class RecipeContentOperations {
     if (uri == null || !uri.hasAbsolutePath) {
       throw RecipeOperationError(
         operation: RecipeOperationType.addImage,
-        message: 'Ogiltig bild-URL format',
+        message: AppLocale.current.validationInvalidImageUrlFormat,
         resourceId: recipe.id,
       );
     }
@@ -276,7 +279,7 @@ class RecipeContentOperations {
     if (recipe.imagesCount >= 5) {
       throw RecipeOperationError(
         operation: RecipeOperationType.addImage,
-        message: 'Maximalt 5 bilder tillåtna',
+        message: AppLocale.current.validationMaxImagesReached,
         resourceId: recipe.id,
       );
     }
@@ -300,7 +303,7 @@ class RecipeContentOperations {
     if (index < 0 || index >= recipe.imagesCount) {
       throw RecipeOperationError(
         operation: RecipeOperationType.removeImage,
-        message: 'Ogiltigt bildindex: $index',
+        message: '${AppLocale.current.validationInvalidImageIndex}: $index',
         resourceId: recipe.id,
       );
     }
@@ -338,24 +341,25 @@ class RecipeContentOperations {
 
   /// Validate recipe content
   static List<String> validateRecipeContent(RealtimeRecipe recipe) {
+    final l = AppLocale.current;
     final errors = <String>[];
 
     // Check basic requirements
     if (recipe.title.trim().isEmpty) {
-      errors.add('Recepttitel saknas');
+      errors.add(l.validationRecipeTitleMissing);
     }
 
     if (recipe.ingredientsCount == 0) {
-      errors.add('Recept har inga ingredienser');
+      errors.add(l.validationRecipeNoIngredients);
     }
 
     if (recipe.instructionsCount == 0) {
-      errors.add('Recipe has no instructions');
+      errors.add(l.validationRecipeNoInstructions);
     }
 
     // Check content quality
     if (recipe.description.trim().isEmpty) {
-      errors.add('Recipe description is empty');
+      errors.add(l.validationRecipeDescriptionEmpty);
     }
 
     return errors;
@@ -431,17 +435,18 @@ class RecipeContentOperations {
 
   /// Get content summary for display
   static String getContentSummary(RealtimeRecipe recipe) {
+    final l = AppLocale.current;
     final parts = <String>[];
 
-    parts.add('${recipe.ingredientsCount} ingredienser');
-    parts.add('${recipe.instructionsCount} steg');
+    parts.add(l.contentSummaryIngredients(recipe.ingredientsCount));
+    parts.add(l.contentSummarySteps(recipe.instructionsCount));
 
     if (recipe.timeMinutes != null) {
-      parts.add('${recipe.timeMinutes} minuter');
+      parts.add(l.contentSummaryMinutes(recipe.timeMinutes!));
     }
 
     if (recipe.portions != null) {
-      parts.add('${recipe.portions} portioner');
+      parts.add(l.contentSummaryPortions(recipe.portions!));
     }
 
     return parts.join(' • ');
@@ -449,21 +454,22 @@ class RecipeContentOperations {
 
   /// Get recipe difficulty level
   static String getDifficultyLevel(RealtimeRecipe recipe) {
+    final l = AppLocale.current;
     final complexity = getComplexityScore(recipe);
 
     switch (complexity) {
       case 1:
-        return 'Mycket lätt';
+        return l.difficultyVeryEasy;
       case 2:
-        return 'Lätt';
+        return l.difficultyEasy;
       case 3:
-        return 'Medel';
+        return l.difficultyMedium;
       case 4:
-        return 'Svår';
+        return l.difficultyHard;
       case 5:
-        return 'Mycket svår';
+        return l.difficultyVeryHard;
       default:
-        return 'Okänd';
+        return l.difficultyUnknown;
     }
   }
 

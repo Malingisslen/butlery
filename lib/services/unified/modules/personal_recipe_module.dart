@@ -18,6 +18,7 @@ import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// HIGH-10: Recipe sync status for tracking background Firebase sync state.
 enum RecipeSyncStatus {
@@ -137,7 +138,7 @@ class PersonalRecipeModule {
     if (currentUserId == null) return null;
 
     if (ValidationUtils.isNullOrWhitespace(title)) {
-      _setError('Receptnamn kan inte vara tomt');
+      _setError(AppLocale.current.errorRecipeNameEmpty);
       return null;
     }
 
@@ -187,7 +188,7 @@ class PersonalRecipeModule {
                 await _syncRecipeToFirebaseAwaited(newRecipe, 'create');
             if (!syncSuccess) {
               _setError(
-                  'Kunde inte spara receptet. Kontrollera din internetanslutning.');
+                  AppLocale.current.errorCouldNotSaveRecipeCheckConnection);
               return null;
             }
             AppLogger.success('✅ Personal recipe "$title" created and synced');
@@ -204,12 +205,13 @@ class PersonalRecipeModule {
       );
     } on RateLimitException catch (e) {
       AppLogger.warning('⚠️ Rate limit exceeded for recipe creation: $e');
-      _setError(
-          'För många receptskapanden. Försök igen om ${e.retryAfter?.inSeconds ?? 60} sekunder.');
+      _setError(AppLocale.current
+          .errorRateLimitExceeded(e.retryAfter?.inSeconds ?? 60));
       return null;
     } catch (e) {
       AppLogger.error('❌ Could not create personal recipe: $e');
-      _setError('Kunde inte skapa recept: $e');
+      _setError(AppLocale.current
+          .errorCouldNotCreate(AppLocale.current.resourceTypeRecipe));
       return null;
     }
   }
@@ -223,7 +225,7 @@ class PersonalRecipeModule {
     if (currentUserId == null) return false;
 
     if (!updatedRecipe.isPersonal) {
-      _setError('Kan bara uppdatera personliga recept');
+      _setError(AppLocale.current.errorCanOnlyUpdatePersonalRecipes);
       return false;
     }
 
@@ -252,7 +254,7 @@ class PersonalRecipeModule {
                 await _syncRecipeToFirebaseAwaited(editedRecipe, 'update');
             if (!syncSuccess) {
               _setError(
-                  'Kunde inte uppdatera receptet. Kontrollera din internetanslutning.');
+                  AppLocale.current.errorCouldNotUpdateRecipeCheckConnection);
               return false;
             }
             AppLogger.success(
@@ -268,12 +270,13 @@ class PersonalRecipeModule {
       );
     } on RateLimitException catch (e) {
       AppLogger.warning('⚠️ Rate limit exceeded for recipe update: $e');
-      _setError(
-          'För många uppdateringar. Försök igen om ${e.retryAfter?.inSeconds ?? 60} sekunder.');
+      _setError(AppLocale.current
+          .errorRateLimitExceeded(e.retryAfter?.inSeconds ?? 60));
       return false;
     } catch (e) {
       AppLogger.error('❌ Could not update personal recipe: $e');
-      _setError('Kunde inte uppdatera recept: $e');
+      _setError(AppLocale.current
+          .errorCouldNotUpdate(AppLocale.current.resourceTypeRecipe));
       return false;
     }
   }
@@ -310,7 +313,7 @@ class PersonalRecipeModule {
 
             AppLogger.success('✅ Personal recipe deleted');
           } else {
-            _setError('Kunde inte ta bort recept från servern');
+            _setError(AppLocale.current.errorCouldNotDeleteFromServer);
             return false;
           }
           return true;
@@ -318,12 +321,12 @@ class PersonalRecipeModule {
       );
     } on RateLimitException catch (e) {
       AppLogger.warning('⚠️ Rate limit exceeded for recipe deletion: $e');
-      _setError(
-          'För många borttagningar. Försök igen om ${e.retryAfter?.inSeconds ?? 60} sekunder.');
+      _setError(AppLocale.current
+          .errorRateLimitExceeded(e.retryAfter?.inSeconds ?? 60));
       return false;
     } catch (e) {
       AppLogger.error('❌ Could not delete personal recipe: $e');
-      _setError('Kunde inte ta bort recept: $e');
+      _setError(AppLocale.current.errorCouldNotDeleteRecipe);
       return false;
     }
   }
@@ -343,7 +346,7 @@ class PersonalRecipeModule {
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not mark recipe as cooked: $e');
-      _setError('Kunde inte markera recept som tillagat: $e');
+      _setError(AppLocale.current.errorCouldNotMarkAsCooked);
       return false;
     }
   }
@@ -362,7 +365,7 @@ class PersonalRecipeModule {
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not add ingredient: $e');
-      _setError('Kunde inte lägga till ingrediens: $e');
+      _setError(AppLocale.current.errorCouldNotAddIngredient);
       return false;
     }
   }
@@ -383,7 +386,7 @@ class PersonalRecipeModule {
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not update ingredient: $e');
-      _setError('Kunde inte uppdatera ingrediens: $e');
+      _setError(AppLocale.current.errorCouldNotUpdateIngredient);
       return false;
     }
   }
@@ -403,7 +406,7 @@ class PersonalRecipeModule {
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not remove ingredient: $e');
-      _setError('Kunde inte ta bort ingrediens: $e');
+      _setError(AppLocale.current.errorCouldNotRemoveIngredient);
       return false;
     }
   }
@@ -422,7 +425,7 @@ class PersonalRecipeModule {
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not add instruction: $e');
-      _setError('Kunde inte lägga till instruktion: $e');
+      _setError(AppLocale.current.errorCouldNotAddInstruction);
       return false;
     }
   }
@@ -443,7 +446,7 @@ class PersonalRecipeModule {
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not update instruction: $e');
-      _setError('Kunde inte uppdatera instruktion: $e');
+      _setError(AppLocale.current.errorCouldNotUpdateInstruction);
       return false;
     }
   }
@@ -463,7 +466,7 @@ class PersonalRecipeModule {
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not remove instruction: $e');
-      _setError('Kunde inte ta bort instruktion: $e');
+      _setError(AppLocale.current.errorCouldNotRemoveInstruction);
       return false;
     }
   }
@@ -474,17 +477,17 @@ class PersonalRecipeModule {
     required List<String> instructions,
   }) {
     if (ValidationUtils.isNullOrWhitespace(title)) {
-      _setError('Receptnamn kan inte vara tomt');
+      _setError(AppLocale.current.errorRecipeNameEmpty);
       return false;
     }
 
     if (ingredients.isEmpty) {
-      _setError('Recept måste ha minst en ingrediens');
+      _setError(AppLocale.current.errorRecipeNeedsIngredient);
       return false;
     }
 
     if (instructions.isEmpty) {
-      _setError('Recept måste ha minst en instruktion');
+      _setError(AppLocale.current.errorRecipeNeedsInstruction);
       return false;
     }
 
@@ -566,7 +569,7 @@ class PersonalRecipeModule {
       List<Map<String, dynamic>> recipesData) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
-      _setError('Du måste vara inloggad för att importera recept');
+      _setError(AppLocale.current.errorMustBeLoggedInToImport);
       return [];
     }
 
@@ -607,7 +610,7 @@ class PersonalRecipeModule {
       return importedIds;
     } catch (e) {
       AppLogger.error('❌ Import error: $e');
-      _setError('Kunde inte importera recept: $e');
+      _setError(AppLocale.current.errorCouldNotImportRecipes);
       return [];
     }
   }
@@ -622,7 +625,7 @@ class PersonalRecipeModule {
       return exportData;
     } catch (e) {
       AppLogger.error('❌ Export error: $e');
-      _setError('Kunde inte exportera recept: $e');
+      _setError(AppLocale.current.errorCouldNotExportRecipes);
       return [];
     }
   }

@@ -9,9 +9,9 @@ import 'package:butlery/widgets/common/cards/selection_card.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
@@ -103,8 +103,8 @@ class _CreateGroupConversationViewState
         context.l10n.messagingCreateGroup,
         style: AppTextStyles.headlineSmall,
       ),
-      backgroundColor: AppColors.cream,
-      foregroundColor: AppColors.textDark,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      foregroundColor: Theme.of(context).colorScheme.onSurface,
       elevation: AppDimensions.elevationLow,
       actions: [
         if (viewModel.hasSelectedMembers)
@@ -188,7 +188,7 @@ class _CreateGroupConversationViewState
         Text(
           context.l10n.messagingSelectAtLeastTwoMembers,
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textLight,
+            color: Theme.of(context).colorScheme.outline,
           ),
         ),
       ],
@@ -202,17 +202,17 @@ class _CreateGroupConversationViewState
       children: [
         Row(
           children: [
-            const Icon(
+            Icon(
               Icons.people,
               size: AppDimensions.iconSizeM,
-              color: AppColors.forestGreen,
+              color: Theme.of(context).colorScheme.primary,
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
               context.l10n
                   .messagingSelectedMembers(viewModel.selectedMemberCount),
               style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.forestGreen,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ],
@@ -302,16 +302,16 @@ class _CreateGroupConversationViewState
                   Text(
                     friend.email,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textLight,
+                      color: Theme.of(context).colorScheme.outline,
                     ),
                   ),
               ],
             ),
           ),
           if (isSelected)
-            const Icon(
+            Icon(
               Icons.check_circle,
-              color: AppColors.forestGreen,
+              color: Theme.of(context).colorScheme.primary,
             ),
         ],
       ),
@@ -330,7 +330,7 @@ class _CreateGroupConversationViewState
               child: Text(
                 viewModel.error!,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.error,
+                  color: Theme.of(context).colorScheme.error,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -364,7 +364,7 @@ class _CreateGroupConversationViewState
       scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Text(context.l10n.messagingGroupCreated),
-          backgroundColor: AppColors.success,
+          backgroundColor: context.butleryColors.success,
         ),
       );
 
@@ -380,7 +380,7 @@ class _CreateGroupConversationViewState
       scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Text(viewModel.error!),
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }

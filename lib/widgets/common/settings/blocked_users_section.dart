@@ -4,7 +4,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/social_components.dart';
@@ -69,7 +68,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.primary,
+              foregroundColor: Theme.of(context).colorScheme.primary,
             ),
             child: Text(context.l10n.blockedUsersUnblock),
           ),
@@ -86,9 +85,10 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Card(
       elevation: 0,
-      color: AppColors.backgroundTint,
+      color: cs.surface,
       child: Column(
         children: [
           // Collapsible header
@@ -98,9 +98,9 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
               padding: const EdgeInsets.all(AppDimensions.spacingMd),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.block,
-                    color: AppColors.textMedium,
+                    color: cs.onSurfaceVariant,
                     size: AppDimensions.iconSizeM,
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
@@ -122,7 +122,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
                   ),
                   Icon(
                     _isExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: AppColors.textMedium,
+                    color: cs.onSurfaceVariant,
                   ),
                 ],
               ),
@@ -130,7 +130,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
           ),
           // Expandable content
           if (_isExpanded) ...[
-            const Divider(height: 1, color: AppColors.divider),
+            Divider(height: 1, color: cs.outlineVariant),
             if (_isLoading)
               const Padding(
                 padding: EdgeInsets.all(AppDimensions.spacingMd),
@@ -186,7 +186,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
           TextButton(
             onPressed: () => _unblockUser(userId),
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.primary,
+              foregroundColor: Theme.of(context).colorScheme.primary,
               padding: AppDimensions.paddingSymmetric16x8,
             ),
             child: Text(context.l10n.blockedUsersUnblock),

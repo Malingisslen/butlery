@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/message.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -15,6 +14,7 @@ class MessageStatusWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
       child: Row(
@@ -23,14 +23,14 @@ class MessageStatusWidget extends StatelessWidget {
           Icon(
             _getStatusIcon(),
             size: AppDimensions.iconSizeXs,
-            color: AppColors.cardWhite
+            color: cs.surfaceContainerHighest
                 .withValues(alpha: AppDimensions.opacityDark),
           ),
           const SizedBox(width: AppDimensions.spacingXxs),
           Text(
             _getStatusText(context),
             style: AppTextStyles.textXs.copyWith(
-              color: AppColors.cardWhite
+              color: cs.surfaceContainerHighest
                   .withValues(alpha: AppDimensions.opacityDark),
             ),
           ),
@@ -106,6 +106,7 @@ class MessageTimestampWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: EdgeInsets.only(
         top: AppDimensions.spacingXs,
@@ -115,7 +116,7 @@ class MessageTimestampWidget extends StatelessWidget {
       child: Text(
         MessageTimeFormatter.format(timestamp),
         style: AppTextStyles.textXs.copyWith(
-          color: AppColors.textLight,
+          color: cs.outline,
         ),
       ),
     );

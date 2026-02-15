@@ -920,6 +920,9 @@ void main() {
             case ShareContentType.shoppingList:
               content = testShoppingList;
               break;
+            case ShareContentType.personalTag:
+              content = 'test-tag';
+              break;
           }
 
           await tester.pumpWidget(

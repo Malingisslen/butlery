@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -82,17 +81,17 @@ class PermissionWidgets {
         );
 
       case EditMode.noAccess:
+        final cs = Theme.of(context).colorScheme;
         return Container(
           padding: const EdgeInsets.all(AppDimensions.spacingL),
           decoration: BoxDecoration(
-            color: AppColors.error
-                .withValues(alpha: AppDimensions.opacityVeryLight),
+            color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            border: Border.all(color: AppColors.error),
+            border: Border.all(color: cs.error),
           ),
           child: Row(
             children: [
-              const Icon(Icons.block, color: AppColors.error),
+              Icon(Icons.block, color: cs.error),
               const SizedBox(width: AppDimensions.spacingM),
               Text(context.l10n.permissionNoAccess,
                   style: AppTextStyles.bodyMediumError),

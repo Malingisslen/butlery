@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/base/base_action_handler.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -140,9 +139,9 @@ class CollaborativeShoppingActions extends BaseActionHandler
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.visibility,
-            color: AppColors.textMedium,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingM),

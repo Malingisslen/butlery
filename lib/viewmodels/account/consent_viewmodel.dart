@@ -4,6 +4,7 @@ import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// ViewModel for managing user consent UI state and operations (GDPR Article 7)
 /// Handles consent management UI, allowing users to grant/revoke consent
@@ -115,7 +116,7 @@ class ConsentViewModel extends ChangeNotifier
           await loadConsent();
           app_logger.AppLogger.success('[$_logTag] Consent saved successfully');
         } else {
-          setError('Kunde inte spara samtycken. Försök igen.');
+          setError(AppLocale.current.errorGeneric);
         }
 
         return success;
@@ -174,7 +175,7 @@ class ConsentViewModel extends ChangeNotifier
           app_logger.AppLogger.success(
               '[$_logTag] All optional consents revoked');
         } else {
-          setError('Kunde inte återkalla samtycken. Försök igen.');
+          setError(AppLocale.current.errorGeneric);
         }
 
         return success;
@@ -223,23 +224,24 @@ class ConsentViewModel extends ChangeNotifier
 
   /// Get user-friendly timestamp text
   String getConsentTimestampText() {
-    if (_currentConsent == null) return 'Inget samtycke';
+    final l = AppLocale.current;
+    if (_currentConsent == null) return l.displayNoConsent;
 
     final timestamp = _currentConsent!.updatedAt ?? _currentConsent!.grantedAt;
     final now = DateTime.now();
     final difference = now.difference(timestamp);
 
     if (difference.inMinutes < 1) {
-      return 'Just nu';
+      return l.commonJustNow;
     } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes} minuter sedan';
+      return '${difference.inMinutes} min';
     } else if (difference.inHours < 24) {
-      return '${difference.inHours} timmar sedan';
+      return '${difference.inHours} h';
     } else if (difference.inDays < 30) {
-      return '${difference.inDays} dagar sedan';
+      return '${difference.inDays} d';
     } else {
       final months = (difference.inDays / 30).floor();
-      return '$months månader sedan';
+      return '$months m';
     }
   }
 
@@ -247,17 +249,17 @@ class ConsentViewModel extends ChangeNotifier
 
   String _formatErrorMessage(Object error) {
     final errorStr = error.toString();
+    final l = AppLocale.current;
 
-    // User-friendly Swedish error messages
     if (errorStr.contains('No authenticated user')) {
-      return 'Du måste vara inloggad för att hantera samtycken';
+      return l.errorMustBeLoggedInToManageConsent;
     } else if (errorStr.contains('network') ||
         errorStr.contains('connection')) {
-      return 'Ingen internetanslutning. Kontrollera din anslutning och försök igen.';
+      return l.errorNoInternetCheckConnection;
     } else if (errorStr.contains('permission')) {
-      return 'Behörighet nekad. Försök logga in igen.';
+      return l.errorPermissionDeniedRetry;
     } else {
-      return 'Ett fel uppstod. Försök igen.';
+      return l.errorGeneric;
     }
   }
 

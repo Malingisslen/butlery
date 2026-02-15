@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_social_handler.dart';
@@ -177,12 +176,12 @@ class RecipeDetailActions {
       } else {
         if (!context.mounted) return;
         _showSnackBar(context.l10n.errorCouldNotOpenLink,
-            backgroundColor: AppColors.error);
+            backgroundColor: Theme.of(context).colorScheme.error);
       }
     } catch (e) {
       if (!context.mounted) return;
       _showSnackBar(context.l10n.errorInvalidLink,
-          backgroundColor: AppColors.error);
+          backgroundColor: Theme.of(context).colorScheme.error);
     }
   }
 

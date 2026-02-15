@@ -5,6 +5,8 @@
 /// - Separate limits for basic imports vs LLM operations
 /// - Cost tracking for LLM operations
 
+import 'package:butlery/core/l10n/app_locale.dart';
+
 /// Result of a rate limit check.
 sealed class RateLimitResult {
   const RateLimitResult();
@@ -48,23 +50,24 @@ class RateLimitDenied extends RateLimitResult {
     required this.suggestedAction,
   });
 
-  /// Get Swedish user-friendly message
+  /// Get localized user-friendly message
   String get swedishMessage {
+    final l = AppLocale.current;
     switch (limitType) {
       case LimitType.perMinute:
-        return 'Du importerar för snabbt. Vänta ${retryAfter.inSeconds} sekunder.';
+        return l.rateLimitTooFast(retryAfter.inSeconds);
       case LimitType.perHour:
-        return 'Du har nått timgränsen. Försök igen om ${retryAfter.inMinutes} minuter.';
+        return l.rateLimitHourly(retryAfter.inMinutes);
       case LimitType.perDay:
-        return 'Du har nått dagens gräns. Försök igen imorgon.';
+        return l.rateLimitDaily;
       case LimitType.llmDaily:
-        return 'AI-kvoten för idag är slut. Försök igen imorgon.';
+        return l.rateLimitAiDaily;
       case LimitType.llmMonthly:
-        return 'AI-kvoten för månaden är slut.';
+        return l.rateLimitAiMonthly;
       case LimitType.costDaily:
-        return 'Dagens AI-budget är förbrukad. Försök igen imorgon.';
+        return l.rateLimitBudgetDaily;
       case LimitType.costMonthly:
-        return 'Månadens AI-budget är förbrukad.';
+        return l.rateLimitBudgetMonthly;
     }
   }
 }

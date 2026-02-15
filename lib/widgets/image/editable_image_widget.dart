@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -323,15 +322,15 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
   }
 
   Widget _buildLoadingOverlay() {
+    final cs = Theme.of(context).colorScheme;
     return Positioned.fill(
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: widget.config.effectiveBorderRadius,
-          color:
-              AppColors.textDark.withValues(alpha: AppDimensions.opacityHalf),
+          color: cs.onSurface.withValues(alpha: AppDimensions.opacityHalf),
         ),
-        child: const Center(
-          child: CircularProgressIndicator(color: AppColors.cardWhite),
+        child: Center(
+          child: CircularProgressIndicator(color: cs.surfaceContainerHighest),
         ),
       ),
     );

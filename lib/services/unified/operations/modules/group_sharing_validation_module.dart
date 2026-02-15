@@ -1,5 +1,6 @@
 // lib/services/unified/operations/modules/group_sharing_validation_module.dart
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/shared_content.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -159,19 +160,19 @@ class GroupSharingValidationModule {
     final warnings = <String>[];
 
     if (groupIds.length > 10) {
-      warnings.add(
-          'Delning till många grupper (${groupIds.length}) kan ta lång tid');
+      warnings
+          .add(AppLocale.current.groupShareWarningManyGroups(groupIds.length));
     }
 
     if (contentList.length > 20) {
       warnings.add(
-          'Delning av mycket innehåll (${contentList.length} objekt) kan ta lång tid');
+          AppLocale.current.groupShareWarningManyItems(contentList.length));
     }
 
     final totalOperations = groupIds.length * contentList.length;
     if (totalOperations > 100) {
       warnings.add(
-          'Stor operation ($totalOperations delningar) - överväg att dela upp den');
+          AppLocale.current.groupShareWarningLargeOperation(totalOperations));
     }
 
     return warnings;

@@ -20,6 +20,7 @@ import 'package:butlery/viewmodels/recipe_form/image_management/image_upload_val
 import 'package:butlery/viewmodels/recipe_form/image_management/image_upload_notification_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/image_management/image_upload_coordinator.dart';
 import 'package:butlery/viewmodels/recipe_form/image_management/upload_queue_summary_calculator.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 // Re-export ImageDisplayInfo for backwards compatibility
 export 'package:butlery/viewmodels/recipe_form/image_management/image_display_info.dart';
@@ -285,7 +286,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   Future<void> showImagePickerDialog(BuildContext context,
       {String? recipeId}) async {
     if (!canAddMoreImages) {
-      _setImageUploadError('Du kan bara ha maximalt $maxImages bilder');
+      _setImageUploadError(AppLocale.current.errorGeneric);
       return;
     }
 
@@ -301,12 +302,12 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
           final xFile = XFile(pickedFile.path);
           await _processImagePickerResult(xFile, recipeId: recipeId);
         } else {
-          _setImageUploadError('Ingen bild valdes');
+          _setImageUploadError(AppLocale.current.errorGeneric);
         }
       }
     } catch (e) {
       AppLogger.error('Image picker error: $e');
-      _setImageUploadError('Kunde inte vÃ¤lja bild: $e');
+      _setImageUploadError(AppLocale.current.errorGeneric);
     }
   }
 
@@ -314,7 +315,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   Future<void> pickImageFromCamera(BuildContext context,
       {String? recipeId}) async {
     if (!canAddMoreImages) {
-      _setImageUploadError('Du kan bara ha maximalt $maxImages bilder');
+      _setImageUploadError(AppLocale.current.errorGeneric);
       return;
     }
 
@@ -329,11 +330,11 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         final xFile = XFile(pickedFile.path);
         await _processImagePickerResult(xFile, recipeId: recipeId);
       } else {
-        _setImageUploadError('Ingen bild valdes');
+        _setImageUploadError(AppLocale.current.errorGeneric);
       }
     } catch (e) {
       AppLogger.error('Camera picker error: $e');
-      _setImageUploadError('Kunde inte ta foto: $e');
+      _setImageUploadError(AppLocale.current.errorGeneric);
     } finally {
       _setUploadingImage(false);
     }
@@ -343,7 +344,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   Future<void> pickImageFromGallery(BuildContext context,
       {String? recipeId}) async {
     if (!canAddMoreImages) {
-      _setImageUploadError('Du kan bara ha maximalt $maxImages bilder');
+      _setImageUploadError(AppLocale.current.errorGeneric);
       return;
     }
 
@@ -358,11 +359,11 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         final xFile = XFile(pickedFile.path);
         await _processImagePickerResult(xFile, recipeId: recipeId);
       } else {
-        _setImageUploadError('Ingen bild valdes');
+        _setImageUploadError(AppLocale.current.errorGeneric);
       }
     } catch (e) {
       AppLogger.error('Gallery picker error: $e');
-      _setImageUploadError('Kunde inte vÃ¤lja bild: $e');
+      _setImageUploadError(AppLocale.current.errorGeneric);
     } finally {
       _setUploadingImage(false);
     }
@@ -372,7 +373,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   Future<void> pickMultipleImagesFromGallery(BuildContext context,
       {String? recipeId}) async {
     if (!canAddMoreImages) {
-      _setImageUploadError('Du kan bara ha maximalt $maxImages bilder');
+      _setImageUploadError(AppLocale.current.errorGeneric);
       return;
     }
 
@@ -386,11 +387,11 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         final xFiles = pickedFiles.map((file) => XFile(file.path)).toList();
         await _processImagePickerResult(xFiles, recipeId: recipeId);
       } else {
-        _setImageUploadError('Inga bilder valdes');
+        _setImageUploadError(AppLocale.current.errorGeneric);
       }
     } catch (e) {
       AppLogger.error('Multiple image picker error: $e');
-      _setImageUploadError('Kunde inte vÃ¤lja bilder: $e');
+      _setImageUploadError(AppLocale.current.errorGeneric);
     } finally {
       _setUploadingImage(false);
     }
@@ -405,12 +406,12 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   /// LÃ¤gg till bild frÃ¥n URL
   Future<void> addImageFromUrl(String imageUrl) async {
     if (!canAddMoreImages) {
-      _setImageUploadError('Du kan bara ha maximalt $maxImages bilder');
+      _setImageUploadError(AppLocale.current.errorGeneric);
       return;
     }
 
     if (imageUrl.trim().isEmpty) {
-      _setImageUploadError('BildlÃ¤nk fÃ¥r inte vara tom');
+      _setImageUploadError(AppLocale.current.errorFillRequiredFields);
       return;
     }
 
@@ -420,13 +421,13 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       // Validera URL format
       final uri = Uri.tryParse(imageUrl.trim());
       if (uri == null || !uri.hasAbsolutePath) {
-        _setImageUploadError('Ogiltig bildlÃ¤nk');
+        _setImageUploadError(AppLocale.current.errorGeneric);
         return;
       }
 
       // Kontrollera att bilden inte redan finns
       if (imageUrls.contains(imageUrl.trim())) {
-        _setImageUploadError('Bilden finns redan');
+        _setImageUploadError(AppLocale.current.errorGeneric);
         return;
       }
 
@@ -434,14 +435,14 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       AppLogger.info('Bild tillagd frÃ¥n URL: $imageUrl');
     } catch (e) {
       AppLogger.error('Fel vid tillÃ¤gg av bild frÃ¥n URL: $e');
-      _setImageUploadError('Kunde inte lÃ¤gga till bild: $e');
+      _setImageUploadError(AppLocale.current.errorGeneric);
     }
   }
 
   /// Ladda upp bild frÃ¥n lokal fil
   Future<void> uploadImageFromFile(XFile imageFile, String recipeId) async {
     if (!canAddMoreImages) {
-      _setImageUploadError('Du kan bara ha maximalt $maxImages bilder');
+      _setImageUploadError(AppLocale.current.errorGeneric);
       return;
     }
 
@@ -458,7 +459,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       final userId = permissionService.currentUserId;
 
       if (userId == null) {
-        _setImageUploadError('Ingen anvÃ¤ndare inloggad');
+        _setImageUploadError(AppLocale.current.errorNoUserLoggedIn);
         return;
       }
 
@@ -473,11 +474,11 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         addUploadedImageUrl(result.url!);
         AppLogger.info('Bild uppladdad: ${result.url}');
       } else {
-        _setImageUploadError(result.error ?? 'Kunde inte ladda upp bild');
+        _setImageUploadError(result.error ?? AppLocale.current.errorGeneric);
       }
     } catch (e) {
       AppLogger.error('Fel vid uppladdning av bild: $e');
-      _setImageUploadError('Kunde inte ladda upp bild: $e');
+      _setImageUploadError(AppLocale.current.errorGeneric);
     } finally {
       _setUploadingImage(false);
     }
@@ -517,7 +518,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       }
     } catch (e) {
       AppLogger.error('Fel vid fÃ¶rberedelse av uppladdning: $e');
-      _setImageUploadError('Kunde inte fÃ¶rbereda bilder: $e');
+      _setImageUploadError(AppLocale.current.errorGeneric);
     }
     // Note: No finally block setting _setUploadingImage(false) - each individual upload handles its own state
   }
@@ -596,7 +597,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       }
     } catch (e) {
       AppLogger.error('ðŸš€ INSTANT_IMAGES: Error processing result: $e');
-      _setImageUploadError('Kunde inte lÃ¤gga till bild: $e');
+      _setImageUploadError(AppLocale.current.errorGeneric);
     }
   }
 
@@ -623,7 +624,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   /// Add XFile to pending list for web blob URL handling
   Future<void> _addPendingImageFromXFile(XFile xFile) async {
     if (!canAddMoreImages) {
-      _setImageUploadError('Du kan bara ha maximalt $maxImages bilder');
+      _setImageUploadError(AppLocale.current.errorGeneric);
       return;
     }
 
@@ -634,7 +635,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       final fileSize = await xFile.length();
       const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
       if (fileSize > maxSizeInBytes) {
-        _setImageUploadError('Bilden Ã¤r fÃ¶r stor (max 5MB)');
+        _setImageUploadError(AppLocale.current.errorGeneric);
         return;
       }
     } catch (e) {
@@ -665,7 +666,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   /// Add file to pending list with validation and comprehensive state tracking
   Future<void> _addPendingImageFromFile(File imageFile) async {
     if (!canAddMoreImages) {
-      _setImageUploadError('Du kan bara ha maximalt $maxImages bilder');
+      _setImageUploadError(AppLocale.current.errorGeneric);
       return;
     }
 
@@ -868,7 +869,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       });
     }).catchError((error) {
       AppLogger.error('ðŸ’¥ Could not get XFile size: $filePath -> $error');
-      _setImageUploadError('Kunde inte lÃ¤sa bilddata: $error');
+      _setImageUploadError(AppLocale.current.errorGeneric);
     });
   }
 
@@ -920,7 +921,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     );
 
     _imageStates[filePath] = failedStatus;
-    _setImageUploadError('Kunde inte ladda upp bild: $errorMessage');
+    _setImageUploadError(AppLocale.current.errorGeneric);
 
     AppLogger.error('âŒ XFile upload failed: $filePath - $errorMessage');
   }
@@ -1025,7 +1026,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     try {
       // Check if file exists
       if (!await imageFile.exists()) {
-        _setImageUploadError('Bildfilen hittades inte');
+        _setImageUploadError(AppLocale.current.errorGeneric);
         return false;
       }
 
@@ -1034,13 +1035,13 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       const maxSizeInBytes =
           20 * 1024 * 1024; // 20MB (generous limit before compression)
       if (fileSize > maxSizeInBytes) {
-        _setImageUploadError('Bilden Ã¤r fÃ¶r stor (max 20MB)');
+        _setImageUploadError(AppLocale.current.errorGeneric);
         return false;
       }
 
       return true;
     } catch (e) {
-      _setImageUploadError('Kunde inte validera bild: $e');
+      _setImageUploadError(AppLocale.current.errorCouldNotValidateImage);
       return false;
     }
   }

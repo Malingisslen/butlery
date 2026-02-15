@@ -8,7 +8,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -78,6 +77,7 @@ class ButleryHeader extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final canPop = ModalRoute.of(context)?.canPop ?? false;
     final showLeading =
         leading != null || (automaticallyImplyLeading && canPop);
@@ -86,7 +86,7 @@ class ButleryHeader extends StatelessWidget implements PreferredSizeWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         ColoredBox(
-          color: AppColors.headerBackground,
+          color: cs.primary,
           child: SafeArea(
             bottom: false,
             child: Column(
@@ -100,9 +100,9 @@ class ButleryHeader extends StatelessWidget implements PreferredSizeWidget {
                       if (showLeading) ...[
                         leading ??
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.arrow_back,
-                                color: AppColors.headerForeground,
+                                color: cs.onPrimary,
                               ),
                               onPressed: () => Navigator.of(context).pop(),
                               tooltip: context.l10n.commonBack,
@@ -145,9 +145,9 @@ class ButleryHeader extends StatelessWidget implements PreferredSizeWidget {
 
         // Rust accent bar
         if (showAccentBar)
-          const ColoredBox(
-            color: AppColors.headerAccent,
-            child: SizedBox(
+          ColoredBox(
+            color: cs.secondary,
+            child: const SizedBox(
               height: accentBarHeight,
               width: double.infinity,
             ),
@@ -214,9 +214,10 @@ class SliverButleryHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return SliverAppBar(
-      backgroundColor: AppColors.headerBackground,
-      foregroundColor: AppColors.headerForeground,
+      backgroundColor: cs.primary,
+      foregroundColor: cs.onPrimary,
       title: Semantics(
         label: title,
         button: true,
@@ -251,9 +252,9 @@ class _AccentBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ColoredBox(
-      color: AppColors.headerAccent,
-      child: SizedBox(
+    return ColoredBox(
+      color: Theme.of(context).colorScheme.secondary,
+      child: const SizedBox(
         height: ButleryHeader.accentBarHeight,
         width: double.infinity,
       ),

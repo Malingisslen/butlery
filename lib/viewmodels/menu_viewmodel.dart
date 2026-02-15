@@ -16,6 +16,7 @@ import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 // Focused modules
 import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
@@ -87,7 +88,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// ```
   Future<void> generateMenu(String prompt) async {
     if (!_stateManager.validatePrompt(prompt)) {
-      _stateManager.setError('Ange vad du vill ha för meny');
+      _stateManager.setError(AppLocale.current.errorEnterMenuDescription);
       return;
     }
 
@@ -125,7 +126,8 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
         );
       }
     } catch (e) {
-      _stateManager.handleOperationError('Meny-generering misslyckades', e);
+      _stateManager.handleOperationError(
+          AppLocale.current.errorImportFailed, e);
 
       // Track menu generation failure
       await _analyticsService.logMenuGenerationFailed(
@@ -164,7 +166,8 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
         _stateManager.clearErrorAfterSuccess();
       }
     } catch (e) {
-      _stateManager.handleOperationError('Kunde inte uppdatera $section', e);
+      _stateManager.handleOperationError(
+          AppLocale.current.errorCouldNotUpdate(section), e);
     } finally {
       _stateManager.setGenerating(false);
     }
@@ -177,7 +180,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
     final newRecipe = _generator.swapSingleRecipe(recipe, category, menu);
     if (newRecipe == null) {
-      _stateManager.setError('Inga fler recept tillgängliga för byte');
+      _stateManager.setError(AppLocale.current.errorNoMoreRecipesForSwap);
       return false;
     }
 
@@ -241,13 +244,14 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     List<String>? selectedFriendIds,
     String? shareMessage,
   }) async {
+    final l = AppLocale.current;
     if (!_stateManager.validateMenuForSaving()) {
-      _stateManager.setError('Ingen meny att spara');
+      _stateManager.setError(l.errorNoMenuToSave);
       return false;
     }
 
     if (!_storage.validateMenuName(menuName)) {
-      _stateManager.setError('Ange ett namn för menyn');
+      _stateManager.setError(l.errorEnterMenuName);
       return false;
     }
 
@@ -288,12 +292,10 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
               shareMethod: 'social',
             );
           } else {
-            _stateManager
-                .setError('Meny sparad, men kunde inte dela med vänner');
+            _stateManager.setError(AppLocale.current.errorSomeSharesFailed);
           }
         } catch (e) {
-          _stateManager
-              .setError('Meny sparad, men kunde inte dela med vänner: $e');
+          _stateManager.setError(AppLocale.current.errorSomeSharesFailed);
         }
       }
 
@@ -301,7 +303,8 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       await _loadAllMenus();
       return true;
     } catch (e) {
-      _stateManager.handleOperationError('Kunde inte spara meny', e);
+      _stateManager.handleOperationError(
+          AppLocale.current.errorCouldNotSaveRecipe, e);
       return false;
     }
   }
@@ -348,10 +351,11 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
         return true;
       }
 
-      _stateManager.setError('Menyn kunde inte hittas');
+      _stateManager.setError(AppLocale.current.errorMenuNotFound);
       return false;
     } catch (e) {
-      _stateManager.handleOperationError('Kunde inte ladda meny', e);
+      _stateManager.handleOperationError(
+          AppLocale.current.errorCouldNotLoad('meny'), e);
       return false;
     }
   }
@@ -373,7 +377,8 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       }
       return success;
     } catch (e) {
-      _stateManager.handleOperationError('Kunde inte ta bort meny', e);
+      _stateManager.handleOperationError(
+          AppLocale.current.errorCouldNotDelete('meny'), e);
       return false;
     }
   }
@@ -388,7 +393,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       return await _storage.markMenuAsModified(menuKey);
     } catch (e) {
       _stateManager.handleOperationError(
-          'Kunde inte markera meny som modifierad', e);
+          AppLocale.current.errorCouldNotUpdate('meny'), e);
       return false;
     }
   }
@@ -400,7 +405,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     String? description,
   }) async {
     if (!_stateManager.validateMenuForSaving()) {
-      _stateManager.setError('Ingen meny att spara som mall');
+      _stateManager.setError(AppLocale.current.errorNoMenuToSaveAsTemplate);
       return false;
     }
 
@@ -417,10 +422,11 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
         return true;
       }
 
-      _stateManager.setError('Kunde inte spara mall');
+      _stateManager.setError(AppLocale.current.errorCouldNotSaveTemplate);
       return false;
     } catch (e) {
-      _stateManager.handleOperationError('Kunde inte spara mall', e);
+      _stateManager.handleOperationError(
+          AppLocale.current.errorCouldNotSaveTemplate, e);
       return false;
     }
   }
@@ -431,7 +437,8 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       final menuService = ServiceLocator.get<UnifiedMenuService>();
       return await menuService.collaborative.getUserMenuTemplates();
     } catch (e) {
-      _stateManager.handleOperationError('Kunde inte hämta mallar', e);
+      _stateManager.handleOperationError(
+          AppLocale.current.errorCouldNotLoad('mallar'), e);
       return [];
     }
   }
@@ -442,7 +449,8 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       final menuService = ServiceLocator.get<UnifiedMenuService>();
       return await menuService.collaborative.deleteMenuTemplate(templateId);
     } catch (e) {
-      _stateManager.handleOperationError('Kunde inte ta bort mall', e);
+      _stateManager.handleOperationError(
+          AppLocale.current.errorCouldNotDelete('mall'), e);
       return false;
     }
   }
@@ -490,7 +498,8 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     try {
       return await _socialManager.getAvailableSharedMenus();
     } catch (e) {
-      _stateManager.handleOperationError('Kunde inte hämta delade menyer', e);
+      _stateManager.handleOperationError(
+          AppLocale.current.errorCouldNotLoad('delade menyer'), e);
       return <Map<String, dynamic>>[];
     }
   }
@@ -515,7 +524,8 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       }
       return success;
     } catch (e) {
-      _stateManager.handleOperationError('Kunde inte importera meny', e);
+      _stateManager.handleOperationError(
+          AppLocale.current.errorCouldNotImportRecipes, e);
       return false;
     }
   }

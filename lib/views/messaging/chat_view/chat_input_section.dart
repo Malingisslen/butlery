@@ -8,10 +8,12 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/widgets/messaging/message_input_field.dart';
 import 'package:butlery/widgets/messaging/image_picker_dialog.dart';
 import 'package:butlery/widgets/messaging/reply_banner.dart';
+import 'package:butlery/widgets/messaging/poll_creation_dialog.dart';
+import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Consolidated state class for ChatInputSection to reduce setState calls
 class ChatInputState {
@@ -41,6 +43,8 @@ class ChatInputSection extends StatefulWidget {
   final Function(String) onAttachment;
   final Message? replyToMessage;
   final VoidCallback? onCancelReply;
+  final void Function(Map<String, dynamic> pollData)? onPollCreate;
+  final String? currentUserId;
 
   const ChatInputSection({
     super.key,
@@ -49,6 +53,8 @@ class ChatInputSection extends StatefulWidget {
     required this.onAttachment,
     this.replyToMessage,
     this.onCancelReply,
+    this.onPollCreate,
+    this.currentUserId,
   });
 
   @override
@@ -136,7 +142,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.chatCouldNotSendMessage),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -172,14 +178,30 @@ class _ChatInputSectionState extends State<ChatInputSection> {
     }
   }
 
+  Future<void> _handlePollCreate() async {
+    if (widget.currentUserId == null || widget.onPollCreate == null) return;
+    try {
+      final poll = await showDialog<Poll>(
+        context: context,
+        builder: (ctx) => PollCreationDialog(creatorId: widget.currentUserId!),
+      );
+      if (poll != null && mounted) {
+        widget.onPollCreate!(poll.toMap());
+      }
+    } catch (e) {
+      AppLogger.error('Failed to create poll', e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
           top: BorderSide(
-            color: AppColors.textMedium
+            color: cs.onSurfaceVariant
                 .withValues(alpha: AppDimensions.opacityMediumLight),
             width: 1,
           ),
@@ -220,9 +242,18 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     IconButton(
                       onPressed: _handleImagePick,
                       icon: const Icon(Icons.image_outlined),
-                      color: AppColors.success,
+                      color: context.butleryColors.success,
                       tooltip: context.l10n.chatSendImage,
                     ),
+
+                    // Poll button
+                    if (widget.onPollCreate != null)
+                      IconButton(
+                        onPressed: _handlePollCreate,
+                        icon: const Icon(Icons.poll_outlined),
+                        color: cs.onSurfaceVariant,
+                        tooltip: 'Skapa omröstning',
+                      ),
 
                     // Attachment button
                     IconButton(
@@ -232,8 +263,8 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                             ? Icons.close
                             : Icons.attach_file,
                         color: _state.showAttachments
-                            ? AppColors.primary
-                            : AppColors.textSecondary,
+                            ? cs.primary
+                            : cs.onSurfaceVariant,
                       ),
                       tooltip: _state.showAttachments
                           ? context.l10n.commonClose
@@ -259,8 +290,8 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                         icon: Icon(
                           Icons.send,
                           color: _state.isComposing
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
+                              ? cs.primary
+                              : cs.onSurfaceVariant,
                         ),
                         tooltip: context.l10n.chatSend,
                       ),

@@ -1,8 +1,8 @@
 // lib/widgets/common/input/shopping_list_actions.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -50,16 +50,16 @@ class ShoppingListActions {
           child: Builder(
             builder: (context) => Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.delete,
                   size: AppDimensions.iconSizeAction,
-                  color: AppColors.error,
+                  color: Theme.of(context).colorScheme.error,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
                 Text(
                   context.l10n.commonDelete,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.error,
+                        color: Theme.of(context).colorScheme.error,
                       ),
                 ),
               ],
@@ -136,7 +136,9 @@ class ShoppingListActions {
                   ? '${context.l10n.shoppingRenameList} "$newName"'
                   : '${context.l10n.errorCouldNotUpdate(context.l10n.shoppingList)}: ${viewModel.error ?? context.l10n.errorUnexpected}',
             ),
-            backgroundColor: success ? AppColors.success : AppColors.error,
+            backgroundColor: success
+                ? context.butleryColors.success
+                : Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -160,8 +162,9 @@ class ShoppingListActions {
                   ? '${context.l10n.shoppingList} "${list.name}" ${context.l10n.commonExport}'
                   : '${context.l10n.errorCouldNotUpdate(context.l10n.shoppingList)}: ${viewModel.error ?? context.l10n.errorUnexpected}',
             ),
-            backgroundColor:
-                exportText.isNotEmpty ? AppColors.success : AppColors.error,
+            backgroundColor: exportText.isNotEmpty
+                ? context.butleryColors.success
+                : Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -172,7 +175,7 @@ class ShoppingListActions {
           SnackBar(
             content: Text(
                 context.l10n.errorCouldNotUpdate(context.l10n.shoppingList)),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -205,7 +208,9 @@ class ShoppingListActions {
                   ? '${context.l10n.shoppingList} "${list.name}" ${context.l10n.successItemDeleted(context.l10n.shoppingList).split(' ')[1]}'
                   : '${context.l10n.errorCouldNotDelete(context.l10n.shoppingList)}: ${viewModel.error ?? context.l10n.errorUnexpected}',
             ),
-            backgroundColor: success ? AppColors.success : AppColors.error,
+            backgroundColor: success
+                ? context.butleryColors.success
+                : Theme.of(context).colorScheme.error,
           ),
         );
       }

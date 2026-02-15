@@ -2,7 +2,7 @@
 // Data models, enums, and core data structures for user display components
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Image Size enum
@@ -87,12 +87,14 @@ class UserDisplayData {
 
 /// Optimerade Status Helper funktioner
 class UserStatusHelper {
-  static Color getStatusColor(UserStatus status) {
+  static Color getStatusColor(BuildContext context, UserStatus status) {
+    final cs = Theme.of(context).colorScheme;
+    final bc = context.butleryColors;
     return switch (status) {
-      UserStatus.online => AppColors.success,
-      UserStatus.offline => AppColors.textTertiary,
-      UserStatus.away => AppColors.warning,
-      UserStatus.busy => AppColors.error,
+      UserStatus.online => bc.success,
+      UserStatus.offline => cs.outline,
+      UserStatus.away => bc.warning,
+      UserStatus.busy => cs.error,
     };
   }
 
@@ -105,9 +107,10 @@ class UserStatusHelper {
     };
   }
 
-  static Icon getStatusIcon(UserStatus status, {double? size}) {
+  static Icon getStatusIcon(BuildContext context, UserStatus status,
+      {double? size}) {
     final iconSize = size ?? AppDimensions.iconSizeM;
-    final color = getStatusColor(status);
+    final color = getStatusColor(context, status);
 
     return switch (status) {
       UserStatus.online => Icon(Icons.circle, color: color, size: iconSize),

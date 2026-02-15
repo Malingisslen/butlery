@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -121,11 +120,12 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final sortedTags = _effectiveTags.toList()..sort();
     final removedTagsList = _removedTags.toList()..sort();
 
     return Dialog(
-      backgroundColor: AppColors.cardWhite,
+      backgroundColor: cs.surfaceContainerHighest,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
       ),
@@ -142,9 +142,9 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
               // Header
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.local_offer_outlined,
-                    color: AppColors.forestGreen,
+                    color: cs.primary,
                     size: AppDimensions.iconSizeAction,
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
@@ -190,7 +190,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                         Text(
                           context.l10n.tagRemovedTags,
                           style: AppTextStyles.titleSmall.copyWith(
-                            color: AppColors.textMedium,
+                            color: cs.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(height: AppDimensions.spacingS),
@@ -246,8 +246,8 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                               icon: const Icon(Icons.add),
                               tooltip: context.l10n.tagAddTag,
                               style: IconButton.styleFrom(
-                                backgroundColor: AppColors.forestGreen,
-                                foregroundColor: AppColors.cardWhite,
+                                backgroundColor: cs.primary,
+                                foregroundColor: cs.onPrimary,
                               ),
                             ),
                           ],
@@ -285,31 +285,29 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
   }
 
   Widget _buildTagChip(String tag) {
+    final cs = Theme.of(context).colorScheme;
     final isUserAdded = _isUserAdded(tag);
     final displayName = TagDisplayUtils.getDisplayName(tag);
 
     return InputChip(
       label: Text(displayName),
       labelStyle: AppTextStyles.bodySmall.copyWith(
-        color: isUserAdded ? AppColors.forestGreen : AppColors.textDark,
+        color: isUserAdded ? cs.primary : cs.onSurface,
         fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.normal,
       ),
       backgroundColor: isUserAdded
-          ? AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityVeryLight)
-          : AppColors.cream,
+          ? cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)
+          : cs.surface,
       side: BorderSide(
         color: isUserAdded
-            ? AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityMediumLight)
-            : AppColors.divider,
+            ? cs.primary.withValues(alpha: AppDimensions.opacityMediumLight)
+            : cs.outlineVariant,
       ),
       deleteIcon: const Icon(Icons.close, size: AppDimensions.iconSize18),
-      deleteIconColor: AppColors.textMedium,
+      deleteIconColor: cs.onSurfaceVariant,
       onDeleted: () => _removeTag(tag),
       avatar: isUserAdded
-          ? const Icon(Icons.person,
-              size: AppDimensions.iconSizeS, color: AppColors.forestGreen)
+          ? Icon(Icons.person, size: AppDimensions.iconSizeS, color: cs.primary)
           : null,
       tooltip: isUserAdded
           ? context.l10n.tagManuallyAdded
@@ -318,21 +316,21 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
   }
 
   Widget _buildRemovedTagChip(String tag) {
+    final cs = Theme.of(context).colorScheme;
     final displayName = TagDisplayUtils.getDisplayName(tag);
 
     return ActionChip(
       label: Text(displayName),
       labelStyle: AppTextStyles.bodySmall.copyWith(
-        color: AppColors.textMedium,
+        color: cs.onSurfaceVariant,
         decoration: TextDecoration.lineThrough,
       ),
-      backgroundColor:
-          AppColors.cream.withValues(alpha: AppDimensions.opacityHalf),
+      backgroundColor: cs.surface.withValues(alpha: AppDimensions.opacityHalf),
       side: BorderSide(
           color:
-              AppColors.divider.withValues(alpha: AppDimensions.opacityHalf)),
-      avatar: const Icon(Icons.undo,
-          size: AppDimensions.iconSizeS, color: AppColors.textMedium),
+              cs.outlineVariant.withValues(alpha: AppDimensions.opacityHalf)),
+      avatar: Icon(Icons.undo,
+          size: AppDimensions.iconSizeS, color: cs.onSurfaceVariant),
       onPressed: () => _restoreTag(tag),
       tooltip: context.l10n.tagClickToRestore,
     );

@@ -9,7 +9,6 @@ import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/indicators/pea_loading_animation.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -132,7 +131,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     return [
       // Load menu / template button
       IconButton(
-        icon: const Icon(Icons.folder_open, color: AppColors.headerForeground),
+        icon: Icon(Icons.folder_open,
+            color: Theme.of(context).colorScheme.onPrimary),
         onPressed: () => VeckomenyDialogs.showLoadMenuBottomSheet(
           context,
           viewModel: viewModel,
@@ -146,7 +146,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       // Save menu button (only when menu exists)
       if (viewModel.hasMenu)
         IconButton(
-          icon: const Icon(Icons.save, color: AppColors.headerForeground),
+          icon:
+              Icon(Icons.save, color: Theme.of(context).colorScheme.onPrimary),
           onPressed: () => VeckomenyDialogs.showSaveMenuDialog(
             context,
             viewModel: viewModel,
@@ -157,7 +158,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       // Clear menu button
       if (viewModel.hasMenu)
         IconButton(
-          icon: const Icon(Icons.clear, color: AppColors.headerForeground),
+          icon:
+              Icon(Icons.clear, color: Theme.of(context).colorScheme.onPrimary),
           onPressed: _clearMenu,
           tooltip: context.l10n.menuClear,
         ),

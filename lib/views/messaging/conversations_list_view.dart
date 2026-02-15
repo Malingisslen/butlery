@@ -12,9 +12,9 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -210,6 +210,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
 
   Widget _buildConversationsList() {
     final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
 
     if (_isLoading) {
       return LoadingWidgets.loadingOverlay(
@@ -263,7 +264,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
               label: context.l10n.messagingPinned,
             ),
             ...pinned.map((c) => _buildConversationItem(c)),
-            const Divider(height: 1, color: AppColors.divider),
+            Divider(height: 1, color: cs.outlineVariant),
           ],
 
           // Regular section (no header)
@@ -280,6 +281,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     required IconData icon,
     required String label,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingL,
@@ -290,13 +292,13 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           Icon(
             icon,
             size: AppDimensions.iconSize14,
-            color: AppColors.textMedium,
+            color: cs.onSurfaceVariant,
           ),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             label,
             style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.textMedium,
+              color: cs.onSurfaceVariant,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.5,
             ),
@@ -307,9 +309,10 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   }
 
   Widget _buildArchivedSection(List<Conversation> archived) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       children: [
-        const Divider(height: 1, color: AppColors.divider),
+        Divider(height: 1, color: cs.outlineVariant),
         InkWell(
           onTap: () => setState(() => _archivedExpanded = !_archivedExpanded),
           child: Padding(
@@ -319,23 +322,23 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             ),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.archive,
                   size: AppDimensions.iconSizeM,
-                  color: AppColors.textMedium,
+                  color: cs.onSurfaceVariant,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
                   child: Text(
                     context.l10n.messagingArchivedCount(archived.length),
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textMedium,
+                      color: cs.onSurfaceVariant,
                     ),
                   ),
                 ),
                 Icon(
                   _archivedExpanded ? Icons.expand_less : Icons.expand_more,
-                  color: AppColors.textMedium,
+                  color: cs.onSurfaceVariant,
                 ),
               ],
             ),
@@ -504,7 +507,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                     SnackBar(
                       content:
                           Text(l10n.messagingCouldNotLeaveGroup(e.toString())),
-                      backgroundColor: AppColors.error,
+                      backgroundColor: Theme.of(context).colorScheme.error,
                     ),
                   );
                 }
@@ -584,7 +587,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.messagingCouldNotShowProfile(e.toString())),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -610,7 +613,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           SnackBar(
             content: Text(
                 l10n.messagingConversationDeleted(conversation.title ?? '')),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
           ),
         );
       }
@@ -620,7 +623,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           SnackBar(
             content:
                 Text(l10n.messagingCouldNotDeleteConversation(e.toString())),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }

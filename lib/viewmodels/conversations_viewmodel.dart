@@ -11,6 +11,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 class ConversationsViewModel extends ChangeNotifier
     with
@@ -58,7 +59,8 @@ class ConversationsViewModel extends ChangeNotifier
               );
     } catch (e) {
       AppLogger.error('Failed to initialize conversations', e);
-      _setConversationsError('Kunde inte ladda konversationer');
+      _setConversationsError(
+          AppLocale.current.errorCouldNotLoad('konversationer'));
     }
   }
 
@@ -76,7 +78,8 @@ class ConversationsViewModel extends ChangeNotifier
     if (_isDisposed) return;
 
     AppLogger.error('Conversations stream error', error);
-    _setConversationsError('Kunde inte ladda konversationer');
+    _setConversationsError(
+        AppLocale.current.errorCouldNotLoad('konversationer'));
   }
 
   void _setConversationsError(String error) {
@@ -137,7 +140,7 @@ class ConversationsViewModel extends ChangeNotifier
           AppLogger.success('Direct conversation started: $conversationId');
           return conversationId;
         },
-        errorPrefix: 'Kunde inte starta konversation',
+        errorPrefix: AppLocale.current.errorCouldNotStartConversation,
       );
     } catch (e) {
       // Error state already set by executeAsync, just return null
@@ -167,7 +170,7 @@ class ConversationsViewModel extends ChangeNotifier
           AppLogger.success('Group conversation created: $conversationId');
           return conversationId;
         },
-        errorPrefix: 'Kunde inte skapa gruppchatt',
+        errorPrefix: AppLocale.current.errorCouldNotCreate('gruppchatt'),
       );
     } catch (e) {
       // Error state already set by executeAsync, just return null

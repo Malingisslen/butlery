@@ -28,7 +28,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -145,7 +144,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             // ✅ RESPONSIVE: Loading overlay also constrained
             if (viewModel.isSaving)
               ColoredBox(
-                color: AppColors.cream
+                color: Theme.of(context)
+                    .colorScheme
+                    .surface
                     .withValues(alpha: AppDimensions.opacityVeryDark),
                 child: Center(
                   child: ConstrainedBox(
@@ -183,7 +184,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           return AppBar(
             title: Text(context.l10n.recipeEdit),
             backgroundColor: isCollaborative
-                ? AppColors.forestGreen
+                ? Theme.of(context)
+                    .colorScheme
+                    .primary
                     .withValues(alpha: AppDimensions.opacityVeryLight)
                 : null,
             actions: [
@@ -470,8 +473,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           horizontal: AppDimensions.paddingL,
           vertical: AppDimensions.paddingM,
         ),
-        side: const BorderSide(color: AppColors.forestGreen),
-        foregroundColor: AppColors.forestGreen,
+        side: BorderSide(color: Theme.of(context).colorScheme.primary),
+        foregroundColor: Theme.of(context).colorScheme.primary,
       ),
     );
   }

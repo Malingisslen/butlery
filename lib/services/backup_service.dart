@@ -9,6 +9,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 class BackupService extends BaseService {
   @override
@@ -20,7 +21,7 @@ class BackupService extends BaseService {
       final recipes = recipeService.recipes;
 
       if (recipes.isEmpty) {
-        return BackupResult.error('Inga recept att exportera');
+        return BackupResult.error(AppLocale.current.backupNoRecipesToExport);
       }
 
       final jsonData = {
@@ -48,11 +49,11 @@ class BackupService extends BaseService {
       } else if (Platform.isIOS) {
         return await _saveToIOSDocuments(jsonString, filename, recipes.length);
       } else {
-        return BackupResult.error('Plattformen stöds inte');
+        return BackupResult.error(AppLocale.current.backupPlatformNotSupported);
       }
     } catch (e) {
       AppLogger.error('Export misslyckades', e);
-      return BackupResult.error('Export misslyckades: $e');
+      return BackupResult.error(AppLocale.current.backupExportFailed('$e'));
     }
   }
 
@@ -80,7 +81,8 @@ class BackupService extends BaseService {
         directory = await getExternalStorageDirectory();
       }
       if (directory == null) {
-        return BackupResult.error('Kunde inte hitta lagringsmapp');
+        return BackupResult.error(
+            AppLocale.current.backupCouldNotFindStorageDir);
       }
 
       final butleryDir = Directory('${directory.path}/Butlery');
@@ -94,13 +96,13 @@ class BackupService extends BaseService {
       AppLogger.success('Backup sparad: ${file.path}');
 
       return BackupResult.success(
-        message: 'Backup sparad i Android/data/.../Butlery',
+        message: AppLocale.current.backupSavedAndroid,
         filePath: file.path,
         recipeCount: recipeCount,
       );
     } catch (e) {
       AppLogger.error('Kunde inte spara till Android', e);
-      return BackupResult.error('Kunde inte spara fil: $e');
+      return BackupResult.error(AppLocale.current.backupCouldNotSaveFile('$e'));
     }
   }
 
@@ -123,13 +125,13 @@ class BackupService extends BaseService {
       AppLogger.success('Backup sparad: ${file.path}');
 
       return BackupResult.success(
-        message: 'Backup sparad i Filer-appen',
+        message: AppLocale.current.backupSavedIos,
         filePath: file.path,
         recipeCount: recipeCount,
       );
     } catch (e) {
       AppLogger.error('Kunde inte spara till iOS', e);
-      return BackupResult.error('Kunde inte spara fil: $e');
+      return BackupResult.error(AppLocale.current.backupCouldNotSaveFile('$e'));
     }
   }
 
@@ -148,7 +150,7 @@ class BackupService extends BaseService {
       final file = result.files.first;
 
       if (file.bytes == null) {
-        return ImportResult.error('Kunde inte läsa filen');
+        return ImportResult.error(AppLocale.current.backupCouldNotReadFile);
       }
 
       final jsonString = utf8.decode(file.bytes!);
@@ -156,7 +158,7 @@ class BackupService extends BaseService {
 
       if (!jsonData.containsKey('butlery_backup') &&
           !jsonData.containsKey('butlery_export')) {
-        return ImportResult.error('Ogiltig backup-fil - inte från Butlery');
+        return ImportResult.error(AppLocale.current.backupInvalidFile);
       }
 
       // Backward compatibility: support both legacy and current format
@@ -198,8 +200,8 @@ class BackupService extends BaseService {
               timeMinutes: recipe.timeMinutes,
               rating: recipe.rating,
               personalTagIds: recipe.personalTagIds,
-              sourceUrl:
-                  'Importerat från backup ${_formatDate(DateTime.now())}',
+              sourceUrl: AppLocale.current
+                  .backupImportedFromBackup(_formatDate(DateTime.now())),
               createdAt: DateTime.now(),
               updatedAt: DateTime.now(),
               createdBy: '',
@@ -223,7 +225,8 @@ class BackupService extends BaseService {
           successCount++;
         } catch (e) {
           skipCount++;
-          errors.add('${recipeJson['title'] ?? 'Okänt recept'}: $e');
+          errors.add(
+              '${recipeJson['title'] ?? AppLocale.current.backupUnknownRecipe}: $e');
         }
       }
 
@@ -238,7 +241,7 @@ class BackupService extends BaseService {
       );
     } catch (e) {
       AppLogger.error('Import misslyckades', e);
-      return ImportResult.error('Import misslyckades: $e');
+      return ImportResult.error(AppLocale.current.backupImportFailed('$e'));
     }
   }
 

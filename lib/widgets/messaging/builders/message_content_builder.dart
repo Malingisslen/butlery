@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/message.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/messaging/fullscreen_image_viewer.dart';
+import 'package:butlery/widgets/messaging/poll_message_widget.dart';
+import 'package:butlery/models/messaging/poll.dart';
 
 /// Builds message content widgets based on message type.
 class MessageContentBuilder {
@@ -18,6 +19,9 @@ class MessageContentBuilder {
     required BuildContext context,
     required Message message,
     required bool isFromCurrentUser,
+    String? currentUserId,
+    void Function(String optionId)? onPollVote,
+    VoidCallback? onPollClose,
   }) {
     switch (message.type) {
       case MessageType.text:
@@ -35,6 +39,15 @@ class MessageContentBuilder {
         return _buildVoiceContent(context, message, isFromCurrentUser);
       case MessageType.system:
         return _buildTextContent(context, message, isFromCurrentUser);
+      case MessageType.poll:
+        return _buildPollContent(
+          context,
+          message,
+          isFromCurrentUser,
+          currentUserId: currentUserId ?? '',
+          onVote: onPollVote,
+          onClose: onPollClose,
+        );
     }
   }
 
@@ -43,13 +56,15 @@ class MessageContentBuilder {
     Message message,
     bool isFromCurrentUser,
   ) {
+    final cs = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           message.content,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: isFromCurrentUser ? AppColors.cardWhite : AppColors.textDark,
+            color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
           ),
         ),
         if (message.isEdited)
@@ -59,9 +74,8 @@ class MessageContentBuilder {
               context.l10n.messagingEdited,
               style: AppTextStyles.labelSmall.copyWith(
                 color: isFromCurrentUser
-                    ? AppColors.cardWhite
-                        .withValues(alpha: AppDimensions.opacityDark)
-                    : AppColors.textMedium,
+                    ? cs.onPrimary.withValues(alpha: AppDimensions.opacityDark)
+                    : cs.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -130,10 +144,12 @@ class MessageContentBuilder {
     required String title,
     String? subtitle,
   }) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingS),
       decoration: BoxDecoration(
-        color: (isFromCurrentUser ? AppColors.cardWhite : AppColors.accent)
+        color: (isFromCurrentUser ? cs.onPrimary : cs.inversePrimary)
             .withValues(alpha: AppDimensions.opacityLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
@@ -142,15 +158,13 @@ class MessageContentBuilder {
           Container(
             padding: const EdgeInsets.all(AppDimensions.paddingS),
             decoration: BoxDecoration(
-              color: AppColors.accent
+              color: cs.inversePrimary
                   .withValues(alpha: AppDimensions.opacityMediumLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             ),
             child: Icon(
               icon,
-              color: isFromCurrentUser
-                  ? AppColors.cardWhite
-                  : AppColors.forestGreen,
+              color: isFromCurrentUser ? cs.onPrimary : cs.primary,
               size: AppDimensions.iconSizeM,
             ),
           ),
@@ -162,17 +176,13 @@ class MessageContentBuilder {
                 Text(
                   label,
                   style: AppTextStyles.labelMedium.copyWith(
-                    color: isFromCurrentUser
-                        ? AppColors.cardWhite
-                        : AppColors.forestGreen,
+                    color: isFromCurrentUser ? cs.onPrimary : cs.primary,
                   ),
                 ),
                 Text(
                   title,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: isFromCurrentUser
-                        ? AppColors.cardWhite
-                        : AppColors.textDark,
+                    color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
                   ),
                 ),
                 if (subtitle != null)
@@ -180,9 +190,9 @@ class MessageContentBuilder {
                     subtitle,
                     style: AppTextStyles.labelSmall.copyWith(
                       color: isFromCurrentUser
-                          ? AppColors.cardWhite
+                          ? cs.onPrimary
                               .withValues(alpha: AppDimensions.opacityVeryDark)
-                          : AppColors.textMedium,
+                          : cs.onSurfaceVariant,
                     ),
                   ),
               ],
@@ -198,13 +208,14 @@ class MessageContentBuilder {
     Message message,
     bool isFromCurrentUser,
   ) {
+    final cs = Theme.of(context).colorScheme;
     final imageUrl = message.metadata?['imageUrl'] as String? ?? '';
 
     if (imageUrl.isEmpty) {
       return Text(
         context.l10n.messagingImageLoadFailed,
         style: AppTextStyles.bodyMedium.copyWith(
-          color: isFromCurrentUser ? AppColors.cardWhite : AppColors.textDark,
+          color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
           fontStyle: FontStyle.italic,
         ),
       );
@@ -239,10 +250,12 @@ class MessageContentBuilder {
                   imageUrl: imageUrl,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => _buildImagePlaceholder(
+                    context: context,
                     isFromCurrentUser: isFromCurrentUser,
                     isLoading: true,
                   ),
                   errorWidget: (context, url, error) => _buildImagePlaceholder(
+                    context: context,
                     isFromCurrentUser: isFromCurrentUser,
                     isLoading: false,
                   ),
@@ -256,9 +269,7 @@ class MessageContentBuilder {
               child: Text(
                 message.content,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: isFromCurrentUser
-                      ? AppColors.cardWhite
-                      : AppColors.textDark,
+                  color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
                 ),
               ),
             ),
@@ -268,45 +279,44 @@ class MessageContentBuilder {
   }
 
   static Widget _buildImagePlaceholder({
+    required BuildContext context,
     required bool isFromCurrentUser,
     required bool isLoading,
   }) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       height: 150,
       color: isFromCurrentUser
-          ? AppColors.cardWhite.withValues(alpha: AppDimensions.opacityLight)
-          : AppColors.accent.withValues(alpha: AppDimensions.opacityLight),
+          ? cs.onPrimary.withValues(alpha: AppDimensions.opacityLight)
+          : cs.inversePrimary.withValues(alpha: AppDimensions.opacityLight),
       child: Center(
         child: isLoading
             ? CircularProgressIndicator(
-                color: isFromCurrentUser
-                    ? AppColors.cardWhite
-                    : AppColors.forestGreen,
+                color: isFromCurrentUser ? cs.onPrimary : cs.primary,
               )
-            : Builder(
-                builder: (context) => Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.broken_image,
-                      size: 48,
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.broken_image,
+                    size: 48,
+                    color: isFromCurrentUser
+                        ? cs.onPrimary
+                            .withValues(alpha: AppDimensions.opacityDark)
+                        : cs.onSurfaceVariant,
+                  ),
+                  const SizedBox(height: AppDimensions.spacingS),
+                  Text(
+                    context.l10n.messagingImageLoadError,
+                    style: AppTextStyles.labelSmall.copyWith(
                       color: isFromCurrentUser
-                          ? AppColors.cardWhite
+                          ? cs.onPrimary
                               .withValues(alpha: AppDimensions.opacityDark)
-                          : AppColors.textMedium,
+                          : cs.onSurfaceVariant,
                     ),
-                    const SizedBox(height: AppDimensions.spacingS),
-                    Text(
-                      context.l10n.messagingImageLoadError,
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: isFromCurrentUser
-                            ? AppColors.cardWhite
-                                .withValues(alpha: AppDimensions.opacityDark)
-                            : AppColors.textMedium,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
       ),
     );
@@ -317,6 +327,8 @@ class MessageContentBuilder {
     Message message,
     bool isFromCurrentUser,
   ) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingS),
       child: Row(
@@ -324,19 +336,47 @@ class MessageContentBuilder {
         children: [
           Icon(
             Icons.play_arrow,
-            color:
-                isFromCurrentUser ? AppColors.cardWhite : AppColors.forestGreen,
+            color: isFromCurrentUser ? cs.onPrimary : cs.primary,
           ),
           const SizedBox(width: AppDimensions.paddingS),
           Text(
             context.l10n.messagingVoiceMessage,
             style: AppTextStyles.bodyMedium.copyWith(
-              color:
-                  isFromCurrentUser ? AppColors.cardWhite : AppColors.textDark,
+              color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  static Widget _buildPollContent(
+    BuildContext context,
+    Message message,
+    bool isFromCurrentUser, {
+    required String currentUserId,
+    void Function(String optionId)? onVote,
+    VoidCallback? onClose,
+  }) {
+    final cs = Theme.of(context).colorScheme;
+    final pollData = message.metadata?['poll'] as Map<String, dynamic>?;
+    if (pollData == null) {
+      return Text(
+        'Omröstning',
+        style: AppTextStyles.bodyMedium.copyWith(
+          color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
+          fontStyle: FontStyle.italic,
+        ),
+      );
+    }
+
+    final poll = Poll.fromMap(pollData);
+    return PollMessageWidget(
+      poll: poll,
+      currentUserId: currentUserId,
+      isFromCurrentUser: isFromCurrentUser,
+      onVote: onVote,
+      onClose: onClose,
     );
   }
 }

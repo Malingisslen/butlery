@@ -11,7 +11,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/main_view_header.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -90,7 +89,7 @@ class LaggTillReceptView extends StatelessWidget {
                   _AddRecipeButton(
                     label: context.l10n.recipeImportLink,
                     icon: Icons.link,
-                    color: AppColors.rust,
+                    color: Theme.of(context).colorScheme.secondary,
                     size: size,
                     onTap: () => _navigate(context, '/smartImport'),
                   ),
@@ -98,7 +97,7 @@ class LaggTillReceptView extends StatelessWidget {
                   _AddRecipeButton(
                     label: context.l10n.recipeWriteManually,
                     icon: Icons.edit,
-                    color: AppColors.forestGreen,
+                    color: Theme.of(context).colorScheme.primary,
                     size: size,
                     onTap: () => _navigate(context, '/skrivSjalv'),
                   ),
@@ -112,7 +111,7 @@ class LaggTillReceptView extends StatelessWidget {
                   _AddRecipeButton(
                     label: context.l10n.recipeFromImage,
                     icon: Icons.image,
-                    color: AppColors.rust,
+                    color: Theme.of(context).colorScheme.secondary,
                     size: size,
                     onTap: () => _navigate(context, '/photoImport'),
                   ),
@@ -120,7 +119,7 @@ class LaggTillReceptView extends StatelessWidget {
                   _AddRecipeButton(
                     label: context.l10n.recipeFromArchive,
                     icon: Icons.archive,
-                    color: AppColors.forestGreen,
+                    color: Theme.of(context).colorScheme.primary,
                     size: size,
                     onTap: () => _navigate(context, '/importFranArkiv'),
                   ),
@@ -169,13 +168,13 @@ class _AddRecipeButton extends StatelessWidget {
                 Icon(
                   icon,
                   size: AppDimensions.iconSizeXl,
-                  color: AppColors.cardWhite,
+                  color: Theme.of(context).colorScheme.onPrimary,
                 ),
                 const SizedBox(height: AppDimensions.spacingSm),
                 Text(
                   label,
                   style: AppTextStyles.labelMedium.copyWith(
-                    color: AppColors.cardWhite,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.center,

@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
@@ -81,7 +80,7 @@ class ConfirmationDialogs {
                     Text(
                       context.l10n.dialogMayTakeAWhile,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textMedium,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],

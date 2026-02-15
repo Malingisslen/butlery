@@ -5,7 +5,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
@@ -436,7 +435,7 @@ class ButleryBottomNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.navBackground,
+        color: backgroundColor ?? Theme.of(context).colorScheme.primary,
       ),
       child: SafeArea(
         top: false,
@@ -484,9 +483,10 @@ class _BottomNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final color = isSelected
-        ? (selectedColor ?? AppColors.navSelectedItem)
-        : (unselectedColor ?? AppColors.navUnselectedItem);
+        ? (selectedColor ?? cs.onPrimary)
+        : (unselectedColor ?? cs.onPrimary.withValues(alpha: 0.7));
 
     return Semantics(
       label: item.accessibleLabel,
@@ -494,15 +494,15 @@ class _BottomNavItem extends StatelessWidget {
       selected: isSelected,
       child: InkWell(
         onTap: onTap,
-        splashColor: AppColors.cardWhite.withValues(alpha: 0.1),
-        highlightColor: AppColors.cardWhite.withValues(alpha: 0.05),
+        splashColor: cs.surfaceContainerHighest.withValues(alpha: 0.1),
+        highlightColor: cs.surfaceContainerHighest.withValues(alpha: 0.05),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(height: AppDimensions.spacingXs),
             // Icon with optional badge
-            _buildIcon(color),
+            _buildIcon(context, color),
             const SizedBox(height: AppDimensions.spacingXxs),
             // Label in Josefin Sans lowercase with underline indicator
             Column(
@@ -524,9 +524,7 @@ class _BottomNavItem extends StatelessWidget {
                   duration: AppDimensions.animationDurationFast,
                   height: 2,
                   width: isSelected ? _getTextWidth(context) : 0,
-                  color: isSelected
-                      ? AppColors.navSelectedIndicator
-                      : Colors.transparent,
+                  color: isSelected ? cs.secondary : Colors.transparent,
                 ),
               ],
             ),
@@ -552,7 +550,8 @@ class _BottomNavItem extends StatelessWidget {
     return textPainter.width;
   }
 
-  Widget _buildIcon(Color color) {
+  Widget _buildIcon(BuildContext context, Color color) {
+    final cs = Theme.of(context).colorScheme;
     final iconData = isSelected ? item.activeIcon : item.icon;
 
     Widget icon = Icon(
@@ -567,7 +566,7 @@ class _BottomNavItem extends StatelessWidget {
           item.badgeCount.toString(),
           style: const TextStyle(fontSize: 10),
         ),
-        backgroundColor: AppColors.rust,
+        backgroundColor: cs.secondary,
         child: icon,
       );
     }

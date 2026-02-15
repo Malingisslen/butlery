@@ -1,7 +1,6 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_list_operations.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
@@ -82,7 +81,7 @@ class ShoppingListOperations {
               Text(
                 context.l10n.shoppingCurrentName(list.name),
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textMedium,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingM),
@@ -306,7 +305,7 @@ class _ConvertToCollaborativeDialogState
             Text(
               context.l10n.shoppingConvertToCollaborativeDescription,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textMedium,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -337,23 +336,25 @@ class _ConvertToCollaborativeDialogState
                         ? Text(
                             friend.email,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textMedium,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
                             ),
                           )
                         : null,
                     secondary: CircleAvatar(
-                      backgroundColor: AppColors.forestGreen,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       child: Text(
                         friend.displayName.isNotEmpty
                             ? friend.displayName[0].toUpperCase()
                             : '?',
                         style: AppTextStyles.contentLabel.copyWith(
-                          color: AppColors.cardWhite,
+                          color: Theme.of(context).colorScheme.onPrimary,
                         ),
                       ),
                     ),
                     controlAffinity: ListTileControlAffinity.trailing,
-                    activeColor: AppColors.forestGreen,
+                    activeColor: Theme.of(context).colorScheme.primary,
                     contentPadding: EdgeInsets.zero,
                   );
                 },

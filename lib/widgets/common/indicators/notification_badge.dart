@@ -1,7 +1,6 @@
 // lib/widgets/common/indicators/notification_badge.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -24,13 +23,14 @@ class NotificationBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingXs),
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.error,
+        color: backgroundColor ?? cs.error,
         shape: BoxShape.circle,
         border: Border.all(
-          color: borderColor ?? Theme.of(context).colorScheme.surface,
+          color: borderColor ?? cs.surface,
           width: AppDimensions.borderWidthThick,
         ),
       ),
@@ -41,7 +41,7 @@ class NotificationBadge extends StatelessWidget {
       child: Text(
         count > 99 ? '99+' : '$count',
         style: AppTextStyles.badge.copyWith(
-          color: textColor ?? AppColors.neutralLight,
+          color: textColor ?? cs.surfaceContainerHighest,
         ),
         textAlign: TextAlign.center,
       ),
