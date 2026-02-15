@@ -1,8 +1,8 @@
 // lib/widgets/permissions/edit_mode_ui_helper.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 
 /// UI helper class for EditMode enum
@@ -10,17 +10,18 @@ import 'package:butlery/models/permissions/edit_mode.dart';
 class EditModeUIHelper {
   /// Get color for a specific edit mode
   static Color getColor(EditMode mode, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     switch (mode) {
       case EditMode.owner:
       case EditMode.edit:
-        return AppColors.forestGreen;
+        return cs.primary;
       case EditMode.collaborative:
-        return AppColors.success;
+        return context.butleryColors.success;
       case EditMode.readOnlyWithFork:
       case EditMode.view:
-        return AppColors.warning;
+        return context.butleryColors.warning;
       case EditMode.noAccess:
-        return AppColors.error;
+        return cs.error;
     }
   }
 

@@ -8,6 +8,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// ViewModel for selecting and sharing recipes with a group
 /// Uses AsyncOperationMixin for loading state management while maintaining
@@ -67,7 +68,7 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
       });
     } catch (e) {
       AppLogger.error('❌ Fel vid laddning av recept', e);
-      setError('Kunde inte ladda recept. Försök igen.');
+      setError(AppLocale.current.errorCouldNotLoadRecipes);
     }
   }
 
@@ -176,7 +177,7 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
       return true;
     } catch (e) {
       AppLogger.error('❌ Fel vid delning av recept', e);
-      setError('Kunde inte dela recept. Försök igen.');
+      setError(AppLocale.current.errorSomeSharesFailed);
       _setSharing(false);
       return false;
     }

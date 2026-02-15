@@ -43,7 +43,6 @@ import 'package:butlery/services/share_service.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/offline_service.dart';
-import 'package:butlery/services/recommendation_service.dart';
 import 'package:butlery/services/backup_service.dart';
 import 'package:butlery/services/social_media_extractor.dart';
 import 'package:butlery/services/content_detector_service.dart';
@@ -90,6 +89,9 @@ import 'package:butlery/services/parsing/feedback/recipe_diff_calculator.dart';
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/repositories/parsing_correction_repository.dart';
 
+// Ingredient substitution service
+import 'package:butlery/services/ingredient_substitution_service.dart';
+
 /// Content module providing recipe and menu management services.
 /// This module handles all content-related functionality and depends on
 /// the Core Module for foundational services. It provides:
@@ -120,7 +122,6 @@ class ContentModule implements DIModule {
         ImagePickerService,
         OfflineService,
         CollaborativeRecipeRepository,
-        RecommendationService,
         BackupService,
         SocialMediaExtractor,
         ExtractionManager,
@@ -148,6 +149,8 @@ class ContentModule implements DIModule {
         ParsedRecipeCache,
         RecipeDiffCalculator,
         ParsingCorrectionRepository,
+        // Ingredient substitution
+        IngredientSubstitutionService,
       ];
 
   @override
@@ -302,6 +305,11 @@ class ContentModule implements DIModule {
         () => ParsingCorrectionRepository(),
       );
 
+      // Ingredient substitution service for replacement suggestions
+      container.registerLazySingleton<IngredientSubstitutionService>(
+        () => IngredientSubstitutionService(),
+      );
+
       // Menu service for meal planning
       container.registerSingleton<MenuService>(MenuService());
 
@@ -340,11 +348,6 @@ class ContentModule implements DIModule {
           firestoreRepository: container<FirestoreRepository>(),
           authRepository: container<auth.AuthRepository>(),
         ),
-      );
-
-      // Recommendation service for AI-powered content recommendations
-      container.registerSingleton<RecommendationService>(
-        RecommendationService(),
       );
 
       // Backup service for recipe data export and import
@@ -435,7 +438,6 @@ class ContentModule implements DIModule {
         'OfflineService': container<OfflineService>(),
         'CollaborativeRecipeRepository':
             container<CollaborativeRecipeRepository>(),
-        'RecommendationService': container<RecommendationService>(),
         'BackupService': container<BackupService>(),
         'SocialMediaExtractor': container<SocialMediaExtractor>(),
         'ExtractionManager': container<ExtractionManager>(),
@@ -448,6 +450,8 @@ class ContentModule implements DIModule {
         'TikTokPipeline': container<TikTokPipeline>(),
         'SiteConfigRepository': container<SiteConfigRepository>(),
         'RecipeParserService': container<RecipeParserService>(),
+        'IngredientSubstitutionService':
+            container<IngredientSubstitutionService>(),
       };
 
       // Perform health checks on services that support it

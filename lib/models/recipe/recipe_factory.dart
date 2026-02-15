@@ -1,3 +1,4 @@
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 
@@ -318,7 +319,7 @@ class RecipeFactory {
         personalTags: sourceRecipe.core.personalTags != null
             ? [...sourceRecipe.core.personalTags!]
             : null,
-        sourceUrl: 'Kopierat från: ${sourceRecipe.core.title}',
+        sourceUrl: AppLocale.current.recipeCopiedFrom(sourceRecipe.core.title),
         imageUrls: [...sourceRecipe.core.imageUrls],
         isPublic: false, // Personal copies are private by default
         tagResult: sourceRecipe.core.tagResult,

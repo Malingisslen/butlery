@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Focused module for real-time event handling
 /// This module handles ONLY real-time event processing:
@@ -139,7 +140,7 @@ class RealtimeEventHandler {
 
     // Notify user of the error with user-friendly message
     final userMessage = _getUserFriendlyErrorMessage(error);
-    setError('Realtidssynkronisering misslyckades: $userMessage');
+    setError('${AppLocale.current.errorRealtimeSyncFailed}: $userMessage');
   }
 
   /// Handle Firebase permission errors
@@ -152,7 +153,7 @@ class RealtimeEventHandler {
     AppLogger.error('❌ Permission error for recipe $recipeId: $error');
 
     stopRealtimeEditing(recipeId);
-    setError('Du har inte behörighet att redigera detta recept');
+    setError(AppLocale.current.errorNoPermissionToEdit);
   }
 
   /// Handle network connectivity errors
@@ -162,7 +163,7 @@ class RealtimeEventHandler {
     required void Function(String) setError,
   }) {
     AppLogger.error('❌ Network error for recipe $recipeId: $error');
-    setError('Nätverksfel - kontrollera din internetanslutning');
+    setError(AppLocale.current.errorNetworkCheckInternet);
   }
 
   /// Log detailed error information for debugging
@@ -179,18 +180,19 @@ class RealtimeEventHandler {
 
   /// Convert technical error to user-friendly message
   static String _getUserFriendlyErrorMessage(dynamic error) {
+    final l = AppLocale.current;
     final errorString = error.toString().toLowerCase();
 
     if (errorString.contains('permission') ||
         errorString.contains('unauthorized')) {
-      return 'Behörighet saknas';
+      return l.errorPermissionMissing;
     } else if (errorString.contains('network') ||
         errorString.contains('connection')) {
-      return 'Nätverksfel';
+      return l.errorNetwork;
     } else if (errorString.contains('timeout')) {
-      return 'Tidsgräns överskriden';
+      return l.errorTimeout;
     } else {
-      return 'Tekniskt fel';
+      return l.errorTechnical;
     }
   }
 

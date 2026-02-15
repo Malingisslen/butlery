@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// Pre-styled input widgets to eliminate design-in-views violations
@@ -251,6 +250,8 @@ class StyledInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return TextFormField(
       controller: controller,
       onChanged: onChanged,
@@ -291,42 +292,43 @@ class StyledInput extends StatelessWidget {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.outline,
+            color: cs.outline,
             width: AppDimensions.borderWidthStandard,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.primary,
+            color: cs.primary,
             width: AppDimensions.borderWidthThick,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          borderSide: const BorderSide(
-            color: AppColors.error,
+          borderSide: BorderSide(
+            color: cs.error,
             width: AppDimensions.borderWidthStandard,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          borderSide: const BorderSide(
-            color: AppColors.error,
+          borderSide: BorderSide(
+            color: cs.error,
             width: AppDimensions.borderWidthThick,
           ),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
+            color: cs.outline.withValues(alpha: AppDimensions.opacityHalf),
             width: AppDimensions.borderWidthStandard,
           ),
         ),
         filled: true,
         fillColor: enabled
-            ? AppColors.cardWhite
-            : AppColors.cardWhite.withValues(alpha: AppDimensions.opacityDark),
+            ? cs.surfaceContainerHighest
+            : cs.surfaceContainerHighest
+                .withValues(alpha: AppDimensions.opacityDark),
       ),
     );
   }
@@ -351,6 +353,8 @@ class StyledFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -365,7 +369,7 @@ class StyledFormField extends StatelessWidget {
                 Text(
                   ' *',
                   style: AppTextStyles.labelText.copyWith(
-                    color: AppColors.error,
+                    color: cs.error,
                   ),
                 ),
             ],
@@ -378,7 +382,7 @@ class StyledFormField extends StatelessWidget {
           Text(
             errorText!,
             style: AppTextStyles.captionText.copyWith(
-              color: AppColors.error,
+              color: cs.error,
             ),
           ),
         ],

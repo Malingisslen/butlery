@@ -7,9 +7,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Type of badge to display.
 enum BadgeType {
@@ -90,42 +90,44 @@ class UnifiedBadge extends StatelessWidget {
   /// Size of the badge.
   final BadgeSize size;
 
-  Color _getBaseColor() {
+  Color _getBaseColor(BuildContext context) {
     if (color != null) return color!;
 
+    final cs = Theme.of(context).colorScheme;
     switch (type) {
       case BadgeType.tag:
-        return AppColors.forestGreen;
+        return cs.primary;
       case BadgeType.allergen:
-        return AppColors.warning;
+        return context.butleryColors.warning;
       case BadgeType.category:
-        return AppColors.rust;
+        return cs.secondary;
       case BadgeType.custom:
-        return AppColors.textMedium;
+        return cs.onSurfaceVariant;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final baseColor = _getBaseColor();
+    final baseColor = _getBaseColor(context);
     final dimensions = _getBadgeDimensions();
 
     Color backgroundColor;
     Color textColor;
     Color? borderColor;
 
+    final cs = Theme.of(context).colorScheme;
     if (isSelected) {
       backgroundColor = baseColor;
-      textColor = AppColors.cardWhite;
+      textColor = cs.surfaceContainerHighest;
       borderColor = null;
     } else {
       switch (variant) {
         case BadgeVariant.filled:
           backgroundColor = baseColor;
-          textColor = AppColors.cardWhite;
+          textColor = cs.surfaceContainerHighest;
           borderColor = null;
         case BadgeVariant.outlined:
-          backgroundColor = AppColors.transparent;
+          backgroundColor = Colors.transparent;
           textColor = baseColor;
           borderColor = baseColor;
         case BadgeVariant.subtle:
@@ -375,38 +377,40 @@ class CategoryBadge extends StatelessWidget {
       label: category,
       type: BadgeType.category,
       variant: BadgeVariant.filled,
-      color: color ?? _getCategoryColor(category),
+      color: color ?? _getCategoryColor(context, category),
       size: BadgeSize.small,
     );
   }
 
-  Color _getCategoryColor(String category) {
+  Color _getCategoryColor(BuildContext context, String category) {
+    final bc = context.butleryColors;
+    final cs = Theme.of(context).colorScheme;
     final normalized = category.toLowerCase();
 
     if (normalized.contains('kött') || normalized.contains('fisk')) {
-      return AppColors.categoryMeatFish;
+      return bc.categoryMeatFish;
     } else if (normalized.contains('mejeri')) {
-      return AppColors.categoryDairy;
+      return bc.categoryDairy;
     } else if (normalized.contains('grönsak')) {
-      return AppColors.categoryVegetables;
+      return bc.categoryVegetables;
     } else if (normalized.contains('frukt')) {
-      return AppColors.categoryFruit;
+      return bc.categoryFruit;
     } else if (normalized.contains('bröd') || normalized.contains('spannmål')) {
-      return AppColors.categoryBreadGrains;
+      return bc.categoryBreadGrains;
     } else if (normalized.contains('frys')) {
-      return AppColors.categoryFrozen;
+      return bc.categoryFrozen;
     } else if (normalized.contains('torr')) {
-      return AppColors.categoryDryGoods;
+      return bc.categoryDryGoods;
     }
 
     // Algorithm for custom categories: hash-based color from palette
     final hash = category.hashCode.abs();
     final colors = [
-      AppColors.forestGreen,
-      AppColors.rust,
-      AppColors.warning,
-      AppColors.categoryDairy,
-      AppColors.categoryFruit,
+      cs.primary,
+      cs.secondary,
+      bc.warning,
+      bc.categoryDairy,
+      bc.categoryFruit,
     ];
     return colors[hash % colors.length];
   }

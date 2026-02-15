@@ -13,7 +13,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
@@ -375,6 +374,8 @@ class _QuickTagChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Semantics(
       label: isSelected
           ? context.l10n.a11yTagSelected(tag.name)
@@ -385,24 +386,24 @@ class _QuickTagChip extends StatelessWidget {
         label: Text(tag.name),
         avatar: isSelected
             ? null
-            : const CircleAvatar(
+            : CircleAvatar(
                 radius: 6,
-                backgroundColor: AppColors.forestGreen,
+                backgroundColor: cs.primary,
               ),
         selected: isSelected,
         onSelected: (_) => onTap(),
-        backgroundColor: AppColors.cream,
-        selectedColor: AppColors.forestGreen
-            .withValues(alpha: AppDimensions.opacityLightMedium),
-        checkmarkColor: AppColors.forestGreen,
+        backgroundColor: cs.surface,
+        selectedColor:
+            cs.primary.withValues(alpha: AppDimensions.opacityLightMedium),
+        checkmarkColor: cs.primary,
         side: BorderSide(
-          color: isSelected ? AppColors.forestGreen : AppColors.divider,
+          color: isSelected ? cs.primary : cs.outlineVariant,
           width: isSelected ? 2 : 1,
         ),
         labelStyle:
             (isSelected ? AppTextStyles.bodyBold : AppTextStyles.bodyMedium)
                 .copyWith(
-          color: isSelected ? AppColors.forestGreen : AppColors.textDark,
+          color: isSelected ? cs.primary : cs.onSurface,
         ),
         showCheckmark: isSelected,
         padding: const EdgeInsets.symmetric(

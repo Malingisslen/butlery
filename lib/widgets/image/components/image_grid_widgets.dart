@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
@@ -156,14 +155,18 @@ class ImageGridWidgets {
                       Icon(
                         isPrimary ? Icons.star : Icons.star_outline,
                         size: AppDimensions.iconSizeXs,
-                        color: AppColors.cardWhite,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
                       ),
                       if (isPrimary) ...[
                         const SizedBox(width: AppDimensions.spacingXxs),
                         Text(
                           context.l10n.imagePrimary,
                           style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.cardWhite,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -206,23 +209,26 @@ class ImageGridWidgets {
     required String tooltip,
     bool isDestructive = false,
   }) {
-    return Tooltip(
-      message: tooltip,
-      child: Container(
-        width: AppDimensions.iconSizeAction,
-        height: AppDimensions.iconSizeAction,
-        decoration: BoxDecoration(
-          color: isDestructive ? AppColors.error : AppColors.cardWhite,
-          shape: BoxShape.circle,
-          boxShadow: AppShadows.subtle,
+    return Builder(builder: (context) {
+      final cs = Theme.of(context).colorScheme;
+      return Tooltip(
+        message: tooltip,
+        child: Container(
+          width: AppDimensions.iconSizeAction,
+          height: AppDimensions.iconSizeAction,
+          decoration: BoxDecoration(
+            color: isDestructive ? cs.error : cs.surfaceContainerHighest,
+            shape: BoxShape.circle,
+            boxShadow: AppShadows.subtle,
+          ),
+          child: Icon(
+            icon,
+            size: AppDimensions.iconSizeS,
+            color: isDestructive ? cs.surfaceContainerHighest : cs.onSurface,
+          ),
         ),
-        child: Icon(
-          icon,
-          size: AppDimensions.iconSizeS,
-          color: isDestructive ? AppColors.cardWhite : AppColors.textDark,
-        ),
-      ),
-    );
+      );
+    });
   }
 
   /// Build add image button for grid layout
@@ -233,69 +239,71 @@ class ImageGridWidgets {
     required VoidCallback onAddImage,
   }) {
     return Builder(
-      builder: (context) => Semantics(
-        label: context.l10n.a11yAddImage,
-        button: true,
-        enabled: !isLoading,
-        child: GestureDetector(
-          onTap: isLoading ? null : onAddImage,
-          child: Container(
-            height: AppDimensions.buttonHeight,
-            decoration: BoxDecoration(
-              borderRadius: config.effectiveBorderRadius,
-              border: Border.all(
-                color: AppColors.forestGreen
-                    .withValues(alpha: AppDimensions.opacityMediumLight),
-                width: AppDimensions.borderWidthThin,
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Semantics(
+          label: context.l10n.a11yAddImage,
+          button: true,
+          enabled: !isLoading,
+          child: GestureDetector(
+            onTap: isLoading ? null : onAddImage,
+            child: Container(
+              height: AppDimensions.buttonHeight,
+              decoration: BoxDecoration(
+                borderRadius: config.effectiveBorderRadius,
+                border: Border.all(
+                  color: cs.primary
+                      .withValues(alpha: AppDimensions.opacityMediumLight),
+                  width: AppDimensions.borderWidthThin,
+                ),
+                color: cs.primary
+                    .withValues(alpha: AppDimensions.opacityExtraVeryLight),
               ),
-              color: AppColors.forestGreen
-                  .withValues(alpha: AppDimensions.opacityExtraVeryLight),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (isLoading) ...[
-                  const SizedBox(
-                    width: AppDimensions.iconSizeM,
-                    height: AppDimensions.iconSizeM,
-                    child: CircularProgressIndicator(
-                      strokeWidth: AppDimensions.borderWidthThin,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingSm),
-                  Flexible(
-                    child: Text(
-                      context.l10n.imageAdding,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.forestGreen,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (isLoading) ...[
+                    SizedBox(
+                      width: AppDimensions.iconSizeM,
+                      height: AppDimensions.iconSizeM,
+                      child: CircularProgressIndicator(
+                        strokeWidth: AppDimensions.borderWidthThin,
+                        valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ] else ...[
-                  const Icon(
-                    Icons.add_photo_alternate_outlined,
-                    color: AppColors.forestGreen,
-                    size: AppDimensions.iconSizeM,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingSm),
-                  Flexible(
-                    child: Text(
-                      context.l10n.imageAddCount(remainingSlots),
-                      style: AppTextStyles.contentLabel.copyWith(
-                        color: AppColors.forestGreen,
+                    const SizedBox(width: AppDimensions.spacingSm),
+                    Flexible(
+                      child: Text(
+                        context.l10n.imageAdding,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: cs.primary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
+                  ] else ...[
+                    Icon(
+                      Icons.add_photo_alternate_outlined,
+                      color: cs.primary,
+                      size: AppDimensions.iconSizeM,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingSm),
+                    Flexible(
+                      child: Text(
+                        context.l10n.imageAddCount(remainingSlots),
+                        style: AppTextStyles.contentLabel.copyWith(
+                          color: cs.primary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

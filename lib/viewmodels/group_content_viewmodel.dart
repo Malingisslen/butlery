@@ -15,6 +15,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Manages group-shared content (recipes, menus, shopping lists) with filtering and activity tracking.
 /// Uses AsyncOperationMixin for loading state management while maintaining
@@ -169,7 +170,7 @@ class GroupContentViewModel extends ChangeNotifier
       });
     } catch (e) {
       AppLogger.error('❌ Failed to load group content', e);
-      setError('Kunde inte ladda gruppinnehåll: ${e.toString()}');
+      setError(AppLocale.current.errorCouldNotLoad('gruppinnehåll'));
     }
   }
 
@@ -184,8 +185,8 @@ class GroupContentViewModel extends ChangeNotifier
           'id': content.id,
           'type': content.contentType,
           'title': _getContentTitle(content),
-          'ownerName': (content.metadata['ownerDisplayName'] as String?)
-              .orDefault('Okänd användare'),
+          'ownerName':
+              (content.metadata['ownerDisplayName'] as String?).orDefault('?'),
           'ownerAvatarUrl': content.metadata['ownerAvatarUrl'],
           'sharedAt': content.sharedAt,
           'action': 'shared_to_group',
@@ -262,7 +263,7 @@ class GroupContentViewModel extends ChangeNotifier
       return true;
     } catch (e) {
       AppLogger.error('❌ Failed to share content to group', e);
-      setError('Kunde inte dela innehåll till gruppen: ${e.toString()}');
+      setError(AppLocale.current.errorCouldNotUpdate('gruppinnehåll'));
       return false;
     } finally {
       _setSharing(false);
@@ -331,8 +332,7 @@ class GroupContentViewModel extends ChangeNotifier
       final recipeSnapshot = Recipe(
         core: RecipeCore(
           id: content.contentId,
-          title: (content.metadata['title'] as String?)
-              .orDefault('Namnlöst recept'),
+          title: (content.metadata['title'] as String?).orDefault('?'),
           description: (content.metadata['description'] as String?).orEmpty(),
           ingredients: List<String>.from(
               (content.metadata['ingredients'] as List?).orEmpty()),
@@ -341,8 +341,7 @@ class GroupContentViewModel extends ChangeNotifier
           imageUrls: content.metadata['imageUrl'] != null
               ? [content.metadata['imageUrl'] as String]
               : [],
-          mealType:
-              (content.metadata['mealType'] as String?).orDefault('Middag'),
+          mealType: (content.metadata['mealType'] as String?).orDefault('?'),
           portions: content.metadata['portions'] as int?,
           timeMinutes: content.metadata['timeMinutes'] as int?,
           rating: (content.metadata['rating'] as num?)?.toDouble(),
@@ -356,8 +355,7 @@ class GroupContentViewModel extends ChangeNotifier
       );
 
       // V2 denormalized metadata for efficient list display
-      final recipeTitle =
-          (content.metadata['title'] as String?).orDefault('Namnlöst recept');
+      final recipeTitle = (content.metadata['title'] as String?).orDefault('?');
       final recipeImageUrl = content.metadata['imageUrl'] as String?;
       final recipePortions = content.metadata['portions'] as int?;
       final recipeTimeMinutes = content.metadata['timeMinutes'] as int?;
@@ -369,8 +367,8 @@ class GroupContentViewModel extends ChangeNotifier
         id: content.id,
         originalRecipeId: content.contentId,
         sharedByUserId: content.ownerId,
-        sharedByDisplayName: (content.metadata['ownerDisplayName'] as String?)
-            .orDefault('Okänd användare'),
+        sharedByDisplayName:
+            (content.metadata['ownerDisplayName'] as String?).orDefault('?'),
         sharedAt: content.sharedAt,
         shareMessage: content.metadata['shareMessage'] as String?,
         allowImport: true,
@@ -410,8 +408,7 @@ class GroupContentViewModel extends ChangeNotifier
               final recipe = Recipe(
                 core: RecipeCore(
                   id: (recipeData['id'] as String?).orEmpty(),
-                  title: (recipeData['title'] as String?)
-                      .orDefault('Namnlöst recept'),
+                  title: (recipeData['title'] as String?).orDefault('?'),
                   description: (recipeData['description'] as String?).orEmpty(),
                   ingredients: List<String>.from(
                       (recipeData['ingredients'] as List?).orEmpty()),
@@ -419,8 +416,7 @@ class GroupContentViewModel extends ChangeNotifier
                       (recipeData['instructions'] as List?).orEmpty()),
                   imageUrls: List<String>.from(
                       (recipeData['imageUrls'] as List?).orEmpty()),
-                  mealType:
-                      (recipeData['mealType'] as String?).orDefault('Middag'),
+                  mealType: (recipeData['mealType'] as String?).orDefault('?'),
                   portions: recipeData['portions'] as int?,
                   timeMinutes: recipeData['timeMinutes'] as int?,
                   rating: (recipeData['rating'] as num?)?.toDouble(),
@@ -446,12 +442,11 @@ class GroupContentViewModel extends ChangeNotifier
       return SharedMenu(
         id: content.id,
         sharedByUserId: content.ownerId,
-        sharedByDisplayName: (content.metadata['ownerDisplayName'] as String?)
-            .orDefault('Okänd användare'),
+        sharedByDisplayName:
+            (content.metadata['ownerDisplayName'] as String?).orDefault('?'),
         sharedAt: content.sharedAt,
         shareMessage: content.metadata['shareMessage'] as String?,
-        menuTitle:
-            (content.metadata['title'] as String?).orDefault('Namnlös meny'),
+        menuTitle: (content.metadata['title'] as String?).orDefault('?'),
         menuSnapshot: reconstructedMenu,
       );
     } catch (e) {
@@ -468,11 +463,10 @@ class GroupContentViewModel extends ChangeNotifier
       // This is a simplified conversion - in a real implementation,
       // you'd need to properly reconstruct the shopping list from the metadata
       return UnifiedShoppingList.personal(
-        name: (content.metadata['listName'] as String?)
-            .orDefault('Namnlös lista'),
+        name: (content.metadata['listName'] as String?).orDefault('?'),
         ownerId: content.ownerId,
-        ownerDisplayName: (content.metadata['ownerDisplayName'] as String?)
-            .orDefault('Okänd användare'),
+        ownerDisplayName:
+            (content.metadata['ownerDisplayName'] as String?).orDefault('?'),
       );
     } catch (e) {
       AppLogger.error(
@@ -485,15 +479,13 @@ class GroupContentViewModel extends ChangeNotifier
   String _getContentTitle(SharedContent content) {
     switch (content.contentType) {
       case 'recipe':
-        return (content.metadata['title'] as String?)
-            .orDefault('Namnlöst recept');
+        return (content.metadata['title'] as String?).orDefault('?');
       case 'menu':
-        return (content.metadata['title'] as String?).orDefault('Namnlös meny');
+        return (content.metadata['title'] as String?).orDefault('?');
       case 'shopping_list':
-        return (content.metadata['listName'] as String?)
-            .orDefault('Namnlös lista');
+        return (content.metadata['listName'] as String?).orDefault('?');
       default:
-        return 'Okänt innehåll';
+        return '?';
     }
   }
 

@@ -9,9 +9,9 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Comment section for saved/shared menus.
 /// Replicates the recipe comment pattern but uses CollaborativeMenuOperations backend.
@@ -155,8 +155,6 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
     if (confirmed != true || !mounted) return;
 
     try {
-      // Comment deletion uses the same toggle mechanism or a separate delete
-      // For now, show error as backend doesn't have a dedicated delete method
       _showMessage(context.l10n.menuCommentDeleteFailed, isError: true);
     } catch (e) {
       if (!mounted) return;
@@ -166,10 +164,11 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
 
   void _showMessage(String message, {bool isError = false}) {
     if (!mounted) return;
+    final cs = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? AppColors.error : AppColors.success,
+        backgroundColor: isError ? cs.error : context.butleryColors.success,
       ),
     );
   }
@@ -189,6 +188,8 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
   }
 
   Widget _buildHeader() {
+    final cs = Theme.of(context).colorScheme;
+
     return InkWell(
       onTap: () {
         if (!mounted) return;
@@ -203,14 +204,14 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
         width: double.infinity,
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         decoration: BoxDecoration(
-          color: AppColors.cardWhite,
-          border: Border.all(color: AppColors.divider),
+          color: cs.surfaceContainerHighest,
+          border: Border.all(color: cs.outlineVariant),
         ),
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.comment_outlined,
-              color: AppColors.forestGreen,
+              color: cs.primary,
               size: AppDimensions.iconSizeAction,
             ),
             const SizedBox(width: AppDimensions.spacingM),
@@ -234,7 +235,7 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
             ),
             Icon(
               _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-              color: AppColors.textMedium,
+              color: cs.onSurfaceVariant,
               size: AppDimensions.iconSizeAction,
             ),
           ],
@@ -244,14 +245,15 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
   }
 
   Widget _buildCommentsBody() {
+    final cs = Theme.of(context).colorScheme;
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        border: Border.all(color: AppColors.divider),
+        color: cs.surfaceContainerHighest,
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         children: [
-          // Comment form
           if (!_permissionService.isAuthenticated)
             _buildLoginPrompt()
           else
@@ -259,7 +261,6 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
               padding: const EdgeInsets.all(AppDimensions.paddingM),
               child: _buildCommentForm(),
             ),
-          // Comments list
           _buildCommentsList(),
         ],
       ),
@@ -287,29 +288,30 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
   }
 
   Widget _buildCommentForm() {
+    final cs = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Reply indicator
         if (_replyToCommentId != null) ...[
           Container(
             padding: AppDimensions.paddingAll3,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainer,
+              color: cs.surfaceContainer,
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.reply,
                   size: AppDimensions.iconSizeM,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: cs.primary,
                 ),
                 const SizedBox(width: AppDimensions.spacingS),
                 Expanded(
                   child: Text(
                     context.l10n.commentReplyingTo,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: cs.primary,
                     ),
                   ),
                 ),
@@ -327,7 +329,6 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
           ),
           const SizedBox(height: AppDimensions.spacingM),
         ],
-        // Input row
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -359,10 +360,10 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
                   : const Icon(Icons.send),
               style: IconButton.styleFrom(
                 backgroundColor: _commentController.text.trim().isNotEmpty
-                    ? Theme.of(context).colorScheme.primary
+                    ? cs.primary
                     : null,
                 foregroundColor: _commentController.text.trim().isNotEmpty
-                    ? Theme.of(context).colorScheme.onPrimary
+                    ? cs.onPrimary
                     : null,
               ),
             ),
@@ -373,6 +374,8 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
   }
 
   Widget _buildCommentsList() {
+    final cs = Theme.of(context).colorScheme;
+
     if (_isLoading) {
       return StateWidget.loading(message: context.l10n.menuLoadingComments);
     }
@@ -390,7 +393,6 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
       );
     }
 
-    // Separate top-level and reply comments
     final topLevel =
         _comments.where((c) => c['replyToCommentId'] == null).toList();
 
@@ -399,9 +401,9 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(vertical: AppDimensions.paddingS),
       itemCount: topLevel.length,
-      separatorBuilder: (_, __) => const Divider(
+      separatorBuilder: (_, __) => Divider(
         height: AppDimensions.borderWidthThin,
-        color: AppColors.divider,
+        color: cs.outlineVariant,
       ),
       itemBuilder: (context, index) {
         final comment = topLevel[index];
@@ -414,6 +416,7 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
   }
 
   Widget _buildCommentWithReplies(Map<String, dynamic> comment) {
+    final cs = Theme.of(context).colorScheme;
     final commentId = comment['id'] as String?;
     final replies =
         _comments.where((c) => c['replyToCommentId'] == commentId).toList();
@@ -430,7 +433,7 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
               decoration: BoxDecoration(
                 border: Border(
                   left: BorderSide(
-                    color: AppColors.textMedium
+                    color: cs.onSurfaceVariant
                         .withValues(alpha: AppDimensions.opacityMediumLight),
                     width: 2,
                   ),
@@ -448,6 +451,7 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
   }
 
   Widget _buildCommentItem(Map<String, dynamic> comment, {int depth = 0}) {
+    final cs = Theme.of(context).colorScheme;
     final authorId = comment['authorId'] as String? ?? '';
     final authorName = comment['authorDisplayName'] as String? ?? 'Unknown';
     final text = comment['text'] as String? ?? '';
@@ -463,14 +467,12 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
       padding: AppDimensions.paddingAll12,
       decoration: isReply
           ? BoxDecoration(
-              color: AppColors.surface
-                  .withValues(alpha: AppDimensions.opacityHalf),
+              color: cs.surface.withValues(alpha: AppDimensions.opacityHalf),
             )
           : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header row
           Row(
             children: [
               Expanded(
@@ -486,7 +488,6 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
                   ],
                 ),
               ),
-              // Reply button
               if (commentId != null)
                 Semantics(
                   label: context.l10n.a11yReplyToComment,
@@ -494,14 +495,13 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
                   child: IconButton(
                     onPressed: () =>
                         setState(() => _replyToCommentId = commentId),
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.reply,
-                      color: AppColors.textMedium,
+                      color: cs.onSurfaceVariant,
                       size: AppDimensions.iconSizeM,
                     ),
                   ),
                 ),
-              // Like button
               Semantics(
                 label: isLiked
                     ? context.l10n.a11yUnlikeComment
@@ -511,33 +511,30 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
                   onPressed: () => _toggleLike(comment),
                   icon: Icon(
                     isLiked ? Icons.favorite : Icons.favorite_border,
-                    color: isLiked ? AppColors.error : AppColors.textMedium,
+                    color: isLiked ? cs.error : cs.onSurfaceVariant,
                     size: AppDimensions.iconSizeM,
                   ),
                 ),
               ),
-              // Delete button for own comments
               if (isOwnComment)
                 IconButton(
                   onPressed: () => _deleteComment(comment),
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.delete_outline,
-                    color: AppColors.textMedium,
+                    color: cs.onSurfaceVariant,
                     size: AppDimensions.iconSizeM,
                   ),
                 ),
             ],
           ),
           const SizedBox(height: AppDimensions.spacingS),
-          // Comment text
           Text(text, style: AppTextStyles.bodyLarge),
-          // Like count
           if (likeCount > 0) ...[
             const SizedBox(height: AppDimensions.spacingS),
             Text(
               context.l10n.socialLikeCount(likeCount),
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: AppColors.primary,
+                color: cs.primary,
               ),
             ),
           ],

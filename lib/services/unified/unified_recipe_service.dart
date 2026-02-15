@@ -19,6 +19,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 // Focused modules
 import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
@@ -513,7 +514,7 @@ class UnifiedRecipeService extends ChangeNotifier
       AppLogger.error(
         '❌ [UnifiedRecipeService] Initialization failed: $e\n$stackTrace',
       );
-      _setError('Kunde inte ladda recept: $e');
+      _setError(AppLocale.current.errorCouldNotLoadRecipes);
       _isLoading = false;
       notifyListeners();
       rethrow; // CRITICAL: Propagate failure to bootstrap system
@@ -744,7 +745,7 @@ class UnifiedRecipeService extends ChangeNotifier
       return RecipeOperationResult.success();
     } else {
       return RecipeOperationResult.failure(
-        _error ?? 'Kunde inte ta bort recept',
+        _error ?? AppLocale.current.errorCouldNotDeleteRecipe,
       );
     }
   }

@@ -8,9 +8,9 @@ import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/widgets/common/indicators/status_badge.dart';
@@ -97,7 +97,8 @@ class MenuPreviewView extends StatelessWidget {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            border: Border.all(color: AppColors.divider),
+            border:
+                Border.all(color: Theme.of(context).colorScheme.outlineVariant),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,7 +193,8 @@ class MenuPreviewView extends StatelessWidget {
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius:
                         BorderRadius.circular(AppDimensions.borderRadiusM),
-                    border: Border.all(color: AppColors.divider),
+                    border: Border.all(
+                        color: Theme.of(context).colorScheme.outlineVariant),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -410,7 +412,7 @@ class MenuPreviewView extends StatelessWidget {
           SnackBar(
             content: Text(
                 context.l10n.menuConnectingCollaborative(sharedMenu.menuTitle)),
-            backgroundColor: AppColors.primary,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             duration: const Duration(seconds: 2),
           ),
         );
@@ -426,7 +428,7 @@ class MenuPreviewView extends StatelessWidget {
           SnackBar(
             content:
                 Text(context.l10n.menuImportedSuccess(sharedMenu.menuTitle)),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -438,7 +440,7 @@ class MenuPreviewView extends StatelessWidget {
         SnackBar(
           content: Text(
               viewModel.menuViewModel.error ?? context.l10n.menuImportFailed),
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
@@ -481,7 +483,7 @@ class MenuPreviewView extends StatelessWidget {
           SnackBar(
             content:
                 Text(context.l10n.menuHiddenFromList(sharedMenu.menuTitle)),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
             action: SnackBarAction(
               label: context.l10n.commonUndo,
               onPressed: () =>
@@ -497,7 +499,7 @@ class MenuPreviewView extends StatelessWidget {
           SnackBar(
             content: Text(
                 viewModel.menuViewModel.error ?? context.l10n.menuCouldNotHide),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -509,7 +511,7 @@ class MenuPreviewView extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(context.l10n.menuSharingComingSoon(sharedMenu.menuTitle)),
-        backgroundColor: AppColors.accent,
+        backgroundColor: Theme.of(context).colorScheme.secondary,
       ),
     );
   }

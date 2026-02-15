@@ -8,7 +8,6 @@ import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
@@ -27,13 +26,15 @@ class MenuContentWidgets {
     required VoidCallback onClear,
     required VoidCallback onChanged,
   }) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,13 +44,13 @@ class MenuContentWidgets {
               Icon(
                 Icons.restaurant_menu,
                 size: AppDimensions.iconSizeAction,
-                color: Theme.of(context).colorScheme.primary,
+                color: cs.primary,
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
                 context.l10n.menuPromptQuestion,
                 style: AppTextStyles.labelMedium.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: cs.primary,
                 ),
               ),
             ],
@@ -64,9 +65,7 @@ class MenuContentWidgets {
                 ? IconButton(
                     icon: Icon(Icons.clear,
                         size: AppDimensions.iconSizeAction,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
+                        color: cs.onSurface
                             .withValues(alpha: AppDimensions.opacityDark)),
                     onPressed: onClear,
                     tooltip: context.l10n.commonClear,
@@ -170,21 +169,23 @@ class MenuContentWidgets {
     BuildContext context, {
     required MenuViewModel viewModel,
   }) {
+    final cs = Theme.of(context).colorScheme;
+
     return Column(
       children: [
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
+            color: cs.primaryContainer,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            border: Border.all(color: AppColors.divider),
+            border: Border.all(color: cs.outlineVariant),
           ),
           child: Row(
             children: [
               Icon(
                 Icons.restaurant,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                color: cs.onPrimaryContainer,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingS),
@@ -195,13 +196,13 @@ class MenuContentWidgets {
                     Text(
                       context.l10n.menuYourWeeklyMenu,
                       style: AppTextStyles.titleMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        color: cs.onPrimaryContainer,
                       ),
                     ),
                     Text(
                       context.l10n.menuRecipeCount(viewModel.totalRecipeCount),
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        color: cs.onPrimaryContainer,
                       ),
                     ),
                   ],
@@ -225,6 +226,8 @@ class MenuContentWidgets {
     required String category,
     required List<Recipe> recipes,
   }) {
+    final cs = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -238,16 +241,16 @@ class MenuContentWidgets {
           ),
           decoration: BoxDecoration(
             // Light green background (8% opacity)
-            color: AppColors.forestGreen.withValues(alpha: 0.08),
+            color: cs.primary.withValues(alpha: 0.08),
             // Rounded right corners only for left-border effect
             borderRadius: const BorderRadius.only(
               topRight: Radius.circular(AppDimensions.borderRadiusS),
               bottomRight: Radius.circular(AppDimensions.borderRadiusS),
             ),
             // 4px green left border
-            border: const Border(
+            border: Border(
               left: BorderSide(
-                color: AppColors.forestGreen,
+                color: cs.primary,
                 width: 4,
               ),
             ),
@@ -257,18 +260,18 @@ class MenuContentWidgets {
               Expanded(
                 child: Text(
                   MenuViewHelpers.capitalizeCategory(category).toUpperCase(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: AppTextStyles.headerFont,
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 3,
-                    color: AppColors.forestGreenDark,
+                    color: cs.primary,
                   ),
                 ),
               ),
               // Swap/refresh button moved to icon only
               Material(
-                color: AppColors.cream,
+                color: cs.surface,
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusS),
                 child: InkWell(
@@ -283,8 +286,8 @@ class MenuContentWidgets {
                       Icons.refresh,
                       size: AppDimensions.iconSizeM,
                       color: viewModel.isGenerating
-                          ? AppColors.textMedium
-                          : AppColors.forestGreen,
+                          ? cs.onSurfaceVariant
+                          : cs.primary,
                     ),
                   ),
                 ),
@@ -319,6 +322,8 @@ Widget _buildInlineError(
   required MenuViewModel viewModel,
   VoidCallback? onRetry,
 }) {
+  final cs = Theme.of(context).colorScheme;
+
   return Center(
     child: Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingXl),
@@ -330,13 +335,13 @@ Widget _buildInlineError(
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: AppColors.rust.withValues(alpha: 0.1),
+              color: cs.secondary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.zero,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.error_outline,
               size: 32,
-              color: AppColors.rust,
+              color: cs.secondary,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingL),
@@ -345,7 +350,7 @@ Widget _buildInlineError(
           Text(
             context.l10n.menuGenerateError,
             style: AppTextStyles.titleMedium.copyWith(
-              color: AppColors.rust,
+              color: cs.secondary,
             ),
             textAlign: TextAlign.center,
           ),
@@ -355,7 +360,7 @@ Widget _buildInlineError(
           Text(
             viewModel.error ?? context.l10n.errorUnexpected,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textMedium,
+              color: cs.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),
@@ -380,7 +385,7 @@ Widget _buildInlineError(
             child: Text(
               context.l10n.commonDismiss,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
             ),
           ),
@@ -407,10 +412,12 @@ class _MenuRecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
       child: Material(
-        color: AppColors.cardWhite,
+        color: cs.surfaceContainerHighest,
         child: InkWell(
           onTap: onTap,
           child: Padding(
@@ -442,7 +449,7 @@ class _MenuRecipeCard extends StatelessWidget {
                               '${recipe.portions} ${context.l10n.recipePortionsPlural}',
                           ].join(' · '),
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textMedium,
+                            color: cs.onSurfaceVariant,
                           ),
                         ),
                     ],
@@ -451,7 +458,7 @@ class _MenuRecipeCard extends StatelessWidget {
                 const SizedBox(width: AppDimensions.spacingSm),
                 // Swap button
                 Material(
-                  color: AppColors.cream,
+                  color: cs.surface,
                   borderRadius: BorderRadius.zero,
                   child: InkWell(
                     onTap: viewModel.isGenerating
@@ -463,7 +470,7 @@ class _MenuRecipeCard extends StatelessWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(context.l10n.menuNoMoreRecipes),
-                                  backgroundColor: AppColors.rust,
+                                  backgroundColor: cs.secondary,
                                 ),
                               );
                             }
@@ -474,8 +481,8 @@ class _MenuRecipeCard extends StatelessWidget {
                         Icons.swap_horiz,
                         size: AppDimensions.iconSizeS,
                         color: viewModel.isGenerating
-                            ? AppColors.textMedium
-                            : AppColors.forestGreen,
+                            ? cs.onSurfaceVariant
+                            : cs.primary,
                       ),
                     ),
                   ),

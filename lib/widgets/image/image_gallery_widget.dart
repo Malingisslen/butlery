@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -121,7 +120,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
 
   /// Build empty gallery state
   Widget _buildEmptyGallery() {
-    // Remove unused theme variable
+    final cs = Theme.of(context).colorScheme;
 
     return Container(
       height: AppDimensions.minHeightLarge,
@@ -129,10 +128,10 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: AppColors.divider
+          color: cs.outlineVariant
               .withValues(alpha: AppDimensions.opacityMediumLight),
         ),
-        color: AppColors.cardWhite,
+        color: cs.surfaceContainerHighest,
       ),
       child: Center(
         child: Column(
@@ -141,15 +140,15 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             Icon(
               Icons.photo_library_outlined,
               size: AppDimensions.iconSizeXxl,
-              color: AppColors.textDark
-                  .withValues(alpha: AppDimensions.opacityMedium),
+              color:
+                  cs.onSurface.withValues(alpha: AppDimensions.opacityMedium),
             ),
             const SizedBox(
                 height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
             Text(
               context.l10n.imageNoImagesYet,
               style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.textDark
+                color: cs.onSurface
                     .withValues(alpha: AppDimensions.opacityMediumDark),
               ),
             ),
@@ -157,8 +156,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             Text(
               context.l10n.imageWillAppearHere,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textDark
-                    .withValues(alpha: AppDimensions.opacityMedium),
+                color:
+                    cs.onSurface.withValues(alpha: AppDimensions.opacityMedium),
               ),
             ),
           ],
@@ -169,26 +168,26 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
 
   /// Build selection mode header
   Widget _buildSelectionHeader() {
-    // Remove unused theme variable
+    final cs = Theme.of(context).colorScheme;
 
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingMd),
-      decoration: const BoxDecoration(
-        color: AppColors.forestGreen,
-        borderRadius: BorderRadius.vertical(
+      decoration: BoxDecoration(
+        color: cs.primary,
+        borderRadius: const BorderRadius.vertical(
             top: Radius.circular(AppDimensions.borderRadius16)),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.check_circle,
-            color: AppColors.forestGreen,
+            color: cs.onPrimary,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
           Text(
             context.l10n.imageCountSelected(_selectedImages.length),
             style: AppTextStyles.contentTitle.copyWith(
-              color: AppColors.cardWhite,
+              color: cs.onPrimary,
             ),
           ),
           const Spacer(),
@@ -197,7 +196,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             child: Text(
               context.l10n.commonCancel,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.forestGreen,
+                color: cs.onPrimary,
               ),
             ),
           ),
@@ -208,20 +207,20 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
 
   /// Build add image button
   Widget _buildAddImageButton() {
-    // Remove unused theme variable
+    final cs = Theme.of(context).colorScheme;
 
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: AppColors.divider
+          color: cs.outlineVariant
               .withValues(alpha: AppDimensions.opacityMediumLight),
           style: BorderStyle.solid,
         ),
-        color: AppColors.cardWhite,
+        color: cs.surfaceContainerHighest,
       ),
       child: Material(
-        color: AppColors.transparent,
+        color: Colors.transparent,
         child: InkWell(
           onTap: widget.onAddImage,
           borderRadius: widget.config.effectiveBorderRadius,
@@ -229,16 +228,16 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
+                Icon(
                   Icons.add_photo_alternate_outlined,
                   size: AppDimensions.iconSizeXl,
-                  color: AppColors.forestGreen,
+                  color: cs.primary,
                 ),
                 const SizedBox(height: AppDimensions.spacingXs),
                 Text(
                   context.l10n.commonAdd,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.forestGreen,
+                    color: cs.primary,
                   ),
                 ),
               ],
@@ -251,7 +250,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
 
   /// Build gallery image
   Widget _buildGalleryImage(String imageUrl, int index) {
-    // Remove unused theme variable
+    final cs = Theme.of(context).colorScheme;
     final isSelected = _selectedImages.contains(imageUrl);
 
     return Stack(
@@ -262,8 +261,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             borderRadius: widget.config.effectiveBorderRadius,
             border: Border.all(
               color: isSelected
-                  ? AppColors.forestGreen
-                  : AppColors.divider
+                  ? cs.primary
+                  : cs.outlineVariant
                       .withValues(alpha: AppDimensions.opacityLight),
               width: isSelected ? 2 : 1,
             ),
@@ -295,7 +294,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                     // Selection overlay
                     if (isSelected)
                       Container(
-                        color: AppColors.forestGreen
+                        color: cs.primary
                             .withValues(alpha: AppDimensions.opacityLight),
                       ),
                   ],
@@ -315,11 +314,11 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected
-                    ? AppColors.forestGreen
-                    : AppColors.cardWhite
+                    ? cs.primary
+                    : cs.surfaceContainerHighest
                         .withValues(alpha: AppDimensions.opacityVeryDark),
                 border: Border.all(
-                  color: AppColors.divider
+                  color: cs.outlineVariant
                       .withValues(alpha: AppDimensions.opacityMediumLight),
                 ),
               ),
@@ -327,8 +326,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                 isSelected ? Icons.check : Icons.circle_outlined,
                 size: AppDimensions.iconSizeS,
                 color: isSelected
-                    ? AppColors.cardWhite
-                    : AppColors.textDark
+                    ? cs.surfaceContainerHighest
+                    : cs.onSurface
                         .withValues(alpha: AppDimensions.opacityMediumDark),
               ),
             ),
@@ -421,7 +420,7 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Remove unused theme variable
+    final cs = Theme.of(context).colorScheme;
 
     if (imageUrls.isEmpty) {
       return Container(
@@ -430,10 +429,10 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: config.effectiveBorderRadius,
           border: Border.all(
-            color: AppColors.divider
+            color: cs.outlineVariant
                 .withValues(alpha: AppDimensions.opacityMediumLight),
           ),
-          color: AppColors.cardWhite,
+          color: cs.surfaceContainerHighest,
         ),
         child: Center(
           child: Column(
@@ -442,15 +441,15 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
               Icon(
                 Icons.photo_library_outlined,
                 size: AppDimensions.iconSizeXxl,
-                color: AppColors.textDark
-                    .withValues(alpha: AppDimensions.opacityMedium),
+                color:
+                    cs.onSurface.withValues(alpha: AppDimensions.opacityMedium),
               ),
               const SizedBox(
                   height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
               Text(
                 context.l10n.imageNoImagesToDisplay,
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textDark
+                  color: cs.onSurface
                       .withValues(alpha: AppDimensions.opacityMediumDark),
                 ),
               ),

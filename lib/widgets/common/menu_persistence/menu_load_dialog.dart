@@ -1,7 +1,7 @@
 // lib/widgets/common/menu_persistence/menu_load_dialog.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
@@ -235,12 +235,13 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet>
               child: Builder(
                 builder: (context) => Row(
                   children: [
-                    const Icon(Icons.delete, color: AppColors.error),
+                    Icon(Icons.delete,
+                        color: Theme.of(context).colorScheme.error),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Text(
                       context.l10n.commonDelete,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.error,
+                            color: Theme.of(context).colorScheme.error,
                           ),
                     ),
                   ],
@@ -275,7 +276,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(context.l10n.menuLoadedSuccess(menu.name ?? '')),
-              backgroundColor: AppColors.success,
+              backgroundColor: context.butleryColors.success,
             ),
           );
         } else {
@@ -283,7 +284,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet>
             SnackBar(
               content:
                   Text(widget.viewModel.error ?? context.l10n.menuLoadFailed),
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -293,7 +294,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.errorLoadingWithDetails(e.toString())),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -314,7 +315,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet>
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
             child: Text(context.l10n.commonDelete),
           ),
@@ -334,7 +335,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet>
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(context.l10n.menuDeletedSuccess(menu.name ?? '')),
-                backgroundColor: AppColors.success,
+                backgroundColor: context.butleryColors.success,
               ),
             );
           } else {
@@ -342,7 +343,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet>
               SnackBar(
                 content: Text(
                     widget.viewModel.error ?? context.l10n.menuDeleteFailed),
-                backgroundColor: AppColors.error,
+                backgroundColor: Theme.of(context).colorScheme.error,
               ),
             );
           }
@@ -353,7 +354,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet>
             SnackBar(
               content:
                   Text(context.l10n.errorDeletingWithDetails(e.toString())),
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }

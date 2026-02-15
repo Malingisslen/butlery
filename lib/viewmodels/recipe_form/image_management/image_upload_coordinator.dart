@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Coordinates bulk image upload operations with thread-safe cancellation support.
 /// **Responsibilities:**
@@ -112,7 +113,7 @@ class ImageUploadCoordinator {
       return successfulUrls;
     } catch (e) {
       AppLogger.error('❌ Fatal error during upload: $e');
-      _setError('Kunde inte ladda upp bilder: $e');
+      _setError(AppLocale.current.errorGeneric);
       return uploadedUrls;
     } finally {
       operationGroup.dispose();

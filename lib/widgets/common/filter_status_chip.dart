@@ -1,7 +1,6 @@
 // lib/widgets/common/filter_status_chip.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -39,9 +38,9 @@ class FilterStatusChip extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.tune,
-            color: AppColors.textMedium,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingXs),

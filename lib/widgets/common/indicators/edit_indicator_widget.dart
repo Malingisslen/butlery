@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -93,7 +92,7 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
 
   @override
   Widget build(BuildContext context) {
-    final color = widget.color ?? AppColors.forestGreen;
+    final color = widget.color ?? Theme.of(context).colorScheme.primary;
     return AnimatedBuilder(
       animation: _fadeAnimation,
       builder: (context, child) {

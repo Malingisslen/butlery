@@ -7,6 +7,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 class CreateSharedListViewModel extends ChangeNotifier {
   final UnifiedShoppingService _shoppingService;
@@ -45,14 +46,15 @@ class CreateSharedListViewModel extends ChangeNotifier {
     if (_title.isEmpty) {
       return null; // Don't show error until user starts typing
     }
-    if (_title.trim().isEmpty) return 'Titel krävs';
-    if (_title.length > 100) return 'Titel för lång (max 100 tecken)';
+    if (_title.trim().isEmpty)
+      return AppLocale.current.errorTitleRequiredNotEmpty;
+    if (_title.length > 100) return AppLocale.current.errorDescriptionTooLong;
     return null;
   }
 
   String? get descriptionError {
     if (_description.length > 500) {
-      return 'Beskrivning för lång (max 500 tecken)';
+      return AppLocale.current.errorDescriptionTooLong;
     }
     return null;
   }
@@ -120,13 +122,13 @@ class CreateSharedListViewModel extends ChangeNotifier {
 
   Future<String?> createSharedList() async {
     if (!canCreate) {
-      _setError('Formuläret är inte komplett');
+      _setError(AppLocale.current.errorFormIncomplete);
       return null;
     }
 
     // Kontrollera att användaren har en profil
     if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
-      _setError('Du måste skapa en profil först');
+      _setError(AppLocale.current.errorMustCreateProfileFirst);
       return null;
     }
 
@@ -144,7 +146,7 @@ class CreateSharedListViewModel extends ChangeNotifier {
         final friend = _friendsService.friendsList
             .where((f) => f.uid == friendId)
             .firstOrNull;
-        memberDisplayNames[friendId] = friend?.displayName ?? 'Okänd vän';
+        memberDisplayNames[friendId] = friend?.displayName ?? '?';
       }
 
       final listId = await _shoppingService.createCollaborativeList(
@@ -162,13 +164,14 @@ class CreateSharedListViewModel extends ChangeNotifier {
 
         return listId;
       } else {
-        final serviceError = _shoppingService.error ?? 'Okänt fel vid skapande';
+        final serviceError =
+            _shoppingService.error ?? AppLocale.current.errorUnknown;
         _setError(serviceError);
         AppLogger.error('❌ Kunde inte skapa delad lista: $serviceError');
         return null;
       }
     } catch (e) {
-      final errorMessage = 'Fel vid skapande av delad lista: $e';
+      final errorMessage = AppLocale.current.createSharedListError('$e');
       _setError(errorMessage);
       AppLogger.error('❌ Exception vid skapande av delad lista', e);
       return null;
@@ -183,17 +186,17 @@ class CreateSharedListViewModel extends ChangeNotifier {
     final friendsValid = hasFriendsSelected;
 
     if (!titleValid) {
-      _setError('Titel krävs och får inte vara tom');
+      _setError(AppLocale.current.errorTitleRequiredNotEmpty);
       return false;
     }
 
     if (!descriptionValid) {
-      _setError('Beskrivning för lång');
+      _setError(AppLocale.current.errorDescriptionTooLong);
       return false;
     }
 
     if (!friendsValid) {
-      _setError('Du måste välja minst en vän att dela med');
+      _setError(AppLocale.current.errorSelectAtLeastOneFriend);
       return false;
     }
 

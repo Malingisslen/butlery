@@ -99,6 +99,13 @@ class ShareDialogHeader {
           shoppingList.name,
           Icons.shopping_cart_outlined,
         );
+      case ShareContentType.personalTag:
+        final tagData = content as Map<String, String>;
+        return (
+          'Dela tagg med vanner',
+          tagData['tagName'] ?? '',
+          Icons.label_outline,
+        );
     }
   }
 }

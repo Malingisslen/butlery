@@ -9,6 +9,7 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Firebase authentication service managing login, registration, and session state.
 class AuthService extends ChangeNotifier
@@ -82,7 +83,7 @@ class AuthService extends ChangeNotifier
       setLoading(false);
       // Filter out false-positive GMS errors
       if (!e.toString().contains('com.google.android.gms')) {
-        setError('Ett oväntat fel uppstod: ${e.toString()}');
+        setError(AppLocale.current.errorUnexpected);
       }
       _currentUser = _authRepository.currentUser;
       return _currentUser != null;
@@ -107,7 +108,7 @@ class AuthService extends ChangeNotifier
 
       if (_currentUser == null) {
         AppLogger.error('Login appeared successful but no user returned');
-        setError('Inloggning misslyckades. Försök igen.');
+        setError(AppLocale.current.errorLoginFailed);
         return false;
       }
 
@@ -131,7 +132,7 @@ class AuthService extends ChangeNotifier
       AppLogger.error('Unexpected login error: $e');
       // Filter out false-positive GMS errors
       if (!e.toString().contains('com.google.android.gms')) {
-        setError('Ett oväntat fel uppstod: ${e.toString()}');
+        setError(AppLocale.current.errorUnexpected);
       }
       _currentUser = _authRepository.currentUser;
       return _currentUser != null;
@@ -145,7 +146,7 @@ class AuthService extends ChangeNotifier
       AppLogger.info('User signed out successfully');
       await _analyticsService.logLogout();
     }).catchError((e) {
-      setError('Kunde inte logga ut: ${e.toString()}');
+      setError(AppLocale.current.errorCouldNotLogOut);
     });
   }
 
@@ -164,7 +165,7 @@ class AuthService extends ChangeNotifier
       );
     }).catchError((e) {
       AppLogger.error('Session timeout logout failed', e);
-      setError('Kunde inte logga ut: ${e.toString()}');
+      setError(AppLocale.current.errorCouldNotLogOut);
     });
   }
 
@@ -189,7 +190,7 @@ class AuthService extends ChangeNotifier
       _handleAuthError(e);
       return false;
     } catch (e) {
-      setError('Ett oväntat fel uppstod: ${e.toString()}');
+      setError(AppLocale.current.errorUnexpected);
       return false;
     }
   }
@@ -202,7 +203,7 @@ class AuthService extends ChangeNotifier
       if (e is FirebaseAuthException) {
         _handleAuthError(e);
       } else {
-        setError('Ett oväntat fel uppstod: ${e.toString()}');
+        setError(AppLocale.current.errorUnexpected);
       }
       return false;
     });
@@ -211,7 +212,7 @@ class AuthService extends ChangeNotifier
   /// Requires recent login - will fail if session is stale.
   Future<bool> deleteAccount() async {
     if (_currentUser == null) {
-      setError('Ingen användare är inloggad');
+      setError(AppLocale.current.errorNoUserLoggedIn);
       return false;
     }
 
@@ -222,12 +223,12 @@ class AuthService extends ChangeNotifier
     }).catchError((e) {
       if (e is FirebaseAuthException) {
         if (e.code == 'requires-recent-login') {
-          setError('Du måste logga in igen för att ta bort ditt konto');
+          setError(AppLocale.current.errorReauthRequired);
         } else {
           _handleAuthError(e);
         }
       } else {
-        setError('Kunde inte ta bort konto: ${e.toString()}');
+        setError(AppLocale.current.errorCouldNotDeleteAccount);
       }
       return false;
     });
@@ -349,7 +350,7 @@ class AuthService extends ChangeNotifier
       return false;
     } catch (e) {
       AppLogger.error('MFA enrollment error: $e');
-      setError('Kunde inte slutföra MFA-registrering');
+      setError(AppLocale.current.errorCouldNotCompleteMfa);
       return false;
     }
   }
@@ -370,7 +371,7 @@ class AuthService extends ChangeNotifier
       return false;
     } catch (e) {
       AppLogger.error('MFA unenroll error: $e');
-      setError('Kunde inte ta bort MFA');
+      setError(AppLocale.current.errorCouldNotRemoveMfa);
       return false;
     }
   }
@@ -448,60 +449,61 @@ class AuthService extends ChangeNotifier
       return false;
     } catch (e) {
       AppLogger.error('MFA sign-in error: $e');
-      setError('MFA-verifiering misslyckades');
+      setError(AppLocale.current.errorMfaVerificationFailed);
       return false;
     }
   }
 
   void _handleAuthError(FirebaseAuthException e) {
+    final l = AppLocale.current;
     String errorMessage;
     AppLogger.error('Firebase Auth Error Code: ${e.code}');
     switch (e.code) {
       case 'weak-password':
-        errorMessage = 'Lösenordet är för svagt. Använd minst 6 tecken.';
+        errorMessage = l.errorWeakPassword;
         break;
       case 'email-already-in-use':
-        errorMessage = 'Email-adressen används redan av ett annat konto.';
+        errorMessage = l.errorEmailAlreadyInUse;
         break;
       case 'invalid-email':
-        errorMessage = 'Ogiltig email-adress.';
+        errorMessage = l.errorInvalidEmailAddress;
         break;
       case 'user-not-found':
-        errorMessage = 'Ingen användare hittades med denna email.';
+        errorMessage = l.errorUserNotFoundByEmail;
         break;
       case 'wrong-password':
-        errorMessage = 'Fel lösenord.';
+        errorMessage = l.errorWrongPassword;
         break;
       case 'invalid-credential':
-        errorMessage = 'Fel email eller lösenord. Kontrollera dina uppgifter.';
+        errorMessage = l.errorInvalidCredentials;
         break;
       case 'user-disabled':
-        errorMessage = 'Detta konto har inaktiverats.';
+        errorMessage = l.errorAccountDisabled;
         break;
       case 'too-many-requests':
-        errorMessage = 'För många försök. Vänta en stund och försök igen.';
+        errorMessage = l.errorTooManyAttempts;
         break;
       case 'network-request-failed':
-        errorMessage = 'Nätverksfel. Kontrollera din internetanslutning.';
+        errorMessage = l.errorNetwork;
         break;
       // MFA-specific errors
       case 'invalid-verification-code':
-        errorMessage = 'Ogiltig verifieringskod. Försök igen.';
+        errorMessage = l.errorInvalidVerificationCode;
         break;
       case 'session-expired':
-        errorMessage = 'Sessionen har gått ut. Försök igen.';
+        errorMessage = l.errorSessionExpired;
         break;
       case 'quota-exceeded':
-        errorMessage = 'För många SMS-försök. Försök igen senare.';
+        errorMessage = l.errorTooManySmsAttempts;
         break;
       case 'invalid-phone-number':
-        errorMessage = 'Ogiltigt telefonnummer. Ange med landskod (+46).';
+        errorMessage = l.errorInvalidPhoneNumber;
         break;
       case 'missing-phone-number':
-        errorMessage = 'Telefonnummer saknas.';
+        errorMessage = l.errorPhoneNumberMissing;
         break;
       default:
-        errorMessage = 'Autentiseringsfel: ${e.message}';
+        errorMessage = l.errorAuthentication;
     }
     setError(errorMessage);
   }

@@ -4,6 +4,7 @@
 /// Delegates to specialized operation classes following the facade pattern.
 
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
@@ -16,6 +17,9 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/services/messaging/message_sending_operations.dart';
 import 'package:butlery/services/messaging/conversation_action_operations.dart';
 import 'package:butlery/services/messaging/message_management_operations.dart';
+import 'package:butlery/services/messaging/message_reactions_service.dart';
+import 'package:uuid/uuid.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Messaging service implementing the facade pattern for real-time communication.
 ///
@@ -35,6 +39,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
   late final MessageSendingOperations _sendingOps;
   late final ConversationActionOperations _actionOps;
   late final MessageManagementOperations _managementOps;
+  late final MessageReactionsService _reactionsService;
 
   @override
   String get serviceName => 'MessagingService';
@@ -60,6 +65,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
       messagingRepository: _messagingRepository,
       authRepository: _authRepository,
     );
+    _reactionsService = MessageReactionsService();
   }
 
   /// Get all conversations for current user
@@ -101,7 +107,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
       final conversationId =
           await _messagingRepository.createDirectConversation(
         user1Id: currentUser.uid,
-        user1DisplayName: currentUser.displayName ?? 'Okänd användare',
+        user1DisplayName:
+            currentUser.displayName ?? AppLocale.current.displayUnknownUser,
         user1AvatarUrl: currentUser.photoURL,
         user2Id: otherUserId,
         user2DisplayName: otherUserDisplayName,
@@ -137,7 +144,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
       if (!allParticipantIds.contains(currentUser.uid)) {
         allParticipantIds.add(currentUser.uid);
         participantDisplayNames[currentUser.uid] =
-            currentUser.displayName ?? 'Okänd användare';
+            currentUser.displayName ?? AppLocale.current.displayUnknownUser;
         participantAvatarUrls[currentUser.uid] = currentUser.photoURL;
       }
 
@@ -473,6 +480,160 @@ class MessagingService extends BaseService with StreamManagementMixin {
         conversationId: conversationId,
         newTitle: newTitle,
       );
+
+  /// Toggle an emoji reaction on a message
+  Future<void> toggleReaction({
+    required String messageId,
+    required String conversationId,
+    required String emoji,
+  }) async {
+    try {
+      final currentUserId = _authRepository.currentUserId;
+      if (currentUserId == null) {
+        throw AuthenticationException('User must be authenticated');
+      }
+
+      await _reactionsService.toggleReaction(
+        messageId: messageId,
+        conversationId: conversationId,
+        userId: currentUserId,
+        emoji: emoji,
+      );
+    } catch (e) {
+      AppLogger.error('Failed to toggle reaction on message $messageId', e);
+      rethrow;
+    }
+  }
+
+  /// Send a poll message to a conversation
+  Future<void> sendPollMessage({
+    required String conversationId,
+    required Map<String, dynamic> pollData,
+  }) async {
+    try {
+      final currentUser = _authRepository.currentUser;
+      if (currentUser == null) {
+        throw AuthenticationException('User must be authenticated');
+      }
+
+      final message = Message(
+        id: const Uuid().v4(),
+        conversationId: conversationId,
+        senderId: currentUser.uid,
+        senderDisplayName:
+            currentUser.displayName ?? AppLocale.current.displayUnknownUser,
+        senderAvatarUrl: currentUser.photoURL,
+        content:
+            pollData['question'] as String? ?? AppLocale.current.messagingPoll,
+        type: MessageType.poll,
+        status: MessageStatus.sending,
+        sentAt: DateTime.now(),
+        metadata: {'poll': pollData},
+      );
+
+      await _messagingRepository.sendMessage(message);
+      AppLogger.success('Poll message sent in conversation $conversationId');
+    } catch (e) {
+      AppLogger.error('Failed to send poll message', e);
+      rethrow;
+    }
+  }
+
+  /// Vote on a poll option in a message
+  Future<void> votePoll({
+    required String messageId,
+    required String optionId,
+    required bool allowMultiple,
+  }) async {
+    try {
+      final currentUserId = _authRepository.currentUserId;
+      if (currentUserId == null) {
+        throw AuthenticationException('User must be authenticated');
+      }
+
+      final firestore = FirebaseFirestore.instance;
+      final messageRef = firestore.collection('messages').doc(messageId);
+
+      await firestore.runTransaction((transaction) async {
+        final doc = await transaction.get(messageRef);
+        if (!doc.exists) return;
+
+        final data = doc.data()!;
+        final metadata = Map<String, dynamic>.from(data['metadata'] ?? {});
+        final pollMap = Map<String, dynamic>.from(metadata['poll'] ?? {});
+        final options = (pollMap['options'] as List<dynamic>?)
+                ?.map((o) => Map<String, dynamic>.from(o as Map))
+                .toList() ??
+            [];
+
+        // Remove user from all options if single choice
+        if (!allowMultiple) {
+          for (final option in options) {
+            final voters = List<String>.from(option['voterIds'] ?? []);
+            voters.remove(currentUserId);
+            option['voterIds'] = voters;
+          }
+        }
+
+        // Toggle vote on target option
+        for (final option in options) {
+          if (option['id'] == optionId) {
+            final voters = List<String>.from(option['voterIds'] ?? []);
+            if (voters.contains(currentUserId)) {
+              voters.remove(currentUserId);
+            } else {
+              voters.add(currentUserId);
+            }
+            option['voterIds'] = voters;
+            break;
+          }
+        }
+
+        pollMap['options'] = options;
+        metadata['poll'] = pollMap;
+        transaction.update(messageRef, {'metadata': metadata});
+      });
+
+      AppLogger.debug('Poll vote recorded for message $messageId');
+    } catch (e) {
+      AppLogger.error('Failed to vote on poll $messageId', e);
+      rethrow;
+    }
+  }
+
+  /// Close a poll (creator only)
+  Future<void> closePoll({required String messageId}) async {
+    try {
+      final currentUserId = _authRepository.currentUserId;
+      if (currentUserId == null) {
+        throw AuthenticationException('User must be authenticated');
+      }
+
+      final firestore = FirebaseFirestore.instance;
+      final messageRef = firestore.collection('messages').doc(messageId);
+      final doc = await messageRef.get();
+      if (!doc.exists) return;
+
+      final data = doc.data()!;
+      final metadata = Map<String, dynamic>.from(data['metadata'] ?? {});
+      final pollMap = Map<String, dynamic>.from(metadata['poll'] ?? {});
+
+      // Verify creator
+      if (pollMap['creatorId'] != currentUserId) {
+        AppLogger.warning('Non-creator attempted to close poll $messageId');
+        return;
+      }
+
+      pollMap['isClosed'] = true;
+      metadata['poll'] = pollMap;
+      await messageRef.update({'metadata': metadata});
+
+      AppLogger.debug('Poll closed: $messageId');
+    } catch (e) {
+      AppLogger.error('Failed to close poll $messageId', e);
+      rethrow;
+    }
+  }
 
   @override
   Future<void> dispose() async {

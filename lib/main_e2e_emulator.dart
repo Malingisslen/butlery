@@ -9,7 +9,6 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -38,6 +37,7 @@ import 'package:butlery/core/di/modules/collaboration_module.dart';
 import 'package:butlery/core/di/modules/performance_module.dart';
 import 'package:butlery/core/di/modules/ui_module.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// E2E Emulator Application Entry Point
 /// This entry point provides complete Butlery app functionality for E2E testing
@@ -143,77 +143,84 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'E2E Emulator Error',
-      home: Scaffold(
-        backgroundColor: AppColors.warningContainer,
-        appBar: AppBar(
-          title: const Text('E2E Emulator Error'),
-          backgroundColor: AppColors.warning,
-          foregroundColor: AppColors.cardWhite,
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(
-                Icons.warning_outlined,
-                size: AppDimensions.iconSizeXxl,
-                color: AppColors.warning,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'E2E Emulator Initialization Failed',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.warning,
+      home: Builder(builder: (context) {
+        final butlery =
+            Theme.of(context).extension<ButleryColors>() ?? ButleryColors.light;
+        final cs = Theme.of(context).colorScheme;
+        return Scaffold(
+          backgroundColor: butlery.warningContainer,
+          appBar: AppBar(
+            title: const Text('E2E Emulator Error'),
+            backgroundColor: butlery.warning,
+            foregroundColor: cs.surfaceContainerHighest,
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(AppDimensions.spacingMd),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.warning_outlined,
+                  size: AppDimensions.iconSizeXxl,
+                  color: butlery.warning,
                 ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'The E2E Emulator application failed to start. Make sure Firebase emulators are running:',
-                style: TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(AppDimensions.paddingM),
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                ),
-                child: const Text(
-                  'firebase emulators:start --only firestore,auth,storage',
+                const SizedBox(height: 16),
+                Text(
+                  'E2E Emulator Initialization Failed',
                   style: TextStyle(
-                    fontFamily: 'monospace',
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
+                    color: butlery.warning,
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(AppDimensions.paddingM),
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundLight,
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                      border: Border.all(color: AppColors.divider),
+                const SizedBox(height: 16),
+                const Text(
+                  'The E2E Emulator application failed to start. Make sure Firebase emulators are running:',
+                  style: TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(AppDimensions.paddingM),
+                  decoration: BoxDecoration(
+                    color: cs.surface,
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusM),
+                  ),
+                  child: const Text(
+                    'firebase emulators:start --only firestore,auth,storage',
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontWeight: FontWeight.bold,
                     ),
-                    child: Text(
-                      message,
-                      style: const TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(AppDimensions.paddingM),
+                      decoration: BoxDecoration(
+                        color: cs.surface,
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.borderRadiusM),
+                        border: Border.all(color: cs.outlineVariant),
+                      ),
+                      child: Text(
+                        message,
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 }

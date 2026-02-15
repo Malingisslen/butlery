@@ -11,6 +11,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
@@ -171,8 +172,7 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
         platform: 'TikTok',
         url: input,
         thumbnailUrl: metadata?.thumbnailUrl,
-        message:
-            'Kunde inte hämta videobeskrivningen. Ta en skärmbild av receptet.',
+        message: AppLocale.current.tiktokCouldNotFetchDescription,
       );
     }
 
@@ -245,7 +245,7 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
         extractedText: caption,
         suggestedTitle: _extractTitleFromCaption(caption),
         thumbnailUrl: metadata?.thumbnailUrl,
-        message: 'AI-kvoten är slut. Markera receptdelar manuellt.',
+        message: AppLocale.current.tiktokAiQuotaExhausted,
         partialData: {
           'videoUrl': input,
           'authorName': metadata?.authorName,
@@ -260,8 +260,7 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
         extractedText: caption,
         suggestedTitle: _extractTitleFromCaption(caption),
         thumbnailUrl: metadata?.thumbnailUrl,
-        message:
-            'Kunde inte extrahera receptet automatiskt. Markera receptdelar manuellt.',
+        message: AppLocale.current.tiktokCouldNotExtractRecipe,
         partialData: {
           'videoUrl': input,
           'authorName': metadata?.authorName,
@@ -274,8 +273,7 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
       platform: 'TikTok',
       url: input,
       thumbnailUrl: metadata?.thumbnailUrl,
-      message:
-          'Videobeskrivningen innehåller inget recept. Ta en skärmbild av receptet.',
+      message: AppLocale.current.tiktokNoRecipeInDescription,
     );
   }
 
@@ -370,12 +368,12 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
   String _formatEmojiParsedForLlm(_EmojiParsedRecipe parsed, String original) {
     final buffer = StringBuffer();
 
-    buffer.writeln('Originaltext från TikTok:');
+    buffer.writeln(AppLocale.current.tiktokOriginalText);
     buffer.writeln(original);
     buffer.writeln();
 
     if (parsed.ingredients.isNotEmpty) {
-      buffer.writeln('Identifierade ingredienser:');
+      buffer.writeln(AppLocale.current.tiktokIdentifiedIngredients);
       for (final ing in parsed.ingredients) {
         buffer.writeln('- $ing');
       }

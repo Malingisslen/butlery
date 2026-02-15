@@ -1,21 +1,23 @@
 // lib/widgets/common/feedback/snackbar_widgets.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// SnackbarWidgets - Snackbar utility widgets
 /// Provides consistent snackbar implementations for different message types.
 class SnackbarWidgets {
   /// Visa success snackbar
   static void showSuccessSnackbar(BuildContext context, String message) {
+    final cs = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle,
-                color: AppColors.neutralLight, size: AppDimensions.iconSizeM),
+            Icon(Icons.check_circle,
+                color: cs.surfaceContainerHighest,
+                size: AppDimensions.iconSizeM),
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Text(
@@ -25,7 +27,7 @@ class SnackbarWidgets {
             ),
           ],
         ),
-        backgroundColor: AppColors.success,
+        backgroundColor: context.butleryColors.success,
         behavior: SnackBarBehavior.floating,
         duration: AppDimensions.snackbarDuration,
       ),
@@ -34,12 +36,14 @@ class SnackbarWidgets {
 
   /// Visa error snackbar
   static void showErrorSnackbar(BuildContext context, String message) {
+    final cs = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.error,
-                color: AppColors.neutralLight, size: AppDimensions.iconSizeM),
+            Icon(Icons.error,
+                color: cs.surfaceContainerHighest,
+                size: AppDimensions.iconSizeM),
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Text(
@@ -49,7 +53,7 @@ class SnackbarWidgets {
             ),
           ],
         ),
-        backgroundColor: AppColors.error,
+        backgroundColor: cs.error,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 4),
       ),
@@ -58,14 +62,16 @@ class SnackbarWidgets {
 
   /// Visa warning snackbar
   static void showWarningSnackbar(BuildContext context, String message) {
+    final warningColor = context.butleryColors.warning;
+    final cs = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.warning_outlined,
               size: AppDimensions.iconSizeM,
-              color: AppColors.warning,
+              color: cs.surfaceContainerHighest,
             ),
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(
@@ -76,7 +82,7 @@ class SnackbarWidgets {
             ),
           ],
         ),
-        backgroundColor: AppColors.warning,
+        backgroundColor: warningColor,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 4),
       ),

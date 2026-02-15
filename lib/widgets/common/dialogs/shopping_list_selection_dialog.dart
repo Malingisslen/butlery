@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -125,7 +124,7 @@ class _ShoppingListSelectionDialogState
             Text(
               widget.subtitle,
               style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
@@ -206,7 +205,9 @@ class _ShoppingListSelectionDialogState
                           subtitle: Text(
                             '${list.totalItems} ${context.l10n.dialogItems} • ${list.type == ListType.collaborative ? context.l10n.dialogShared : context.l10n.dialogPrivate}',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
                             ),
                           ),
                           onTap: () => _handleSelectExisting(list.id),
@@ -219,15 +220,16 @@ class _ShoppingListSelectionDialogState
                 Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
                   decoration: BoxDecoration(
-                    color: AppColors.cardWhite,
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius:
                         BorderRadius.circular(AppDimensions.borderRadiusM),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.info_outline,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                       const SizedBox(width: AppDimensions.spacingM),
                       Expanded(

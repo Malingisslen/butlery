@@ -13,8 +13,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
 import 'package:butlery/views/messaging/group_detail_view.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Centralized chat action handler with clean interfaces
@@ -464,7 +464,7 @@ class ChatActionHandler {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.error,
+        backgroundColor: Theme.of(context).colorScheme.error,
       ),
     );
   }
@@ -473,7 +473,7 @@ class ChatActionHandler {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.success,
+        backgroundColor: context.butleryColors.success,
       ),
     );
   }

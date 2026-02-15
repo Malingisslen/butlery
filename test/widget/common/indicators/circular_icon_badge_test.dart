@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/indicators/circular_icon_badge.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 void main() {
@@ -12,6 +11,12 @@ void main() {
     setUpAll(() {
       TestWidgetsFlutterBinding.ensureInitialized();
     });
+
+    /// Helper to get the theme's ColorScheme from the widget tree
+    ColorScheme getColorScheme(WidgetTester tester) {
+      final context = tester.element(find.byType(CircularIconBadge));
+      return Theme.of(context).colorScheme;
+    }
 
     group('Default Constructor', () {
       testWidgets('should render with required icon',
@@ -28,7 +33,7 @@ void main() {
         expect(find.byIcon(Icons.star), findsOneWidget);
       });
 
-      testWidgets('should use default blue background color',
+      testWidgets('should use theme primary as default background',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
@@ -38,12 +43,13 @@ void main() {
           ),
         );
 
+        final cs = getColorScheme(tester);
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(AppColors.forestGreen));
+        expect(decoration.color, equals(cs.primary));
       });
 
-      testWidgets('should use default white icon color',
+      testWidgets('should use theme surface as default icon color',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
@@ -53,8 +59,9 @@ void main() {
           ),
         );
 
+        final cs = getColorScheme(tester);
         final icon = tester.widget<Icon>(find.byIcon(Icons.star));
-        expect(icon.color, equals(AppColors.cardWhite));
+        expect(icon.color, equals(cs.surfaceContainerHighest));
       });
 
       testWidgets('should use default icon size', (WidgetTester tester) async {
@@ -164,7 +171,7 @@ void main() {
         expect(find.byIcon(Icons.add), findsOneWidget);
       });
 
-      testWidgets('should use primary blue background',
+      testWidgets('should use theme primary background',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
@@ -174,12 +181,14 @@ void main() {
           ),
         );
 
+        final cs = getColorScheme(tester);
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(AppColors.forestGreen));
+        expect(decoration.color, equals(cs.primary));
       });
 
-      testWidgets('should use white icon color', (WidgetTester tester) async {
+      testWidgets('should use theme surface icon color',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -188,8 +197,9 @@ void main() {
           ),
         );
 
+        final cs = getColorScheme(tester);
         final icon = tester.widget<Icon>(find.byIcon(Icons.add));
-        expect(icon.color, equals(AppColors.cardWhite));
+        expect(icon.color, equals(cs.surfaceContainerHighest));
       });
 
       testWidgets('should accept custom size', (WidgetTester tester) async {
@@ -410,10 +420,6 @@ void main() {
         final icon = tester.widget<Icon>(find.byIcon(Icons.star));
         expect(icon.color, equals(Colors.black));
       });
-    });
-
-    tearDownAll(() {
-      // Clean up after all tests
     });
   });
 }

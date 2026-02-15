@@ -1,7 +1,6 @@
 // lib/widgets/common/profile/profile_menu.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -180,6 +179,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
   Widget _buildProfileHeader(BuildContext context) {
     final profileViewModel = ServiceLocator.get<ProfileViewModel>();
     final user = profileViewModel.currentUser;
+    final cs = Theme.of(context).colorScheme;
 
     return Stack(
       children: [
@@ -191,8 +191,8 @@ class _ProfileMenuState extends State<ProfileMenu> {
             AppDimensions.spacingL,
             AppDimensions.spacingL,
           ),
-          decoration: const BoxDecoration(
-            color: AppColors.forestGreenDark,
+          decoration: BoxDecoration(
+            color: cs.primary,
           ),
           child: Column(
             children: [
@@ -203,7 +203,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
               Text(
                 widget.displayName,
                 style: AppTextStyles.headlineSmall.copyWith(
-                  color: AppColors.cream,
+                  color: cs.surface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -213,7 +213,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
                 Text(
                   widget.email!,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.cream.withValues(alpha: 0.8),
+                    color: cs.surface.withValues(alpha: 0.8),
                   ),
                 ),
               ],
@@ -234,7 +234,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
               onPressed: () => Navigator.pop(context),
               icon: Icon(
                 Icons.close,
-                color: AppColors.cream.withValues(alpha: 0.8),
+                color: cs.surface.withValues(alpha: 0.8),
                 size: AppDimensions.iconSizeAction,
               ),
             ),
@@ -259,19 +259,20 @@ class _ProfileMenuState extends State<ProfileMenu> {
   }
 
   Widget _buildStatItem(String value, String label) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       children: [
         Text(
           value,
           style: AppTextStyles.headlineBold.copyWith(
-            color: AppColors.cream,
+            color: cs.surface,
           ),
         ),
         const SizedBox(height: AppDimensions.spacingXxs),
         Text(
           label.toUpperCase(),
           style: AppTextStyles.labelSmall.copyWith(
-            color: AppColors.cream.withValues(alpha: 0.7),
+            color: cs.surface.withValues(alpha: 0.7),
             letterSpacing: 1,
           ),
         ),
@@ -286,13 +287,14 @@ class _ProfileMenuState extends State<ProfileMenu> {
         widget.userImageUrl != null && widget.userImageUrl!.isNotEmpty;
     const avatarSize = 100.0; // Larger avatar for profile header
 
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: avatarSize,
       height: avatarSize,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         // UI Redesign: Square avatar with sharp corners
         borderRadius: BorderRadius.zero,
-        color: AppColors.cream,
+        color: cs.surface,
       ),
       child: hasImage
           ? ClipRRect(
@@ -310,22 +312,23 @@ class _ProfileMenuState extends State<ProfileMenu> {
     );
   }
 
-  /// Initials avatar - UI Redesign: Cream bg, green dark text, sharp corners
+  /// Initials avatar - UI Redesign: Surface bg, primary text, sharp corners
   Widget _buildInitialsAvatar(BuildContext context, double size) {
+    final cs = Theme.of(context).colorScheme;
     final initials = _getInitials(widget.displayName);
     return Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         // UI Redesign: Square with sharp corners
         borderRadius: BorderRadius.zero,
-        color: AppColors.cream,
+        color: cs.surface,
       ),
       child: Center(
         child: Text(
           initials,
           style: AppTextStyles.headerTitle.copyWith(
-            color: AppColors.forestGreenDark,
+            color: cs.primary,
             fontSize: size * 0.36,
             fontWeight: FontWeight.w600,
           ),
@@ -411,6 +414,13 @@ class _ProfileMenuState extends State<ProfileMenu> {
             subtitle: context.l10n.profileMyTagsSubtitle,
             icon: Icons.local_offer_outlined,
             onTap: widget.onViewPersonalTags,
+          ),
+          ProfileActions.buildMenuItem(
+            context,
+            title: 'Vanliga fragor',
+            subtitle: 'Hjalp och svar pa vanliga fragor',
+            icon: Icons.help_outline,
+            onTap: () => Navigator.pushNamed(context, Routes.faq),
           ),
         ],
       ),

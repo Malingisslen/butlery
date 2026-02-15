@@ -1,7 +1,6 @@
 // lib/views/unified_shopping/widgets/shopping_app_bar.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -21,6 +20,7 @@ class ShoppingAppBar {
     VoidCallback onShareExternally,
     VoidCallback onShowSyncStatus,
   ) {
+    final cs = Theme.of(context).colorScheme;
     final canShare = viewModel.hasItems;
 
     return [
@@ -35,10 +35,8 @@ class ShoppingAppBar {
             child: IconButton(
               icon: Icon(
                 AdaptiveIcons.add,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: AppDimensions.opacityDark),
+                color:
+                    cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
               ),
               onPressed: onCreateList,
               tooltip: context.l10n.shoppingNewList,
@@ -56,11 +54,8 @@ class ShoppingAppBar {
               icon: Icon(
                 AdaptiveIcons.peopleOutlined,
                 color: canShare
-                    ? Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: AppDimensions.opacityDark)
-                    : AppColors.textTertiary,
+                    ? cs.onSurface.withValues(alpha: AppDimensions.opacityDark)
+                    : cs.outlineVariant,
               ),
               onPressed: canShare ? onShowShareDialog : null,
               tooltip: canShare
@@ -80,11 +75,8 @@ class ShoppingAppBar {
               icon: Icon(
                 AdaptiveIcons.share,
                 color: canShare
-                    ? Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: AppDimensions.opacityDark)
-                    : AppColors.textTertiary,
+                    ? cs.onSurface.withValues(alpha: AppDimensions.opacityDark)
+                    : cs.outlineVariant,
               ),
               onPressed: canShare ? onShareExternally : null,
               tooltip: canShare
@@ -103,7 +95,7 @@ class ShoppingAppBar {
               child: IconButton(
                 icon: Icon(
                   _getSharingStatusIcon(viewModel),
-                  color: _getSharingStatusColor(viewModel),
+                  color: _getSharingStatusColor(context, viewModel),
                 ),
                 onPressed: () => onShowSyncStatus(),
                 tooltip: _getSharingStatusTooltip(context, viewModel),
@@ -125,6 +117,7 @@ class ShoppingAppBar {
     VoidCallback onShareExternally,
     VoidCallback onShowSyncStatus,
   ) {
+    final cs = Theme.of(context).colorScheme;
     final canShare = viewModel.hasItems;
 
     return [
@@ -132,7 +125,7 @@ class ShoppingAppBar {
       IconButton(
         icon: Icon(
           AdaptiveIcons.add,
-          color: AppColors.headerForeground,
+          color: cs.onPrimary,
         ),
         onPressed: onCreateList,
         tooltip: context.l10n.shoppingNewList,
@@ -143,7 +136,7 @@ class ShoppingAppBar {
         IconButton(
           icon: Icon(
             AdaptiveIcons.peopleOutlined,
-            color: AppColors.headerForeground,
+            color: cs.onPrimary,
           ),
           onPressed: onShowShareDialog,
           tooltip: context.l10n.shoppingShareWithFriends,
@@ -154,7 +147,7 @@ class ShoppingAppBar {
         IconButton(
           icon: Icon(
             AdaptiveIcons.share,
-            color: AppColors.headerForeground,
+            color: cs.onPrimary,
           ),
           onPressed: onShareExternally,
           tooltip: context.l10n.shoppingShareExternally,
@@ -164,7 +157,7 @@ class ShoppingAppBar {
       IconButton(
         icon: Icon(
           _getSharingStatusIcon(viewModel),
-          color: AppColors.headerForeground.withValues(alpha: 0.8),
+          color: cs.onPrimary.withValues(alpha: 0.8),
         ),
         onPressed: onShowSyncStatus,
         tooltip: _getSharingStatusTooltip(context, viewModel),
@@ -176,16 +169,18 @@ class ShoppingAppBar {
     BuildContext context,
     VoidCallback onAddItem,
   ) {
+    final cs = Theme.of(context).colorScheme;
+
     return Semantics(
       label: context.l10n.a11yAddItem,
       button: true,
       enabled: true,
       child: ElevatedButton.icon(
         onPressed: onAddItem,
-        style: ComponentThemes.extendedFabStyle,
+        style: ComponentThemes.extendedFabStyle(cs),
         icon: Icon(
           AdaptiveIcons.add,
-          color: AppColors.cardWhite,
+          color: cs.surfaceContainerHighest,
         ),
         label: Text(context.l10n.shoppingAddItem),
       ),
@@ -225,34 +220,36 @@ class ShoppingAppBar {
   }
 
   /// Get the appropriate color for sharing status based on list type and user permissions
-  static Color _getSharingStatusColor(UnifiedShoppingViewModel viewModel) {
+  static Color _getSharingStatusColor(
+      BuildContext context, UnifiedShoppingViewModel viewModel) {
+    final cs = Theme.of(context).colorScheme;
     final activeList = viewModel.activeList;
-    if (activeList == null) return AppColors.forestGreen;
+    if (activeList == null) return cs.primary;
 
     switch (activeList.type) {
       case ListType.personal:
-        return AppColors.forestGreen;
+        return cs.primary;
       case ListType.collaborative:
         final permissionService = ServiceLocator.get<PermissionService>();
         final currentUserId = permissionService.currentUser?.uid;
-        if (currentUserId == null) return AppColors.forestGreen;
+        if (currentUserId == null) return cs.primary;
 
         final userPermission = activeList.memberPermissions[currentUserId];
         switch (userPermission) {
           case SharedListPermission.view:
-            return AppColors.textMedium; // Subtle for view-only
+            return cs.onSurfaceVariant; // Subtle for view-only
           case SharedListPermission.edit:
-            return AppColors.accent; // Trusted access
+            return cs.secondary; // Trusted access
           case SharedListPermission.admin:
-            return AppColors.forestGreen; // Blue for admin
+            return cs.primary; // Blue for admin
           default:
             // If not in permissions map, check if owner (admin)
             return activeList.ownerId == currentUserId
-                ? AppColors.forestGreen
-                : AppColors.accent;
+                ? cs.primary
+                : cs.secondary;
         }
       case ListType.template:
-        return AppColors.textMedium;
+        return cs.onSurfaceVariant;
     }
   }
 

@@ -8,9 +8,9 @@ import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/widgets/common/layout_components.dart'; // ✅ UPPDATERAD IMPORT
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -327,7 +327,7 @@ class _UserProfileEditViewContentState
                 displayName: viewModel.displayName.isNotEmpty
                     ? viewModel.displayName
                     : context.l10n.profileNewUser,
-                onEditTap: _uploadAvatar, // Lägg till denna parameter
+                onEditTap: _uploadAvatar,
               ),
               // Upload progress overlay
               if (viewModel.isUploadingAvatar)
@@ -385,10 +385,11 @@ class _UserProfileEditViewContentState
           hint: context.l10n.profileDisplayNameHint,
           prefixIcon: const Icon(Icons.person),
           suffixIcon: viewModel.displayNameError != null
-              ? const Icon(Icons.error, color: AppColors.error)
+              ? Icon(Icons.error, color: Theme.of(context).colorScheme.error)
               : _displayNameController.text.isNotEmpty &&
                       viewModel.displayNameError == null
-                  ? const Icon(Icons.check_circle, color: AppColors.success)
+                  ? Icon(Icons.check_circle,
+                      color: context.butleryColors.success)
                   : null,
           validator: (value) => ValidationUtils.validateRequired(
             value,
@@ -411,7 +412,7 @@ class _UserProfileEditViewContentState
           Text(
             viewModel.displayNameError!,
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.error,
+              color: Theme.of(context).colorScheme.error,
             ),
           ),
         ],
@@ -484,7 +485,7 @@ class _UserProfileEditViewContentState
                 },
                 secondary: Icon(
                   isSelected ? Icons.check_circle : Icons.language,
-                  color: isSelected ? AppColors.success : null,
+                  color: isSelected ? context.butleryColors.success : null,
                 ),
               );
             }).toList(),
@@ -532,7 +533,7 @@ class _UserProfileEditViewContentState
                 },
                 secondary: Icon(
                   isSelected ? Icons.check_circle : mode.$3,
-                  color: isSelected ? AppColors.success : null,
+                  color: isSelected ? context.butleryColors.success : null,
                 ),
               );
             }).toList(),
@@ -583,18 +584,18 @@ class _UserProfileEditViewContentState
             width: double.infinity,
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             decoration: BoxDecoration(
-              color: AppColors.warning
+              color: context.butleryColors.warning
                   .withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               border: Border.all(
-                  color: AppColors.warning
+                  color: context.butleryColors.warning
                       .withValues(alpha: AppDimensions.opacityMediumLight)),
             ),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.warning_amber,
-                  color: AppColors.warning,
+                  color: context.butleryColors.warning,
                   size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingXs),

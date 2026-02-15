@@ -13,8 +13,6 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/menu_service.dart';
-import 'package:butlery/services/recommendation_service.dart';
-import 'package:butlery/models/recommendation.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 import 'package:butlery/models/messaging/message.dart';
@@ -214,104 +212,6 @@ class MockRecipeDiscoveryService extends Mock
     _trendingRecipes.clear();
     _searchResults.clear();
     _recentlySharedRecipes.clear();
-    _shouldThrowError = false;
-  }
-}
-
-class MockRecommendationService extends Mock implements RecommendationService {
-  // Configuration state
-  List<Recommendation> _recommendations = [];
-  bool _shouldThrowError = false;
-  final Map<String, bool> _feedbackResults = {};
-
-  /// Configure recommendations result
-  void setRecommendations(List<Recommendation> recommendations) {
-    _recommendations = recommendations;
-  }
-
-  /// Configure mock to throw error on next operation
-  void setShouldThrowError(bool shouldThrow) {
-    _shouldThrowError = shouldThrow;
-  }
-
-  /// Configure feedback operation results
-  void setFeedbackResult(String recommendationId, bool success) {
-    _feedbackResults[recommendationId] = success;
-  }
-
-  @override
-  Future<List<Recommendation>> generateRecommendations({
-    required String userId,
-    int limit = 10,
-    List<RecommendationType>? types,
-  }) async {
-    if (_shouldThrowError) {
-      throw Exception('Mock configured to throw error');
-    }
-
-    var result = List<Recommendation>.from(_recommendations);
-    if (limit > 0 && result.length > limit) {
-      result = result.take(limit).toList();
-    }
-    return result;
-  }
-
-  @override
-  Future<void> provideFeedback(
-      String recommendationId, FeedbackType feedbackType) async {
-    if (_shouldThrowError) {
-      throw Exception('Mock configured to throw error');
-    }
-
-    final success = _feedbackResults[recommendationId] ?? true;
-    if (!success) {
-      throw Exception('Feedback failed for recommendation: $recommendationId');
-    }
-
-    // Update the local recommendation state if it exists
-    final recommendation = _recommendations.cast<Recommendation?>().firstWhere(
-          (rec) => rec?.id == recommendationId,
-          orElse: () => null,
-        );
-
-    if (recommendation != null) {
-      switch (feedbackType) {
-        case FeedbackType.like:
-          recommendation.isLiked = true;
-          recommendation.isDismissed = false;
-          break;
-        case FeedbackType.dismiss:
-        case FeedbackType.notInterested:
-          recommendation.isDismissed = true;
-          recommendation.isLiked = false;
-          break;
-        case FeedbackType.save:
-          // Save doesn't change dismissed/liked state in this mock
-          break;
-      }
-    }
-  }
-
-  @override
-  Future<void> undoDismissal(String recommendationId) async {
-    if (_shouldThrowError) {
-      throw Exception('Mock configured to throw error');
-    }
-
-    final recommendation = _recommendations.cast<Recommendation?>().firstWhere(
-          (rec) => rec?.id == recommendationId,
-          orElse: () => null,
-        );
-
-    if (recommendation != null) {
-      recommendation.isDismissed = false;
-    }
-  }
-
-  /// Reset mock state
-  void resetState() {
-    _recommendations.clear();
-    _feedbackResults.clear();
     _shouldThrowError = false;
   }
 }

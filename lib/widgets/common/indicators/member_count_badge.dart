@@ -1,7 +1,6 @@
 // lib/widgets/common/indicators/member_count_badge.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -29,7 +28,7 @@ class MemberCountBadge extends StatelessWidget {
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         shape: BoxShape.circle,
         border: Border.all(
-          color: AppColors.divider,
+          color: Theme.of(context).colorScheme.outlineVariant,
           width: AppDimensions.borderWidthStandard,
         ),
       ),

@@ -1,3 +1,4 @@
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:uuid/uuid.dart';
@@ -218,10 +219,11 @@ class SharedShoppingList
     return timeago.format(sharedAt, locale: 'sv');
   }
 
-  String get sharingContextText => 'Delad av $sharedByDisplayName';
+  String get sharingContextText =>
+      AppLocale.current.shoppingListSharedBy(sharedByDisplayName);
 
-  String get attributionText =>
-      'Ursprungligen delad av $originalOwnerDisplayName';
+  String get attributionText => AppLocale.current
+      .shoppingListOriginallySharedBy(originalOwnerDisplayName);
 
   SharedShoppingList copyWith({
     String? id,

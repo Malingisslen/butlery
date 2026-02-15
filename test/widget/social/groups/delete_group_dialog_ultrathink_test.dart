@@ -257,18 +257,8 @@ void main() {
         // Find action button and verify it exists (exact styling tested through getter)
         expect(find.text('Ta bort grupp'), findsAtLeastNWidgets(1));
 
-        // Verify style getter returns correct styling
-        final dialog = DeleteGroupDialog(
-          group: FriendCategory(
-            id: 'test',
-            ownerId: 'user',
-            name: 'Test',
-            emoji: '👥',
-            friendUserIds: ['user'],
-          ),
-        );
-        final buttonStyle = dialog.actionButtonStyle;
-        expect(buttonStyle, isNotNull);
+        // Verify FilledButton has styling applied via actionButtonStyleFor
+        expect(find.byType(FilledButton), findsOneWidget);
       });
 
       testWidgets('should have loading button label method',

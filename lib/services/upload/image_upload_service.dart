@@ -17,6 +17,7 @@ import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Result of an upload operation
 class UploadResult {
@@ -281,8 +282,8 @@ class ImageUploadService extends BaseService {
     // Send notification
     _sendNotificationEvent(UploadNotificationEvent(
       trigger: UploadNotificationTrigger.retrySuccess,
-      title: 'Uppladdning slutförd',
-      message: 'Bilden har laddats upp framgångsrikt',
+      title: AppLocale.current.uploadNotificationComplete,
+      message: AppLocale.current.uploadNotificationCompleteBody,
       priority: NotificationPriority.low,
       data: {'filePath': filePath, 'url': url},
       timestamp: DateTime.now(),
@@ -336,8 +337,8 @@ class ImageUploadService extends BaseService {
       // Send failure notification
       _sendNotificationEvent(UploadNotificationEvent(
         trigger: UploadNotificationTrigger.majorFailure,
-        title: 'Uppladdning misslyckades',
-        message: 'Kunde inte ladda upp bilden efter flera försök',
+        title: AppLocale.current.uploadNotificationFailed,
+        message: AppLocale.current.uploadNotificationFailedBody,
         priority: NotificationPriority.high,
         data: {'filePath': filePath, 'error': error.toString()},
         timestamp: DateTime.now(),

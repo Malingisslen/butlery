@@ -69,6 +69,7 @@ import 'package:butlery/core/events/group_events.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Comprehensive group creation ViewModel providing advanced social group creation through service integration.
 /// Manages group creation form state enabling social group creation with friend selection, form validation,
@@ -249,10 +250,10 @@ class CreateGroupViewModel extends ChangeNotifier
   /// **Private Method**: Used internally during name updates for real-time validation.
   void _validateName() {
     if (_name.trim().isEmpty) {
-      _nameError = 'Gruppnamn krävs';
+      _nameError = AppLocale.current.errorGroupNameRequired;
     } else if (_friendsService.categories.getCategoryByName(_name.trim()) !=
         null) {
-      _nameError = 'Det här gruppnamnet finns redan';
+      _nameError = AppLocale.current.errorGroupNameExists;
     } else {
       _nameError = null;
     }
@@ -326,7 +327,8 @@ class CreateGroupViewModel extends ChangeNotifier
         );
 
         if (categoryId == null) {
-          throw Exception(_friendsService.error ?? 'Kunde inte skapa grupp');
+          throw Exception(_friendsService.error ??
+              AppLocale.current.errorCouldNotCreateGroup);
         }
 
         // Step 2: Verify created group and retrieve group data
@@ -336,7 +338,7 @@ class CreateGroupViewModel extends ChangeNotifier
             .firstOrNull;
 
         if (createdGroup == null) {
-          throw Exception('Kunde inte hitta den skapade gruppen');
+          throw Exception(AppLocale.current.errorGroupNotFound);
         }
 
         // Step 3: Send email invitations to selected friends
@@ -358,7 +360,7 @@ class CreateGroupViewModel extends ChangeNotifier
 
         // Broadcast group creation event for system-wide coordination
         GroupEventBus.groupCreated();
-      }, errorPrefix: 'Kunde inte skapa grupp');
+      }, errorPrefix: AppLocale.current.errorCouldNotCreate('grupp'));
 
       return true;
     } catch (e) {

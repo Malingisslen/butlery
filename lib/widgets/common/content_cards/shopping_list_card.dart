@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 
@@ -15,7 +15,6 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 /// - Shopping list sharing status and collaborative indicators
 /// - Shopping list-specific styling and theming
 /// - Shopping list preview with item list
-/// ❌ DOES NOT CONTAIN: Recipe cards, friend cards, menu cards, generic content logic
 class ShoppingListCard extends StatelessWidget {
   final UnifiedShoppingList shoppingList;
   final VoidCallback? onTap;
@@ -42,13 +41,15 @@ class ShoppingListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return RepaintBoundary(
       child: Container(
         margin: margin ?? _getDefaultMargin(),
         child: Material(
           elevation: AppDimensions.elevationMedium,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          color: AppColors.backgroundLight,
+          color: cs.surface,
           child: Semantics(
             label: context.l10n.a11yShoppingList(shoppingList.name),
             button: true,
@@ -144,13 +145,14 @@ class ShoppingListCard extends StatelessWidget {
   }
 
   Widget _buildListHeader(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final title = _getListTitle();
     return Row(
       children: [
-        const Icon(
+        Icon(
           Icons.shopping_cart,
           size: AppDimensions.iconSizeM,
-          color: AppColors.textMedium,
+          color: cs.onSurfaceVariant,
         ),
         const SizedBox(width: AppDimensions.spacingS),
         Expanded(
@@ -188,27 +190,28 @@ class ShoppingListCard extends StatelessWidget {
     }
 
     return Text(
-      metadata.join(' • '),
+      metadata.join(' \u2022 '),
       style: AppTextStyles.metadataEmphasized,
     );
   }
 
   Widget _buildListPreview(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final items = _getListItems();
 
     if (items.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(AppDimensions.spacingM),
         decoration: BoxDecoration(
-          color: AppColors.backgroundTint,
+          color: cs.surfaceContainerLow,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         ),
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.info_outline,
               size: AppDimensions.iconSizeS,
-              color: AppColors.textMedium,
+              color: cs.onSurfaceVariant,
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
@@ -238,8 +241,8 @@ class ShoppingListCard extends StatelessWidget {
                         : Icons.radio_button_unchecked,
                     size: AppDimensions.iconSizeS,
                     color: _isItemCompleted(item)
-                        ? AppColors.success
-                        : AppColors.textMedium,
+                        ? context.butleryColors.success
+                        : cs.onSurfaceVariant,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
                   Expanded(
@@ -250,8 +253,8 @@ class ShoppingListCard extends StatelessWidget {
                             ? TextDecoration.lineThrough
                             : null,
                         color: _isItemCompleted(item)
-                            ? AppColors.textMedium
-                            : AppColors.textDark,
+                            ? cs.onSurfaceVariant
+                            : cs.onSurface,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -273,6 +276,7 @@ class ShoppingListCard extends StatelessWidget {
   }
 
   Widget _buildSharingStatus(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isShared = _isListShared();
     final memberCount = _getListMemberCount();
 
@@ -286,21 +290,19 @@ class ShoppingListCard extends StatelessWidget {
         vertical: AppDimensions.spacingS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.forestGreen
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
           width: AppDimensions.borderWidthThin,
         ),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.people,
             size: AppDimensions.iconSizeS,
-            color: AppColors.forestGreen,
+            color: cs.primary,
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Text(
@@ -315,6 +317,7 @@ class ShoppingListCard extends StatelessWidget {
   }
 
   Widget _buildSharingIndicator(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isShared = _isListShared();
 
     if (!isShared) {
@@ -323,14 +326,14 @@ class ShoppingListCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingXs),
-      decoration: const BoxDecoration(
-        color: AppColors.forestGreen,
+      decoration: BoxDecoration(
+        color: cs.primary,
         shape: BoxShape.circle,
       ),
-      child: const Icon(
+      child: Icon(
         Icons.people,
         size: AppDimensions.iconSizeS,
-        color: AppColors.cardWhite,
+        color: cs.surfaceContainerHighest,
       ),
     );
   }
@@ -345,6 +348,7 @@ class ShoppingListCard extends StatelessWidget {
 
     final completionPercentage = (completedItems / totalItems);
     final isComplete = completionPercentage == 1.0;
+    final bc = context.butleryColors;
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -353,10 +357,8 @@ class ShoppingListCard extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: isComplete
-            ? AppColors.success
-                .withValues(alpha: AppDimensions.opacityLightSubtle)
-            : AppColors.warning
-                .withValues(alpha: AppDimensions.opacityLightSubtle),
+            ? bc.success.withValues(alpha: AppDimensions.opacityLightSubtle)
+            : bc.warning.withValues(alpha: AppDimensions.opacityLightSubtle),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Row(
@@ -365,7 +367,7 @@ class ShoppingListCard extends StatelessWidget {
           Icon(
             isComplete ? Icons.check_circle : Icons.hourglass_empty,
             size: AppDimensions.iconSizeS,
-            color: isComplete ? AppColors.success : AppColors.warning,
+            color: isComplete ? bc.success : bc.warning,
           ),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
@@ -373,7 +375,7 @@ class ShoppingListCard extends StatelessWidget {
                 ? context.l10n.shoppingCardComplete
                 : '${(completionPercentage * 100).round()}%',
             style: AppTextStyles.labelSmall.copyWith(
-              color: isComplete ? AppColors.success : AppColors.warning,
+              color: isComplete ? bc.success : bc.warning,
             ),
           ),
         ],
@@ -381,8 +383,7 @@ class ShoppingListCard extends StatelessWidget {
     );
   }
 
-  // Helper methods to extract data from the shopping list object
-  // These will need to be updated when the actual shopping list model is available
+  // Helper methods
 
   String _getListTitle() {
     return shoppingList.name;
@@ -466,6 +467,6 @@ class ShoppingListCard extends StatelessWidget {
 /// Shopping list card display styles
 enum ShoppingListCardStyle {
   detailed, // Full visning med alla detaljer
-  compact, // Kompakt visning för listor
-  grid, // För grid-layout
+  compact, // Kompakt visning for listor
+  grid, // For grid-layout
 }

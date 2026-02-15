@@ -1,3 +1,4 @@
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
 import 'package:butlery/services/tagging/config/dietary_config.dart';
 
@@ -39,16 +40,16 @@ class ReservedTags {
   static String? validateTagName(String tagName) {
     final trimmed = tagName.trim();
     if (trimmed.isEmpty) {
-      return 'Taggnamn kan inte vara tomt';
+      return AppLocale.current.tagValidationEmpty;
     }
     if (trimmed.length < 2) {
-      return 'Taggnamn måste vara minst 2 tecken';
+      return AppLocale.current.tagValidationTooShort;
     }
     if (trimmed.length > 50) {
-      return 'Taggnamn får vara max 50 tecken';
+      return AppLocale.current.tagValidationTooLong;
     }
     if (isReserved(trimmed)) {
-      return 'Detta namn är reserverat för systemtaggar';
+      return AppLocale.current.tagValidationReserved;
     }
     return null;
   }

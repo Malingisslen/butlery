@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/animated_pressable.dart';
 
@@ -220,11 +219,12 @@ class StyledButton extends StatelessWidget {
   }
 
   Widget _buildDestructiveIconButton(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return IconButton(
       onPressed: onPressed,
       style: IconButton.styleFrom(
-        backgroundColor: AppColors.errorContainer,
-        foregroundColor: AppColors.onErrorContainer,
+        backgroundColor: cs.errorContainer,
+        foregroundColor: cs.onErrorContainer,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         ),
@@ -258,9 +258,10 @@ class StyledButton extends StatelessWidget {
   }
 
   ButtonStyle _getDestructiveButtonStyle(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return ElevatedButton.styleFrom(
-      backgroundColor: AppColors.errorContainer,
-      foregroundColor: AppColors.onErrorContainer,
+      backgroundColor: cs.errorContainer,
+      foregroundColor: cs.onErrorContainer,
       padding: padding ??
           const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingMd,

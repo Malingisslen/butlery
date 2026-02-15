@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
@@ -24,84 +24,91 @@ class UserAvatarWidgets {
     bool showStatus = false,
     bool isOnline = false,
   }) {
-    final avatarSize = _getAvatarSize(size);
-    // UI Redesign: Avatar uses rust color scheme
-    final effectiveBackgroundColor = backgroundColor ?? AppColors.rust;
-    final effectiveTextColor = textColor ?? AppColors.cardWhite;
+    return Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        final bc = context.butleryColors;
+        final avatarSize = _getAvatarSize(size);
+        // UI Redesign: Avatar uses rust (secondary) color scheme
+        final effectiveBackgroundColor = backgroundColor ?? cs.secondary;
+        final effectiveTextColor = textColor ?? cs.surfaceContainerHighest;
 
-    Widget avatar = Container(
-      width: avatarSize,
-      height: avatarSize,
-      decoration: BoxDecoration(
-        color: effectiveBackgroundColor,
-        border: borderWidth != null && borderColor != null
-            ? Border.all(width: borderWidth, color: borderColor)
-            : null,
-      ),
-      child: (imageUrl != null && imageUrl.isNotEmpty)
-          ? ClipRect(
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                width: avatarSize,
-                height: avatarSize,
-                fit: BoxFit.cover,
-                alignment: Alignment.center,
-                placeholder: (context, url) => _buildInitialsAvatar(displayName,
-                    avatarSize, effectiveBackgroundColor, effectiveTextColor),
-                errorWidget: (context, url, error) => _buildInitialsAvatar(
-                    displayName,
-                    avatarSize,
-                    effectiveBackgroundColor,
-                    effectiveTextColor),
-                fadeInDuration: AppDimensions.animationDurationCommon,
-                fadeOutDuration: AppDimensions.animationDurationCommon,
-              ),
-            )
-          : _buildInitialsAvatar(displayName, avatarSize,
-              effectiveBackgroundColor, effectiveTextColor),
-    );
-
-    // Status indicator
-    if (showStatus) {
-      avatar = Stack(
-        children: [
-          avatar,
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Container(
-              width: avatarSize * 0.25,
-              height: avatarSize * 0.25,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isOnline ? AppColors.success : AppColors.textTertiary,
-                border: Border.all(
-                  color: AppColors.cardWhite,
-                  width: AppDimensions.borderWidthThin,
-                ),
-              ),
-            ),
+        Widget avatarWidget = Container(
+          width: avatarSize,
+          height: avatarSize,
+          decoration: BoxDecoration(
+            color: effectiveBackgroundColor,
+            border: borderWidth != null && borderColor != null
+                ? Border.all(width: borderWidth, color: borderColor)
+                : null,
           ),
-        ],
-      );
-    }
+          child: (imageUrl != null && imageUrl.isNotEmpty)
+              ? ClipRect(
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    width: avatarSize,
+                    height: avatarSize,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                    placeholder: (_, url) => _buildInitialsAvatar(
+                        displayName,
+                        avatarSize,
+                        effectiveBackgroundColor,
+                        effectiveTextColor),
+                    errorWidget: (_, url, error) => _buildInitialsAvatar(
+                        displayName,
+                        avatarSize,
+                        effectiveBackgroundColor,
+                        effectiveTextColor),
+                    fadeInDuration: AppDimensions.animationDurationCommon,
+                    fadeOutDuration: AppDimensions.animationDurationCommon,
+                  ),
+                )
+              : _buildInitialsAvatar(displayName, avatarSize,
+                  effectiveBackgroundColor, effectiveTextColor),
+        );
 
-    return onTap != null
-        ? Builder(
-            builder: (context) => Material(
-              color: AppColors.transparent,
-              child: Semantics(
-                label: context.l10n.a11yProfileImage(displayName),
-                button: true,
-                child: InkWell(
-                  onTap: onTap,
-                  borderRadius: BorderRadius.zero,
-                  child: avatar,
+        // Status indicator
+        if (showStatus) {
+          avatarWidget = Stack(
+            children: [
+              avatarWidget,
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  width: avatarSize * 0.25,
+                  height: avatarSize * 0.25,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isOnline ? bc.success : cs.outline,
+                    border: Border.all(
+                      color: cs.surfaceContainerHighest,
+                      width: AppDimensions.borderWidthThin,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          )
-        : avatar;
+            ],
+          );
+        }
+
+        return onTap != null
+            ? Material(
+                color: Colors.transparent,
+                child: Semantics(
+                  label: context.l10n.a11yProfileImage(displayName),
+                  button: true,
+                  child: InkWell(
+                    onTap: onTap,
+                    borderRadius: BorderRadius.zero,
+                    child: avatarWidget,
+                  ),
+                ),
+              )
+            : avatarWidget;
+      },
+    );
   }
 
   /// Editable avatar
@@ -113,52 +120,55 @@ class UserAvatarWidgets {
     Color? borderColor,
     double? borderWidth,
   }) {
-    return Stack(
-      children: [
-        avatar(
-          imageUrl: imageUrl,
-          displayName: displayName,
-          size: size,
-          borderColor: borderColor ?? AppColors.forestGreen,
-          borderWidth: borderWidth ?? AppDimensions.spacingXs,
-        ),
-        Positioned(
-          right: 0,
-          bottom: 0,
-          child: Builder(
-            builder: (context) => Material(
-              color: AppColors.forestGreen,
-              shape: const CircleBorder(),
-              child: Semantics(
-                label: context.l10n.a11yChangeProfileImage,
-                button: true,
-                child: InkWell(
-                  onTap: onEditTap,
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusL),
-                  child: Container(
-                    width: AppDimensions.iconSizeXl,
-                    height: AppDimensions.iconSizeXl,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.forestGreen,
-                      border: Border.all(
-                        color: AppColors.cardWhite,
-                        width: AppDimensions.borderWidthThick,
+    return Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Stack(
+          children: [
+            avatar(
+              imageUrl: imageUrl,
+              displayName: displayName,
+              size: size,
+              borderColor: borderColor ?? cs.primary,
+              borderWidth: borderWidth ?? AppDimensions.spacingXs,
+            ),
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Material(
+                color: cs.primary,
+                shape: const CircleBorder(),
+                child: Semantics(
+                  label: context.l10n.a11yChangeProfileImage,
+                  button: true,
+                  child: InkWell(
+                    onTap: onEditTap,
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusL),
+                    child: Container(
+                      width: AppDimensions.iconSizeXl,
+                      height: AppDimensions.iconSizeXl,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: cs.primary,
+                        border: Border.all(
+                          color: cs.surfaceContainerHighest,
+                          width: AppDimensions.borderWidthThick,
+                        ),
                       ),
-                    ),
-                    child: const Icon(
-                      Icons.edit,
-                      size: AppDimensions.iconSizeM,
-                      color: AppColors.cardWhite,
+                      child: Icon(
+                        Icons.edit,
+                        size: AppDimensions.iconSizeM,
+                        color: cs.surfaceContainerHighest,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
@@ -167,16 +177,23 @@ class UserAvatarWidgets {
     required bool isOnline,
     double? size,
   }) {
-    final indicatorSize = size ?? AppDimensions.iconSizeM;
-    return Container(
-      width: indicatorSize,
-      height: indicatorSize,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: isOnline ? AppColors.success : AppColors.textTertiary,
-        border: Border.all(
-            color: AppColors.cardWhite, width: AppDimensions.borderWidthThin),
-      ),
+    return Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        final bc = context.butleryColors;
+        final indicatorSize = size ?? AppDimensions.iconSizeM;
+        return Container(
+          width: indicatorSize,
+          height: indicatorSize,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isOnline ? bc.success : cs.outline,
+            border: Border.all(
+                color: cs.surfaceContainerHighest,
+                width: AppDimensions.borderWidthThin),
+          ),
+        );
+      },
     );
   }
 

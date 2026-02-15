@@ -6,6 +6,7 @@ import 'package:butlery/services/unified/operations/social_menu_operations.dart'
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
 import 'package:butlery/viewmodels/menu/menu_storage.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Focused module for menu social features
 /// This module handles ONLY social integration:
@@ -216,15 +217,15 @@ class MenuSocialManager {
     required String menuName,
   }) {
     if (menu.isEmpty) {
-      throw ArgumentError('Ingen meny att dela');
+      throw ArgumentError(AppLocale.current.errorNoMenuToShare);
     }
 
     if (menuName.trim().isEmpty) {
-      throw ArgumentError('Ange ett namn för menyn');
+      throw ArgumentError(AppLocale.current.errorFillRequiredFields);
     }
 
     if (friendUserIds.isEmpty) {
-      throw ArgumentError('Välj minst en vän att dela med');
+      throw ArgumentError(AppLocale.current.errorSelectAtLeastOneFriend);
     }
 
     return true;

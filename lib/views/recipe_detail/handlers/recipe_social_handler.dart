@@ -6,7 +6,7 @@ import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
@@ -67,7 +67,7 @@ class RecipeSocialHandler {
     if (currentUserId == null) {
       showSnackBar(
         context.l10n.socialMustBeLoggedInToComment,
-        backgroundColor: AppColors.error,
+        backgroundColor: Theme.of(context).colorScheme.error,
       );
       return;
     }
@@ -79,7 +79,7 @@ class RecipeSocialHandler {
         if (context.mounted) {
           showSnackBar(
             context.l10n.socialCouldNotFetchUserData,
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           );
         }
         return;
@@ -90,11 +90,11 @@ class RecipeSocialHandler {
       if (!context.mounted) return;
 
       showSnackBar(context.l10n.socialCommentPosted,
-          backgroundColor: AppColors.success);
+          backgroundColor: context.butleryColors.success);
     } catch (e) {
       if (!context.mounted) return;
       showSnackBar(context.l10n.socialCouldNotPostComment,
-          backgroundColor: AppColors.error);
+          backgroundColor: Theme.of(context).colorScheme.error);
     }
   }
 
@@ -124,11 +124,11 @@ class RecipeSocialHandler {
       );
       if (!context.mounted) return;
       showSnackBar(context.l10n.socialUserProfileCreated,
-          backgroundColor: AppColors.success);
+          backgroundColor: context.butleryColors.success);
     } catch (e) {
       if (!context.mounted) return;
       showSnackBar(context.l10n.socialCouldNotCreateProfile,
-          backgroundColor: AppColors.error);
+          backgroundColor: Theme.of(context).colorScheme.error);
     }
   }
 }

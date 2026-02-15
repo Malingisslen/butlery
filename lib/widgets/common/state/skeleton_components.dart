@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Skeleton loading components.
@@ -71,6 +70,7 @@ class _SkeletonBoxState extends State<_SkeletonBox>
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     // Show static skeleton when reduced motion is enabled
     if (_reduceMotion) {
       return Container(
@@ -80,7 +80,7 @@ class _SkeletonBoxState extends State<_SkeletonBox>
         decoration: BoxDecoration(
           borderRadius: widget.borderRadius ??
               BorderRadius.circular(AppDimensions.borderRadiusS),
-          color: AppColors.neutralLight,
+          color: cs.surfaceContainerHighest,
         ),
       );
     }
@@ -95,10 +95,10 @@ class _SkeletonBoxState extends State<_SkeletonBox>
         gradient: LinearGradient(
           begin: AlignmentDirectional.centerStart,
           end: AlignmentDirectional.centerEnd,
-          colors: const [
-            AppColors.neutralMedium,
-            AppColors.neutralLight,
-            AppColors.neutralMedium
+          colors: [
+            cs.onSurfaceVariant,
+            cs.surfaceContainerHighest,
+            cs.onSurfaceVariant
           ],
           stops: const [0.0, 0.5, 1.0],
           transform: _GradientRotation(_shimmerController),

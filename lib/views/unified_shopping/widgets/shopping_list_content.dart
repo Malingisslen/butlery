@@ -3,9 +3,9 @@
 // UI Redesign: Color-coded category headers with full-width colored bars
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -15,7 +15,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 /// Main content area for shopping list.
 ///
 /// **UI Redesign:** Category headers now use full-width colored bars
-/// with category-specific colors from AppColors.category* constants.
+/// with category-specific colors from ButleryColors.category* constants.
 class ShoppingListContent {
   static Widget build(
     BuildContext context,
@@ -162,9 +162,11 @@ class ShoppingListContent {
     Function(UnifiedShoppingItem) onEditItem,
     Function(UnifiedShoppingItem) onDeleteItem,
   ) {
+    final cs = Theme.of(context).colorScheme;
     // UI Redesign: Get category-specific color
-    final categoryColor =
-        isCompleted ? AppColors.textMedium : _getCategoryColor(category);
+    final categoryColor = isCompleted
+        ? cs.onSurfaceVariant
+        : _getCategoryColor(context, category);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,7 +189,7 @@ class ShoppingListContent {
                 child: Text(
                   category.toUpperCase(),
                   style: AppTextStyles.labelMedium.copyWith(
-                    color: AppColors.cardWhite,
+                    color: Colors.white,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 2,
                   ),
@@ -202,14 +204,14 @@ class ShoppingListContent {
                   vertical: AppDimensions.spacingXxs,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.cardWhite.withValues(alpha: 0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: Text(
                   '${items.length}',
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: AppColors.cardWhite,
+                    color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -233,39 +235,42 @@ class ShoppingListContent {
     );
   }
 
-  /// Get category-specific color from AppColors.
-  static Color _getCategoryColor(String category) {
+  /// Get category-specific color from ButleryColors.
+  static Color _getCategoryColor(BuildContext context, String category) {
+    final bc = context.butleryColors;
     switch (category.toLowerCase()) {
       case 'kött & fisk':
       case 'kött':
       case 'fisk':
-        return AppColors.categoryMeatFish;
+        return bc.categoryMeatFish;
       case 'mejeri':
-        return AppColors.categoryDairy;
+        return bc.categoryDairy;
       case 'frukt & grönt':
       case 'grönsaker':
       case 'frukt':
-        return AppColors.categoryVegetables;
+        return bc.categoryVegetables;
       case 'bröd':
       case 'bröd & spannmål':
-        return AppColors.categoryBreadGrains;
+        return bc.categoryBreadGrains;
       case 'fryst':
-        return AppColors.categoryFrozen;
+        return bc.categoryFrozen;
       case 'skafferi':
-        return AppColors.categoryDryGoods;
+        return bc.categoryDryGoods;
       default:
-        return AppColors.categoryOther;
+        return bc.categoryOther;
     }
   }
 
   static Widget _buildCompletedItemsHeader(
       BuildContext context, UnifiedShoppingViewModel viewModel) {
+    final cs = Theme.of(context).colorScheme;
+
     return Row(
       children: [
-        const Icon(
+        Icon(
           Icons.check_circle,
           size: AppDimensions.iconSizeM,
-          color: AppColors.forestGreen,
+          color: cs.primary,
         ),
         const SizedBox(width: AppDimensions.spacingSm),
         Expanded(
@@ -275,14 +280,14 @@ class ShoppingListContent {
               Text(
                 context.l10n.shoppingPurchased,
                 style: AppTextStyles.bodyLargeBold.copyWith(
-                  color: AppColors.forestGreen,
+                  color: cs.primary,
                 ),
               ),
               Text(
                 context.l10n.shoppingBoughtOfTotal(
                     viewModel.boughtItems, viewModel.totalItems),
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.forestGreen
+                  color: cs.primary
                       .withValues(alpha: AppDimensions.opacityVeryDark),
                 ),
               ),

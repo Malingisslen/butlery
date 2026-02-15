@@ -3,6 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -411,12 +412,16 @@ void main() {
       });
 
       test('should provide status color', () {
-        final statusColor = viewModel.getStatusColor();
+        const cs = ColorScheme.light();
+        const butlery = ButleryColors.light;
+        final statusColor = viewModel.getStatusColor(cs, butlery);
         expect(statusColor, isA<Color>());
       });
 
       test('should provide progress color', () {
-        final progressColor = viewModel.getProgressColor();
+        const cs = ColorScheme.light();
+        const butlery = ButleryColors.light;
+        final progressColor = viewModel.getProgressColor(cs, butlery);
         expect(progressColor, isA<Color>());
       });
 

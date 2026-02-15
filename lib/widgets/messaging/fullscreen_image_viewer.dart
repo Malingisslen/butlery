@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -40,11 +39,12 @@ class FullscreenImageViewer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AppColors.textDark,
+      backgroundColor: cs.onSurface,
       appBar: AppBar(
-        backgroundColor: AppColors.textDark,
-        foregroundColor: AppColors.cardWhite,
+        backgroundColor: cs.onSurface,
+        foregroundColor: cs.surfaceContainerHighest,
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.of(context).pop(),
@@ -63,26 +63,26 @@ class FullscreenImageViewer extends StatelessWidget {
                 child: CachedNetworkImage(
                   imageUrl: imageUrl,
                   fit: BoxFit.contain,
-                  placeholder: (context, url) => const Center(
+                  placeholder: (context, url) => Center(
                     child: CircularProgressIndicator(
-                      color: AppColors.cardWhite,
+                      color: cs.surfaceContainerHighest,
                     ),
                   ),
                   errorWidget: (context, url, error) => Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.broken_image,
                           size: 64,
-                          color: AppColors.textLight,
+                          color: cs.outline,
                         ),
                         const SizedBox(height: AppDimensions.spacingM),
                         Text(
                           context.l10n.messagingImageLoadError,
                           style:
                               Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppColors.textLight,
+                                    color: cs.outline,
                                   ),
                         ),
                       ],
@@ -98,14 +98,14 @@ class FullscreenImageViewer extends StatelessWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingL),
-              color: AppColors.textDark
-                  .withValues(alpha: AppDimensions.opacityVeryDark),
+              color:
+                  cs.onSurface.withValues(alpha: AppDimensions.opacityVeryDark),
               child: SafeArea(
                 top: false,
                 child: Text(
                   caption!,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.cardWhite,
+                    color: cs.surfaceContainerHighest,
                   ),
                   textAlign: TextAlign.center,
                 ),

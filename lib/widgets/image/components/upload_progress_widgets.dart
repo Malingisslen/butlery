@@ -3,9 +3,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 
 /// Provides upload progress UI components for image editing.
@@ -28,55 +28,57 @@ class UploadProgressWidgets {
             (managementSummary['canBulkCancel'] as bool? ?? false) ||
             (managementSummary['hasRetryableFailures'] as bool? ?? false));
 
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
-      decoration: BoxDecoration(
-        color: AppColors.forestGreen
-            .withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(
-          color: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+    return Builder(builder: (context) {
+      final cs = Theme.of(context).colorScheme;
+      return Container(
+        padding: const EdgeInsets.all(AppDimensions.paddingM),
+        decoration: BoxDecoration(
+          color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          border: Border.all(
+            color:
+                cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+          ),
         ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  _buildStatusIcon(managementSummary),
-                  const SizedBox(width: AppDimensions.spacingM),
-                  Expanded(
-                    child: Text(
-                      uploadQueueStatus,
-                      style: AppTextStyles.metadataEmphasized.copyWith(
-                        color: AppColors.forestGreen,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _buildStatusIcon(managementSummary),
+                    const SizedBox(width: AppDimensions.spacingM),
+                    Expanded(
+                      child: Text(
+                        uploadQueueStatus,
+                        style: AppTextStyles.metadataEmphasized.copyWith(
+                          color: cs.primary,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
+                ),
+                if (managementSummary != null) ...[
+                  const SizedBox(height: AppDimensions.spacingXs),
+                  _buildProgressDetails(managementSummary),
                 ],
-              ),
-              if (managementSummary != null) ...[
-                const SizedBox(height: AppDimensions.spacingXs),
-                _buildProgressDetails(managementSummary),
               ],
-            ],
-          ),
-          if (showBulkControls) ...[
-            const SizedBox(height: AppDimensions.spacingM),
-            _buildBulkManagementControls(
-              summary: managementSummary,
-              onRetryAllFailed: onRetryAllFailed,
-              onCancelAllActive: onCancelAllActive,
-              onClearAllFailed: onClearAllFailed,
             ),
+            if (showBulkControls) ...[
+              const SizedBox(height: AppDimensions.spacingM),
+              _buildBulkManagementControls(
+                summary: managementSummary,
+                onRetryAllFailed: onRetryAllFailed,
+                onCancelAllActive: onCancelAllActive,
+                onClearAllFailed: onClearAllFailed,
+              ),
+            ],
           ],
-        ],
-      ),
-    );
+        ),
+      );
+    });
   }
 
   /// Build status icon - checkmark when complete, spinner when active
@@ -86,22 +88,25 @@ class UploadProgressWidgets {
             (managementSummary['pending'] as int? ?? 0) > 0);
 
     if (hasActiveUploads) {
-      return SizedBox(
-        width: 16,
-        height: 16,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor:
-              const AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
-          value: (managementSummary['overallProgress'] as double?),
-        ),
-      );
+      return Builder(builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return SizedBox(
+          width: 16,
+          height: 16,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
+            value: (managementSummary['overallProgress'] as double?),
+          ),
+        );
+      });
     } else {
-      return const Icon(
-        Icons.check_circle,
-        size: AppDimensions.iconSizeS,
-        color: AppColors.success,
-      );
+      return Builder(
+          builder: (context) => Icon(
+                Icons.check_circle,
+                size: AppDimensions.iconSizeS,
+                color: context.butleryColors.success,
+              ));
     }
   }
 
@@ -121,6 +126,7 @@ class UploadProgressWidgets {
     final active = summary['active'] as int? ?? 0;
 
     return Builder(builder: (context) {
+      final cs = Theme.of(context).colorScheme;
       final controls = <Widget>[];
 
       if (canBulkRetry && onRetryAllFailed != null) {
@@ -129,7 +135,7 @@ class UploadProgressWidgets {
             icon: Icons.refresh,
             label: context.l10n.uploadRetryAllCount(failed),
             onTap: onRetryAllFailed,
-            color: AppColors.forestGreen,
+            color: cs.primary,
           ),
         );
       }
@@ -140,7 +146,7 @@ class UploadProgressWidgets {
             icon: Icons.stop,
             label: context.l10n.uploadStopAllCount(active),
             onTap: onCancelAllActive,
-            color: AppColors.textMedium,
+            color: cs.onSurfaceVariant,
           ),
         );
       }
@@ -151,7 +157,7 @@ class UploadProgressWidgets {
             icon: Icons.clear_all,
             label: context.l10n.uploadClearFailed,
             onTap: onClearAllFailed,
-            color: AppColors.error,
+            color: cs.error,
           ),
         );
       }
@@ -173,38 +179,41 @@ class UploadProgressWidgets {
     required VoidCallback onTap,
     required Color color,
   }) {
-    return Material(
-      color: color.withValues(alpha: AppDimensions.opacityExtraDark),
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-      child: InkWell(
-        onTap: onTap,
+    return Builder(builder: (context) {
+      final cs = Theme.of(context).colorScheme;
+      return Material(
+        color: color.withValues(alpha: AppDimensions.opacityExtraDark),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingM,
-            vertical: AppDimensions.paddingS,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: AppDimensions.iconSizeS,
-                color: AppColors.cardWhite,
-              ),
-              const SizedBox(width: AppDimensions.spacingXs),
-              Text(
-                label,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.cardWhite,
-                  fontWeight: FontWeight.w600,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingM,
+              vertical: AppDimensions.paddingS,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: AppDimensions.iconSizeS,
+                  color: cs.surfaceContainerHighest,
                 ),
-              ),
-            ],
+                const SizedBox(width: AppDimensions.spacingXs),
+                Text(
+                  label,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: cs.surfaceContainerHighest,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   /// Build enhanced progress details with analytics
@@ -229,21 +238,24 @@ class UploadProgressWidgets {
 
     if (details.isEmpty) return const SizedBox.shrink();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: details
-          .map((detail) => Padding(
-                padding: const EdgeInsets.only(top: AppDimensions.spacingXxs),
-                child: Text(
-                  detail,
-                  style: AppTextStyles.textSm.copyWith(
-                    color: AppColors.forestGreen
-                        .withValues(alpha: AppDimensions.opacityVeryDark),
+    return Builder(builder: (context) {
+      final cs = Theme.of(context).colorScheme;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: details
+            .map((detail) => Padding(
+                  padding: const EdgeInsets.only(top: AppDimensions.spacingXxs),
+                  child: Text(
+                    detail,
+                    style: AppTextStyles.textSm.copyWith(
+                      color: cs.primary
+                          .withValues(alpha: AppDimensions.opacityVeryDark),
+                    ),
                   ),
-                ),
-              ))
-          .toList(),
-    );
+                ))
+            .toList(),
+      );
+    });
   }
 
   /// Build upload progress overlay for individual images
@@ -254,183 +266,186 @@ class UploadProgressWidgets {
     Function(String)? onRetryUpload,
     Function(String)? onCancelUpload,
   }) {
-    return Positioned.fill(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: borderRadius,
-          color: AppColors.textDark
-              .withValues(alpha: AppDimensions.opacityMediumDark),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            buildProgressIndicator(status),
-            const SizedBox(height: AppDimensions.spacingSm),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingM,
-                vertical: AppDimensions.paddingS,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.textDark
-                    .withValues(alpha: AppDimensions.opacityVeryDark),
-                borderRadius: BorderRadius.circular(AppDimensions.paddingS),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    status.statusDescription,
-                    style: AppTextStyles.metadataEmphasized.copyWith(
-                      color: AppColors.cardWhite,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  if (status.isActive &&
-                      status.formattedTimeRemaining != null) ...[
-                    const SizedBox(height: AppDimensions.spacingXxs),
-                    Builder(
-                        builder: (context) => Text(
-                              context.l10n.uploadTimeRemaining(
-                                  status.formattedTimeRemaining!),
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.cardWhite.withValues(
-                                    alpha: AppDimensions.opacityVeryDark),
-                              ),
-                            )),
-                  ],
-                  if (status.fileSizeMB != null) ...[
-                    const SizedBox(height: AppDimensions.spacingXxs),
-                    Text(
-                      '${status.fileSizeMB!.toStringAsFixed(1)} MB',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.cardWhite
-                            .withValues(alpha: AppDimensions.opacityDark),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            if (status.state == ImageUploadState.failed ||
-                status.state == ImageUploadState.cancelled) ...[
+    return Builder(builder: (context) {
+      final cs = Theme.of(context).colorScheme;
+      return Positioned.fill(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: borderRadius,
+            color:
+                cs.onSurface.withValues(alpha: AppDimensions.opacityMediumDark),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              buildProgressIndicator(status),
               const SizedBox(height: AppDimensions.spacingSm),
-              Builder(
-                  builder: (context) => Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (status.canRetry && onRetryUpload != null)
-                            buildUploadActionButton(
-                              icon: Icons.refresh,
-                              label: context.l10n.commonRetry,
-                              onTap: () => onRetryUpload(imageUrl),
-                              color: AppColors.forestGreen,
-                            ),
-                          if (status.canRetry &&
-                              onRetryUpload != null &&
-                              onCancelUpload != null)
-                            const SizedBox(width: AppDimensions.spacingSm),
-                          if (onCancelUpload != null)
-                            buildUploadActionButton(
-                              icon: Icons.close,
-                              label: context.l10n.commonDelete,
-                              onTap: () => onCancelUpload(imageUrl),
-                              color: AppColors.error,
-                            ),
-                        ],
-                      )),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingM,
+                  vertical: AppDimensions.paddingS,
+                ),
+                decoration: BoxDecoration(
+                  color: cs.onSurface
+                      .withValues(alpha: AppDimensions.opacityVeryDark),
+                  borderRadius: BorderRadius.circular(AppDimensions.paddingS),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      status.statusDescription,
+                      style: AppTextStyles.metadataEmphasized.copyWith(
+                        color: cs.surfaceContainerHighest,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    if (status.isActive &&
+                        status.formattedTimeRemaining != null) ...[
+                      const SizedBox(height: AppDimensions.spacingXxs),
+                      Text(
+                        context.l10n.uploadTimeRemaining(
+                            status.formattedTimeRemaining!),
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: cs.surfaceContainerHighest
+                              .withValues(alpha: AppDimensions.opacityVeryDark),
+                        ),
+                      ),
+                    ],
+                    if (status.fileSizeMB != null) ...[
+                      const SizedBox(height: AppDimensions.spacingXxs),
+                      Text(
+                        '${status.fileSizeMB!.toStringAsFixed(1)} MB',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: cs.surfaceContainerHighest
+                              .withValues(alpha: AppDimensions.opacityDark),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (status.state == ImageUploadState.failed ||
+                  status.state == ImageUploadState.cancelled) ...[
+                const SizedBox(height: AppDimensions.spacingSm),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (status.canRetry && onRetryUpload != null)
+                      buildUploadActionButton(
+                        icon: Icons.refresh,
+                        label: context.l10n.commonRetry,
+                        onTap: () => onRetryUpload(imageUrl),
+                        color: cs.primary,
+                      ),
+                    if (status.canRetry &&
+                        onRetryUpload != null &&
+                        onCancelUpload != null)
+                      const SizedBox(width: AppDimensions.spacingSm),
+                    if (onCancelUpload != null)
+                      buildUploadActionButton(
+                        icon: Icons.close,
+                        label: context.l10n.commonDelete,
+                        onTap: () => onCancelUpload(imageUrl),
+                        color: cs.error,
+                      ),
+                  ],
+                ),
+              ],
             ],
-          ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   /// Build progress indicator based on upload state
   static Widget buildProgressIndicator(ImageUploadStatus status) {
-    switch (status.state) {
-      case ImageUploadState.pending:
-        return Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.cardWhite
-                .withValues(alpha: AppDimensions.opacityLight),
-          ),
-          child: const Icon(
-            Icons.schedule,
-            color: AppColors.cardWhite,
-            size: AppDimensions.iconSizeL,
-          ),
-        );
-
-      case ImageUploadState.uploading:
-      case ImageUploadState.retrying:
-        return SizedBox(
-          width: 60,
-          height: 60,
-          child: CircularProgressIndicator(
-            value: status.progress > 0 ? status.progress : null,
-            strokeWidth: 4,
-            backgroundColor: AppColors.cardWhite
-                .withValues(alpha: AppDimensions.opacityMediumLight),
-            valueColor: AlwaysStoppedAnimation<Color>(
-              status.state == ImageUploadState.retrying
-                  ? AppColors.textMedium
-                  : AppColors.forestGreen,
+    return Builder(builder: (context) {
+      final cs = Theme.of(context).colorScheme;
+      switch (status.state) {
+        case ImageUploadState.pending:
+          return Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: cs.surfaceContainerHighest
+                  .withValues(alpha: AppDimensions.opacityLight),
             ),
-          ),
-        );
+            child: Icon(
+              Icons.schedule,
+              color: cs.surfaceContainerHighest,
+              size: AppDimensions.iconSizeL,
+            ),
+          );
 
-      case ImageUploadState.completed:
-        return Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityExtraDark),
-          ),
-          child: const Icon(
-            Icons.check,
-            color: AppColors.cardWhite,
-            size: AppDimensions.iconSizeL,
-          ),
-        );
+        case ImageUploadState.uploading:
+        case ImageUploadState.retrying:
+          return SizedBox(
+            width: 60,
+            height: 60,
+            child: CircularProgressIndicator(
+              value: status.progress > 0 ? status.progress : null,
+              strokeWidth: 4,
+              backgroundColor: cs.surfaceContainerHighest
+                  .withValues(alpha: AppDimensions.opacityMediumLight),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                status.state == ImageUploadState.retrying
+                    ? cs.onSurfaceVariant
+                    : cs.primary,
+              ),
+            ),
+          );
 
-      case ImageUploadState.failed:
-        return Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.error
-                .withValues(alpha: AppDimensions.opacityExtraDark),
-          ),
-          child: const Icon(
-            Icons.error,
-            color: AppColors.cardWhite,
-            size: AppDimensions.iconSizeL,
-          ),
-        );
+        case ImageUploadState.completed:
+          return Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color:
+                  cs.primary.withValues(alpha: AppDimensions.opacityExtraDark),
+            ),
+            child: Icon(
+              Icons.check,
+              color: cs.surfaceContainerHighest,
+              size: AppDimensions.iconSizeL,
+            ),
+          );
 
-      case ImageUploadState.cancelled:
-        return Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.textMedium
-                .withValues(alpha: AppDimensions.opacityExtraDark),
-          ),
-          child: const Icon(
-            Icons.cancel,
-            color: AppColors.cardWhite,
-            size: AppDimensions.iconSizeL,
-          ),
-        );
-    }
+        case ImageUploadState.failed:
+          return Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: cs.error.withValues(alpha: AppDimensions.opacityExtraDark),
+            ),
+            child: Icon(
+              Icons.error,
+              color: cs.surfaceContainerHighest,
+              size: AppDimensions.iconSizeL,
+            ),
+          );
+
+        case ImageUploadState.cancelled:
+          return Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: cs.onSurfaceVariant
+                  .withValues(alpha: AppDimensions.opacityExtraDark),
+            ),
+            child: Icon(
+              Icons.cancel,
+              color: cs.surfaceContainerHighest,
+              size: AppDimensions.iconSizeL,
+            ),
+          );
+      }
+    });
   }
 
   /// Build action button for upload overlay
@@ -440,36 +455,39 @@ class UploadProgressWidgets {
     required VoidCallback onTap,
     required Color color,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppDimensions.paddingS),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
-        ),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: AppDimensions.opacityExtraDark),
-          borderRadius: BorderRadius.circular(AppDimensions.paddingS),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: AppColors.cardWhite,
-              size: AppDimensions.iconSizeS,
-            ),
-            const SizedBox(width: AppDimensions.spacingXs),
-            Text(
-              label,
-              style: AppTextStyles.metadataEmphasized.copyWith(
-                color: AppColors.cardWhite,
+    return Builder(builder: (context) {
+      final cs = Theme.of(context).colorScheme;
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppDimensions.paddingS),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingM,
+            vertical: AppDimensions.paddingS,
+          ),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: AppDimensions.opacityExtraDark),
+            borderRadius: BorderRadius.circular(AppDimensions.paddingS),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: cs.surfaceContainerHighest,
+                size: AppDimensions.iconSizeS,
               ),
-            ),
-          ],
+              const SizedBox(width: AppDimensions.spacingXs),
+              Text(
+                label,
+                style: AppTextStyles.metadataEmphasized.copyWith(
+                  color: cs.surfaceContainerHighest,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }

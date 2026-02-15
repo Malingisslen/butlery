@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -17,13 +16,14 @@ class SourceUrlDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppColors.backgroundTint,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
         children: [
@@ -37,7 +37,7 @@ class SourceUrlDisplay extends StatelessWidget {
             child: Text(
               context.l10n.recipeImportedFrom(sourceUrl),
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

@@ -3,7 +3,6 @@
 // UI Redesign: Square checkboxes (22px, 2px green border)
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -22,14 +21,16 @@ class ShoppingItemTiles {
     Function(UnifiedShoppingItem) onEditItem,
     Function(UnifiedShoppingItem) onDeleteItem,
   ) {
+    final cs = Theme.of(context).colorScheme;
+
     return RepaintBoundary(
       child: Container(
         margin: const EdgeInsets.only(bottom: AppDimensions.spacingXxs),
         decoration: BoxDecoration(
-          color: AppColors.cardWhite,
+          color: cs.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           border: Border.all(
-            color: AppColors.divider,
+            color: cs.outlineVariant,
             width: AppDimensions.borderWidthStandard,
           ),
         ),
@@ -56,18 +57,18 @@ class ShoppingItemTiles {
                         borderRadius:
                             BorderRadius.circular(AppDimensions.borderRadiusXs),
                         border: Border.all(
-                          color: AppColors.forestGreen,
+                          color: cs.primary,
                           width: 2,
                         ),
                         color: isCompleted
-                            ? AppColors.forestGreen
-                            : AppColors.cardWhite,
+                            ? cs.primary
+                            : cs.surfaceContainerHighest,
                       ),
                       child: isCompleted
-                          ? const Icon(
+                          ? Icon(
                               Icons.check,
                               size: 14,
-                              color: AppColors.cardWhite,
+                              color: cs.surfaceContainerHighest,
                             )
                           : null,
                     ),
@@ -83,8 +84,8 @@ class ShoppingItemTiles {
                             item.displayText,
                             style: AppTextStyles.contentTitle.copyWith(
                               color: isCompleted
-                                  ? AppColors.textMedium
-                                  : AppColors.textDark,
+                                  ? cs.onSurfaceVariant
+                                  : cs.onSurface,
                               decoration: isCompleted
                                   ? TextDecoration.lineThrough
                                   : TextDecoration.none,
@@ -98,9 +99,9 @@ class ShoppingItemTiles {
                               item.note!,
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: isCompleted
-                                    ? AppColors.textMedium.withValues(
+                                    ? cs.onSurfaceVariant.withValues(
                                         alpha: AppDimensions.opacityVeryDark)
-                                    : AppColors.textMedium,
+                                    : cs.onSurfaceVariant,
                                 decoration: isCompleted
                                     ? TextDecoration.lineThrough
                                     : TextDecoration.none,
@@ -120,7 +121,7 @@ class ShoppingItemTiles {
                         height: 8,
                         margin: const EdgeInsetsDirectional.only(start: 8),
                         decoration: BoxDecoration(
-                          color: _getPriorityColor(item.priority),
+                          color: _getPriorityColor(cs, item.priority),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -135,10 +136,10 @@ class ShoppingItemTiles {
                           button: true,
                           enabled: true,
                           child: IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.edit,
                               size: AppDimensions.iconSizeS,
-                              color: AppColors.textMedium,
+                              color: cs.onSurfaceVariant,
                             ),
                             onPressed: () => onEditItem(item),
                             tooltip: context.l10n.commonEdit,
@@ -159,7 +160,7 @@ class ShoppingItemTiles {
                             icon: Icon(
                               Icons.delete,
                               size: AppDimensions.iconSizeS,
-                              color: AppColors.textMedium
+                              color: cs.onSurfaceVariant
                                   .withValues(alpha: AppDimensions.opacityDark),
                             ),
                             onPressed: () => onDeleteItem(item),
@@ -183,23 +184,25 @@ class ShoppingItemTiles {
     );
   }
 
-  static Color _getPriorityColor(int priority) {
+  static Color _getPriorityColor(ColorScheme cs, int priority) {
     switch (priority) {
       case 5:
-        return AppColors
-            .forestGreenDark; // Highest priority - strong brand color
+        return cs.primary; // Highest priority - strong brand color
       case 4:
-        return AppColors.forestGreen; // High priority - main brand color
+        return cs.primary; // High priority - main brand color
       default:
-        return AppColors.textMedium; // Normal priority - subtle brand color
+        return cs.onSurfaceVariant; // Normal priority - subtle brand color
     }
   }
 
   static Widget buildEmptyState({
+    required BuildContext context,
     required String title,
     required String message,
     required IconData icon,
   }) {
+    final cs = Theme.of(context).colorScheme;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -207,13 +210,13 @@ class ShoppingItemTiles {
           Icon(
             icon,
             size: 64,
-            color: AppColors.textMedium,
+            color: cs.onSurfaceVariant,
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             title,
             style: AppTextStyles.titleMedium.copyWith(
-              color: AppColors.textMedium,
+              color: cs.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),
@@ -221,7 +224,7 @@ class ShoppingItemTiles {
           Text(
             message,
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textMedium,
+              color: cs.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),

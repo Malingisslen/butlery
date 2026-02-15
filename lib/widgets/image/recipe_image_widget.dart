@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
@@ -98,6 +97,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final dimensions = widget.config.getDimensions();
     final hasImages = widget.imageUrls.isNotEmpty;
 
@@ -106,7 +106,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
       height: dimensions.height == double.infinity ? null : dimensions.height,
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
-        color: AppColors.cardWhite,
+        color: cs.surfaceContainerHighest,
       ),
       child: hasImages ? _buildImageContent() : _buildEmptyState(),
     );
@@ -124,6 +124,7 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
   }
 
   Widget _buildRecipeCard() {
+    final cs = Theme.of(context).colorScheme;
     final primaryImage = widget.imageUrls.first;
 
     return Stack(
@@ -146,8 +147,8 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppColors.transparent,
-                  AppColors.cardWhite
+                  Colors.transparent,
+                  cs.surfaceContainerHighest
                       .withValues(alpha: AppDimensions.opacityVeryLight),
                 ],
               ),

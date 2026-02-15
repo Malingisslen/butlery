@@ -4,9 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:butlery/viewmodels/account/data_export_viewmodel.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -32,7 +32,7 @@ class DataExportView extends StatelessWidget {
           centerTitle: true,
         ),
         body: SafeArea(
-          // ✅ RESPONSIVE: Center and constrain content on large screens
+          // RESPONSIVE: Center and constrain content on large screens
           child: Center(
             child: ConstrainedBox(
               constraints: BoxConstraints(
@@ -74,6 +74,8 @@ class DataExportView extends StatelessWidget {
   }
 
   Widget _buildHeaderSection(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingXl),
@@ -82,10 +84,10 @@ class DataExportView extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.download_rounded,
                   size: 32,
-                  color: AppColors.primary,
+                  color: cs.primary,
                 ),
                 const SizedBox(width: AppDimensions.spacingL),
                 Expanded(
@@ -100,7 +102,7 @@ class DataExportView extends StatelessWidget {
             Text(
               context.l10n.dataExportGdprDescription,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textMedium,
+                    color: cs.onSurfaceVariant,
                     height: 1.5,
                   ),
             ),
@@ -130,6 +132,8 @@ class DataExportView extends StatelessWidget {
   }
 
   Widget _buildLoadingState(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingLg),
@@ -145,7 +149,7 @@ class DataExportView extends StatelessWidget {
             Text(
               context.l10n.dataExportMayTakeSeconds,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textMedium,
+                    color: cs.onSurfaceVariant,
                   ),
             ),
           ],
@@ -155,16 +159,18 @@ class DataExportView extends StatelessWidget {
   }
 
   Widget _buildErrorState(BuildContext context, DataExportViewModel viewModel) {
+    final cs = Theme.of(context).colorScheme;
+
     return Card(
-      color: AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingXl),
         child: Column(
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline,
               size: 48,
-              color: AppColors.error,
+              color: cs.error,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
@@ -191,17 +197,19 @@ class DataExportView extends StatelessWidget {
 
   Widget _buildSuccessState(
       BuildContext context, DataExportViewModel viewModel) {
+    final cs = Theme.of(context).colorScheme;
+
     return Card(
-      color:
-          AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: context.butleryColors.success
+          .withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingXl),
         child: Column(
           children: [
-            const Icon(
+            Icon(
               Icons.check_circle_outline,
               size: 48,
-              color: AppColors.success,
+              color: context.butleryColors.success,
             ),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
@@ -212,14 +220,14 @@ class DataExportView extends StatelessWidget {
             Text(
               '${context.l10n.dataExportExportedAt} ${viewModel.exportTimestampText}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textMedium,
+                    color: cs.onSurfaceVariant,
                   ),
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
               '${context.l10n.dataExportFileSize}: ${viewModel.exportSizeText}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textMedium,
+                    color: cs.onSurfaceVariant,
                   ),
             ),
             const SizedBox(height: AppDimensions.paddingXl),
@@ -249,7 +257,7 @@ class DataExportView extends StatelessWidget {
               icon: const Icon(Icons.delete_outline),
               label: Text(context.l10n.dataExportClear),
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.textMedium,
+                foregroundColor: cs.onSurfaceVariant,
               ),
             ),
           ],
@@ -260,7 +268,8 @@ class DataExportView extends StatelessWidget {
 
   Widget _buildInfoSection(BuildContext context) {
     return Card(
-      color: AppColors.info.withValues(alpha: AppDimensions.opacityVeryLight),
+      color: context.butleryColors.info
+          .withValues(alpha: AppDimensions.opacityVeryLight),
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingXl),
         child: Column(
@@ -268,9 +277,9 @@ class DataExportView extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.info_outline,
-                  color: AppColors.info,
+                  color: context.butleryColors.info,
                   size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
@@ -292,7 +301,7 @@ class DataExportView extends StatelessWidget {
             Text(
               context.l10n.dataExportOnlyYourData,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textMedium,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontStyle: FontStyle.italic,
                   ),
             ),
@@ -307,10 +316,10 @@ class DataExportView extends StatelessWidget {
       padding: AppDimensions.paddingVertical4,
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.check,
             size: AppDimensions.iconSizeS,
-            color: AppColors.success,
+            color: context.butleryColors.success,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
           Text(text, style: Theme.of(context).textTheme.bodyMedium),
@@ -329,7 +338,7 @@ class DataExportView extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.dataExportExportedSuccessfully),
-          backgroundColor: AppColors.success,
+          backgroundColor: context.butleryColors.success,
         ),
       );
     }
@@ -358,11 +367,11 @@ class DataExportView extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.dataExportFileSaved(fileName)),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
             duration: const Duration(seconds: 4),
             action: SnackBarAction(
               label: 'OK',
-              textColor: AppColors.cardWhite,
+              textColor: Colors.white,
               onPressed: () {},
             ),
           ),
@@ -370,11 +379,12 @@ class DataExportView extends StatelessWidget {
       }
     } catch (e) {
       if (context.mounted) {
+        final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content:
                 Text(context.l10n.dataExportCouldNotSaveFile(e.toString())),
-            backgroundColor: AppColors.error,
+            backgroundColor: cs.error,
           ),
         );
       }
@@ -407,10 +417,11 @@ class DataExportView extends StatelessWidget {
       ));
     } catch (e) {
       if (context.mounted) {
+        final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.dataExportCouldNotShare(e.toString())),
-            backgroundColor: AppColors.error,
+            backgroundColor: cs.error,
           ),
         );
       }
@@ -419,6 +430,8 @@ class DataExportView extends StatelessWidget {
 
   Future<void> _handleClear(
       BuildContext context, DataExportViewModel viewModel) async {
+    final cs = Theme.of(context).colorScheme;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -432,7 +445,7 @@ class DataExportView extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.error,
+              foregroundColor: cs.error,
             ),
             child: Text(context.l10n.commonClear),
           ),

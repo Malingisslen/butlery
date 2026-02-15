@@ -1,6 +1,7 @@
 // lib/viewmodels/recipe_form/recipe_form_state.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
@@ -74,10 +75,10 @@ class RecipeFormState extends ChangeNotifier {
       validator: (ingredient) {
         // CRITICAL FIX: Enhanced validator with consistent validation rules
         if (ingredient == null || ingredient.trim().isEmpty) {
-          return 'Ingrediens krävs'; // Swedish validation message
+          return AppLocale.current.formValidationIngredientRequired;
         }
         if (ingredient.length > 200) {
-          return 'Ingrediens för lång (max 200 tecken)';
+          return AppLocale.current.formValidationIngredientTooLong;
         }
         return null; // Valid
       },
@@ -95,10 +96,10 @@ class RecipeFormState extends ChangeNotifier {
       validator: (instruction) {
         // CRITICAL FIX: Enhanced validator with consistent validation rules
         if (instruction == null || instruction.trim().isEmpty) {
-          return 'Instruktion krävs'; // Swedish validation message
+          return AppLocale.current.formValidationInstructionRequired;
         }
         if (instruction.length > 500) {
-          return 'Instruktion för lång (max 500 tecken)';
+          return AppLocale.current.formValidationInstructionTooLong;
         }
         return null; // Valid
       },
@@ -119,10 +120,10 @@ class RecipeFormState extends ChangeNotifier {
           return null; // Tags are optional, empty is OK
         }
         if (tag.length > 50) {
-          return 'Tagg för lång (max 50 tecken)';
+          return AppLocale.current.formValidationTagTooLong;
         }
         if (tag.contains(',')) {
-          return 'Taggar får inte innehålla kommatecken';
+          return AppLocale.current.formValidationTagNoCommas;
         }
         return null; // Valid
       },

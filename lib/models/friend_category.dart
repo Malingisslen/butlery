@@ -48,6 +48,7 @@
 
 // lib/models/friend_category.dart
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:uuid/uuid.dart';
 
@@ -205,11 +206,11 @@ class FriendCategory {
   /// Get category summary for UI
   String get summary {
     if (isEmpty) {
-      return 'Inga vänner';
+      return AppLocale.current.friendSummaryNoFriends;
     } else if (friendCount == 1) {
-      return '1 vän';
+      return AppLocale.current.friendSummaryOneFriend;
     } else {
-      return '$friendCount vänner';
+      return AppLocale.current.friendSummaryCount(friendCount);
     }
   }
 
@@ -331,38 +332,38 @@ class FriendCategory {
 
 /// Predefined category data för snabb setup
 class DefaultFriendCategories {
-  static const List<Map<String, dynamic>> defaults = [
-    {
-      'name': 'Familj',
-      'description': 'Familjemedlemmar',
-      'emoji': '👨‍👩‍👧‍👦',
-      'sortOrder': 0,
-    },
-    {
-      'name': 'Vänner',
-      'description': 'Nära vänner',
-      'emoji': '👥',
-      'sortOrder': 1,
-    },
-    {
-      'name': 'Grannar',
-      'description': 'Grannar och lokalområdet',
-      'emoji': '🏠',
-      'sortOrder': 2,
-    },
-    {
-      'name': 'Jobbet',
-      'description': 'Kollegor och arbetskompisar',
-      'emoji': '💼',
-      'sortOrder': 3,
-    },
-    {
-      'name': 'Matgrupp',
-      'description': 'Personer som älskar att laga mat',
-      'emoji': '👨‍🍳',
-      'sortOrder': 4,
-    },
-  ];
+  static List<Map<String, dynamic>> get defaults => [
+        {
+          'name': AppLocale.current.friendCategoryDefaultFamily,
+          'description': AppLocale.current.friendCategoryDefaultFamilyDesc,
+          'emoji': '👨‍👩‍👧‍👦',
+          'sortOrder': 0,
+        },
+        {
+          'name': AppLocale.current.friendCategoryDefaultFriends,
+          'description': AppLocale.current.friendCategoryDefaultFriendsDesc,
+          'emoji': '👥',
+          'sortOrder': 1,
+        },
+        {
+          'name': AppLocale.current.friendCategoryDefaultNeighbors,
+          'description': AppLocale.current.friendCategoryDefaultNeighborsDesc,
+          'emoji': '🏠',
+          'sortOrder': 2,
+        },
+        {
+          'name': AppLocale.current.friendCategoryDefaultWork,
+          'description': AppLocale.current.friendCategoryDefaultWorkDesc,
+          'emoji': '💼',
+          'sortOrder': 3,
+        },
+        {
+          'name': AppLocale.current.friendCategoryDefaultFoodGroup,
+          'description': AppLocale.current.friendCategoryDefaultFoodGroupDesc,
+          'emoji': '👨‍🍳',
+          'sortOrder': 4,
+        },
+      ];
 
   /// Create default categories for a user
   static List<FriendCategory> createDefaultsForUser(String ownerId) {

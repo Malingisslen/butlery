@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 // Import all split modules
@@ -112,7 +111,7 @@ class LayoutComponents {
 
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: AppColors.transparent,
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (modalContext) => LayoutComponents.profileMenu(
         userImageUrl: userImageUrl,

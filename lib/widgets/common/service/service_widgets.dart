@@ -6,7 +6,6 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// ServiceWidgets - Service integration widgets
@@ -61,12 +60,15 @@ class ServiceWidgets {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(
-            width: AppDimensions.iconSizeM,
-            height: AppDimensions.iconSizeM,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
+          Builder(
+            builder: (context) => SizedBox(
+              width: AppDimensions.iconSizeM,
+              height: AppDimensions.iconSizeM,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).colorScheme.primary),
+              ),
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXl),
@@ -82,17 +84,17 @@ class ServiceWidgets {
   }
 
   static Widget _buildDefaultServiceError(BuildContext context, String error) {
+    final cs = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Container(
           padding: const EdgeInsets.all(AppDimensions.paddingM),
           decoration: BoxDecoration(
-            color: AppColors.error
-                .withValues(alpha: AppDimensions.opacityVeryLight),
+            color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             border: Border.all(
-                color: AppColors.error
+                color: cs.error
                     .withValues(alpha: AppDimensions.opacityMediumLight)),
           ),
           child: Text(
@@ -105,26 +107,32 @@ class ServiceWidgets {
   }
 
   static Widget _buildLoadingOverlay() {
-    return ColoredBox(
-      color: AppColors.neutralDark
-          .withValues(alpha: AppDimensions.opacityMediumLight),
-      child: Center(
-        child: Container(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          decoration: BoxDecoration(
-            color: AppColors.cardWhite,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          ),
-          child: const SizedBox(
-            width: AppDimensions.iconSizeM,
-            height: AppDimensions.iconSizeM,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
+    return Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return ColoredBox(
+          color:
+              cs.onSurface.withValues(alpha: AppDimensions.opacityMediumLight),
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest,
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusL),
+              ),
+              child: SizedBox(
+                width: AppDimensions.iconSizeM,
+                height: AppDimensions.iconSizeM,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

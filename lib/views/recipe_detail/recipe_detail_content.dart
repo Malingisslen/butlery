@@ -10,8 +10,8 @@ import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/common/input_components.dart';
+import 'package:butlery/widgets/recipe/ingredient_substitution_sheet.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -126,30 +126,32 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
 
   /// Builds the tabbed section with Ingredienser and Instruktioner tabs.
   Widget _buildTabbedContent(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Column(
       children: [
         TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.forestGreen,
+          indicatorColor: cs.primary,
           indicatorWeight: 3,
-          labelColor: AppColors.forestGreenDark,
-          unselectedLabelColor: AppColors.textMedium,
+          labelColor: cs.primary,
+          unselectedLabelColor: cs.onSurfaceVariant,
           labelStyle: AppTextStyles.bodySmall.copyWith(
             fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: AppColors.forestGreenDark,
+            color: cs.primary,
           ),
           unselectedLabelStyle: AppTextStyles.bodySmall.copyWith(
             fontSize: 15,
             fontWeight: FontWeight.w400,
-            color: AppColors.textMedium,
+            color: cs.onSurfaceVariant,
           ),
           tabs: [
             Tab(text: context.l10n.recipeIngredients),
             Tab(text: context.l10n.recipeInstructions),
           ],
         ),
-        const Divider(height: 1, color: AppColors.creamDarker),
+        Divider(height: 1, color: cs.surfaceContainerHigh),
         AnimatedSize(
           duration: AppDimensions.animationDurationMedium,
           child: _buildTabContent(),
@@ -176,6 +178,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
 
   /// Ingredients tab with portion scaler and structured table.
   Widget _buildIngredientsTab(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Column(
@@ -187,11 +191,11 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
               vertical: AppDimensions.paddingM,
               horizontal: AppDimensions.paddingL,
             ),
-            decoration: const BoxDecoration(
-              color: AppColors.creamDarker,
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerHigh,
               border: Border(
                 bottom: BorderSide(
-                  color: AppColors.divider,
+                  color: cs.outlineVariant,
                 ),
               ),
             ),
@@ -208,62 +212,63 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
             return Column(
               children: [
                 if (index > 0)
-                  const Divider(
+                  Divider(
                     height: 1,
                     thickness: 1,
-                    color: AppColors.creamDarker,
+                    color: cs.surfaceContainerHigh,
                   ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Quantity + unit column
-                      SizedBox(
-                        width: 70,
-                        child: Text(
-                          parsed.unit.isNotEmpty
-                              ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
-                              : parsed.quantity > 0
-                                  ? _formatQuantity(parsed.quantity)
-                                  : '',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.forestGreenDark,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                      const SizedBox(width: AppDimensions.spacingXl),
-                      // Ingredient name
-                      Expanded(
-                        child: Row(
-                          children: [
-                            if (isAllergen)
-                              const Padding(
-                                padding: EdgeInsets.only(
-                                  right: AppDimensions.spacingXs,
-                                ),
-                                child: Icon(
-                                  Icons.warning_amber,
-                                  size: AppDimensions.iconSizeS,
-                                  color: AppColors.error,
-                                ),
-                              ),
-                            Expanded(
-                              child: Text(
-                                parsed.name,
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: isAllergen
-                                      ? AppColors.error
-                                      : AppColors.textDark,
-                                ),
-                              ),
+                InkWell(
+                  onTap: () => _showSubstitutionSheet(context, parsed.name),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Quantity + unit column
+                        SizedBox(
+                          width: 70,
+                          child: Text(
+                            parsed.unit.isNotEmpty
+                                ? '${_formatQuantity(parsed.quantity)} ${parsed.unit}'
+                                : parsed.quantity > 0
+                                    ? _formatQuantity(parsed.quantity)
+                                    : '',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: cs.primary,
+                              fontWeight: FontWeight.w600,
                             ),
-                          ],
+                            textAlign: TextAlign.right,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: AppDimensions.spacingXl),
+                        // Ingredient name (tap for substitutions)
+                        Expanded(
+                          child: Row(
+                            children: [
+                              if (isAllergen)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    right: AppDimensions.spacingXs,
+                                  ),
+                                  child: Icon(
+                                    Icons.warning_amber,
+                                    size: AppDimensions.iconSizeS,
+                                    color: cs.error,
+                                  ),
+                                ),
+                              Expanded(
+                                child: Text(
+                                  parsed.name,
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: isAllergen ? cs.error : cs.onSurface,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -276,6 +281,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
 
   /// Instructions tab with checkable steps.
   Widget _buildInstructionsTab(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final instructions = viewModel.recipe.instructions;
     if (instructions.isEmpty) {
       return Padding(
@@ -283,7 +289,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
         child: Text(
           context.l10n.recipeNoInstructions,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textMedium,
+            color: cs.onSurfaceVariant,
             fontStyle: FontStyle.italic,
           ),
         ),
@@ -315,7 +321,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Checkable step indicator
-                    _buildStepCheckbox(index + 1, isCompleted),
+                    _buildStepCheckbox(context, index + 1, isCompleted),
                     const SizedBox(width: AppDimensions.spacingMd),
 
                     // Instruction text
@@ -323,9 +329,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
                       child: Text(
                         instruction,
                         style: AppTextStyles.bodyLarge.copyWith(
-                          color: isCompleted
-                              ? AppColors.textMedium
-                              : AppColors.textDark,
+                          color:
+                              isCompleted ? cs.onSurfaceVariant : cs.onSurface,
                           decoration: isCompleted
                               ? TextDecoration.lineThrough
                               : TextDecoration.none,
@@ -342,30 +347,33 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
     );
   }
 
-  Widget _buildStepCheckbox(int stepNumber, bool isCompleted) {
+  Widget _buildStepCheckbox(
+      BuildContext context, int stepNumber, bool isCompleted) {
+    final cs = Theme.of(context).colorScheme;
+
     return AnimatedContainer(
       duration: AppDimensions.animationDurationFast,
       width: 28,
       height: 28,
       decoration: BoxDecoration(
-        color: isCompleted ? AppColors.forestGreen : AppColors.cardWhite,
+        color: isCompleted ? cs.primary : cs.surfaceContainerHighest,
         shape: BoxShape.circle,
         border: Border.all(
-          color: AppColors.forestGreen,
+          color: cs.primary,
           width: 2,
         ),
       ),
       child: Center(
         child: isCompleted
-            ? const Icon(
+            ? Icon(
                 Icons.check,
                 size: 16,
-                color: AppColors.cardWhite,
+                color: cs.onPrimary,
               )
             : Text(
                 '$stepNumber',
                 style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: AppColors.forestGreen,
+                  color: cs.primary,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -395,6 +403,20 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
       return quantity.toInt().toString();
     }
     return quantity.toStringAsFixed(1);
+  }
+
+  void _showSubstitutionSheet(BuildContext context, String ingredientName) {
+    if (ingredientName.isEmpty) return;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.6,
+      ),
+      builder: (_) => IngredientSubstitutionSheet(
+        ingredientName: ingredientName,
+      ),
+    );
   }
 
   void _toggleStepCompletion(int index) {
@@ -436,6 +458,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
   }
 
   Widget _buildTags(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final recipe = viewModel.recipe;
     final userAddedTags = recipe.tagOverrides?.addedTags ?? <String>{};
 
@@ -443,17 +466,17 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        border: Border.all(color: AppColors.divider),
+        color: cs.surfaceContainerHighest,
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.local_offer_outlined,
-                color: AppColors.forestGreen,
+                color: cs.primary,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
@@ -477,22 +500,22 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
                 ),
                 decoration: BoxDecoration(
                   color: isUserAdded
-                      ? AppColors.forestGreen
+                      ? cs.primary
                           .withValues(alpha: AppDimensions.opacityLightSubtle)
-                      : AppColors.forestGreen
+                      : cs.primary
                           .withValues(alpha: AppDimensions.opacityVeryLight),
                   border: Border.all(
                     color: isUserAdded
-                        ? AppColors.forestGreen
+                        ? cs.primary
                             .withValues(alpha: AppDimensions.opacityHalf)
-                        : AppColors.forestGreen.withValues(
+                        : cs.primary.withValues(
                             alpha: AppDimensions.opacityMediumLight),
                   ),
                 ),
                 child: Text(
                   displayName,
                   style: AppTextStyles.metadataEmphasized.copyWith(
-                    color: AppColors.forestGreen,
+                    color: cs.primary,
                     fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
@@ -505,11 +528,13 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
   }
 
   Widget _buildImageCarousel(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        border: Border.all(color: AppColors.divider),
+        color: cs.surfaceContainerHighest,
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -519,9 +544,9 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
             padding: const EdgeInsets.all(AppDimensions.paddingL),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.photo_library_outlined,
-                  color: AppColors.forestGreen,
+                  color: cs.primary,
                   size: AppDimensions.iconSizeAction,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
@@ -601,6 +626,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final names = _resolvedNames;
     if (names.isEmpty) return const SizedBox.shrink();
 
@@ -612,8 +638,8 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        border: Border.all(color: AppColors.divider),
+        color: cs.surfaceContainerHighest,
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -621,9 +647,9 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
           // Header with expand/collapse
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.label_outline,
-                color: AppColors.forestGreen,
+                color: cs.primary,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
@@ -657,9 +683,10 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
             spacing: AppDimensions.spacingS,
             runSpacing: AppDimensions.spacingS,
             children: [
-              ...displayNames.map(_buildPersonalTag),
+              ...displayNames.map((name) => _buildPersonalTag(context, name)),
               if (!_isExpanded && hasOverflow)
-                _buildOverflowIndicator(names.length - _collapsedLimit),
+                _buildOverflowIndicator(
+                    context, names.length - _collapsedLimit),
             ],
           ),
         ],
@@ -667,30 +694,32 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
     );
   }
 
-  Widget _buildPersonalTag(String name) {
+  Widget _buildPersonalTag(BuildContext context, String name) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingS,
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.forestGreen
-            .withValues(alpha: AppDimensions.opacityLightSubtle),
+        color: cs.primary.withValues(alpha: AppDimensions.opacityLightSubtle),
         border: Border.all(
-          color: AppColors.forestGreen
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Text(
         name,
         style: AppTextStyles.metadataEmphasized.copyWith(
-          color: AppColors.forestGreen,
+          color: cs.primary,
         ),
       ),
     );
   }
 
-  Widget _buildOverflowIndicator(int count) {
+  Widget _buildOverflowIndicator(BuildContext context, int count) {
+    final cs = Theme.of(context).colorScheme;
+
     return Semantics(
       label: context.l10n.a11yShowMore(count),
       button: true,
@@ -702,18 +731,15 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
             vertical: AppDimensions.spacingXs,
           ),
           decoration: BoxDecoration(
-            color: AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityVeryLight),
+            color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
             border: Border.all(
-              color: AppColors.forestGreen
-                  .withValues(alpha: AppDimensions.opacityLight),
+              color: cs.primary.withValues(alpha: AppDimensions.opacityLight),
             ),
           ),
           child: Text(
             context.l10n.commonMoreCount(count),
             style: AppTextStyles.metadataEmphasized.copyWith(
-              color: AppColors.forestGreen
-                  .withValues(alpha: AppDimensions.opacityDark),
+              color: cs.primary.withValues(alpha: AppDimensions.opacityDark),
             ),
           ),
         ),

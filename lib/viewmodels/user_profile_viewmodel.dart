@@ -19,6 +19,7 @@ import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// User profile ViewModel for profile form management, avatar uploads, validation, and privacy settings (MVVM).
 class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
@@ -137,7 +138,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
       // Get current user ID
       final userId = ServiceLocator.get<PermissionService>().currentUserId;
       if (userId == null) {
-        _operationError = 'Ingen användare inloggad';
+        _operationError = AppLocale.current.errorNoUserLoggedIn;
         throw Exception(_operationError);
       }
 
@@ -154,13 +155,14 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
         AppLogger.success('✅ Avatar uploaded with automatic retry support');
         return true;
       } else {
-        _operationError = result.error ?? 'Kunde inte ladda upp avatar';
+        _operationError =
+            result.error ?? AppLocale.current.errorCouldNotUpdate('avatar');
         throw Exception(_operationError);
       }
     } catch (e, stackTrace) {
       AppLogger.error('🖼️ VIEWMODEL ERROR: Exception in uploadAvatar: $e');
       AppLogger.error('🖼️ VIEWMODEL ERROR: Stack trace: $stackTrace');
-      _operationError ??= 'Kunde inte ladda upp avatar: ${e.toString()}';
+      _operationError ??= '${AppLocale.current.errorGeneric}: ${e.toString()}';
       return false;
     } finally {
       _isUploadingAvatar = false;
@@ -197,7 +199,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// ```
   Future<bool> saveProfile() async {
     if (!isFormValid) {
-      _handleUserError('Fyll i alla obligatoriska fält korrekt');
+      _handleUserError(AppLocale.current.errorFillRequiredFieldsCorrectly);
       return false;
     }
 
@@ -206,7 +208,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
       final isAvailable =
           await _userService.isDisplayNameAvailable(_displayName);
       if (!isAvailable) {
-        _displayNameError = 'Detta namn är redan taget';
+        _displayNameError = AppLocale.current.errorNameAlreadyTaken;
         notifyListeners();
         return false;
       }
@@ -232,7 +234,8 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
             notifyListeners();
             return true;
           } else {
-            throw Exception(_userService.error ?? 'Kunde inte spara profil');
+            throw Exception(_userService.error ??
+                AppLocale.current.errorCouldNotUpdate('profil'));
           }
         }, operationName: 'Save profile') ??
         false;
@@ -270,7 +273,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
                 await _userService.isDisplayNameAvailable(_displayName);
 
             if (!isAvailable) {
-              _displayNameError = 'Detta namn är redan taget';
+              _displayNameError = AppLocale.current.errorNameAlreadyTaken;
             } else {
               _displayNameError = null;
             }
@@ -331,14 +334,14 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// Provides immediate Swedish localized error feedback for optimal user experience.
   void _validateDisplayName() {
     if (_displayName.isEmpty) {
-      _displayNameError = 'Namn krävs';
+      _displayNameError = AppLocale.current.validationNameRequired;
     } else if (_displayName.length < 2) {
-      _displayNameError = 'Namnet måste vara minst 2 tecken';
+      _displayNameError = AppLocale.current.errorDisplayNameMinLength;
     } else if (_displayName.length > 50) {
-      _displayNameError = 'Namnet får vara max 50 tecken';
+      _displayNameError = AppLocale.current.errorDescriptionTooLong;
     } else if (!RegExp(r'^[\p{L}\p{N}\s\-_.]+$', unicode: true)
         .hasMatch(_displayName)) {
-      _displayNameError = 'Namnet innehåller ogiltiga tecken';
+      _displayNameError = AppLocale.current.errorFillRequiredFieldsCorrectly;
     } else {
       _displayNameError = null;
     }

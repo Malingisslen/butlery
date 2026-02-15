@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -36,7 +35,9 @@ class CollaborativeParticipantsWidgets {
                       margin:
                           EdgeInsetsDirectional.only(start: index > 0 ? 4 : 0),
                       decoration: BoxDecoration(
-                        color: AppColors.forestGreen
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
                             .withValues(alpha: AppDimensions.opacityVeryLight),
                         shape: BoxShape.circle,
                       ),
@@ -49,7 +50,7 @@ class CollaborativeParticipantsWidgets {
           return Icon(
             Icons.people_outline,
             size: avatarSize,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           );
         }
 
@@ -59,7 +60,7 @@ class CollaborativeParticipantsWidgets {
           return Icon(
             Icons.person_outline,
             size: avatarSize,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           );
         }
 
@@ -103,27 +104,32 @@ class CollaborativeParticipantsWidgets {
         // Show "+X" if there are more
         if (remaining > 0) ...[
           SizedBox(width: gap),
-          Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              color: AppColors.forestGreen
-                  .withValues(alpha: AppDimensions.opacityLight),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.forestGreen,
-                width: 1,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                '+$remaining',
-                style: AppTextStyles.bodyLargeBold.copyWith(
-                  fontSize: size * 0.35,
-                  color: AppColors.forestGreen,
+          Builder(
+            builder: (context) {
+              final cs = Theme.of(context).colorScheme;
+              return Container(
+                width: size,
+                height: size,
+                decoration: BoxDecoration(
+                  color:
+                      cs.primary.withValues(alpha: AppDimensions.opacityLight),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: cs.primary,
+                    width: 1,
+                  ),
                 ),
-              ),
-            ),
+                child: Center(
+                  child: Text(
+                    '+$remaining',
+                    style: AppTextStyles.bodyLargeBold.copyWith(
+                      fontSize: size * 0.35,
+                      color: cs.primary,
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ],

@@ -1,6 +1,7 @@
 /// Text Import Strategy - Parses structured/unstructured text into recipes (social media, manual input).
 
 import 'package:uuid/uuid.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_strategy.dart';
@@ -383,7 +384,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         timeMinutes: timeMinutes,
         rating: rating,
         personalTagIds: _extractTags(text),
-        sourceUrl: 'Importerat från text',
+        sourceUrl: AppLocale.current.textImportSourceUrl,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         createdBy: '',

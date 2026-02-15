@@ -5,7 +5,6 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/recipe/comment_time_formatter.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -96,7 +95,7 @@ class CommentItemWidget extends StatelessWidget {
                   : Icons.favorite_border,
               size: AppDimensions.iconSizeM,
               color: socialViewModel.hasLikedComment(comment.id)
-                  ? AppColors.error
+                  ? Theme.of(context).colorScheme.error
                   : Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             if (comment.likeCount > 0) ...[

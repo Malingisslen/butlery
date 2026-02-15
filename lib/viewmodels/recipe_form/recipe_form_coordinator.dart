@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
@@ -102,7 +103,7 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
         _permissionManager.checkPermissions();
       },
       operationName: 'Load Initial Permissions',
-      customErrorMessage: 'Fel vid laddning av permissions',
+      customErrorMessage: AppLocale.current.recipeFormPermissionsError,
     );
   }
 

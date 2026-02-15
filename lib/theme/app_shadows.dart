@@ -13,7 +13,6 @@
 /// ```
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Central repository for shadow definitions.
@@ -25,7 +24,7 @@ abstract class AppShadows {
   /// Elevation: ~1dp
   static List<BoxShadow> get subtle => [
         BoxShadow(
-          color: AppColors.shadow.withValues(alpha: AppDimensions.opacityVeryLight),
+          color: Colors.black.withValues(alpha: AppDimensions.opacityVeryLight),
           blurRadius: 4,
           offset: const Offset(0, 1),
         ),
@@ -35,7 +34,7 @@ abstract class AppShadows {
   /// Elevation: ~2dp
   static List<BoxShadow> get card => [
         BoxShadow(
-          color: AppColors.shadow.withValues(alpha: AppDimensions.opacityVeryLight),
+          color: Colors.black.withValues(alpha: AppDimensions.opacityVeryLight),
           blurRadius: 8,
           offset: const Offset(0, 2),
         ),
@@ -45,7 +44,7 @@ abstract class AppShadows {
   /// Elevation: ~4dp
   static List<BoxShadow> get elevated => [
         BoxShadow(
-          color: AppColors.shadow.withValues(alpha: AppDimensions.opacityLight),
+          color: Colors.black.withValues(alpha: AppDimensions.opacityLight),
           blurRadius: 16,
           offset: const Offset(0, 4),
         ),
@@ -55,7 +54,8 @@ abstract class AppShadows {
   /// Elevation: ~8dp
   static List<BoxShadow> get floating => [
         BoxShadow(
-          color: AppColors.shadow.withValues(alpha: AppDimensions.opacityMediumLight),
+          color:
+              Colors.black.withValues(alpha: AppDimensions.opacityMediumLight),
           blurRadius: 24,
           offset: const Offset(0, 8),
         ),

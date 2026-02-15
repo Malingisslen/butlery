@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Status för connection monitoring
 enum ConnectionStatus {
@@ -140,15 +141,15 @@ class ConnectionMonitor {
   String get statusDescription {
     switch (_status) {
       case ConnectionStatus.unknown:
-        return 'Kontrollerar anslutning...';
+        return AppLocale.current.statusCheckingConnection;
       case ConnectionStatus.connecting:
-        return 'Ansluter...';
+        return AppLocale.current.statusConnecting;
       case ConnectionStatus.connected:
-        return 'Ansluten';
+        return AppLocale.current.statusConnecting;
       case ConnectionStatus.disconnected:
-        return 'Frånkopplad';
+        return AppLocale.current.errorNoInternetConnection;
       case ConnectionStatus.reconnecting:
-        return 'Återansluter...';
+        return AppLocale.current.statusReconnecting;
     }
   }
 

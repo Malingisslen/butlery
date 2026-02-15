@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 class FriendsSearchManager extends ChangeNotifier {
   final UnifiedFriendsService _friendsService;
@@ -51,7 +52,7 @@ class FriendsSearchManager extends ChangeNotifier {
 
     if (_searchQuery.length < 2) {
       _searchResults = [];
-      _searchError = 'Skriv minst 2 tecken för att söka';
+      _searchError = AppLocale.current.errorFillRequiredFields;
       _safeNotifyListeners();
       return;
     }
@@ -100,7 +101,7 @@ class FriendsSearchManager extends ChangeNotifier {
     } catch (e) {
       if (_isDisposed) return;
 
-      _searchError = 'Sökningen misslyckades';
+      _searchError = AppLocale.current.errorGeneric;
       AppLogger.error('Search failed: $e');
       _safeNotifyListeners();
     }

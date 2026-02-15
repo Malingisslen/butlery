@@ -13,6 +13,7 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// User profile service with 30-min caching, social discovery, auth monitoring, and privacy controls.
 /// ```dart
@@ -97,7 +98,7 @@ class UserService extends ChangeNotifier
   }) async {
     final user = _authRepository.currentUser;
     if (user == null) {
-      _setError('Ingen användare inloggad');
+      _setError(AppLocale.current.errorNoUserLoggedIn);
       return null;
     }
 
@@ -360,7 +361,7 @@ class UserService extends ChangeNotifier
       notifyListeners();
     } catch (e) {
       AppLogger.error('❌ Kunde inte ladda nuvarande profil: $e');
-      _setError('Kunde inte ladda profil: $e');
+      _setError(AppLocale.current.errorCouldNotLoadProfile);
       notifyListeners();
     }
   }
@@ -430,7 +431,7 @@ class UserService extends ChangeNotifier
       AppLogger.success('✅ FCM token updated successfully');
     } catch (e) {
       AppLogger.error('❌ Failed to update FCM token', e);
-      _setError('Kunde inte uppdatera notifikationstoken: $e');
+      _setError(AppLocale.current.errorCouldNotUpdateNotificationToken);
     }
   }
 
@@ -458,7 +459,7 @@ class UserService extends ChangeNotifier
       AppLogger.success('✅ Notification settings updated successfully');
     } catch (e) {
       AppLogger.error('❌ Failed to update notification settings', e);
-      _setError('Kunde inte uppdatera notifikationsinställningar: $e');
+      _setError(AppLocale.current.errorCouldNotUpdateNotificationSettings);
     }
   }
 
@@ -490,10 +491,31 @@ class UserService extends ChangeNotifier
       return true;
     } catch (e) {
       AppLogger.error('❌ Failed to update allergen preferences', e);
-      _setError('Kunde inte uppdatera allergeninställningar: $e');
+      _setError(AppLocale.current.errorCouldNotUpdateAllergenSettings);
       return false;
     } finally {
       _setLoading(false);
+    }
+  }
+
+  /// Mark onboarding as completed for the current user.
+  Future<void> markOnboardingComplete() async {
+    final userId = currentUserId;
+    if (userId == null || _currentUserProfile == null) return;
+
+    try {
+      final updated = _currentUserProfile!.copyWith(
+        hasCompletedOnboarding: true,
+      );
+      await _repository.saveProfile(updated);
+
+      _currentUserProfile = updated;
+      _profileCache[userId] = updated;
+      notifyListeners();
+
+      AppLogger.success('Onboarding marked as complete');
+    } catch (e) {
+      AppLogger.error('Failed to mark onboarding complete', e);
     }
   }
 

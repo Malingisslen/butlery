@@ -2,10 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Participant list widget showing active participants
 class ParticipantListWidget extends StatelessWidget {
@@ -29,9 +29,10 @@ class ParticipantListWidget extends StatelessWidget {
     if (activities.isEmpty) {
       return const SizedBox.shrink();
     }
+    final cs = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
+        color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         boxShadow: AppShadows.subtle,
       ),
@@ -42,9 +43,9 @@ class ParticipantListWidget extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.people,
-                  color: AppColors.forestGreen,
+                  color: cs.primary,
                   size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
@@ -53,7 +54,7 @@ class ParticipantListWidget extends StatelessWidget {
                   style: AppTextStyles.headlineSmall,
                 ),
                 const Spacer(),
-                _buildOnlineIndicator(),
+                _buildOnlineIndicator(context),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingXl),
@@ -70,20 +71,20 @@ class ParticipantListWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildOnlineIndicator() {
+  Widget _buildOnlineIndicator(BuildContext context) {
     final onlineCount = activities.where((a) => a.isOnline).length;
+    final successColor = context.butleryColors.success;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingS,
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color:
-            AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: successColor.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
         border: Border.all(
-          color: AppColors.success
-              .withValues(alpha: AppDimensions.opacityMediumLight),
+          color:
+              successColor.withValues(alpha: AppDimensions.opacityMediumLight),
         ),
       ),
       child: Row(
@@ -93,7 +94,7 @@ class ParticipantListWidget extends StatelessWidget {
             width: AppDimensions.spacingS,
             height: AppDimensions.spacingS,
             decoration: BoxDecoration(
-              color: AppColors.success,
+              color: successColor,
               borderRadius: BorderRadius.circular(AppDimensions.spacingXs),
             ),
           ),
@@ -109,6 +110,7 @@ class ParticipantListWidget extends StatelessWidget {
 
   Widget _buildParticipantChip(
       BuildContext context, ParticipantActivity activity) {
+    final cs = Theme.of(context).colorScheme;
     final isCurrentUser = activity.userId == currentUserId;
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -117,15 +119,13 @@ class ParticipantListWidget extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: isCurrentUser
-            ? AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityVeryLight)
-            : Theme.of(context).colorScheme.surface,
+            ? cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)
+            : cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.iconSizeAction),
         border: Border.all(
           color: isCurrentUser
-              ? AppColors.forestGreen
-                  .withValues(alpha: AppDimensions.opacityMediumLight)
-              : AppColors.divider,
+              ? cs.primary.withValues(alpha: AppDimensions.opacityMediumLight)
+              : cs.outlineVariant,
         ),
       ),
       child: Row(
@@ -133,7 +133,7 @@ class ParticipantListWidget extends StatelessWidget {
         children: [
           Stack(
             children: [
-              _buildSimpleAvatar(activity.displayName, 24),
+              _buildSimpleAvatar(context, activity.displayName, 24),
               Positioned(
                 right: 0,
                 bottom: 0,
@@ -142,12 +142,12 @@ class ParticipantListWidget extends StatelessWidget {
                   height: AppDimensions.spacingS,
                   decoration: BoxDecoration(
                     color: activity.isOnline
-                        ? AppColors.success
-                        : AppColors.textTertiary,
+                        ? context.butleryColors.success
+                        : cs.outline,
                     borderRadius:
                         BorderRadius.circular(AppDimensions.spacingXs),
                     border: Border.all(
-                      color: Theme.of(context).colorScheme.surface,
+                      color: cs.surface,
                       width: 1,
                     ),
                   ),
@@ -164,7 +164,7 @@ class ParticipantListWidget extends StatelessWidget {
                 isCurrentUser ? 'Du' : activity.displayName,
                 style: isCurrentUser
                     ? AppTextStyles.bodyLargeBold.copyWith(
-                        color: AppColors.forestGreen,
+                        color: cs.primary,
                       )
                     : AppTextStyles.bodyLarge,
               ),
@@ -179,22 +179,23 @@ class ParticipantListWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSimpleAvatar(String displayName, double size) {
+  Widget _buildSimpleAvatar(
+      BuildContext context, String displayName, double size) {
+    final cs = Theme.of(context).colorScheme;
     final initials = _getInitials(displayName);
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.forestGreen
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
       ),
       child: Center(
         child: Text(
           initials,
           style: AppTextStyles.bodyLargeBold.copyWith(
             fontSize: size * 0.4,
-            color: AppColors.forestGreen,
+            color: cs.primary,
           ),
         ),
       ),

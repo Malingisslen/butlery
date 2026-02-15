@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
@@ -24,6 +23,7 @@ class GroupMemberItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Card(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       child: ListTile(
@@ -40,7 +40,7 @@ class GroupMemberItem extends StatelessWidget {
               Text(
                 '(${context.l10n.commonYou})',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textMedium,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
             ],
@@ -49,7 +49,7 @@ class GroupMemberItem extends StatelessWidget {
         trailing: canRemove
             ? IconButton(
                 icon: const Icon(Icons.remove_circle_outline),
-                color: AppColors.error,
+                color: cs.error,
                 onPressed: onRemove,
                 tooltip: context.l10n.groupRemoveMember,
               )

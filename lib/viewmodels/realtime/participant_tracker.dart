@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Data för en deltagares aktivitet
 class ParticipantActivity {
@@ -85,7 +86,7 @@ class ParticipantTracker {
 
   /// Hämta display name för deltagare
   String getDisplayName(String userId) {
-    return _participantNames[userId] ?? 'Okänd användare';
+    return _participantNames[userId] ?? AppLocale.current.displayUnknownUser;
   }
 
   /// Kontrollera om deltagare var aktiv nyligen

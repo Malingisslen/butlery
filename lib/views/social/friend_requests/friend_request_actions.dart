@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/base/base_action_handler.dart';
 
 // Theme
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Refactored FriendRequestActions using BaseActionHandler
@@ -37,7 +37,7 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
         tooltip: context.l10n.socialAcceptSelected,
         icon: const Icon(Icons.check_circle),
         label: Text(context.l10n.socialAcceptCount(selectedIncoming.length)),
-        backgroundColor: AppColors.success,
+        backgroundColor: context.butleryColors.success,
       );
     }
     return null;

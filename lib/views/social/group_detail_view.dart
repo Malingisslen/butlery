@@ -11,8 +11,8 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -145,7 +145,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.groupUpdated),
-          backgroundColor: AppColors.success,
+          backgroundColor: context.butleryColors.success,
         ),
       );
       await _viewModel.loadGroupData();
@@ -164,7 +164,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.groupInvitationsSentSuccess),
-          backgroundColor: AppColors.success,
+          backgroundColor: context.butleryColors.success,
         ),
       );
       await _viewModel.loadGroupData();
@@ -199,7 +199,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.groupDeleted(group.name)),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
           ),
         );
 
@@ -291,7 +291,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.groupCouldNotTransferOwnership),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
         return;
@@ -315,7 +315,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
             content: Text(decision.requiresOwnershipTransfer
                 ? context.l10n.groupOwnershipTransferredAndLeft
                 : context.l10n.groupYouLeftGroup),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
           ),
         );
         // Navigate to groups tab
@@ -340,7 +340,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.groupNoMembersToShare),
-          backgroundColor: AppColors.warning,
+          backgroundColor: context.butleryColors.warning,
         ),
       );
       return;
@@ -352,7 +352,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.groupCouldNotLoadMembers),
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       return;
@@ -380,7 +380,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.groupNoMembersToShare),
-          backgroundColor: AppColors.warning,
+          backgroundColor: context.butleryColors.warning,
         ),
       );
       return;
@@ -423,7 +423,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.groupNoMembersToShare),
-          backgroundColor: AppColors.warning,
+          backgroundColor: context.butleryColors.warning,
         ),
       );
       return;

@@ -1,7 +1,6 @@
 // lib/widgets/common/profile/builders/menu_item_builders.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -105,8 +104,8 @@ class MenuItemBuilders {
                       top: 0,
                       child: Container(
                         padding: const EdgeInsets.all(AppDimensions.spacingXs),
-                        decoration: const BoxDecoration(
-                          color: AppColors.error,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.error,
                           shape: BoxShape.circle,
                         ),
                         constraints: const BoxConstraints(
@@ -116,7 +115,9 @@ class MenuItemBuilders {
                         child: Text(
                           count > 99 ? '99+' : '$count',
                           style: AppTextStyles.badge.copyWith(
-                            color: AppColors.neutralLight,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
                           ),
                           textAlign: TextAlign.center,
                         ),

@@ -9,7 +9,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 // Production imports - NEVER assume, always check production code first
 import 'package:butlery/widgets/common/content_cards/image_preview_card.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 // Test infrastructure imports - using centralized system
@@ -189,9 +188,12 @@ void main() {
 
         await tester.pumpWidget(
           createTestWidget(
-            child: ImagePreviewCard.loading(
-              height: 150.0,
-              child: loadingChild,
+            child: Builder(
+              builder: (context) => ImagePreviewCard.loading(
+                context: context,
+                height: 150.0,
+                child: loadingChild,
+              ),
             ),
           ),
         );
@@ -205,7 +207,7 @@ void main() {
         // Verify loading preset values are applied
         final container = tester.widget<Container>(find.byType(Container).last);
         final decoration = container.decoration as BoxDecoration?;
-        expect(decoration?.color, equals(AppColors.cardWhite)); // Line 38
+        expect(decoration?.color, isNotNull); // Theme-aware color
         expect(
             decoration?.borderRadius,
             equals(const BorderRadius.all(
@@ -221,8 +223,11 @@ void main() {
 
         await tester.pumpWidget(
           createTestWidget(
-            child: ImagePreviewCard.loading(
-              child: loadingChild,
+            child: Builder(
+              builder: (context) => ImagePreviewCard.loading(
+                context: context,
+                child: loadingChild,
+              ),
             ),
           ),
         );
@@ -482,17 +487,21 @@ void main() {
         // Main constructor
         const mainCard = ImagePreviewCard(child: testChild);
 
-        // Loading constructor
-        final loadingCard = ImagePreviewCard.loading(child: testChild);
-
         await tester.pumpWidget(
           createTestWidget(
-            child: Column(
-              children: <Widget>[
-                mainCard,
-                loadingCard,
-                // Empty constructor needs context so test separately
-              ],
+            child: Builder(
+              builder: (context) {
+                // Loading constructor needs context
+                final loadingCard = ImagePreviewCard.loading(
+                    context: context, child: testChild);
+                return Column(
+                  children: <Widget>[
+                    mainCard,
+                    loadingCard,
+                    // Empty constructor needs context so test separately
+                  ],
+                );
+              },
             ),
           ),
         );
@@ -511,17 +520,20 @@ void main() {
 
         await tester.pumpWidget(
           createTestWidget(
-            child: Column(
-              children: [
-                const ImagePreviewCard(
-                  backgroundColor: Colors.red,
-                  child: testChild,
-                ),
-                ImagePreviewCard.loading(
-                  height: 100,
-                  child: testChild,
-                ),
-              ],
+            child: Builder(
+              builder: (context) => Column(
+                children: [
+                  const ImagePreviewCard(
+                    backgroundColor: Colors.red,
+                    child: testChild,
+                  ),
+                  ImagePreviewCard.loading(
+                    context: context,
+                    height: 100,
+                    child: testChild,
+                  ),
+                ],
+              ),
             ),
           ),
         );

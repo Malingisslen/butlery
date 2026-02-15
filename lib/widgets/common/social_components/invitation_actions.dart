@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -48,11 +47,15 @@ class InvitationActions {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: AppColors.forestGreen
+        color: Theme.of(context)
+            .colorScheme
+            .primary
             .withValues(alpha: AppDimensions.opacityVeryLight),
         border: Border(
           top: BorderSide(
-              color: AppColors.forestGreen
+              color: Theme.of(context)
+                  .colorScheme
+                  .primary
                   .withValues(alpha: AppDimensions.opacityMediumLight)),
         ),
       ),
@@ -184,9 +187,11 @@ class InvitationActions {
           if (showRemove && onBulkRemove != null)
             TextButton.icon(
               onPressed: onBulkRemove,
-              icon: const Icon(Icons.delete, color: AppColors.error),
+              icon: Icon(Icons.delete,
+                  color: Theme.of(context).colorScheme.error),
               label: Text(removeText ?? context.l10n.commonDelete),
-              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+              style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error),
             ),
           if (showExport && onBulkExport != null)
             TextButton.icon(
@@ -272,7 +277,8 @@ class InvitationActions {
             onConfirm();
           },
           style: isDangerous
-              ? ElevatedButton.styleFrom(backgroundColor: AppColors.error)
+              ? ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error)
               : null,
           child: Text(confirmText ?? context.l10n.commonContinue),
         ),
@@ -342,7 +348,8 @@ class InvitationActions {
             value: 'remove',
             child: Builder(
               builder: (context) => ListTile(
-                leading: const Icon(Icons.delete, color: AppColors.error),
+                leading: Icon(Icons.delete,
+                    color: Theme.of(context).colorScheme.error),
                 title: Text(context.l10n.commonDelete,
                     style: AppTextStyles.bodyMediumError),
                 dense: true,
@@ -364,9 +371,12 @@ class InvitationActions {
     Widget? rightAction,
     String? leftLabel,
     String? rightLabel,
-    Color? leftColor = AppColors.error,
-    Color? rightColor = AppColors.forestGreen,
+    Color? leftColor,
+    Color? rightColor,
   }) {
+    final cs = Theme.of(context).colorScheme;
+    final resolvedLeftColor = leftColor ?? cs.error;
+    final resolvedRightColor = rightColor ?? cs.primary;
     final resolvedLeftLabel = leftLabel ?? context.l10n.commonDelete;
     final resolvedRightLabel = rightLabel ?? context.l10n.invitationInvite;
 
@@ -374,13 +384,13 @@ class InvitationActions {
       key: UniqueKey(),
       background: leftAction ??
           Container(
-            color: leftColor,
+            color: resolvedLeftColor,
             alignment: AlignmentDirectional.centerStart,
             padding: const EdgeInsetsDirectional.only(start: 20),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.delete, color: AppColors.cardWhite),
+                Icon(Icons.delete, color: cs.surfaceContainerHighest),
                 Text(
                   resolvedLeftLabel,
                   style: AppTextStyles.buttonTextLight,
@@ -390,13 +400,13 @@ class InvitationActions {
           ),
       secondaryBackground: rightAction ??
           Container(
-            color: rightColor,
+            color: resolvedRightColor,
             alignment: AlignmentDirectional.centerEnd,
             padding: const EdgeInsetsDirectional.only(end: 20),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.send, color: AppColors.cardWhite),
+                Icon(Icons.send, color: cs.surfaceContainerHighest),
                 Text(
                   resolvedRightLabel,
                   style: AppTextStyles.buttonTextLight,

@@ -5,6 +5,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Monitors internet and Firebase connectivity with real-time status updates.
 class ConnectivityMonitoringService extends ChangeNotifier
@@ -28,7 +29,7 @@ class ConnectivityMonitoringService extends ChangeNotifier
 
   bool _isConnectedToInternet = true;
   bool _isConnectedToFirebase = true;
-  String _connectionStatusText = 'Ansluten';
+  String _connectionStatusText = '';
   StreamSubscription<bool>? _firebaseConnectionSubscription;
   Timer? _internetCheckTimer;
 
@@ -113,14 +114,15 @@ class ConnectivityMonitoringService extends ChangeNotifier
   }
 
   void _updateConnectionStatus() {
+    final l = AppLocale.current;
     if (_isConnectedToInternet && _isConnectedToFirebase) {
-      _connectionStatusText = 'Ansluten';
+      _connectionStatusText = l.statusConnected;
     } else if (_isConnectedToInternet && !_isConnectedToFirebase) {
-      _connectionStatusText = 'Firebase otillgänglig';
+      _connectionStatusText = l.statusFirebaseUnavailable;
     } else if (!_isConnectedToInternet && _isConnectedToFirebase) {
-      _connectionStatusText = 'Ingen internetanslutning';
+      _connectionStatusText = l.statusNoInternet;
     } else {
-      _connectionStatusText = 'Frånkopplad';
+      _connectionStatusText = l.statusDisconnected;
     }
   }
 

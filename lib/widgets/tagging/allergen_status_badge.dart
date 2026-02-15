@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Badge displaying allergen status with tri-state coloring.
 ///
@@ -45,7 +45,7 @@ class AllergenStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (color, icon) = _getStatusStyle();
+    final (color, icon) = _getStatusStyle(context);
     final displayLabel = label ?? _getDisplayLabel(context);
     final semanticLabel = _getSemanticLabel(context);
 
@@ -80,19 +80,20 @@ class AllergenStatusBadge extends StatelessWidget {
     }
   }
 
-  (Color, IconData) _getStatusStyle() {
+  (Color, IconData) _getStatusStyle(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     // Shape distinction for color-blind accessibility:
     // - FREE: Circle (check_circle)
     // - CONTAINS: Triangle (warning)
     // - UNKNOWN: Circle with question (help_outline)
     switch (status) {
       case TriState.free:
-        return (AppColors.success, Icons.check_circle_outline);
+        return (context.butleryColors.success, Icons.check_circle_outline);
       case TriState.contains:
         // Triangle shape distinguishes from other states
-        return (AppColors.error, Icons.warning_amber);
+        return (cs.error, Icons.warning_amber);
       case TriState.unknown:
-        return (AppColors.textMedium, Icons.help_outline);
+        return (cs.onSurfaceVariant, Icons.help_outline);
     }
   }
 

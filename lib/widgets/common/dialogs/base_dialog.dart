@@ -1,7 +1,6 @@
 /// Base Dialog Classes - Unified dialog patterns with template method pattern for form, confirmation, and loading dialogs.
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -46,12 +45,13 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return AlertDialog(
       icon: widget.titleIcon != null
           ? Icon(widget.titleIcon!,
               color: widget.isDangerous
-                  ? AppColors.error
-                  : widget.primaryActionColor ?? AppColors.forestGreen,
+                  ? cs.error
+                  : widget.primaryActionColor ?? cs.primary,
               size: AppDimensions.iconSizeXxl)
           : null,
       title: Text(widget.title),
@@ -92,25 +92,26 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
   }
 
   Widget _buildPrimaryButton() {
+    final cs = Theme.of(context).colorScheme;
     final buttonColor = widget.isDangerous
-        ? AppColors.error
-        : (widget.primaryActionColor ?? AppColors.forestGreen);
+        ? cs.error
+        : (widget.primaryActionColor ?? cs.primary);
     final resolvedText = _resolvedPrimaryActionText();
     if (widget.isDangerous) {
       return FilledButton.icon(
         onPressed: _isLoading ? null : _onPrimaryAction,
         style: FilledButton.styleFrom(
           backgroundColor: buttonColor,
-          foregroundColor: AppColors.cardWhite,
+          foregroundColor: cs.surfaceContainerHighest,
         ),
         icon: _isLoading
-            ? const SizedBox(
+            ? SizedBox(
                 width: 16,
                 height: 16,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
+                      AlwaysStoppedAnimation<Color>(cs.surfaceContainerHighest),
                 ),
               )
             : Icon(widget.primaryActionIcon ?? Icons.delete),
@@ -121,13 +122,13 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
         onPressed: _isLoading ? null : _onPrimaryAction,
         style: FilledButton.styleFrom(backgroundColor: buttonColor),
         icon: _isLoading
-            ? const SizedBox(
+            ? SizedBox(
                 width: 16,
                 height: 16,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
+                      AlwaysStoppedAnimation<Color>(cs.surfaceContainerHighest),
                 ),
               )
             : Icon(widget.primaryActionIcon ?? Icons.check),
@@ -162,23 +163,23 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
   }
 
   Widget _buildErrorDisplay() {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color:
-            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        border: Border.all(color: AppColors.error),
+        border: Border.all(color: cs.error),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.error),
+          Icon(Icons.error_outline, color: cs.error),
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
               _error!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.error,
+                    color: cs.error,
                   ),
             ),
           ),
@@ -200,7 +201,7 @@ abstract class BaseFormDialog<T> extends BaseDialog<T> {
     super.primaryActionText,
     super.secondaryActionText,
     super.primaryActionIcon = Icons.save,
-    super.primaryActionColor = AppColors.forestGreen,
+    super.primaryActionColor,
   });
 
   List<Widget> buildFormFields(BuildContext context);
@@ -357,7 +358,7 @@ abstract class BaseActionDialog<T> extends StatefulWidget {
   String actionButtonLabel(BuildContext context);
   String? loadingButtonLabel(BuildContext context) => null;
   Widget get actionButtonIcon => const Icon(Icons.check);
-  ButtonStyle? get actionButtonStyle => null;
+  ButtonStyle? actionButtonStyleFor(BuildContext context) => null;
   bool get isDestructiveAction => false;
 
   @override
@@ -396,19 +397,21 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
   }
 
   Widget _buildActionButton() {
+    final cs = Theme.of(context).colorScheme;
     final loadingText =
         widget.loadingButtonLabel(context) ?? context.l10n.commonWorking;
-    if (widget.actionButtonStyle != null) {
+    final actionStyle = widget.actionButtonStyleFor(context);
+    if (actionStyle != null) {
       return FilledButton.icon(
         onPressed: isLoading ? null : _performAction,
-        style: widget.actionButtonStyle,
+        style: actionStyle,
         icon: isLoading
-            ? const SizedBox(
+            ? SizedBox(
                 width: 16,
                 height: 16,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: AppColors.cardWhite,
+                  color: cs.surfaceContainerHighest,
                 ),
               )
             : widget.actionButtonIcon,
@@ -457,23 +460,23 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
   }
 
   Widget _buildErrorDisplay() {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color:
-            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        border: Border.all(color: AppColors.error),
+        border: Border.all(color: cs.error),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.error),
+          Icon(Icons.error_outline, color: cs.error),
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
               error!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.error,
+                    color: cs.error,
                   ),
             ),
           ),

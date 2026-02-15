@@ -3,9 +3,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Social group and friend category management components.
 class SocialGroupComponents {
@@ -176,7 +176,7 @@ class SocialGroupComponents {
               : null,
           leading: const Icon(Icons.group),
           trailing: isSelected
-              ? const Icon(Icons.check, color: AppColors.success)
+              ? Icon(Icons.check, color: context.butleryColors.success)
               : null,
           selected: isSelected,
           onTap: () {
@@ -389,7 +389,7 @@ class SocialGroupComponents {
   }) {
     return Column(
       children: [
-        Icon(icon, color: AppColors.textMedium),
+        Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
         const SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
@@ -398,7 +398,7 @@ class SocialGroupComponents {
         Text(
           label,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: AppColors.textMedium,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
           textAlign: TextAlign.center,
         ),
@@ -420,7 +420,8 @@ class SocialGroupComponents {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon,
-              size: AppDimensions.iconSizeXxl, color: AppColors.textMedium),
+              size: AppDimensions.iconSizeXxl,
+              color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             title ?? context.l10n.socialNoCategories,
@@ -430,7 +431,7 @@ class SocialGroupComponents {
           Text(
             subtitle ?? context.l10n.socialCreateFirstCategory,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textMedium,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
             textAlign: TextAlign.center,
           ),

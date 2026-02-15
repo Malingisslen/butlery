@@ -3,7 +3,6 @@
 // UI Redesign: Green border (2px) + thicker rust bottom border (4px) + white background
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -112,6 +111,7 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     // UI Redesign: Green border on top/left/right + rust bottom accent
     // Uses Container border instead of OutlineInputBorder to ensure
     // the rust bottom accent renders visibly (OutlineInputBorder paints over DecoratedBox)
@@ -124,10 +124,10 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
       decoration: InputDecoration(
         hintText: widget.hintText ?? context.l10n.searchHint,
         hintStyle: AppTextStyles.bodyMediumMuted,
-        prefixIcon: const Icon(
+        prefixIcon: Icon(
           Icons.search,
           size: AppDimensions.iconSizeAction,
-          color: AppColors.forestGreen,
+          color: cs.primary,
         ),
         suffixIcon: _buildSuffixIcon(),
         border: InputBorder.none,
@@ -145,9 +145,9 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
     if (widget.useClassicStyle) {
       final classicField = DecoratedBox(
         decoration: BoxDecoration(
-          color: AppColors.cardWhite,
+          color: cs.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          border: Border.all(color: AppColors.forestGreen, width: 2),
+          border: Border.all(color: cs.primary, width: 2),
         ),
         child: searchField,
       );
@@ -159,13 +159,13 @@ class _SearchInputWidgetState extends State<SearchInputWidget> {
 
     // UI Redesign style: green top/left/right + rust bottom accent
     final styledSearchField = DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.cardWhite,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
         border: Border(
-          top: BorderSide(color: AppColors.forestGreen, width: 2),
-          left: BorderSide(color: AppColors.forestGreen, width: 2),
-          right: BorderSide(color: AppColors.forestGreen, width: 2),
-          bottom: BorderSide(color: AppColors.rust, width: 4),
+          top: BorderSide(color: cs.primary, width: 2),
+          left: BorderSide(color: cs.primary, width: 2),
+          right: BorderSide(color: cs.primary, width: 2),
+          bottom: BorderSide(color: cs.secondary, width: 4),
         ),
       ),
       child: searchField,

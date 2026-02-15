@@ -3,6 +3,7 @@
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/realtime/modules/menu_operations.dart';
 
 /// Focused module for menu participant management
@@ -20,10 +21,11 @@ class MenuParticipants {
     required String userDisplayName,
     required ResourcePermission permission,
   }) {
+    final l = AppLocale.current;
     if (userId.trim().isEmpty) {
       throw MenuOperationError(
         operation: MenuOperationType.addParticipant,
-        message: 'Användar-ID kan inte vara tomt',
+        message: l.validationUserIdCannotBeEmpty,
         resourceId: menu.id,
       );
     }
@@ -31,7 +33,7 @@ class MenuParticipants {
     if (userDisplayName.trim().isEmpty) {
       throw MenuOperationError(
         operation: MenuOperationType.addParticipant,
-        message: 'Användarnamn kan inte vara tomt',
+        message: l.validationUsernameCannotBeEmpty,
         resourceId: menu.id,
       );
     }
@@ -40,7 +42,7 @@ class MenuParticipants {
     if (isParticipant(menu, userId)) {
       throw MenuOperationError(
         operation: MenuOperationType.addParticipant,
-        message: 'Användaren är redan deltagare: $userDisplayName',
+        message: l.validationUserAlreadyParticipant(userDisplayName),
         resourceId: menu.id,
       );
     }
@@ -56,10 +58,11 @@ class MenuParticipants {
     RealtimeMenu menu, {
     required String userId,
   }) {
+    final l = AppLocale.current;
     if (userId.trim().isEmpty) {
       throw MenuOperationError(
         operation: MenuOperationType.removeParticipant,
-        message: 'Användar-ID kan inte vara tomt',
+        message: l.validationUserIdCannotBeEmpty,
         resourceId: menu.id,
       );
     }
@@ -68,7 +71,7 @@ class MenuParticipants {
     if (!isParticipant(menu, userId)) {
       throw MenuOperationError(
         operation: MenuOperationType.removeParticipant,
-        message: 'Användaren är inte deltagare: $userId',
+        message: l.validationUserNotParticipant(userId),
         resourceId: menu.id,
       );
     }
@@ -77,7 +80,7 @@ class MenuParticipants {
     if (userId == menu.ownerId) {
       throw MenuOperationError(
         operation: MenuOperationType.removeParticipant,
-        message: 'Kan inte ta bort menyägaren',
+        message: l.validationCannotRemoveMenuOwner,
         resourceId: menu.id,
       );
     }
@@ -93,10 +96,11 @@ class MenuParticipants {
     required String userId,
     required ResourcePermission newPermission,
   }) {
+    final l = AppLocale.current;
     if (userId.trim().isEmpty) {
       throw MenuOperationError(
         operation: MenuOperationType.updatePermissions,
-        message: 'Användar-ID kan inte vara tomt',
+        message: l.validationUserIdCannotBeEmpty,
         resourceId: menu.id,
       );
     }
@@ -105,7 +109,7 @@ class MenuParticipants {
     if (!isParticipant(menu, userId)) {
       throw MenuOperationError(
         operation: MenuOperationType.updatePermissions,
-        message: 'Användaren är inte deltagare: $userId',
+        message: l.validationUserNotParticipant(userId),
         resourceId: menu.id,
       );
     }
@@ -114,7 +118,7 @@ class MenuParticipants {
     if (userId == menu.ownerId) {
       throw MenuOperationError(
         operation: MenuOperationType.updatePermissions,
-        message: 'Kan inte ändra ägarens behörighet',
+        message: l.validationCannotChangeOwnerPermission,
         resourceId: menu.id,
       );
     }
@@ -123,7 +127,7 @@ class MenuParticipants {
     if (newPermission == ResourcePermission.owner) {
       throw MenuOperationError(
         operation: MenuOperationType.updatePermissions,
-        message: 'Kan inte tilldela ägarbehörighet till annan användare',
+        message: l.validationCannotAssignOwnerPermission,
         resourceId: menu.id,
       );
     }
@@ -285,7 +289,7 @@ class MenuParticipants {
   /// Get formatted participant list for display (IDs only, names cached elsewhere)
   static String getParticipantListString(RealtimeMenu menu) {
     if (!hasParticipants(menu)) {
-      return 'Endast ägare: ${menu.ownerDisplayName}';
+      return AppLocale.current.participantOwnerOnly(menu.ownerDisplayName);
     }
 
     final participantIds = menu.participants.keys
@@ -293,7 +297,8 @@ class MenuParticipants {
             (id) => id != menu.ownerId) // Exclude owner from participant list
         .toList();
 
-    return 'Ägare: ${menu.ownerDisplayName}, Deltagare: ${participantIds.length}st';
+    return AppLocale.current
+        .participantSummary(menu.ownerDisplayName, participantIds.length);
   }
 
   /// Find participant permission by user ID

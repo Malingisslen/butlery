@@ -3,7 +3,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -302,14 +301,14 @@ class _SkrivSjalvReceptViewContentState
                 ? context.l10n.recipeEdit
                 : context.l10n.recipeWriteNew,
           ),
-          backgroundColor: AppColors.cream,
-          foregroundColor: AppColors.textDark,
-          iconTheme: const IconThemeData(
-            color: AppColors.forestGreen,
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          foregroundColor: Theme.of(context).colorScheme.onSurface,
+          iconTheme: IconThemeData(
+            color: Theme.of(context).colorScheme.primary,
             size: AppDimensions.iconSizeL,
           ),
-          actionsIconTheme: const IconThemeData(
-            color: AppColors.forestGreen,
+          actionsIconTheme: IconThemeData(
+            color: Theme.of(context).colorScheme.primary,
             size: AppDimensions.iconSizeL,
           ),
         ),
@@ -536,7 +535,9 @@ class _SkrivSjalvReceptViewContentState
             // ✅ RESPONSIVE: Constrained loading overlay
             if (_isSaving || viewModel.isSaving)
               ColoredBox(
-                color: AppColors.cream
+                color: Theme.of(context)
+                    .colorScheme
+                    .surface
                     .withValues(alpha: AppDimensions.opacityVeryDark),
                 child: Center(
                   child: ConstrainedBox(

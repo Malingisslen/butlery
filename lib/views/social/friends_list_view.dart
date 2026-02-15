@@ -9,7 +9,6 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -187,18 +186,25 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                           width: double.infinity,
                           padding: const EdgeInsets.all(AppDimensions.paddingL),
                           decoration: BoxDecoration(
-                            color: AppColors.error.withValues(
-                                alpha: AppDimensions.opacityVeryLight),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .error
+                                .withValues(
+                                    alpha: AppDimensions.opacityVeryLight),
                             borderRadius: BorderRadius.circular(
                                 AppDimensions.borderRadiusM),
                             border: Border.all(
-                                color: AppColors.error.withValues(
-                                    alpha: AppDimensions.opacityMediumLight)),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .error
+                                    .withValues(
+                                        alpha:
+                                            AppDimensions.opacityMediumLight)),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.error_outline,
-                                  color: AppColors.error),
+                              Icon(Icons.error_outline,
+                                  color: Theme.of(context).colorScheme.error),
                               const SizedBox(width: AppDimensions.spacingS),
                               Expanded(
                                 child: Text(
@@ -261,9 +267,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
               ? FloatingActionButton(
                   onPressed: () => _showCreateGroupDialog(viewModel),
                   tooltip: context.l10n.groupCreateGroup,
-                  child: const Stack(
+                  child: Stack(
                     children: [
-                      Center(
+                      const Center(
                         child: Icon(
                           Icons.groups,
                           size: AppDimensions.iconSizeL,

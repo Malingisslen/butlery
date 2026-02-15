@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
@@ -156,7 +155,7 @@ class ShareTargetSelectionEnhanced {
         decoration: BoxDecoration(
           color: isSelected
               ? Theme.of(context).colorScheme.primary
-              : AppColors.transparent,
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
         child: Row(

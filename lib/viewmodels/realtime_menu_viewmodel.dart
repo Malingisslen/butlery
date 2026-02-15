@@ -20,6 +20,7 @@ import 'package:butlery/viewmodels/realtime_menu/realtime_menu_state.dart';
 import 'package:butlery/viewmodels/realtime_menu/realtime_stream_manager.dart';
 import 'package:butlery/viewmodels/realtime_menu/realtime_menu_operations.dart';
 import 'package:butlery/viewmodels/realtime_menu/realtime_participant_manager.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 class RealtimeMenuViewModel extends ChangeNotifier {
   final RealtimeMenuService _menuService;
@@ -118,7 +119,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
     try {
       await _streamManager.startWatching(menuId);
     } catch (e) {
-      _state.transitionToError('Kunde inte starta watching: $e');
+      _state.transitionToError(AppLocale.current.errorGeneric);
       AppLogger.error('❌ Failed to start watching', e);
     }
   }
@@ -142,7 +143,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
         recipe: recipe,
       );
     } catch (e) {
-      _state.setError('Kunde inte lägga till recept: $e');
+      _state.setError(AppLocale.current.errorGeneric);
     }
   }
 
@@ -163,7 +164,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
         currentRecipes: currentRecipes,
       );
     } catch (e) {
-      _state.setError('Kunde inte ta bort recept: $e');
+      _state.setError(AppLocale.current.errorGeneric);
     }
   }
 
@@ -189,7 +190,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
         toIndex: toIndex,
       );
     } catch (e) {
-      _state.setError('Kunde inte flytta recept: $e');
+      _state.setError(AppLocale.current.errorGeneric);
     }
   }
 
@@ -212,7 +213,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
         currentRecipes: currentRecipes,
       );
     } catch (e) {
-      _state.setError('Kunde inte ändra ordning på recept: $e');
+      _state.setError(AppLocale.current.errorGeneric);
     }
   }
 
@@ -229,7 +230,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
         currentRecipes: currentRecipes,
       );
     } catch (e) {
-      _state.setError('Kunde inte rensa kategori: $e');
+      _state.setError(AppLocale.current.errorGeneric);
     }
   }
 
@@ -244,7 +245,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
         categoryName: categoryName,
       );
     } catch (e) {
-      _state.setError('Kunde inte regenerera kategori: $e');
+      _state.setError(AppLocale.current.errorGeneric);
     } finally {
       if (_state.status == RealtimeMenuStatus.updating) {
         _state.transitionToWatching();
@@ -258,7 +259,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
     required ResourcePermission permission,
   }) async {
     if (currentMenu == null) {
-      _state.setError('Ingen meny laddad');
+      _state.setError(AppLocale.current.errorNoMenuLoaded);
       return;
     }
 
@@ -270,13 +271,13 @@ class RealtimeMenuViewModel extends ChangeNotifier {
         permission: permission,
       );
     } catch (e) {
-      _state.setError('Kunde inte lägga till deltagare: $e');
+      _state.setError(AppLocale.current.errorGeneric);
     }
   }
 
   Future<void> removeParticipant(String userId) async {
     if (currentMenu == null) {
-      _state.setError('Ingen meny laddad');
+      _state.setError(AppLocale.current.errorNoMenuLoaded);
       return;
     }
 
@@ -286,7 +287,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
         userId: userId,
       );
     } catch (e) {
-      _state.setError('Kunde inte ta bort deltagare: $e');
+      _state.setError(AppLocale.current.errorGeneric);
     }
   }
 
@@ -308,7 +309,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
       await stopWatching();
       AppLogger.success('✅ Meny borttagen');
     } catch (e) {
-      _state.setError('Kunde inte ta bort meny: $e');
+      _state.setError(AppLocale.current.errorGeneric);
     }
   }
 
@@ -332,7 +333,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
       );
       AppLogger.success('✅ Menyinfo uppdaterad');
     } catch (e) {
-      _state.setError('Kunde inte uppdatera menyinfo: $e');
+      _state.setError(AppLocale.current.errorGeneric);
     } finally {
       if (_state.status == RealtimeMenuStatus.updating) {
         _state.transitionToWatching();
@@ -381,17 +382,17 @@ class RealtimeMenuViewModel extends ChangeNotifier {
 
   bool _canPerformUpdate() {
     if (currentMenu == null) {
-      _state.setError('Ingen meny laddad');
+      _state.setError(AppLocale.current.errorNoMenuLoaded);
       return false;
     }
 
     if (!canEdit) {
-      _state.setError('Ingen redigeringsbehörighet');
+      _state.setError(AppLocale.current.errorNoEditPermission);
       return false;
     }
 
     if (!isOnline) {
-      _state.setError('Ingen internetanslutning');
+      _state.setError(AppLocale.current.errorNoInternetConnection);
       return false;
     }
 

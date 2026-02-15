@@ -1,7 +1,6 @@
 // lib/widgets/common/social/social_builders.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -31,8 +30,8 @@ class SocialBuilders {
           : Icon(icon, size: iconSize ?? AppDimensions.iconSizeS),
       label: Text(label),
       style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor ?? AppColors.forestGreen,
-        foregroundColor: foregroundColor ?? AppColors.cardWhite,
+        backgroundColor: backgroundColor,
+        foregroundColor: foregroundColor,
         padding: padding ?? AppDimensions.paddingSymmetric16x8,
       ),
     );
@@ -57,7 +56,7 @@ class SocialBuilders {
             entry.value.toString(),
             style: valueStyle ??
                 AppTextStyles.bodyLargeBold.copyWith(
-                  color: textColor ?? AppColors.forestGreen,
+                  color: textColor ?? Theme.of(context).colorScheme.primary,
                 ),
           ),
           if (showLabels) ...[
@@ -66,7 +65,8 @@ class SocialBuilders {
               entry.key,
               style: labelStyle ??
                   Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: textColor ?? AppColors.textMedium,
+                        color: textColor ??
+                            Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
             ),
           ],

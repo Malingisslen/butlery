@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
@@ -123,13 +122,15 @@ class FormScaffold extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: isLoading ? null : onSave,
                     child: isLoading
-                        ? const SizedBox(
+                        ? SizedBox(
                             height: 16,
                             width: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.cardWhite),
+                                  Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHighest),
                             ),
                           )
                         : Text(context.l10n.commonSave),

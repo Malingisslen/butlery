@@ -1,7 +1,6 @@
 // lib/views/unified_shopping/widgets/shopping_dialogs.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -193,7 +192,7 @@ class ShoppingDialogs {
           SnackBar(
             content: Text(
                 context.l10n.shoppingCouldNotShowShareDialog(e.toString())),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(seconds: 4),
           ),
         );

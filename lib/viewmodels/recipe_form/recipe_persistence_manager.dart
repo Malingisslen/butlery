@@ -13,6 +13,7 @@ import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart
 import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
 import 'package:butlery/services/parsing/feedback/recipe_diff_calculator.dart';
 import 'package:butlery/repositories/parsing_correction_repository.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Manages recipe persistence with atomic save, fork, and delete operations.
 class RecipePersistenceManager with ErrorHandlingMixin {
@@ -91,12 +92,12 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     }
 
     if (!_state.isValid) {
-      _state.setError('Fyll i alla obligatoriska fält');
+      _state.setError(AppLocale.current.errorFillRequiredFields);
       return null;
     }
 
     if (!_permissionManager.canEdit) {
-      _state.setError('Du har inte behörighet att spara detta recept');
+      _state.setError(AppLocale.current.errorNoPermissionToSave);
       return null;
     }
 
@@ -211,7 +212,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
 
       if (result == null) {
         if (!_disposed) {
-          _state.setError('Kunde inte spara recept');
+          _state.setError(AppLocale.current.errorCouldNotSaveRecipe);
         }
       } else {
         if (!_disposed) {
@@ -229,7 +230,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
       AppLogger.error('❌ Atomic save operation failed: $e');
 
       if (!_disposed) {
-        _state.setError('Kunde inte spara recept: $e');
+        _state.setError(AppLocale.current.errorCouldNotSaveRecipe);
       }
 
       _completePendingSaveOperations(null);
@@ -250,7 +251,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   /// Forks recipe creating an independent copy.
   Future<Recipe?> forkRecipe() async {
     if (_state.originalRecipe == null) {
-      _state.setError('Inget recept att forka');
+      _state.setError(AppLocale.current.errorNoRecipeToFork);
       return null;
     }
 
@@ -277,7 +278,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
       );
 
       if (result == null) {
-        _state.setError('Kunde inte forka recept');
+        _state.setError(AppLocale.current.errorCouldNotForkRecipe);
       } else {
         if (!_disposed) {
           _state.clearCurrentDraft();
@@ -287,7 +288,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
       return result;
     } catch (e) {
       AppLogger.error('Fel vid forkning av recept: $e');
-      _state.setError('Kunde inte forka recept: $e');
+      _state.setError(AppLocale.current.errorCouldNotForkRecipe);
       return null;
     } finally {
       _state.setForking(false);
@@ -297,12 +298,12 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   /// Deletes recipe with collaborative cleanup and permission validation.
   Future<bool> deleteRecipe({required bool isCollaborative}) async {
     if (_state.originalRecipe == null) {
-      _state.setError('Inget recept att ta bort');
+      _state.setError(AppLocale.current.errorNoRecipeToDelete);
       return false;
     }
 
     if (!_permissionManager.canDelete) {
-      _state.setError('Du har inte behörighet att ta bort detta recept');
+      _state.setError(AppLocale.current.errorNoPermissionToDelete);
       return false;
     }
 
@@ -326,7 +327,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     );
 
     if (result == null) {
-      _state.setError('Kunde inte ta bort recept');
+      _state.setError(AppLocale.current.errorCouldNotDeleteRecipe);
       return false;
     }
 

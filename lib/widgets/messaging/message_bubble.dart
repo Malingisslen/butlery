@@ -4,15 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/models/messaging/message.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/widgets/messaging/builders/message_content_builder.dart';
 import 'package:butlery/widgets/messaging/components/message_status_widget.dart';
 import 'package:butlery/widgets/messaging/components/system_message_widget.dart';
+import 'package:butlery/widgets/common/emoji_reaction_display.dart';
+import 'package:butlery/widgets/common/emoji_reaction_picker.dart';
 
 /// Message bubble component for chat messages.
 /// Uses extracted components from [MessageContentBuilder],
@@ -26,6 +28,7 @@ class MessageBubble extends StatefulWidget {
   final Message? replyToMessage; // The message being replied to
   final bool showAvatar;
   final bool showTimestamp;
+  final void Function(String emoji)? onReactionToggle;
 
   const MessageBubble({
     super.key,
@@ -37,6 +40,7 @@ class MessageBubble extends StatefulWidget {
     this.replyToMessage,
     this.showAvatar = true,
     this.showTimestamp = true,
+    this.onReactionToggle,
   });
 
   @override
@@ -51,6 +55,7 @@ class _MessageBubbleState extends State<MessageBubble>
   static const double _swipeThreshold = 80.0;
   static const double _maxSwipe = 120.0;
   bool _reduceMotion = false;
+  bool _showReactionPicker = false;
 
   @override
   void initState() {
@@ -126,9 +131,9 @@ class _MessageBubbleState extends State<MessageBubble>
                           child: Opacity(
                             opacity: (_dragExtent.abs() / _swipeThreshold)
                                 .clamp(0.0, 1.0),
-                            child: const Icon(
+                            child: Icon(
                               Icons.reply,
-                              color: AppColors.success,
+                              color: context.butleryColors.success,
                               size: AppDimensions.iconSizeL,
                             ),
                           ),
@@ -223,12 +228,13 @@ class _MessageBubbleState extends State<MessageBubble>
   }
 
   Widget _buildAvatar(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: 32,
       height: 32,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.accent.withValues(alpha: AppDimensions.opacityLight),
+        color: cs.secondary.withValues(alpha: AppDimensions.opacityLight),
       ),
       child: widget.message.senderAvatarUrl != null
           ? SimpleImageWidget(
@@ -249,7 +255,7 @@ class _MessageBubbleState extends State<MessageBubble>
             ? widget.message.senderDisplayName[0].toUpperCase()
             : '?',
         style: AppTextStyles.labelMedium.copyWith(
-          color: AppColors.forestGreen,
+          color: Theme.of(context).colorScheme.primary,
         ),
       ),
     );
@@ -264,38 +270,81 @@ class _MessageBubbleState extends State<MessageBubble>
       child: Text(
         widget.message.senderDisplayName,
         style: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.textMedium,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),
     );
   }
 
   Widget _buildMessageCard(BuildContext context) {
-    return Semantics(
-      label: context.l10n.a11yMessageLongPressOptions,
-      button: true,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        onLongPress: widget.onLongPress,
-        child: StyledCard(
-          backgroundColor:
-              _isFromCurrentUser ? AppColors.forestGreen : AppColors.cardWhite,
-          borderRadius: AppDimensions.borderRadiusM,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingM,
-            vertical: AppDimensions.paddingS,
+    return Column(
+      crossAxisAlignment: _isFromCurrentUser
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
+      children: [
+        // Reaction picker overlay
+        if (_showReactionPicker && widget.onReactionToggle != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+            child: EmojiReactionPicker(
+              onReactionSelected: (emoji) {
+                widget.onReactionToggle?.call(emoji);
+                setState(() => _showReactionPicker = false);
+              },
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (widget.message.isReply && widget.replyToMessage != null)
-                _buildReplyPreview(context),
-              _buildMessageContent(context),
-              if (_isFromCurrentUser) _buildMessageStatus(context),
-            ],
+
+        Semantics(
+          label: context.l10n.a11yMessageLongPressOptions,
+          button: true,
+          child: GestureDetector(
+            onTap: () {
+              if (_showReactionPicker) {
+                setState(() => _showReactionPicker = false);
+              } else {
+                widget.onTap?.call();
+              }
+            },
+            onLongPress: () {
+              // Show reaction picker on long press if handler is available
+              if (widget.onReactionToggle != null) {
+                setState(() => _showReactionPicker = !_showReactionPicker);
+              }
+              widget.onLongPress?.call();
+            },
+            child: StyledCard(
+              backgroundColor: _isFromCurrentUser
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: AppDimensions.borderRadiusM,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingM,
+                vertical: AppDimensions.paddingS,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.message.isReply && widget.replyToMessage != null)
+                    _buildReplyPreview(context),
+                  _buildMessageContent(context),
+                  if (_isFromCurrentUser) _buildMessageStatus(context),
+                ],
+              ),
+            ),
           ),
         ),
-      ),
+
+        // Reaction display below the bubble
+        if (widget.message.reactions.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: AppDimensions.spacingXxs),
+            child: EmojiReactionDisplay(
+              reactions: widget.message.reactions,
+              currentUserId: widget.currentUserId,
+              onReactionTap: (emoji) => widget.onReactionToggle?.call(emoji),
+            ),
+          ),
+      ],
     );
   }
 

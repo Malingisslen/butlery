@@ -1,5 +1,6 @@
 /// Upload queue summary calculator for image upload analytics and UI display text.
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 
 /// Calculates upload queue summaries and formatted display text for UI.
@@ -135,20 +136,21 @@ class UploadQueueSummaryCalculator {
 
     final progressPercent = (overallProgress * 100).round();
 
+    final l = AppLocale.current;
     if (active > 0) {
       if (pending > 0) {
-        return 'Laddar upp $active bilder ($progressPercent% klart, $pending väntar)';
+        return l.uploadStatusUploading(active, progressPercent, pending);
       } else {
-        return 'Laddar upp $active bilder ($progressPercent% klart)';
+        return l.uploadStatusUploadingNoPending(active, progressPercent);
       }
     } else if (pending > 0) {
-      return 'Väntar på att ladda upp $pending bilder...';
+      return l.uploadStatusWaiting(pending);
     } else if (failed > 0 && completed > 0) {
-      return '$completed av $total bilder uppladdade, $failed misslyckades';
+      return l.uploadStatusPartialFailure(completed, total, failed);
     } else if (failed > 0) {
-      return '$failed av $total bilder misslyckades - tryck för att försöka igen';
+      return l.uploadStatusAllFailed(failed, total);
     } else if (completed == total && total > 0) {
-      return 'Alla $total bilder uppladdade framgångsrikt';
+      return l.uploadStatusAllSuccess(total);
     } else {
       return '';
     }
@@ -159,13 +161,14 @@ class UploadQueueSummaryCalculator {
       double progress, Duration? timeRemaining) {
     final progressPercent = (progress * 100).round();
 
+    final l = AppLocale.current;
     if (timeRemaining != null) {
       final timeText = formatDuration(timeRemaining);
-      return '$progressPercent% klart - $timeText kvar';
+      return l.uploadProgressWithTime(progressPercent, timeText);
     } else if (progress < 1.0) {
-      return '$progressPercent% klart';
+      return l.uploadProgressPercent(progressPercent);
     } else {
-      return 'Uppladdning slutförd';
+      return l.uploadComplete;
     }
   }
 
@@ -189,18 +192,19 @@ class UploadQueueSummaryCalculator {
 
     final successRate = total > 0 ? ((completed / total) * 100).round() : 0;
 
+    final l = AppLocale.current;
     if (completed == total && failed == 0) {
       final timeText =
           elapsedTime != null ? ' på ${formatDuration(elapsedTime)}' : '';
-      return 'Alla bilder uppladdade$timeText (100% framgång)';
+      return l.uploadAllSuccessWithTime(timeText);
     } else if (completed > 0 || failed > 0) {
-      final completionText = '$completed av $total slutförda';
-      final failureText = failed > 0 ? ', $failed misslyckades' : '';
-      final rateText = ' ($successRate% framgång)';
+      final completionText = l.uploadCompletionOf(completed, total);
+      final failureText = failed > 0 ? l.uploadFailureCount(failed) : '';
+      final rateText = l.uploadSuccessRate(successRate);
 
       return '$completionText$failureText$rateText';
     } else {
-      return 'Förbereder uppladdning...';
+      return l.uploadPreparing;
     }
   }
 

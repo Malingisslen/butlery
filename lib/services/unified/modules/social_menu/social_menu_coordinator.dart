@@ -40,6 +40,7 @@ import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
@@ -155,12 +156,14 @@ class SocialMenuCoordinator
     final totalRecipes =
         content.values.fold(0, (sum, recipes) => sum + recipes.length);
 
-    if (categories.isEmpty) return 'Tom meny';
+    if (categories.isEmpty) return AppLocale.current.menuTitleEmpty;
     if (categories.length == 1) {
-      return '${categories.first} meny ($totalRecipes recept)';
+      return AppLocale.current
+          .menuTitleSingleCategory(categories.first, totalRecipes);
     }
 
-    return 'Veckomeny med ${categories.join(', ')} ($totalRecipes recept)';
+    return AppLocale.current
+        .menuTitleMultiCategory(categories.join(', '), totalRecipes);
   }
 
   @override

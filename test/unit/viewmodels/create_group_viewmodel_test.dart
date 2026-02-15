@@ -400,10 +400,8 @@ void main() {
         // Assert
         expect(result, isFalse);
         // The error is prefixed by executeAsync's errorPrefix parameter
-        expect(
-            viewModel.error,
-            equals(
-                'Kunde inte skapa grupp: Exception: Kunde inte hitta den skapade gruppen'));
+        expect(viewModel.error,
+            equals('Kunde inte skapa grupp: Exception: Gruppen hittades inte'));
       });
 
       test('should set loading state during creation', () async {

@@ -1,8 +1,8 @@
 // lib/widgets/common/profile/builders/profile_section_builders.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/profile/builders/menu_item_builders.dart';
 import 'package:butlery/widgets/common/profile/handlers/backup_restore_handler.dart';
@@ -20,8 +20,8 @@ class ProfileSectionBuilders {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Divider(
-            color: AppColors.divider,
+          Divider(
+            color: Theme.of(context).colorScheme.outlineVariant,
             height: AppDimensions.dividerHeight,
           ),
           const SizedBox(height: AppDimensions.spacingXl),
@@ -40,7 +40,7 @@ class ProfileSectionBuilders {
             subtitle: context.l10n.profileDownloadBackupSubtitle,
             onTap: () =>
                 BackupRestoreHandler.handleBackup(rootContext ?? context),
-            color: AppColors.forestGreen,
+            color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: AppDimensions.spacingM),
           MenuItemBuilders.buildDataButton(
@@ -50,7 +50,7 @@ class ProfileSectionBuilders {
             subtitle: context.l10n.profileRestoreFromBackupSubtitle,
             onTap: () =>
                 BackupRestoreHandler.handleRestore(rootContext ?? context),
-            color: AppColors.forestGreen,
+            color: Theme.of(context).colorScheme.primary,
           ),
         ],
       ),
@@ -63,8 +63,8 @@ class ProfileSectionBuilders {
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Column(
         children: [
-          const Divider(
-            color: AppColors.divider,
+          Divider(
+            color: Theme.of(context).colorScheme.outlineVariant,
             height: AppDimensions.dividerHeight,
           ),
           const SizedBox(height: AppDimensions.spacingXl),
@@ -73,9 +73,11 @@ class ProfileSectionBuilders {
             child: FilledButton.tonalIcon(
               onPressed: () => AuthActionHandler.handleLogout(context),
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.error
+                backgroundColor: Theme.of(context)
+                    .colorScheme
+                    .error
                     .withValues(alpha: AppDimensions.opacityVeryLight),
-                foregroundColor: AppColors.error,
+                foregroundColor: Theme.of(context).colorScheme.error,
                 minimumSize:
                     const Size(double.infinity, AppDimensions.buttonHeight),
                 padding: const EdgeInsets.symmetric(
@@ -104,8 +106,8 @@ class ProfileSectionBuilders {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Divider(
-            color: AppColors.divider,
+          Divider(
+            color: Theme.of(context).colorScheme.outlineVariant,
             height: AppDimensions.dividerHeight,
           ),
           const SizedBox(height: AppDimensions.spacingXl),
@@ -125,7 +127,7 @@ class ProfileSectionBuilders {
             title: context.l10n.profilePrivacyPolicy,
             subtitle: context.l10n.profilePrivacyPolicySubtitle,
             onTap: () => GdprConsentHandler.handlePrivacyPolicy(context),
-            color: AppColors.primary,
+            color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: AppDimensions.spacingM),
 
@@ -136,7 +138,7 @@ class ProfileSectionBuilders {
             title: context.l10n.profileManageConsent,
             subtitle: context.l10n.profileManageConsentSubtitle,
             onTap: () => GdprConsentHandler.handleManageConsent(context),
-            color: AppColors.primary,
+            color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: AppDimensions.spacingM),
 
@@ -147,7 +149,7 @@ class ProfileSectionBuilders {
             title: context.l10n.profileExportData,
             subtitle: context.l10n.profileExportDataSubtitle,
             onTap: () => GdprConsentHandler.handleExportData(context),
-            color: AppColors.info,
+            color: context.butleryColors.info,
           ),
           const SizedBox(height: AppDimensions.spacingM),
 
@@ -158,7 +160,7 @@ class ProfileSectionBuilders {
             title: context.l10n.profileDeleteAccount,
             subtitle: context.l10n.profileDeleteAccountSubtitle,
             onTap: () => AuthActionHandler.handleDeleteAccount(context),
-            color: AppColors.error,
+            color: Theme.of(context).colorScheme.error,
           ),
         ],
       ),

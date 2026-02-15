@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/group_content_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
@@ -52,7 +52,7 @@ class GroupShoppingListActions {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(context.l10n.groupListImported(shoppingList.name)),
-              backgroundColor: AppColors.success,
+              backgroundColor: context.butleryColors.success,
               action: SnackBarAction(
                 label: context.l10n.groupView,
                 onPressed: () {
@@ -71,7 +71,7 @@ class GroupShoppingListActions {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(context.l10n.groupCouldNotImportList(e.toString())),
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -92,7 +92,7 @@ class GroupShoppingListActions {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.groupListCopiedToClipboard),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
           ),
         );
       }
@@ -101,7 +101,7 @@ class GroupShoppingListActions {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.groupCouldNotCopyList(e.toString())),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -134,7 +134,8 @@ class GroupShoppingListActions {
                   leading: const Icon(Icons.content_copy),
                   title: Text(context.l10n.groupCopiedToClipboard),
                   subtitle: Text(context.l10n.groupPasteInAnyApp),
-                  trailing: const Icon(Icons.check, color: AppColors.success),
+                  trailing:
+                      Icon(Icons.check, color: context.butleryColors.success),
                   onTap: () => Navigator.pop(context),
                 ),
                 ListTile(
@@ -156,7 +157,7 @@ class GroupShoppingListActions {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.shoppingCouldNotShareList(e.toString())),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -208,7 +209,7 @@ class GroupShoppingListActions {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.shoppingSharingComingSoon(shareOptions)),
-            backgroundColor: AppColors.info,
+            backgroundColor: context.butleryColors.info,
           ),
         );
       }
@@ -218,7 +219,7 @@ class GroupShoppingListActions {
           SnackBar(
             content:
                 Text(context.l10n.shoppingCouldNotOpenShareMenu(e.toString())),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -242,14 +243,14 @@ class GroupShoppingListActions {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.socialReportSent),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
           ),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.socialCouldNotSendReport(e.toString())),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }

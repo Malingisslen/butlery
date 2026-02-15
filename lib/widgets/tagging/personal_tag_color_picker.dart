@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_shadows.dart';
@@ -32,8 +31,11 @@ class PersonalTagColors {
   ];
 
   /// Converts hex string to Color.
-  static Color fromHex(String? hex) {
-    if (hex == null || hex.isEmpty) return AppColors.forestGreen;
+  ///
+  /// When [hex] is null/empty, returns [fallback] if provided, otherwise
+  /// a default green matching the brand primary in light mode.
+  static Color fromHex(String? hex, {Color? fallback}) {
+    if (hex == null || hex.isEmpty) return fallback ?? const Color(0xFF4A7C59);
 
     String colorStr = hex.replaceAll('#', '');
     if (colorStr.length == 6) {
@@ -97,7 +99,8 @@ class _ColorCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorValue = PersonalTagColors.fromHex(color);
+    final cs = Theme.of(context).colorScheme;
+    final colorValue = PersonalTagColors.fromHex(color, fallback: cs.primary);
 
     return Semantics(
       label: context.l10n.personalTagSelectColor,
@@ -112,15 +115,15 @@ class _ColorCircle extends StatelessWidget {
             color: colorValue,
             shape: BoxShape.circle,
             border: Border.all(
-              color: isSelected ? AppColors.textDark : AppColors.transparent,
+              color: isSelected ? cs.onSurface : Colors.transparent,
               width: isSelected ? 3 : 0,
             ),
             boxShadow: isSelected ? AppShadows.card : null,
           ),
           child: isSelected
-              ? const Icon(
+              ? Icon(
                   Icons.check,
-                  color: AppColors.cardWhite,
+                  color: cs.surfaceContainerHighest,
                   size: AppDimensions.iconSizeM,
                 )
               : null,
@@ -147,7 +150,8 @@ class PersonalTagColorDot extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: PersonalTagColors.fromHex(color),
+        color: PersonalTagColors.fromHex(color,
+            fallback: Theme.of(context).colorScheme.primary),
         shape: BoxShape.circle,
       ),
     );

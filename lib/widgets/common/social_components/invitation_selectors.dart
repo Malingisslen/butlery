@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -32,7 +31,7 @@ class InvitationSelectors {
               child: Text(
                 context.l10n.invitationNoTargetsAvailable,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textMedium,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
               ),
             ),
@@ -335,11 +334,15 @@ class InvitationSelectors {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: AppColors.forestGreen
+        color: Theme.of(context)
+            .colorScheme
+            .primary
             .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         border: Border.all(
-            color: AppColors.forestGreen
+            color: Theme.of(context)
+                .colorScheme
+                .primary
                 .withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Column(
@@ -364,7 +367,7 @@ class InvitationSelectors {
             Text(
               context.l10n.invitationTargetsSelected(selectedTargets.length),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textMedium,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             )
           else
@@ -377,7 +380,9 @@ class InvitationSelectors {
                   onDeleted: onRemoveTarget != null
                       ? () => onRemoveTarget(target)
                       : null,
-                  backgroundColor: AppColors.forestGreen
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .primary
                       .withValues(alpha: AppDimensions.opacityVeryLight),
                 );
               }).toList(),
@@ -453,18 +458,19 @@ class _RadioTargetSelectorState extends State<_RadioTargetSelector> {
               border: Border.all(
                 color: isSelected
                     ? Theme.of(context).primaryColor
-                    : AppColors.textMedium,
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
                 width: 2,
               ),
               color: isSelected
                   ? Theme.of(context).primaryColor
-                  : AppColors.transparent,
+                  : Colors.transparent,
             ),
             child: isSelected
-                ? const Icon(
+                ? Icon(
                     Icons.check,
                     size: 14,
-                    color: AppColors.cardWhite,
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
                   )
                 : null,
           ),

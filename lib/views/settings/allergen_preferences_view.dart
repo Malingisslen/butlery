@@ -8,9 +8,9 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/allergen_preferences_viewmodel.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
@@ -77,6 +77,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
 
   Widget _buildAllergenSection(
       BuildContext context, AllergenPreferencesViewModel viewModel) {
+    final cs = Theme.of(context).colorScheme;
+
     return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -85,9 +87,9 @@ class _AllergenPreferencesContent extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.shield_outlined,
-                  color: AppColors.forestGreen,
+                  color: cs.primary,
                   size: AppDimensions.iconSizeAction,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
@@ -101,7 +103,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
             Text(
               context.l10n.allergenTrackAllergensSubtitle,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
@@ -114,11 +116,13 @@ class _AllergenPreferencesContent extends StatelessWidget {
                   label: Text(e.value),
                   selected: isSelected,
                   onSelected: (_) => viewModel.toggleAllergen(e.key),
-                  selectedColor: AppColors.success
+                  selectedColor: context.butleryColors.success
                       .withValues(alpha: AppDimensions.opacityLight),
-                  checkmarkColor: AppColors.success,
+                  checkmarkColor: context.butleryColors.success,
                   labelStyle: AppTextStyles.labelMedium.copyWith(
-                    color: isSelected ? AppColors.success : AppColors.textDark,
+                    color: isSelected
+                        ? context.butleryColors.success
+                        : cs.onSurface,
                   ),
                 );
               }).toList(),
@@ -131,6 +135,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
 
   Widget _buildDietarySection(
       BuildContext context, AllergenPreferencesViewModel viewModel) {
+    final cs = Theme.of(context).colorScheme;
+
     return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -139,9 +145,9 @@ class _AllergenPreferencesContent extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.restaurant_outlined,
-                  color: AppColors.forestGreen,
+                  color: cs.primary,
                   size: AppDimensions.iconSizeAction,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
@@ -155,7 +161,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
             Text(
               context.l10n.allergenTrackDietarySubtitle,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
@@ -168,11 +174,13 @@ class _AllergenPreferencesContent extends StatelessWidget {
                   label: Text(e.value),
                   selected: isSelected,
                   onSelected: (_) => viewModel.toggleDietary(e.key),
-                  selectedColor: AppColors.success
+                  selectedColor: context.butleryColors.success
                       .withValues(alpha: AppDimensions.opacityLight),
-                  checkmarkColor: AppColors.success,
+                  checkmarkColor: context.butleryColors.success,
                   labelStyle: AppTextStyles.labelMedium.copyWith(
-                    color: isSelected ? AppColors.success : AppColors.textDark,
+                    color: isSelected
+                        ? context.butleryColors.success
+                        : cs.onSurface,
                   ),
                 );
               }).toList(),
@@ -185,6 +193,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
 
   Widget _buildDisplaySection(
       BuildContext context, AllergenPreferencesViewModel viewModel) {
+    final cs = Theme.of(context).colorScheme;
+
     return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -193,9 +203,9 @@ class _AllergenPreferencesContent extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.visibility_outlined,
-                  color: AppColors.forestGreen,
+                  color: cs.primary,
                   size: AppDimensions.iconSizeAction,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
@@ -211,11 +221,11 @@ class _AllergenPreferencesContent extends StatelessWidget {
               subtitle: Text(context.l10n.allergenDisplayOnCardsSubtitle),
               value: viewModel.showOnCards,
               onChanged: viewModel.setShowOnCards,
-              activeTrackColor: AppColors.forestGreen
-                  .withValues(alpha: AppDimensions.opacityHalf),
+              activeTrackColor:
+                  cs.primary.withValues(alpha: AppDimensions.opacityHalf),
               thumbColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.selected)) {
-                  return AppColors.forestGreen;
+                  return cs.primary;
                 }
                 return null;
               }),
@@ -227,11 +237,11 @@ class _AllergenPreferencesContent extends StatelessWidget {
               subtitle: Text(context.l10n.allergenDisplayOnDetailSubtitle),
               value: viewModel.showOnDetail,
               onChanged: viewModel.setShowOnDetail,
-              activeTrackColor: AppColors.forestGreen
-                  .withValues(alpha: AppDimensions.opacityHalf),
+              activeTrackColor:
+                  cs.primary.withValues(alpha: AppDimensions.opacityHalf),
               thumbColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.selected)) {
-                  return AppColors.forestGreen;
+                  return cs.primary;
                 }
                 return null;
               }),
@@ -243,11 +253,11 @@ class _AllergenPreferencesContent extends StatelessWidget {
               subtitle: Text(context.l10n.allergenDisplayCoverageSubtitle),
               value: viewModel.showCoverage,
               onChanged: viewModel.setShowCoverage,
-              activeTrackColor: AppColors.forestGreen
-                  .withValues(alpha: AppDimensions.opacityHalf),
+              activeTrackColor:
+                  cs.primary.withValues(alpha: AppDimensions.opacityHalf),
               thumbColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.selected)) {
-                  return AppColors.forestGreen;
+                  return cs.primary;
                 }
                 return null;
               }),
@@ -283,19 +293,20 @@ class _AllergenPreferencesContent extends StatelessWidget {
   }
 
   Widget _buildErrorMessage(BuildContext context, String error) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color:
-            AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.error.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-            color: AppColors.error
-                .withValues(alpha: AppDimensions.opacityMediumLight)),
+            color:
+                cs.error.withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.error),
+          Icon(Icons.error_outline, color: cs.error),
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
@@ -309,6 +320,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
   }
 
   Widget _buildRetagSection(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -317,9 +330,9 @@ class _AllergenPreferencesContent extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.sync,
-                  color: AppColors.forestGreen,
+                  color: cs.primary,
                   size: AppDimensions.iconSizeAction,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
@@ -333,7 +346,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
             Text(
               context.l10n.allergenAnalyzeAllRecipes,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
@@ -381,7 +394,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.allergenSettingsSaved),
-          backgroundColor: AppColors.success,
+          backgroundColor: context.butleryColors.success,
         ),
       );
     }
@@ -389,6 +402,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
 
   Future<void> _confirmReset(
       BuildContext context, AllergenPreferencesViewModel viewModel) async {
+    final cs = Theme.of(context).colorScheme;
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -403,7 +418,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            style: TextButton.styleFrom(foregroundColor: cs.error),
             child: Text(context.l10n.allergenReset),
           ),
         ],

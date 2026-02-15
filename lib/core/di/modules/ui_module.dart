@@ -35,8 +35,8 @@ import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart';
 import 'package:butlery/viewmodels/shopping_share_viewmodel.dart';
 import 'package:butlery/viewmodels/group_content_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
-import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
+import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 
 // Services dependencies
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -119,10 +119,12 @@ class UIModule implements DIModule {
         // Other ViewModels
         CollaborativeStatusViewModel,
         UniversalShareDialogViewModel,
-        DiscoveryDashboardViewModel,
 
         // Tagging ViewModels (singleton - maintains Firestore stream)
         PersonalTagViewModel,
+
+        // Onboarding ViewModel
+        OnboardingViewModel,
       ];
 
   @override
@@ -292,14 +294,14 @@ class UIModule implements DIModule {
         ),
       );
 
-      // Discovery Dashboard ViewModel
-      container.registerFactory<DiscoveryDashboardViewModel>(
-        () => DiscoveryDashboardViewModel(),
-      );
-
       // Personal Tag ViewModel - Singleton (holds Firestore stream)
       container.registerLazySingleton<PersonalTagViewModel>(
         () => PersonalTagViewModel(),
+      );
+
+      // Onboarding ViewModel
+      container.registerFactory<OnboardingViewModel>(
+        () => OnboardingViewModel(),
       );
     } catch (e) {
       throw DIModuleException(

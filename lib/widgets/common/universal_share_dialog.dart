@@ -7,9 +7,9 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 
 // Import focused components
@@ -27,6 +27,7 @@ enum ShareContentType {
   recipe,
   menu,
   shoppingList,
+  personalTag,
 }
 
 /// Delningssätt
@@ -132,6 +133,25 @@ class UniversalShareDialog extends StatefulWidget {
       availableFriends: availableFriends,
       availableGroups: availableGroups,
       isBulkSharing: true,
+    );
+  }
+
+  /// Factory constructor for sharing a personal tag definition
+  factory UniversalShareDialog.personalTag({
+    required String tagId,
+    required String tagName,
+    required UniversalShareDialogViewModel viewModel,
+    String? initialMessage,
+    List<UserProfile>? availableFriends,
+    List<FriendCategory>? availableGroups,
+  }) {
+    return UniversalShareDialog(
+      content: {'tagId': tagId, 'tagName': tagName},
+      contentType: ShareContentType.personalTag,
+      viewModel: viewModel,
+      initialMessage: initialMessage,
+      availableFriends: availableFriends,
+      availableGroups: availableGroups,
     );
   }
 
@@ -395,6 +415,16 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
             shareMode: _selectedMode,
           );
           break;
+        case ShareContentType.personalTag:
+          final tagData = widget.content as Map<String, String>;
+          shareResult = await widget.viewModel.sharePersonalTag(
+            tagId: tagData['tagId']!,
+            tagName: tagData['tagName']!,
+            friendUserIds: friendIds,
+            groupIds: groupIds,
+            message: message.isNotEmpty ? message : null,
+          );
+          break;
       }
 
       if (shareResult && mounted) {
@@ -411,7 +441,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(successMessage),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
           ),
         );
       } else if (widget.viewModel.hasError && mounted) {
@@ -419,7 +449,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(widget.viewModel.errorMessage!),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(
                 seconds: 4), // Longer duration for validation messages
           ),
@@ -430,7 +460,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.shareFailed(e.toString())),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }

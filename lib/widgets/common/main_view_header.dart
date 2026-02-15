@@ -7,7 +7,6 @@
 /// - Action buttons in top right (avatar, settings)
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -62,11 +61,12 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         ColoredBox(
-          color: AppColors.forestGreenDark,
+          color: cs.primaryContainer,
           child: SafeArea(
             bottom: false,
             child: SizedBox(
@@ -101,7 +101,7 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
                                 vertical: AppDimensions.spacingXxs,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.cream,
+                                color: cs.surface,
                                 borderRadius: BorderRadius.circular(2),
                               ),
                               child: Text(
@@ -136,9 +136,9 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
         ),
         // Rust accent bar
         if (showAccentBar)
-          const ColoredBox(
-            color: AppColors.rust,
-            child: SizedBox(
+          ColoredBox(
+            color: cs.secondary,
+            child: const SizedBox(
               height: accentBarHeight,
               width: double.infinity,
             ),
@@ -167,28 +167,29 @@ class ButlerySearchBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.spacingMd,
       ),
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
+        color: cs.surfaceContainerHighest,
         border: Border(
-          top: const BorderSide(color: AppColors.forestGreen, width: 2),
-          left: const BorderSide(color: AppColors.forestGreen, width: 2),
-          right: const BorderSide(color: AppColors.forestGreen, width: 2),
-          bottom: BorderSide(
-              color: AppColors.rust.withValues(alpha: 0.7), width: 4),
+          top: BorderSide(color: cs.primary, width: 2),
+          left: BorderSide(color: cs.primary, width: 2),
+          right: BorderSide(color: cs.primary, width: 2),
+          bottom:
+              BorderSide(color: cs.secondary.withValues(alpha: 0.7), width: 4),
         ),
       ),
       child: Row(
         children: [
-          const Padding(
-            padding: EdgeInsets.only(left: AppDimensions.spacingMd),
+          Padding(
+            padding: const EdgeInsets.only(left: AppDimensions.spacingMd),
             child: Icon(
               Icons.search,
-              color: AppColors.forestGreen,
+              color: cs.primary,
               size: 18,
             ),
           ),
@@ -197,12 +198,12 @@ class ButlerySearchBox extends StatelessWidget {
               controller: controller,
               onChanged: onChanged,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textDark,
+                color: cs.onSurface,
               ),
               decoration: InputDecoration(
                 hintText: hintText ?? context.l10n.searchRecipesHint,
                 hintStyle: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textLight,
+                  color: cs.outline,
                 ),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(
@@ -215,7 +216,7 @@ class ButlerySearchBox extends StatelessWidget {
           if (controller.text.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.clear, size: 18),
-              color: AppColors.textMedium,
+              color: cs.onSurfaceVariant,
               onPressed: () {
                 controller.clear();
                 onChanged?.call('');
@@ -289,8 +290,9 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Material(
-      color: isSelected ? AppColors.forestGreen : Colors.transparent,
+      color: isSelected ? cs.primary : Colors.transparent,
       borderRadius: BorderRadius.circular(0),
       child: InkWell(
         onTap: onTap,
@@ -300,14 +302,12 @@ class _FilterChip extends StatelessWidget {
             vertical: AppDimensions.spacingSm,
           ),
           decoration: BoxDecoration(
-            border: isSelected
-                ? null
-                : Border.all(color: AppColors.forestGreen, width: 2),
+            border: isSelected ? null : Border.all(color: cs.primary, width: 2),
           ),
           child: Text(
             label,
             style: AppTextStyles.filterChip.copyWith(
-              color: isSelected ? AppColors.cream : AppColors.forestGreenDark,
+              color: isSelected ? cs.surface : cs.primaryContainer,
             ),
           ),
         ),
@@ -336,6 +336,8 @@ class ButlerySectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final effectiveAccentColor = accentColor ?? cs.secondary;
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
@@ -346,10 +348,10 @@ class ButlerySectionHeader extends StatelessWidget {
         vertical: AppDimensions.spacingSm,
       ),
       decoration: BoxDecoration(
-        color: (accentColor ?? AppColors.rust).withValues(alpha: 0.08),
+        color: effectiveAccentColor.withValues(alpha: 0.08),
         border: Border(
           left: BorderSide(
-            color: accentColor ?? AppColors.rust,
+            color: effectiveAccentColor,
             width: 4,
           ),
         ),
@@ -365,7 +367,7 @@ class ButlerySectionHeader extends StatelessWidget {
             Text(
               count!,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
             ),
         ],

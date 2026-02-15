@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -255,7 +254,7 @@ class InvitationLists {
                   Text(
                     '${target.memberCount ?? 0} medlemmar',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textMedium,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                   ),
                 ],

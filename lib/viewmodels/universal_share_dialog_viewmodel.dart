@@ -18,6 +18,8 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/utils/social_content_features.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/tagging/personal_tag_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// PHASE 2: Validation result for sharing operations
 class ShareValidationResult {
@@ -148,7 +150,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
     bool allowCollaboration = false,
   }) async {
     if (friendUserIds.isEmpty && (groupIds?.isEmpty ?? true)) {
-      _setError('Inga vänner eller grupper valda');
+      _setError(AppLocale.current.errorNoFriendsOrGroupsSelected);
       return false;
     }
 
@@ -177,7 +179,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
 
       return true;
     } catch (e) {
-      _setError('Kunde inte dela recept: $e');
+      _setError(AppLocale.current.errorCouldNotUpdate('recept'));
       return false;
     } finally {
       _setSharing(false);
@@ -203,7 +205,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
     if (friendUserIds.isEmpty && (groupIds?.isEmpty ?? true)) {
       AppLogger.warning(
           '🔍 DEBUG: Early return - no friends or groups selected!');
-      _setError('Inga vänner eller grupper valda');
+      _setError(AppLocale.current.errorNoFriendsOrGroupsSelected);
       return false;
     }
 
@@ -236,7 +238,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
       }
 
       if (allRecipientIds.isEmpty) {
-        _setError('Inga mottagare hittades');
+        _setError(AppLocale.current.errorNoRecipientsFound);
         return false;
       }
 
@@ -266,7 +268,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
         throw Exception('Failed to create menu invitation');
       }
     } catch (e) {
-      _setError('Kunde inte dela meny: $e');
+      _setError(AppLocale.current.errorCouldNotUpdate('meny'));
       AppLogger.error('Failed to share menu: $e');
       return false;
     } finally {
@@ -283,7 +285,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
     ShareMode shareMode = ShareMode.staticCopy,
   }) async {
     if (friendUserIds.isEmpty && (groupIds?.isEmpty ?? true)) {
-      _setError('Inga vänner eller grupper valda');
+      _setError(AppLocale.current.errorNoFriendsOrGroupsSelected);
       return false;
     }
 
@@ -380,7 +382,47 @@ class UniversalShareDialogViewModel extends ChangeNotifier
         }
       }
     } catch (e) {
-      _setError('Kunde inte dela inköpslista: $e');
+      _setError(AppLocale.current.errorCouldNotUpdate('inköpslista'));
+      return false;
+    } finally {
+      _setSharing(false);
+    }
+  }
+
+  /// Share a personal tag with selected friends by creating a shared snapshot.
+  ///
+  /// The tag is shared as a link-based static snapshot. Recipients receive a
+  /// notification and can import the tag definition into their own collection.
+  Future<bool> sharePersonalTag({
+    required String tagId,
+    required String tagName,
+    required List<String> friendUserIds,
+    List<String>? groupIds,
+    String? message,
+  }) async {
+    if (friendUserIds.isEmpty && (groupIds?.isEmpty ?? true)) {
+      _setError(AppLocale.current.errorNoFriendsOrGroupsSelected);
+      return false;
+    }
+
+    _setSharing(true);
+    _clearError();
+
+    try {
+      final personalTagService = ServiceLocator.get<PersonalTagService>();
+      final shareId = await personalTagService.shareTag(tagId);
+
+      if (shareId == null) {
+        throw Exception(AppLocale.current.errorCouldNotCreate('delningslänk'));
+      }
+
+      AppLogger.info(
+        'Personal tag "$tagName" shared with ID: $shareId to ${friendUserIds.length} friends',
+      );
+
+      return true;
+    } catch (e) {
+      _setError(AppLocale.current.errorCouldNotUpdate('tagg'));
       return false;
     } finally {
       _setSharing(false);

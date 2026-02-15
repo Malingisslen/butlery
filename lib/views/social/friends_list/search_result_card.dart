@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/widgets/common/content_card.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -122,7 +122,7 @@ class SearchResultCard {
             SnackBar(
               content:
                   Text(context.l10n.socialFriendRequestSent(user.displayName)),
-              backgroundColor: AppColors.success,
+              backgroundColor: context.butleryColors.success,
             ),
           );
         } else {
@@ -130,7 +130,7 @@ class SearchResultCard {
             SnackBar(
               content: Text(viewModel.error ??
                   context.l10n.socialCouldNotSendFriendRequest),
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -140,7 +140,7 @@ class SearchResultCard {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.errorOccurredWithDetails('$e')),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -163,7 +163,7 @@ class SearchResultCard {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.socialCouldNotFindFriendRequest),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -179,7 +179,7 @@ class SearchResultCard {
             SnackBar(
               content: Text(context.l10n
                   .socialFriendRequestAcceptedFrom(user.displayName)),
-              backgroundColor: AppColors.success,
+              backgroundColor: context.butleryColors.success,
             ),
           );
         } else {
@@ -187,7 +187,7 @@ class SearchResultCard {
             SnackBar(
               content: Text(viewModel.error ??
                   context.l10n.socialCouldNotAcceptFriendRequest),
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -197,7 +197,7 @@ class SearchResultCard {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.errorOccurredWithDetails('$e')),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }

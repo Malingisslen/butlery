@@ -5,15 +5,19 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
+import 'package:butlery/models/shared_personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_personal_tag_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
+import 'package:butlery/services/user_service.dart' as user;
 import 'package:rxdart/rxdart.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Service for managing user-defined personal tags, groups, and automation rules.
 ///
@@ -57,14 +61,14 @@ class PersonalTagService extends BaseService {
         }
 
         if (await _tagRepository.nameExists(tag.name)) {
-          throw ArgumentError('En tagg med namnet "${tag.name}" finns redan');
+          throw ArgumentError(AppLocale.current.errorTagNameExists(tag.name));
         }
 
         // Validate groupId exists if specified
         if (tag.groupId != null) {
           final group = await _groupRepository.read(tag.groupId!);
           if (group == null) {
-            throw ArgumentError('Gruppen finns inte');
+            throw ArgumentError(AppLocale.current.errorGroupDoesNotExist);
           }
         }
 
@@ -111,14 +115,14 @@ class PersonalTagService extends BaseService {
         }
 
         if (await _tagRepository.nameExists(tag.name, excludeId: tag.id)) {
-          throw ArgumentError('En tagg med namnet "${tag.name}" finns redan');
+          throw ArgumentError(AppLocale.current.errorTagNameExists(tag.name));
         }
 
         // Validate groupId exists if specified
         if (tag.groupId != null) {
           final group = await _groupRepository.read(tag.groupId!);
           if (group == null) {
-            throw ArgumentError('Gruppen finns inte');
+            throw ArgumentError(AppLocale.current.errorGroupDoesNotExist);
           }
         }
 
@@ -225,7 +229,7 @@ class PersonalTagService extends BaseService {
         if (groupId != null) {
           final group = await _groupRepository.read(groupId);
           if (group == null) {
-            throw ArgumentError('Gruppen finns inte');
+            throw ArgumentError(AppLocale.current.errorGroupDoesNotExist);
           }
         }
 
@@ -264,7 +268,7 @@ class PersonalTagService extends BaseService {
 
         if (await _groupRepository.nameExists(group.name)) {
           throw ArgumentError(
-            'En grupp med namnet "${group.name}" finns redan',
+            AppLocale.current.errorGroupNameExistsWithName(group.name),
           );
         }
 
@@ -310,7 +314,7 @@ class PersonalTagService extends BaseService {
         if (await _groupRepository.nameExists(group.name,
             excludeId: group.id)) {
           throw ArgumentError(
-            'En grupp med namnet "${group.name}" finns redan',
+            AppLocale.current.errorGroupNameExistsWithName(group.name),
           );
         }
 
@@ -398,7 +402,7 @@ class PersonalTagService extends BaseService {
 
         final tag = await _tagRepository.read(tagId);
         if (tag == null) {
-          throw ArgumentError('Taggen finns inte');
+          throw ArgumentError(AppLocale.current.errorTagDoesNotExist);
         }
 
         final updatedRules = [...tag.rules, rule];
@@ -423,12 +427,12 @@ class PersonalTagService extends BaseService {
 
         final tag = await _tagRepository.read(tagId);
         if (tag == null) {
-          throw ArgumentError('Taggen finns inte');
+          throw ArgumentError(AppLocale.current.errorTagDoesNotExist);
         }
 
         final ruleIndex = tag.rules.indexWhere((r) => r.id == rule.id);
         if (ruleIndex == -1) {
-          throw ArgumentError('Regeln finns inte');
+          throw ArgumentError(AppLocale.current.errorRuleDoesNotExist);
         }
 
         final updatedRules = [...tag.rules];
@@ -449,7 +453,7 @@ class PersonalTagService extends BaseService {
       () async {
         final tag = await _tagRepository.read(tagId);
         if (tag == null) {
-          throw ArgumentError('Taggen finns inte');
+          throw ArgumentError(AppLocale.current.errorTagDoesNotExist);
         }
 
         final updatedRules = tag.rules.where((r) => r.id != ruleId).toList();
@@ -473,12 +477,12 @@ class PersonalTagService extends BaseService {
       () async {
         final tag = await _tagRepository.read(tagId);
         if (tag == null) {
-          throw ArgumentError('Taggen finns inte');
+          throw ArgumentError(AppLocale.current.errorTagDoesNotExist);
         }
 
         final ruleIndex = tag.rules.indexWhere((r) => r.id == ruleId);
         if (ruleIndex == -1) {
-          throw ArgumentError('Regeln finns inte');
+          throw ArgumentError(AppLocale.current.errorRuleDoesNotExist);
         }
 
         final updatedRules = [...tag.rules];
@@ -850,6 +854,113 @@ class PersonalTagService extends BaseService {
           requiresAuth: true,
         ) ??
         [];
+  }
+
+  /// Shares a personal tag by creating a snapshot in the shared collection.
+  ///
+  /// Returns the share ID that can be sent to other users for import.
+  Future<String?> shareTag(String tagId) async {
+    return await executeServiceOperation(
+      () async {
+        final tag = await _tagRepository.read(tagId);
+        if (tag == null) {
+          throw ArgumentError(AppLocale.current.errorTagDoesNotExist);
+        }
+
+        final userId = _getCurrentUserId();
+        if (userId == null) {
+          throw StateError(AppLocale.current.errorNoUserLoggedIn);
+        }
+
+        final userService = ServiceLocator.get<user.UserService>();
+        final displayName =
+            userService.currentUserProfile?.displayName ?? 'Unknown';
+
+        // Snapshot matching recipe IDs at share time
+        final recipeRepo = _getRecipeRepository();
+        final matchingRecipeIds = <String>[];
+        if (recipeRepo != null) {
+          final recipes = await recipeRepo.fetchAllUserRecipes(userId);
+          for (final recipe in recipes) {
+            final tagIds = recipe.personalTagIds ?? [];
+            if (tagIds.contains(tagId)) {
+              matchingRecipeIds.add(recipe.id);
+            }
+          }
+        }
+
+        // Serialize rules as embedded maps
+        final serializedRules =
+            tag.rules.map((r) => r.toEmbeddedMap()).toList();
+
+        final sharedTag = SharedPersonalTag.create(
+          tagName: tag.name,
+          sharedByUserId: userId,
+          sharedByDisplayName: displayName,
+          matchingRecipeIds: matchingRecipeIds,
+          tagRules: serializedRules,
+        );
+
+        final repo = ServiceLocator.get<FirebaseSharedPersonalTagRepository>();
+        await repo.create(sharedTag);
+
+        AppLogger.info(
+          'Shared personal tag "${tag.name}" with ${matchingRecipeIds.length} recipes',
+        );
+
+        return sharedTag.id;
+      },
+      operationName: 'Share personal tag',
+      requiresAuth: true,
+    );
+  }
+
+  /// Imports a shared tag by creating a local copy for the current user.
+  Future<PersonalTag?> importSharedTag(String shareId) async {
+    return await executeServiceOperation(
+      () async {
+        final repo = ServiceLocator.get<FirebaseSharedPersonalTagRepository>();
+        final sharedTag = await repo.read(shareId);
+        if (sharedTag == null) {
+          throw ArgumentError(AppLocale.current.errorSharedTagNotFound);
+        }
+
+        // Check for duplicate name and make unique if needed
+        var tagName = sharedTag.tagName;
+        if (await _tagRepository.nameExists(tagName)) {
+          tagName = '$tagName (importerad)';
+          // If that also exists, add a number
+          var counter = 2;
+          while (await _tagRepository.nameExists(tagName)) {
+            tagName = '${sharedTag.tagName} (importerad $counter)';
+            counter++;
+          }
+        }
+
+        // Reconstruct rules from snapshot
+        final rules = sharedTag.tagRules
+            .map((data) => PersonalTagRule.fromEmbeddedMap(data))
+            .toList();
+
+        final nextOrder = await _tagRepository.getNextSortOrder();
+        final localTag = PersonalTag.create(
+          name: tagName,
+          sortOrder: nextOrder,
+          rules: rules,
+        );
+
+        await _tagRepository.create(localTag);
+        clearCache(_tagsCacheKey);
+
+        AppLogger.info(
+          'Imported shared tag "${sharedTag.tagName}" as "$tagName" from ${sharedTag.sharedByDisplayName}',
+        );
+
+        return localTag;
+      },
+      operationName: 'Import shared tag',
+      requiresAuth: true,
+    );
   }
 
   @override

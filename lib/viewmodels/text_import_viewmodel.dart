@@ -44,6 +44,7 @@
 // lib/viewmodels/text_import_viewmodel.dart
 
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Comprehensive text import ViewModel providing advanced text-to-recipe conversion through ImportManager coordination.
 /// Specializes in text-based recipe importing from various sources including social media, OCR, manual input, and copied content.
@@ -88,7 +89,7 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// ```
   Future<bool> parseText() async {
     if (!hasValidInput) {
-      setError('Vänligen ange text att tolka');
+      setError(AppLocale.current.errorPleaseEnterText);
       return false;
     }
 
@@ -96,7 +97,7 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
       await performImport();
       return hasParsedRecipe && !hasError;
     } catch (e) {
-      setError('Kunde inte tolka text: $e');
+      setError(AppLocale.current.errorImportFailed);
       return false;
     }
   }
@@ -332,12 +333,12 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// ```
   bool validateInput() {
     if (!hasValidInput) {
-      setError('Vänligen ange text att importera');
+      setError(AppLocale.current.errorPleaseEnterTextToImport);
       return false;
     }
 
     if (inputText.trim().length < 10) {
-      setError('Texten är för kort för att innehålla ett recept');
+      setError(AppLocale.current.errorTextTooShort);
       return false;
     }
 
@@ -370,27 +371,27 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
     final suggestions = <String>[];
 
     if (!text.contains('ingrediens') && !text.contains('ingredient')) {
-      suggestions.add('Inkludera ingredienslista för bättre tolkning');
+      suggestions.add(AppLocale.current.textImportSuggestionIngredients);
     }
 
     if (!text.contains('instruktion') &&
         !text.contains('steg') &&
         !text.contains('gör så här')) {
-      suggestions.add('Inkludera tillagningsinstruktioner eller steg');
+      suggestions.add(AppLocale.current.textImportSuggestionInstructions);
     }
 
     if (!text.contains('minut') &&
         !text.contains('timme') &&
         !text.contains('tid')) {
-      suggestions.add('Inkludera tillagningstid om tillgänglig');
+      suggestions.add(AppLocale.current.textImportSuggestionTime);
     }
 
     if (!text.contains('portion') && !text.contains('servering')) {
-      suggestions.add('Inkludera antal portioner om känt');
+      suggestions.add(AppLocale.current.textImportSuggestionPortions);
     }
 
     if (suggestions.isEmpty) {
-      suggestions.add('Texten ser bra ut för recepttolkning');
+      suggestions.add(AppLocale.current.textImportSuggestionLooksGood);
     }
 
     return suggestions;

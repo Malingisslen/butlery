@@ -12,7 +12,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/theme_constants.dart';
 
 class StyledCard extends StatelessWidget {
@@ -118,6 +118,7 @@ class StyledCard extends StatelessWidget {
         borderColor = null;
 
   /// Selection card (for pickers, selectors)
+  /// Note: borderColor resolved to theme primary in build() when showBorder is true
   const StyledCard.selection({
     super.key,
     required this.child,
@@ -131,7 +132,7 @@ class StyledCard extends StatelessWidget {
             : AppDimensions.elevationLow,
         borderRadius = AppDimensions.borderRadius8,
         showBorder = isSelected,
-        borderColor = isSelected ? AppColors.forestGreen : null;
+        borderColor = null;
 
   @override
   Widget build(BuildContext context) {
@@ -172,7 +173,7 @@ class StyledCard extends StatelessWidget {
         ),
         side: showBorder
             ? BorderSide(
-                color: borderColor ?? Theme.of(context).colorScheme.outline,
+                color: borderColor ?? Theme.of(context).colorScheme.primary,
                 width: AppDimensions.borderWidthStandard,
               )
             : BorderSide.none,
@@ -218,12 +219,17 @@ class StyledCards {
     required Widget child,
     VoidCallback? onRetry,
   }) {
-    return StyledCard.outlined(
-      backgroundColor: AppColors.errorContainer,
-      borderColor: AppColors.error,
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
-      onTap: onRetry,
-      child: child,
+    return Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return StyledCard.outlined(
+          backgroundColor: cs.errorContainer,
+          borderColor: cs.error,
+          padding: const EdgeInsets.all(AppDimensions.spacingMd),
+          onTap: onRetry,
+          child: child,
+        );
+      },
     );
   }
 
@@ -231,11 +237,16 @@ class StyledCards {
   static Widget info({
     required Widget child,
   }) {
-    return StyledCard.outlined(
-      backgroundColor: AppColors.infoContainer,
-      borderColor: AppColors.info,
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
-      child: child,
+    return Builder(
+      builder: (context) {
+        final bc = context.butleryColors;
+        return StyledCard.outlined(
+          backgroundColor: bc.infoContainer,
+          borderColor: bc.info,
+          padding: const EdgeInsets.all(AppDimensions.spacingMd),
+          child: child,
+        );
+      },
     );
   }
 
@@ -243,11 +254,16 @@ class StyledCards {
   static Widget success({
     required Widget child,
   }) {
-    return StyledCard.outlined(
-      backgroundColor: AppColors.successContainer,
-      borderColor: AppColors.success,
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
-      child: child,
+    return Builder(
+      builder: (context) {
+        final bc = context.butleryColors;
+        return StyledCard.outlined(
+          backgroundColor: bc.successContainer,
+          borderColor: bc.success,
+          padding: const EdgeInsets.all(AppDimensions.spacingMd),
+          child: child,
+        );
+      },
     );
   }
 
@@ -255,11 +271,16 @@ class StyledCards {
   static Widget warning({
     required Widget child,
   }) {
-    return StyledCard.outlined(
-      backgroundColor: AppColors.warningContainer,
-      borderColor: AppColors.warning,
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
-      child: child,
+    return Builder(
+      builder: (context) {
+        final bc = context.butleryColors;
+        return StyledCard.outlined(
+          backgroundColor: bc.warningContainer,
+          borderColor: bc.warning,
+          padding: const EdgeInsets.all(AppDimensions.spacingMd),
+          child: child,
+        );
+      },
     );
   }
 
@@ -268,23 +289,28 @@ class StyledCards {
     double? height,
     double? width,
   }) {
-    return StyledCard.standard(
-      child: Container(
-        height: height ?? 100,
-        width: width,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColors.divider,
-              AppColors.backgroundLight,
-              AppColors.divider,
-            ],
-            stops: [0.0, 0.5, 1.0],
-            begin: AlignmentDirectional.centerStart,
-            end: AlignmentDirectional.centerEnd,
+    return Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return StyledCard.standard(
+          child: Container(
+            height: height ?? 100,
+            width: width,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  cs.outlineVariant,
+                  cs.surface,
+                  cs.outlineVariant,
+                ],
+                stops: const [0.0, 0.5, 1.0],
+                begin: AlignmentDirectional.centerStart,
+                end: AlignmentDirectional.centerEnd,
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

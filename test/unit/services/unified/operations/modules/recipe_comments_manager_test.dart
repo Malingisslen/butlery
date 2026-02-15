@@ -39,6 +39,8 @@ class FakeRecipeComment implements RecipeComment {
   final int replyCount;
   @override
   final bool isDeleted;
+  @override
+  final Map<String, List<String>> reactions;
 
   FakeRecipeComment({
     required this.id,
@@ -53,6 +55,7 @@ class FakeRecipeComment implements RecipeComment {
     this.parentCommentId,
     this.replyCount = 0,
     this.isDeleted = false,
+    this.reactions = const {},
   }) : createdAt = createdAt ?? DateTime.now();
 
   @override
@@ -80,6 +83,7 @@ class FakeRecipeComment implements RecipeComment {
     int? likesCount,
     int? replyCount,
     bool? isDeleted,
+    Map<String, List<String>>? reactions,
   }) {
     return FakeRecipeComment(
       id: id,
@@ -94,6 +98,7 @@ class FakeRecipeComment implements RecipeComment {
       parentCommentId: parentCommentId,
       replyCount: replyCount ?? this.replyCount,
       isDeleted: isDeleted ?? this.isDeleted,
+      reactions: reactions ?? this.reactions,
     );
   }
 

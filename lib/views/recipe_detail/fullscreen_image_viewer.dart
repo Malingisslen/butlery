@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_colors.dart';
 
 /// Fullscreen image viewer for recipe images
 /// This widget provides a full-screen image viewing experience with:
@@ -56,26 +55,28 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.textDark,
+      backgroundColor: cs.onSurface,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: _showAppBar
-            ? AppColors.textDark.withValues(alpha: AppDimensions.opacityDark)
-            : AppColors.transparent,
+            ? cs.onSurface.withValues(alpha: AppDimensions.opacityDark)
+            : Colors.transparent,
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.light,
         title: _showAppBar
             ? Text(
                 '${_currentIndex + 1} / ${widget.imageUrls.length}',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.cardWhite,
+                      color: cs.surfaceContainerHighest,
                     ),
               )
             : null,
-        iconTheme: const IconThemeData(color: AppColors.cardWhite),
+        iconTheme: IconThemeData(color: cs.surfaceContainerHighest),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.cardWhite),
+          icon: Icon(Icons.arrow_back, color: cs.surfaceContainerHighest),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -102,7 +103,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
               child: Container(
                 width: double.infinity,
                 height: double.infinity,
-                color: AppColors.textDark,
+                color: cs.onSurface,
                 child: Center(
                   child: Image.network(
                     widget.imageUrls[index],
@@ -111,7 +112,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                       if (progress == null) return child;
                       return Center(
                         child: CircularProgressIndicator(
-                          color: AppColors.cardWhite,
+                          color: cs.surfaceContainerHighest,
                           value: progress.expectedTotalBytes != null
                               ? progress.cumulativeBytesLoaded /
                                   progress.expectedTotalBytes!
@@ -124,7 +125,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                         child: Icon(
                           Icons.error_outline,
                           size: AppDimensions.iconSizeXxl,
-                          color: AppColors.cardWhite54,
+                          color: Colors.white54,
                         ),
                       );
                     },

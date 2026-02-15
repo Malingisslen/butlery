@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -26,7 +26,7 @@ class CategoryDisplayWidgets {
         return ListTile(
           leading: Icon(
             category.emoji != null ? Icons.emoji_emotions : Icons.group,
-            color: AppColors.forestGreen,
+            color: Theme.of(context).colorScheme.primary,
           ),
           title: Text(category.name),
           subtitle: showMemberCount
@@ -76,7 +76,7 @@ class CategoryDisplayWidgets {
                           ? Icons.emoji_emotions
                           : Icons.group,
                       size: AppDimensions.iconSizeXl,
-                      color: AppColors.forestGreen,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                     const SizedBox(height: AppDimensions.spacingS),
                     Text(
@@ -135,7 +135,7 @@ class CategoryDisplayWidgets {
                     icon: Icons.category,
                     label: context.l10n.friendCategories,
                     value: categories.length.toString(),
-                    color: AppColors.forestGreen,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 Expanded(
@@ -143,7 +143,7 @@ class CategoryDisplayWidgets {
                     icon: Icons.people,
                     label: context.l10n.friendTotalMembers,
                     value: totalMembers.toString(),
-                    color: AppColors.success,
+                    color: context.butleryColors.success,
                   ),
                 ),
                 Expanded(
@@ -151,7 +151,7 @@ class CategoryDisplayWidgets {
                     icon: Icons.analytics,
                     label: context.l10n.friendAverage,
                     value: averageSize.toString(),
-                    color: AppColors.warning,
+                    color: context.butleryColors.warning,
                   ),
                 ),
               ],
@@ -162,7 +162,7 @@ class CategoryDisplayWidgets {
                 context.l10n.friendLargestCategory(
                     largestCategory.name, largestCategory.memberIds.length),
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -206,7 +206,7 @@ class CategoryDisplayWidgets {
                         category.emoji != null
                             ? Icons.emoji_emotions
                             : Icons.group,
-                        color: AppColors.forestGreen,
+                        color: Theme.of(context).colorScheme.primary,
                         size: AppDimensions.iconSizeM,
                       ),
                       const SizedBox(width: AppDimensions.spacingS),
@@ -235,17 +235,18 @@ class CategoryDisplayWidgets {
                     const SizedBox(height: AppDimensions.spacingS),
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.people,
                           size: AppDimensions.iconSizeS,
-                          color: AppColors.textMedium,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: AppDimensions.spacingXs),
                         Text(
                           context.l10n
                               .friendMemberCount(category.friendUserIds.length),
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textMedium,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -303,14 +304,14 @@ class CategoryDisplayWidgets {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: AppColors.backgroundLight,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.category,
-            color: AppColors.forestGreen,
+            color: Theme.of(context).colorScheme.primary,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingMd),
@@ -326,7 +327,7 @@ class CategoryDisplayWidgets {
                   Text(
                     context.l10n.friendTotalMembersCount(totalMembers),
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textMedium,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
               ],
@@ -350,16 +351,16 @@ class CategoryDisplayWidgets {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.category_outlined,
             size: AppDimensions.iconSizeXxl,
-            color: AppColors.textMedium,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             title ?? context.l10n.emptyNoCategoriesTitle,
             style: AppTextStyles.titleMedium.copyWith(
-              color: AppColors.textMedium,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),
@@ -367,7 +368,7 @@ class CategoryDisplayWidgets {
           Text(
             subtitle ?? context.l10n.friendCreateFirstCategory,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),
@@ -419,7 +420,7 @@ class _StatItem extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textMedium,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
           textAlign: TextAlign.center,
         ),

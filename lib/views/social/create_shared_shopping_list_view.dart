@@ -6,9 +6,9 @@ import 'package:butlery/viewmodels/create_shared_list_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
@@ -140,12 +140,16 @@ class _CreateSharedShoppingListViewState
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
-                  color: AppColors.error
+                  color: Theme.of(context)
+                      .colorScheme
+                      .error
                       .withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusM),
                   border: Border.all(
-                      color: AppColors.error
+                      color: Theme.of(context)
+                          .colorScheme
+                          .error
                           .withValues(alpha: AppDimensions.opacityMediumLight)),
                 ),
                 child: Text(
@@ -165,25 +169,25 @@ class _CreateSharedShoppingListViewState
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: AppColors.backgroundTint,
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.group,
-                color: AppColors.forestGreen,
+                color: Theme.of(context).colorScheme.primary,
                 size: AppDimensions.iconSizeAction,
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Text(
                 context.l10n.shoppingCreateSharedList,
                 style: AppTextStyles.titleMedium.copyWith(
-                  color: AppColors.forestGreen,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ],
@@ -263,11 +267,11 @@ class _CreateSharedShoppingListViewState
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color:
-            AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.butleryColors.success
+            .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-            color: AppColors.success
+            color: context.butleryColors.success
                 .withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Column(
@@ -275,16 +279,16 @@ class _CreateSharedShoppingListViewState
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.info_outline,
-                color: AppColors.success,
+                color: context.butleryColors.success,
                 size: AppDimensions.iconSizeM,
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Text(
                 context.l10n.shoppingWhatHappensWhenSharing,
                 style: AppTextStyles.titleBold.copyWith(
-                  color: AppColors.success,
+                  color: context.butleryColors.success,
                 ),
               ),
             ],
@@ -293,7 +297,7 @@ class _CreateSharedShoppingListViewState
           Text(
             context.l10n.shoppingShareInfoBullets,
             style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.success,
+              color: context.butleryColors.success,
             ),
           ),
         ],

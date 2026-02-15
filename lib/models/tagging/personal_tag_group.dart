@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// A group/folder for organizing PersonalTags.
 ///
@@ -173,12 +174,13 @@ class PersonalTagGroup {
   /// Validates the group name.
   /// Returns null if valid, error message if invalid.
   static String? validateName(String? name) {
+    final l = AppLocale.current;
     if (name == null || name.trim().isEmpty) {
-      return 'Gruppnamn krävs';
+      return l.validationGroupNameRequired;
     }
     final trimmed = name.trim();
     if (trimmed.length > 50) {
-      return 'Gruppnamn för långt (max 50 tecken)';
+      return l.validationGroupNameTooLong;
     }
     return null;
   }

@@ -5,7 +5,6 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -104,7 +103,7 @@ class RequestsTab {
           Text(
             context.l10n.socialFindNewFriendsDescription,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textMedium,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),
@@ -172,16 +171,16 @@ class RequestsTab {
       children: [
         Row(
           children: [
-            const Icon(
+            Icon(
               Icons.outbox,
               size: AppDimensions.iconSizeM,
-              color: AppColors.textMedium,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(width: AppDimensions.spacingS),
             Text(
               context.l10n.socialSentRequests,
               style: AppTextStyles.titleMedium.copyWith(
-                color: AppColors.textMedium,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(width: AppDimensions.spacingS),
@@ -191,14 +190,14 @@ class RequestsTab {
                 vertical: AppDimensions.paddingS,
               ),
               decoration: BoxDecoration(
-                color: AppColors.textMedium,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusS),
               ),
               child: Text(
                 '${viewModel.sentRequests.length}',
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: AppColors.cardWhite,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 ),
               ),
             ),
@@ -219,13 +218,14 @@ class RequestsTab {
     FriendRequest request,
     FriendsViewModel viewModel,
   ) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.backgroundLight,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: AppColors.textLight,
+          color: cs.outline,
           width: AppDimensions.borderWidthThin,
         ),
       ),
@@ -236,14 +236,14 @@ class RequestsTab {
             child: Container(
               width: 40,
               height: 40,
-              decoration: const BoxDecoration(
-                color: AppColors.backgroundTint,
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerLow,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.person,
                 size: AppDimensions.iconSizeL,
-                color: AppColors.textMedium,
+                color: cs.onSurfaceVariant,
               ),
             ),
           ),
@@ -262,7 +262,7 @@ class RequestsTab {
                 Text(
                   context.l10n.socialWaitingForResponse,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textMedium,
+                    color: cs.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -275,7 +275,7 @@ class RequestsTab {
                 await viewModel.cancelSentRequest(request.id);
               },
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.textMedium),
+                side: BorderSide(color: cs.onSurfaceVariant),
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.paddingS,
                   vertical: AppDimensions.paddingS,
@@ -284,7 +284,7 @@ class RequestsTab {
               child: Text(
                 context.l10n.commonCancel,
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: AppColors.textMedium,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
             ),

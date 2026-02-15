@@ -7,6 +7,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Focused module for realtime menu participant management
 /// This module handles ONLY participant operations:
@@ -56,7 +57,7 @@ class RealtimeParticipantManager {
     required ResourcePermission permission,
   }) async {
     if (!canManageParticipants(menuId)) {
-      throw Exception('Ingen behörighet att hantera deltagare');
+      throw Exception(AppLocale.current.errorNoPermissionToManageParticipants);
     }
 
     AppLogger.info('👤 Adding participant: $userDisplayName ($permission)');
@@ -85,11 +86,11 @@ class RealtimeParticipantManager {
     required String userId,
   }) async {
     if (!canManageParticipants(menuId)) {
-      throw Exception('Ingen behörighet att hantera deltagare');
+      throw Exception(AppLocale.current.errorNoPermissionToManageParticipants);
     }
 
     if (userId == currentUserId) {
-      throw Exception('Kan inte ta bort sig själv som deltagare');
+      throw Exception(AppLocale.current.errorCannotRemoveSelf);
     }
 
     AppLogger.info('👤 Removing participant: $userId');
@@ -117,11 +118,11 @@ class RealtimeParticipantManager {
     required ResourcePermission newPermission,
   }) async {
     if (!canManageParticipants(menuId)) {
-      throw Exception('Ingen behörighet att hantera deltagare');
+      throw Exception(AppLocale.current.errorNoPermissionToManageParticipants);
     }
 
     if (userId == currentUserId) {
-      throw Exception('Kan inte ändra sina egna behörigheter');
+      throw Exception(AppLocale.current.errorCannotChangeOwnPermissions);
     }
 
     AppLogger.info(
@@ -147,7 +148,7 @@ class RealtimeParticipantManager {
   }) async {
     final userId = currentUserId;
     if (userId == null) {
-      throw Exception('Ingen användar-ID tillgänglig');
+      throw Exception(AppLocale.current.errorNoUserIdAvailable);
     }
 
     AppLogger.info('👤 Leaving menu: $menuId');
@@ -291,7 +292,7 @@ class RealtimeParticipantManager {
     final online = onlineParticipants.length;
 
     if (total == 1) {
-      return 'Bara du';
+      return AppLocale.current.displayOnlyYou;
     } else if (online == total) {
       return '$total deltagare (alla online)';
     } else if (online == 0) {
@@ -307,7 +308,7 @@ class RealtimeParticipantManager {
     required List<Map<String, dynamic>> participants,
   }) async {
     if (!canManageParticipants(menuId)) {
-      throw Exception('Ingen behörighet att hantera deltagare');
+      throw Exception(AppLocale.current.errorNoPermissionToManageParticipants);
     }
 
     AppLogger.info('👥 Adding ${participants.length} participants');
@@ -335,7 +336,7 @@ class RealtimeParticipantManager {
     required List<String> userIds,
   }) async {
     if (!canManageParticipants(menuId)) {
-      throw Exception('Ingen behörighet att hantera deltagare');
+      throw Exception(AppLocale.current.errorNoPermissionToManageParticipants);
     }
 
     // Filter out current user

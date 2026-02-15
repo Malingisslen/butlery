@@ -10,6 +10,7 @@ import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Social Recipe Sharing Service
 /// Handles ONLY sharing and unsharing operations for recipes.
@@ -50,7 +51,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       ResourcePermission permission) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
+      _setError(AppLocale.current.errorMustBeLoggedIn);
       return false;
     }
 
@@ -60,14 +61,14 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       // 1. Loading the recipe
       final recipe = await _getRecipe(recipeId);
       if (recipe == null) {
-        _setError('Receptet kunde inte hittas');
+        _setError(AppLocale.current.errorRecipeNotFound);
         return false;
       }
 
       // Check if current user can share this recipe
       if (recipe.createdBy != currentUserId &&
           recipe.socialData?.ownerId != currentUserId) {
-        _setError('Du har inte behörighet att dela detta recept');
+        _setError(AppLocale.current.errorNoPermissionToShare);
         return false;
       }
 
@@ -109,7 +110,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       // 5. Saving to Firebase
       final success = await _saveRecipe(updatedRecipe);
       if (!success) {
-        _setError('Kunde inte spara recept');
+        _setError(AppLocale.current.errorCouldNotSaveRecipe);
         return false;
       }
 
@@ -146,7 +147,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not share recipe: $e');
-      _setError('Kunde inte dela recept: $e');
+      _setError(AppLocale.current.errorCouldNotSaveRecipe);
       return false;
     }
   }
@@ -156,7 +157,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       ResourcePermission permission) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
+      _setError(AppLocale.current.errorMustBeLoggedIn);
       return false;
     }
 
@@ -174,7 +175,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       }
 
       if (allMemberIds.isEmpty) {
-        _setError('Inga gruppmedlemmar hittades');
+        _setError(AppLocale.current.errorNoGroupMembersFound);
         return false;
       }
 
@@ -193,7 +194,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       return success;
     } catch (e) {
       AppLogger.error('❌ Could not share recipe with groups: $e');
-      _setError('Kunde inte dela recept med grupper: $e');
+      _setError(AppLocale.current.errorCouldNotShareRecipeWithGroups);
       return false;
     }
   }
@@ -202,7 +203,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
   Future<bool> unshareRecipe(String recipeId) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
+      _setError(AppLocale.current.errorMustBeLoggedIn);
       return false;
     }
 
@@ -212,18 +213,18 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       // 1. Loading the recipe
       final recipe = await _getRecipe(recipeId);
       if (recipe == null) {
-        _setError('Receptet kunde inte hittas');
+        _setError(AppLocale.current.errorRecipeNotFound);
         return false;
       }
 
       // 2. Checking owner permissions
       if (!recipe.isCollaborative) {
-        _setError('Receptet är inte delat');
+        _setError(AppLocale.current.errorRecipeNotShared);
         return false;
       }
 
       if (recipe.socialData?.ownerId != currentUserId) {
-        _setError('Endast ägaren kan sluta dela receptet');
+        _setError(AppLocale.current.errorOnlyOwnerCanUnshare);
         return false;
       }
 
@@ -239,7 +240,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       // 6. Saving to personal collection
       final success = await _saveRecipe(unsharedRecipe);
       if (!success) {
-        _setError('Kunde inte sluta dela recept');
+        _setError(AppLocale.current.errorCouldNotUnshareRecipe);
         return false;
       }
 
@@ -253,7 +254,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not unshare recipe: $e');
-      _setError('Kunde inte sluta dela recept: $e');
+      _setError(AppLocale.current.errorCouldNotUnshareRecipe);
       return false;
     }
   }

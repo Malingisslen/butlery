@@ -5,9 +5,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// List item widget for displaying conversation in conversations list.
 /// Supports swipe gestures for pin/archive and long-press context menu.
@@ -35,6 +35,8 @@ class ConversationListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return RepaintBoundary(
       child: Dismissible(
         key: Key('conversation-${conversation.id}'),
@@ -55,10 +57,10 @@ class ConversationListItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingLg,
           ),
-          color: AppColors.info,
+          color: context.butleryColors.info,
           child: Icon(
             conversation.isPinned ? Icons.push_pin_outlined : Icons.push_pin,
-            color: AppColors.cardWhite,
+            color: Colors.white,
           ),
         ),
         secondaryBackground: Container(
@@ -66,10 +68,10 @@ class ConversationListItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingLg,
           ),
-          color: AppColors.warning,
+          color: context.butleryColors.warning,
           child: Icon(
             conversation.isArchived ? Icons.unarchive : Icons.archive,
-            color: AppColors.cardWhite,
+            color: Colors.white,
           ),
         ),
         child: Semantics(
@@ -86,7 +88,7 @@ class ConversationListItem extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  _buildAvatar(),
+                  _buildAvatar(context),
                   const SizedBox(width: AppDimensions.paddingM),
                   Expanded(
                     child: Column(
@@ -96,14 +98,14 @@ class ConversationListItem extends StatelessWidget {
                         Row(
                           children: [
                             if (conversation.isPinned)
-                              const Padding(
-                                padding: EdgeInsets.only(
+                              Padding(
+                                padding: const EdgeInsets.only(
                                   right: AppDimensions.spacingXs,
                                 ),
                                 child: Icon(
                                   Icons.push_pin,
                                   size: AppDimensions.iconSize14,
-                                  color: AppColors.textTertiary,
+                                  color: cs.outlineVariant,
                                 ),
                               ),
                             Expanded(
@@ -111,10 +113,10 @@ class ConversationListItem extends StatelessWidget {
                                 conversation.getDisplayTitle(currentUserId),
                                 style: _hasUnreadMessages
                                     ? AppTextStyles.bodyBold.copyWith(
-                                        color: AppColors.textDark,
+                                        color: cs.onSurface,
                                       )
                                     : AppTextStyles.bodyMedium.copyWith(
-                                        color: AppColors.textDark,
+                                        color: cs.onSurface,
                                       ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -125,10 +127,10 @@ class ConversationListItem extends StatelessWidget {
                               conversation.formattedLastActivity,
                               style: _hasUnreadMessages
                                   ? AppTextStyles.labelSmall.copyWith(
-                                      color: AppColors.forestGreen,
+                                      color: cs.primary,
                                     )
                                   : AppTextStyles.labelSmall.copyWith(
-                                      color: AppColors.textMedium,
+                                      color: cs.onSurfaceVariant,
                                       fontWeight: FontWeight.normal,
                                     ),
                             ),
@@ -143,10 +145,10 @@ class ConversationListItem extends StatelessWidget {
                                 _getLastMessagePreview(context),
                                 style: _hasUnreadMessages
                                     ? AppTextStyles.labelSmall.copyWith(
-                                        color: AppColors.textDark,
+                                        color: cs.onSurface,
                                       )
                                     : AppTextStyles.labelSmall.copyWith(
-                                        color: AppColors.textMedium,
+                                        color: cs.onSurfaceVariant,
                                       ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -154,7 +156,7 @@ class ConversationListItem extends StatelessWidget {
                             ),
                             if (_hasUnreadMessages) ...[
                               const SizedBox(width: AppDimensions.paddingS),
-                              _buildUnreadIndicator(),
+                              _buildUnreadIndicator(context),
                             ],
                           ],
                         ),
@@ -170,7 +172,9 @@ class ConversationListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar() {
+  Widget _buildAvatar(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Stack(
       children: [
         Container(
@@ -179,11 +183,11 @@ class ConversationListItem extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color:
-                AppColors.accent.withValues(alpha: AppDimensions.opacityLight),
+                cs.inversePrimary.withValues(alpha: AppDimensions.opacityLight),
           ),
           child: conversation.isGroup
-              ? _buildGroupAvatar()
-              : _buildDirectConversationAvatar(),
+              ? _buildGroupAvatar(context)
+              : _buildDirectConversationAvatar(context),
         ),
 
         // Online status indicator (only for direct conversations)
@@ -195,10 +199,10 @@ class ConversationListItem extends StatelessWidget {
               width: 16,
               height: 16,
               decoration: BoxDecoration(
-                color: AppColors.success,
+                color: context.butleryColors.success,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppColors.cardWhite,
+                  color: Colors.white,
                   width: 2,
                 ),
               ),
@@ -208,22 +212,23 @@ class ConversationListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildGroupAvatar() {
+  Widget _buildGroupAvatar(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.forestGreen
-            .withValues(alpha: AppDimensions.opacityVeryLight),
+        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
       ),
-      child: const Icon(
+      child: Icon(
         Icons.group,
-        color: AppColors.forestGreen,
+        color: cs.primary,
         size: AppDimensions.iconSizeL,
       ),
     );
   }
 
-  Widget _buildDirectConversationAvatar() {
+  Widget _buildDirectConversationAvatar(BuildContext context) {
     final avatarUrl = conversation.getDisplayAvatarUrl(currentUserId);
     final displayName = conversation.getDisplayTitle(currentUserId);
 
@@ -233,30 +238,34 @@ class ConversationListItem extends StatelessWidget {
         config: ImageConfig.avatar(
           size: ImageSize.custom,
         ),
-        placeholder: _buildAvatarFallback(displayName),
+        placeholder: _buildAvatarFallback(context, displayName),
       );
     }
 
-    return _buildAvatarFallback(displayName);
+    return _buildAvatarFallback(context, displayName);
   }
 
-  Widget _buildAvatarFallback(String displayName) {
+  Widget _buildAvatarFallback(BuildContext context, String displayName) {
+    final cs = Theme.of(context).colorScheme;
+
     return Center(
       child: Text(
         displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
         style: AppTextStyles.sectionHeader.copyWith(
-          color: AppColors.forestGreen,
+          color: cs.primary,
         ),
       ),
     );
   }
 
-  Widget _buildUnreadIndicator() {
+  Widget _buildUnreadIndicator(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       width: AppDimensions.spacingSm,
       height: AppDimensions.spacingSm,
-      decoration: const BoxDecoration(
-        color: AppColors.forestGreen,
+      decoration: BoxDecoration(
+        color: cs.primary,
         shape: BoxShape.circle,
       ),
     );

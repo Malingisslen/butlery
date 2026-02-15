@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
 import 'package:butlery/widgets/common/social/social_facade.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Social avatar and user display components.
@@ -263,7 +262,7 @@ class SocialAvatarComponents {
             builder: (context) => Text(
               moreUsersText.replaceAll('{count}', remainingCount.toString()),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textMedium,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
           ),
@@ -299,14 +298,17 @@ class SocialAvatarComponents {
     ImageSize size = ImageSize.medium,
     Color? backgroundColor,
   }) {
-    return Container(
-      width: _getSizeValue(size),
-      height: _getSizeValue(size),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: backgroundColor ?? AppColors.divider,
+    return Builder(
+      builder: (context) => Container(
+        width: _getSizeValue(size),
+        height: _getSizeValue(size),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color:
+              backgroundColor ?? Theme.of(context).colorScheme.outlineVariant,
+        ),
+        child: const CircularProgressIndicator(),
       ),
-      child: const CircularProgressIndicator(),
     );
   }
 
@@ -316,18 +318,23 @@ class SocialAvatarComponents {
     VoidCallback? onRetry,
     String? errorMessage,
   }) {
-    return Container(
-      width: _getSizeValue(size),
-      height: _getSizeValue(size),
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        color: AppColors.error,
-      ),
-      child: Icon(
-        Icons.error,
-        size: _getSizeValue(size) * 0.6,
-        color: AppColors.cardWhite,
-      ),
+    return Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Container(
+          width: _getSizeValue(size),
+          height: _getSizeValue(size),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: cs.error,
+          ),
+          child: Icon(
+            Icons.error,
+            size: _getSizeValue(size) * 0.6,
+            color: cs.surfaceContainerHighest,
+          ),
+        );
+      },
     );
   }
 
@@ -338,18 +345,23 @@ class SocialAvatarComponents {
     Color? backgroundColor,
     Color? iconColor,
   }) {
-    return Container(
-      width: _getSizeValue(size),
-      height: _getSizeValue(size),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: backgroundColor ?? AppColors.textTertiary,
-      ),
-      child: Icon(
-        icon,
-        size: _getSizeValue(size) * 0.6,
-        color: iconColor ?? AppColors.placeholderIcon,
-      ),
+    return Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Container(
+          width: _getSizeValue(size),
+          height: _getSizeValue(size),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: backgroundColor ?? cs.outline,
+          ),
+          child: Icon(
+            icon,
+            size: _getSizeValue(size) * 0.6,
+            color: iconColor ?? cs.onSurfaceVariant,
+          ),
+        );
+      },
     );
   }
 

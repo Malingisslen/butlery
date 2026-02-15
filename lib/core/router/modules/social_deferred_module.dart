@@ -5,8 +5,6 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/user_profile.dart';
 
 // Deferred imports for social views
-import 'package:butlery/views/social/discovery_dashboard_view.dart'
-    deferred as discovery;
 import 'package:butlery/views/social/user_profile_edit_view.dart'
     deferred as profile_edit;
 import 'package:butlery/views/social/friends_list_view.dart'
@@ -36,7 +34,6 @@ class SocialDeferredModule implements DeferredModule {
 
   @override
   Set<String> get handledRoutes => {
-        Routes.discovery,
         Routes.profileEdit,
         Routes.friends,
         Routes.friendRequests,
@@ -54,7 +51,6 @@ class SocialDeferredModule implements DeferredModule {
 
     // Load all social view libraries in parallel
     await Future.wait([
-      discovery.loadLibrary(),
       profile_edit.loadLibrary(),
       friends_list.loadLibrary(),
       friend_requests.loadLibrary(),
@@ -72,9 +68,6 @@ class SocialDeferredModule implements DeferredModule {
   @override
   Widget buildRoute(String routeName, RouteSettings settings) {
     switch (routeName) {
-      case Routes.discovery:
-        return discovery.DiscoveryDashboardView();
-
       case Routes.profileEdit:
         return profile_edit.UserProfileEditView();
 

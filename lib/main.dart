@@ -53,7 +53,6 @@ import 'package:butlery/services/performance/intelligent_cache_manager.dart';
 
 // Theme and routing
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/router/app_router.dart';
 
@@ -61,10 +60,18 @@ import 'package:butlery/core/router/app_router.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/core/providers/locale_provider.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 // Views
 import 'package:butlery/views/auth_view.dart';
 import 'package:butlery/views/mina_recept_view.dart';
+import 'package:butlery/views/onboarding/onboarding_view.dart';
+
+// Beta feedback
+import 'package:butlery/widgets/common/feedback_fab.dart';
+
+// Services for auth wrapper
+import 'package:butlery/services/user_service.dart';
 
 // Firebase
 import 'package:firebase_core/firebase_core.dart';
@@ -209,51 +216,54 @@ class _ErrorApp extends StatelessWidget {
     return MaterialApp(
       title: 'Butlery - Error',
       theme: AppTheme.lightTheme,
-      home: Scaffold(
-        backgroundColor: AppColors.cream,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppDimensions.spacingL),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.error_outline,
-                  size: AppDimensions.iconSizeXxl,
-                  color: AppColors.error,
-                ),
-                const SizedBox(height: AppDimensions.spacingXl),
-                const Text(
-                  'Application Error',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: AppDimensions.spacingM),
-                Container(
-                  constraints: const BoxConstraints(maxHeight: 400),
-                  child: SingleChildScrollView(
-                    child: Text(
-                      message,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontFamily: 'monospace',
+      home: Builder(builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Scaffold(
+          backgroundColor: cs.surface,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppDimensions.spacingL),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: AppDimensions.iconSizeXxl,
+                    color: cs.error,
+                  ),
+                  const SizedBox(height: AppDimensions.spacingXl),
+                  const Text(
+                    'Application Error',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: AppDimensions.spacingM),
+                  Container(
+                    constraints: const BoxConstraints(maxHeight: 400),
+                    child: SingleChildScrollView(
+                      child: Text(
+                        message,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontFamily: 'monospace',
+                        ),
+                        textAlign: TextAlign.left,
                       ),
-                      textAlign: TextAlign.left,
                     ),
                   ),
-                ),
-                const SizedBox(height: AppDimensions.spacingXl),
-                ElevatedButton(
-                  onPressed: () {
-                    // Restart the application
-                    main();
-                  },
-                  child: const Text('Restart App'),
-                ),
-              ],
+                  const SizedBox(height: AppDimensions.spacingXl),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Restart the application
+                      main();
+                    },
+                    child: const Text('Restart App'),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 }
@@ -291,6 +301,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   /// Initialize locale provider
   Future<void> _initializeLocale() async {
     await _localeProvider.initialize();
+    AppLocale.initialize(_localeProvider.locale);
     _localeProvider.addListener(_onLocaleChanged);
     if (mounted) {
       setState(() {});
@@ -299,6 +310,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
 
   /// Handle locale change
   void _onLocaleChanged() {
+    AppLocale.updateLocale(_localeProvider.locale);
     if (mounted) {
       setState(() {});
     }
@@ -612,8 +624,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
             home: const InitializationWrapper(),
             onUnknownRoute: AppRouter.handleUnknownRoute,
             onGenerateRoute: AppRouter.generateRoute,
-            // Universal fix for Android nav bar overlay
-            // Wraps ALL views with SafeArea to prevent content from being hidden
+            // Universal fix for Android nav bar overlay + beta feedback FAB overlay
             builder: (context, child) {
               if (child == null) return const SizedBox.shrink();
               return SafeArea(
@@ -621,7 +632,15 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                 bottom: true, // Always protect bottom from system nav bar
                 left: false,
                 right: false,
-                child: child,
+                child: Stack(
+                  children: [
+                    RepaintBoundary(
+                      key: feedbackRepaintBoundaryKey,
+                      child: child,
+                    ),
+                    const FeedbackFAB(),
+                  ],
+                ),
               );
             },
           );
@@ -634,41 +653,44 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     return MaterialApp(
       title: 'Butlery',
       theme: AppTheme.lightTheme,
-      home: Scaffold(
-        backgroundColor: AppColors.cream,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: AppDimensions.iconSizeHero,
-                height: AppDimensions.iconSizeHero,
-                decoration: BoxDecoration(
-                  color: AppColors.forestGreen,
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.borderRadiusL,
+      home: Builder(builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Scaffold(
+          backgroundColor: cs.surface,
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: AppDimensions.iconSizeHero,
+                  height: AppDimensions.iconSizeHero,
+                  decoration: BoxDecoration(
+                    color: cs.primary,
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.borderRadiusL,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.restaurant_menu,
+                    size: AppDimensions.iconSizeHero,
+                    color: cs.outlineVariant,
                   ),
                 ),
-                child: const Icon(
-                  Icons.restaurant_menu,
-                  size: AppDimensions.iconSizeHero,
-                  color: AppColors.neutralLight,
+                const SizedBox(height: AppDimensions.spacingXxxl),
+                const CircularProgressIndicator(),
+                const SizedBox(height: AppDimensions.spacingXl),
+                Text(
+                  message,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: cs.outline,
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppDimensions.spacingXxxl),
-              const CircularProgressIndicator(),
-              const SizedBox(height: AppDimensions.spacingXl),
-              Text(
-                message,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: AppColors.textTertiary,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 
@@ -702,11 +724,13 @@ class AuthWrapper extends StatefulWidget {
 
 class _AuthWrapperState extends State<AuthWrapper> {
   late final AuthService _authService;
+  late final UserService _userService;
 
   @override
   void initState() {
     super.initState();
     _authService = ServiceLocator.get<AuthService>();
+    _userService = ServiceLocator.get<UserService>();
 
     // Log initial state
     if (_authService.currentUser != null) {
@@ -717,6 +741,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
     // Listen to AuthService ChangeNotifier for auth state changes
     _authService.addListener(_onAuthStateChanged);
+    // Listen to UserService to react when profile loads
+    _userService.addListener(_onUserProfileChanged);
   }
 
   void _onAuthStateChanged() {
@@ -732,12 +758,19 @@ class _AuthWrapperState extends State<AuthWrapper> {
     }
   }
 
+  void _onUserProfileChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   void dispose() {
     AppLogger.debug(
       'AuthWrapper: Disposing wrapper for user: ${_authService.currentUser?.uid ?? 'NULL'}',
     );
     _authService.removeListener(_onAuthStateChanged);
+    _userService.removeListener(_onUserProfileChanged);
     super.dispose();
   }
 
@@ -747,6 +780,13 @@ class _AuthWrapperState extends State<AuthWrapper> {
     final user = _authService.currentUser;
 
     if (user != null) {
+      // Check if user has completed onboarding
+      final profile = _userService.currentUserProfile;
+      if (profile != null && !profile.hasCompletedOnboarding) {
+        AppLogger.debug('AuthWrapper: User needs onboarding');
+        return OnboardingView(key: ValueKey('onboarding_${user.uid}'));
+      }
+
       AppLogger.debug(
         'AuthWrapper: NAVIGATION SUCCESS - User logged in: ${user.uid}',
       );

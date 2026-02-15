@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/group_content_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -28,7 +28,7 @@ class GroupSharedShoppingListCard {
     return Material(
       elevation: AppDimensions.elevationMedium,
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      color: AppColors.surface,
+      color: Theme.of(context).colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingM),
         child: Column(
@@ -54,14 +54,16 @@ class GroupSharedShoppingListCard {
         Container(
           padding: const EdgeInsets.all(AppDimensions.spacingS),
           decoration: BoxDecoration(
-            color: AppColors.primaryContainer
+            color: Theme.of(context)
+                .colorScheme
+                .primaryContainer
                 .withValues(alpha: AppDimensions.opacityMediumLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.shopping_cart,
             size: AppDimensions.iconSizeM,
-            color: AppColors.onPrimaryContainer,
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
           ),
         ),
         const SizedBox(width: AppDimensions.spacingM),
@@ -80,7 +82,9 @@ class GroupSharedShoppingListCard {
                 Text(
                   shoppingList.description!,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.onSurface
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
                         .withValues(alpha: AppDimensions.opacityDark),
                   ),
                   maxLines: 1,
@@ -112,7 +116,9 @@ class GroupSharedShoppingListCard {
         Text(
           context.l10n.shoppingSharedBy(ownerName),
           style: AppTextStyles.textXs.copyWith(
-            color: AppColors.onSurface
+            color: Theme.of(context)
+                .colorScheme
+                .onSurface
                 .withValues(alpha: AppDimensions.opacityMediumDark),
           ),
         ),
@@ -128,7 +134,9 @@ class GroupSharedShoppingListCard {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
             .withValues(alpha: AppDimensions.opacityMediumLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
@@ -140,14 +148,18 @@ class GroupSharedShoppingListCard {
               Icon(
                 Icons.list_alt,
                 size: AppDimensions.iconSizeS,
-                color: AppColors.onSurface
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
                     .withValues(alpha: AppDimensions.opacityDark),
               ),
               const SizedBox(width: AppDimensions.spacingS),
               Text(
                 context.l10n.shoppingShoppingList,
                 style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: AppColors.onSurface
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
                       .withValues(alpha: AppDimensions.opacityDark),
                 ),
               ),
@@ -159,7 +171,7 @@ class GroupSharedShoppingListCard {
                     vertical: AppDimensions.spacingXxs,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.info
+                    color: context.butleryColors.info
                         .withValues(alpha: AppDimensions.opacityVeryLight),
                     borderRadius:
                         BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -167,7 +179,7 @@ class GroupSharedShoppingListCard {
                   child: Text(
                     context.l10n.shoppingCollaborative,
                     style: AppTextStyles.textXsBold.copyWith(
-                      color: AppColors.info,
+                      color: context.butleryColors.info,
                     ),
                   ),
                 ),
@@ -176,10 +188,14 @@ class GroupSharedShoppingListCard {
           const SizedBox(height: AppDimensions.spacingS),
           LinearProgressIndicator(
             value: totalItems > 0 ? boughtItems / totalItems : 0,
-            backgroundColor:
-                AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
+            backgroundColor: Theme.of(context)
+                .colorScheme
+                .outline
+                .withValues(alpha: AppDimensions.opacityLight),
             valueColor: AlwaysStoppedAnimation<Color>(
-              boughtItems == totalItems ? AppColors.success : AppColors.primary,
+              boughtItems == totalItems
+                  ? context.butleryColors.success
+                  : Theme.of(context).colorScheme.primary,
             ),
           ),
         ],
@@ -196,18 +212,20 @@ class GroupSharedShoppingListCard {
     return Row(
       children: [
         _buildStatChip('$totalItems', context.l10n.shoppingTotal,
-            Icons.format_list_numbered, AppColors.primary),
+            Icons.format_list_numbered, Theme.of(context).colorScheme.primary),
         const SizedBox(width: AppDimensions.spacingS),
         _buildStatChip('$boughtItems', context.l10n.shoppingBought,
-            Icons.check_circle, AppColors.success),
+            Icons.check_circle, context.butleryColors.success),
         const SizedBox(width: AppDimensions.spacingS),
         _buildStatChip('$remainingItems', context.l10n.shoppingRemaining,
-            Icons.shopping_cart_outlined, AppColors.warning),
+            Icons.shopping_cart_outlined, context.butleryColors.warning),
         const Spacer(),
         Text(
           ShoppingListFormatter.getShareTimeText(shoppingList),
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.onSurface
+            color: Theme.of(context)
+                .colorScheme
+                .onSurface
                 .withValues(alpha: AppDimensions.opacityMediumDark),
           ),
         ),
@@ -276,7 +294,9 @@ class GroupSharedShoppingListCard {
               context, viewModel, shoppingList),
           icon: const Icon(Icons.more_vert),
           style: IconButton.styleFrom(
-            backgroundColor: AppColors.surfaceVariant
+            backgroundColor: Theme.of(context)
+                .colorScheme
+                .surfaceContainerHighest
                 .withValues(alpha: AppDimensions.opacityHalf),
           ),
         ),

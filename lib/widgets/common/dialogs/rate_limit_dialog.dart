@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 
 /// Dialog shown when user hits a rate limit during import.
@@ -51,7 +51,7 @@ class RateLimitDialog extends StatelessWidget {
     return AlertDialog(
       icon: Icon(
         _getIconForLimitType(rateLimitResult.limitType),
-        color: AppColors.warning,
+        color: context.butleryColors.warning,
         size: AppDimensions.iconSizeXxl,
       ),
       title: Text(_getTitleForLimitType(context, rateLimitResult.limitType)),
@@ -62,7 +62,7 @@ class RateLimitDialog extends StatelessWidget {
           Text(
             rateLimitResult.swedishMessage,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
@@ -103,15 +103,15 @@ class RateLimitDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color:
-            AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.butleryColors.warning
+            .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.timer_outlined,
-            color: AppColors.warning,
+            color: context.butleryColors.warning,
             size: AppDimensions.iconSizeM,
           ),
           const SizedBox(width: AppDimensions.spacingS),
@@ -119,7 +119,7 @@ class RateLimitDialog extends StatelessWidget {
             child: Text(
               timeText,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -171,7 +171,7 @@ class RateLimitDialog extends StatelessWidget {
         Text(
           context.l10n.dialogAlternatives,
           style: AppTextStyles.metadataEmphasized.copyWith(
-            color: AppColors.textSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: AppDimensions.spacingS),
@@ -236,6 +236,7 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Semantics(
       label: title,
       button: true,
@@ -245,14 +246,14 @@ class _ActionTile extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppDimensions.spacingM),
           decoration: BoxDecoration(
-            border: Border.all(color: AppColors.divider),
+            border: Border.all(color: cs.outlineVariant),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
           child: Row(
             children: [
               Icon(
                 icon,
-                color: AppColors.forestGreen,
+                color: cs.primary,
                 size: AppDimensions.iconSizeL,
               ),
               const SizedBox(width: AppDimensions.spacingM),
@@ -267,15 +268,15 @@ class _ActionTile extends StatelessWidget {
                     Text(
                       subtitle,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.chevron_right,
-                color: AppColors.textSecondary,
+                color: cs.onSurfaceVariant,
               ),
             ],
           ),

@@ -7,6 +7,7 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Comprehensive shopping list sharing ViewModel providing advanced social shopping distribution through service integration.
 /// Manages shopping list sharing state enabling social shopping distribution with friend selection, share message customization,
@@ -125,7 +126,7 @@ class ShoppingShareViewModel extends ChangeNotifier
       await _loadFriends();
       _initialized = true;
     } catch (e) {
-      _setError('Kunde inte ladda vänner: $e');
+      _setError(AppLocale.current.errorCouldNotLoad('vänner'));
     } finally {
       _setLoading(false);
     }
@@ -167,7 +168,7 @@ class ShoppingShareViewModel extends ChangeNotifier
   Future<bool> shareShoppingListCommand(
       UnifiedShoppingList shoppingList) async {
     if (!canShare) {
-      _setError('Kan inte dela - välj minst en vän');
+      _setError(AppLocale.current.errorSelectAtLeastOneFriend);
       return false;
     }
 
@@ -195,11 +196,11 @@ class ShoppingShareViewModel extends ChangeNotifier
       if (allSuccessful) {
         return true;
       } else {
-        _setError('Vissa delningar misslyckades');
+        _setError(AppLocale.current.errorSomeSharesFailed);
         return false;
       }
     } catch (e) {
-      _setError('Misslyckades med delning: $e');
+      _setError(AppLocale.current.errorCouldNotUpdate('delning'));
       return false;
     } finally {
       _setSharing(false);
@@ -214,7 +215,7 @@ class ShoppingShareViewModel extends ChangeNotifier
     try {
       await _loadFriends();
     } catch (e) {
-      _setError('Kunde inte uppdatera vänlista: $e');
+      _setError(AppLocale.current.errorCouldNotLoad('vänlista'));
     } finally {
       _setLoading(false);
     }
@@ -229,7 +230,7 @@ class ShoppingShareViewModel extends ChangeNotifier
     try {
       _friends = _friendsService.management.getAllFriends();
     } catch (e) {
-      throw Exception('Kunde inte ladda vänner');
+      throw Exception(AppLocale.current.errorCouldNotLoad('vänner'));
     }
   }
 
@@ -258,12 +259,12 @@ class ShoppingShareViewModel extends ChangeNotifier
   /// Validate that sharing is possible
   bool validateSharingPossible() {
     if (_friends.isEmpty) {
-      _setError('Du har inga vänner att dela med');
+      _setError(AppLocale.current.errorNoFriendsToShareWith);
       return false;
     }
 
     if (_selectedFriendIds.isEmpty) {
-      _setError('Välj minst en vän att dela med');
+      _setError(AppLocale.current.errorSelectAtLeastOneFriend);
       return false;
     }
 
@@ -273,6 +274,6 @@ class ShoppingShareViewModel extends ChangeNotifier
   /// Get sharing summary for confirmation
   String getSharingSummary() {
     final friendNames = selectedFriends.map((f) => f.displayName).join(', ');
-    return 'Dela med: $friendNames';
+    return AppLocale.current.shoppingSharingSummary(friendNames);
   }
 }

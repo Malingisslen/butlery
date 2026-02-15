@@ -1,7 +1,6 @@
 // lib/widgets/common/input/portion_scaler_ui.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -78,7 +77,7 @@ class PortionScalerUI {
         Text(
           context.l10n.scalerPortionsLabel,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.forestGreenDark,
+            color: Theme.of(context).colorScheme.primaryContainer,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -129,7 +128,7 @@ class PortionScalerUI {
                   style: AppTextStyles.bodyBold.copyWith(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.forestGreenDark,
+                    color: Theme.of(context).colorScheme.primaryContainer,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -156,8 +155,9 @@ class PortionScalerUI {
     required IconData icon,
     required VoidCallback? onPressed,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return Material(
-      color: AppColors.transparent,
+      color: Colors.transparent,
       child: InkWell(
         onTap: onPressed,
         borderRadius: BorderRadius.zero,
@@ -166,19 +166,16 @@ class PortionScalerUI {
           height: 36,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: AppColors.cardWhite,
+            color: cs.surfaceContainerHighest,
             border: Border.all(
-              color:
-                  onPressed != null ? AppColors.forestGreen : AppColors.divider,
+              color: onPressed != null ? cs.primary : cs.outlineVariant,
               width: 2.0,
             ),
           ),
           child: Icon(
             icon,
             size: AppDimensions.iconSizeL,
-            color: onPressed != null
-                ? AppColors.forestGreen
-                : AppColors.textMedium,
+            color: onPressed != null ? cs.primary : cs.onSurfaceVariant,
           ),
         ),
       ),

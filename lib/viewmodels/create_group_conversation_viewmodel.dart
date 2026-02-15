@@ -8,6 +8,7 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// ViewModel for messaging group conversation creation with friend selection and validation.
 /// Manages complete group conversation creation workflow including friend list loading,
@@ -108,7 +109,7 @@ class CreateGroupConversationViewModel extends ChangeNotifier
 
       if (_isDisposed) return;
 
-      setError('Kunde inte ladda vänner: ${e.toString()}');
+      setError(AppLocale.current.errorGeneric);
     }
   }
 
@@ -168,9 +169,9 @@ class CreateGroupConversationViewModel extends ChangeNotifier
   /// Requires non-empty group name and at least 2 members.
   void _validateGroupCreation() {
     if (_groupName.trim().isEmpty) {
-      _validationError = 'Gruppnamn krävs';
+      _validationError = AppLocale.current.errorFillRequiredFields;
     } else if (_selectedMemberIds.length < 2) {
-      _validationError = 'Välj minst 2 medlemmar';
+      _validationError = AppLocale.current.errorSelectAtLeastOneFriend;
     } else {
       _validationError = null;
     }
@@ -232,7 +233,7 @@ class CreateGroupConversationViewModel extends ChangeNotifier
 
       if (_isDisposed) return null;
 
-      setError('Kunde inte skapa grupp: ${e.toString()}');
+      setError(AppLocale.current.errorCouldNotCreateGroup);
       _isCreatingGroup = false;
       _safeNotifyListeners();
 

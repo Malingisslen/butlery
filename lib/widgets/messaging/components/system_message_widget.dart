@@ -1,7 +1,6 @@
 // lib/widgets/messaging/components/system_message_widget.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -13,6 +12,7 @@ class SystemMessageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingL,
@@ -25,14 +25,13 @@ class SystemMessageWidget extends StatelessWidget {
             vertical: AppDimensions.paddingS,
           ),
           decoration: BoxDecoration(
-            color: AppColors.textTertiary
-                .withValues(alpha: AppDimensions.opacityVeryLight),
+            color: cs.outline.withValues(alpha: AppDimensions.opacityVeryLight),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
           child: Text(
             content,
             style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.textMedium,
+              color: cs.onSurfaceVariant,
               fontStyle: FontStyle.italic,
             ),
             textAlign: TextAlign.center,
@@ -58,15 +57,16 @@ class ReplyPreviewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingS),
       margin: const EdgeInsets.only(bottom: AppDimensions.paddingS),
       decoration: BoxDecoration(
-        color: (isFromCurrentUser ? AppColors.cardWhite : AppColors.accent)
+        color: (isFromCurrentUser ? cs.surfaceContainerHighest : cs.secondary)
             .withValues(alpha: AppDimensions.opacityLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        border: const Border(
-          left: BorderSide(color: AppColors.accent, width: 3),
+        border: Border(
+          left: BorderSide(color: cs.secondary, width: 3),
         ),
       ),
       child: Column(
@@ -76,9 +76,9 @@ class ReplyPreviewWidget extends StatelessWidget {
             senderName,
             style: AppTextStyles.labelMedium.copyWith(
               color: isFromCurrentUser
-                  ? AppColors.cardWhite
+                  ? cs.surfaceContainerHighest
                       .withValues(alpha: AppDimensions.opacityVeryDark)
-                  : AppColors.forestGreen,
+                  : cs.primary,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXxs),
@@ -86,9 +86,9 @@ class ReplyPreviewWidget extends StatelessWidget {
             content,
             style: AppTextStyles.labelSmall.copyWith(
               color: isFromCurrentUser
-                  ? AppColors.cardWhite
+                  ? cs.surfaceContainerHighest
                       .withValues(alpha: AppDimensions.opacityDark)
-                  : AppColors.textMedium,
+                  : cs.onSurfaceVariant,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -114,22 +114,23 @@ class MessageAvatarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: 32,
       height: 32,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.accent.withValues(alpha: AppDimensions.opacityLight),
+        color: cs.secondary.withValues(alpha: AppDimensions.opacityLight),
       ),
-      child: avatarImage ?? _buildFallback(),
+      child: avatarImage ?? _buildFallback(cs),
     );
   }
 
-  Widget _buildFallback() {
+  Widget _buildFallback(ColorScheme cs) {
     return Center(
       child: Text(
         displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-        style: AppTextStyles.labelMedium.copyWith(color: AppColors.forestGreen),
+        style: AppTextStyles.labelMedium.copyWith(color: cs.primary),
       ),
     );
   }

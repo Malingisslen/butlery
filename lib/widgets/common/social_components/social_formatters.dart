@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -57,18 +56,34 @@ class SocialFormatters {
     }
   }
 
-  /// Get social color scheme
-  static Map<String, Color> getSocialColorScheme() {
+  /// Get social color scheme.
+  /// Always pass context for theme-aware colors. The no-context fallback uses
+  /// hardcoded light-mode values and should be migrated away over time.
+  static Map<String, Color> getSocialColorScheme([BuildContext? context]) {
+    if (context != null) {
+      final cs = Theme.of(context).colorScheme;
+      return {
+        'primary': cs.primary,
+        'secondary':
+            cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        'success': cs.primary,
+        'warning': cs.onSurfaceVariant,
+        'danger': cs.error,
+        'info': cs.primary.withValues(alpha: AppDimensions.opacityDark),
+        'muted': cs.onSurfaceVariant,
+      };
+    }
+    // Fallback for callers without context (light-mode hardcoded)
     return {
-      'primary': AppColors.forestGreen,
-      'secondary': AppColors.forestGreen
+      'primary': const Color(0xFF4A7C59),
+      'secondary': const Color(0xFF4A7C59)
           .withValues(alpha: AppDimensions.opacityVeryLight),
-      'success': AppColors.forestGreen,
-      'warning': AppColors.textMedium,
-      'danger': AppColors.error,
+      'success': const Color(0xFF4A7C59),
+      'warning': const Color(0xFF636A72),
+      'danger': const Color(0xFFC44536),
       'info':
-          AppColors.forestGreen.withValues(alpha: AppDimensions.opacityDark),
-      'muted': AppColors.textMedium,
+          const Color(0xFF4A7C59).withValues(alpha: AppDimensions.opacityDark),
+      'muted': const Color(0xFF636A72),
     };
   }
 }

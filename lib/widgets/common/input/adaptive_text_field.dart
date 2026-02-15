@@ -6,7 +6,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// A platform-adaptive text field.
@@ -133,7 +132,7 @@ class AdaptiveTextField extends StatelessWidget {
           Text(
             label!,
             style: AppTextStyles.labelMedium.copyWith(
-              color: hasError ? AppColors.error : null,
+              color: hasError ? Theme.of(context).colorScheme.error : null,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXs),
@@ -257,29 +256,35 @@ class AdaptiveTextField extends StatelessWidget {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          borderSide: const BorderSide(
-            color: AppColors.error,
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.error,
             width: AppDimensions.borderWidthStandard,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-          borderSide: const BorderSide(
-            color: AppColors.error,
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.error,
             width: AppDimensions.borderWidthThick,
           ),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: AppDimensions.opacityHalf),
+            color: Theme.of(context)
+                .colorScheme
+                .outline
+                .withValues(alpha: AppDimensions.opacityHalf),
             width: AppDimensions.borderWidthStandard,
           ),
         ),
         filled: true,
         fillColor: enabled
-            ? AppColors.cardWhite
-            : AppColors.cardWhite.withValues(alpha: AppDimensions.opacityDark),
+            ? Theme.of(context).colorScheme.surfaceContainerHighest
+            : Theme.of(context)
+                .colorScheme
+                .surfaceContainerHighest
+                .withValues(alpha: AppDimensions.opacityDark),
       ),
     );
   }

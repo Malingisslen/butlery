@@ -1,7 +1,6 @@
 // lib/widgets/common/input/shopping_item_dialog.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -155,7 +154,7 @@ class _AddUnifiedShoppingItemDialogState
         children: [
           Icon(
             isEditing ? Icons.edit : Icons.add_shopping_cart,
-            color: AppColors.forestGreen,
+            color: Theme.of(context).colorScheme.primary,
             size: AppDimensions.iconSizeAction,
           ),
           const SizedBox(width: AppDimensions.spacingM),
@@ -180,9 +179,9 @@ class _AddUnifiedShoppingItemDialogState
                 autofocus: true,
                 label: context.l10n.shoppingItemName,
                 hint: context.l10n.shoppingItemHint,
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.shopping_basket,
-                  color: AppColors.forestGreen,
+                  color: Theme.of(context).colorScheme.primary,
                   size: AppDimensions.iconSizeAction,
                 ),
                 validator: FormValidators.shoppingItemName(),
@@ -199,9 +198,9 @@ class _AddUnifiedShoppingItemDialogState
                       controller: _amountController,
                       label: context.l10n.shoppingAmount,
                       hint: '1',
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.numbers,
-                        color: AppColors.forestGreen,
+                        color: Theme.of(context).colorScheme.primary,
                         size: AppDimensions.iconSizeAction,
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
@@ -221,9 +220,9 @@ class _AddUnifiedShoppingItemDialogState
                       decoration: InputDecoration(
                         labelText: context.l10n.shoppingUnit,
                         labelStyle: AppTextStyles.labelLarge,
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.straighten,
-                          color: AppColors.forestGreen,
+                          color: Theme.of(context).colorScheme.primary,
                           size: AppDimensions.iconSizeAction,
                         ),
                         border: const OutlineInputBorder(),
@@ -264,9 +263,9 @@ class _AddUnifiedShoppingItemDialogState
                 decoration: InputDecoration(
                   labelText: context.l10n.shoppingCategory,
                   labelStyle: AppTextStyles.labelLarge,
-                  prefixIcon: const Icon(
+                  prefixIcon: Icon(
                     Icons.category,
-                    color: AppColors.forestGreen,
+                    color: Theme.of(context).colorScheme.primary,
                     size: AppDimensions.iconSizeAction,
                   ),
                   border: const OutlineInputBorder(),

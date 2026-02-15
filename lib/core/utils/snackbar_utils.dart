@@ -1,9 +1,9 @@
 /// Snackbar utilities for standardized user feedback (success, error, warning, info).
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Centralized snackbar utilities for consistent user feedback throughout the application.
@@ -22,11 +22,12 @@ class SnackBarUtils {
     bool showCloseButton = false,
   }) {
     try {
+      final cs = Theme.of(context).colorScheme;
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: AppColors.forestGreen, // UI Redesign: green background
-        textColor: AppColors.cardWhite,
+        backgroundColor: cs.primary, // UI Redesign: green background
+        textColor: cs.surfaceContainerHighest,
         icon: Icons.check,
         duration: duration ?? const Duration(seconds: 5), // UI Redesign: 5s
         actionLabel: actionLabel,
@@ -67,11 +68,12 @@ class SnackBarUtils {
     bool showCloseButton = true,
   }) {
     try {
+      final cs = Theme.of(context).colorScheme;
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: AppColors.rust, // UI Redesign: rust background
-        textColor: AppColors.cardWhite,
+        backgroundColor: cs.secondary, // UI Redesign: rust background
+        textColor: cs.surfaceContainerHighest,
         icon: Icons.close,
         duration: duration ?? const Duration(seconds: 5),
         actionLabel: actionLabel ?? (showCloseButton ? 'OK' : null),
@@ -123,11 +125,13 @@ class SnackBarUtils {
     bool showCloseButton = false,
   }) {
     try {
+      final butlery = context.butleryColors;
+      final cs = Theme.of(context).colorScheme;
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: AppColors.warning,
-        textColor: AppColors.textDark,
+        backgroundColor: butlery.warning,
+        textColor: cs.onSurface,
         icon: Icons.warning_outlined,
         duration: duration ?? const Duration(seconds: 4),
         actionLabel: actionLabel,
@@ -150,11 +154,12 @@ class SnackBarUtils {
     bool showCloseButton = false,
   }) {
     try {
+      final cs = Theme.of(context).colorScheme;
       _showSnackBar(
         context,
         message: message,
-        backgroundColor: AppColors.forestGreen,
-        textColor: AppColors.neutralLight,
+        backgroundColor: cs.primary,
+        textColor: cs.outlineVariant,
         icon: Icons.info_outline,
         duration: duration ?? const Duration(seconds: 4),
         actionLabel: actionLabel,
@@ -174,17 +179,18 @@ class SnackBarUtils {
     Duration? duration,
   }) {
     try {
+      final cs = Theme.of(context).colorScheme;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
             children: [
-              const SizedBox(
+              SizedBox(
                 width: AppDimensions.iconSizeS,
                 height: AppDimensions.iconSizeS,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.neutralLight),
+                      AlwaysStoppedAnimation<Color>(cs.onInverseSurface),
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingMd),
@@ -192,13 +198,13 @@ class SnackBarUtils {
                 child: Text(
                   message,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.neutralLight,
+                        color: cs.onInverseSurface,
                       ),
                 ),
               ),
             ],
           ),
-          backgroundColor: AppColors.neutralDark,
+          backgroundColor: cs.inverseSurface,
           duration: duration ?? const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
         ),
@@ -226,7 +232,7 @@ class SnackBarUtils {
         context,
         message: message,
         backgroundColor: backgroundColor,
-        textColor: textColor ?? AppColors.neutralLight,
+        textColor: textColor ?? Theme.of(context).colorScheme.outlineVariant,
         icon: icon,
         duration: duration ?? const Duration(seconds: 3),
         actionLabel: actionLabel,

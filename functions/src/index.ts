@@ -45,6 +45,9 @@ export { onSuggestionCreated, onSuggestionStatusChanged } from "./ingredients/on
 // Analytics Functions - Ingredient tracking
 export { trackUnmatchedIngredients, getUnmatchedIngredientStats } from "./analytics/track-unmatched-ingredients";
 
+// Feedback Functions - Beta user feedback
+export { onFeedbackCreated } from "./feedback/on-feedback-created";
+
 admin.initializeApp();
 const db = admin.firestore();
 

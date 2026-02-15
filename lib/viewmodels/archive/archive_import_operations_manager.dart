@@ -5,6 +5,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Manages batch import operations with error handling and state management.
 class ArchiveImportOperationsManager extends ChangeNotifier {
@@ -26,7 +27,7 @@ class ArchiveImportOperationsManager extends ChangeNotifier {
     VoidCallback onSuccess,
   ) async {
     if (selectedRecipeIds.isEmpty) {
-      _setError('Inga recept valda');
+      _setError(AppLocale.current.errorNoRecipesSelected);
       return;
     }
 
@@ -46,10 +47,10 @@ class ArchiveImportOperationsManager extends ChangeNotifier {
         onSuccess();
         notifyListeners();
       } else {
-        _setError(result.message ?? 'Import misslyckades');
+        _setError(result.message ?? AppLocale.current.errorImportFailed);
       }
     } catch (e) {
-      _setError('Import misslyckades: $e');
+      _setError(AppLocale.current.errorImportFailed);
     } finally {
       _setImporting(false);
     }
@@ -77,10 +78,10 @@ class ArchiveImportOperationsManager extends ChangeNotifier {
         onSuccess();
         notifyListeners();
       } else {
-        _setError(result.message ?? 'Import misslyckades');
+        _setError(result.message ?? AppLocale.current.errorImportFailed);
       }
     } catch (e) {
-      _setError('Import misslyckades: $e');
+      _setError(AppLocale.current.errorImportFailed);
     } finally {
       _setImporting(false);
     }

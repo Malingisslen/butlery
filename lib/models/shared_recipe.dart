@@ -1,3 +1,4 @@
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 import 'package:butlery/models/shared_content/shared_content_status_mixin.dart';
 import 'package:butlery/models/shared_content/copy_on_write_mixin.dart';
@@ -247,7 +248,8 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
   /// For V2 shares without snapshot, caller must fetch full recipe first.
   Recipe? createImportRecipe({required String newOwnerId}) {
     if (_recipeSnapshot == null) return null;
-    final attributionText = 'Inspirerat av recept från $sharedByDisplayName';
+    final attributionText =
+        AppLocale.current.sharedRecipeAttributionText(sharedByDisplayName);
     return _recipeSnapshot.copyWith(sourceUrl: attributionText);
   }
 

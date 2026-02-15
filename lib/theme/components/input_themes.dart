@@ -1,10 +1,10 @@
 /// Input and data display theme configurations.
 ///
 /// **UI Redesign:**
-/// - Inputs: Forest green focus border
-/// - Cards: White with subtle shadow, recipe cards get left green + bottom rust borders
-/// - Chips: Pill-shaped with forest green selection
-/// - Error states use error red (NOT rust)
+/// - Inputs: Primary focus border
+/// - Cards: Surface with subtle border
+/// - Chips: Pill-shaped with primary selection
+/// - Error states use error color (NOT rust)
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -12,47 +12,47 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Input, card, and data display component themes.
+/// All methods accept [ColorScheme] for dark/light mode awareness.
 class InputThemes {
-  /// Private constructor
   InputThemes._();
 
-  /// Input decoration theme - Forest green focus
-  static InputDecorationTheme get inputDecorationTheme {
+  /// Input decoration theme
+  static InputDecorationTheme inputDecorationTheme(ColorScheme cs) {
     return InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.cardWhite,
+      fillColor: cs.surfaceContainerHighest,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        borderSide: const BorderSide(
-          color: AppColors.divider,
+        borderSide: BorderSide(
+          color: cs.outlineVariant,
           width: 1,
         ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        borderSide: const BorderSide(
-          color: AppColors.divider,
+        borderSide: BorderSide(
+          color: cs.outlineVariant,
           width: 1,
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        borderSide: const BorderSide(
-          color: AppColors.forestGreen,
+        borderSide: BorderSide(
+          color: cs.primary,
           width: 2,
         ),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        borderSide: const BorderSide(
-          color: AppColors.error,
+        borderSide: BorderSide(
+          color: cs.error,
           width: 1,
         ),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        borderSide: const BorderSide(
-          color: AppColors.error,
+        borderSide: BorderSide(
+          color: cs.error,
           width: 2,
         ),
       ),
@@ -60,22 +60,22 @@ class InputThemes {
         horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.spacingModerate,
       ),
-      hintStyle: const TextStyle(color: AppColors.textLight),
-      labelStyle: AppTextStyles.bodyMedium,
-      errorStyle: AppTextStyles.errorText,
+      hintStyle: TextStyle(color: cs.outline),
+      labelStyle: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
+      errorStyle: AppTextStyles.errorText.copyWith(color: cs.error),
     );
   }
 
-  /// Card theme - White with subtle shadow
-  static CardThemeData get cardTheme {
+  /// Card theme
+  static CardThemeData cardTheme(ColorScheme cs) {
     return CardThemeData(
-      color: AppColors.cardWhite,
+      color: cs.surfaceContainerHighest,
       elevation: 0,
       shadowColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        side: const BorderSide(
-          color: AppColors.divider,
+        side: BorderSide(
+          color: cs.outlineVariant,
           width: 1,
         ),
       ),
@@ -86,14 +86,18 @@ class InputThemes {
   }
 
   /// List tile theme
-  static ListTileThemeData get listTileTheme {
+  static ListTileThemeData listTileTheme(ColorScheme cs) {
     return ListTileThemeData(
-      tileColor: AppColors.cardWhite,
-      selectedTileColor: AppColors.lightColorScheme.primaryContainer,
-      iconColor: AppColors.forestGreen,
-      textColor: AppColors.textDark,
-      titleTextStyle: AppTextStyles.listTileTitle,
-      subtitleTextStyle: AppTextStyles.listTileSubtitle,
+      tileColor: cs.surfaceContainerHighest,
+      selectedTileColor: cs.primaryContainer,
+      iconColor: cs.primary,
+      textColor: cs.onSurface,
+      titleTextStyle: AppTextStyles.listTileTitle.copyWith(
+        color: cs.onSurface,
+      ),
+      subtitleTextStyle: AppTextStyles.listTileSubtitle.copyWith(
+        color: cs.onSurfaceVariant,
+      ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingMd,
         vertical: AppDimensions.spacingSm,
@@ -105,19 +109,19 @@ class InputThemes {
     );
   }
 
-  /// Chip theme - Pill-shaped with forest green selection
-  static ChipThemeData get chipTheme {
+  /// Chip theme
+  static ChipThemeData chipTheme(ColorScheme cs) {
     return ChipThemeData(
-      backgroundColor: AppColors.creamDark,
-      selectedColor: AppColors.forestGreen,
-      disabledColor: AppColors.divider,
+      backgroundColor: cs.surfaceContainerHigh,
+      selectedColor: cs.primary,
+      disabledColor: cs.outlineVariant,
       labelStyle: AppTextStyles.labelMedium.copyWith(
-        color: AppColors.textDark,
+        color: cs.onSurface,
       ),
       secondaryLabelStyle: AppTextStyles.labelMedium.copyWith(
-        color: AppColors.cardWhite,
+        color: cs.onPrimary,
       ),
-      brightness: Brightness.light,
+      brightness: cs.brightness,
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.paddingM,
         vertical: AppDimensions.paddingS,
@@ -128,9 +132,9 @@ class InputThemes {
     );
   }
 
-  /// Recipe card decoration - Left green border + bottom rust border
-  /// Note: Cannot use borderRadius with non-uniform border colors in Flutter
-  /// UI Redesign: 3px left green border, 2px bottom rust border per mockup
+  /// Recipe card decoration - Left green border + bottom rust border.
+  /// Uses AppColors directly since BoxDecoration is not part of ThemeData
+  /// and these are brand-specific decorative borders.
   static BoxDecoration get recipeCardDecoration => const BoxDecoration(
         color: AppColors.cardWhite,
         border: Border(
@@ -145,7 +149,7 @@ class InputThemes {
         ),
       );
 
-  /// Trending recipe card decoration - Uses new palette
+  /// Trending recipe card decoration
   static BoxDecoration get trendingRecipeCardDecoration => BoxDecoration(
         color: AppColors.primaryContainer
             .withValues(alpha: AppDimensions.opacityVeryLight),
@@ -155,7 +159,7 @@ class InputThemes {
                 .withValues(alpha: AppDimensions.opacityLight)),
       );
 
-  /// Activity timeline item decoration - Uses rust accent
+  /// Activity timeline item decoration
   static BoxDecoration get activityTimelineItemDecoration => BoxDecoration(
         color: AppColors.secondaryContainer
             .withValues(alpha: AppDimensions.opacityVeryLight),
@@ -165,7 +169,7 @@ class InputThemes {
                 AppColors.rust.withValues(alpha: AppDimensions.opacityLight)),
       );
 
-  /// Empty state container decoration - Light green background
+  /// Empty state container decoration
   static BoxDecoration get emptyStateContainerDecoration => BoxDecoration(
         color: AppColors.primaryContainer
             .withValues(alpha: AppDimensions.opacityVeryLight),
@@ -175,7 +179,7 @@ class InputThemes {
                 .withValues(alpha: AppDimensions.opacityLight)),
       );
 
-  /// Search box decoration - Custom for ButlerySearchBox
+  /// Search box decoration
   static BoxDecoration get searchBoxDecoration => BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
@@ -185,8 +189,7 @@ class InputThemes {
         ),
       );
 
-  /// Search box decoration (focused) - Green/rust accent
-  /// Note: Cannot use borderRadius with non-uniform border colors in Flutter
+  /// Search box decoration (focused)
   static BoxDecoration get searchBoxDecorationFocused => const BoxDecoration(
         color: AppColors.cardWhite,
         border: Border(

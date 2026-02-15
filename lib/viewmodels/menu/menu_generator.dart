@@ -6,6 +6,7 @@ import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Focused module for menu generation
 /// This module handles ONLY menu generation:
@@ -78,7 +79,7 @@ class MenuGenerator {
     await Future.delayed(const Duration(milliseconds: 300));
 
     if (availableRecipes.isEmpty) {
-      throw Exception('Inga recept tillgängliga. Lägg till recept först.');
+      throw Exception(AppLocale.current.errorNoRecipesAvailable);
     }
 
     final generatedMenu = await _menuService.generateMenuFromPrompt(
@@ -88,7 +89,7 @@ class MenuGenerator {
 
     if (generatedMenu.isEmpty) {
       throw Exception(
-        'Kunde inte generera meny från din begäran. Prova att vara mer specifik.',
+        AppLocale.current.errorGeneric,
       );
     }
 
@@ -178,11 +179,11 @@ class MenuGenerator {
   /// Validate menu generation prerequisites
   void validateGenerationPrerequisites(String prompt) {
     if (prompt.trim().isEmpty) {
-      throw ArgumentError('Ange vad du vill ha för meny');
+      throw ArgumentError(AppLocale.current.errorFillRequiredFields);
     }
 
     if (availableRecipes.isEmpty) {
-      throw Exception('Inga recept tillgängliga. Lägg till recept först.');
+      throw Exception(AppLocale.current.errorNoRecipesAvailable);
     }
   }
 
@@ -219,14 +220,14 @@ class MenuGenerator {
   /// Get menu generation suggestions
   List<String> getGenerationSuggestions() {
     return [
-      'Vegetarisk veckomeny för 2 personer',
-      'Snabba middagar för hela veckan',
-      'Kött och fisk varierad meny',
-      'Familjevänlig veckomeny',
-      'Hälsosam och näringsrik meny',
-      'Budgetvänlig veckomeny',
-      'Italiensk temameny',
-      'Asiatisk inspirerad veckomeny',
+      AppLocale.current.menuSuggestionVegetarian,
+      AppLocale.current.menuSuggestionQuickDinners,
+      AppLocale.current.menuSuggestionMeatFish,
+      AppLocale.current.menuSuggestionFamily,
+      AppLocale.current.menuSuggestionHealthy,
+      AppLocale.current.menuSuggestionBudget,
+      AppLocale.current.menuSuggestionItalian,
+      AppLocale.current.menuSuggestionAsian,
     ];
   }
 

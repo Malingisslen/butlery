@@ -1,7 +1,7 @@
 // lib/views/social/shared_with_me/shared_content_actions.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
@@ -33,7 +33,7 @@ class SharedContentActions {
         SnackBar(
           content:
               Text(context.l10n.sharedRecipeImported(sharedRecipe.recipeTitle)),
-          backgroundColor: AppColors.success,
+          backgroundColor: context.butleryColors.success,
         ),
       );
     } else if (context.mounted && viewModel.recipeViewModel.hasError) {
@@ -41,7 +41,7 @@ class SharedContentActions {
         SnackBar(
           content: Text(viewModel.recipeViewModel.error ??
               context.l10n.sharedImportFailed),
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
@@ -62,7 +62,7 @@ class SharedContentActions {
           SnackBar(
             content: Text(context.l10n
                 .sharedConnectingToCollaborativeMenu(sharedMenu.menuTitle)),
-            backgroundColor: AppColors.primary,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             duration: const Duration(seconds: 2),
           ),
         );
@@ -78,7 +78,7 @@ class SharedContentActions {
           SnackBar(
             content:
                 Text(context.l10n.sharedMenuImported(sharedMenu.menuTitle)),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
           ),
         );
       }
@@ -87,7 +87,7 @@ class SharedContentActions {
         SnackBar(
           content: Text(
               viewModel.menuViewModel.error ?? context.l10n.sharedImportFailed),
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
@@ -131,7 +131,7 @@ class SharedContentActions {
           SnackBar(
             content: Text(
                 context.l10n.sharedContentHidden(sharedRecipe.recipeTitle)),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
             action: SnackBarAction(
               label: context.l10n.commonUndo,
               onPressed: () =>
@@ -144,7 +144,7 @@ class SharedContentActions {
           SnackBar(
             content: Text(viewModel.recipeViewModel.error ??
                 context.l10n.sharedCouldNotHideRecipe),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -189,7 +189,7 @@ class SharedContentActions {
           SnackBar(
             content:
                 Text(context.l10n.sharedContentHidden(sharedMenu.menuTitle)),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
             action: SnackBarAction(
               label: context.l10n.commonUndo,
               onPressed: () =>
@@ -202,7 +202,7 @@ class SharedContentActions {
           SnackBar(
             content: Text(viewModel.menuViewModel.error ??
                 context.l10n.sharedCouldNotHideMenu),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -224,7 +224,7 @@ class SharedContentActions {
         SnackBar(
           content:
               Text(context.l10n.sharedJoinedList(sharedShoppingList.listName)),
-          backgroundColor: AppColors.success,
+          backgroundColor: context.butleryColors.success,
         ),
       );
 
@@ -260,7 +260,7 @@ class SharedContentActions {
               SnackBar(
                 content: Text(context.l10n.sharedJoinedListFindInShopping(
                     sharedShoppingList.listName)),
-                backgroundColor: AppColors.success,
+                backgroundColor: context.butleryColors.success,
                 duration: const Duration(seconds: 4),
               ),
             );
@@ -273,7 +273,7 @@ class SharedContentActions {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(context.l10n.sharedJoinedButCouldNotNavigate),
-                backgroundColor: AppColors.warning,
+                backgroundColor: context.butleryColors.warning,
                 duration: const Duration(seconds: 5),
               ),
             );
@@ -286,14 +286,14 @@ class SharedContentActions {
           SnackBar(
             content: Text(viewModel.shoppingViewModel.error ??
                 context.l10n.sharedCouldNotJoinList),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.sharedCouldNotJoinListTryAgain),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -339,7 +339,7 @@ class SharedContentActions {
           SnackBar(
             content: Text(
                 context.l10n.sharedContentHidden(sharedShoppingList.listName)),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
             action: SnackBarAction(
               label: context.l10n.commonUndo,
               onPressed: () => viewModel.shoppingViewModel
@@ -352,7 +352,7 @@ class SharedContentActions {
           SnackBar(
             content: Text(viewModel.shoppingViewModel.error ??
                 context.l10n.sharedCouldNotHideShoppingList),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -387,14 +387,14 @@ class SharedContentActions {
           SnackBar(
             content:
                 Text(context.l10n.unshareSuccess(sharedRecipe.recipeTitle)),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.unshareFailed),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -404,7 +404,7 @@ class SharedContentActions {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.unshareFailed),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -438,14 +438,14 @@ class SharedContentActions {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.unshareSuccess(sharedMenu.menuTitle)),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.unshareFailed),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -455,7 +455,7 @@ class SharedContentActions {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.unshareFailed),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -491,14 +491,14 @@ class SharedContentActions {
           SnackBar(
             content:
                 Text(context.l10n.unshareSuccess(sharedShoppingList.listName)),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.butleryColors.success,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.unshareFailed),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -508,7 +508,7 @@ class SharedContentActions {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.unshareFailed),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }

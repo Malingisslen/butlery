@@ -8,6 +8,9 @@ class Routes {
   /// Authentication route
   static const String auth = '/auth';
 
+  /// Onboarding wizard route
+  static const String onboarding = '/onboarding';
+
   /// Add recipe route
   static const String laggTill = '/laggTill';
 
@@ -51,7 +54,6 @@ class Routes {
   static const String inkopslista = '/inkopslista';
 
   // Social routes
-  static const String discovery = '/discovery';
   static const String profileEdit = '/profile/edit';
   static const String friends = '/friends';
   static const String friendRequests = '/friends/requests';
@@ -66,10 +68,16 @@ class Routes {
   static const String messages = '/messages';
   static const String chat = '/chat';
 
+  // Cooking mode
+  static const String cookingMode = '/cooking-mode';
+
   // Settings routes
   static const String settingsAllergens = '/settings/allergens';
   static const String settingsPersonalTags = '/settings/personal-tags';
   static const String settingsNotifications = '/settings/notifications';
+
+  // Help routes
+  static const String faq = '/faq';
 
   // Route aliases
   static const Map<String, String> aliases = {
@@ -92,7 +100,6 @@ class Routes {
     veckomeny,
     realtimeMenu,
     inkopslista,
-    discovery,
     profileEdit,
     friends,
     friendRequests,
@@ -104,9 +111,11 @@ class Routes {
     sharedShoppingLists,
     messages,
     chat,
+    cookingMode,
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,
+    faq,
   };
 
   /// Routes using slide-from-bottom animation
@@ -124,7 +133,6 @@ class Routes {
   /// Routes using slide-from-right animation
   static const Set<String> rightSlideRoutes = {
     inkopslista,
-    discovery,
     profileEdit,
     friends,
     friendRequests,
@@ -136,15 +144,18 @@ class Routes {
     sharedShoppingLists,
     messages,
     chat,
+    cookingMode,
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,
+    faq,
   };
 
   /// Routes using fade animation
   static const Set<String> fadeRoutes = {
     home,
     auth,
+    onboarding,
   };
 
   /// Resolves route alias to main route
@@ -184,6 +195,7 @@ class Routes {
     // Base routes
     home,
     auth,
+    onboarding,
 
     // Recipe management
     laggTill,
@@ -202,8 +214,10 @@ class Routes {
     realtimeMenu,
     inkopslista,
 
+    // Cooking
+    cookingMode,
+
     // Social features
-    discovery,
     profileEdit,
     friends,
     friendRequests,
@@ -222,6 +236,9 @@ class Routes {
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,
+
+    // Help
+    faq,
   };
 
   /// All routes including aliases

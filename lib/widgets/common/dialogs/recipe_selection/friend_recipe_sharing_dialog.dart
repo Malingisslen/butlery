@@ -9,9 +9,9 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/recipe_selection_viewmodel.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Dialog for sharing recipes with friends
@@ -55,8 +55,9 @@ class FriendRecipeSharingDialog extends StatelessWidget {
                       ? null
                       : () => _shareSelectedRecipes(context, viewModel),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.forestGreen,
-                    foregroundColor: AppColors.cardWhite,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingL,
                       vertical: AppDimensions.paddingM,
@@ -67,7 +68,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
                     ),
                   ),
                   icon: viewModel.isSharing
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: AppDimensions.iconSizeAction,
                           height: AppDimensions.iconSizeAction,
                           child: SizedBox(
@@ -76,7 +77,9 @@ class FriendRecipeSharingDialog extends StatelessWidget {
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.cardWhite),
+                                  Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHighest),
                             ),
                           ),
                         )
@@ -135,8 +138,9 @@ class FriendRecipeSharingDialog extends StatelessWidget {
         if (viewModel.searchQuery.isNotEmpty || viewModel.hasSelectedRecipes)
           _buildInfo(context, viewModel),
 
-        const Divider(
-            height: AppDimensions.borderWidthThin, color: AppColors.divider),
+        Divider(
+            height: AppDimensions.borderWidthThin,
+            color: Theme.of(context).colorScheme.outlineVariant),
 
         // Recipe list
         Expanded(
@@ -181,7 +185,9 @@ class FriendRecipeSharingDialog extends StatelessWidget {
                 vertical: AppDimensions.spacingXs,
               ),
               decoration: BoxDecoration(
-                color: AppColors.forestGreen
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary
                     .withValues(alpha: AppDimensions.opacityVeryLight),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusRound),
@@ -189,7 +195,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
               child: Text(
                 context.l10n.dialogSelectedCount(viewModel.selectedCount),
                 style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: AppColors.forestGreen,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ),
@@ -225,7 +231,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
             shareMessage,
             style: AppTextStyles.bodyLargeLight,
           ),
-          backgroundColor: AppColors.success,
+          backgroundColor: context.butleryColors.success,
           duration: const Duration(seconds: 3),
         ),
       );
@@ -236,7 +242,7 @@ class FriendRecipeSharingDialog extends StatelessWidget {
             viewModel.error ?? context.l10n.chatCouldNotShareRecipe,
             style: AppTextStyles.bodyLargeLight,
           ),
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
           duration: const Duration(seconds: 3),
         ),
       );
@@ -261,6 +267,8 @@ class FriendRecipeListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final successColor = context.butleryColors.success;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
@@ -273,9 +281,9 @@ class FriendRecipeListItem extends StatelessWidget {
                 height: AppDimensions.iconSizeXl,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) =>
-                    _buildPlaceholder(),
+                    _buildPlaceholder(context),
               )
-            : _buildPlaceholder(),
+            : _buildPlaceholder(context),
       ),
       title: Row(
         children: [
@@ -296,25 +304,24 @@ class FriendRecipeListItem extends StatelessWidget {
                 vertical: AppDimensions.spacingXs,
               ),
               decoration: BoxDecoration(
-                color: AppColors.success
-                    .withValues(alpha: AppDimensions.opacityVeryLight),
+                color: successColor.withValues(
+                    alpha: AppDimensions.opacityVeryLight),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusRound),
                 border: Border.all(
-                    color: AppColors.success
-                        .withValues(alpha: AppDimensions.opacityMediumLight)),
+                    color: successColor.withValues(
+                        alpha: AppDimensions.opacityMediumLight)),
               ),
               child: Text(context.l10n.dialogAlreadyShared,
                   style: AppTextStyles.labelSmallSuccess),
             ),
         ],
       ),
-      subtitle: _buildSubtitle(),
+      subtitle: _buildSubtitle(context),
       trailing: Checkbox(
         value: isSelected,
         onChanged: (value) => onSelectionChanged(value ?? false),
-        activeColor:
-            isAlreadyShared ? AppColors.textMedium : AppColors.forestGreen,
+        activeColor: isAlreadyShared ? cs.onSurfaceVariant : cs.primary,
         shape: RoundedRectangleBorder(
             borderRadius:
                 BorderRadius.circular(AppDimensions.borderRadiusRound)),
@@ -323,7 +330,9 @@ class FriendRecipeListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildSubtitle() {
+  Widget _buildSubtitle(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final successColor = context.butleryColors.success;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -331,10 +340,10 @@ class FriendRecipeListItem extends StatelessWidget {
           recipe.mealType,
           style: isAlreadyShared
               ? AppTextStyles.metadataEmphasized.copyWith(
-                  color: AppColors.textMedium,
+                  color: cs.onSurfaceVariant,
                 )
               : AppTextStyles.metadataEmphasized.copyWith(
-                  color: AppColors.forestGreen,
+                  color: cs.primary,
                 ),
         ),
         if (recipe.description.isNotEmpty)
@@ -353,15 +362,14 @@ class FriendRecipeListItem extends StatelessWidget {
               Icon(
                 Icons.access_time,
                 size: AppDimensions.iconSizeM,
-                color:
-                    isAlreadyShared ? AppColors.success : AppColors.textMedium,
+                color: isAlreadyShared ? successColor : cs.onSurfaceVariant,
               ),
               const SizedBox(height: AppDimensions.spacingXs),
               Text(
                 '${recipe.timeMinutes} min',
                 style: isAlreadyShared
                     ? AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.success,
+                        color: successColor,
                         fontSize: AppTextStyles.labelSmall.fontSize,
                       )
                     : AppTextStyles.bodySmall
@@ -377,15 +385,14 @@ class FriendRecipeListItem extends StatelessWidget {
               Icon(
                 Icons.people,
                 size: AppDimensions.iconSizeM,
-                color:
-                    isAlreadyShared ? AppColors.success : AppColors.textMedium,
+                color: isAlreadyShared ? successColor : cs.onSurfaceVariant,
               ),
               const SizedBox(height: AppDimensions.spacingXs),
               Text(
                 '${recipe.portions} port',
                 style: isAlreadyShared
                     ? AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.success,
+                        color: successColor,
                         fontSize: AppTextStyles.labelSmall.fontSize,
                       )
                     : AppTextStyles.bodySmall
@@ -398,21 +405,21 @@ class FriendRecipeListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final successColor = context.butleryColors.success;
     return Container(
       width: AppDimensions.iconSizeXl,
       height: AppDimensions.iconSizeXl,
       decoration: BoxDecoration(
         color: isAlreadyShared
-            ? AppColors.success
-                .withValues(alpha: AppDimensions.opacityVeryLight)
-            : AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityVeryLight),
+            ? successColor.withValues(alpha: AppDimensions.opacityVeryLight)
+            : cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Icon(
         Icons.restaurant_menu,
-        color: isAlreadyShared ? AppColors.success : AppColors.forestGreen,
+        color: isAlreadyShared ? successColor : cs.primary,
         size: AppDimensions.iconSizeAction,
       ),
     );

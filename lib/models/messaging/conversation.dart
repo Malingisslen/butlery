@@ -56,6 +56,7 @@
 
 // lib/models/messaging/conversation.dart
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:uuid/uuid.dart';
 
@@ -393,7 +394,7 @@ class Conversation {
   /// fallback text when no messages exist. Used for conversation list previews.
   String get lastMessagePreview {
     if (lastMessage == null) {
-      return 'Ingen meddelanden än';
+      return AppLocale.current.conversationNoMessagesYet;
     }
 
     final message = lastMessage!;

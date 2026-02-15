@@ -13,7 +13,7 @@ import 'package:butlery/widgets/common/content_cards/image_preview_card.dart';
 import 'package:butlery/widgets/common/buttons/overlay_button.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -123,13 +123,14 @@ class _PhotoImportViewContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final viewModel = context.watch<PhotoImportViewModel>();
 
     return LayoutComponents.mainMenu(
       currentIndex: null,
       title: context.l10n.importFromPhoto,
       body: SafeArea(
-        // ✅ RESPONSIVE: Center and constrain content on large screens
+        // RESPONSIVE: Center and constrain content on large screens
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -150,18 +151,18 @@ class _PhotoImportViewContent extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(AppDimensions.paddingL),
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundTint,
+                      color: cs.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(
                         AppDimensions.borderRadiusM,
                       ),
-                      border: Border.all(color: AppColors.divider),
+                      border: Border.all(color: cs.outlineVariant),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           Icons.info_outline,
                           size: AppDimensions.iconSizeM,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: cs.primary,
                         ),
                         const SizedBox(width: AppDimensions.spacingS),
                         Expanded(
@@ -175,7 +176,6 @@ class _PhotoImportViewContent extends StatelessWidget {
                   ),
                   const SizedBox(height: AppDimensions.spacingXl),
 
-                  // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
                   UtilityComponents.primaryButton(
                     context,
                     label: viewModel.hasImage
@@ -202,13 +202,13 @@ class _PhotoImportViewContent extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(AppDimensions.paddingM),
                       decoration: BoxDecoration(
-                        color: AppColors.warning
+                        color: context.butleryColors.warning
                             .withValues(alpha: AppDimensions.opacityVeryLight),
                         borderRadius: BorderRadius.circular(
                           AppDimensions.borderRadiusM,
                         ),
                         border: Border.all(
-                          color: AppColors.warning.withValues(
+                          color: context.butleryColors.warning.withValues(
                               alpha: AppDimensions.opacityMediumLight),
                           width: AppDimensions.borderWidthStandard,
                         ),
@@ -218,9 +218,9 @@ class _PhotoImportViewContent extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.warning_amber_rounded,
-                                color: AppColors.warning,
+                                color: context.butleryColors.warning,
                                 size: AppDimensions.iconSizeM,
                               ),
                               const SizedBox(width: AppDimensions.spacingS),
@@ -229,7 +229,8 @@ class _PhotoImportViewContent extends StatelessWidget {
                                   context.l10n.importImageQualityLow(
                                       (viewModel.qualityScore! * 100).toInt()),
                                   style: AppTextStyles.titleSmall.copyWith(
-                                    color: AppColors.onWarningContainer,
+                                    color: context
+                                        .butleryColors.onWarningContainer,
                                   ),
                                 ),
                               ),
@@ -241,7 +242,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                             Text(
                               context.l10n.importImprovementSuggestions,
                               style: AppTextStyles.badgeLarge.copyWith(
-                                color: AppColors.onWarningContainer,
+                                color: context.butleryColors.onWarningContainer,
                               ),
                             ),
                             const SizedBox(height: AppDimensions.spacingXs),
@@ -256,14 +257,16 @@ class _PhotoImportViewContent extends StatelessWidget {
                                     Text(
                                       '• ',
                                       style: AppTextStyles.bodySmall.copyWith(
-                                        color: AppColors.onWarningContainer,
+                                        color: context
+                                            .butleryColors.onWarningContainer,
                                       ),
                                     ),
                                     Expanded(
                                       child: Text(
                                         rec,
                                         style: AppTextStyles.bodySmall.copyWith(
-                                          color: AppColors.onWarningContainer,
+                                          color: context
+                                              .butleryColors.onWarningContainer,
                                         ),
                                       ),
                                     ),
@@ -276,7 +279,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                           Text(
                             context.l10n.importOcrMayFail,
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.onWarningContainer,
+                              color: context.butleryColors.onWarningContainer,
                               fontStyle: FontStyle.italic,
                             ),
                           ),
@@ -345,7 +348,6 @@ class _PhotoImportViewContent extends StatelessWidget {
                     const SizedBox(height: AppDimensions.spacingM),
                     TextDisplayCard(text: viewModel.ocrText),
                     const SizedBox(height: AppDimensions.spacingXl),
-                    // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
                     UtilityComponents.primaryButton(
                       context,
                       label: context.l10n.importProceedToEdit,
@@ -372,6 +374,7 @@ class _PhotoImportViewContent extends StatelessWidget {
   ) {
     if (viewModel.isProcessing) {
       return ImagePreviewCard.loading(
+        context: context,
         child: StateWidget.loading(message: context.l10n.importProcessingImage),
       );
     }
@@ -382,6 +385,7 @@ class _PhotoImportViewContent extends StatelessWidget {
       final adaptiveHeight = (screenHeight * 0.4).clamp(200.0, 400.0);
 
       return ImagePreviewCard.loading(
+        context: context,
         height: adaptiveHeight,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
@@ -417,8 +421,9 @@ class _PhotoImportViewContent extends StatelessWidget {
     );
   }
 
-  /// Color-coded OCR confidence badge (green ≥80%, orange 60-79%, red <60%).
+  /// Color-coded OCR confidence badge (green >=80%, orange 60-79%, red <60%).
   Widget _buildConfidenceIndicator(BuildContext context, double confidence) {
+    final cs = Theme.of(context).colorScheme;
     final percentage = (confidence * 100).toInt();
     Color badgeBackgroundColor;
     Color badgeBorderColor;
@@ -429,32 +434,32 @@ class _PhotoImportViewContent extends StatelessWidget {
 
     if (confidence >= 0.8) {
       // High confidence - Green
-      badgeBackgroundColor =
-          AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight);
-      badgeBorderColor =
-          AppColors.success.withValues(alpha: AppDimensions.opacityMediumLight);
-      badgeIconColor = AppColors.success;
-      badgeTextColor = AppColors.onSuccessContainer;
+      badgeBackgroundColor = context.butleryColors.success
+          .withValues(alpha: AppDimensions.opacityVeryLight);
+      badgeBorderColor = context.butleryColors.success
+          .withValues(alpha: AppDimensions.opacityMediumLight);
+      badgeIconColor = context.butleryColors.success;
+      badgeTextColor = context.butleryColors.onSuccessContainer;
       icon = Icons.check_circle;
       label = context.l10n.importHighQuality;
     } else if (confidence >= 0.6) {
       // Medium confidence - Orange
-      badgeBackgroundColor =
-          AppColors.warning.withValues(alpha: AppDimensions.opacityVeryLight);
-      badgeBorderColor =
-          AppColors.warning.withValues(alpha: AppDimensions.opacityMediumLight);
-      badgeIconColor = AppColors.warning;
-      badgeTextColor = AppColors.onWarningContainer;
+      badgeBackgroundColor = context.butleryColors.warning
+          .withValues(alpha: AppDimensions.opacityVeryLight);
+      badgeBorderColor = context.butleryColors.warning
+          .withValues(alpha: AppDimensions.opacityMediumLight);
+      badgeIconColor = context.butleryColors.warning;
+      badgeTextColor = context.butleryColors.onWarningContainer;
       icon = Icons.info;
       label = context.l10n.importGoodQuality;
     } else {
       // Low confidence - Red
       badgeBackgroundColor =
-          AppColors.error.withValues(alpha: AppDimensions.opacityVeryLight);
+          cs.error.withValues(alpha: AppDimensions.opacityVeryLight);
       badgeBorderColor =
-          AppColors.error.withValues(alpha: AppDimensions.opacityMediumLight);
-      badgeIconColor = AppColors.error;
-      badgeTextColor = AppColors.onErrorContainer;
+          cs.error.withValues(alpha: AppDimensions.opacityMediumLight);
+      badgeIconColor = cs.error;
+      badgeTextColor = cs.onErrorContainer;
       icon = Icons.warning;
       label = context.l10n.importLowQuality;
     }

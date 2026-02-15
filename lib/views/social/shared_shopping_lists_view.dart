@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -32,10 +31,10 @@ class SharedShoppingListsView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   Icons.shopping_cart_outlined,
                   size: 64,
-                  color: AppColors.textMedium,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 const SizedBox(height: AppDimensions.spacingMd),
                 Text(
@@ -46,7 +45,7 @@ class SharedShoppingListsView extends StatelessWidget {
                 Text(
                   context.l10n.commonComingSoon,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.textMedium,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                 ),
               ],

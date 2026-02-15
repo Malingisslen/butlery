@@ -6,6 +6,7 @@ import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// How multiple conditions are combined in a rule.
 enum MatchMode {
@@ -111,33 +112,34 @@ extension ConditionTypeExtension on ConditionType {
     }
   }
 
-  /// Human-readable Swedish label for UI.
+  /// Human-readable localized label for UI.
   String get label {
+    final l = AppLocale.current;
     switch (this) {
       case ConditionType.ingredient:
-        return 'Ingrediens';
+        return l.conditionTypeIngredient;
       case ConditionType.property:
-        return 'Egenskap';
+        return l.conditionTypeProperty;
       case ConditionType.keyword:
-        return 'Nyckelord';
+        return l.conditionTypeKeyword;
       case ConditionType.sourceUrl:
-        return 'Källa';
+        return l.conditionTypeSource;
       case ConditionType.cuisine:
-        return 'Kök';
+        return l.conditionTypeCuisine;
       case ConditionType.dietary:
-        return 'Kost';
+        return l.conditionTypeDiet;
       case ConditionType.time:
-        return 'Tid';
+        return l.conditionTypeTime;
       case ConditionType.rating:
-        return 'Betyg';
+        return l.conditionTypeRating;
       case ConditionType.recency:
-        return 'Nyligen';
+        return l.conditionTypeRecent;
       case ConditionType.ownership:
-        return 'Ägarskap';
+        return l.conditionTypeOwnership;
       case ConditionType.hasImage:
-        return 'Har bild';
+        return l.conditionTypeHasImage;
       case ConditionType.completeness:
-        return 'Fullständighet';
+        return l.conditionTypeCompleteness;
     }
   }
 
@@ -253,33 +255,34 @@ extension ConditionOperatorExtension on ConditionOperator {
     }
   }
 
-  /// Human-readable Swedish label for UI.
+  /// Human-readable localized label for UI.
   String get label {
+    final l = AppLocale.current;
     switch (this) {
       case ConditionOperator.contains:
-        return 'innehåller';
+        return l.operatorContains;
       case ConditionOperator.equals:
-        return 'är exakt';
+        return l.operatorExact;
       case ConditionOperator.startsWith:
-        return 'börjar med';
+        return l.operatorStartsWith;
       case ConditionOperator.notContains:
-        return 'innehåller inte';
+        return l.operatorNotContains;
       case ConditionOperator.notEquals:
-        return 'är inte';
+        return l.operatorNotExact;
       case ConditionOperator.has:
-        return 'har';
+        return l.operatorHas;
       case ConditionOperator.notHas:
-        return 'har inte';
+        return l.operatorNotHas;
       case ConditionOperator.lessThan:
-        return 'mindre än';
+        return l.operatorLessThan;
       case ConditionOperator.lessThanOrEqual:
-        return 'högst';
+        return l.operatorAtMost;
       case ConditionOperator.greaterThan:
-        return 'mer än';
+        return l.operatorGreaterThan;
       case ConditionOperator.greaterThanOrEqual:
-        return 'minst';
+        return l.operatorAtLeast;
       case ConditionOperator.withinDays:
-        return 'inom dagar';
+        return l.operatorWithinDays;
     }
   }
 
@@ -959,14 +962,15 @@ class PersonalTagRule {
   ///
   /// [requireTagId] - Set to false for embedded rules where tagId is not needed.
   static String? validate(PersonalTagRule rule, {bool requireTagId = true}) {
+    final l = AppLocale.current;
     if (requireTagId && rule.tagId.isEmpty) {
-      return 'Regel måste kopplas till en tagg';
+      return l.validationRuleMustBeLinked;
     }
     if (rule.name.trim().isEmpty) {
-      return 'Regelnamn krävs';
+      return l.validationRuleNameRequired;
     }
     if (rule.conditions.isEmpty) {
-      return 'Regel måste ha minst ett villkor';
+      return l.validationRuleMustHaveCondition;
     }
     for (final condition in rule.conditions) {
       // Validate based on condition type
@@ -974,12 +978,12 @@ class PersonalTagRule {
         // Numeric conditions need a valid number
         if (condition.value == null ||
             (condition.value is String && condition.value.isEmpty)) {
-          return 'Alla villkor måste ha ett värde';
+          return l.validationAllConditionsMustHaveValue;
         }
       } else {
         // Text conditions need a non-empty string
         if (condition.stringValue.trim().isEmpty) {
-          return 'Alla villkor måste ha ett värde';
+          return l.validationAllConditionsMustHaveValue;
         }
       }
     }

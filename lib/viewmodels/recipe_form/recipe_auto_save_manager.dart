@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -268,10 +269,10 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
         ingredients.firstWhere((i) => i.trim().isNotEmpty, orElse: () => '');
 
     if (firstIngredient.isNotEmpty) {
-      return 'Recept med $firstIngredient';
+      return AppLocale.current.recipeAutoTitleWithIngredient(firstIngredient);
     }
 
-    return 'Namnlöst recept';
+    return AppLocale.current.recipeAutoTitleUntitled;
   }
 
   /// Save draft data to local storage

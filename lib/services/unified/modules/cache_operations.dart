@@ -3,6 +3,7 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Specialized cache operations module providing focused local storage management for recipe data.
 /// This module implements comprehensive local cache management following Single Responsibility Principle,
@@ -64,7 +65,7 @@ class CacheOperations {
       return cachedRecipes;
     } catch (e) {
       AppLogger.error('❌ Cache initialization error: $e');
-      setError('Kunde inte ladda recept: $e');
+      setError(AppLocale.current.errorCouldNotLoadRecipes);
       return [];
     }
   }

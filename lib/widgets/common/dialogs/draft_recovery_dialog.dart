@@ -1,7 +1,6 @@
 // lib/widgets/common/dialogs/draft_recovery_dialog.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -34,9 +33,9 @@ class DraftRecoveryDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: const Icon(
+      icon: Icon(
         Icons.restore,
-        color: AppColors.forestGreen,
+        color: Theme.of(context).colorScheme.primary,
         size: AppDimensions.iconSizeL,
       ),
       title: Text(
@@ -89,7 +88,7 @@ class DraftRecoveryDialog extends StatelessWidget {
           icon: const Icon(Icons.restore, size: AppDimensions.iconSizeS),
           label: Text(context.l10n.draftRestore),
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.forestGreen,
+            backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         ),
       ],
@@ -111,14 +110,16 @@ class DraftRecoveryDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(AppDimensions.paddingS),
                 decoration: BoxDecoration(
-                  color: AppColors.forestGreen
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
                       .withValues(alpha: AppDimensions.opacityVeryLight),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.article_outlined,
-                  color: AppColors.forestGreen,
+                  color: Theme.of(context).colorScheme.primary,
                   size: AppDimensions.iconSizeM,
                 ),
               ),

@@ -83,6 +83,11 @@ enum MessageType {
   /// Audio message type for voice recordings with playback controls, duration
   /// display, and waveform visualization for enhanced audio messaging experience.
   voice,
+
+  /// Poll message for group decision-making and voting.
+  /// Allows users to create questions with multiple options that
+  /// other participants can vote on within the conversation.
+  poll,
 }
 
 /// Enumeration defining comprehensive message delivery status lifecycle for messaging infrastructure tracking.
@@ -141,6 +146,8 @@ extension MessageTypeExtension on MessageType {
         return 'Bild';
       case MessageType.voice:
         return 'Röstmeddelande';
+      case MessageType.poll:
+        return 'Omröstning';
     }
   }
 
@@ -165,6 +172,8 @@ extension MessageTypeExtension on MessageType {
         return '📷';
       case MessageType.voice:
         return '🎤';
+      case MessageType.poll:
+        return '📊';
     }
   }
 }

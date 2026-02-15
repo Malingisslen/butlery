@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
@@ -536,8 +537,8 @@ class UnifiedMenuService extends ChangeNotifier
           final recipes = attributedMenu[firstCategory]!;
           if (recipes.isNotEmpty) {
             final firstRecipe = recipes[0];
-            final attributionText =
-                'Inspirerat av meny från ${sharedMenu.sharedByDisplayName}';
+            final attributionText = AppLocale.current
+                .menuAttributionText(sharedMenu.sharedByDisplayName);
             final attributedRecipe = firstRecipe.copyWith(
               description: firstRecipe.description.isEmpty
                   ? attributionText

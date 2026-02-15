@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/modules/realtime_edit_context.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Core real-time field operations module
 /// Handles recipe field updates (title, description, portions, time) and batch operations.
@@ -18,7 +19,7 @@ class RealtimeFieldOperations {
     try {
       // Validate session
       if (!context.hasActiveSession(recipeId)) {
-        context.setError('Inte i realtidsredigeringsläge');
+        context.setError(AppLocale.current.errorNotInRealtimeMode);
         return false;
       }
       // Add metadata to changes
@@ -37,7 +38,7 @@ class RealtimeFieldOperations {
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not apply real-time edit: $e');
-      context.setError('Kunde inte genomföra realtidsändring: $e');
+      context.setError(AppLocale.current.errorCouldNotApplyRealtimeEdit);
       return false;
     }
   }
@@ -49,7 +50,7 @@ class RealtimeFieldOperations {
     required String newTitle,
   }) async {
     if (newTitle.trim().isEmpty) {
-      context.setError('Titel kan inte vara tom');
+      context.setError(AppLocale.current.errorTitleCannotBeEmpty);
       return false;
     }
     return await makeRealtimeEdit(
@@ -85,7 +86,7 @@ class RealtimeFieldOperations {
     required int newPortions,
   }) async {
     if (newPortions <= 0) {
-      context.setError('Portioner måste vara större än 0');
+      context.setError(AppLocale.current.errorPortionsMustBePositive);
       return false;
     }
     return await makeRealtimeEdit(
@@ -105,7 +106,7 @@ class RealtimeFieldOperations {
     required int newTimeMinutes,
   }) async {
     if (newTimeMinutes <= 0) {
-      context.setError('Tid måste vara större än 0 minuter');
+      context.setError(AppLocale.current.errorTimeMustBePositive);
       return false;
     }
     return await makeRealtimeEdit(

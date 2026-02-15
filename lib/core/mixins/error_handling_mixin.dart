@@ -38,6 +38,7 @@
 /// ```
 
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Error classification enum for intelligent error handling strategies.
 /// This enumeration provides detailed error classification to enable appropriate
@@ -201,7 +202,7 @@ mixin ErrorHandlingMixin {
       createOperation,
       operationName: 'Create $itemType',
       defaultValue: defaultValue,
-      customErrorMessage: 'Kunde inte skapa $itemType. Försök igen.',
+      customErrorMessage: AppLocale.current.errorCouldNotCreate(itemType),
     );
   }
 
@@ -215,7 +216,7 @@ mixin ErrorHandlingMixin {
       updateOperation,
       operationName: 'Update $itemType',
       defaultValue: defaultValue,
-      customErrorMessage: 'Kunde inte uppdatera $itemType. Försök igen.',
+      customErrorMessage: AppLocale.current.errorCouldNotUpdate(itemType),
     );
   }
 
@@ -231,7 +232,7 @@ mixin ErrorHandlingMixin {
       },
       operationName: 'Delete $itemType',
       defaultValue: false,
-      customErrorMessage: 'Kunde inte ta bort $itemType. Försök igen.',
+      customErrorMessage: AppLocale.current.errorCouldNotDelete(itemType),
     );
 
     return result ?? false;
@@ -247,7 +248,7 @@ mixin ErrorHandlingMixin {
       loadOperation,
       operationName: 'Load $itemType',
       defaultValue: defaultValue,
-      customErrorMessage: 'Kunde inte ladda $itemType. Försök igen.',
+      customErrorMessage: AppLocale.current.errorCouldNotLoad(itemType),
     );
   }
 
@@ -260,7 +261,7 @@ mixin ErrorHandlingMixin {
       loadOperation,
       operationName: 'Load $itemType list',
       defaultValue: <T>[],
-      customErrorMessage: 'Kunde inte ladda $itemType. Försök igen.',
+      customErrorMessage: AppLocale.current.errorCouldNotLoad(itemType),
     );
 
     return result ?? <T>[];
@@ -275,7 +276,7 @@ mixin ErrorHandlingMixin {
     final result = await safeLoadList(loadOperation, itemType);
 
     if (result.isEmpty && showEmptyMessage) {
-      handleUserInfo('Inga objekt hittades.');
+      handleUserInfo(AppLocale.current.errorNoItemsFound);
     }
 
     return result;
@@ -301,7 +302,7 @@ mixin ErrorHandlingMixin {
           final opName = operationName ?? 'Network operation';
           AppLogger.error(
               '$opName failed after $maxRetries attempts: $e', stackTrace);
-          handleUserError('Nätverksfel. Kontrollera din internetanslutning.');
+          handleUserError(AppLocale.current.errorNetwork);
           return defaultValue;
         }
 
@@ -326,11 +327,11 @@ mixin ErrorHandlingMixin {
       AppLogger.error('$operationName failed: $e', stackTrace);
 
       if (e.toString().toLowerCase().contains('permission')) {
-        handleUserError('Du har inte behörighet för denna åtgärd.');
+        handleUserError(AppLocale.current.errorPermissionDenied);
       } else if (e.toString().toLowerCase().contains('auth')) {
-        handleUserError('Autentiseringsfel. Logga in igen.');
+        handleUserError(AppLocale.current.errorAuthentication);
       } else {
-        handleUserError('Ett fel uppstod. Försök igen.');
+        handleUserError(AppLocale.current.errorGeneric);
       }
 
       return defaultValue;
@@ -525,19 +526,20 @@ mixin ErrorHandlingMixin {
   /// [errorType] The classified error type
   /// Returns user-friendly error message string
   String getUserMessageForErrorType(ErrorType errorType) {
+    final l = AppLocale.current;
     switch (errorType) {
       case ErrorType.dnsResolution:
-        return 'Anslutningsproblem upptäckts. Försöker återansluta...';
+        return l.errorDnsResolution;
       case ErrorType.networkConnectivity:
-        return 'Nätverksfel. Kontrollera din internetanslutning.';
+        return l.errorNetwork;
       case ErrorType.authentication:
-        return 'Autentiseringsfel. Logga in igen.';
+        return l.errorAuthentication;
       case ErrorType.notFound:
-        return 'Kunde inte hittas.';
+        return l.errorNotFound;
       case ErrorType.serviceUnavailable:
-        return 'Tjänsten är tillfälligt otillgänglig. Försök igen senare.';
+        return l.errorServiceUnavailable;
       case ErrorType.unknown:
-        return 'Ett fel uppstod. Försök igen.';
+        return l.errorGeneric;
     }
   }
 

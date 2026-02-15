@@ -3,7 +3,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
@@ -100,7 +99,7 @@ class UserCollectionWidgets {
             children: [
               Icon(icon,
                   size: AppDimensions.iconSizeXl,
-                  color: AppColors.textTertiary),
+                  color: Theme.of(context).colorScheme.outline),
               const SizedBox(height: AppDimensions.spacingXl),
               Text(title ?? context.l10n.userNoUsers,
                   style: AppTextStyles.titleMedium,
@@ -114,8 +113,8 @@ class UserCollectionWidgets {
                 ElevatedButton(
                   onPressed: onAction,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.forestGreen,
-                    foregroundColor: AppColors.cardWhite,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   ),
                   child: Text(actionLabel),
                 ),
@@ -134,18 +133,23 @@ class UserCollectionWidgets {
     Color? textColor,
     EdgeInsets? padding,
   }) {
-    return Container(
-      padding: padding ?? AppDimensions.paddingSymmetric4x2,
-      decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.forestGreen,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-      ),
-      child: Text(
-        label,
-        style: AppTextStyles.labelSmall.copyWith(
-          color: textColor ?? AppColors.cardWhite,
-        ),
-      ),
+    return Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        return Container(
+          padding: padding ?? AppDimensions.paddingSymmetric4x2,
+          decoration: BoxDecoration(
+            color: backgroundColor ?? cs.primary,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+          ),
+          child: Text(
+            label,
+            style: AppTextStyles.labelSmall.copyWith(
+              color: textColor ?? cs.surfaceContainerHighest,
+            ),
+          ),
+        );
+      },
     );
   }
 }

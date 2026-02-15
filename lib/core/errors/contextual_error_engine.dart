@@ -1,51 +1,103 @@
 // lib/core/errors/contextual_error_engine.dart
 
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
-
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/connectivity_check.dart';
 
 /// User action contexts for intelligent error message generation
 enum UserActionContext {
   // Recipe contexts
-  recipeSaving('sparar recept'),
-  recipeUploading('laddar upp recept'),
-  recipeLoading('laddar recept'),
-  recipeDeleting('tar bort recept'),
-  recipeValidation('validerar recept'),
-  recipeCollaborativeSync('synkroniserar delat recept'),
-  recipeDraftRestore('återställer utkast'),
+  recipeSaving,
+  recipeUploading,
+  recipeLoading,
+  recipeDeleting,
+  recipeValidation,
+  recipeCollaborativeSync,
+  recipeDraftRestore,
 
   // Image contexts
-  recipeImageUpload('laddar upp bilder'),
-  recipeImageProcessing('bearbetar bilder'),
-  recipeImageDelete('tar bort bild'),
+  recipeImageUpload,
+  recipeImageProcessing,
+  recipeImageDelete,
 
   // Shopping contexts
-  shoppingListCreate('skapar inköpslista'),
-  shoppingItemAdd('lägger till vara'),
-  shoppingListSync('synkroniserar inköpslista'),
-  shoppingListShare('delar inköpslista'),
-  shoppingListDelete('tar bort inköpslista'),
+  shoppingListCreate,
+  shoppingItemAdd,
+  shoppingListSync,
+  shoppingListShare,
+  shoppingListDelete,
 
   // Social contexts
-  friendInvite('skickar väninvitation'),
-  groupCreate('skapar grupp'),
-  messagesSend('skickar meddelande'),
-  socialSync('synkroniserar socialt innehåll'),
-  userProfileUpdate('uppdaterar profil'),
-  permissionRequest('begär behörighet'),
+  friendInvite,
+  groupCreate,
+  messagesSend,
+  socialSync,
+  userProfileUpdate,
+  permissionRequest,
 
   // System contexts
-  appStartup('startar app'),
-  dataSync('synkroniserar data'),
-  backgroundUpload('bakgrundsuppladdning'),
-  offline('offline-operation');
+  appStartup,
+  dataSync,
+  backgroundUpload,
+  offline;
 
-  const UserActionContext(this.swedishDescription);
-
-  /// Human-readable Swedish description of the action
-  final String swedishDescription;
+  /// Localized description of the action
+  String get localizedDescription {
+    final l = AppLocale.current;
+    switch (this) {
+      case recipeSaving:
+        return l.actionRecipeSaving;
+      case recipeUploading:
+        return l.actionRecipeUploading;
+      case recipeLoading:
+        return l.actionRecipeLoading;
+      case recipeDeleting:
+        return l.actionRecipeDeleting;
+      case recipeValidation:
+        return l.actionRecipeValidation;
+      case recipeCollaborativeSync:
+        return l.actionRecipeCollaborativeSync;
+      case recipeDraftRestore:
+        return l.actionRecipeDraftRestore;
+      case recipeImageUpload:
+        return l.actionRecipeImageUpload;
+      case recipeImageProcessing:
+        return l.actionRecipeImageProcessing;
+      case recipeImageDelete:
+        return l.actionRecipeImageDelete;
+      case shoppingListCreate:
+        return l.actionShoppingListCreate;
+      case shoppingItemAdd:
+        return l.actionShoppingItemAdd;
+      case shoppingListSync:
+        return l.actionShoppingListSync;
+      case shoppingListShare:
+        return l.actionShoppingListShare;
+      case shoppingListDelete:
+        return l.actionShoppingListDelete;
+      case friendInvite:
+        return l.actionFriendInvite;
+      case groupCreate:
+        return l.actionGroupCreate;
+      case messagesSend:
+        return l.actionMessagesSend;
+      case socialSync:
+        return l.actionSocialSync;
+      case userProfileUpdate:
+        return l.actionUserProfileUpdate;
+      case permissionRequest:
+        return l.actionPermissionRequest;
+      case appStartup:
+        return l.actionAppStartup;
+      case dataSync:
+        return l.actionDataSync;
+      case backgroundUpload:
+        return l.actionBackgroundUpload;
+      case offline:
+        return l.actionOffline;
+    }
+  }
 }
 
 /// Error severity levels for progressive disclosure
@@ -132,7 +184,7 @@ class ContextualErrorEngine {
 
   /// Generate the main error message with context and connectivity awareness
   static String _generateBaseMessage(ErrorContext context) {
-    final action = context.actionContext.swedishDescription;
+    final action = context.actionContext.localizedDescription;
 
     switch (context.errorType) {
       case ErrorType.networkConnectivity:
@@ -158,30 +210,27 @@ class ContextualErrorEngine {
   /// Generate network-aware error messages
   static String _getNetworkErrorMessage(
       String action, ConnectivityResult connectivity) {
+    final l = AppLocale.current;
     switch (connectivity) {
       case ConnectivityResult.none:
-        return 'Ingen internetanslutning medan $action. Ändringar sparas lokalt och synkroniseras automatiskt när du är online igen.';
-
+        return l.errorNetworkNoConnection(action);
       case ConnectivityResult.limited:
-        return 'Begränsad internetanslutning medan $action. Vissa funktioner kan vara otillgängliga.';
-
+        return l.errorNetworkLimited(action);
       case ConnectivityResult.degraded:
-        return 'Anslutningsproblem medan $action. DNS-problem upptäckta, kontrollerar anslutningen automatiskt.';
-
+        return l.errorNetworkDegraded(action);
       case ConnectivityResult.full:
-        return 'Tillfälligt nätverksfel medan $action. Kontrollerar anslutningen och försöker igen automatiskt.';
-
+        return l.errorNetworkTemporary(action);
       case ConnectivityResult.unknown:
-        return 'Okänd anslutningsstatus medan $action. Kontrollera internetanslutningen och försök igen.';
+        return l.errorNetworkUnknownStatus(action);
     }
   }
 
   /// Generate authentication error messages with context
   static String _getAuthenticationErrorMessage(
       String action, ErrorContext context) {
-    final baseMessage = 'Du saknar behörighet för $action';
+    final l = AppLocale.current;
+    final baseMessage = l.errorAuthNoPermissionFor(action);
 
-    // Check for specific permission context from additional data
     final permissionLevel =
         context.additionalData?['permissionLevel'] as String?;
     final resourceOwner = context.additionalData?['resourceOwner'] as String?;
@@ -189,69 +238,91 @@ class ContextualErrorEngine {
         context.additionalData?['isAuthenticated'] as bool? ?? true;
 
     if (!isAuthenticated) {
-      return '$baseMessage eftersom du inte är inloggad.';
+      return l.errorAuthNotLoggedInWhile(baseMessage);
     }
 
     if (permissionLevel != null) {
       switch (permissionLevel) {
         case 'viewer':
-          return '$baseMessage. Du har endast läsrättigheter för detta innehåll.';
+          return l.errorAuthViewerOnly(baseMessage);
         case 'editor':
-          return '$baseMessage. Redigeringsrättigheter krävs för denna åtgärd.';
+          return l.errorAuthEditorRequired(baseMessage);
         case 'none':
-          return '$baseMessage. Du har inte delats detta innehåll.';
+          return l.errorAuthNotShared(baseMessage);
       }
     }
 
     if (resourceOwner != null) {
-      return '$baseMessage. Endast ägaren ($resourceOwner) kan utföra denna åtgärd.';
+      return l.errorAuthOwnerOnly(baseMessage, resourceOwner);
     }
 
-    return '$baseMessage. Kontakta innehållsägaren för utökade rättigheter.';
+    return l.errorAuthContactOwner(baseMessage);
   }
 
   /// Generate not found error messages
   static String _getNotFoundErrorMessage(String action, ErrorContext context) {
-    if (action.contains('recept')) {
-      return 'Receptet kunde inte hittas medan $action. Det kan ha blivit raderat eller flyttat av ägaren.';
-    } else if (action.contains('inköpslista')) {
-      return 'Inköpslistan kunde inte hittas medan $action. Den kan ha blivit raderad eller du har inte längre åtkomst.';
-    } else if (action.contains('bild')) {
-      return 'Bilden kunde inte hittas medan $action. Den kan ha blivit raderad eller flyttad.';
+    final l = AppLocale.current;
+    // Match on action context enum rather than string content
+    switch (context.actionContext) {
+      case UserActionContext.recipeSaving:
+      case UserActionContext.recipeLoading:
+      case UserActionContext.recipeDeleting:
+      case UserActionContext.recipeUploading:
+      case UserActionContext.recipeValidation:
+      case UserActionContext.recipeCollaborativeSync:
+      case UserActionContext.recipeDraftRestore:
+        return l.errorNotFoundRecipe(action);
+      case UserActionContext.shoppingListCreate:
+      case UserActionContext.shoppingItemAdd:
+      case UserActionContext.shoppingListSync:
+      case UserActionContext.shoppingListShare:
+      case UserActionContext.shoppingListDelete:
+        return l.errorNotFoundShoppingList(action);
+      case UserActionContext.recipeImageUpload:
+      case UserActionContext.recipeImageProcessing:
+      case UserActionContext.recipeImageDelete:
+        return l.errorNotFoundImage(action);
+      default:
+        return l.errorNotFoundGeneric(action);
     }
-
-    return 'Det begärda innehållet kunde inte hittas medan $action. Det kan ha blivit raderat eller du har inte längre åtkomst.';
   }
 
   /// Generate service unavailable error messages
   static String _getServiceUnavailableMessage(
       String action, ErrorContext context) {
+    final l = AppLocale.current;
     final isMaintenanceTime = _isMaintenanceTime();
 
     if (isMaintenanceTime) {
-      return 'Tjänsten är temporärt otillgänglig för underhåll medan $action. Försök igen om några minuter.';
+      return l.errorServiceMaintenance(action);
     }
 
-    if (action.contains('synkroniserar') || action.contains('delar')) {
-      return 'Synkroniseringstjänsten är temporärt otillgänglig medan $action. Ändringar sparas lokalt och synkroniseras automatiskt senare.';
+    // Check sync-related contexts by enum
+    switch (context.actionContext) {
+      case UserActionContext.shoppingListSync:
+      case UserActionContext.socialSync:
+      case UserActionContext.dataSync:
+      case UserActionContext.shoppingListShare:
+      case UserActionContext.recipeCollaborativeSync:
+        return l.errorServiceSync(action);
+      default:
+        return l.errorServiceTemporary(action);
     }
-
-    return 'Tjänsten är temporärt otillgänglig medan $action. Försök igen om ett par minuter.';
   }
 
   /// Generate DNS resolution error messages
   static String _getDnsErrorMessage(String action, ErrorContext context) {
-    return 'Kunde inte ansluta till servern medan $action. Kontrollera internetanslutningen eller försök igen senare.';
+    return AppLocale.current.errorDnsConnection(action);
   }
 
   /// Generate unknown error messages with context
   static String _getUnknownErrorMessage(String action, ErrorContext context) {
-    final technicalInfo = context.technicalDetails != null &&
-            context.severity != ErrorSeverity.minimal
-        ? ' (Teknisk information: ${context.technicalDetails})'
-        : '';
-
-    return 'Ett oväntat fel uppstod medan $action. Försök igen eller kontakta support om problemet kvarstår.$technicalInfo';
+    final l = AppLocale.current;
+    if (context.technicalDetails != null &&
+        context.severity != ErrorSeverity.minimal) {
+      return l.errorUnknownWithTechnical(action, context.technicalDetails!);
+    }
+    return l.errorUnknownWhileAction(action);
   }
 
   /// Generate recovery guidance based on error context
@@ -268,65 +339,65 @@ class ContextualErrorEngine {
 
     if (recoveryActions.isEmpty) return '';
 
+    final label = AppLocale.current.suggestionLabel;
     final actionText = recoveryActions.length == 1
-        ? 'Förslag: ${recoveryActions.first}'
-        : 'Förslag:\n${recoveryActions.map((action) => '• $action').join('\n')}';
+        ? '$label ${recoveryActions.first}'
+        : '$label\n${recoveryActions.map((action) => '• $action').join('\n')}';
 
     return actionText;
   }
 
   /// Get context-specific recovery actions
   static List<String> _getContextSpecificActions(ErrorContext context) {
+    final l = AppLocale.current;
     final actions = <String>[];
 
     switch (context.actionContext) {
       case UserActionContext.recipeSaving:
         if (context.errorType == ErrorType.networkConnectivity) {
-          actions.add('Receptet sparas lokalt och synkroniseras automatiskt');
+          actions.add(l.suggestionSavedLocally);
         } else if (context.errorType == ErrorType.authentication) {
-          actions.add('Kontrollera att du är inloggad');
-          actions.add('Be om redigeringsrättigheter från receptägaren');
+          actions.add(l.suggestionCheckLoggedIn);
+          actions.add(l.suggestionRequestPermission);
         }
         break;
 
       case UserActionContext.recipeImageUpload:
         if (context.errorType == ErrorType.networkConnectivity) {
-          actions
-              .add('Bilderna sparas lokalt och laddas upp automatiskt senare');
+          actions.add(l.suggestionImageSavedLocally);
         } else {
-          actions.add('Kontrollera att bilderna är mindre än 10MB');
-          actions.add('Använd JPG, PNG eller HEIC format');
+          actions.add(l.suggestionImageSizeLimit);
+          actions.add(l.suggestionImageFormat);
         }
         break;
 
       case UserActionContext.recipeDraftRestore:
-        actions.add('Välj ett annat utkast från listan');
-        actions.add('Börja skapa ett nytt recept istället');
+        actions.add(l.suggestionSelectAnotherDraft);
+        actions.add(l.suggestionCreateNewRecipe);
         break;
 
       case UserActionContext.friendInvite:
       case UserActionContext.socialSync:
         if (context.errorType == ErrorType.authentication) {
-          actions.add('Kontrollera att du är inloggad');
-          actions.add('Uppdatera dina kontoinställningar');
+          actions.add(l.suggestionCheckLoggedIn);
+          actions.add(l.suggestionUpdateAccountSettings);
         }
         break;
 
       default:
-        // Generic recovery actions based on error type
         switch (context.errorType) {
           case ErrorType.networkConnectivity:
-            actions.add('Kontrollera internetanslutningen');
-            actions.add('Försök igen när anslutningen är stabil');
+            actions.add(l.suggestionCheckConnection);
+            actions.add(l.suggestionRetryWhenStable);
             break;
           case ErrorType.authentication:
-            actions.add('Logga in på nytt');
+            actions.add(l.suggestionLoginAgain);
             break;
           case ErrorType.serviceUnavailable:
-            actions.add('Försök igen om några minuter');
+            actions.add(l.suggestionRetryInMinutes);
             break;
           default:
-            actions.add('Försök igen eller kontakta support');
+            actions.add(l.suggestionRetryOrContactSupport);
         }
     }
 
@@ -335,7 +406,8 @@ class ContextualErrorEngine {
 
   /// Get fallback message when error generation fails
   static String _getFallbackMessage(UserActionContext context) {
-    return 'Ett fel uppstod medan ${context.swedishDescription}. Försök igen.';
+    return AppLocale.current
+        .errorFallbackWhileAction(context.localizedDescription);
   }
 
   /// Check if current time is during maintenance window (simple heuristic)

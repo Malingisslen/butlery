@@ -1,7 +1,6 @@
 // lib/widgets/common/content_cards/text_display_card.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -28,6 +27,7 @@ class TextDisplayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final Widget textWidget = Text(
       text,
       style: textStyle ?? AppTextStyles.bodyMedium,
@@ -36,9 +36,9 @@ class TextDisplayCard extends StatelessWidget {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.backgroundTint,
+        color: backgroundColor ?? cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: borderColor ?? AppColors.divider),
+        border: Border.all(color: borderColor ?? cs.outlineVariant),
       ),
       child: scrollable ? SingleChildScrollView(child: textWidget) : textWidget,
     );

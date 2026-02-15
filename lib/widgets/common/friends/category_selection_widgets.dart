@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
-import 'package:butlery/theme/app_colors.dart';
+// AppColors import removed - using theme-aware colors
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -109,7 +109,9 @@ class CategorySelectionWidgets {
           Icon(
             category.emoji != null ? Icons.emoji_emotions : Icons.group,
             size: AppDimensions.iconSizeS,
-            color: isSelected ? AppColors.textDark : AppColors.textMedium,
+            color: isSelected
+                ? Theme.of(context).colorScheme.onSurface
+                : Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(category.name),
@@ -118,8 +120,9 @@ class CategorySelectionWidgets {
             Text(
               '(${category.friendUserIds.length})',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color:
-                        isSelected ? AppColors.textDark : AppColors.textMedium,
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.onSurface
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
           ],
@@ -127,11 +130,13 @@ class CategorySelectionWidgets {
       ),
       selected: isSelected,
       onSelected: enabled ? (_) => onTap() : null,
-      backgroundColor: AppColors.cream,
-      selectedColor: AppColors.forestGreen,
-      checkmarkColor: AppColors.textDark,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      selectedColor: Theme.of(context).colorScheme.primary,
+      checkmarkColor: Theme.of(context).colorScheme.onSurface,
       labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: isSelected ? AppColors.textDark : AppColors.textMedium,
+            color: isSelected
+                ? Theme.of(context).colorScheme.onSurface
+                : Theme.of(context).colorScheme.onSurfaceVariant,
           ),
     );
   }
@@ -161,16 +166,20 @@ class CategorySelectionWidgets {
             ),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.neutralLight
+                  ? Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest
                       .withValues(alpha: AppDimensions.opacityVeryDark)
-                  : AppColors.forestGreen
+                  : Theme.of(context)
+                      .colorScheme
+                      .primary
                       .withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
             ),
             child: Text(
               '${category.friendCount}',
               style: AppTextStyles.badge.copyWith(
-                color: AppColors.forestGreen,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ),
@@ -178,12 +187,16 @@ class CategorySelectionWidgets {
       ),
       selected: isSelected,
       onSelected: enabled ? (_) => onTap() : null,
-      selectedColor:
-          AppColors.forestGreen.withValues(alpha: AppDimensions.opacityLight),
-      checkmarkColor: AppColors.forestGreen,
-      backgroundColor: AppColors.cream,
+      selectedColor: Theme.of(context)
+          .colorScheme
+          .primary
+          .withValues(alpha: AppDimensions.opacityLight),
+      checkmarkColor: Theme.of(context).colorScheme.primary,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       side: BorderSide(
-        color: isSelected ? AppColors.forestGreen : AppColors.textMedium,
+        color: isSelected
+            ? Theme.of(context).colorScheme.primary
+            : Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
   }
@@ -241,11 +254,15 @@ class CategorySelectionWidgets {
       builder: (context) => Container(
         padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
         decoration: BoxDecoration(
-          color: AppColors.forestGreen
+          color: Theme.of(context)
+              .colorScheme
+              .primary
               .withValues(alpha: AppDimensions.opacityVeryLight),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           border: Border.all(
-            color: AppColors.forestGreen
+            color: Theme.of(context)
+                .colorScheme
+                .primary
                 .withValues(alpha: AppDimensions.opacityMediumLight),
           ),
         ),
@@ -254,13 +271,13 @@ class CategorySelectionWidgets {
             Container(
               padding: const EdgeInsets.all(AppDimensions.spacingXs),
               decoration: BoxDecoration(
-                color: AppColors.forestGreen,
+                color: Theme.of(context).colorScheme.primary,
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadius6),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.category,
-                color: AppColors.neutralLight,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 size: AppDimensions.iconSizeS,
               ),
             ),
@@ -272,14 +289,14 @@ class CategorySelectionWidgets {
                   Text(
                     context.l10n.friendSelectedCategories,
                     style: AppTextStyles.labelLarge.copyWith(
-                      color: AppColors.forestGreen,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   Text(
                     context.l10n.friendSelectedCategoriesSummary(
                         selectedCategories.length, totalFriends),
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.forestGreen,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                 ],
@@ -290,7 +307,7 @@ class CategorySelectionWidgets {
               icon: const Icon(Icons.clear, size: AppDimensions.iconSize18),
               label: Text(context.l10n.commonClear),
               style: TextButton.styleFrom(
-                foregroundColor: AppColors.forestGreen,
+                foregroundColor: Theme.of(context).colorScheme.primary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingS,
                   vertical: AppDimensions.spacingXs,
@@ -315,7 +332,8 @@ class CategorySelectionWidgets {
       builder: (context) => Container(
         width: width,
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.textMedium),
+          border:
+              Border.all(color: Theme.of(context).colorScheme.onSurfaceVariant),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         ),
         child: ExpansionTile(
@@ -335,7 +353,7 @@ class CategorySelectionWidgets {
               subtitle: Text(context.l10n
                   .friendFriendsCount(category.friendUserIds.length)),
               dense: true,
-              activeColor: AppColors.forestGreen,
+              activeColor: Theme.of(context).colorScheme.primary,
             );
           }).toList(),
         ),

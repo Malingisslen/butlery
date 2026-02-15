@@ -1,0 +1,96 @@
+/// ViewModel for the onboarding wizard flow.
+import 'package:flutter/foundation.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/services/user_service.dart';
+
+class OnboardingViewModel extends ChangeNotifier {
+  int _currentPage = 0;
+  final Set<String> _selectedAllergens = {};
+  final Set<String> _selectedDietaryPrefs = {};
+  bool _isCompleting = false;
+
+  int get currentPage => _currentPage;
+  Set<String> get selectedAllergens => Set.unmodifiable(_selectedAllergens);
+  Set<String> get selectedDietaryPrefs =>
+      Set.unmodifiable(_selectedDietaryPrefs);
+  bool get isCompleting => _isCompleting;
+  bool get isLastPage => _currentPage == 3;
+  bool get isFirstPage => _currentPage == 0;
+
+  void setPage(int page) {
+    _currentPage = page;
+    notifyListeners();
+  }
+
+  void nextPage() {
+    if (_currentPage < 3) {
+      _currentPage++;
+      notifyListeners();
+    }
+  }
+
+  void previousPage() {
+    if (_currentPage > 0) {
+      _currentPage--;
+      notifyListeners();
+    }
+  }
+
+  void toggleAllergen(String allergen) {
+    if (_selectedAllergens.contains(allergen)) {
+      _selectedAllergens.remove(allergen);
+    } else {
+      _selectedAllergens.add(allergen);
+    }
+    notifyListeners();
+  }
+
+  void toggleDietaryPref(String pref) {
+    if (_selectedDietaryPrefs.contains(pref)) {
+      _selectedDietaryPrefs.remove(pref);
+    } else {
+      _selectedDietaryPrefs.add(pref);
+    }
+    notifyListeners();
+  }
+
+  bool isAllergenSelected(String allergen) =>
+      _selectedAllergens.contains(allergen);
+
+  bool isDietaryPrefSelected(String pref) =>
+      _selectedDietaryPrefs.contains(pref);
+
+  /// Saves preferences and marks onboarding as completed.
+  /// Returns true on success.
+  Future<bool> completeOnboarding() async {
+    _isCompleting = true;
+    notifyListeners();
+
+    try {
+      final userService = ServiceLocator.get<UserService>();
+
+      // Save allergen/dietary preferences if any were selected
+      if (_selectedAllergens.isNotEmpty || _selectedDietaryPrefs.isNotEmpty) {
+        final prefs = UserAllergenPreferences(
+          trackedAllergens: _selectedAllergens,
+          trackedDietary: _selectedDietaryPrefs,
+        );
+        await userService.updateAllergenPreferences(prefs);
+      }
+
+      // Mark onboarding as completed on the profile
+      await userService.markOnboardingComplete();
+
+      AppLogger.success('Onboarding completed');
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to complete onboarding', e);
+      return false;
+    } finally {
+      _isCompleting = false;
+      notifyListeners();
+    }
+  }
+}

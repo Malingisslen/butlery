@@ -8,9 +8,10 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/recipe/comment_form_widget.dart';
 import 'package:butlery/widgets/recipe/comment_item_widgets.dart';
 import 'package:butlery/services/unified/operations/modules/comment_likes_system.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/services/unified/operations/modules/comment_reactions_system.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
@@ -71,10 +72,10 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(vm),
+            _buildHeader(context, vm),
             if (_isExpanded) ...[
               const SizedBox(height: AppDimensions.spacingM),
-              _buildCommentsSection(vm),
+              _buildCommentsSection(context, vm),
             ],
           ],
         );
@@ -82,7 +83,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     );
   }
 
-  Widget _buildHeader(SocialRecipeViewModel vm) {
+  Widget _buildHeader(BuildContext context, SocialRecipeViewModel vm) {
+    final cs = Theme.of(context).colorScheme;
+
     return InkWell(
       onTap: () {
         if (!mounted) return;
@@ -97,15 +100,15 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
         width: double.infinity,
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         decoration: BoxDecoration(
-          color: AppColors.cardWhite,
+          color: cs.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          border: Border.all(color: AppColors.divider),
+          border: Border.all(color: cs.outlineVariant),
         ),
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.comment_outlined,
-              color: AppColors.forestGreen,
+              color: cs.primary,
               size: AppDimensions.iconSizeAction,
             ),
             const SizedBox(width: AppDimensions.spacingM),
@@ -127,7 +130,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
             ),
             Icon(
               _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-              color: AppColors.textMedium,
+              color: cs.onSurfaceVariant,
               size: AppDimensions.iconSizeAction,
             ),
           ],
@@ -136,12 +139,14 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     );
   }
 
-  Widget _buildCommentsSection(SocialRecipeViewModel vm) {
+  Widget _buildCommentsSection(BuildContext context, SocialRecipeViewModel vm) {
+    final cs = Theme.of(context).colorScheme;
+
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
+        color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         children: [
@@ -159,7 +164,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
               ),
             ),
           // Comments list
-          _buildCommentsList(vm),
+          _buildCommentsList(context, vm),
         ],
       ),
     );
@@ -185,7 +190,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     );
   }
 
-  Widget _buildCommentsList(SocialRecipeViewModel vm) {
+  Widget _buildCommentsList(BuildContext context, SocialRecipeViewModel vm) {
+    final cs = Theme.of(context).colorScheme;
+
     if (vm.isLoadingComments) {
       return StateWidget.loading(message: context.l10n.socialLoadingComments);
     }
@@ -208,9 +215,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(vertical: AppDimensions.paddingS),
       itemCount: vm.topLevelComments.length,
-      separatorBuilder: (_, __) => const Divider(
+      separatorBuilder: (_, __) => Divider(
         height: AppDimensions.borderWidthThin,
-        color: AppColors.divider,
+        color: cs.outlineVariant,
       ),
       itemBuilder: (context, index) {
         final comment = vm.topLevelComments[index];
@@ -227,6 +234,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     final currentUserId = vm.currentUser?.uid;
 
     return CommentItemWidgets.buildCommentWithReplies(
+      context: context,
       comment: comment,
       replies: replies,
       commentBuilder: (c, depth) {
@@ -244,6 +252,10 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           isOwnComment: isOwn,
           onDelete: isOwn ? () => _deleteComment(c, vm) : null,
           depth: depth,
+          currentUserId: currentUserId,
+          onReactionTap: currentUserId != null
+              ? (emoji) => _toggleReaction(c, vm, emoji)
+              : null,
         );
       },
     );
@@ -280,6 +292,26 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     }
   }
 
+  Future<void> _toggleReaction(
+      dynamic comment, SocialRecipeViewModel vm, String emoji) async {
+    if (vm.currentUser == null) return;
+    try {
+      final success = await CommentReactionsSystem.toggleCommentReaction(
+        commentId: comment.id,
+        recipeId: widget.recipe.id,
+        userId: vm.currentUser!.uid,
+        emoji: emoji,
+      );
+      if (success && mounted) {
+        // Refresh comments to pick up the updated reactions
+        await vm.refreshComments(widget.recipe.id);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      _showMessage('Kunde inte uppdatera reaktion', isError: true);
+    }
+  }
+
   Future<void> _showLikesDialog(
       dynamic comment, SocialRecipeViewModel vm) async {
     if (!mounted) return;
@@ -305,10 +337,11 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
   void _showMessage(String message, {bool isError = false}) {
     if (!mounted) return;
+    final cs = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? AppColors.error : AppColors.success,
+        backgroundColor: isError ? cs.error : context.butleryColors.success,
       ),
     );
   }

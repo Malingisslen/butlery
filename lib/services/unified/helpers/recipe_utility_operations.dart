@@ -5,6 +5,7 @@ import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Helper class for recipe utility operations (refresh, save from social, etc.).
 class RecipeUtilityOperations {
@@ -87,7 +88,7 @@ class RecipeUtilityOperations {
       setLoading(false);
       notifyListeners();
     } catch (e) {
-      setError('Kunde inte uppdatera recept: $e');
+      setError(AppLocale.current.errorCouldNotUpdateRecipes);
       setLoading(false);
       notifyListeners();
     }
@@ -113,7 +114,7 @@ class RecipeUtilityOperations {
   }) async {
     final recipe = getRecipeById(recipeId);
     if (recipe == null) {
-      setError('Recept hittades inte');
+      setError(AppLocale.current.errorRecipeNotFound);
       return false;
     }
 

@@ -18,6 +18,7 @@ import 'package:butlery/viewmodels/friends/friends_profile_cache_manager.dart';
 import 'package:butlery/viewmodels/friends/friends_selection_manager.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Friendship status between current user and another user
 enum FriendshipStatus { none, friends, requestSent, requestReceived, blocked }
@@ -252,8 +253,8 @@ class FriendsViewModel extends ChangeNotifier
           AppLogger.success('✅ Grupp "$name" skapad!');
           return true;
         } else {
-          _groupCreationError =
-              _friendsService.error ?? 'Kunde inte skapa grupp';
+          _groupCreationError = _friendsService.error ??
+              AppLocale.current.errorCouldNotCreateGroup;
           throw Exception(_groupCreationError!);
         }
       });

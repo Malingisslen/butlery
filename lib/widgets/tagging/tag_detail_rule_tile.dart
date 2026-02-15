@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Displays a rule with its status, condition summary, and match count.
 class TagDetailRuleTile extends StatelessWidget {
@@ -40,8 +40,9 @@ class TagDetailRuleTile extends StatelessWidget {
       child: ListTile(
         leading: Icon(
           rule.isEnabled ? Icons.check_circle : Icons.pause_circle,
-          color:
-              rule.isEnabled ? AppColors.success : colorScheme.onSurfaceVariant,
+          color: rule.isEnabled
+              ? context.butleryColors.success
+              : colorScheme.onSurfaceVariant,
         ),
         title: Text(rule.name),
         subtitle: Column(
@@ -67,7 +68,7 @@ class TagDetailRuleTile extends StatelessWidget {
                 context.l10n.tagDetailRuleMatches(matchCount),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: matchCount > 0
-                      ? AppColors.success
+                      ? context.butleryColors.success
                       : colorScheme.onSurfaceVariant,
                   fontWeight:
                       matchCount > 0 ? FontWeight.w500 : FontWeight.normal,
@@ -97,9 +98,9 @@ class TagDetailRuleTile extends StatelessWidget {
                 PopupMenuItem(
                   value: 'delete',
                   child: ListTile(
-                    leading: const Icon(Icons.delete, color: AppColors.error),
+                    leading: Icon(Icons.delete, color: colorScheme.error),
                     title: Text(context.l10n.commonDelete,
-                        style: const TextStyle(color: AppColors.error)),
+                        style: TextStyle(color: colorScheme.error)),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),

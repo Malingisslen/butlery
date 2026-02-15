@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -147,7 +147,8 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error),
             child: Text(context.l10n.commonRemove),
           ),
         ],
@@ -177,7 +178,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.success,
+        backgroundColor: context.butleryColors.success,
       ),
     );
   }
@@ -232,7 +233,9 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
           children: [
             Icon(
               _hasMfa ? Icons.verified_user : Icons.security,
-              color: _hasMfa ? AppColors.success : AppColors.warning,
+              color: _hasMfa
+                  ? context.butleryColors.success
+                  : context.butleryColors.warning,
               size: 40,
             ),
             const SizedBox(width: AppDimensions.spacingMd),
@@ -278,8 +281,8 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                 subtitle: Text(context.l10n.mfaRegistered(
                     _formatEnrollmentTime(factor.enrollmentTimestamp))),
                 trailing: IconButton(
-                  icon:
-                      const Icon(Icons.delete_outline, color: AppColors.error),
+                  icon: Icon(Icons.delete_outline,
+                      color: Theme.of(context).colorScheme.error),
                   onPressed: () => _unenrollMfa(factor),
                 ),
               ),
@@ -393,18 +396,21 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.errorContainer,
+        color: Theme.of(context).colorScheme.errorContainer,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+        border: Border.all(
+            color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.onErrorContainer),
+          Icon(Icons.error_outline,
+              color: Theme.of(context).colorScheme.onErrorContainer),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(
             child: Text(
               _errorMessage!,
-              style: const TextStyle(color: AppColors.onErrorContainer),
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onErrorContainer),
             ),
           ),
         ],

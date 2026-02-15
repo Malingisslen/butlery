@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/theme/app_colors.dart';
+
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -68,13 +68,13 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(
+                SizedBox(
                   width: AppDimensions.iconSizeM,
                   height: AppDimensions.iconSizeM,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(AppColors.forestGreen),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).colorScheme.primary),
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingXl),
@@ -91,18 +91,22 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           return Container(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
-              color: AppColors.error
+              color: Theme.of(context)
+                  .colorScheme
+                  .error
                   .withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               border: Border.all(
-                  color: AppColors.error
+                  color: Theme.of(context)
+                      .colorScheme
+                      .error
                       .withValues(alpha: AppDimensions.opacityMediumLight)),
             ),
             child: Text(
               categoriesService.error ??
                   context.l10n.errorCouldNotLoad(context.l10n.friendCategories),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.error,
+                    color: Theme.of(context).colorScheme.error,
                   ),
             ),
           );
@@ -112,11 +116,15 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           return Container(
             padding: const EdgeInsets.all(AppDimensions.paddingM),
             decoration: BoxDecoration(
-              color: AppColors.error
+              color: Theme.of(context)
+                  .colorScheme
+                  .error
                   .withValues(alpha: AppDimensions.opacityVeryLight),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               border: Border.all(
-                  color: AppColors.error
+                  color: Theme.of(context)
+                      .colorScheme
+                      .error
                       .withValues(alpha: AppDimensions.opacityMediumLight)),
             ),
             child: Text(
@@ -124,7 +132,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                   context.l10n
                       .errorCouldNotLoad(context.l10n.friendFriendsLabel),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.error,
+                    color: Theme.of(context).colorScheme.error,
                   ),
             ),
           );
@@ -248,7 +256,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                     ),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.neutralLight
+                          ? Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
                               .withValues(alpha: AppDimensions.opacityVeryDark)
                           : Theme.of(context).colorScheme.primary.withValues(
                               alpha: AppDimensions.opacityVeryLight),
@@ -359,7 +369,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                             vertical: AppDimensions.spacingXs,
                           ),
                           activeColor: Theme.of(context).colorScheme.primary,
-                          checkColor: AppColors.neutralLight,
+                          checkColor: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
                         ),
                       );
                     },
@@ -394,9 +406,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               color: Theme.of(context).colorScheme.primary,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius6),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.group,
-              color: AppColors.neutralLight,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               size: AppDimensions.iconSizeM,
             ),
           ),

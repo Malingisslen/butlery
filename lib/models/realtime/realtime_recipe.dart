@@ -1,5 +1,6 @@
 // lib/models/realtime/realtime_recipe.dart
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
@@ -441,7 +442,7 @@ class RealtimeRecipe extends RealtimeResource {
     return Recipe(
       core: RecipeCore(
         id: '', // Nytt ID genereras automatiskt
-        title: 'Kopia av ${recipe.title}',
+        title: AppLocale.current.realtimeRecipeCopyTitle(recipe.title),
         description: recipe.description,
         ingredients: [...recipe.ingredients],
         instructions: [...recipe.instructions],
@@ -454,7 +455,7 @@ class RealtimeRecipe extends RealtimeResource {
         personalTags: recipe.core.personalTags != null
             ? [...recipe.core.personalTags!]
             : null,
-        sourceUrl: 'Delat från $ownerDisplayName',
+        sourceUrl: AppLocale.current.realtimeRecipeSharedFrom(ownerDisplayName),
         imageUrls: [...recipe.imageUrls],
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),

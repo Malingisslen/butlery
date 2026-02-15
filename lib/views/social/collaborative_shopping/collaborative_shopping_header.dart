@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Focused widget for collaborative shopping list header
@@ -68,7 +68,9 @@ class CollaborativeShoppingHeader extends StatelessWidget {
   }
 
   Widget _buildStatusBadge(BuildContext context) {
-    final color = viewModel.getStatusColor();
+    final cs = Theme.of(context).colorScheme;
+    final butlery = context.butleryColors;
+    final color = viewModel.getStatusColor(cs, butlery);
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -103,7 +105,9 @@ class CollaborativeShoppingHeader extends StatelessWidget {
 
   Widget _buildProgressSection(BuildContext context) {
     final progress = viewModel.completionPercentage / 100;
-    final progressColor = viewModel.getProgressColor();
+    final cs = Theme.of(context).colorScheme;
+    final butlery = context.butleryColors;
+    final progressColor = viewModel.getProgressColor(cs, butlery);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,9 +170,9 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(
+        Icon(
           Icons.group,
-          color: AppColors.textMedium,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
           size: AppDimensions.iconSizeM,
         ),
         const SizedBox(width: AppDimensions.spacingXs),
@@ -183,9 +187,9 @@ class CollaborativeShoppingHeader extends StatelessWidget {
   Widget _buildActivitySummary(BuildContext context) {
     return Row(
       children: [
-        const Icon(
+        Icon(
           Icons.access_time,
-          color: AppColors.textMedium,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
           size: AppDimensions.iconSizeM,
         ),
         const SizedBox(width: AppDimensions.spacingXs),

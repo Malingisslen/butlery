@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
@@ -19,41 +18,44 @@ class CollaborativeStatusWidgets {
     Color? color,
     EdgeInsets? padding,
   }) {
-    final effectiveColor = color ?? AppColors.forestGreen;
+    return Builder(
+      builder: (context) {
+        final effectiveColor = color ?? Theme.of(context).colorScheme.primary;
 
-    return Container(
-      padding: padding ??
-          const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingS,
-            vertical: AppDimensions.spacingXs,
-          ),
-      decoration: BoxDecoration(
-        color: effectiveColor.withValues(alpha: AppDimensions.opacityVeryLight),
-        borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
-        border: Border.all(
-          color: effectiveColor.withValues(
-              alpha: AppDimensions.opacityMediumLight),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: AppDimensions.iconSizeM,
-            color: effectiveColor,
-          ),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Builder(
-            builder: (context) => Text(
-              text ?? context.l10n.collaborativeShared,
-              style: AppTextStyles.labelLarge.copyWith(
-                color: effectiveColor,
+        return Container(
+          padding: padding ??
+              const EdgeInsets.symmetric(
+                horizontal: AppDimensions.spacingS,
+                vertical: AppDimensions.spacingXs,
               ),
+          decoration: BoxDecoration(
+            color: effectiveColor.withValues(
+                alpha: AppDimensions.opacityVeryLight),
+            borderRadius: BorderRadius.circular(AppDimensions.chipRadius),
+            border: Border.all(
+              color: effectiveColor.withValues(
+                  alpha: AppDimensions.opacityMediumLight),
             ),
           ),
-        ],
-      ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: AppDimensions.iconSizeM,
+                color: effectiveColor,
+              ),
+              const SizedBox(width: AppDimensions.spacingXs),
+              Text(
+                text ?? context.l10n.collaborativeShared,
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: effectiveColor,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -68,73 +70,78 @@ class CollaborativeStatusWidgets {
     Widget? trailing,
     BuildContext? context, // Needed to fetch real participants
   }) {
-    final bgColor = backgroundColor ??
-        AppColors.forestGreen.withValues(alpha: AppDimensions.opacityVeryLight);
+    return Builder(
+      builder: (builderContext) {
+        final cs = Theme.of(builderContext).colorScheme;
+        final bgColor = backgroundColor ??
+            cs.primary.withValues(alpha: AppDimensions.opacityVeryLight);
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
-      decoration: BoxDecoration(
-        color: bgColor,
-        border: Border(
-          bottom: BorderSide(
-            color: AppColors.forestGreen
-                .withValues(alpha: AppDimensions.opacityMediumLight),
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppDimensions.spacingL),
+          decoration: BoxDecoration(
+            color: bgColor,
+            border: Border(
+              bottom: BorderSide(
+                color: cs.primary
+                    .withValues(alpha: AppDimensions.opacityMediumLight),
+              ),
+            ),
           ),
-        ),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        child: Row(
-          children: [
-            const Icon(
-              Icons.people,
-              color: AppColors.forestGreen,
-              size: AppDimensions.iconSizeAction,
-            ),
-            const SizedBox(width: AppDimensions.spacingS),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.bodyLargeBold.copyWith(
-                      color: AppColors.forestGreen,
-                    ),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.people,
+                  color: cs.primary,
+                  size: AppDimensions.iconSizeAction,
+                ),
+                const SizedBox(width: AppDimensions.spacingS),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTextStyles.bodyLargeBold.copyWith(
+                          color: cs.primary,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: cs.primary,
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(
-                    subtitle,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.forestGreen,
-                    ),
+                ),
+                // USE REAL PARTICIPANTS if context and contentId exist
+                if (context != null && contentId != null)
+                  CollaborativeParticipantsWidgets.participantsList(
+                    context: context,
+                    contentId: contentId,
+                    contentType: contentType,
+                    maxVisible: 3,
+                    avatarSize: 24,
+                  )
+                // FALLBACK to trailing widget
+                else if (trailing != null)
+                  trailing
+                // LAST FALLBACK - show just an icon
+                else
+                  Icon(
+                    Icons.people_outline,
+                    size: AppDimensions.iconSizeL,
+                    color: cs.primary,
                   ),
-                ],
-              ),
+              ],
             ),
-            // USE REAL PARTICIPANTS if context and contentId exist
-            if (context != null && contentId != null)
-              CollaborativeParticipantsWidgets.participantsList(
-                context: context,
-                contentId: contentId,
-                contentType: contentType,
-                maxVisible: 3,
-                avatarSize: 24,
-              )
-            // FALLBACK to trailing widget
-            else if (trailing != null)
-              trailing
-            // LAST FALLBACK - show just an icon
-            else
-              const Icon(
-                Icons.people_outline,
-                size: AppDimensions.iconSizeL,
-                color: AppColors.forestGreen,
-              ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -248,11 +255,11 @@ class _CollaborativeAppBar extends StatelessWidget
         final isCollaborative = status.isCollaborative;
         final participants = status.participants;
 
+        final cs = Theme.of(context).colorScheme;
         return AppBar(
           title: Text(title ?? context.l10n.collaborativeContent),
           backgroundColor: isCollaborative
-              ? AppColors.forestGreen
-                  .withValues(alpha: AppDimensions.opacityVeryLight)
+              ? cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)
               : null,
           elevation: isCollaborative ? 2 : null,
           actions: [
@@ -272,7 +279,7 @@ class _CollaborativeAppBar extends StatelessWidget
                           ? '${participants.length}'
                           : context.l10n.collaborativeShared,
                       icon: Icons.people,
-                      color: AppColors.forestGreen,
+                      color: cs.primary,
                     ),
                   ),
                 ),

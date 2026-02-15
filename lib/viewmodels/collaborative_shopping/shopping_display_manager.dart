@@ -3,29 +3,31 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Manages UI display helpers including colors, status text, and item formatting.
 class ShoppingDisplayManager {
-  Color getStatusColor(bool hasData, String statusText) {
-    if (!hasData) return AppColors.textMedium;
+  Color getStatusColor(ColorScheme cs, ButleryColors butleryColors,
+      bool hasData, String statusText) {
+    if (!hasData) return cs.onSurfaceVariant;
 
     switch (statusText) {
       case 'Klar':
-        return AppColors.success;
+        return butleryColors.success;
       case 'Pågående':
-        return AppColors.warning;
+        return butleryColors.warning;
       case 'Tom lista':
-        return AppColors.textMedium;
+        return cs.onSurfaceVariant;
       default:
-        return AppColors.textMedium;
+        return cs.onSurfaceVariant;
     }
   }
 
-  Color getProgressColor(double completionPercentage) {
-    if (completionPercentage == 100) return AppColors.success;
-    if (completionPercentage > 50) return AppColors.warning;
-    return AppColors.forestGreen;
+  Color getProgressColor(ColorScheme cs, ButleryColors butleryColors,
+      double completionPercentage) {
+    if (completionPercentage == 100) return butleryColors.success;
+    if (completionPercentage > 50) return butleryColors.warning;
+    return cs.primary;
   }
 
   String? getItemSubtitle(UnifiedShoppingItem item) {

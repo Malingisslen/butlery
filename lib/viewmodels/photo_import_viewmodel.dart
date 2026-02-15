@@ -28,6 +28,7 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Comprehensive photo import ViewModel providing advanced OCR processing and image recognition through ImportManager coordination.
 /// Specializes in photo-based recipe importing from camera captures and gallery images through OCR technology,
@@ -195,14 +196,14 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// **Throws**: Exception if no image data is available for retry.
   Future<void> retryOcr() async {
     if (_imageBytes == null) {
-      setError('Ingen bild att behandla');
+      setError(AppLocale.current.errorNoImageToProcess);
       return;
     }
 
     await executeAsyncVoid(() async {
       clearError();
       await _performOcr(_imageBytes!);
-    }, errorPrefix: 'Kunde inte försöka OCR igen');
+    }, errorPrefix: AppLocale.current.errorGeneric);
   }
 
   /// Indicates whether OCR retry is possible based on image availability.
@@ -272,7 +273,7 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   @override
   Future<void> performImport() async {
     if (!hasOcrResult) {
-      setError('Ingen OCR-text tillgänglig för import');
+      setError(AppLocale.current.errorPleaseEnterText);
       return;
     }
 
@@ -308,7 +309,7 @@ class PhotoImportViewModel extends ImportBaseViewModel {
       );
 
       if (picked == null) {
-        throw Exception('Ingen bild vald');
+        throw Exception(AppLocale.current.errorNoImageSelected);
       }
 
       // Validate image format
@@ -317,7 +318,7 @@ class PhotoImportViewModel extends ImportBaseViewModel {
           !fileName.endsWith('.jpeg') &&
           !fileName.endsWith('.png')) {
         throw Exception(
-          'Bildformatet stöds inte. Använd JPEG eller PNG-format.',
+          AppLocale.current.errorImageFormatUnsupported,
         );
       }
 
@@ -328,8 +329,7 @@ class PhotoImportViewModel extends ImportBaseViewModel {
       final sizeInMB = bytes.length / (1024 * 1024);
       if (sizeInMB > 15) {
         throw Exception(
-          'Bilden är för stor (${sizeInMB.toStringAsFixed(1)} MB). '
-          'Använd en mindre bild eller komprimera den.',
+          AppLocale.current.errorImageTooLarge(sizeInMB.toStringAsFixed(1)),
         );
       }
 
@@ -344,7 +344,7 @@ class PhotoImportViewModel extends ImportBaseViewModel {
 
       // Perform OCR
       await _performOcr(bytes);
-    }, errorPrefix: 'Kunde inte bearbeta bild');
+    }, errorPrefix: AppLocale.current.errorGeneric);
   }
 
   /// Performs comprehensive OCR processing using universal multi-provider OCR service.
@@ -444,36 +444,34 @@ class PhotoImportViewModel extends ImportBaseViewModel {
 
     // Primary message based on quality score
     if (_lastQualityScore != null && _lastQualityScore! < 0.6) {
+      final l = AppLocale.current;
       messageParts.add(
-        'Bildkvaliteten är för låg för OCR (${(_lastQualityScore! * 100).toInt()}%).',
+        l.errorImageQualityTooLow((_lastQualityScore! * 100).toInt()),
       );
     } else if (allProvidersDown) {
       messageParts.add(
-        'OCR-tjänsterna är tillfälligt otillgängliga. Försök igen om några minuter.',
+        AppLocale.current.errorOcrServicesUnavailable,
       );
     } else {
-      messageParts.add('Ingen text kunde extraheras från bilden.');
+      messageParts.add(AppLocale.current.errorNoTextExtracted);
     }
 
     // Add specific recommendations if available
     if (_lastRecommendations != null && _lastRecommendations!.isNotEmpty) {
-      messageParts.add('\n\nFörbättringsförslag:');
+      messageParts.add('\n\n${AppLocale.current.labelImprovementSuggestions}');
       for (final recommendation in _lastRecommendations!) {
         messageParts.add('• $recommendation');
       }
     } else {
       // Generic quality tips if no specific recommendations
       messageParts.add(
-        '\n\nTips för bättre resultat:\n'
-        '• Se till att bilden är välbelyst och skarp\n'
-        '• Undvik skuggor och reflektioner\n'
-        '• Håll kameran rakt mot texten',
+        '\n\n${AppLocale.current.ocrQualityTips}',
       );
     }
 
     // Add recovery options
     messageParts.add(
-      '\n\nDu kan försöka igen med en ny bild eller fortsätta med manuell inmatning.',
+      '\n\n${AppLocale.current.ocrRetryOrManual}',
     );
 
     return messageParts.join('\n');

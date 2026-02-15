@@ -1,4 +1,5 @@
 /// User profile with social networking and notification capabilities.
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
@@ -23,6 +24,7 @@ class UserProfile with JsonSerializableMixin {
   final bool notificationsEnabled;
   final String? preferredLocale;
   final UserAllergenPreferences? allergenPreferences;
+  final bool hasCompletedOnboarding;
 
   UserProfile({
     required this.uid,
@@ -41,6 +43,7 @@ class UserProfile with JsonSerializableMixin {
     this.notificationsEnabled = true,
     this.preferredLocale,
     this.allergenPreferences,
+    this.hasCompletedOnboarding = false,
   });
 
   UserProfile copyWith({
@@ -62,6 +65,7 @@ class UserProfile with JsonSerializableMixin {
     String? preferredLocale,
     // Allergen preferences
     UserAllergenPreferences? allergenPreferences,
+    bool? hasCompletedOnboarding,
   }) {
     return UserProfile(
       uid: uid,
@@ -83,6 +87,8 @@ class UserProfile with JsonSerializableMixin {
       preferredLocale: preferredLocale ?? this.preferredLocale,
       // Allergen preferences
       allergenPreferences: allergenPreferences ?? this.allergenPreferences,
+      hasCompletedOnboarding:
+          hasCompletedOnboarding ?? this.hasCompletedOnboarding,
     );
   }
 
@@ -114,17 +120,18 @@ class UserProfile with JsonSerializableMixin {
     final difference = now.difference(lastActiveAt);
 
     if (isOnline) {
-      return 'Online';
+      return AppLocale.current.userStatusOnline;
     } else if (difference.inMinutes < 1) {
-      return 'Aktiv nyss';
+      return AppLocale.current.userStatusJustActive;
     } else if (difference.inHours < 1) {
-      return 'Aktiv för ${difference.inMinutes} min sedan';
+      return AppLocale.current.userStatusActiveMinutesAgo(difference.inMinutes);
     } else if (difference.inDays < 1) {
-      return 'Aktiv för ${difference.inHours} tim sedan';
+      return AppLocale.current.userStatusActiveHoursAgo(difference.inHours);
     } else if (difference.inDays < 7) {
-      return 'Aktiv för ${difference.inDays} dagar sedan';
+      return AppLocale.current.userStatusActiveDaysAgo(difference.inDays);
     } else {
-      return 'Aktiv för ${(difference.inDays / 7).floor()} veckor sedan';
+      return AppLocale.current
+          .userStatusActiveWeeksAgo((difference.inDays / 7).floor());
     }
   }
 
@@ -179,6 +186,7 @@ class UserProfile with JsonSerializableMixin {
       'preferredLocale': preferredLocale,
       // Allergen preferences
       'allergenPreferences': allergenPreferences?.toFirestore(),
+      'hasCompletedOnboarding': hasCompletedOnboarding,
     };
   }
 
@@ -206,6 +214,7 @@ class UserProfile with JsonSerializableMixin {
       'preferredLocale': preferredLocale,
       // Allergen preferences
       'allergenPreferences': allergenPreferences?.toFirestore(),
+      'hasCompletedOnboarding': hasCompletedOnboarding,
     };
   }
 
@@ -242,6 +251,8 @@ class UserProfile with JsonSerializableMixin {
           ? UserAllergenPreferences.fromFirestore(
               data['allergenPreferences'] as Map<String, dynamic>)
           : null,
+      hasCompletedOnboarding:
+          utils.SerializationUtils.safeBool(data, 'hasCompletedOnboarding'),
     );
   }
 
@@ -271,6 +282,8 @@ class UserProfile with JsonSerializableMixin {
           ? UserAllergenPreferences.fromFirestore(
               json['allergenPreferences'] as Map<String, dynamic>)
           : null,
+      hasCompletedOnboarding:
+          (json['hasCompletedOnboarding'] as bool?).orFalse(),
     );
   }
 

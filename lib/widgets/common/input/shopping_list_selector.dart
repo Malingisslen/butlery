@@ -1,9 +1,9 @@
 // lib/widgets/common/input/shopping_list_selector.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -106,10 +106,10 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
   Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
-        const Icon(
+        Icon(
           Icons.shopping_cart,
           size: AppDimensions.iconSizeAction,
-          color: AppColors.forestGreen,
+          color: Theme.of(context).colorScheme.primary,
         ),
         const SizedBox(width: AppDimensions.spacingM),
         Expanded(
@@ -174,11 +174,11 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
-        color:
-            AppColors.success.withValues(alpha: AppDimensions.opacityVeryLight),
+        color: context.butleryColors.success
+            .withValues(alpha: AppDimensions.opacityVeryLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         border: Border.all(
-            color: AppColors.success
+            color: context.butleryColors.success
                 .withValues(alpha: AppDimensions.opacityMediumLight)),
       ),
       child: Column(
@@ -186,17 +186,17 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.restaurant_menu,
                 size: AppDimensions.iconSizeAction,
-                color: AppColors.success,
+                color: context.butleryColors.success,
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Expanded(
                 child: Text(
                   context.l10n.shoppingAddFromMenu,
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: AppColors.success,
+                    color: context.butleryColors.success,
                   ),
                 ),
               ),
@@ -273,7 +273,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
                   : context.l10n.shoppingListCreateFailed(
                       _viewModel.error ?? context.l10n.errorUnknown),
             ),
-            backgroundColor: success ? AppColors.success : AppColors.error,
+            backgroundColor: success
+                ? context.butleryColors.success
+                : Theme.of(context).colorScheme.error,
           ),
         );
 
@@ -328,7 +330,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
                     : context.l10n.shoppingItemsAddFailed(
                         viewModel.error ?? context.l10n.errorUnknown),
               ),
-              backgroundColor: success ? AppColors.success : AppColors.error,
+              backgroundColor: success
+                  ? context.butleryColors.success
+                  : Theme.of(context).colorScheme.error,
             ),
           );
 

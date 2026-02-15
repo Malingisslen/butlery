@@ -22,6 +22,7 @@ import 'package:butlery/repositories/firebase/firebase_ingredient_repository.dar
 import 'package:butlery/repositories/firebase/firebase_user_ingredient_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_personal_tag_repository.dart';
 
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
@@ -62,6 +63,7 @@ class TaggingModule implements DIModule {
         TaggingService,
         FirebasePersonalTagRepository,
         FirebasePersonalTagGroupRepository,
+        FirebaseSharedPersonalTagRepository,
         PersonalTagService,
         TagEditingService,
         TagResolutionService,
@@ -119,6 +121,13 @@ class TaggingModule implements DIModule {
       // Personal tag group repository for organizing tags
       container.registerLazySingleton<FirebasePersonalTagGroupRepository>(
         () => FirebasePersonalTagGroupRepository(
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
+      // Shared personal tag repository for cross-user tag sharing
+      container.registerLazySingleton<FirebaseSharedPersonalTagRepository>(
+        () => FirebaseSharedPersonalTagRepository(
           authRepository: container<AuthRepository>(),
         ),
       );
@@ -193,6 +202,8 @@ class TaggingModule implements DIModule {
             container<FirebasePersonalTagRepository>(),
         'FirebasePersonalTagGroupRepository':
             container<FirebasePersonalTagGroupRepository>(),
+        'FirebaseSharedPersonalTagRepository':
+            container<FirebaseSharedPersonalTagRepository>(),
         'PersonalTagService': container<PersonalTagService>(),
         'TagEditingService': container<TagEditingService>(),
         'TagResolutionService': container<TagResolutionService>(),

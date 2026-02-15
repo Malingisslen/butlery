@@ -547,8 +547,8 @@ void main() {
         expect(withSystem.lastMessagePreview, equals('Erik har anslutit sig'));
       });
 
-      test('should show Swedish "Ingen meddelanden än"', () {
-        expect(conversation.lastMessagePreview, equals('Ingen meddelanden än'));
+      test('should show Swedish "Inga meddelanden än"', () {
+        expect(conversation.lastMessagePreview, equals('Inga meddelanden än'));
       });
 
       test('should format activity time', () {

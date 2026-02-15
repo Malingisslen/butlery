@@ -11,6 +11,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 class ChatViewModel extends ChangeNotifier
     with StreamManagementMixin, ErrorHandlingMixin {
@@ -34,7 +35,7 @@ class ChatViewModel extends ChangeNotifier
   final Map<String, String> _userDisplayNames = {};
 
   List<String> get typingUserNames =>
-      _typingUserIds.map((id) => _userDisplayNames[id] ?? 'Okänd').toList();
+      _typingUserIds.map((id) => _userDisplayNames[id] ?? '?').toList();
 
   StreamSubscription<List<Message>>? _messagesSubscription;
   StreamSubscription<List<String>>? _typingSubscription;
@@ -67,8 +68,9 @@ class ChatViewModel extends ChangeNotifier
   bool get hasReplyTarget => _replyToMessage != null;
 
   String get conversationTitle {
-    if (_conversation == null) return 'Laddar...';
-    if (currentUserId == null) return _conversation!.title ?? 'Chatt';
+    if (_conversation == null) return AppLocale.current.commonLoading;
+    if (currentUserId == null)
+      return _conversation!.title ?? AppLocale.current.labelChat;
     return _conversation!.getDisplayTitle(currentUserId!);
   }
 
@@ -78,7 +80,7 @@ class ChatViewModel extends ChangeNotifier
     // For group conversations, show participant count
     if (_conversation!.isGroup) {
       final count = _conversation!.participantIds.length;
-      return '$count deltagare';
+      return AppLocale.current.labelParticipantCount(count);
     }
 
     // For direct conversations, show last seen or online status
@@ -113,7 +115,7 @@ class ChatViewModel extends ChangeNotifier
         _safeNotifyListeners();
       } catch (e) {
         AppLogger.error('Failed to load conversation', e);
-        _setError('Kunde inte ladda konversation');
+        _setError(AppLocale.current.errorCouldNotLoadConversation);
       }
     }
   }
@@ -136,7 +138,7 @@ class ChatViewModel extends ChangeNotifier
       AppLogger.debug('🔍 [ChatViewModel] Message stream subscription created');
     } catch (e) {
       AppLogger.error('❌ [ChatViewModel] Failed to initialize messages', e);
-      _setError('Kunde inte ladda meddelanden');
+      _setError(AppLocale.current.errorCouldNotLoadMessages);
     }
   }
 
@@ -169,7 +171,7 @@ class ChatViewModel extends ChangeNotifier
     if (_isDisposed) return;
 
     AppLogger.error('Messages stream error', error);
-    _setError('Kunde inte ladda meddelanden');
+    _setError(AppLocale.current.errorCouldNotLoadMessages);
   }
 
   void _setError(String error) {
@@ -183,7 +185,7 @@ class ChatViewModel extends ChangeNotifier
     if (_isDisposed) return false;
 
     if (content.trim().isEmpty) {
-      _sendError = 'Meddelandet kan inte vara tomt';
+      _sendError = AppLocale.current.errorMessageCannotBeEmpty;
       _safeNotifyListeners();
       return false;
     }
@@ -211,7 +213,7 @@ class ChatViewModel extends ChangeNotifier
       return true;
     } catch (e) {
       AppLogger.error('Failed to send text message', e);
-      _sendError = 'Kunde inte skicka meddelandet: ${e.toString()}';
+      _sendError = AppLocale.current.errorCouldNotSend('meddelande');
       _isSending = false;
       _safeNotifyListeners();
       return false;
@@ -244,7 +246,7 @@ class ChatViewModel extends ChangeNotifier
       return true;
     } catch (e) {
       AppLogger.error('Failed to send recipe share', e);
-      _sendError = 'Kunde inte dela receptet: ${e.toString()}';
+      _sendError = AppLocale.current.errorCouldNotShare('recept');
       _isSending = false;
       _safeNotifyListeners();
       return false;
@@ -339,7 +341,7 @@ class ChatViewModel extends ChangeNotifier
       if (!_userDisplayNames.containsKey(userId)) {
         // For now, use a placeholder
         // In production, you'd fetch the display name from FirebaseUsersRepository or conversation metadata
-        _userDisplayNames[userId] = 'Användare';
+        _userDisplayNames[userId] = '?';
       }
     }
   }
@@ -383,7 +385,7 @@ class ChatViewModel extends ChangeNotifier
       return true;
     } catch (e) {
       AppLogger.error('Failed to send reply', e);
-      _sendError = 'Kunde inte skicka svaret: ${e.toString()}';
+      _sendError = AppLocale.current.errorCouldNotSend('svar');
       _isSending = false;
       _safeNotifyListeners();
       return false;
