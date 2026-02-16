@@ -1,5 +1,6 @@
 /// Welcome page for the onboarding wizard.
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -30,7 +31,7 @@ class OnboardingWelcomePage extends StatelessWidget {
           ),
           const SizedBox(height: AppDimensions.spacingXl),
           Text(
-            'Valkommen till Butlery!',
+            context.l10n.onboardingWelcomeTitle,
             style: AppTextStyles.headlineMedium.copyWith(
               color: cs.primary,
             ),
@@ -38,8 +39,7 @@ class OnboardingWelcomePage extends StatelessWidget {
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
-            'Lat oss stalla in dina preferenser sa att du far '
-            'den basta upplevelsen fran borjan.',
+            context.l10n.onboardingWelcomeDescription,
             style: AppTextStyles.bodyLarge.copyWith(
               color: cs.onSurfaceVariant,
             ),
@@ -47,7 +47,7 @@ class OnboardingWelcomePage extends StatelessWidget {
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
-            'Du kan alltid andra dessa i installningarna senare.',
+            context.l10n.onboardingWelcomeNote,
             style: AppTextStyles.bodyMedium.copyWith(
               color: cs.outline,
             ),

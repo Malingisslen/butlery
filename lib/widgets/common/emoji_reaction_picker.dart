@@ -1,6 +1,7 @@
 // lib/widgets/common/emoji_reaction_picker.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Available emoji reactions for comments.
@@ -56,6 +57,19 @@ class EmojiReactionPicker extends StatelessWidget {
   }
 }
 
+String _emojiSemanticsLabel(BuildContext context, String key) {
+  final l10n = context.l10n;
+  return switch (key) {
+    'thumbs_up' => l10n.reactionThumbsUp,
+    'heart' => l10n.reactionHeart,
+    'fire' => l10n.reactionFire,
+    'laughing' => l10n.reactionLaughing,
+    'yum' => l10n.reactionYum,
+    'thinking' => l10n.reactionThinking,
+    _ => key.replaceAll('_', ' '),
+  };
+}
+
 class _EmojiButton extends StatefulWidget {
   final String emojiKey;
   final String emoji;
@@ -93,7 +107,7 @@ class _EmojiButtonState extends State<_EmojiButton> {
           child: Text(
             widget.emoji,
             style: const TextStyle(fontSize: 22),
-            semanticsLabel: widget.emojiKey.replaceAll('_', ' '),
+            semanticsLabel: _emojiSemanticsLabel(context, widget.emojiKey),
           ),
         ),
       ),

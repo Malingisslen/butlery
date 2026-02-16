@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/ingredient_substitution.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 
 /// Service for looking up ingredient substitutions.
 ///
@@ -16,6 +16,11 @@ import 'package:butlery/models/ingredient_substitution.dart';
 ///
 /// Normalizes ingredient names (lowercase, trim) for consistent lookup.
 class IngredientSubstitutionService extends BaseService {
+  final FirestoreRepository _firestoreRepository;
+
+  IngredientSubstitutionService({
+    required FirestoreRepository firestoreRepository,
+  }) : _firestoreRepository = firestoreRepository;
   static const int _cacheMaxSize = 100;
   static const String _assetPath = 'assets/data/ingredient_substitutions.json';
   static const String _firestoreCollection = 'ingredient_substitutions';
@@ -108,7 +113,7 @@ class IngredientSubstitutionService extends BaseService {
     String normalized,
   ) async {
     try {
-      final snapshot = await FirebaseFirestore.instance
+      final snapshot = await _firestoreRepository.firestore
           .collection(_firestoreCollection)
           .where('ingredientName', isEqualTo: normalized)
           .limit(1)

@@ -8,6 +8,7 @@
 /// 5. Falling back to user-assisted import if needed
 library;
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
@@ -69,8 +70,8 @@ class YouTubeImportStrategy extends ImportStrategy with ImportValidationMixin {
 
     final videoId = _transcriptService.extractVideoId(input);
     if (videoId == null) {
-      return const ImportFailure(
-        message: 'Ogiltig YouTube-URL',
+      return ImportFailure(
+        message: AppLocale.current.errorInvalidYoutubeUrl,
         errorCode: ImportErrorCode.invalidUrl,
         pipeline: 'youtube',
         tier: 0,

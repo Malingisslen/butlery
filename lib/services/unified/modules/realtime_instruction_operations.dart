@@ -86,7 +86,7 @@ class RealtimeInstructionOperations {
     required int toIndex,
   }) async {
     if (fromIndex < 0 || toIndex < 0) {
-      context.setError('Ogiltiga instruktions-index');
+      context.setError(AppLocale.current.errorInvalidInstructionIndex);
       return false;
     }
     if (fromIndex == toIndex) {

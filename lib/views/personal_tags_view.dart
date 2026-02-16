@@ -543,7 +543,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
               ),
             ListTile(
               leading: const Icon(Icons.share),
-              title: const Text('Dela'),
+              title: Text(context.l10n.commonShare),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _shareTag(context, tag);
@@ -600,7 +600,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       );
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(context, 'Kunde inte dela taggen');
+        SnackBarUtils.showError(context, context.l10n.personalTagCouldNotShare);
       }
     }
   }

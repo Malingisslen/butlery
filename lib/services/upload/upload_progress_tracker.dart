@@ -9,6 +9,7 @@
 
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Tracks upload progress with speed calculation and milestone detection.
 /// Core responsibilities:
@@ -132,8 +133,8 @@ class UploadProgressTracker {
     final percentage = (milestone * 100).round();
     return UploadNotificationEvent(
       trigger: UploadNotificationTrigger.significantProgress,
-      title: 'Uppladdning $percentage% klar',
-      message: 'Bilduppladdning gör framsteg - $percentage% slutförd',
+      title: AppLocale.current.uploadNotificationTitle(percentage),
+      message: AppLocale.current.uploadNotificationMessage(percentage),
       priority: NotificationPriority.low,
       data: {'milestone': milestone, 'progress': currentProgress},
       timestamp: DateTime.now(),

@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Recipe sharing formats: complete (full details), compact (messaging/social), markdown (documentation/export).
 enum RecipeShareFormat { complete, compact, markdown }
@@ -16,11 +17,13 @@ class ShareService extends BaseService {
   @override
   String get serviceName => 'ShareService';
 
-  static const String _ingredientsTitle = 'Ingredienser:';
-  static const String _instructionsTitle = 'Gör så här:';
-  static const String _sourceLabel = 'Källa:';
-  static const String _portionsLabel = 'portioner';
-  static const String _minutesLabel = 'minuter';
+  static String get _ingredientsTitle =>
+      AppLocale.current.shareIngredientsLabel;
+  static String get _instructionsTitle =>
+      AppLocale.current.shareInstructionsLabel;
+  static String get _sourceLabel => AppLocale.current.shareSourceLabel;
+  static String get _portionsLabel => AppLocale.current.sharePortionsUnit;
+  static String get _minutesLabel => AppLocale.current.shareMinutesUnit;
   static const String _recipeEmoji = '🍽';
   static const String _timeEmoji = '⏱';
   static const String _servingsEmoji = '🍴';

@@ -1,3 +1,4 @@
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 /// Recipe content operations (ingredients, instructions, state changes).
@@ -323,16 +324,16 @@ class RecipeOperations {
     final errors = <String>[];
 
     if (recipe.core.title.trim().isEmpty) {
-      errors.add('Titel saknas');
+      errors.add(AppLocale.current.validationTitleMissing);
     }
     if (recipe.core.ingredients.isEmpty) {
-      errors.add('Ingredienser saknas');
+      errors.add(AppLocale.current.validationIngredientsMissing);
     }
     if (recipe.core.instructions.isEmpty) {
-      errors.add('Instruktioner saknas');
+      errors.add(AppLocale.current.validationInstructionsMissing);
     }
     if (recipe.core.mealType.trim().isEmpty) {
-      errors.add('Måltidstyp saknas');
+      errors.add(AppLocale.current.validationMealTypeMissing);
     }
 
     return errors;

@@ -18,8 +18,8 @@ import 'package:butlery/services/messaging/message_sending_operations.dart';
 import 'package:butlery/services/messaging/conversation_action_operations.dart';
 import 'package:butlery/services/messaging/message_management_operations.dart';
 import 'package:butlery/services/messaging/message_reactions_service.dart';
-import 'package:uuid/uuid.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:uuid/uuid.dart';
 
 /// Messaging service implementing the facade pattern for real-time communication.
 ///
@@ -39,7 +39,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
   late final MessageSendingOperations _sendingOps;
   late final ConversationActionOperations _actionOps;
   late final MessageManagementOperations _managementOps;
-  late final MessageReactionsService _reactionsService;
+  final MessageReactionsService _reactionsService;
 
   @override
   String get serviceName => 'MessagingService';
@@ -51,8 +51,10 @@ class MessagingService extends BaseService with StreamManagementMixin {
   MessagingService({
     required MessagingRepository messagingRepository,
     required auth_repo.AuthRepository authRepository,
+    required MessageReactionsService reactionsService,
   })  : _messagingRepository = messagingRepository,
-        _authRepository = authRepository {
+        _authRepository = authRepository,
+        _reactionsService = reactionsService {
     _sendingOps = MessageSendingOperations(
       messagingRepository: _messagingRepository,
       authRepository: _authRepository,
@@ -65,7 +67,6 @@ class MessagingService extends BaseService with StreamManagementMixin {
       messagingRepository: _messagingRepository,
       authRepository: _authRepository,
     );
-    _reactionsService = MessageReactionsService();
   }
 
   /// Get all conversations for current user

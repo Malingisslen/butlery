@@ -8,6 +8,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Full-screen landscape cooking mode with ingredients left, instructions right.
 /// Keeps screen awake and forces landscape orientation while active.
@@ -176,7 +177,7 @@ class _IngredientsPanel extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  'Portioner',
+                  context.l10n.cookingModePortions,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: cs.onPrimary,
                     fontWeight: FontWeight.w500,

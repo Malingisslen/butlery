@@ -252,8 +252,7 @@ class ConversationMutationModule {
 
       // Send system message about participant addition
       for (final participantId in participantIds) {
-        final displayName =
-            participantDisplayNames[participantId] ?? 'Okänd användare';
+        final displayName = participantDisplayNames[participantId] ?? '?';
         final systemMessage = Message.system(
           conversationId: conversationId,
           content: '$displayName har lagts till i gruppen',
@@ -320,8 +319,8 @@ class ConversationMutationModule {
       );
 
       // Send system message about participant removal
-      final displayName = conversation.participantDisplayNames[participantId] ??
-          'Okänd användare';
+      final displayName =
+          conversation.participantDisplayNames[participantId] ?? '?';
       final systemMessage = Message.system(
         conversationId: conversationId,
         content: '$displayName har lämnat gruppen',

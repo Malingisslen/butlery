@@ -1,5 +1,7 @@
 // lib/core/utils/shopping_category_mapper.dart
 
+import 'package:butlery/core/l10n/app_locale.dart';
+
 /// Maps ingredient groups to shopping categories.
 /// Shared between service and viewmodel layers to avoid dependency inversion.
 class ShoppingCategoryMapper {
@@ -9,22 +11,22 @@ class ShoppingCategoryMapper {
     final lower = group.toLowerCase();
     if (lower.startsWith('protein/meat') ||
         lower.startsWith('protein/seafood')) {
-      return 'Kött & fisk';
+      return AppLocale.current.shoppingCatMeatFish;
     }
     if (lower.startsWith('protein/dairy') || lower.startsWith('protein/egg')) {
-      return 'Mejeri';
+      return AppLocale.current.shoppingCatDairy;
     }
     if (lower.startsWith('vegetable') || lower.startsWith('fruit')) {
-      return 'Frukt & grönt';
+      return AppLocale.current.shoppingCatFruitVeg;
     }
     if (lower.startsWith('grain')) {
-      return 'Bröd & spannmål';
+      return AppLocale.current.shoppingCatBreadGrain;
     }
     if (lower.startsWith('spice') ||
         lower.startsWith('fat') ||
         lower.startsWith('sweetener')) {
-      return 'Skafferi';
+      return AppLocale.current.shoppingCatPantry;
     }
-    return 'Övrigt';
+    return AppLocale.current.shoppingCategoryOther;
   }
 }

@@ -32,6 +32,7 @@
 /// helpful user guidance for successful form completion across all application features and interactions.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Comprehensive form validation utility class that provides standardized validation patterns for all application forms.
 /// This class consolidates validation logic including basic field validation, Swedish-localized error messages,
@@ -76,7 +77,7 @@ class FormValidators {
   static FormFieldValidator<String> required(String fieldName) {
     return (value) {
       if (value == null || value.trim().isEmpty) {
-        return '$fieldName får inte vara tom';
+        return AppLocale.current.validationFieldCannotBeEmpty(fieldName);
       }
       return null;
     };
@@ -86,7 +87,7 @@ class FormValidators {
   static FormFieldValidator<String> minLength(int min, String fieldName) {
     return (value) {
       if (value != null && value.trim().length < min) {
-        return '$fieldName måste vara minst $min tecken';
+        return AppLocale.current.validationFieldTooShort(fieldName, min);
       }
       return null;
     };
@@ -96,7 +97,7 @@ class FormValidators {
   static FormFieldValidator<String> maxLength(int max, String fieldName) {
     return (value) {
       if (value != null && value.length > max) {
-        return '$fieldName får vara max $max tecken';
+        return AppLocale.current.validationFieldTooLong(fieldName, max);
       }
       return null;
     };
@@ -113,15 +114,20 @@ class FormValidators {
 
       final number = double.tryParse(value.replaceAll(',', '.'));
       if (number == null) {
-        return '${fieldName ?? 'Värdet'} måste vara ett nummer';
+        return AppLocale.current.validationMustBeNumber(
+            fieldName ?? AppLocale.current.validationDefaultValueLabel);
       }
 
       if (min != null && number < min) {
-        return '${fieldName ?? 'Värdet'} måste vara minst $min';
+        return AppLocale.current.validationMinValue(
+            fieldName ?? AppLocale.current.validationDefaultValueLabel,
+            min.toString());
       }
 
       if (max != null && number > max) {
-        return '${fieldName ?? 'Värdet'} får vara max $max';
+        return AppLocale.current.validationMaxValue(
+            fieldName ?? AppLocale.current.validationDefaultValueLabel,
+            max.toString());
       }
 
       return null;
@@ -134,7 +140,7 @@ class FormValidators {
       if (value == null || value.isEmpty) return null;
 
       if (!_urlRegex.hasMatch(value)) {
-        return 'Ange en giltig URL (börja med http:// eller https://)';
+        return AppLocale.current.validationInvalidUrlHint;
       }
 
       return null;
@@ -143,46 +149,51 @@ class FormValidators {
 
   /// Betyg validator (0-5)
   static FormFieldValidator<String> rating() {
-    return numberRange(min: 0, max: 5, fieldName: 'Betyg');
+    return numberRange(
+        min: 0, max: 5, fieldName: AppLocale.current.validationFieldRating);
   }
 
   /// Portioner validator (1-100)
   static FormFieldValidator<String> portions() {
-    return numberRange(min: 1, max: 100, fieldName: 'Antal portioner');
+    return numberRange(
+        min: 1, max: 100, fieldName: AppLocale.current.validationFieldPortions);
   }
 
   /// Tid validator (1-1440 minuter = 24 timmar)
   static FormFieldValidator<String> cookingTime() {
-    return numberRange(min: 1, max: 1440, fieldName: 'Tillagningstid');
+    return numberRange(
+        min: 1,
+        max: 1440,
+        fieldName: AppLocale.current.validationFieldCookingTime);
   }
 
   /// Display name validator for user profiles.
   static FormFieldValidator<String> displayName() {
     return (value) {
       if (value == null || value.trim().isEmpty) {
-        return 'Visningsnamn får inte vara tomt';
+        return AppLocale.current.validationDisplayNameEmpty;
       }
 
       final trimmed = value.trim();
 
       if (trimmed.length < 2) {
-        return 'Visningsnamn måste vara minst 2 tecken';
+        return AppLocale.current.validationDisplayNameTooShort;
       }
 
       if (trimmed.length > 30) {
-        return 'Visningsnamn får vara max 30 tecken';
+        return AppLocale.current.validationDisplayNameTooLong;
       }
 
       if (!_displayNameRegex.hasMatch(trimmed)) {
-        return 'Visningsnamn får bara innehålla bokstäver, siffror, mellanslag och - _ .';
+        return AppLocale.current.validationDisplayNameInvalidChars;
       }
 
       if (trimmed.replaceAll(RegExp(r'[\s\-_\.]'), '').isEmpty) {
-        return 'Visningsnamn måste innehålla minst en bokstav eller siffra';
+        return AppLocale.current.validationDisplayNameNoLetters;
       }
 
       if (trimmed != value) {
-        return 'Visningsnamn får inte börja eller sluta med mellanslag';
+        return AppLocale.current.validationDisplayNameNoSpaces;
       }
 
       return null;
@@ -193,17 +204,17 @@ class FormValidators {
   static FormFieldValidator<String> comment() {
     return (value) {
       if (value == null || value.trim().isEmpty) {
-        return 'Kommentar får inte vara tom';
+        return AppLocale.current.validationCommentEmpty;
       }
 
       final trimmed = value.trim();
 
       if (trimmed.length < 3) {
-        return 'Kommentar måste vara minst 3 tecken';
+        return AppLocale.current.validationCommentTooShort;
       }
 
       if (trimmed.length > 500) {
-        return 'Kommentar får vara max 500 tecken';
+        return AppLocale.current.validationCommentTooLong;
       }
 
       return null;
@@ -218,7 +229,7 @@ class FormValidators {
       }
 
       if (value.length > 200) {
-        return 'Meddelande får vara max 200 tecken';
+        return AppLocale.current.validationMessageMaxLength(200);
       }
 
       return null;
@@ -242,10 +253,10 @@ class FormValidators {
   static FormFieldValidator<String> authName() {
     return (value) {
       if (value == null || value.isEmpty) {
-        return 'Namn krävs';
+        return AppLocale.current.validationNameRequired;
       }
       if (value.length < 2) {
-        return 'Namnet måste vara minst 2 tecken';
+        return AppLocale.current.validationNameTooShort;
       }
       return null;
     };
@@ -255,11 +266,11 @@ class FormValidators {
   static FormFieldValidator<String> authEmail() {
     return (value) {
       if (value == null || value.isEmpty) {
-        return 'Email krävs';
+        return AppLocale.current.validationEmailRequired;
       }
       // Enkel email-validering - same as auth_view.dart
       if (!value.contains('@') || !value.contains('.')) {
-        return 'Ange en giltig e-postadress';
+        return AppLocale.current.validationEmailInvalidHint;
       }
       return null;
     };
@@ -269,10 +280,10 @@ class FormValidators {
   static FormFieldValidator<String> authPassword({bool isSignUp = false}) {
     return (value) {
       if (value == null || value.isEmpty) {
-        return 'Lösenord krävs';
+        return AppLocale.current.validationPasswordRequired;
       }
       if (isSignUp && value.length < 6) {
-        return 'Lösenordet måste vara minst 6 tecken';
+        return AppLocale.current.validationPasswordTooShort;
       }
       return null;
     };
@@ -282,7 +293,7 @@ class FormValidators {
   static FormFieldValidator<String> shoppingItemName() {
     return (value) {
       if (value == null || value.trim().isEmpty) {
-        return 'Ange artikelnamn';
+        return AppLocale.current.validationShoppingItemRequired;
       }
       return null;
     };
@@ -292,11 +303,11 @@ class FormValidators {
   static FormFieldValidator<String> shoppingItemAmount() {
     return (value) {
       if (value == null || value.isEmpty) {
-        return 'Ange antal';
+        return AppLocale.current.validationAmountRequired;
       }
       final amount = double.tryParse(value.replaceAll(',', '.'));
       if (amount == null || amount <= 0) {
-        return 'Ogiltigt antal';
+        return AppLocale.current.validationInvalidAmount;
       }
       return null;
     };
@@ -311,10 +322,10 @@ class FormValidators {
       for (final tag in tags) {
         if (tag.isEmpty) continue;
         if (tag.length < 2) {
-          return 'Varje tagg måste vara minst 2 tecken';
+          return AppLocale.current.validationTagMinLength;
         }
         if (tag.length > 20) {
-          return 'Varje tagg får vara max 20 tecken';
+          return AppLocale.current.validationTagMaxLength;
         }
       }
       return null;
@@ -325,7 +336,7 @@ class FormValidators {
   static FormFieldValidator<String> nonEmptyText(String fieldName) {
     return (value) {
       if (value == null || value.trim().isEmpty) {
-        return '$fieldName får inte vara tomt';
+        return AppLocale.current.validationFieldNotEmpty(fieldName);
       }
       return null;
     };
@@ -335,23 +346,23 @@ class FormValidators {
   static FormFieldValidator<String> strongPassword() {
     return (value) {
       if (value == null || value.isEmpty) {
-        return 'Lösenord krävs';
+        return AppLocale.current.validationPasswordRequired;
       }
 
       if (value.length < 8) {
-        return 'Lösenordet måste vara minst 8 tecken';
+        return AppLocale.current.validationPasswordMinEight;
       }
 
       if (!value.contains(RegExp(r'[A-Z]'))) {
-        return 'Lösenordet måste innehålla minst en stor bokstav';
+        return AppLocale.current.validationPasswordNeedsUppercase;
       }
 
       if (!value.contains(RegExp(r'[a-z]'))) {
-        return 'Lösenordet måste innehålla minst en liten bokstav';
+        return AppLocale.current.validationPasswordNeedsLowercase;
       }
 
       if (!value.contains(RegExp(r'[0-9]'))) {
-        return 'Lösenordet måste innehålla minst en siffra';
+        return AppLocale.current.validationPasswordNeedsDigit;
       }
 
       return null;
@@ -402,7 +413,7 @@ class FormValidators {
   /// Username validator - combination of required and displayName.
   static FormFieldValidator<String> requiredDisplayName() {
     return combine([
-      required('Visningsnamn'),
+      required(AppLocale.current.validationDisplayNameLabel),
       displayName(),
     ]);
   }
@@ -410,7 +421,7 @@ class FormValidators {
   /// Comment validator - combination for required comments.
   static FormFieldValidator<String> requiredComment() {
     return combine([
-      required('Kommentar'),
+      required(AppLocale.current.validationCommentLabel),
       comment(),
     ]);
   }

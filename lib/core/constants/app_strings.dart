@@ -6,6 +6,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Central repository for all user-facing text in the Butlery application.
 ///
@@ -80,7 +81,11 @@ class AppStrings {
   @Deprecated(
       'Use context.l10n.commonShare or AppStrings.shareL10n(context) instead')
   static const String share = 'Dela';
+  @Deprecated(
+      'Use context.l10n.commonRename or AppLocale.current.commonRename instead')
   static const String rename = 'Byt namn';
+  @Deprecated(
+      'Use context.l10n.commonExport or AppLocale.current.commonExport instead')
   static const String export = 'Exportera';
   @Deprecated('Use context.l10n.commonOk or AppStrings.okL10n(context) instead')
   static const String ok = 'OK';
@@ -95,21 +100,43 @@ class AppStrings {
   @Deprecated(
       'Use context.l10n.commonLoading or AppStrings.loadingL10n(context) instead')
   static const String loading = 'Laddar...';
+  @Deprecated(
+      'Use context.l10n.commonWorking or AppLocale.current.commonWorking instead')
   static const String working = 'Arbetar...';
 
   // Shopping list actions
+  @Deprecated(
+      'Use context.l10n.shoppingRenameList or AppLocale.current.shoppingRenameList instead')
   static const String renameList = 'Byt namn på lista';
+  @Deprecated(
+      'Use context.l10n.shoppingCreateList or AppLocale.current.shoppingCreateList instead')
   static const String createList = 'Skapa ny inköpslista';
+  @Deprecated(
+      'Use context.l10n.shoppingNewName or AppLocale.current.shoppingNewName instead')
   static const String newName = 'Nytt namn';
+  @Deprecated(
+      'Use context.l10n.shoppingListName or AppLocale.current.shoppingListName instead')
   static const String listName = 'Namn på lista';
+  @Deprecated(
+      'Use context.l10n.shoppingAddToList or AppLocale.current.shoppingAddToList instead')
   static const String addToList = 'Lägg till i';
 
   // Authentication
+  @Deprecated(
+      'Use context.l10n.authResetPassword or AppLocale.current.authResetPassword instead')
   static const String resetPassword = 'Återställ lösenord';
+  @Deprecated(
+      'Use context.l10n.authForgotPassword or AppLocale.current.authForgotPassword instead')
   static const String forgotPassword = 'Glömt lösenord?';
+  @Deprecated(
+      'Use context.l10n.authEnterPassword or AppLocale.current.authEnterPassword instead')
   static const String enterPassword = 'Ange ditt lösenord';
+  @Deprecated(
+      'Use context.l10n.authPasswordMinLength or AppLocale.current.authPasswordMinLength instead')
   static const String passwordMinLength =
       'Minst 8 tecken, stor/liten bokstav och siffra';
+  @Deprecated(
+      'Use context.l10n.authResetPasswordInstructions or AppLocale.current.authResetPasswordInstructions instead')
   static const String resetPasswordInstructions =
       'Ange din email-adress så skickar vi instruktioner för att återställa ditt lösenord.';
   @Deprecated(
@@ -117,42 +144,73 @@ class AppStrings {
   static const String send = 'Skicka';
 
   // App navigation
+  @Deprecated(
+      'Use context.l10n.navExitApp or AppLocale.current.navExitApp instead')
   static const String exitApp = 'Avsluta Butlery?';
+  @Deprecated(
+      'Use context.l10n.navExitAppConfirmation or AppLocale.current.navExitAppConfirmation instead')
   static const String exitAppConfirmation = 'Vill du verkligen avsluta appen?';
+  @Deprecated('Use context.l10n.navExit or AppLocale.current.navExit instead')
   static const String exit = 'Avsluta';
 
   // Image picker
+  @Deprecated(
+      'Use context.l10n.imageAddImage or AppLocale.current.imageAddImage instead')
   static const String addImage = 'Lägg till bild';
+  @Deprecated(
+      'Use context.l10n.imageTakePhoto or AppLocale.current.imageTakePhoto instead')
   static const String takePhoto = 'Ta foto';
+  @Deprecated(
+      'Use context.l10n.imageUseCamera or AppLocale.current.imageUseCamera instead')
   static const String useCamera = 'Använd kameran';
+  @Deprecated(
+      'Use context.l10n.imageFromGallery or AppLocale.current.imageFromGallery instead')
   static const String fromGallery = 'Från galleriet';
+  @Deprecated(
+      'Use context.l10n.imageSelectFromGallery or AppLocale.current.imageSelectFromGallery instead')
   static const String selectFromGallery = 'Välj en bild från galleriet';
-  static String selectUpToImages(int count) => 'Välj upp till $count bilder';
+  static String selectUpToImages(int count) =>
+      AppLocale.current.imageSelectUpTo(count);
 
   // Form validation messages
-  static String fieldRequired(String fieldName) => '$fieldName krävs';
+  static String fieldRequired(String fieldName) =>
+      AppLocale.current.validationFieldRequired(fieldName);
   static String fieldTooShort(String fieldName, int minLength) =>
-      '$fieldName måste vara minst $minLength tecken';
+      AppLocale.current.validationFieldTooShort(fieldName, minLength);
   static String fieldTooLong(String fieldName, int maxLength) =>
-      '$fieldName får vara max $maxLength tecken';
+      AppLocale.current.validationFieldTooLong(fieldName, maxLength);
   static String invalidFormat(String fieldName) =>
-      'Ogiltigt format för $fieldName';
+      AppLocale.current.validationInvalidFormat(fieldName);
 
   // Specific validation messages
   @Deprecated('Use context.l10n.validationNameRequired instead')
   static const String nameRequired = 'Namn krävs';
   @Deprecated('Use context.l10n.validationEmailRequired instead')
   static const String emailRequired = 'E-post krävs';
+  @Deprecated(
+      'Use context.l10n.validationPasswordRequired or AppLocale.current.validationPasswordRequired instead')
   static const String passwordRequired = 'Lösenord krävs';
   @Deprecated('Use context.l10n.validationEmailInvalid instead')
   static const String invalidEmail = 'Ogiltig e-postadress';
+  @Deprecated(
+      'Use context.l10n.validationInvalidUrl or AppLocale.current.validationInvalidUrl instead')
   static const String invalidUrl = 'Ogiltig URL';
+  @Deprecated(
+      'Use context.l10n.validationInvalidPhone or AppLocale.current.validationInvalidPhone instead')
   static const String invalidPhoneNumber = 'Ogiltigt telefonnummer';
+  @Deprecated(
+      'Use context.l10n.validationInvalidAmount or AppLocale.current.validationInvalidAmount instead')
   static const String invalidAmount = 'Ogiltigt antal';
+  @Deprecated(
+      'Use context.l10n.validationPasswordTooShort or AppLocale.current.validationPasswordTooShort instead')
   static const String passwordTooShort = 'Lösenordet måste vara minst 6 tecken';
 
   // Generic validation messages for ValidationUtils
+  @Deprecated(
+      'Use context.l10n.validationGenericRequired or AppLocale.current.validationGenericRequired instead')
   static const String genericRequired = 'Detta fält krävs';
+  @Deprecated(
+      'Use context.l10n.validationEmailInvalid or AppLocale.current.validationEmailInvalid instead')
   static const String emailInvalid = 'Ogiltig e-postadress';
 
   // Error messages
@@ -163,42 +221,66 @@ class AppStrings {
       'Nätverksfel. Kontrollera din internetanslutning.';
   @Deprecated('Use context.l10n.errorServer instead')
   static const String serverError = 'Serverfel. Försök igen senare.';
+  @Deprecated(
+      'Use context.l10n.errorAuthentication or AppLocale.current.errorAuthentication instead')
   static const String authenticationError = 'Autentiseringsfel. Logga in igen.';
+  @Deprecated(
+      'Use context.l10n.errorPermissionDenied or AppLocale.current.errorPermissionDenied instead')
   static const String permissionDenied =
       'Du har inte behörighet för denna åtgärd.';
+  @Deprecated(
+      'Use context.l10n.errorNotFound or AppLocale.current.errorNotFound instead')
   static const String notFound = 'Kunde inte hittas.';
+  @Deprecated(
+      'Use context.l10n.errorAlreadyExists or AppLocale.current.errorAlreadyExists instead')
   static const String alreadyExists = 'Finns redan.';
 
   // Specific error contexts
   static String couldNotCreate(String itemType) =>
-      'Kunde inte skapa $itemType. Försök igen.';
+      AppLocale.current.errorCouldNotCreate(itemType);
   static String couldNotUpdate(String itemType) =>
-      'Kunde inte uppdatera $itemType. Försök igen.';
+      AppLocale.current.errorCouldNotUpdate(itemType);
   static String couldNotDelete(String itemType) =>
-      'Kunde inte ta bort $itemType. Försök igen.';
+      AppLocale.current.errorCouldNotDelete(itemType);
   static String couldNotLoad(String itemType) =>
-      'Kunde inte ladda $itemType. Försök igen.';
+      AppLocale.current.errorCouldNotLoad(itemType);
 
   // Success messages
-  static String itemCreated(String itemType) => '$itemType skapades!';
-  static String itemUpdated(String itemType) => '$itemType uppdaterades!';
-  static String itemDeleted(String itemType) => '$itemType togs bort!';
-  static String itemAdded(String itemName) => '$itemName tillagd!';
+  static String itemCreated(String itemType) =>
+      AppLocale.current.successItemCreated(itemType);
+  static String itemUpdated(String itemType) =>
+      AppLocale.current.successItemUpdated(itemType);
+  static String itemDeleted(String itemType) =>
+      AppLocale.current.successItemDeleted(itemType);
+  static String itemAdded(String itemName) =>
+      AppLocale.current.successItemAdded(itemName);
 
   // Confirmation messages
   static String confirmDelete(String itemName) =>
-      'Är du säker på att du vill ta bort "$itemName"?';
+      AppLocale.current.confirmDeleteItem(itemName);
+  @Deprecated(
+      'Use context.l10n.confirmUnsavedChanges or AppLocale.current.confirmUnsavedChanges instead')
   static const String unsavedChanges =
       'Du har osparade ändringar. Vill du lämna utan att spara?';
+  @Deprecated(
+      'Use context.l10n.confirmIrreversibleAction or AppLocale.current.confirmIrreversibleAction instead')
   static const String irreversibleAction = 'Denna åtgärd kan inte ångras.';
 
   // Draft recovery messages
+  @Deprecated(
+      'Use context.l10n.draftRecovery or AppLocale.current.draftRecovery instead')
   static const String draftRecovery = 'Återställ utkast';
+  @Deprecated(
+      'Use context.l10n.draftRecoverySubtitle or AppLocale.current.draftRecoverySubtitle instead')
   static const String draftRecoverySubtitle =
       'Du har osparade receptutkast. Vill du fortsätta där du slutade?';
   static const String restoreDraft = 'Återställ';
   static const String startFresh = 'Börja om';
+  @Deprecated(
+      'Use context.l10n.draftRestored or AppLocale.current.draftRestored instead')
   static const String draftRestored = 'Utkast återställt!';
+  @Deprecated(
+      'Use context.l10n.draftRestoredDetails or AppLocale.current.draftRestoredDetails instead')
   static const String draftRestoredDetails = 'fält laddades';
   static const String couldNotRestoreDraft =
       'Kunde inte återställa utkast. Börjar med tomt formulär.';
@@ -206,7 +288,7 @@ class AppStrings {
   static const String unnamedRecipe = 'Namnlöst recept';
   static String fieldsFilledCount(int count) => '$count fält ifyllda';
   static String draftRestoredWithCount(int count) =>
-      'Utkast återställt! $count $draftRestoredDetails';
+      AppLocale.current.draftRestoredWithCount(count);
 
   // Enhanced contextual error messages
   static String networkAwareError({
@@ -217,21 +299,21 @@ class AppStrings {
     switch (connectivityType.toLowerCase()) {
       case 'none':
         return includeRecoveryAction
-            ? 'Ingen internetanslutning. $baseOperation kommer att sparas lokalt och synkroniseras när du är online igen.'
-            : 'Ingen internetanslutning för $baseOperation.';
+            ? AppLocale.current.networkErrorNoConnection(baseOperation)
+            : AppLocale.current.networkErrorNoConnectionShort(baseOperation);
 
       case 'mobile':
         return includeRecoveryAction
-            ? 'Använder mobildata för $baseOperation. Detta kan ta längre tid eller påverka din dataförbrukning.'
-            : 'Mobilanslutning för $baseOperation.';
+            ? AppLocale.current.networkErrorMobileData(baseOperation)
+            : AppLocale.current.networkErrorMobileShort(baseOperation);
 
       case 'limited':
         return includeRecoveryAction
-            ? 'Begränsad anslutning upptäckt. $baseOperation kan ta längre tid eller sparas lokalt.'
-            : 'Begränsad anslutning för $baseOperation.';
+            ? AppLocale.current.networkErrorLimited(baseOperation)
+            : AppLocale.current.networkErrorLimitedShort(baseOperation);
 
       default:
-        return 'Nätverksfel under $baseOperation. Kontrollera din anslutning och försök igen.';
+        return AppLocale.current.networkErrorDefault(baseOperation);
     }
   }
 
@@ -242,29 +324,37 @@ class AppStrings {
     String? reason,
     String? suggestedAction,
   }) {
-    final baseMessage = 'Du kan inte $action detta $resource';
-    final reasonText = reason != null ? ' eftersom $reason' : '';
-    final actionText =
-        suggestedAction != null ? '\n\nFörslag: $suggestedAction' : '';
+    final baseMessage =
+        AppLocale.current.permissionErrorAction(action, resource);
+    final reasonText = reason != null
+        ? ' ${AppLocale.current.permissionErrorBecause(reason)}'
+        : '';
+    final actionText = suggestedAction != null
+        ? '\n\n${AppLocale.current.permissionErrorSuggestion(suggestedAction)}'
+        : '';
     return '$baseMessage$reasonText.$actionText';
   }
 
   // Action-specific error contexts
   static String actionSpecificError(String action, String issue) =>
-      'Problem medan $action: $issue';
+      AppLocale.current.errorDuringAction(action, issue);
   static String actionWithRecovery(
           String action, String issue, String recovery) =>
-      'Problem medan $action: $issue\n\nFörslag: $recovery';
+      AppLocale.current.errorDuringActionRecovery(action, issue, recovery);
 
-  // Progressive error disclosure
+  // Progressive error disclosure — no l10n equivalents for most of these yet
   static const String showTechnicalDetails = 'Visa tekniska detaljer';
   static const String hideTechnicalDetails = 'Dölj tekniska detaljer';
+  @Deprecated(
+      'Use context.l10n.technicalInformation or AppLocale.current.technicalInformation instead')
   static const String technicalInformation = 'Teknisk information';
   static const String contactSupport = 'Kontakta support';
   static const String tryAgainLater = 'Försök igen senare';
 
-  // Connectivity-specific messages
+  // Connectivity-specific messages — no l10n equivalents for most of these yet
   static const String offlineMode = 'Offline-läge aktiverat';
+  @Deprecated(
+      'Use context.l10n.connectivityRestored or AppLocale.current.connectivityRestored instead')
   static const String connectivityRestored = 'Anslutning återställd';
   static const String syncingPendingChanges =
       'Synkroniserar väntande ändringar...';
@@ -287,8 +377,10 @@ class AppStrings {
   static const String waitAndRetry = 'Vänta och försök igen';
   static const String checkPermissions = 'Kontrollera behörigheter';
 
-  // Empty states
+  // Empty states — no l10n equivalents for most of these yet
   static const String noItemsFound = 'Inga objekt hittades.';
+  @Deprecated(
+      'Use context.l10n.emptyList or AppLocale.current.emptyList instead')
   static const String emptyList = 'Listan är tom.';
   static const String noResults = 'Inga resultat hittades.';
   static const String noFriends = 'Du har inga vänner än.';
@@ -298,43 +390,97 @@ class AppStrings {
   // Feature-specific strings
 
   // Recipe related
+  @Deprecated(
+      'Use context.l10n.recipeName or AppLocale.current.recipeName instead')
   static const String recipeName = 'Receptnamn';
+  @Deprecated(
+      'Use context.l10n.recipeDescription or AppLocale.current.recipeDescription instead')
   static const String recipeDescription = 'Beskrivning';
+  @Deprecated(
+      'Use context.l10n.recipeIngredients or AppLocale.current.recipeIngredients instead')
   static const String ingredients = 'Ingredienser';
+  @Deprecated(
+      'Use context.l10n.recipeInstructions or AppLocale.current.recipeInstructions instead')
   static const String instructions = 'Instruktioner';
+  @Deprecated(
+      'Use context.l10n.recipeCookingTime or AppLocale.current.recipeCookingTime instead')
   static const String cookingTime = 'Tillagningstid';
+  @Deprecated(
+      'Use context.l10n.recipePortions or AppLocale.current.recipePortions instead')
   static const String portions = 'Portioner';
   static const String addRecipe = 'Lägg till recept';
   static const String editRecipe = 'Redigera recept';
   static const String deleteRecipe = 'Ta bort recept';
 
   // Shopping related
+  @Deprecated(
+      'Use context.l10n.shoppingItemName or AppLocale.current.shoppingItemName instead')
   static const String itemName = 'Varunamn';
+  @Deprecated(
+      'Use context.l10n.shoppingAmount or AppLocale.current.shoppingAmount instead')
   static const String amount = 'Mängd';
+  @Deprecated(
+      'Use context.l10n.shoppingUnit or AppLocale.current.shoppingUnit instead')
   static const String unit = 'Enhet';
+  @Deprecated(
+      'Use context.l10n.shoppingCategory or AppLocale.current.shoppingCategory instead')
   static const String category = 'Kategori';
+  @Deprecated(
+      'Use context.l10n.shoppingNote or AppLocale.current.shoppingNote instead')
   static const String note = 'Anteckning';
+  @Deprecated(
+      'Use context.l10n.shoppingAddItem or AppLocale.current.shoppingAddItem instead')
   static const String addItem = 'Lägg till vara';
+  @Deprecated(
+      'Use context.l10n.shoppingEditItem or AppLocale.current.shoppingEditItem instead')
   static const String editItem = 'Redigera vara';
+  @Deprecated(
+      'Use context.l10n.shoppingList or AppLocale.current.shoppingList instead')
   static const String shoppingList = 'Inköpslista';
 
   // Social/Friends related
+  @Deprecated(
+      'Use context.l10n.socialFriendName or AppLocale.current.socialFriendName instead')
   static const String friendName = 'Vännamn';
+  @Deprecated(
+      'Use context.l10n.socialGroupName or AppLocale.current.socialGroupName instead')
   static const String groupName = 'Gruppnamn';
+  @Deprecated(
+      'Use context.l10n.socialDisplayName or AppLocale.current.socialDisplayName instead')
   static const String displayName = 'Visningsnamn';
+  @Deprecated(
+      'Use context.l10n.socialCreateGroup or AppLocale.current.socialCreateGroup instead')
   static const String createGroup = 'Skapa grupp';
+  @Deprecated(
+      'Use context.l10n.socialEditGroup or AppLocale.current.socialEditGroup instead')
   static const String editGroup = 'Redigera grupp';
+  @Deprecated(
+      'Use context.l10n.socialDeleteGroup or AppLocale.current.socialDeleteGroup instead')
   static const String deleteGroup = 'Ta bort grupp';
+  @Deprecated(
+      'Use context.l10n.socialAddFriend or AppLocale.current.socialAddFriend instead')
   static const String addFriend = 'Lägg till vän';
+  @Deprecated(
+      'Use context.l10n.socialRemoveFriend or AppLocale.current.socialRemoveFriend instead')
   static const String removeFriend = 'Ta bort vän';
+  @Deprecated(
+      'Use context.l10n.socialSendFriendRequest or AppLocale.current.socialSendFriendRequest instead')
   static const String sendFriendRequest = 'Skicka vänförfrågan';
+  @Deprecated(
+      'Use context.l10n.socialAcceptFriendRequest or AppLocale.current.socialAcceptFriendRequest instead')
   static const String acceptFriendRequest = 'Acceptera vänförfrågan';
+  @Deprecated(
+      'Use context.l10n.socialDeclineFriendRequest or AppLocale.current.socialDeclineFriendRequest instead')
   static const String declineFriendRequest = 'Avböj vänförfrågan';
 
   // Menu related
+  @Deprecated('Use context.l10n.menuName or AppLocale.current.menuName instead')
   static const String menuName = 'Menynamn';
+  @Deprecated('Use context.l10n.menuSave or AppLocale.current.menuSave instead')
   static const String saveMenu = 'Spara meny';
+  @Deprecated('Use context.l10n.menuLoad or AppLocale.current.menuLoad instead')
   static const String loadMenu = 'Ladda meny';
+  @Deprecated('Use context.l10n.menuWeek or AppLocale.current.menuWeek instead')
   static const String weekMenu = 'Veckomeny';
 
   // Placeholder texts
@@ -346,14 +492,32 @@ class AppStrings {
   static const String phonePlaceholder = '+46 70 123 45 67';
 
   // Status messages
+  @Deprecated(
+      'Use context.l10n.statusConnecting or AppLocale.current.statusConnecting instead')
   static const String connecting = 'Ansluter...';
+  @Deprecated(
+      'Use context.l10n.statusSyncing or AppLocale.current.statusSyncing instead')
   static const String syncing = 'Synkroniserar...';
+  @Deprecated(
+      'Use context.l10n.statusUploading or AppLocale.current.statusUploading instead')
   static const String uploading = 'Laddar upp...';
+  @Deprecated(
+      'Use context.l10n.statusDownloading or AppLocale.current.statusDownloading instead')
   static const String downloading = 'Laddar ner...';
+  @Deprecated(
+      'Use context.l10n.statusProcessing or AppLocale.current.statusProcessing instead')
   static const String processing = 'Bearbetar...';
+  @Deprecated(
+      'Use context.l10n.statusSaving or AppLocale.current.statusSaving instead')
   static const String saving = 'Sparar...';
+  @Deprecated(
+      'Use context.l10n.statusDeleting or AppLocale.current.statusDeleting instead')
   static const String deleting = 'Tar bort...';
+  @Deprecated(
+      'Use context.l10n.statusCreating or AppLocale.current.statusCreating instead')
   static const String creating = 'Skapar...';
+  @Deprecated(
+      'Use context.l10n.statusUpdating or AppLocale.current.statusUpdating instead')
   static const String updating = 'Uppdaterar...';
 
   // Accessibility strings
@@ -365,49 +529,80 @@ class AppStrings {
   static const String collapseButton = 'Kollapsa';
 
   // Time & date
+  @Deprecated(
+      'Use context.l10n.timeToday or AppLocale.current.timeToday instead')
   static const String today = 'Idag';
+  @Deprecated(
+      'Use context.l10n.timeYesterday or AppLocale.current.timeYesterday instead')
   static const String yesterday = 'Igår';
+  @Deprecated(
+      'Use context.l10n.timeTomorrow or AppLocale.current.timeTomorrow instead')
   static const String tomorrow = 'Imorgon';
+  @Deprecated(
+      'Use context.l10n.timeThisWeek or AppLocale.current.timeThisWeek instead')
   static const String thisWeek = 'Denna vecka';
+  @Deprecated(
+      'Use context.l10n.timeLastWeek or AppLocale.current.timeLastWeek instead')
   static const String lastWeek = 'Förra veckan';
+  @Deprecated(
+      'Use context.l10n.timeNextWeek or AppLocale.current.timeNextWeek instead')
   static const String nextWeek = 'Nästa vecka';
 
   // Units & measurements
+  @Deprecated(
+      'Use context.l10n.unitMinutesShort or AppLocale.current.unitMinutesShort instead')
   static const String minutesShort = 'min';
+  @Deprecated(
+      'Use context.l10n.unitHoursShort or AppLocale.current.unitHoursShort instead')
   static const String hoursShort = 'h';
+  @Deprecated(
+      'Use context.l10n.unitPiecesShort or AppLocale.current.unitPiecesShort instead')
   static const String piecesShort = 'st';
+  @Deprecated(
+      'Use context.l10n.unitLiters or AppLocale.current.unitLiters instead')
   static const String liters = 'liter';
+  @Deprecated(
+      'Use context.l10n.unitKilograms or AppLocale.current.unitKilograms instead')
   static const String kilograms = 'kg';
+  @Deprecated(
+      'Use context.l10n.unitGrams or AppLocale.current.unitGrams instead')
   static const String grams = 'g';
 
   // Helper methods
 
   /// Format a duration in minutes to a human-readable string
   static String formatDuration(int minutes) {
+    final min = AppLocale.current.unitMinutesShort;
+    final h = AppLocale.current.unitHoursShort;
     if (minutes < 60) {
-      return '$minutes $minutesShort';
+      return '$minutes $min';
     } else {
       final hours = minutes ~/ 60;
       final remainingMinutes = minutes % 60;
       if (remainingMinutes == 0) {
-        return '$hours $hoursShort';
+        return '$hours $h';
       } else {
-        return '$hours $hoursShort $remainingMinutes $minutesShort';
+        return '$hours $h $remainingMinutes $min';
       }
     }
   }
 
   /// Format portions with proper pluralization
   static String formatPortions(int portions) {
-    return portions == 1 ? '1 portion' : '$portions portioner';
+    return portions == 1
+        ? AppLocale.current.formatPortionSingle
+        : AppLocale.current.formatPortionPlural(portions);
   }
 
   /// Format an error message with context
   static String errorWithContext(String action, String error) {
-    return 'Fel vid $action: $error';
+    return AppLocale.current.errorWithContext(action, error);
   }
 
-  /// Create a loading message for specific actions
+  /// Create a loading message for specific actions.
+  // TODO(l10n): Swedish verb conjugation ("${action}ar...") is inherently
+  // language-specific. Needs a parameterized l10n key like loadingAction(action)
+  // that each locale can format appropriately.
   static String loadingAction(String action) {
     return '${action.substring(0, 1).toUpperCase()}${action.substring(1).toLowerCase()}ar...';
   }

@@ -143,7 +143,8 @@ class MenuOperations {
         !isValidCategoryName(toCategory)) {
       throw MenuOperationError(
         operation: MenuOperationType.moveRecipeBetweenCategories,
-        message: 'Ogiltiga kategorinamn: $fromCategory -> $toCategory',
+        message: AppLocale.current
+            .errorInvalidCategoryNamesFromTo(fromCategory, toCategory),
         resourceId: menu.id,
       );
     }

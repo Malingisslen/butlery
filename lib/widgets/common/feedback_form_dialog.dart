@@ -6,6 +6,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/services/feedback/feedback_service.dart';
@@ -49,7 +50,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'Skicka feedback',
+            context.l10n.feedbackSendLabel,
             style: AppTextStyles.headerTitle.copyWith(
               color: cs.onPrimary,
             ),
@@ -67,7 +68,8 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Category dropdown
-              Text('Kategori', style: AppTextStyles.labelLarge),
+              Text(context.l10n.feedbackCategoryLabel,
+                  style: AppTextStyles.labelLarge),
               const SizedBox(height: AppDimensions.spacingSm),
               DropdownButtonFormField<FeedbackCategory>(
                 initialValue: _category,
@@ -76,18 +78,18 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                     borderRadius: BorderRadius.zero,
                   ),
                 ),
-                items: const [
+                items: [
                   DropdownMenuItem(
                     value: FeedbackCategory.bug,
-                    child: Text('Bugg'),
+                    child: Text(context.l10n.feedbackCategoryBug),
                   ),
                   DropdownMenuItem(
                     value: FeedbackCategory.featureRequest,
-                    child: Text('Onskemol'),
+                    child: Text(context.l10n.feedbackCategoryFeatureRequest),
                   ),
                   DropdownMenuItem(
                     value: FeedbackCategory.general,
-                    child: Text('Ovrigt'),
+                    child: Text(context.l10n.feedbackCategoryGeneral),
                   ),
                 ],
                 onChanged: (value) {
@@ -98,15 +100,16 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
               const SizedBox(height: AppDimensions.spacingMd),
 
               // Description
-              Text('Beskrivning', style: AppTextStyles.labelLarge),
+              Text(context.l10n.feedbackDescriptionLabel,
+                  style: AppTextStyles.labelLarge),
               const SizedBox(height: AppDimensions.spacingSm),
               TextField(
                 controller: _descriptionController,
                 maxLines: 5,
                 minLines: 3,
-                decoration: const InputDecoration(
-                  hintText: 'Beskriv vad du upplevde...',
-                  border: OutlineInputBorder(
+                decoration: InputDecoration(
+                  hintText: context.l10n.feedbackDescriptionHint,
+                  border: const OutlineInputBorder(
                     borderRadius: BorderRadius.zero,
                   ),
                 ),
@@ -115,7 +118,8 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
               const SizedBox(height: AppDimensions.spacingMd),
 
               // Email (optional)
-              Text('E-post (valfritt)', style: AppTextStyles.labelLarge),
+              Text(context.l10n.feedbackEmailLabel,
+                  style: AppTextStyles.labelLarge),
               const SizedBox(height: AppDimensions.spacingSm),
               TextField(
                 controller: _emailController,
@@ -135,11 +139,12 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Skarmavbild', style: AppTextStyles.labelLarge),
+                    Text(context.l10n.feedbackScreenshotLabel,
+                        style: AppTextStyles.labelLarge),
                     IconButton(
                       icon: const Icon(Icons.close, size: 18),
                       onPressed: () => setState(() => _screenshot = null),
-                      tooltip: 'Ta bort skarmavbild',
+                      tooltip: context.l10n.feedbackRemoveScreenshot,
                     ),
                   ],
                 ),
@@ -180,7 +185,8 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                             color: cs.onPrimary,
                           ),
                         )
-                      : Text('Skicka', style: AppTextStyles.labelLarge),
+                      : Text(context.l10n.feedbackSendButton,
+                          style: AppTextStyles.labelLarge),
                 ),
               ),
             ],
@@ -194,7 +200,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
     final description = _descriptionController.text.trim();
     if (description.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ange en beskrivning')),
+        SnackBar(content: Text(context.l10n.feedbackDescriptionRequired)),
       );
       return;
     }
@@ -217,12 +223,12 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
       if (success) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tack for din feedback!')),
+          SnackBar(content: Text(context.l10n.feedbackThanks)),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kunde inte skicka feedback. Forsok igen.'),
+          SnackBar(
+            content: Text(context.l10n.feedbackSendFailed),
           ),
         );
       }

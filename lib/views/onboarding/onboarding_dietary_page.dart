@@ -1,6 +1,7 @@
 /// Dietary preferences page for the onboarding wizard.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
@@ -8,13 +9,31 @@ import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 class OnboardingDietaryPage extends StatelessWidget {
   const OnboardingDietaryPage({super.key});
 
-  static const Map<String, _DietaryItem> _dietaryOptions = {
-    'vegetarisk':
-        _DietaryItem('Vegetarian', Icons.eco, 'Inga kott- eller fiskprodukter'),
-    'vegansk': _DietaryItem('Vegan', Icons.spa, 'Inga animaliska produkter'),
-    'pescetarian':
-        _DietaryItem('Pescetarian', Icons.set_meal, 'Fisk men inget kott'),
+  static const Map<String, IconData> _dietaryIcons = {
+    'vegetarisk': Icons.eco,
+    'vegansk': Icons.spa,
+    'pescetarian': Icons.set_meal,
   };
+
+  static String _dietaryLabel(BuildContext context, String key) {
+    final l10n = context.l10n;
+    return switch (key) {
+      'vegetarisk' => l10n.onboardingDietaryVegetarian,
+      'vegansk' => l10n.onboardingDietaryVegan,
+      'pescetarian' => l10n.onboardingDietaryPescetarian,
+      _ => key,
+    };
+  }
+
+  static String _dietaryDescription(BuildContext context, String key) {
+    final l10n = context.l10n;
+    return switch (key) {
+      'vegetarisk' => l10n.onboardingDietaryVegetarianDesc,
+      'vegansk' => l10n.onboardingDietaryVeganDesc,
+      'pescetarian' => l10n.onboardingDietaryPescetarianDesc,
+      _ => '',
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,27 +47,27 @@ class OnboardingDietaryPage extends StatelessWidget {
         children: [
           const SizedBox(height: AppDimensions.spacingXl),
           Text(
-            'Kostreferenser',
+            context.l10n.onboardingDietaryTitle,
             style: AppTextStyles.headlineMedium.copyWith(
               color: cs.primary,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
-            'Har du nagra kostreferenser? Vi kan filtrera recept at dig.',
+            context.l10n.onboardingDietaryDescription,
             style: AppTextStyles.bodyMedium.copyWith(
               color: cs.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingLg),
-          ..._dietaryOptions.entries.map((entry) {
+          ..._dietaryIcons.entries.map((entry) {
             final isSelected = viewModel.isDietaryPrefSelected(entry.key);
             return Padding(
               padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
               child: _DietaryToggleCard(
-                label: entry.value.label,
-                icon: entry.value.icon,
-                description: entry.value.description,
+                label: _dietaryLabel(context, entry.key),
+                icon: entry.value,
+                description: _dietaryDescription(context, entry.key),
                 isSelected: isSelected,
                 onTap: () => viewModel.toggleDietaryPref(entry.key),
               ),
@@ -58,13 +77,6 @@ class OnboardingDietaryPage extends StatelessWidget {
       ),
     );
   }
-}
-
-class _DietaryItem {
-  final String label;
-  final IconData icon;
-  final String description;
-  const _DietaryItem(this.label, this.icon, this.description);
 }
 
 class _DietaryToggleCard extends StatelessWidget {

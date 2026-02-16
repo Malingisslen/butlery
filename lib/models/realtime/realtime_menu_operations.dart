@@ -1,3 +1,4 @@
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_menu_data.dart';
 
@@ -216,7 +217,7 @@ class RealtimeMenuOperations {
   /// Get completion status text
   static String getCompletionStatus(RealtimeMenuData data) {
     final percentage = (getCompletionPercentage(data) * 100).round();
-    return '$percentage% färdig';
+    return AppLocale.current.menuCompletionPercent(percentage);
   }
 
   /// Get progress color name
