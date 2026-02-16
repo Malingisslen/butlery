@@ -12,6 +12,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/feedback_form_dialog.dart';
 
@@ -46,14 +47,7 @@ class FeedbackFAB extends StatelessWidget {
             height: AppDimensions.minTouchTarget,
             decoration: BoxDecoration(
               color: cs.surface,
-              boxShadow: [
-                BoxShadow(
-                  color: cs.onSurface
-                      .withValues(alpha: AppDimensions.opacityLight),
-                  blurRadius: AppDimensions.elevationMedium,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              boxShadow: AppShadows.card,
             ),
             child: Center(
               child: Text(
