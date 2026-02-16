@@ -79,6 +79,15 @@ nul
 /tasks/*.md
 !/tasks/lessons.md
 
+# Generated reports
+*_report.json
+
+# One-off scripts
+*.py
+
+# Temp analysis files
+*tmp_analyze*
+
 # Node.js
 node_modules/
 service-account.json
