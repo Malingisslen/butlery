@@ -9057,17 +9057,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String validationInvalidIngredientIndex(int index) {
-    return 'Invalid ingredient index';
+    return 'Invalid ingredient index: $index';
   }
 
   @override
   String validationInvalidInstructionIndex(int index) {
-    return 'Invalid instruction index';
+    return 'Invalid instruction index: $index';
   }
 
   @override
   String validationInvalidImageIndex(int index) {
-    return 'Invalid image index';
+    return 'Invalid image index: $index';
   }
 
   @override
@@ -9231,347 +9231,347 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get errorUserNotLoggedIn => 'Användare inte inloggad';
+  String get errorUserNotLoggedIn => 'User not logged in';
 
   @override
-  String get errorResourceNotFound => 'Resursen hittades inte';
+  String get errorResourceNotFound => 'Resource not found';
 
   @override
-  String get errorNoDeletePermission => 'Ingen behörighet att ta bort resursen';
+  String get errorNoDeletePermission => 'No permission to delete resource';
 
   @override
   String get errorCannotRemoveResourceOwner =>
-      'Kan inte ta bort ägaren från resursen';
+      'Cannot remove the owner from the resource';
 
   @override
   String get validationRecipeTitleCannotBeEmpty =>
-      'Recepttitel kan inte vara tom';
+      'Recipe title cannot be empty';
 
   @override
   String get validationCookingTimeCannotBeNegative =>
-      'Tillagningstid kan inte vara negativ';
+      'Cooking time cannot be negative';
 
   @override
-  String get validationIngredientCannotBeEmpty =>
-      'Ingrediens kan inte vara tom';
+  String get validationIngredientCannotBeEmpty => 'Ingredient cannot be empty';
 
   @override
   String get validationInstructionCannotBeEmpty =>
-      'Instruktion kan inte vara tom';
+      'Instruction cannot be empty';
 
   @override
-  String get validationAtLeastOneIngredient => 'Minst en ingrediens krävs';
+  String get validationAtLeastOneIngredient =>
+      'At least one ingredient is required';
 
   @override
-  String get validationAtLeastOneInstruction => 'Minst en instruktion krävs';
+  String get validationAtLeastOneInstruction =>
+      'At least one instruction is required';
 
   @override
-  String get validationImageUrlCannotBeEmpty => 'Bild-URL kan inte vara tom';
+  String get validationImageUrlCannotBeEmpty => 'Image URL cannot be empty';
 
   @override
-  String get validationInvalidImageUrlFormat => 'Ogiltig bild-URL format';
+  String get validationInvalidImageUrlFormat => 'Invalid image URL format';
 
   @override
-  String get validationMaxImagesReached => 'Maximalt 5 bilder tillåtna';
+  String get validationMaxImagesReached => 'Maximum 5 images allowed';
 
   @override
-  String get validationRecipeTitleMissing => 'Recepttitel saknas';
+  String get validationRecipeTitleMissing => 'Recipe title is missing';
 
   @override
-  String get validationRecipeNoIngredients => 'Recept har inga ingredienser';
+  String get validationRecipeNoIngredients => 'Recipe has no ingredients';
 
   @override
-  String get validationRecipeNoInstructions => 'Recept har inga instruktioner';
+  String get validationRecipeNoInstructions => 'Recipe has no instructions';
 
   @override
-  String get validationRecipeDescriptionEmpty => 'Receptbeskrivning saknas';
+  String get validationRecipeDescriptionEmpty =>
+      'Recipe description is missing';
 
   @override
-  String get validationUserIdCannotBeEmpty => 'Användar-ID kan inte vara tomt';
+  String get validationUserIdCannotBeEmpty => 'User ID cannot be empty';
 
   @override
-  String get validationUsernameCannotBeEmpty =>
-      'Användarnamn kan inte vara tomt';
+  String get validationUsernameCannotBeEmpty => 'Username cannot be empty';
 
   @override
   String validationUserAlreadyParticipant(String name) {
-    return 'Användaren är redan deltagare: $name';
+    return 'User is already a participant: $name';
   }
 
   @override
   String get validationMaxParticipantsReached =>
-      'Maxgräns för deltagare nådd (50)';
+      'Maximum participant limit reached (50)';
 
   @override
   String get validationCannotRemoveRecipeOwner =>
-      'Kan inte ta bort receptägaren';
+      'Cannot remove the recipe owner';
 
   @override
-  String get validationCannotRemoveMenuOwner => 'Kan inte ta bort menyägaren';
+  String get validationCannotRemoveMenuOwner => 'Cannot remove the menu owner';
 
   @override
   String validationUserNotParticipant(String id) {
-    return 'Användaren är inte deltagare: $id';
+    return 'User is not a participant: $id';
   }
 
   @override
   String get validationCannotChangeOwnerPermission =>
-      'Kan inte ändra ägarens behörighet';
+      'Cannot change owner permission';
 
   @override
   String get validationCannotAssignOwnerPermission =>
-      'Kan inte tilldela ägarbehörighet till annan användare';
+      'Cannot assign owner permission to another user';
 
   @override
-  String get validationRecipeMissingOwner => 'Recept saknar ägare';
+  String get validationRecipeMissingOwner => 'Recipe is missing an owner';
 
   @override
   String get validationRecipeOwnerMissingName =>
-      'Receptägare saknar visningsnamn';
+      'Recipe owner is missing a display name';
 
   @override
   String get validationParticipantEmptyUserId =>
-      'Deltagare har tomt användar-ID';
+      'Participant has an empty user ID';
 
   @override
-  String get validationTagNameRequired => 'Taggnamn krävs';
+  String get validationTagNameRequired => 'Tag name is required';
 
   @override
-  String get validationTagNameTooLong => 'Taggnamn för långt (max 50 tecken)';
+  String get validationTagNameTooLong =>
+      'Tag name too long (max 50 characters)';
 
   @override
-  String get validationTagNameNoCommas =>
-      'Taggnamn får inte innehålla kommatecken';
+  String get validationTagNameNoCommas => 'Tag name cannot contain commas';
 
   @override
   String get validationTagNameReserved =>
-      'Detta namn är reserverat för systemtaggar';
+      'This name is reserved for system tags';
 
   @override
-  String get validationGroupNameRequired => 'Gruppnamn krävs';
+  String get validationGroupNameRequired => 'Group name is required';
 
   @override
   String get validationGroupNameTooLong =>
-      'Gruppnamn för långt (max 50 tecken)';
+      'Group name too long (max 50 characters)';
 
   @override
-  String get validationRuleMustBeLinked => 'Regel måste kopplas till en tagg';
+  String get validationRuleMustBeLinked => 'Rule must be linked to a tag';
 
   @override
-  String get validationRuleNameRequired => 'Regelnamn krävs';
+  String get validationRuleNameRequired => 'Rule name is required';
 
   @override
   String get validationRuleMustHaveCondition =>
-      'Regel måste ha minst ett villkor';
+      'Rule must have at least one condition';
 
   @override
   String get validationAllConditionsMustHaveValue =>
-      'Alla villkor måste ha ett värde';
+      'All conditions must have a value';
 
   @override
-  String get validationImageDoesNotExist => 'Bilden finns inte';
+  String get validationImageDoesNotExist => 'Image does not exist';
 
   @override
-  String get validationCouldNotReadImageSize => 'Kunde inte läsa bildstorlek';
+  String get validationCouldNotReadImageSize => 'Could not read image size';
 
   @override
   String validationImageTooLargeWithSize(int size) {
-    return 'Bilden är för stor (max $size MB)';
+    return 'Image is too large (max $size MB)';
   }
 
   @override
-  String get validationCouldNotValidateImage => 'Kunde inte validera bild';
+  String get validationCouldNotValidateImage => 'Could not validate image';
 
   @override
-  String get difficultyVeryEasy => 'Mycket lätt';
+  String get difficultyVeryEasy => 'Very easy';
 
   @override
-  String get difficultyEasy => 'Lätt';
+  String get difficultyEasy => 'Easy';
 
   @override
-  String get difficultyMedium => 'Medel';
+  String get difficultyMedium => 'Medium';
 
   @override
-  String get difficultyHard => 'Svår';
+  String get difficultyHard => 'Hard';
 
   @override
-  String get difficultyVeryHard => 'Mycket svår';
+  String get difficultyVeryHard => 'Very hard';
 
   @override
-  String get difficultyUnknown => 'Okänd';
+  String get difficultyUnknown => 'Unknown';
 
   @override
   String contentSummaryIngredients(int count) {
-    return '$count ingredienser';
+    return '$count ingredients';
   }
 
   @override
   String contentSummarySteps(int count) {
-    return '$count steg';
+    return '$count steps';
   }
 
   @override
   String contentSummaryMinutes(int count) {
-    return '$count minuter';
+    return '$count minutes';
   }
 
   @override
   String contentSummaryPortions(int count) {
-    return '$count portioner';
+    return '$count servings';
   }
 
   @override
-  String get collaborationPrivateRecipe => 'Privat recept';
+  String get collaborationPrivateRecipe => 'Private recipe';
 
   @override
   String collaborationCollaborativeEditorsViewers(int editors, int viewers) {
-    return 'Kollaborativt ($editors redigerare, $viewers betraktare)';
+    return 'Collaborative ($editors editors, $viewers viewers)';
   }
 
   @override
   String collaborationCollaborativeEditors(int editors) {
-    return 'Kollaborativt ($editors redigerare)';
+    return 'Collaborative ($editors editors)';
   }
 
   @override
   String collaborationSharedViewers(int viewers) {
-    return 'Delat ($viewers betraktare)';
+    return 'Shared ($viewers viewers)';
   }
 
   @override
-  String get collaborationSharedRecipe => 'Delat recept';
+  String get collaborationSharedRecipe => 'Shared recipe';
 
   @override
   String participantOwnerOnly(String name) {
-    return 'Endast ägare: $name';
+    return 'Owner only: $name';
   }
 
   @override
   String participantSummary(String owner, int count) {
-    return 'Ägare: $owner, Deltagare: ${count}st';
+    return 'Owner: $owner, Participants: $count';
   }
 
   @override
   String activityMinutesAgo(int count) {
-    return '$count min sedan';
+    return '$count min ago';
   }
 
   @override
   String activityHoursAgo(int count) {
-    return '$count tim sedan';
+    return '$count hours ago';
   }
 
   @override
   String activityDaysAgo(int count) {
-    return '$count dagar sedan';
+    return '$count days ago';
   }
 
   @override
   String activityWeeksAgo(int count) {
-    return '$count veckor sedan';
+    return '$count weeks ago';
   }
 
   @override
   String resourceCreatedBy(String name) {
-    return 'Skapades av $name';
+    return 'Created by $name';
   }
 
   @override
   String resourceLastEditedBy(String name, String timeAgo) {
-    return 'Senast redigerad av $name $timeAgo';
+    return 'Last edited by $name $timeAgo';
   }
 
   @override
   String get syncParsingNotImplemented =>
-      'RealtimeShoppingList parsing inte implementerad än';
+      'RealtimeShoppingList parsing not implemented yet';
 
   @override
-  String get backupNoRecipesToExport => 'Inga recept att exportera';
+  String get backupNoRecipesToExport => 'No recipes to export';
 
   @override
-  String get backupPlatformNotSupported => 'Plattformen stöds inte';
+  String get backupPlatformNotSupported => 'Platform not supported';
 
   @override
-  String get backupSavedAndroid => 'Backup sparad i Android/data/.../Butlery';
+  String get backupSavedAndroid => 'Backup saved in Android/data/.../Butlery';
 
   @override
-  String get backupSavedIos => 'Backup sparad i Filer-appen';
+  String get backupSavedIos => 'Backup saved in the Files app';
 
   @override
-  String get backupCouldNotFindStorageDir => 'Kunde inte hitta lagringsmapp';
+  String get backupCouldNotFindStorageDir => 'Could not find storage directory';
 
   @override
   String backupCouldNotSaveFile(String error) {
-    return 'Kunde inte spara fil: $error';
+    return 'Could not save file: $error';
   }
 
   @override
-  String get backupCouldNotReadFile => 'Kunde inte läsa filen';
+  String get backupCouldNotReadFile => 'Could not read the file';
 
   @override
-  String get backupInvalidFile => 'Ogiltig backup-fil - inte från Butlery';
+  String get backupInvalidFile => 'Invalid backup file - not from Butlery';
 
   @override
-  String get backupUnknownRecipe => 'Okänt recept';
+  String get backupUnknownRecipe => 'Unknown recipe';
 
   @override
   String backupImportedFromBackup(String date) {
-    return 'Importerat från backup $date';
+    return 'Imported from backup $date';
   }
 
   @override
   String backupExportFailed(String error) {
-    return 'Export misslyckades: $error';
+    return 'Export failed: $error';
   }
 
   @override
   String backupImportFailed(String error) {
-    return 'Import misslyckades: $error';
+    return 'Import failed: $error';
   }
 
   @override
-  String get syncAlreadyInProgress => 'Synkronisering pågår redan';
+  String get syncAlreadyInProgress => 'Sync already in progress';
 
   @override
-  String get syncMustBeOnline => 'Du måste vara online för att synkronisera';
+  String get syncMustBeOnline => 'You must be online to sync';
 
   @override
-  String get syncNoUserLoggedIn => 'Ingen användare inloggad';
+  String get syncNoUserLoggedIn => 'No user logged in';
 
   @override
-  String get syncNoPendingChanges => 'Inga väntande ändringar';
+  String get syncNoPendingChanges => 'No pending changes';
 
   @override
   String syncAllSynced(int count) {
-    return 'Alla $count ändringar synkade!';
+    return 'All $count changes synced!';
   }
 
   @override
   String syncPartialSuccess(int synced, int total, int remaining) {
-    return '$synced av $total synkade, $remaining kvar';
+    return '$synced of $total synced, $remaining remaining';
   }
 
   @override
-  String get syncFailedRetryLater =>
-      'Synkronisering misslyckades, försöker igen senare';
+  String get syncFailedRetryLater => 'Sync failed, will retry later';
 
   @override
   String get instagramCouldNotFindRecipe =>
-      'Kunde inte hitta recept i inlagget. Ta en skärmbild av receptet.';
+      'Could not find a recipe in the post. Take a screenshot of the recipe.';
 
   @override
-  String get uploadNotificationComplete => 'Uppladdning slutförd';
+  String get uploadNotificationComplete => 'Upload complete';
 
   @override
   String get uploadNotificationCompleteBody =>
-      'Bilden har laddats upp framgångsrikt';
+      'The image has been uploaded successfully';
 
   @override
-  String get uploadNotificationFailed => 'Uppladdning misslyckades';
+  String get uploadNotificationFailed => 'Upload failed';
 
   @override
   String get uploadNotificationFailedBody =>
-      'Kunde inte ladda upp bilden efter flera försök';
+      'Could not upload the image after multiple attempts';
 
   @override
   String uploadStatusWaiting(int pending) {
@@ -9584,164 +9584,165 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get uploadStatusPreparing => 'Förbereder uppladdning...';
+  String get uploadStatusPreparing => 'Preparing upload...';
 
   @override
   String uploadStatusRetrying(int attempt, int max) {
-    return 'Försöker igen ($attempt/$max)...';
+    return 'Retrying ($attempt/$max)...';
   }
 
   @override
-  String get uploadStatusComplete => 'Uppladdning slutförd';
+  String get uploadStatusComplete => 'Upload complete';
 
   @override
-  String get uploadStatusCancelled => 'Uppladdning avbruten';
+  String get uploadStatusCancelled => 'Upload cancelled';
 
   @override
-  String get uploadFailureNetwork => 'Nätverksfel - kontrollera anslutningen';
+  String get uploadFailureNetwork => 'Network error - check your connection';
 
   @override
-  String get uploadFailureValidation => 'Bilden kunde inte valideras';
+  String get uploadFailureValidation => 'Image could not be validated';
 
   @override
-  String get uploadFailureServer => 'Serverfel - försök igen';
+  String get uploadFailureServer => 'Server error - try again';
 
   @override
-  String get uploadFailureCancelled => 'Uppladdning avbruten';
+  String get uploadFailureCancelled => 'Upload cancelled';
 
   @override
-  String get uploadFailureGeneric => 'Uppladdning misslyckades';
+  String get uploadFailureGeneric => 'Upload failed';
 
   @override
   String get uploadRetryCheckInternet =>
-      'Kontrollera internetanslutningen och tryck för att försöka igen';
+      'Check your internet connection and tap to retry';
 
   @override
   String get uploadRetryCheckImage =>
-      'Kontrollera att bilden är giltig och inte för stor';
+      'Make sure the image is valid and not too large';
 
   @override
-  String get uploadRetryTryLater => 'Försök igen om en stund';
+  String get uploadRetryTryLater => 'Try again in a moment';
 
   @override
-  String get uploadRetryTapToRetry => 'Tryck för att försöka igen';
+  String get uploadRetryTapToRetry => 'Tap to retry';
 
   @override
   String llmUnexpectedError(String error) {
-    return 'Ett oväntat fel uppstod: $error';
+    return 'An unexpected error occurred: $error';
   }
 
   @override
-  String get llmUnknownRecipe => 'Okänt recept';
+  String get llmUnknownRecipe => 'Unknown recipe';
 
   @override
-  String get llmMustBeLoggedIn =>
-      'Du måste vara inloggad för att använda AI-funktioner.';
+  String get llmMustBeLoggedIn => 'You must be logged in to use AI features.';
 
   @override
   String get llmServiceOverloaded =>
-      'AI-tjänsten är tillfälligt överbelastad. Försök igen om en stund.';
+      'The AI service is temporarily overloaded. Try again in a moment.';
 
   @override
   String llmInvalidArgument(String error) {
-    return 'Ogiltigt argument: $error';
+    return 'Invalid argument: $error';
   }
 
   @override
   String llmGenericError(String error) {
-    return 'Ett fel uppstod: $error';
+    return 'An error occurred: $error';
   }
 
   @override
   String get tiktokCouldNotFetchDescription =>
-      'Kunde inte hämta videobeskrivningen. Ta en skärmbild av receptet.';
+      'Could not fetch the video description. Take a screenshot of the recipe.';
 
   @override
   String get tiktokAiQuotaExhausted =>
-      'AI-kvoten är slut. Markera receptdelar manuellt.';
+      'AI quota exhausted. Mark recipe parts manually.';
 
   @override
   String get tiktokCouldNotExtractRecipe =>
-      'Kunde inte extrahera receptet automatiskt. Markera receptdelar manuellt.';
+      'Could not extract the recipe automatically. Mark recipe parts manually.';
 
   @override
   String get tiktokNoRecipeInDescription =>
-      'Videobeskrivningen innehåller inget recept. Ta en skärmbild av receptet.';
+      'The video description does not contain a recipe. Take a screenshot of the recipe.';
 
   @override
   String rateLimitTooFast(int seconds) {
-    return 'Du importerar för snabbt. Vänta $seconds sekunder.';
+    return 'You are importing too fast. Wait $seconds seconds.';
   }
 
   @override
   String rateLimitHourly(int minutes) {
-    return 'Du har nått timgränsen. Försök igen om $minutes minuter.';
+    return 'You have reached the hourly limit. Try again in $minutes minutes.';
   }
 
   @override
   String get rateLimitDaily =>
-      'Du har nått dagens gräns för importer. Försök igen imorgon.';
+      'You have reached the daily import limit. Try again tomorrow.';
 
   @override
   String get rateLimitAiDaily =>
-      'AI-kvoten för idag är slut. Försök igen imorgon.';
+      'The AI quota for today is exhausted. Try again tomorrow.';
 
   @override
-  String get rateLimitAiMonthly => 'AI-kvoten för månaden är slut.';
+  String get rateLimitAiMonthly => 'The AI quota for the month is exhausted.';
 
   @override
   String get rateLimitBudgetDaily =>
-      'Dagens AI-budget är förbrukad. Försök igen imorgon.';
+      'Today\'s AI budget has been used up. Try again tomorrow.';
 
   @override
-  String get rateLimitBudgetMonthly => 'Månadens AI-budget är förbrukad.';
+  String get rateLimitBudgetMonthly =>
+      'This month\'s AI budget has been used up.';
 
   @override
-  String get importErrorUnexpected => 'Ett oväntat fel uppstod';
+  String get importErrorUnexpected => 'An unexpected error occurred';
 
   @override
-  String get importErrorNoInternet => 'Ingen internetanslutning';
+  String get importErrorNoInternet => 'No internet connection';
 
   @override
   String get importErrorTooManyImports =>
-      'För många importer på kort tid. Vänta en stund.';
+      'Too many imports in a short time. Wait a moment.';
 
   @override
-  String get importErrorAiQuotaExhausted => 'AI-kvoten är slut för idag';
+  String get importErrorAiQuotaExhausted => 'AI quota exhausted for today';
 
   @override
-  String get importErrorInvalidUrl => 'Ogiltig URL';
+  String get importErrorInvalidUrl => 'Invalid URL';
 
   @override
-  String get importErrorCouldNotReachPage => 'Kunde inte nå sidan';
+  String get importErrorCouldNotReachPage => 'Could not reach the page';
 
   @override
-  String get importErrorLoginRequired => 'Sidan kräver inloggning';
+  String get importErrorLoginRequired => 'The page requires login';
 
   @override
-  String get importErrorNoRecipeFound => 'Inget recept hittades';
+  String get importErrorNoRecipeFound => 'No recipe found';
 
   @override
-  String get importErrorCouldNotReadImage => 'Kunde inte läsa texten i bilden';
+  String get importErrorCouldNotReadImage =>
+      'Could not read the text in the image';
 
   @override
-  String get importErrorCouldNotParseRecipe => 'Kunde inte tolka receptet';
+  String get importErrorCouldNotParseRecipe => 'Could not parse the recipe';
 
   @override
-  String get importErrorCouldNotSaveRecipe => 'Kunde inte spara receptet';
+  String get importErrorCouldNotSaveRecipe => 'Could not save the recipe';
 
   @override
-  String get importErrorCancelled => 'Importen avbröts';
+  String get importErrorCancelled => 'Import was cancelled';
 
   @override
-  String get messagingPoll => 'Omröstning';
+  String get messagingPoll => 'Poll';
 
   @override
   String get shoppingListEmpty => 'Empty shopping list';
 
   @override
   String shoppingListAllBought(int count) {
-    return 'Alla $count artiklar köpta';
+    return 'All $count items bought';
   }
 
   @override
@@ -9750,62 +9751,61 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get shoppingListNoActivity => 'Ingen aktivitet';
+  String get shoppingListNoActivity => 'No activity';
 
   @override
-  String get shoppingListActivityNow => 'nu';
+  String get shoppingListActivityNow => 'now';
 
   @override
   String shoppingListActivityMinAgo(int count) {
-    return '$count min sedan';
+    return '$count min ago';
   }
 
   @override
   String shoppingListActivityHoursAgo(int count) {
-    return '$count tim sedan';
+    return '$count hours ago';
   }
 
   @override
   String shoppingListActivityDaysAgo(int count) {
-    return '$count dagar sedan';
+    return '$count days ago';
   }
 
   @override
   String shoppingListLastActivityBy(String name, String time) {
-    return 'Senaste aktivitet av $name $time';
+    return 'Last activity by $name $time';
   }
 
   @override
   String unknownResourceType(String value) {
-    return 'Okänd RealtimeResourceType: $value';
+    return 'Unknown RealtimeResourceType: $value';
   }
 
   @override
-  String get notificationTitleDailySummary => 'Daglig sammanfattning';
+  String get notificationTitleDailySummary => 'Daily summary';
 
   @override
-  String get notificationBodyNoActivityToday => 'Ingen ny aktivitet idag';
+  String get notificationBodyNoActivityToday => 'No new activity today';
 
   @override
-  String get notificationBodyNoActivityToReport =>
-      'Ingen aktivitet att rapportera';
+  String get notificationBodyNoActivityToReport => 'No activity to report';
 
   @override
   String get notificationBodyProblemLoadingActivities =>
-      'Problem med att ladda aktiviteter';
+      'Problem loading activities';
 
   @override
   String get notificationBodyCouldNotCreateSummary =>
-      'Kunde inte skapa sammanfattning';
+      'Could not create summary';
 
   @override
-  String get notificationActionViewRecipes => 'Visa recept';
+  String get notificationActionViewRecipes => 'View recipes';
 
   @override
-  String get notificationActionViewFriends => 'Visa vänner';
+  String get notificationActionViewFriends => 'View friends';
 
   @override
-  String get notificationActionOpenApp => 'Öppna app';
+  String get notificationActionOpenApp => 'Open app';
 
   @override
   String get notificationDefaultTitle => 'New activity';
@@ -9815,95 +9815,95 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String notificationDigestRecipes(int count) {
-    return '$count recept';
+    return '$count recipes';
   }
 
   @override
   String notificationDigestFriendActivities(int count) {
-    return '$count vänaktiviteter';
+    return '$count friend activities';
   }
 
   @override
   String notificationDigestShoppingLists(int count) {
-    return '$count inköpslistor';
+    return '$count shopping lists';
   }
 
   @override
   String notificationDigestCollaborations(int count) {
-    return '$count samarbeten';
+    return '$count collaborations';
   }
 
   @override
-  String get conditionTypeIngredient => 'Ingrediens';
+  String get conditionTypeIngredient => 'Ingredient';
 
   @override
-  String get conditionTypeProperty => 'Egenskap';
+  String get conditionTypeProperty => 'Property';
 
   @override
-  String get conditionTypeKeyword => 'Nyckelord';
+  String get conditionTypeKeyword => 'Keyword';
 
   @override
-  String get conditionTypeSource => 'Källa';
+  String get conditionTypeSource => 'Source';
 
   @override
-  String get conditionTypeCuisine => 'Kök';
+  String get conditionTypeCuisine => 'Cuisine';
 
   @override
-  String get conditionTypeDiet => 'Kost';
+  String get conditionTypeDiet => 'Diet';
 
   @override
-  String get conditionTypeTime => 'Tid';
+  String get conditionTypeTime => 'Time';
 
   @override
-  String get conditionTypeRating => 'Betyg';
+  String get conditionTypeRating => 'Rating';
 
   @override
-  String get conditionTypeRecent => 'Nyligen';
+  String get conditionTypeRecent => 'Recent';
 
   @override
-  String get conditionTypeOwnership => 'Ägarskap';
+  String get conditionTypeOwnership => 'Ownership';
 
   @override
-  String get conditionTypeHasImage => 'Har bild';
+  String get conditionTypeHasImage => 'Has image';
 
   @override
-  String get conditionTypeCompleteness => 'Fullständighet';
+  String get conditionTypeCompleteness => 'Completeness';
 
   @override
-  String get operatorContains => 'innehåller';
+  String get operatorContains => 'contains';
 
   @override
-  String get operatorExact => 'är exakt';
+  String get operatorExact => 'is exactly';
 
   @override
-  String get operatorStartsWith => 'börjar med';
+  String get operatorStartsWith => 'starts with';
 
   @override
-  String get operatorNotContains => 'innehåller inte';
+  String get operatorNotContains => 'does not contain';
 
   @override
-  String get operatorNotExact => 'är inte';
+  String get operatorNotExact => 'is not';
 
   @override
-  String get operatorHas => 'har';
+  String get operatorHas => 'has';
 
   @override
-  String get operatorNotHas => 'har inte';
+  String get operatorNotHas => 'does not have';
 
   @override
-  String get operatorLessThan => 'mindre än';
+  String get operatorLessThan => 'less than';
 
   @override
-  String get operatorAtMost => 'högst';
+  String get operatorAtMost => 'at most';
 
   @override
-  String get operatorGreaterThan => 'mer än';
+  String get operatorGreaterThan => 'more than';
 
   @override
-  String get operatorAtLeast => 'minst';
+  String get operatorAtLeast => 'at least';
 
   @override
-  String get operatorWithinDays => 'inom dagar';
+  String get operatorWithinDays => 'within days';
 
   @override
   String get errorAuthenticationPleaseLogin =>
@@ -9959,32 +9959,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String notificationBatchBodyRecipes(int count) {
-    return '$count nya händelser på dina recept';
+    return '$count new events on your recipes';
   }
 
   @override
   String notificationBatchBodyFriends(int count) {
-    return '$count nya aktiviteter från dina vänner';
+    return '$count new activities from your friends';
   }
 
   @override
   String notificationBatchBodyShopping(int count) {
-    return '$count uppdateringar av dina inköpslistor';
+    return '$count updates to your shopping lists';
   }
 
   @override
   String notificationBatchBodyCollaboration(int count) {
-    return '$count nya samarbetsaktiviteter';
+    return '$count new collaboration activities';
   }
 
   @override
   String notificationBatchBodyDefault(int count) {
-    return '$count nya händelser i Butlery';
+    return '$count new events in Butlery';
   }
 
   @override
   String notificationDigestBody(int totalCount, String summary) {
-    return 'Du har $totalCount nya aktiviteter: $summary';
+    return 'You have $totalCount new activities: $summary';
   }
 
   @override

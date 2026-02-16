@@ -1,8 +1,6 @@
 // test/widget/common/input/shopping_list_actions_test.dart
 // Comprehensive tests for ShoppingListActions using ultrathink methodology
 
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -15,7 +13,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 // Test infrastructure
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -82,9 +80,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Should show all menu items with correct Swedish text
-        expect(find.text(AppStrings.rename), findsOneWidget);
-        expect(find.text(AppStrings.export), findsOneWidget);
-        expect(find.text(AppStrings.delete), findsOneWidget);
+        expect(find.text(AppLocale.current.commonRename), findsOneWidget);
+        expect(find.text(AppLocale.current.commonExport), findsOneWidget);
+        expect(find.text(AppLocale.current.commonDelete), findsOneWidget);
 
         // Should show correct icons
         expect(find.byIcon(Icons.edit), findsOneWidget);
@@ -157,10 +155,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // Should show dialog with correct title and content
-        expect(find.text(AppStrings.renameList), findsOneWidget);
-        expect(find.text(AppStrings.newName), findsOneWidget);
-        expect(find.text(AppStrings.cancel), findsOneWidget);
-        expect(find.text(AppStrings.save), findsOneWidget);
+        expect(find.text(AppLocale.current.shoppingRenameList), findsOneWidget);
+        expect(find.text(AppLocale.current.shoppingNewName), findsOneWidget);
+        expect(find.text(AppLocale.current.commonCancel), findsOneWidget);
+        expect(find.text(AppLocale.current.commonSave), findsOneWidget);
 
         // TextField should have original name
         final textField = tester.widget<TextField>(find.byType(TextField));
@@ -208,7 +206,7 @@ void main() {
 
         // Change the name
         await tester.enterText(find.byType(TextField), 'New Name');
-        await tester.tap(find.text(AppStrings.save));
+        await tester.tap(find.text(AppLocale.current.commonSave));
         await tester.pumpAndSettle();
 
         // Verify service was called
@@ -255,7 +253,7 @@ void main() {
         await tester.pumpAndSettle();
 
         await tester.enterText(find.byType(TextField), 'New Name');
-        await tester.tap(find.text(AppStrings.save));
+        await tester.tap(find.text(AppLocale.current.commonSave));
         await tester.pumpAndSettle();
 
         // Should show error snackbar
@@ -296,7 +294,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Keep same name and save
-        await tester.tap(find.text(AppStrings.save));
+        await tester.tap(find.text(AppLocale.current.commonSave));
         await tester.pumpAndSettle();
 
         // Should not call rename service
@@ -334,7 +332,7 @@ void main() {
         await tester.tap(find.text('Show Dialog'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text(AppStrings.cancel));
+        await tester.tap(find.text(AppLocale.current.commonCancel));
         await tester.pumpAndSettle();
 
         // Should not call rename service
@@ -538,10 +536,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // Should show dialog with correct elements
-        expect(find.text(AppStrings.createList), findsOneWidget);
-        expect(find.text(AppStrings.listName), findsOneWidget);
-        expect(find.text(AppStrings.cancel), findsOneWidget);
-        expect(find.text(AppStrings.create), findsOneWidget);
+        expect(find.text(AppLocale.current.shoppingCreateList), findsOneWidget);
+        expect(find.text(AppLocale.current.shoppingListName), findsOneWidget);
+        expect(find.text(AppLocale.current.commonCancel), findsOneWidget);
+        expect(find.text(AppLocale.current.commonCreate), findsOneWidget);
 
         // Should have hint text
         expect(find.text('T.ex. "Veckans handlista"'), findsOneWidget);
@@ -578,7 +576,7 @@ void main() {
 
         // Enter list name
         await tester.enterText(find.byType(TextField), 'My New List');
-        await tester.tap(find.text(AppStrings.create));
+        await tester.tap(find.text(AppLocale.current.commonCreate));
         await tester.pumpAndSettle();
 
         // Should return the trimmed name
@@ -610,7 +608,7 @@ void main() {
         await tester.tap(find.text('Create List'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text(AppStrings.cancel));
+        await tester.tap(find.text(AppLocale.current.commonCancel));
         await tester.pumpAndSettle();
 
         // Should return null
@@ -736,7 +734,7 @@ void main() {
         await tester.pumpAndSettle();
 
         await tester.enterText(find.byType(TextField), 'New Success Name');
-        await tester.tap(find.text(AppStrings.save));
+        await tester.tap(find.text(AppLocale.current.commonSave));
         await tester.pumpAndSettle();
 
         // Check SnackBar styling
@@ -781,7 +779,7 @@ void main() {
         await tester.pumpAndSettle();
 
         await tester.enterText(find.byType(TextField), 'New Error Name');
-        await tester.tap(find.text(AppStrings.save));
+        await tester.tap(find.text(AppLocale.current.commonSave));
         await tester.pumpAndSettle();
 
         // Check SnackBar styling

@@ -1556,7 +1556,7 @@
   },
   "shareRecipeTitle": "Share recipe",
   "shareMenuTitle": "Share menu",
-  "shareShoppingListTitle": "Share shopping list",
+  "shareShoppingListTitle": "🛒 SHOPPING LIST",
   "shareCreateAndShare": "Create & Share",
   "shareRecipeWithFriends": "Share recipe with friends",
   "shareMenuWithFriends": "Share weekly menu with friends",
@@ -1970,7 +1970,7 @@
   "groupCreateNew": "Create new group",
   "groupDeleteConfirmPrefix": "Are you sure you want to delete the group ",
   "groupDeleteTheGroup": "Delete the group",
-  "groupDeleteWarning": "This cannot be undone. All members will be removed from the group.",
+  "groupDeleteWarning": "All members will leave the group.",
   "groupDeleteWhenLeaving": "Do you want to delete the group when you leave?",
   "groupDescriptionHint": "What is this group about?",
   "groupDescriptionLabel": "Description (optional)",
@@ -5373,7 +5373,7 @@
   "pollAddOption": "Add option",
   "pollAllowMultiple": "Allow multiple choices",
   "pollCancel": "Cancel",
-  "pollCreate": "Create",
+  "pollCreate": "Create poll",
   "pollVoteCount": "{count, plural, =1{1 vote} other{{count} votes}}",
   "@pollVoteCount": {
     "placeholders": {
@@ -5815,9 +5815,9 @@
   "validationPortionsMustBePositive": "Portions must be positive",
   "validationTimeMustBePositive": "Time must be positive",
   "validationRatingRange": "Rating must be between 0 and 5",
-  "validationInvalidIngredientIndex": "Invalid ingredient index",
-  "validationInvalidInstructionIndex": "Invalid instruction index",
-  "validationInvalidImageIndex": "Invalid image index",
+  "validationInvalidIngredientIndex": "Invalid ingredient index: {index}",
+  "validationInvalidInstructionIndex": "Invalid instruction index: {index}",
+  "validationInvalidImageIndex": "Invalid image index: {index}",
   "notificationTitleSuccess": "Success!",
   "notificationTitleError": "Error occurred",
   "notificationTitleNewRecipeActivity": "New recipe activity",
@@ -7003,33 +7003,153 @@
   "labelButleryUser": "Butlery user",
   "shoppingListSummaryEmpty": "Empty shopping list",
   "shoppingListSummaryAllDone": "All {count} items done",
-  "@shoppingListSummaryAllDone": { "placeholders": { "count": {"type": "int"} } },
+  "@shoppingListSummaryAllDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "shoppingListSummaryToBuy": "{count} items to buy",
-  "@shoppingListSummaryToBuy": { "placeholders": { "count": {"type": "int"} } },
+  "@shoppingListSummaryToBuy": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "shoppingListSummaryRemaining": "{remaining} of {total} items remaining",
-  "@shoppingListSummaryRemaining": { "placeholders": { "remaining": {"type": "int"}, "total": {"type": "int"} } },
+  "@shoppingListSummaryRemaining": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "notificationBatchComments": "{count} new comments on your recipes",
-  "@notificationBatchComments": { "placeholders": { "count": {"type": "int"} } },
+  "@notificationBatchComments": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notificationCommentSingle": "{author} commented on \"{recipe}\"",
-  "@notificationCommentSingle": { "placeholders": { "author": {"type": "String"}, "recipe": {"type": "String"} } },
+  "@notificationCommentSingle": {
+    "placeholders": {
+      "author": {
+        "type": "String"
+      },
+      "recipe": {
+        "type": "String"
+      }
+    }
+  },
   "notificationCommentMultipleSameAuthor": "{author} wrote {count} comments on \"{recipe}\"",
-  "@notificationCommentMultipleSameAuthor": { "placeholders": { "author": {"type": "String"}, "count": {"type": "int"}, "recipe": {"type": "String"} } },
+  "@notificationCommentMultipleSameAuthor": {
+    "placeholders": {
+      "author": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "recipe": {
+        "type": "String"
+      }
+    }
+  },
   "notificationCommentMultipleAuthors": "{authorCount} people wrote {commentCount} comments on \"{recipe}\"",
-  "@notificationCommentMultipleAuthors": { "placeholders": { "authorCount": {"type": "int"}, "commentCount": {"type": "int"}, "recipe": {"type": "String"} } },
+  "@notificationCommentMultipleAuthors": {
+    "placeholders": {
+      "authorCount": {
+        "type": "int"
+      },
+      "commentCount": {
+        "type": "int"
+      },
+      "recipe": {
+        "type": "String"
+      }
+    }
+  },
   "notificationRatingSingle": "Your recipe \"{recipe}\" received {count} new ratings this {period}!",
-  "@notificationRatingSingle": { "placeholders": { "recipe": {"type": "String"}, "count": {"type": "int"}, "period": {"type": "String"} } },
+  "@notificationRatingSingle": {
+    "placeholders": {
+      "recipe": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
   "notificationRatingMultiple": "Your recipes received {totalRatings} new ratings across {recipeCount} recipes this {period}!",
-  "@notificationRatingMultiple": { "placeholders": { "totalRatings": {"type": "int"}, "recipeCount": {"type": "int"}, "period": {"type": "String"} } },
+  "@notificationRatingMultiple": {
+    "placeholders": {
+      "totalRatings": {
+        "type": "int"
+      },
+      "recipeCount": {
+        "type": "int"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
   "timeCompactMonths": "{count}mo",
-  "@timeCompactMonths": { "placeholders": { "count": {"type": "int"} } },
+  "@timeCompactMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "validationFieldCannotBeEmpty": "{fieldName} cannot be empty",
-  "@validationFieldCannotBeEmpty": { "placeholders": { "fieldName": {"type": "String"} } },
+  "@validationFieldCannotBeEmpty": {
+    "placeholders": {
+      "fieldName": {
+        "type": "String"
+      }
+    }
+  },
   "validationMustBeNumber": "{fieldName} must be a number",
-  "@validationMustBeNumber": { "placeholders": { "fieldName": {"type": "String"} } },
+  "@validationMustBeNumber": {
+    "placeholders": {
+      "fieldName": {
+        "type": "String"
+      }
+    }
+  },
   "validationMinValue": "{fieldName} must be at least {min}",
-  "@validationMinValue": { "placeholders": { "fieldName": {"type": "String"}, "min": {"type": "String"} } },
+  "@validationMinValue": {
+    "placeholders": {
+      "fieldName": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
+    }
+  },
   "validationMaxValue": "{fieldName} must be at most {max}",
-  "@validationMaxValue": { "placeholders": { "fieldName": {"type": "String"}, "max": {"type": "String"} } },
+  "@validationMaxValue": {
+    "placeholders": {
+      "fieldName": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
   "validationDefaultValueLabel": "The value",
   "validationInvalidUrlHint": "Enter a valid URL (starting with http:// or https://)",
   "validationFieldRating": "Rating",
@@ -7045,7 +7165,13 @@
   "validationCommentTooShort": "Comment must be at least 3 characters",
   "validationCommentTooLong": "Comment must be at most 500 characters",
   "validationMessageMaxLength": "Message must be at most {max} characters",
-  "@validationMessageMaxLength": { "placeholders": { "max": {"type": "int"} } },
+  "@validationMessageMaxLength": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
   "validationNameTooShort": "Name must be at least 2 characters",
   "validationEmailInvalidHint": "Enter a valid email address",
   "validationShoppingItemRequired": "Enter item name",
@@ -7053,7 +7179,13 @@
   "validationTagMinLength": "Each tag must be at least 2 characters",
   "validationTagMaxLength": "Each tag must be at most 20 characters",
   "validationFieldNotEmpty": "{fieldName} cannot be empty",
-  "@validationFieldNotEmpty": { "placeholders": { "fieldName": {"type": "String"} } },
+  "@validationFieldNotEmpty": {
+    "placeholders": {
+      "fieldName": {
+        "type": "String"
+      }
+    }
+  },
   "validationPasswordMinEight": "Password must be at least 8 characters",
   "validationPasswordNeedsUppercase": "Password must contain at least one uppercase letter",
   "validationPasswordNeedsLowercase": "Password must contain at least one lowercase letter",
@@ -7066,21 +7198,69 @@
   "validationFieldGroupName": "Group name",
   "validationFieldArticle": "Item",
   "errorImageUploadFailed": "Image upload failed: {message}",
-  "@errorImageUploadFailed": { "placeholders": { "message": {"type": "String"} } },
+  "@errorImageUploadFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "errorRecipeServiceFailed": "Recipe management failed: {message}",
-  "@errorRecipeServiceFailed": { "placeholders": { "message": {"type": "String"} } },
+  "@errorRecipeServiceFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "errorPermissionFailed": "Permission error: {message}",
-  "@errorPermissionFailed": { "placeholders": { "message": {"type": "String"} } },
+  "@errorPermissionFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "errorNetworkWithDetail": "Network error: {message}",
-  "@errorNetworkWithDetail": { "placeholders": { "message": {"type": "String"} } },
+  "@errorNetworkWithDetail": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "errorStorageFailed": "Storage error: {message}",
-  "@errorStorageFailed": { "placeholders": { "message": {"type": "String"} } },
+  "@errorStorageFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "errorCollaborationFailed": "Collaboration error: {message}",
-  "@errorCollaborationFailed": { "placeholders": { "message": {"type": "String"} } },
+  "@errorCollaborationFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "errorAutoSaveFailed": "Auto-save failed: {message}",
-  "@errorAutoSaveFailed": { "placeholders": { "message": {"type": "String"} } },
+  "@errorAutoSaveFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "errorSystemFailed": "System error: {message}",
-  "@errorSystemFailed": { "placeholders": { "message": {"type": "String"} } },
+  "@errorSystemFailed": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "actionRefresh": "Refresh",
   "actionGoBack": "Go back",
   "actionReport": "Report",
@@ -7095,9 +7275,21 @@
   "sharePortionsUnit": "portions",
   "shareMinutesUnit": "minutes",
   "uploadNotificationTitle": "Upload {percentage}% complete",
-  "@uploadNotificationTitle": { "placeholders": { "percentage": {"type": "int"} } },
+  "@uploadNotificationTitle": {
+    "placeholders": {
+      "percentage": {
+        "type": "int"
+      }
+    }
+  },
   "uploadNotificationMessage": "Image upload progress - {percentage}% complete",
-  "@uploadNotificationMessage": { "placeholders": { "percentage": {"type": "int"} } },
+  "@uploadNotificationMessage": {
+    "placeholders": {
+      "percentage": {
+        "type": "int"
+      }
+    }
+  },
   "feedbackDescriptionRequired": "Enter a description",
   "feedbackThanks": "Thank you for your feedback!",
   "feedbackSendFailed": "Could not send feedback. Try again.",
@@ -7110,52 +7302,159 @@
   "reactionYum": "Yummy",
   "reactionThinking": "Thinking",
   "menuCompletionPercent": "{percentage}% complete",
-  "@menuCompletionPercent": { "placeholders": { "percentage": {"type": "int"} } },
+  "@menuCompletionPercent": {
+    "placeholders": {
+      "percentage": {
+        "type": "int"
+      }
+    }
+  },
   "networkErrorNoConnection": "No internet connection. {operation} will be saved locally and synced when you're back online.",
-  "@networkErrorNoConnection": { "placeholders": { "operation": {"type": "String"} } },
+  "@networkErrorNoConnection": {
+    "placeholders": {
+      "operation": {
+        "type": "String"
+      }
+    }
+  },
   "networkErrorNoConnectionShort": "No internet connection for {operation}.",
-  "@networkErrorNoConnectionShort": { "placeholders": { "operation": {"type": "String"} } },
+  "@networkErrorNoConnectionShort": {
+    "placeholders": {
+      "operation": {
+        "type": "String"
+      }
+    }
+  },
   "networkErrorMobileData": "Using mobile data for {operation}. This may take longer or affect your data usage.",
-  "@networkErrorMobileData": { "placeholders": { "operation": {"type": "String"} } },
+  "@networkErrorMobileData": {
+    "placeholders": {
+      "operation": {
+        "type": "String"
+      }
+    }
+  },
   "networkErrorMobileShort": "Mobile connection for {operation}.",
-  "@networkErrorMobileShort": { "placeholders": { "operation": {"type": "String"} } },
+  "@networkErrorMobileShort": {
+    "placeholders": {
+      "operation": {
+        "type": "String"
+      }
+    }
+  },
   "networkErrorLimited": "Limited connection detected. {operation} may take longer or be saved locally.",
-  "@networkErrorLimited": { "placeholders": { "operation": {"type": "String"} } },
+  "@networkErrorLimited": {
+    "placeholders": {
+      "operation": {
+        "type": "String"
+      }
+    }
+  },
   "networkErrorLimitedShort": "Limited connection for {operation}.",
-  "@networkErrorLimitedShort": { "placeholders": { "operation": {"type": "String"} } },
+  "@networkErrorLimitedShort": {
+    "placeholders": {
+      "operation": {
+        "type": "String"
+      }
+    }
+  },
   "networkErrorDefault": "Network error during {operation}. Check your connection and try again.",
-  "@networkErrorDefault": { "placeholders": { "operation": {"type": "String"} } },
+  "@networkErrorDefault": {
+    "placeholders": {
+      "operation": {
+        "type": "String"
+      }
+    }
+  },
   "permissionErrorAction": "You cannot {action} this {resource}",
-  "@permissionErrorAction": { "placeholders": { "action": {"type": "String"}, "resource": {"type": "String"} } },
+  "@permissionErrorAction": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      },
+      "resource": {
+        "type": "String"
+      }
+    }
+  },
   "permissionErrorBecause": "because {reason}",
-  "@permissionErrorBecause": { "placeholders": { "reason": {"type": "String"} } },
+  "@permissionErrorBecause": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "permissionErrorSuggestion": "Suggestion: {suggestion}",
-  "@permissionErrorSuggestion": { "placeholders": { "suggestion": {"type": "String"} } },
+  "@permissionErrorSuggestion": {
+    "placeholders": {
+      "suggestion": {
+        "type": "String"
+      }
+    }
+  },
   "errorDuringAction": "Problem while {action}: {issue}",
-  "@errorDuringAction": { "placeholders": { "action": {"type": "String"}, "issue": {"type": "String"} } },
+  "@errorDuringAction": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      },
+      "issue": {
+        "type": "String"
+      }
+    }
+  },
   "errorDuringActionRecovery": "Problem while {action}: {issue}\n\nSuggestion: {recovery}",
-  "@errorDuringActionRecovery": { "placeholders": { "action": {"type": "String"}, "issue": {"type": "String"}, "recovery": {"type": "String"} } },
+  "@errorDuringActionRecovery": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      },
+      "issue": {
+        "type": "String"
+      },
+      "recovery": {
+        "type": "String"
+      }
+    }
+  },
   "formatPortionSingle": "1 portion",
   "formatPortionPlural": "{count} portions",
-  "@formatPortionPlural": { "placeholders": { "count": {"type": "int"} } },
-  "errorWithContext": "Error during {action}: {error}",
-  "@errorWithContext": { "placeholders": { "action": {"type": "String"}, "error": {"type": "String"} } },
-
+  "@formatPortionPlural": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "validationFailedWith": "Validation failed: {error}",
-  "@validationFailedWith": { "placeholders": { "error": {"type": "String"} } },
+  "@validationFailedWith": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "snackbarNoInternet": "No internet connection. Check your connection.",
   "errorInvalidYoutubeUrl": "Invalid YouTube URL",
   "errorInvalidInstructionIndex": "Invalid instruction indices",
   "errorInvalidIngredientIndex": "Invalid ingredient indices",
   "errorInvalidCategoryNamesFromTo": "Invalid category names: {fromCategory} -> {toCategory}",
-  "@errorInvalidCategoryNamesFromTo": { "placeholders": { "fromCategory": {"type": "String"}, "toCategory": {"type": "String"} } },
+  "@errorInvalidCategoryNamesFromTo": {
+    "placeholders": {
+      "fromCategory": {
+        "type": "String"
+      },
+      "toCategory": {
+        "type": "String"
+      }
+    }
+  },
   "unknownUser": "Unknown user",
   "validationTitleMissing": "Title is missing",
   "validationIngredientsMissing": "Ingredients are missing",
   "validationInstructionsMissing": "Instructions are missing",
   "validationMealTypeMissing": "Meal type is missing",
   "unknownActivity": "Unknown activity",
-
   "shareMinutesAbbrev": "min",
   "sharePortionsAbbrev": "serv",
   "shareTimeLabel": "Time:",
@@ -7168,14 +7467,21 @@
   "shareTypeLabelBold": "**Type:**",
   "shareTagsLabel": "Tags",
   "shareInstructionsLabelCompact": "Instructions:",
-  "shareShoppingListTitle": "🛒 SHOPPING LIST",
   "shareShoppingListTitleSimple": "Shopping list",
   "shareWeekMenuTitle": "Week menu",
   "shareWeekMenuTitleEmoji": "🍽 WEEK MENU",
   "shareSummaryLabel": "📊 Summary:",
   "shareSummaryRecipesInCategories": "{recipeCount} recipes in {categoryCount} categories",
-  "@shareSummaryRecipesInCategories": { "placeholders": { "recipeCount": {"type": "int"}, "categoryCount": {"type": "int"} } },
-
+  "@shareSummaryRecipesInCategories": {
+    "placeholders": {
+      "recipeCount": {
+        "type": "int"
+      },
+      "categoryCount": {
+        "type": "int"
+      }
+    }
+  },
   "unsavedChangesTitle": "Unsaved changes",
   "unsavedChangesMessage": "You have unsaved changes. Do you really want to cancel?",
   "cancelWithoutSaving": "Cancel without saving",
@@ -7183,24 +7489,61 @@
   "deleteConfirmMessage": "Do you really want to delete",
   "groupLeaveTitle": "Leave group?",
   "groupLeaveMessage": "Do you really want to leave the group \"{name}\"?",
-  "@groupLeaveMessage": { "placeholders": { "name": {"type": "String"} } },
+  "@groupLeaveMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "groupLeaveAction": "Leave group",
   "shareItemTitle": "Share {type}?",
-  "@shareItemTitle": { "placeholders": { "type": {"type": "String"} } },
+  "@shareItemTitle": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
   "shareItemMessage": "Do you want to share {type} with {recipients}?",
-  "@shareItemMessage": { "placeholders": { "type": {"type": "String"}, "recipients": {"type": "String"} } },
+  "@shareItemMessage": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "recipients": {
+        "type": "String"
+      }
+    }
+  },
   "shareRecipientsMore": "and {count} more",
-  "@shareRecipientsMore": { "placeholders": { "count": {"type": "int"} } },
+  "@shareRecipientsMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "recipeDeleteWarning": "The recipe will be permanently deleted.",
-  "groupDeleteWarning": "All members will leave the group.",
   "shoppingListDeleteWarning": "All items on the list will be removed.",
   "itemDeletedSuccess": "{type} has been deleted",
-  "@itemDeletedSuccess": { "placeholders": { "type": {"type": "String"} } },
+  "@itemDeletedSuccess": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
   "itemDeleteError": "Could not delete {type}",
-  "@itemDeleteError": { "placeholders": { "type": {"type": "String"} } },
+  "@itemDeleteError": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
   "commentDeleteError": "Could not delete the comment",
   "reactionUpdateError": "Could not update reaction",
-
   "activityRecipeCreated": "👨‍🍳 Recipe created",
   "activityMenuCreated": "📋 Menu created",
   "activityShoppingListCreated": "🛒 Shopping list created",
@@ -7216,46 +7559,77 @@
   "activityAchievementUnlocked": "🏆 Achievement",
   "activityMilestoneReached": "🎯 Milestone",
   "activityUnknown": "❓ Unknown activity",
-
   "pollVoteSingular": "vote",
   "pollVotePlural": "votes",
   "pollClosed": "Closed",
   "pollCloseAction": "Close poll",
-  "pollCreate": "Create poll",
-
   "chatGroupChatDefault": "Group chat",
   "chatGroupCreatedMessage": "{name} created the group \"{title}\"",
-  "@chatGroupCreatedMessage": { "placeholders": { "name": {"type": "String"}, "title": {"type": "String"} } },
+  "@chatGroupCreatedMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "chatParticipantAdded": "{name} was added to the group",
-  "@chatParticipantAdded": { "placeholders": { "name": {"type": "String"} } },
+  "@chatParticipantAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "chatParticipantLeft": "{name} left the group",
-  "@chatParticipantLeft": { "placeholders": { "name": {"type": "String"} } },
+  "@chatParticipantLeft": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "authRequiredError": "You must be logged in",
   "shoppingListEditPermissionDenied": "You do not have permission to edit this shared shopping list",
   "tagShareError": "Could not share the tag",
-
-  "userStatusOnline": "Online",
   "userStatusOffline": "Offline",
   "userStatusAway": "Away",
   "userStatusBusy": "Busy",
-
   "participantsCount": "Participants ({count})",
-  "@participantsCount": { "placeholders": { "count": {"type": "int"} } },
+  "@participantsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "participantsOnlineCount": "{count} online",
-  "@participantsOnlineCount": { "placeholders": { "count": {"type": "int"} } },
-
+  "@participantsOnlineCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "socialPermissionOwnerLabel": "Owner",
   "socialPermissionAdminLabel": "Admin",
   "socialPermissionEditorLabel": "Edit",
   "socialPermissionViewerLabel": "View",
-
   "restoreDraft": "Restore",
   "startFresh": "Start fresh",
   "couldNotRestoreDraft": "Could not restore draft. Starting with an empty form.",
   "restoringDraft": "Restoring draft...",
   "unnamedRecipe": "Unnamed recipe",
   "fieldsFilledCount": "{count} fields filled",
-  "@fieldsFilledCount": { "placeholders": { "count": {"type": "int"} } },
+  "@fieldsFilledCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "showTechnicalDetails": "Show technical details",
   "hideTechnicalDetails": "Hide technical details",
   "contactSupport": "Contact support",
@@ -7276,39 +7650,45 @@
   "addRecipe": "Add recipe",
   "editRecipe": "Edit recipe",
   "deleteRecipeAction": "Delete recipe",
-
   "searchPlaceholder": "Search...",
   "namePlaceholder": "Enter name",
   "descriptionPlaceholder": "Enter description (optional)",
   "emailPlaceholder": "your@email.com",
   "urlPlaceholder": "https://example.com",
   "phonePlaceholder": "+1 555 123 4567",
-
-  "accessibilityMenuButton": "Menu button",
-  "accessibilityBackButton": "Back",
-  "accessibilityCloseButton": "Close",
-  "accessibilityMoreOptions": "More options",
-  "accessibilityExpandButton": "Expand",
-  "accessibilityCollapseButton": "Collapse",
-
   "makePersonalCopy": "Create personal copy",
   "checkConnection": "Check internet connection",
   "loginAgain": "Log in again",
   "contactOwner": "Contact the owner",
   "waitAndRetry": "Wait and try again",
   "checkPermissions": "Check permissions",
-
   "ingredientParseError": "Could not parse ingredient",
   "portionsUnit": "portions",
   "sharedRecipeFallback": "Shared recipe • {count} members",
-  "@sharedRecipeFallback": { "placeholders": { "count": {"type": "int"} } },
+  "@sharedRecipeFallback": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "sharedMenuFallback": "Shared menu • {count} members",
-  "@sharedMenuFallback": { "placeholders": { "count": {"type": "int"} } },
+  "@sharedMenuFallback": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "sharedFallback": "Shared",
-
   "deleteItemType": "Delete {itemType}?",
-  "@deleteItemType": { "placeholders": { "itemType": {"type": "String"} } },
-
+  "@deleteItemType": {
+    "placeholders": {
+      "itemType": {
+        "type": "String"
+      }
+    }
+  },
   "accountSecurityTitle": "Account Security",
   "accountSecurityChangePassword": "Change Password",
   "accountSecurityChangeEmail": "Change Email",
@@ -7322,23 +7702,590 @@
   "accountSecurityPasswordMismatch": "Passwords do not match",
   "profileAccountSecurity": "Account Security",
   "profileAccountSecuritySubtitle": "Password, email, and two-factor authentication",
-
   "bulkSelectedCount": "{count} selected",
-  "@bulkSelectedCount": { "placeholders": { "count": {"type": "int"} } },
+  "@bulkSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "bulkSelectAll": "Select All",
   "bulkDelete": "Delete Selected",
   "bulkShare": "Share Selected",
   "viewModeGrid": "Grid View",
   "viewModeList": "List View",
-
   "duplicateImportTitle": "Recipe may already exist",
   "duplicateImportMessage": "A recipe with the same source already exists: {recipeName}",
-  "@duplicateImportMessage": { "placeholders": { "recipeName": {"type": "String"} } },
+  "@duplicateImportMessage": {
+    "placeholders": {
+      "recipeName": {
+        "type": "String"
+      }
+    }
+  },
   "duplicateImportViewExisting": "View Existing",
   "duplicateImportAnyway": "Import Anyway",
   "imageCropTitle": "Crop image",
   "bulkDeleteConfirmMessage": "The selected recipes will be removed.",
   "bulkDeleteSuccess": "{count} recipes deleted",
-  "@bulkDeleteSuccess": { "placeholders": { "count": {"type": "int"} } },
-  "errorDeleteFailed": "Could not delete recipe. It has been restored."
+  "@bulkDeleteSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "errorDeleteFailed": "Could not delete recipe. It has been restored.",
+  "errorUserNotLoggedIn": "User not logged in",
+  "errorResourceNotFound": "Resource not found",
+  "errorNoDeletePermission": "No permission to delete resource",
+  "errorCannotRemoveResourceOwner": "Cannot remove the owner from the resource",
+  "validationRecipeTitleCannotBeEmpty": "Recipe title cannot be empty",
+  "validationCookingTimeCannotBeNegative": "Cooking time cannot be negative",
+  "validationIngredientCannotBeEmpty": "Ingredient cannot be empty",
+  "validationInstructionCannotBeEmpty": "Instruction cannot be empty",
+  "validationAtLeastOneIngredient": "At least one ingredient is required",
+  "validationAtLeastOneInstruction": "At least one instruction is required",
+  "validationImageUrlCannotBeEmpty": "Image URL cannot be empty",
+  "validationInvalidImageUrlFormat": "Invalid image URL format",
+  "validationMaxImagesReached": "Maximum 5 images allowed",
+  "validationRecipeTitleMissing": "Recipe title is missing",
+  "validationRecipeNoIngredients": "Recipe has no ingredients",
+  "validationRecipeNoInstructions": "Recipe has no instructions",
+  "validationRecipeDescriptionEmpty": "Recipe description is missing",
+  "validationUserIdCannotBeEmpty": "User ID cannot be empty",
+  "validationUsernameCannotBeEmpty": "Username cannot be empty",
+  "validationUserAlreadyParticipant": "User is already a participant: {name}",
+  "@validationUserAlreadyParticipant": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "validationMaxParticipantsReached": "Maximum participant limit reached (50)",
+  "validationCannotRemoveRecipeOwner": "Cannot remove the recipe owner",
+  "validationCannotRemoveMenuOwner": "Cannot remove the menu owner",
+  "validationUserNotParticipant": "User is not a participant: {id}",
+  "@validationUserNotParticipant": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "validationCannotChangeOwnerPermission": "Cannot change owner permission",
+  "validationCannotAssignOwnerPermission": "Cannot assign owner permission to another user",
+  "validationRecipeMissingOwner": "Recipe is missing an owner",
+  "validationRecipeOwnerMissingName": "Recipe owner is missing a display name",
+  "validationParticipantEmptyUserId": "Participant has an empty user ID",
+  "validationTagNameRequired": "Tag name is required",
+  "validationTagNameTooLong": "Tag name too long (max 50 characters)",
+  "validationTagNameNoCommas": "Tag name cannot contain commas",
+  "validationTagNameReserved": "This name is reserved for system tags",
+  "validationGroupNameRequired": "Group name is required",
+  "validationGroupNameTooLong": "Group name too long (max 50 characters)",
+  "validationRuleMustBeLinked": "Rule must be linked to a tag",
+  "validationRuleNameRequired": "Rule name is required",
+  "validationRuleMustHaveCondition": "Rule must have at least one condition",
+  "validationAllConditionsMustHaveValue": "All conditions must have a value",
+  "validationImageDoesNotExist": "Image does not exist",
+  "validationCouldNotReadImageSize": "Could not read image size",
+  "validationImageTooLargeWithSize": "Image is too large (max {size} MB)",
+  "@validationImageTooLargeWithSize": {
+    "placeholders": {
+      "size": {
+        "type": "int"
+      }
+    }
+  },
+  "validationCouldNotValidateImage": "Could not validate image",
+  "difficultyVeryEasy": "Very easy",
+  "difficultyEasy": "Easy",
+  "difficultyMedium": "Medium",
+  "difficultyHard": "Hard",
+  "difficultyVeryHard": "Very hard",
+  "difficultyUnknown": "Unknown",
+  "contentSummaryIngredients": "{count} ingredients",
+  "@contentSummaryIngredients": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "contentSummarySteps": "{count} steps",
+  "@contentSummarySteps": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "contentSummaryMinutes": "{count} minutes",
+  "@contentSummaryMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "contentSummaryPortions": "{count} servings",
+  "@contentSummaryPortions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "collaborationPrivateRecipe": "Private recipe",
+  "collaborationCollaborativeEditorsViewers": "Collaborative ({editors} editors, {viewers} viewers)",
+  "@collaborationCollaborativeEditorsViewers": {
+    "placeholders": {
+      "editors": {
+        "type": "int"
+      },
+      "viewers": {
+        "type": "int"
+      }
+    }
+  },
+  "collaborationCollaborativeEditors": "Collaborative ({editors} editors)",
+  "@collaborationCollaborativeEditors": {
+    "placeholders": {
+      "editors": {
+        "type": "int"
+      }
+    }
+  },
+  "collaborationSharedViewers": "Shared ({viewers} viewers)",
+  "@collaborationSharedViewers": {
+    "placeholders": {
+      "viewers": {
+        "type": "int"
+      }
+    }
+  },
+  "collaborationSharedRecipe": "Shared recipe",
+  "participantOwnerOnly": "Owner only: {name}",
+  "@participantOwnerOnly": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "participantSummary": "Owner: {owner}, Participants: {count}",
+  "@participantSummary": {
+    "placeholders": {
+      "owner": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityMinutesAgo": "{count} min ago",
+  "@activityMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityHoursAgo": "{count} hours ago",
+  "@activityHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityDaysAgo": "{count} days ago",
+  "@activityDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityWeeksAgo": "{count} weeks ago",
+  "@activityWeeksAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "resourceCreatedBy": "Created by {name}",
+  "@resourceCreatedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "resourceLastEditedBy": "Last edited by {name} {timeAgo}",
+  "@resourceLastEditedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "timeAgo": {
+        "type": "String"
+      }
+    }
+  },
+  "syncParsingNotImplemented": "RealtimeShoppingList parsing not implemented yet",
+  "backupNoRecipesToExport": "No recipes to export",
+  "backupPlatformNotSupported": "Platform not supported",
+  "backupSavedAndroid": "Backup saved in Android/data/.../Butlery",
+  "backupSavedIos": "Backup saved in the Files app",
+  "backupCouldNotFindStorageDir": "Could not find storage directory",
+  "backupCouldNotSaveFile": "Could not save file: {error}",
+  "@backupCouldNotSaveFile": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "backupCouldNotReadFile": "Could not read the file",
+  "backupInvalidFile": "Invalid backup file - not from Butlery",
+  "backupUnknownRecipe": "Unknown recipe",
+  "backupImportedFromBackup": "Imported from backup {date}",
+  "@backupImportedFromBackup": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "backupExportFailed": "Export failed: {error}",
+  "@backupExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "backupImportFailed": "Import failed: {error}",
+  "@backupImportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "syncAlreadyInProgress": "Sync already in progress",
+  "syncMustBeOnline": "You must be online to sync",
+  "syncNoUserLoggedIn": "No user logged in",
+  "syncNoPendingChanges": "No pending changes",
+  "syncAllSynced": "All {count} changes synced!",
+  "@syncAllSynced": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncPartialSuccess": "{synced} of {total} synced, {remaining} remaining",
+  "@syncPartialSuccess": {
+    "placeholders": {
+      "synced": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "remaining": {
+        "type": "int"
+      }
+    }
+  },
+  "syncFailedRetryLater": "Sync failed, will retry later",
+  "instagramCouldNotFindRecipe": "Could not find a recipe in the post. Take a screenshot of the recipe.",
+  "uploadNotificationComplete": "Upload complete",
+  "uploadNotificationCompleteBody": "The image has been uploaded successfully",
+  "uploadNotificationFailed": "Upload failed",
+  "uploadNotificationFailedBody": "Could not upload the image after multiple attempts",
+  "uploadStatusPreparing": "Preparing upload...",
+  "uploadStatusRetrying": "Retrying ({attempt}/{max})...",
+  "@uploadStatusRetrying": {
+    "placeholders": {
+      "attempt": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "uploadStatusComplete": "Upload complete",
+  "uploadStatusCancelled": "Upload cancelled",
+  "uploadFailureNetwork": "Network error - check your connection",
+  "uploadFailureValidation": "Image could not be validated",
+  "uploadFailureServer": "Server error - try again",
+  "uploadFailureCancelled": "Upload cancelled",
+  "uploadFailureGeneric": "Upload failed",
+  "uploadRetryCheckInternet": "Check your internet connection and tap to retry",
+  "uploadRetryCheckImage": "Make sure the image is valid and not too large",
+  "uploadRetryTryLater": "Try again in a moment",
+  "uploadRetryTapToRetry": "Tap to retry",
+  "llmUnexpectedError": "An unexpected error occurred: {error}",
+  "@llmUnexpectedError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "llmUnknownRecipe": "Unknown recipe",
+  "llmMustBeLoggedIn": "You must be logged in to use AI features.",
+  "llmServiceOverloaded": "The AI service is temporarily overloaded. Try again in a moment.",
+  "llmInvalidArgument": "Invalid argument: {error}",
+  "@llmInvalidArgument": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "llmGenericError": "An error occurred: {error}",
+  "@llmGenericError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "tiktokCouldNotFetchDescription": "Could not fetch the video description. Take a screenshot of the recipe.",
+  "tiktokAiQuotaExhausted": "AI quota exhausted. Mark recipe parts manually.",
+  "tiktokCouldNotExtractRecipe": "Could not extract the recipe automatically. Mark recipe parts manually.",
+  "tiktokNoRecipeInDescription": "The video description does not contain a recipe. Take a screenshot of the recipe.",
+  "rateLimitTooFast": "You are importing too fast. Wait {seconds} seconds.",
+  "@rateLimitTooFast": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "rateLimitHourly": "You have reached the hourly limit. Try again in {minutes} minutes.",
+  "@rateLimitHourly": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "rateLimitDaily": "You have reached the daily import limit. Try again tomorrow.",
+  "rateLimitAiDaily": "The AI quota for today is exhausted. Try again tomorrow.",
+  "rateLimitAiMonthly": "The AI quota for the month is exhausted.",
+  "rateLimitBudgetDaily": "Today's AI budget has been used up. Try again tomorrow.",
+  "rateLimitBudgetMonthly": "This month's AI budget has been used up.",
+  "importErrorUnexpected": "An unexpected error occurred",
+  "importErrorNoInternet": "No internet connection",
+  "importErrorTooManyImports": "Too many imports in a short time. Wait a moment.",
+  "importErrorAiQuotaExhausted": "AI quota exhausted for today",
+  "importErrorInvalidUrl": "Invalid URL",
+  "importErrorCouldNotReachPage": "Could not reach the page",
+  "importErrorLoginRequired": "The page requires login",
+  "importErrorNoRecipeFound": "No recipe found",
+  "importErrorCouldNotReadImage": "Could not read the text in the image",
+  "importErrorCouldNotParseRecipe": "Could not parse the recipe",
+  "importErrorCouldNotSaveRecipe": "Could not save the recipe",
+  "importErrorCancelled": "Import was cancelled",
+  "messagingPoll": "Poll",
+  "shoppingListAllBought": "All {count} items bought",
+  "@shoppingListAllBought": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingListNoActivity": "No activity",
+  "shoppingListActivityNow": "now",
+  "shoppingListActivityMinAgo": "{count} min ago",
+  "@shoppingListActivityMinAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingListActivityHoursAgo": "{count} hours ago",
+  "@shoppingListActivityHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingListActivityDaysAgo": "{count} days ago",
+  "@shoppingListActivityDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingListLastActivityBy": "Last activity by {name} {time}",
+  "@shoppingListLastActivityBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "unknownResourceType": "Unknown RealtimeResourceType: {value}",
+  "@unknownResourceType": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationTitleDailySummary": "Daily summary",
+  "notificationBodyNoActivityToday": "No new activity today",
+  "notificationBodyNoActivityToReport": "No activity to report",
+  "notificationBodyProblemLoadingActivities": "Problem loading activities",
+  "notificationBodyCouldNotCreateSummary": "Could not create summary",
+  "notificationActionViewRecipes": "View recipes",
+  "notificationActionViewFriends": "View friends",
+  "notificationActionOpenApp": "Open app",
+  "notificationDigestRecipes": "{count} recipes",
+  "@notificationDigestRecipes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationDigestFriendActivities": "{count} friend activities",
+  "@notificationDigestFriendActivities": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationDigestShoppingLists": "{count} shopping lists",
+  "@notificationDigestShoppingLists": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationDigestCollaborations": "{count} collaborations",
+  "@notificationDigestCollaborations": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "conditionTypeIngredient": "Ingredient",
+  "conditionTypeProperty": "Property",
+  "conditionTypeKeyword": "Keyword",
+  "conditionTypeSource": "Source",
+  "conditionTypeCuisine": "Cuisine",
+  "conditionTypeDiet": "Diet",
+  "conditionTypeTime": "Time",
+  "conditionTypeRating": "Rating",
+  "conditionTypeRecent": "Recent",
+  "conditionTypeOwnership": "Ownership",
+  "conditionTypeHasImage": "Has image",
+  "conditionTypeCompleteness": "Completeness",
+  "operatorContains": "contains",
+  "operatorExact": "is exactly",
+  "operatorStartsWith": "starts with",
+  "operatorNotContains": "does not contain",
+  "operatorNotExact": "is not",
+  "operatorHas": "has",
+  "operatorNotHas": "does not have",
+  "operatorLessThan": "less than",
+  "operatorAtMost": "at most",
+  "operatorGreaterThan": "more than",
+  "operatorAtLeast": "at least",
+  "operatorWithinDays": "within days",
+  "notificationBatchBodyRecipes": "{count} new events on your recipes",
+  "@notificationBatchBodyRecipes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationBatchBodyFriends": "{count} new activities from your friends",
+  "@notificationBatchBodyFriends": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationBatchBodyShopping": "{count} updates to your shopping lists",
+  "@notificationBatchBodyShopping": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationBatchBodyCollaboration": "{count} new collaboration activities",
+  "@notificationBatchBodyCollaboration": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationBatchBodyDefault": "{count} new events in Butlery",
+  "@notificationBatchBodyDefault": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationDigestBody": "You have {totalCount} new activities: {summary}",
+  "@notificationDigestBody": {
+    "placeholders": {
+      "totalCount": {
+        "type": "int"
+      },
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
+  "@validationInvalidIngredientIndex": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "@validationInvalidInstructionIndex": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "@validationInvalidImageIndex": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  }
 }

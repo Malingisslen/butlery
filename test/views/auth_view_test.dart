@@ -775,7 +775,7 @@ void main() {
 
         // Assert: Password reset dialog appears with Swedish content
         expect(find.byType(AlertDialog), findsOneWidget);
-        // Note: Actual text depends on AppStrings.resetPassword constants
+        // Note: Actual text depends on l10n authResetPassword strings
         expect(find.text('Email'), findsOneWidget); // Email field in dialog
         expect(find.text('din.email@exempel.se'), findsOneWidget); // Hint text
 
