@@ -7891,5 +7891,10 @@
   "bulkDeleteConfirmMessage": "De valda recepten kommer att tas bort.",
   "bulkDeleteSuccess": "{count} recept borttagna",
   "@bulkDeleteSuccess": { "placeholders": { "count": {"type": "int"} } },
-  "errorDeleteFailed": "Kunde inte ta bort receptet. Det har återställts."
+  "errorDeleteFailed": "Kunde inte ta bort receptet. Det har återställts.",
+  "profileFaq": "Vanliga frågor",
+  "profileFaqSubtitle": "Hjälp och svar på vanliga frågor",
+  "sharedWithYou": "Delade med dig",
+  "importTag": "Importera",
+  "tagImportedSuccess": "Taggen importerades"
 }

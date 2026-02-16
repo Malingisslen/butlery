@@ -33,6 +33,8 @@ import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
 import 'package:butlery/core/observers/snackbar_route_observer.dart';
 import 'package:butlery/core/observers/performance_navigator_observer.dart';
 import 'package:butlery/core/observers/session_activity_observer.dart';
+import 'package:butlery/core/observers/interaction_route_observer.dart';
+import 'package:butlery/services/feedback/interaction_logger.dart';
 
 // Session timeout
 import 'package:butlery/services/session_timeout_service.dart';
@@ -590,6 +592,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     final observers = <NavigatorObserver>[
       _performanceObserver, // Track screen performance with Firebase Performance
       _snackbarObserver,
+      InteractionRouteObserver(ServiceLocator.get<InteractionLogger>()),
       if (_sessionActivityObserver != null) _sessionActivityObserver!,
       if (_analyticsObserver != null) _analyticsObserver!,
     ];

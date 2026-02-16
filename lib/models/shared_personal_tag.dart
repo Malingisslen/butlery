@@ -19,6 +19,7 @@ class SharedPersonalTag {
   final DateTime sharedAt;
   final List<String> matchingRecipeIds;
   final List<Map<String, dynamic>> tagRules;
+  final List<String> recipientUserIds;
 
   const SharedPersonalTag({
     required this.id,
@@ -29,6 +30,7 @@ class SharedPersonalTag {
     required this.sharedAt,
     this.matchingRecipeIds = const [],
     this.tagRules = const [],
+    this.recipientUserIds = const [],
   });
 
   /// Creates a new shared tag with generated ID.
@@ -39,6 +41,7 @@ class SharedPersonalTag {
     required String sharedByDisplayName,
     List<String> matchingRecipeIds = const [],
     List<Map<String, dynamic>> tagRules = const [],
+    List<String> recipientUserIds = const [],
   }) {
     return SharedPersonalTag(
       id: const Uuid().v4(),
@@ -49,6 +52,7 @@ class SharedPersonalTag {
       sharedAt: DateTime.now(),
       matchingRecipeIds: matchingRecipeIds,
       tagRules: tagRules,
+      recipientUserIds: recipientUserIds,
     );
   }
 
@@ -80,6 +84,10 @@ class SharedPersonalTag {
         'matchingRecipeIds',
       ),
       tagRules: _parseRules(data['tagRules']),
+      recipientUserIds: SerializationUtils.safeStringList(
+        data,
+        'recipientUserIds',
+      ),
     );
   }
 
@@ -98,6 +106,7 @@ class SharedPersonalTag {
       'sharedAt': Timestamp.fromDate(sharedAt),
       'matchingRecipeIds': matchingRecipeIds,
       if (tagRules.isNotEmpty) 'tagRules': tagRules,
+      if (recipientUserIds.isNotEmpty) 'recipientUserIds': recipientUserIds,
     };
   }
 

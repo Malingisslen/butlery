@@ -12069,4 +12069,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorDeleteFailed =>
       'Could not delete recipe. It has been restored.';
+
+  @override
+  String get profileFaq => 'FAQ';
+
+  @override
+  String get profileFaqSubtitle => 'Help and answers to common questions';
+
+  @override
+  String get sharedWithYou => 'Shared with you';
+
+  @override
+  String get importTag => 'Import';
+
+  @override
+  String get tagImportedSuccess => 'Tag imported successfully';
 }

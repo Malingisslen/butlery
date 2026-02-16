@@ -15,9 +15,12 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
+import 'package:butlery/models/shared_personal_tag.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_personal_tag_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
+import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
@@ -26,6 +29,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/views/tag_detail_view.dart';
@@ -63,17 +67,55 @@ class _PersonalTagsViewContent extends StatefulWidget {
 
 class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   TagSortOrder _sortOrder = TagSortOrder.byUsage;
+  List<SharedPersonalTag> _pendingSharedTags = [];
 
   @override
   void initState() {
     super.initState();
-    // Load statistics after initial build
+    // Load statistics and pending shared tags after initial build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = context.read<PersonalTagViewModel>();
       if (viewModel.hasTags && !viewModel.isLoadingStats) {
         viewModel.loadTagStatistics();
       }
+      _loadPendingSharedTags();
     });
+  }
+
+  Future<void> _loadPendingSharedTags() async {
+    final authService = ServiceLocator.get<AuthService>();
+    final userId = authService.currentUser?.uid;
+    if (userId == null) return;
+
+    try {
+      final repo = ServiceLocator.get<FirebaseSharedPersonalTagRepository>();
+      final tags = await repo.getPendingForUser(userId);
+      if (mounted) {
+        setState(() => _pendingSharedTags = tags);
+      }
+    } catch (e) {
+      AppLogger.warning('Failed to load pending shared tags: $e');
+    }
+  }
+
+  Future<void> _importSharedTag(
+      BuildContext context, SharedPersonalTag sharedTag) async {
+    try {
+      final personalTagService = ServiceLocator.get<PersonalTagService>();
+      final result = await personalTagService.importSharedTag(sharedTag.id);
+      if (result != null && context.mounted) {
+        SnackBarUtils.showSuccess(context, context.l10n.tagImportedSuccess);
+        // Remove from pending list and refresh
+        setState(() {
+          _pendingSharedTags.removeWhere((t) => t.id == sharedTag.id);
+        });
+        context.read<PersonalTagViewModel>().initialize();
+      }
+    } catch (e) {
+      if (context.mounted) {
+        SnackBarUtils.showError(context, context.l10n.commonErrorOccurred);
+      }
+    }
   }
 
   List<PersonalTag> _sortTags(List<PersonalTag> tags, PersonalTagViewModel vm) {
@@ -221,11 +263,16 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                 onRefresh: () async {
                   await viewModel.initialize();
                   await viewModel.loadTagStatistics();
+                  await _loadPendingSharedTags();
                 },
                 child: ListView(
                   padding: const EdgeInsets.symmetric(
                       vertical: AppDimensions.spacingMd),
                   children: [
+                    // Pending shared tags section
+                    if (_pendingSharedTags.isNotEmpty)
+                      _buildSharedTagsSection(context),
+
                     // Ungrouped tags section
                     if (ungroupedTags.isNotEmpty) ...[
                       _buildTagSection(
@@ -251,6 +298,56 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildSharedTagsSection(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingLg,
+            vertical: AppDimensions.spacingSm,
+          ),
+          child: Text(
+            context.l10n.sharedWithYou,
+            style: AppTextStyles.labelLarge.copyWith(
+              color: colorScheme.primary,
+            ),
+          ),
+        ),
+        for (final shared in _pendingSharedTags)
+          Card(
+            margin: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingLg,
+              vertical: AppDimensions.spacingXs,
+            ),
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: colorScheme.primary
+                    .withValues(alpha: AppDimensions.opacityLight),
+                child: Icon(Icons.label,
+                    color: colorScheme.primary, size: AppDimensions.iconSizeM),
+              ),
+              title: Text(shared.tagName),
+              subtitle: Text(
+                context.l10n.sharedByName(shared.sharedByDisplayName),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              trailing: FilledButton.tonal(
+                onPressed: () => _importSharedTag(context, shared),
+                child: Text(context.l10n.importTag),
+              ),
+            ),
+          ),
+        const SizedBox(height: AppDimensions.spacingMd),
+        const Divider(),
+      ],
     );
   }
 

@@ -71,6 +71,22 @@ class FirebaseSharedPersonalTagRepository
     return tag.sharedByUserId == userId;
   }
 
+  /// Gets all shared tags where the user is a recipient.
+  Future<List<SharedPersonalTag>> getPendingForUser(String userId) async {
+    try {
+      final snapshot = await getCollectionRef()
+          .where('recipientUserIds', arrayContains: userId)
+          .orderBy('sharedAt', descending: true)
+          .get();
+
+      return snapshot.docs.map(fromFirestore).toList();
+    } catch (e, stackTrace) {
+      AppLogger.error(
+          'Failed to get pending shared tags for user $userId: $e', stackTrace);
+      return [];
+    }
+  }
+
   /// Gets all shared tags created by a specific user.
   Future<List<SharedPersonalTag>> getSharedTagsByUser(String userId) async {
     try {

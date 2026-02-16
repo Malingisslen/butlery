@@ -425,8 +425,8 @@ class _ProfileMenuState extends State<ProfileMenu> {
           ),
           ProfileActions.buildMenuItem(
             context,
-            title: 'Vanliga fragor',
-            subtitle: 'Hjalp och svar pa vanliga fragor',
+            title: context.l10n.profileFaq,
+            subtitle: context.l10n.profileFaqSubtitle,
             icon: Icons.help_outline,
             onTap: () => Navigator.pushNamed(context, Routes.faq),
           ),

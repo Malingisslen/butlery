@@ -235,6 +235,19 @@ class NotificationStrategy {
       'body_en': '{enablerName} enabled collaboration for "{recipeTitle}"',
     },
   );
+
+  /// Tag shared - immediate notification when someone shares a personal tag
+  static const tagShared = NotificationStrategy(
+    type: NotificationType.immediate,
+    priority: NotificationPriority.high,
+    category: NotificationCategory.recipes,
+    localization: {
+      'title_sv': 'Tagg delad med dig',
+      'title_en': 'Tag shared with you',
+      'body_sv': '{senderName} delade taggen "{tagName}" med dig',
+      'body_en': '{senderName} shared the tag "{tagName}" with you',
+    },
+  );
 }
 
 /// Template for notification content

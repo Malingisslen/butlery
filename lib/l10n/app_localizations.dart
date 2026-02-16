@@ -20727,6 +20727,36 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte ta bort receptet. Det har återställts.'**
   String get errorDeleteFailed;
+
+  /// No description provided for @profileFaq.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vanliga frågor'**
+  String get profileFaq;
+
+  /// No description provided for @profileFaqSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hjälp och svar på vanliga frågor'**
+  String get profileFaqSubtitle;
+
+  /// No description provided for @sharedWithYou.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delade med dig'**
+  String get sharedWithYou;
+
+  /// No description provided for @importTag.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importera'**
+  String get importTag;
+
+  /// No description provided for @tagImportedSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggen importerades'**
+  String get tagImportedSuccess;
 }
 
 class _AppLocalizationsDelegate

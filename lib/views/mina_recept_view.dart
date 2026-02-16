@@ -135,12 +135,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               '✅ Friends data refreshed for MinaReceptView (delayed)');
         } catch (e) {
           AppLogger.error(
-              '❌ Fel vid delayed friends data refresh i MinaReceptView', e);
+              '❌ Error during delayed friends data refresh in MinaReceptView',
+              e);
         }
       });
     } catch (e) {
       AppLogger.error(
-          '❌ Fel vid setup av delayed friends refresh i MinaReceptView', e);
+          '❌ Error setting up delayed friends refresh in MinaReceptView', e);
     }
   }
 
@@ -148,15 +149,15 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   void _safeLoadRecipeData() {
     try {
       if (mounted) {
-        AppLogger.info('🔄 Laddar receptdata för MinaReceptView...');
+        AppLogger.info('🔄 Loading recipe data for MinaReceptView...');
 
         // RecipeListViewModel loads data automatically from RecipeService
         // No explicit refresh needed here - provider handles this
 
-        AppLogger.success('✅ Receptdata redo för MinaReceptView');
+        AppLogger.success('✅ Recipe data ready for MinaReceptView');
       }
     } catch (e) {
-      AppLogger.error('❌ Fel vid laddning av receptdata i MinaReceptView', e);
+      AppLogger.error('❌ Error loading recipe data in MinaReceptView', e);
     }
   }
 
@@ -167,7 +168,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
-  // Exit-dialog
+  // Exit dialog
   Future<void> _showExitDialog(BuildContext context) async {
     final shouldExit = await showDialog<bool>(
       context: context,
@@ -194,14 +195,14 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
-  // Synkronisera med online
+  // Sync with online
   Future<void> _syncWithOnline() async {
     final offlineService = context.read<offline_service.OfflineService>();
     final viewModel = context.read<RecipeListViewModel>();
 
     if (offlineService.isOnline) {
       try {
-        // Visa loading indicator
+        // Show loading indicator
         if (mounted) {
           SnackBarUtils.showInfo(context, context.l10n.statusSyncing);
         }
@@ -209,10 +210,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         // Sync offline changes
         await offlineService.syncNow();
 
-        // Uppdatera receptlistan
+        // Update recipe list
         await viewModel.refresh();
 
-        // Visa success
+        // Show success
         if (mounted) {
           SnackBarUtils.showSuccess(context, context.l10n.syncComplete);
         }
