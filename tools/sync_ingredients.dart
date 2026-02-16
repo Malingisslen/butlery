@@ -1,7 +1,7 @@
 /// Syncs ingredient data from CSV files to Firebase Firestore.
 ///
 /// Usage:
-///   dart run tool/sync_ingredients.dart [options]
+///   dart run tools/sync_ingredients.dart [options]
 ///
 /// Options:
 ///   --dry-run    Preview changes without applying
