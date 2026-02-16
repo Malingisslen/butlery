@@ -179,6 +179,30 @@ class CollaborativeMenuOperations {
     return _repository.getMenuCommentsStream(menuId);
   }
 
+  /// Delete a menu comment
+  Future<bool> deleteMenuComment({
+    required String menuId,
+    required String commentId,
+  }) async {
+    final result = await _repository.deleteMenuComment(
+      menuId: menuId,
+      commentId: commentId,
+    );
+    if (result) {
+      _menuComments.remove(menuId);
+    }
+    return result;
+  }
+
+  /// Remove current user's rating from a menu
+  Future<bool> removeMenuRating(String menuId) async {
+    final result = await _repository.removeMenuRating(menuId);
+    if (result) {
+      _menuRatings.remove(menuId);
+    }
+    return result;
+  }
+
   /// Like/unlike a comment
   Future<bool> toggleCommentLike({
     required String menuId,

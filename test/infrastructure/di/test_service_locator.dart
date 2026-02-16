@@ -597,11 +597,6 @@ class TestServiceLocator {
     // getIt.registerFactory<TestableUnifiedShoppingViewModel>(
     //   () => TestableViewModelFactory.createShoppingViewModel(),
     // );
-
-    // Discovery Dashboard ViewModels
-    // getIt.registerFactory<TestableDiscoveryDashboardViewModel>(
-    //   () => TestableViewModelFactory.createDiscoveryDashboardViewModel(),
-    // );
   }
 
   /// Configure for collaborative view testing scenarios

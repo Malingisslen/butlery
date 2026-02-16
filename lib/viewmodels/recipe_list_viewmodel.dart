@@ -376,6 +376,15 @@ class RecipeListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Toggle favorite status on a recipe.
+  Future<void> toggleFavorite(String recipeId) async {
+    final recipe = _recipeService.getRecipeById(recipeId);
+    if (recipe == null) return;
+    await _recipeService.toggleFavorite(recipeId, !recipe.isFavorite);
+    _invalidateCache();
+    notifyListeners();
+  }
+
   /// Deletes recipe with service coordination and automatic state management.
   /// [recipeId] Unique identifier for recipe deletion
   /// Performs recipe deletion through UnifiedRecipeService with automatic list updates.

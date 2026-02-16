@@ -204,13 +204,12 @@ class ProviderTestUtils {
     return providers;
   }
 
-  /// Setup providers for social views (DiscoveryDashboardView, FriendsListView).
+  /// Setup providers for social views (FriendsListView).
   /// Temporarily simplified until all ViewModels are properly imported.
   static List<ChangeNotifierProvider> setupSocialProviders({
     bool hasUnreadNotifications = false,
     int friendCount = 0,
     int pendingRequestCount = 0,
-    bool isDiscoveryLoading = false,
   }) {
     // Simplified implementation - will be expanded when ViewModels are available
     return [];

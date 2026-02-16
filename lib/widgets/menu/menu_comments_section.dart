@@ -155,7 +155,21 @@ class _MenuCommentsSectionState extends State<MenuCommentsSection> {
     if (confirmed != true || !mounted) return;
 
     try {
-      _showMessage(context.l10n.menuCommentDeleteFailed, isError: true);
+      final commentId = comment['id'] as String?;
+      if (commentId == null) {
+        _showMessage(context.l10n.menuCommentDeleteFailed, isError: true);
+        return;
+      }
+      final success = await _menuService.collaborative.deleteMenuComment(
+        menuId: widget.menuId,
+        commentId: commentId,
+      );
+      if (!mounted) return;
+      if (success) {
+        _showMessage(context.l10n.menuCommentDeletedSuccess);
+      } else {
+        _showMessage(context.l10n.menuCommentDeleteFailed, isError: true);
+      }
     } catch (e) {
       if (!mounted) return;
       _showMessage(context.l10n.menuCommentDeleteFailed, isError: true);

@@ -533,6 +533,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     userDietaryPrefs: allergenPrefs.showOnCards
                         ? allergenPrefs.trackedDietary
                         : null,
+                    onFavoriteToggle: () => viewModel.toggleFavorite(recipe.id),
                     onTap: () async {
                       await Navigator.pushNamed(
                         context,

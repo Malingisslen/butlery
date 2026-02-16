@@ -131,6 +131,14 @@ class RecipeDetailActions {
     );
   }
 
+  /// Toggle collaborative editing on a recipe
+  Future<void> toggleCollaboration(BuildContext context) async {
+    await RecipeManagementHandler.toggleCollaboration(
+      context,
+      showSnackBar: _showSnackBar,
+    );
+  }
+
   /// Re-tag recipe with new allergen and dietary analysis
   Future<void> retagRecipe(BuildContext context) async {
     await RecipeTaggingHandler.retagRecipe(

@@ -117,6 +117,16 @@ abstract class MenuCollaborationRepository extends Repository<SharedMenu> {
   /// with chronological ordering and metadata inclusion.
   Stream<List<Map<String, dynamic>>> getMenuCommentsStream(String menuId);
 
+  /// Delete a comment from a menu discussion
+  /// Verifies the comment belongs to the current user before deleting.
+  Future<bool> deleteMenuComment({
+    required String menuId,
+    required String commentId,
+  });
+
+  /// Remove current user's rating from a menu
+  Future<bool> removeMenuRating(String menuId);
+
   /// Toggle like/unlike status on a comment
   /// Abstracts Firebase atomic operations for like counting
   /// and user tracking with concurrent modification safety.

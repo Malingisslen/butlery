@@ -191,6 +191,12 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     return await createPersonalList(name);
   }
 
+  /// Create a new shopping list from a template
+  Future<void> createListFromTemplate(String templateId) async {
+    await _shoppingService.createListFromTemplate(templateId: templateId);
+    notifyListeners();
+  }
+
   /// Renames specific shopping list
   Future<bool> renameList(String listId, String newName) async {
     return await _shoppingService.renameList(listId, newName);

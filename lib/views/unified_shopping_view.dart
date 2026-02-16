@@ -12,6 +12,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 
 // Theme and utility components
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
@@ -20,6 +21,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/share_service.dart';
 
 // Focused shopping components implementing facade pattern
+import 'package:butlery/widgets/shopping/shopping_template_browser.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_app_bar.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_header.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
@@ -76,6 +78,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                 _showShoppingShareDialog,
                 _shareListExternally,
                 () => _showSharingStatus(viewModel),
+                onBrowseTemplates: _showTemplateBrowser,
               ),
             ),
             // Floating action button for quick item addition
@@ -244,6 +247,56 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
       context,
       _viewModel,
       _showSuccessSnackBar,
+    );
+  }
+
+  Future<void> _showTemplateBrowser() async {
+    await showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500, maxHeight: 500),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(AppDimensions.paddingM),
+                child: Row(
+                  children: [
+                    Text(
+                      context.l10n.shoppingTemplates,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ShoppingTemplateBrowser(
+                  onTemplateSelected: (templateId) async {
+                    final successMsg = context.l10n.shoppingTemplateCreated;
+                    Navigator.pop(context);
+                    try {
+                      await _viewModel.createListFromTemplate(templateId);
+                      if (mounted) {
+                        _showSuccessSnackBar(successMsg);
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        _showErrorSnackBar(e.toString());
+                      }
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

@@ -473,6 +473,64 @@ class FirebaseMenuCollaborationRepository
   }
 
   @override
+  Future<bool> deleteMenuComment({
+    required String menuId,
+    required String commentId,
+  }) async {
+    try {
+      final userId = requireCurrentUserId();
+
+      final commentRef = firestore
+          .collection('menu_comments')
+          .doc(menuId)
+          .collection('comments')
+          .doc(commentId);
+
+      final commentDoc = await commentRef.get();
+      if (!commentDoc.exists) return false;
+
+      final commentData = commentDoc.data()!;
+      if (commentData['commentedBy'] != userId) {
+        AppLogger.warning(
+            'Cannot delete comment - not authored by current user');
+        return false;
+      }
+
+      await commentRef.delete();
+      AppLogger.success('Deleted menu comment: $commentId');
+      return true;
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to delete menu comment: $e', stackTrace);
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> removeMenuRating(String menuId) async {
+    try {
+      final userId = requireCurrentUserId();
+
+      final ratingRef = firestore
+          .collection('menu_ratings')
+          .doc(menuId)
+          .collection('ratings')
+          .doc(userId);
+
+      final ratingDoc = await ratingRef.get();
+      if (!ratingDoc.exists) return false;
+
+      await ratingRef.delete();
+      await updateMenuRatingStatistics(menuId);
+
+      AppLogger.success('Removed menu rating for menu: $menuId');
+      return true;
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to remove menu rating: $e', stackTrace);
+      return false;
+    }
+  }
+
+  @override
   Future<bool> toggleCommentLike({
     required String menuId,
     required String commentId,
