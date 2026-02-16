@@ -66,8 +66,8 @@ class ContextualErrorHandler {
       return message;
     } catch (e) {
       AppLogger.error('Failed to generate network-aware error: $e');
-      return AppStrings.actionSpecificError(
-          operation, technicalDetails ?? 'Natverksfel');
+      return AppStrings.actionSpecificError(operation,
+          technicalDetails ?? AppLocale.current.errorNetworkFallback);
     }
   }
 

@@ -43,6 +43,7 @@
 
 // lib/models/invitations/invitation_target.dart
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -221,7 +222,7 @@ class InvitationTarget {
     if (isGroup) {
       return description;
     } else {
-      return 'Butlery-användare';
+      return AppLocale.current.labelButleryUser;
     }
   }
 

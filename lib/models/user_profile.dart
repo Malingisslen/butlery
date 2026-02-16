@@ -153,13 +153,13 @@ class UserProfile with JsonSerializableMixin {
   String get memberSinceText {
     final now = DateTime.now();
     final difference = now.difference(joinedAt);
-
+    final l = AppLocale.current;
     if (difference.inDays < 30) {
-      return 'Medlem i ${difference.inDays} dagar';
+      return l.memberSinceDays(difference.inDays);
     } else if (difference.inDays < 365) {
-      return 'Medlem i ${(difference.inDays / 30).floor()} månader';
+      return l.memberSinceMonths((difference.inDays / 30).floor());
     } else {
-      return 'Medlem i ${(difference.inDays / 365).floor()} år';
+      return l.memberSinceYears((difference.inDays / 365).floor());
     }
   }
 

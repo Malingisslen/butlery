@@ -343,21 +343,22 @@ class Message {
   /// optimal user experience across all message types and content sharing scenarios.
   /// Returns formatted display content with icons and titles appropriate for the message type.
   String get displayContent {
+    final l = AppLocale.current;
     switch (type) {
       case MessageType.text:
         return content;
       case MessageType.recipeShare:
-        return '${type.icon} ${metadata?['recipeTitle'] ?? 'Recept'}';
+        return '${type.icon} ${metadata?['recipeTitle'] ?? l.messageContentRecipe}';
       case MessageType.menuShare:
-        return '${type.icon} ${metadata?['menuTitle'] ?? 'Meny'}';
+        return '${type.icon} ${metadata?['menuTitle'] ?? l.messageContentMenu}';
       case MessageType.shoppingListShare:
-        return '${type.icon} ${metadata?['listTitle'] ?? 'Inköpslista'}';
+        return '${type.icon} ${metadata?['listTitle'] ?? l.messageContentShoppingList}';
       case MessageType.system:
         return content;
       case MessageType.image:
-        return '${type.icon} Bild';
+        return '${type.icon} ${l.messageContentImage}';
       case MessageType.voice:
-        return '${type.icon} Röstmeddelande';
+        return '${type.icon} ${l.messageContentVoice}';
       case MessageType.poll:
         final pollData = metadata?['poll'] as Map<String, dynamic>?;
         return '${type.icon} ${pollData?['question'] ?? content}';

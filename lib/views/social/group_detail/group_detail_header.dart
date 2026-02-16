@@ -141,11 +141,11 @@ class GroupDetailHeader {
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
-      return context.l10n.discoveryTimeAgoNow;
+      return context.l10n.timeAgoNow;
     } else if (difference.inDays == 1) {
       return context.l10n.groupYesterday;
     } else if (difference.inDays < 7) {
-      return context.l10n.discoveryTimeAgoDays(difference.inDays);
+      return context.l10n.timeAgoDays(difference.inDays);
     } else {
       return '${date.day}/${date.month} ${date.year}';
     }

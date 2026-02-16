@@ -2,6 +2,7 @@
 /// ```dart
 /// final im = ImportManager(ops); await im.autoImport(text);
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/import/import_strategy.dart';
@@ -175,7 +176,8 @@ class ImportManager {
         if (result.metadata?['needsScreenshot'] == true) {
           // Convert to user-assisted import with helpful message
           return ImportManagerResult.assistance(
-            extractedText: result.errorMessage ?? 'Video saknar undertexter',
+            extractedText:
+                result.errorMessage ?? AppLocale.current.errorVideoNoSubtitles,
             suggestedTitle: null,
             sourceUrl: result.metadata?['url'] as String?,
             thumbnailUrl: result.metadata?['thumbnailUrl'] as String?,

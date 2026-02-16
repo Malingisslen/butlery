@@ -49,6 +49,7 @@
 /// ```
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Enumeration defining the different types of recipe changes for comprehensive change tracking.
 /// Recipe change types categorize modifications for accurate tracking and synchronization:
@@ -115,13 +116,14 @@ class RecipeChange {
   /// language formatting for user interface display and notifications.
   /// Returns Swedish change descriptions: 'Tillagd', 'Ändrad', 'Borttagen'.
   String get changeTypeText {
+    final l = AppLocale.current;
     switch (type) {
       case RecipeChangeType.added:
-        return 'Tillagd';
+        return l.changeTypeAdded;
       case RecipeChangeType.modified:
-        return 'Ändrad';
+        return l.changeTypeModified;
       case RecipeChangeType.removed:
-        return 'Borttagen';
+        return l.changeTypeRemoved;
     }
   }
 

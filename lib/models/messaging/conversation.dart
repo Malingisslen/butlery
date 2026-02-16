@@ -57,6 +57,7 @@
 // lib/models/messaging/conversation.dart
 
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:uuid/uuid.dart';
 
@@ -306,7 +307,7 @@ class Conversation {
   /// Used for conversation list displays, navigation headers, and conversation identification.
   String getDisplayTitle(String currentUserId) {
     if (isGroup) {
-      return title ?? 'Gruppchatt';
+      return title ?? AppLocale.current.conversationGroupChat;
     }
 
     // For direct conversations, show the other participant's name
@@ -315,7 +316,7 @@ class Conversation {
       orElse: () => currentUserId,
     );
 
-    return participantDisplayNames[otherParticipantId] ?? 'Okänd användare';
+    return participantDisplayNames[otherParticipantId] ?? '?';
   }
 
   /// Gets the appropriate avatar URL for conversation display based on type and current user.
@@ -411,21 +412,8 @@ class Conversation {
   /// formatting suitable for conversation list displays. Uses Swedish time units with
   /// abbreviated format (m, h, d, w) for space-efficient activity indicators.
   String get formattedLastActivity {
-    final now = DateTime.now();
     final lastActivity = lastMessage?.sentAt ?? updatedAt;
-    final difference = now.difference(lastActivity);
-
-    if (difference.inMinutes < 1) {
-      return 'Nu';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}m';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours}h';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}d';
-    } else {
-      return '${(difference.inDays / 7).floor()}w';
-    }
+    return TimeAgoFormatter.compact(lastActivity);
   }
 
   /// Standard object methods for debugging, comparison, and identity management.

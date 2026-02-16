@@ -52,6 +52,7 @@
 /// ```
 
 // lib/models/permissions/edit_mode.dart
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Enumeration defining edit modes for granular content access control and permission management.
 /// Provides comprehensive editing permission classification with hierarchical access levels,
@@ -110,19 +111,20 @@ extension EditModeExtension on EditMode {
   /// and available actions for optimal user experience and clear permission communication.
   /// Returns Swedish description text appropriate for UI display and user guidance.
   String get description {
+    final l = AppLocale.current;
     switch (this) {
       case EditMode.owner:
-        return 'Du äger detta recept';
+        return l.editModeOwner;
       case EditMode.collaborative:
-        return 'Du redigerar tillsammans med andra';
+        return l.editModeCollaborative;
       case EditMode.readOnlyWithFork:
-        return 'Skrivskyddat - du kan spara din egen kopia';
+        return l.editModeReadOnlyWithFork;
       case EditMode.noAccess:
-        return 'Ingen åtkomst';
+        return l.editModeNoAccess;
       case EditMode.edit:
-        return 'Redigeringsläge';
+        return l.editModeEdit;
       case EditMode.view:
-        return 'Visningsläge';
+        return l.editModeView;
     }
   }
 }

@@ -2,7 +2,9 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:butlery/models/social/activity_engagement.dart';
 import 'package:butlery/models/social/activity_type.dart';
 
@@ -196,7 +198,7 @@ class ActivityFeedItem {
       id: id,
       userId: SerializationUtils.safeString(data, 'userId'),
       userDisplayName: SerializationUtils.safeString(data, 'userDisplayName',
-          defaultValue: 'Okänd användare'),
+          defaultValue: '?'),
       userAvatarUrl:
           SerializationUtils.safeNullableString(data, 'userAvatarUrl'),
       type: ActivityType.fromKey(
@@ -299,8 +301,7 @@ class ActivityFeedItem {
     return ActivityFeedItem(
       id: json['id'] as String,
       userId: (json['userId'] as String?).orEmpty(),
-      userDisplayName:
-          (json['userDisplayName'] as String?).orDefault('Okänd användare'),
+      userDisplayName: (json['userDisplayName'] as String?).orDefault('?'),
       userAvatarUrl: json['userAvatarUrl'] as String?,
       type:
           ActivityType.fromKey((json['type'] as String?).orDefault('unknown')),
@@ -360,52 +361,40 @@ class ActivityFeedItem {
 
   /// Get human-readable time since activity
   String get timeAgo {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-
-    if (difference.inDays > 7) {
-      return '${timestamp.day}/${timestamp.month}';
-    } else if (difference.inDays > 0) {
-      return '${difference.inDays} dagar sedan';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} timmar sedan';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minuter sedan';
-    } else {
-      return 'Nyss';
-    }
+    return TimeAgoFormatter.verbose(timestamp);
   }
 
   /// Get activity description in Swedish
   String get description {
+    final l = AppLocale.current;
     switch (type) {
       case ActivityType.recipeCreated:
-        return 'skapade ett recept';
+        return l.activityCreatedRecipe;
       case ActivityType.recipeShared:
-        return 'delade ett recept';
+        return l.activitySharedRecipe;
       case ActivityType.recipeRated:
         final rating = (metadata['rating'] as int?).orZero();
-        return 'betygsatte ett recept ($rating⭐)';
+        return l.activityRatedRecipe(rating);
       case ActivityType.commentAdded:
-        return 'kommenterade ett recept';
+        return l.activityCommentedRecipe;
       case ActivityType.reactionAdded:
         final reaction = (metadata['reactionType'] as String?).orEmpty();
-        return 'reagerade på ett recept ($reaction)';
+        return l.activityReactedRecipe(reaction);
       case ActivityType.menuCreated:
-        return 'skapade en meny';
+        return l.activityCreatedMenu;
       case ActivityType.menuShared:
-        return 'delade en meny';
+        return l.activitySharedMenu;
       case ActivityType.shoppingListCreated:
-        return 'skapade en inköpslista';
+        return l.activityCreatedShoppingList;
       case ActivityType.shoppingListShared:
-        return 'delade en inköpslista';
+        return l.activitySharedShoppingList;
       case ActivityType.groupJoined:
-        return 'gick med i en grupp';
+        return l.activityJoinedGroup;
       case ActivityType.achievementUnlocked:
         final achievement = (metadata['achievementName'] as String?).orEmpty();
-        return 'låste upp en bedrift: $achievement';
+        return l.activityUnlockedAchievement(achievement);
       default:
-        return 'gjorde något';
+        return l.activityDidSomething;
     }
   }
 

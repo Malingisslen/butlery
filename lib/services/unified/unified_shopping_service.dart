@@ -368,6 +368,26 @@ class UnifiedShoppingService extends ChangeNotifier
     return await _itemManagement.addItemsBatchToActiveList(items);
   }
 
+  // Template operations (delegating to repository)
+
+  Future<List<Map<String, dynamic>>> getUserTemplates() async {
+    return await _shoppingRepository.getUserTemplates();
+  }
+
+  Future<void> deleteTemplate(String templateId) async {
+    await _shoppingRepository.deleteTemplate(templateId);
+  }
+
+  Future<String> createListFromTemplate({
+    required String templateId,
+    String? listName,
+  }) async {
+    return await _shoppingRepository.createListFromTemplate(
+      templateId: templateId,
+      listName: listName ?? 'Inköpslista',
+    );
+  }
+
   /// Save active list ID to cache for persistence across app restarts
   Future<void> _saveActiveListId() async {
     await safeExecute(

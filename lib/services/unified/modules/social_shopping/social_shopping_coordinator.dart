@@ -39,6 +39,7 @@
 /// ```
 
 import 'dart:async';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -449,11 +450,12 @@ class SocialShoppingCoordinator
     final boughtItems = shoppingList.items.where((item) => item.bought).length;
     final remainingItems = totalItems - boughtItems;
 
-    if (totalItems == 0) return 'Tom handlingslista';
-    if (remainingItems == 0) return 'Alla $totalItems artiklar klara';
-    if (boughtItems == 0) return '$totalItems artiklar att köpa';
+    final l = AppLocale.current;
+    if (totalItems == 0) return l.shoppingListSummaryEmpty;
+    if (remainingItems == 0) return l.shoppingListSummaryAllDone(totalItems);
+    if (boughtItems == 0) return l.shoppingListSummaryToBuy(totalItems);
 
-    return '$remainingItems av $totalItems artiklar kvar';
+    return l.shoppingListSummaryRemaining(remainingItems, totalItems);
   }
 
   /// Check if user can edit shopping list

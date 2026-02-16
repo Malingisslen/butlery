@@ -2949,126 +2949,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get collaborativeLoadingSharedList => 'Loading shared list...';
 
   @override
-  String get discoveryActivity => 'Activity';
-
-  @override
-  String discoveryByAuthor(String name) {
-    return 'By $name';
-  }
-
-  @override
-  String get discoveryCategories => 'Categories';
-
-  @override
-  String get discoveryContentType => 'Content type';
-
-  @override
-  String get discoveryCustomizeExperience =>
-      'Customize your discovery experience';
-
-  @override
-  String get discoveryDiscover => 'Discover';
-
-  @override
-  String get discoveryDiscoverNewContent => 'Discover new content';
-
-  @override
-  String get discoveryFeedbackHint =>
-      'Help us improve Butlery! Describe your feedback here...';
-
-  @override
-  String get discoveryFeedbackThanks =>
-      'Thank you for your feedback! We will review it.';
-
-  @override
-  String get discoveryFilterContent => 'Filter content';
-
-  @override
-  String get discoveryFindPopularContent =>
-      'Find popular recipes, menus and lists';
-
-  @override
-  String get discoveryForYou => 'For you';
-
-  @override
-  String get discoveryGiveFeedback => 'Give feedback';
-
-  @override
-  String discoveryItemCount(int count) {
-    return '$count items';
-  }
-
-  @override
-  String get discoveryLoading => 'Loading discovery content...';
-
-  @override
-  String get discoveryMenus => 'Menus';
-
-  @override
-  String get discoveryNotifications => 'Notifications';
-
-  @override
-  String get discoveryPopularNow => 'Popular right now';
-
-  @override
-  String get discoveryPushNotifications => 'Push notifications';
-
-  @override
-  String get discoveryPushNotificationsDescription =>
-      'Get notifications about new content';
-
-  @override
-  String get discoveryRecipes => 'Recipes';
-
-  @override
-  String get discoverySeeAll => 'See all';
-
-  @override
-  String get discoverySendFeedback => 'Send feedback';
-
-  @override
-  String get discoverySettings => 'Discovery settings';
-
-  @override
-  String get discoverySettingsSaved => 'Settings saved!';
-
-  @override
-  String get discoveryShoppingLists => 'Shopping lists';
-
-  @override
-  String get discoveryShowFriendActivity => 'Show friend activity';
-
-  @override
-  String get discoveryShowFriendActivityDescription =>
-      'Show what your friends are doing';
-
-  @override
-  String get discoveryShowMenuResults => 'Show menu results';
-
-  @override
-  String get discoveryShowRecipeResults => 'Show recipe results';
-
-  @override
-  String get discoveryShowRecommendations => 'Show recommendations';
-
-  @override
-  String get discoveryShowRecommendationsDescription =>
-      'Show personal recommendations';
-
-  @override
-  String get discoveryShowShoppingLists => 'Show shopping lists';
-
-  @override
-  String get discoveryShowTrends => 'Show trends';
-
-  @override
-  String get discoveryShowTrendsDescription =>
-      'Show popular content from the community';
-
-  @override
-  String get discoveryToDiscover => 'to discover';
-
-  @override
   String get allergenCrustacean => 'Crustacean';
 
   @override
@@ -5874,189 +5754,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonStart => 'Start';
 
   @override
-  String get discoveryAllRecommendationsComingSoon =>
-      'Show all recommendations coming soon!';
-
-  @override
-  String get discoveryBuildingRecommendations => 'Building recommendations';
-
-  @override
-  String get discoveryCouldNotHideRecommendation =>
-      'Could not hide recommendation right now.';
-
-  @override
-  String get discoveryCouldNotRestoreRecommendation =>
-      'Could not restore recommendation.';
-
-  @override
-  String get discoveryCouldNotSendFeedback =>
-      'Could not send feedback right now.';
-
-  @override
-  String get discoveryFeedbackThanksImproving =>
-      'Thanks for your feedback! We are improving recommendations.';
-
-  @override
-  String get discoveryFriendActivity => 'Friend activity';
-
-  @override
-  String get discoveryFriendActivityDescription =>
-      'When your friends share recipes, menus or shopping lists they will appear here.';
-
-  @override
-  String get discoveryFriendActivityWillAppearHere =>
-      'Activity from your friends will appear here';
-
-  @override
-  String get discoveryFriendsChoice => 'Friends\' choice';
-
-  @override
-  String get discoveryLearningPreferences =>
-      'We are learning your preferences to give better recommendations.';
-
-  @override
-  String get discoveryLike => 'Like';
-
-  @override
-  String get discoveryListening => 'Listening...';
-
-  @override
-  String get discoveryLists => 'Lists';
-
-  @override
-  String get discoveryLoadingPopularContent => 'Loading popular content...';
-
-  @override
-  String get discoveryNoFriendActivityYet => 'No friend activity yet';
-
-  @override
-  String get discoveryNoPopularRecipesYet => 'No popular recipes yet';
-
-  @override
-  String get discoveryPerformedAction => 'Performed an action';
-
-  @override
-  String get discoveryPopular => 'Popular';
-
-  @override
-  String get discoveryPopularContent => 'Popular content';
-
-  @override
-  String get discoveryPopularMenus => 'Popular menus';
-
-  @override
-  String get discoveryPopularRecipes => 'Popular recipes';
-
-  @override
-  String get discoveryPopularShoppingLists => 'Popular shopping lists';
-
-  @override
-  String get discoveryPopularWithFriends => 'Popular with friends';
-
-  @override
-  String get discoveryPopularWithFriendsDescription =>
-      'Content that your friends like and share';
-
-  @override
-  String discoveryPortions(int count) {
-    return '$count portions';
-  }
-
-  @override
-  String get discoveryRecently => 'Recently';
-
-  @override
-  String get discoveryRecentlyShared => 'Recently shared';
-
-  @override
-  String get discoveryRecentlySharedDescription =>
-      'Latest shared content in your network';
-
-  @override
-  String get discoveryRecommendationHidden =>
-      'Recommendation hidden. We won\'t show similar content.';
-
-  @override
-  String get discoveryRecommendationRestored => 'Recommendation restored.';
-
-  @override
-  String get discoveryRecommended => 'Recommended';
-
-  @override
-  String get discoveryRecommendedForYou => 'Recommended for you';
-
-  @override
-  String get discoverySearchFilters => 'Search filters';
-
-  @override
-  String get discoverySearchHint => 'Search recipes, menus, shopping lists...';
-
-  @override
-  String discoverySearchResultsFor(int count, String query) {
-    return '$count results for \"$query\"';
-  }
-
-  @override
-  String get discoverySeasonal => 'Seasonal';
-
-  @override
-  String discoverySharedBy(String name) {
-    return 'Shared by $name';
-  }
-
-  @override
-  String get discoverySharing => 'sharing';
-
-  @override
-  String get discoverySimilarToShared => 'Similar to shared';
-
-  @override
-  String discoveryTimeAgoDays(int count) {
-    return '${count}d ago';
-  }
-
-  @override
-  String discoveryTimeAgoHours(int count) {
-    return '${count}h ago';
-  }
-
-  @override
-  String discoveryTimeAgoMinutes(int count) {
-    return '${count}m ago';
-  }
-
-  @override
-  String get discoveryTimeAgoNow => 'Now';
-
-  @override
-  String get discoveryUnknownContent => 'Unknown content';
-
-  @override
-  String get discoveryUnknownUser => 'Unknown user';
-
-  @override
-  String discoveryUserSharedType(String user, String type) {
-    return '$user shared $type';
-  }
-
-  @override
-  String get discoveryVoiceSearch => 'Voice search';
-
-  @override
-  String get discoveryVoiceSearchInstruction =>
-      'Press the microphone and start speaking';
-
-  @override
-  String get discoveryVoiceSearchPreview =>
-      'Search started! (Voice search is a preview)';
-
-  @override
-  String get discoveryVoiceSearchPrompt => 'Say what you want to search for...';
-
-  @override
-  String get discoveryVoiceSearchResult => 'Voice search: \"pasta recipe\"';
-
-  @override
   String groupInvitationsCount(int count) {
     return 'Group invitations ($count)';
   }
@@ -6381,9 +6078,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonView => 'View';
-
-  @override
-  String get discoveryClearSearch => 'Clear search';
 
   @override
   String get groupCancelInvitation => 'Cancel invitation';
@@ -11119,4 +10813,403 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get fcmChannelGeneralDescription =>
       'General notifications from Butlery';
+
+  @override
+  String get timeAgoNow => 'Now';
+
+  @override
+  String timeAgoMinutesAbbr(int count) {
+    return '$count min ago';
+  }
+
+  @override
+  String timeAgoHoursAbbr(int count) {
+    return '${count}h ago';
+  }
+
+  @override
+  String timeAgoDays(int count) {
+    return '$count days ago';
+  }
+
+  @override
+  String timeAgoWeeks(int count) {
+    return '$count weeks ago';
+  }
+
+  @override
+  String get timeAgoJustNow => 'Just now';
+
+  @override
+  String timeAgoMinutesFull(int count) {
+    return '$count minutes ago';
+  }
+
+  @override
+  String timeAgoHoursFull(int count) {
+    return '$count hours ago';
+  }
+
+  @override
+  String timeCompactMinutes(int count) {
+    return '${count}m';
+  }
+
+  @override
+  String timeCompactHours(int count) {
+    return '${count}h';
+  }
+
+  @override
+  String timeCompactDays(int count) {
+    return '${count}d';
+  }
+
+  @override
+  String timeCompactWeeks(int count) {
+    return '${count}w';
+  }
+
+  @override
+  String get expiresExpired => 'Expired';
+
+  @override
+  String expiresDaysRemaining(int count) {
+    return '$count days left';
+  }
+
+  @override
+  String expiresHoursRemaining(int count) {
+    return '$count hours left';
+  }
+
+  @override
+  String expiresMinutesRemaining(int count) {
+    return '$count minutes left';
+  }
+
+  @override
+  String get expiresSoon => 'Expires soon';
+
+  @override
+  String groupInvitationNotificationWithMessage(
+      String sender, String emoji, String group, String message) {
+    return '$sender invited you to group $emoji $group: \"$message\"';
+  }
+
+  @override
+  String groupInvitationNotificationSimple(
+      String sender, String emoji, String group) {
+    return '$sender invited you to group $emoji $group';
+  }
+
+  @override
+  String get invitationStatusPending => 'Pending';
+
+  @override
+  String get invitationStatusAccepted => 'Accepted';
+
+  @override
+  String get invitationStatusRejected => 'Rejected';
+
+  @override
+  String get invitationStatusCancelled => 'Cancelled';
+
+  @override
+  String get invitationStatusExpired => 'Expired';
+
+  @override
+  String get messageContentRecipe => 'Recipe';
+
+  @override
+  String get messageContentMenu => 'Menu';
+
+  @override
+  String get messageContentShoppingList => 'Shopping list';
+
+  @override
+  String get messageContentImage => 'Image';
+
+  @override
+  String get messageContentVoice => 'Voice message';
+
+  @override
+  String get conversationGroupChat => 'Group chat';
+
+  @override
+  String get editModeOwner => 'You own this recipe';
+
+  @override
+  String get editModeCollaborative => 'You are editing together with others';
+
+  @override
+  String get editModeReadOnlyWithFork =>
+      'Read-only - you can save your own copy';
+
+  @override
+  String get editModeNoAccess => 'No access';
+
+  @override
+  String get editModeEdit => 'Edit mode';
+
+  @override
+  String get editModeView => 'View mode';
+
+  @override
+  String get changeTypeAdded => 'Added';
+
+  @override
+  String get changeTypeModified => 'Modified';
+
+  @override
+  String get changeTypeRemoved => 'Removed';
+
+  @override
+  String memberSinceDays(int count) {
+    return 'Member for $count days';
+  }
+
+  @override
+  String memberSinceMonths(int count) {
+    return 'Member for $count months';
+  }
+
+  @override
+  String memberSinceYears(int count) {
+    return 'Member for $count years';
+  }
+
+  @override
+  String get commentDeleted => '[Comment deleted]';
+
+  @override
+  String get labelSharedMenu => 'Shared menu';
+
+  @override
+  String sharedMenuTitlePattern(String name) {
+    return '$name\'s weekly menu';
+  }
+
+  @override
+  String importedFromMenu(String name, String title) {
+    return 'Imported from $name\'s menu \"$title\"';
+  }
+
+  @override
+  String get importedRecipeLabel => 'Imported recipe';
+
+  @override
+  String get activityCreatedRecipe => 'created a recipe';
+
+  @override
+  String get activitySharedRecipe => 'shared a recipe';
+
+  @override
+  String activityRatedRecipe(int rating) {
+    return 'rated a recipe ($rating⭐)';
+  }
+
+  @override
+  String get activityCommentedRecipe => 'commented on a recipe';
+
+  @override
+  String activityReactedRecipe(String reaction) {
+    return 'reacted to a recipe ($reaction)';
+  }
+
+  @override
+  String get activityCreatedMenu => 'created a menu';
+
+  @override
+  String get activitySharedMenu => 'shared a menu';
+
+  @override
+  String get activityCreatedShoppingList => 'created a shopping list';
+
+  @override
+  String get activitySharedShoppingList => 'shared a shopping list';
+
+  @override
+  String get activityJoinedGroup => 'joined a group';
+
+  @override
+  String activityUnlockedAchievement(String achievement) {
+    return 'unlocked an achievement: $achievement';
+  }
+
+  @override
+  String get activityDidSomething => 'did something';
+
+  @override
+  String get labelEmptyMenu => 'Empty menu';
+
+  @override
+  String get labelMultipleChanges => 'Multiple changes';
+
+  @override
+  String get errorVideoNoSubtitles => 'Video has no subtitles';
+
+  @override
+  String get errorNetworkFallback => 'Network error';
+
+  @override
+  String get recipeCollaborationEnable => 'Enable collaboration';
+
+  @override
+  String get recipeCollaborationDisable => 'Disable collaboration';
+
+  @override
+  String get menuCommentDeletedSuccess => 'Comment deleted';
+
+  @override
+  String get recipeSharingStatus => 'Sharing status';
+
+  @override
+  String get recipeSharingSharedWith => 'Shared with';
+
+  @override
+  String get recipeSharingStopAll => 'Stop sharing with all';
+
+  @override
+  String get recipeSharingStopAllConfirm =>
+      'Are you sure you want to stop sharing with everyone?';
+
+  @override
+  String get recipeSharingStopAllSuccess => 'Sharing stopped with everyone';
+
+  @override
+  String get recipeSharingRevoke => 'Revoke sharing';
+
+  @override
+  String recipeSharingRevokeConfirm(String name) {
+    return 'Stop sharing with $name?';
+  }
+
+  @override
+  String recipeSharingRevokeSuccess(String name) {
+    return 'Sharing with $name stopped';
+  }
+
+  @override
+  String get recipeSharingFriends => 'Friends';
+
+  @override
+  String get recipeSharingGroups => 'Groups';
+
+  @override
+  String get recipeSharingNoShares => 'Not shared with anyone';
+
+  @override
+  String get menuRatingRemoveMessage => 'Do you want to remove your rating?';
+
+  @override
+  String get menuRatingRemoved => 'Rating removed';
+
+  @override
+  String get menuRatingRemoveError => 'Could not remove rating';
+
+  @override
+  String get shoppingTemplates => 'Shopping templates';
+
+  @override
+  String get shoppingTemplateBrowse => 'Browse templates';
+
+  @override
+  String get shoppingTemplateEmpty => 'No saved templates';
+
+  @override
+  String get shoppingTemplateEmptyDescription =>
+      'Save a shopping list as a template for quick recreation';
+
+  @override
+  String get shoppingTemplateUse => 'Use template';
+
+  @override
+  String get shoppingTemplateDelete => 'Delete template';
+
+  @override
+  String shoppingTemplateDeleteConfirm(String name) {
+    return 'Do you want to delete the template \"$name\"?';
+  }
+
+  @override
+  String get shoppingTemplateDeleted => 'Template deleted';
+
+  @override
+  String get shoppingTemplateCreated => 'List created from template';
+
+  @override
+  String shoppingTemplateItemCount(int count) {
+    return '$count items';
+  }
+
+  @override
+  String shoppingTemplateUsedCount(int count) {
+    return 'Used $count times';
+  }
+
+  @override
+  String get shoppingCategoryCollapse => 'Collapse';
+
+  @override
+  String get shoppingCategoryExpand => 'Expand';
+
+  @override
+  String get labelButleryUser => 'Butlery user';
+
+  @override
+  String get shoppingListSummaryEmpty => 'Empty shopping list';
+
+  @override
+  String shoppingListSummaryAllDone(int count) {
+    return 'All $count items done';
+  }
+
+  @override
+  String shoppingListSummaryToBuy(int count) {
+    return '$count items to buy';
+  }
+
+  @override
+  String shoppingListSummaryRemaining(int remaining, int total) {
+    return '$remaining of $total items remaining';
+  }
+
+  @override
+  String notificationBatchComments(int count) {
+    return '$count new comments on your recipes';
+  }
+
+  @override
+  String notificationCommentSingle(String author, String recipe) {
+    return '$author commented on \"$recipe\"';
+  }
+
+  @override
+  String notificationCommentMultipleSameAuthor(
+      String author, int count, String recipe) {
+    return '$author wrote $count comments on \"$recipe\"';
+  }
+
+  @override
+  String notificationCommentMultipleAuthors(
+      int authorCount, int commentCount, String recipe) {
+    return '$authorCount people wrote $commentCount comments on \"$recipe\"';
+  }
+
+  @override
+  String notificationRatingSingle(String recipe, int count, String period) {
+    return 'Your recipe \"$recipe\" received $count new ratings this $period!';
+  }
+
+  @override
+  String notificationRatingMultiple(
+      int totalRatings, int recipeCount, String period) {
+    return 'Your recipes received $totalRatings new ratings across $recipeCount recipes this $period!';
+  }
+
+  @override
+  String timeCompactMonths(int count) {
+    return '${count}mo';
+  }
 }

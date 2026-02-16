@@ -164,7 +164,7 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
         );
 
         if (success == null) {
-          throw Exception('Kunde inte dela recept: ${recipe.title}');
+          throw Exception('Could not share recipe: ${recipe.title}');
         }
       }
 
