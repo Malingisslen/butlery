@@ -96,6 +96,9 @@ class _AddUnifiedShoppingItemDialogState
     ShoppingCategory.drinks,
     ShoppingCategory.snacks,
     ShoppingCategory.cleaning,
+    ShoppingCategory.spices,
+    ShoppingCategory.canned,
+    ShoppingCategory.dryGoods,
     ShoppingCategory.other,
   ];
 
@@ -119,6 +122,12 @@ class _AddUnifiedShoppingItemDialogState
         return context.l10n.categorySnacks;
       case ShoppingCategory.cleaning:
         return context.l10n.categoryHygiene;
+      case ShoppingCategory.spices:
+        return context.l10n.categorySpices;
+      case ShoppingCategory.canned:
+        return context.l10n.categoryCanned;
+      case ShoppingCategory.dryGoods:
+        return context.l10n.categoryDryGoods;
       case ShoppingCategory.other:
         return context.l10n.categoryOther;
       default:
