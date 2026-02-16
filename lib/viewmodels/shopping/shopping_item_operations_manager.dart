@@ -3,6 +3,7 @@
 /// Part of UnifiedShoppingViewModel's modular architecture.
 
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/core/utils/shopping_category_mapper.dart';
 
 /// Shopping item operations manager for search, grouping, and bulk operations.
 class ShoppingItemOperationsManager {
@@ -53,6 +54,11 @@ class ShoppingItemOperationsManager {
             item.category.toLowerCase().contains(lowercaseQuery))
         .toList();
   }
+
+  /// Map an ingredient group path to a shopping category.
+  /// Delegates to shared utility to avoid service→viewmodel dependency.
+  static String categoryFromIngredientGroup(String group) =>
+      ShoppingCategoryMapper.categoryFromIngredientGroup(group);
 
   /// Bulk add items from recipe ingredients
   Future<bool> addItemsFromRecipe(

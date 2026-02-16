@@ -19091,11 +19091,29 @@ abstract class AppLocalizations {
   /// **'Inte delat med någon'**
   String get recipeSharingNoShares;
 
+  /// No description provided for @menuRatingRemoveTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort betyg?'**
+  String get menuRatingRemoveTitle;
+
   /// No description provided for @menuRatingRemoveMessage.
   ///
   /// In sv, this message translates to:
   /// **'Vill du ta bort ditt betyg?'**
   String get menuRatingRemoveMessage;
+
+  /// No description provided for @menuRatingRemoveConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort'**
+  String get menuRatingRemoveConfirm;
+
+  /// No description provided for @menuRatingRemoveButton.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort betyg'**
+  String get menuRatingRemoveButton;
 
   /// No description provided for @menuRatingRemoved.
   ///

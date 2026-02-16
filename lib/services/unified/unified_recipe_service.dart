@@ -605,6 +605,11 @@ class UnifiedRecipeService extends ChangeNotifier
     return await _socialModule.removeMemberFromRecipe(recipeId, userId);
   }
 
+  /// Remove all sharing from a recipe (revoke all members, mark non-collaborative)
+  Future<bool> unshareRecipe(String recipeId) async {
+    return await _socialModule.unshareRecipe(recipeId);
+  }
+
   Future<bool> updateMemberPermission(
     String recipeId,
     String userId,

@@ -6,6 +6,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -102,6 +103,36 @@ class _MenuRatingSectionState extends State<MenuRatingSection> {
     } catch (e) {
       if (!mounted) return;
       _showMessage(context.l10n.menuRatingFailed, isError: true);
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _confirmRemoveRating() async {
+    final confirmed = await CommonDialogActions.showActionConfirmation(
+      context: context,
+      title: context.l10n.menuRatingRemoveTitle,
+      message: context.l10n.menuRatingRemoveMessage,
+      confirmText: context.l10n.menuRatingRemoveConfirm,
+      isDangerous: true,
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isSaving = true);
+    try {
+      final success =
+          await _menuService.collaborative.removeMenuRating(widget.menuId);
+      if (!mounted) return;
+      if (success) {
+        setState(() => _userRating = 0.0);
+        _showMessage(context.l10n.menuRatingRemoved);
+        await _loadRatings();
+      } else {
+        _showMessage(context.l10n.menuRatingRemoveError, isError: true);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      _showMessage(context.l10n.menuRatingRemoveError, isError: true);
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -258,6 +289,20 @@ class _MenuRatingSectionState extends State<MenuRatingSection> {
             ],
           ],
         ),
+        // Remove rating button
+        if (_userRating > 0) ...[
+          const SizedBox(height: AppDimensions.spacingSm),
+          TextButton(
+            onPressed: _isSaving ? null : _confirmRemoveRating,
+            child: Text(
+              context.l10n.menuRatingRemoveButton,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }

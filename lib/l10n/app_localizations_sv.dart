@@ -11130,7 +11130,16 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeSharingNoShares => 'Inte delat med någon';
 
   @override
+  String get menuRatingRemoveTitle => 'Ta bort betyg?';
+
+  @override
   String get menuRatingRemoveMessage => 'Vill du ta bort ditt betyg?';
+
+  @override
+  String get menuRatingRemoveConfirm => 'Ta bort';
+
+  @override
+  String get menuRatingRemoveButton => 'Ta bort betyg';
 
   @override
   String get menuRatingRemoved => 'Betyget borttaget';

@@ -10,6 +10,7 @@ import 'package:butlery/views/recipe_detail/recipe_detail_content.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_metadata.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_comments.dart';
+import 'package:butlery/views/recipe_detail/recipe_detail_sharing_status.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -18,6 +19,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -335,6 +337,28 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               ],
                             ),
                           ),
+                          // Collaboration toggle (owner only)
+                          if (recipe.createdBy ==
+                              ServiceLocator.get<PermissionService>()
+                                  .currentUserId)
+                            PopupMenuItem(
+                              value: 'toggle_collaboration',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    recipe.isCollaborative
+                                        ? Icons.group_off_outlined
+                                        : Icons.group_add_outlined,
+                                    size: AppDimensions.iconSizeM,
+                                    color: menuCs.primary,
+                                  ),
+                                  const SizedBox(width: AppDimensions.spacingM),
+                                  Text(recipe.isCollaborative
+                                      ? context.l10n.recipeCollaborationDisable
+                                      : context.l10n.recipeCollaborationEnable),
+                                ],
+                              ),
+                            ),
                           if (recipe.sourceUrl != null &&
                               recipe.sourceUrl!.isNotEmpty)
                             PopupMenuItem(
@@ -499,6 +523,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             );
                           },
                         ),
+                        // Sharing status panel (owner only)
+                        RecipeDetailSharingStatus(
+                          recipe: recipe,
+                          onSharingChanged: () => setState(() {}),
+                        ),
+
                         const SizedBox(height: AppDimensions.spacingMd),
 
                         // Recipe comments
@@ -569,6 +599,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       case 'delete':
         await _actions.deleteRecipe(context);
         // Navigation is handled by RecipeDetailActions.deleteRecipe()
+        break;
+      case 'toggle_collaboration':
+        await _actions.toggleCollaboration(context);
         break;
       case 'source':
         if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) {

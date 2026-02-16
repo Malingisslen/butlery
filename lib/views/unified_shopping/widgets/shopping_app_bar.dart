@@ -18,8 +18,9 @@ class ShoppingAppBar {
     VoidCallback onCreateList,
     VoidCallback onShowShareDialog,
     VoidCallback onShareExternally,
-    VoidCallback onShowSyncStatus,
-  ) {
+    VoidCallback onShowSyncStatus, {
+    VoidCallback? onBrowseTemplates,
+  }) {
     final cs = Theme.of(context).colorScheme;
     final canShare = viewModel.hasItems;
 
@@ -42,6 +43,18 @@ class ShoppingAppBar {
               tooltip: context.l10n.shoppingNewList,
             ),
           ),
+
+          // Browse templates
+          if (onBrowseTemplates != null)
+            IconButton(
+              icon: Icon(
+                Icons.list_alt_outlined,
+                color:
+                    cs.onSurface.withValues(alpha: AppDimensions.opacityDark),
+              ),
+              onPressed: onBrowseTemplates,
+              tooltip: context.l10n.shoppingTemplateBrowse,
+            ),
 
           // Dela med vänner-knapp (social)
           Semantics(
@@ -115,8 +128,9 @@ class ShoppingAppBar {
     VoidCallback onCreateList,
     VoidCallback onShowShareDialog,
     VoidCallback onShareExternally,
-    VoidCallback onShowSyncStatus,
-  ) {
+    VoidCallback onShowSyncStatus, {
+    VoidCallback? onBrowseTemplates,
+  }) {
     final cs = Theme.of(context).colorScheme;
     final canShare = viewModel.hasItems;
 
@@ -130,6 +144,17 @@ class ShoppingAppBar {
         onPressed: onCreateList,
         tooltip: context.l10n.shoppingNewList,
       ),
+
+      // Browse templates
+      if (onBrowseTemplates != null)
+        IconButton(
+          icon: Icon(
+            Icons.list_alt_outlined,
+            color: cs.onPrimary,
+          ),
+          onPressed: onBrowseTemplates,
+          tooltip: context.l10n.shoppingTemplateBrowse,
+        ),
 
       // Dela med vänner-knapp (social)
       if (canShare)

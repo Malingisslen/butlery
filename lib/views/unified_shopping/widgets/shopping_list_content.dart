@@ -1,6 +1,6 @@
 // lib/views/unified_shopping/widgets/shopping_list_content.dart
 //
-// UI Redesign: Color-coded category headers with full-width colored bars
+// UI Redesign: Color-coded category headers with collapse/expand and progress
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -14,8 +14,12 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Main content area for shopping list.
 ///
-/// **UI Redesign:** Category headers now use full-width colored bars
-/// with category-specific colors from ButleryColors.category* constants.
+/// **UI Redesign:** Category headers with collapse/expand, progress indicators,
+/// and category-specific colors from ButleryColors.category* constants.
+///
+/// Kept as static class for backward compatibility. Use [ShoppingListContent.build]
+/// for the static variant, or [ShoppingListContentWidget] for the stateful version
+/// with collapse/expand support.
 class ShoppingListContent {
   static Widget build(
     BuildContext context,
@@ -26,6 +30,48 @@ class ShoppingListContent {
     VoidCallback onCreateList,
     VoidCallback onAddItem,
   ) {
+    return ShoppingListContentWidget(
+      viewModel: viewModel,
+      onItemTap: onItemTap,
+      onEditItem: onEditItem,
+      onDeleteItem: onDeleteItem,
+      onCreateList: onCreateList,
+      onAddItem: onAddItem,
+    );
+  }
+}
+
+/// Stateful widget with collapse/expand per category and progress indicators.
+class ShoppingListContentWidget extends StatefulWidget {
+  final UnifiedShoppingViewModel viewModel;
+  final Function(UnifiedShoppingItem) onItemTap;
+  final Function(UnifiedShoppingItem) onEditItem;
+  final Function(UnifiedShoppingItem) onDeleteItem;
+  final VoidCallback onCreateList;
+  final VoidCallback onAddItem;
+
+  const ShoppingListContentWidget({
+    super.key,
+    required this.viewModel,
+    required this.onItemTap,
+    required this.onEditItem,
+    required this.onDeleteItem,
+    required this.onCreateList,
+    required this.onAddItem,
+  });
+
+  @override
+  State<ShoppingListContentWidget> createState() =>
+      _ShoppingListContentWidgetState();
+}
+
+class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
+  final Set<String> _collapsedCategories = {};
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = widget.viewModel;
+
     if (viewModel.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -40,45 +86,39 @@ class ShoppingListContent {
     if (viewModel.activeList == null) {
       return StateWidget.noShoppingList(
         actionLabel: context.l10n.shoppingCreateList,
-        onAction: onCreateList,
+        onAction: widget.onCreateList,
       );
     }
 
     if (!viewModel.hasItems) {
       return StateWidget.noShoppingList(
         actionLabel: context.l10n.shoppingAddItem,
-        onAction: onAddItem,
+        onAction: widget.onAddItem,
       );
     }
 
-    return _buildShoppingList(
-        context, viewModel, onItemTap, onEditItem, onDeleteItem);
+    return _buildShoppingList(context, viewModel);
   }
 
-  static Widget _buildShoppingList(
+  Widget _buildShoppingList(
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
-    Function(UnifiedShoppingItem) onItemTap,
-    Function(UnifiedShoppingItem) onEditItem,
-    Function(UnifiedShoppingItem) onDeleteItem,
   ) {
-    // Pre-compute flat list of widgets for ListView.builder
-    // This improves performance by only building visible items
+    // Pre-compute category progress from ALL items
+    final categoryProgress = _computeCategoryProgress(viewModel);
+
     final widgets = <Widget>[
       // Pending items by category
-      ..._buildPendingItemsByCategory(
-          context, viewModel, onItemTap, onEditItem, onDeleteItem),
+      ..._buildPendingItemsByCategory(context, viewModel, categoryProgress),
 
       // Completed items section
       if (viewModel.boughtItems > 0) ...[
         const SizedBox(height: AppDimensions.spacingLg),
         _buildCompletedItemsHeader(context, viewModel),
         const SizedBox(height: AppDimensions.spacingSm),
-        ..._buildCompletedItems(
-            context, viewModel, onItemTap, onEditItem, onDeleteItem),
+        ..._buildCompletedItems(context, viewModel),
       ],
 
-      // Bottom spacing
       const SizedBox(height: AppDimensions.spacingHuge),
     ];
 
@@ -89,12 +129,28 @@ class ShoppingListContent {
     );
   }
 
-  static List<Widget> _buildPendingItemsByCategory(
+  /// Compute total and completed counts per category across all items.
+  Map<String, ({int total, int completed})> _computeCategoryProgress(
+    UnifiedShoppingViewModel viewModel,
+  ) {
+    final result = <String, ({int total, int completed})>{};
+    for (final item in viewModel.items) {
+      final category = item.category.isEmpty
+          ? context.l10n.shoppingCategoryOther
+          : item.category;
+      final existing = result[category] ?? (total: 0, completed: 0);
+      result[category] = (
+        total: existing.total + 1,
+        completed: existing.completed + (item.isCompleted ? 1 : 0),
+      );
+    }
+    return result;
+  }
+
+  List<Widget> _buildPendingItemsByCategory(
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
-    Function(UnifiedShoppingItem) onItemTap,
-    Function(UnifiedShoppingItem) onEditItem,
-    Function(UnifiedShoppingItem) onDeleteItem,
+    Map<String, ({int total, int completed})> categoryProgress,
   ) {
     final pendingItems =
         viewModel.items.where((item) => !item.isCompleted).toList();
@@ -109,24 +165,20 @@ class ShoppingListContent {
     }
 
     return categorizedItems.entries.map((entry) {
+      final progress = categoryProgress[entry.key];
       return _buildCategorySection(
         context,
         entry.key,
         entry.value,
         false,
-        onItemTap,
-        onEditItem,
-        onDeleteItem,
+        progress: progress,
       );
     }).toList();
   }
 
-  static List<Widget> _buildCompletedItems(
+  List<Widget> _buildCompletedItems(
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
-    Function(UnifiedShoppingItem) onItemTap,
-    Function(UnifiedShoppingItem) onEditItem,
-    Function(UnifiedShoppingItem) onDeleteItem,
   ) {
     final completedItems =
         viewModel.items.where((item) => item.isCompleted).toList();
@@ -146,92 +198,125 @@ class ShoppingListContent {
         entry.key,
         entry.value,
         true,
-        onItemTap,
-        onEditItem,
-        onDeleteItem,
       );
     }).toList();
   }
 
-  static Widget _buildCategorySection(
+  Widget _buildCategorySection(
     BuildContext context,
     String category,
     List<UnifiedShoppingItem> items,
-    bool isCompleted,
-    Function(UnifiedShoppingItem) onItemTap,
-    Function(UnifiedShoppingItem) onEditItem,
-    Function(UnifiedShoppingItem) onDeleteItem,
-  ) {
+    bool isCompleted, {
+    ({int total, int completed})? progress,
+  }) {
     final cs = Theme.of(context).colorScheme;
-    // UI Redesign: Get category-specific color
     final categoryColor = isCompleted
         ? cs.onSurfaceVariant
         : _getCategoryColor(context, category);
 
+    final isCollapsed = _collapsedCategories.contains(category);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // UI Redesign: Full-width colored category header bar
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
-            vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
-          ),
-          margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
-          decoration: BoxDecoration(
-            color: categoryColor,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  category.toUpperCase(),
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 2,
+        // Tappable category header with collapse/expand
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              if (isCollapsed) {
+                _collapsedCategories.remove(category);
+              } else {
+                _collapsedCategories.add(category);
+              }
+            });
+          },
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingMd,
+              vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
+            ),
+            margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+            decoration: BoxDecoration(
+              color: categoryColor,
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    // Chevron icon
+                    Icon(
+                      isCollapsed ? Icons.expand_more : Icons.expand_less,
+                      color: cs.onPrimary,
+                      size: AppDimensions.iconSizeM,
+                    ),
+                    const SizedBox(width: AppDimensions.spacingSm),
+                    Expanded(
+                      child: Text(
+                        category.toUpperCase(),
+                        style: AppTextStyles.labelMedium.copyWith(
+                          color: cs.onPrimary,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 2,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // Progress badge: X/Y format
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingSm,
+                        vertical: AppDimensions.spacingXxs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: cs.onPrimary.withValues(alpha: 0.2),
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.borderRadiusS),
+                      ),
+                      child: Text(
+                        progress != null
+                            ? '${progress.completed}/${progress.total}'
+                            : '${items.length}',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: cs.onPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                // Progress indicator
+                if (progress != null && progress.total > 0) ...[
+                  const SizedBox(height: AppDimensions.spacingXs),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: LinearProgressIndicator(
+                      value: progress.completed / progress.total,
+                      minHeight: 3,
+                      backgroundColor: cs.onPrimary.withValues(alpha: 0.2),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        cs.onPrimary.withValues(alpha: 0.7),
+                      ),
+                    ),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              // Count badge
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingSm,
-                  vertical: AppDimensions.spacingXxs,
-                ),
-                decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onPrimary
-                      .withValues(alpha: 0.2),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusS),
-                ),
-                child: Text(
-                  '${items.length}',
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+                ],
+              ],
+            ),
           ),
         ),
 
-        // Items in category
-        ...items.map((item) => ShoppingItemTiles.buildItemTile(
-              context,
-              item,
-              isCompleted,
-              onItemTap,
-              onEditItem,
-              onDeleteItem,
-            )),
+        // Items in category (hidden when collapsed)
+        if (!isCollapsed)
+          ...items.map((item) => ShoppingItemTiles.buildItemTile(
+                context,
+                item,
+                isCompleted,
+                widget.onItemTap,
+                widget.onEditItem,
+                widget.onDeleteItem,
+              )),
 
         const SizedBox(height: AppDimensions.spacingMd),
       ],
@@ -264,7 +349,7 @@ class ShoppingListContent {
     }
   }
 
-  static Widget _buildCompletedItemsHeader(
+  Widget _buildCompletedItemsHeader(
       BuildContext context, UnifiedShoppingViewModel viewModel) {
     final cs = Theme.of(context).colorScheme;
 

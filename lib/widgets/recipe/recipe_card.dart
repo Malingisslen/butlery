@@ -45,12 +45,14 @@ class RecipeCard extends StatelessWidget {
   final int maxPersonalTags;
   final bool showMealType;
   final bool showAnalysisStatus;
+  final void Function(Recipe)? onFavoriteToggle;
 
   const RecipeCard({
     super.key,
     required this.recipe,
     this.onTap,
     this.onLongPress,
+    this.onFavoriteToggle,
     this.showContextMenu = false,
     this.showImage = true,
     this.showTags = false, // UI Redesign: Clean list cards by default
@@ -152,6 +154,8 @@ class RecipeCard extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(child: _buildTitle(context)),
+                        if (onFavoriteToggle != null)
+                          _buildFavoriteButton(context),
                         if (showContextMenu) _buildContextMenuButton(context),
                       ],
                     ),
@@ -224,6 +228,7 @@ class RecipeCard extends StatelessWidget {
                   Expanded(
                       child: _buildTitle(context,
                           style: AppTextStyles.titleMedium)),
+                  if (onFavoriteToggle != null) _buildFavoriteButton(context),
                 ],
               ),
               if (showMetadata) ...[
@@ -246,8 +251,13 @@ class RecipeCard extends StatelessWidget {
           _buildRecipeImage(context, height: 150, width: double.infinity),
           const SizedBox(height: AppDimensions.spacingSm),
         ],
-        // Title
-        _buildTitle(context),
+        // Title + favorite
+        Row(
+          children: [
+            Expanded(child: _buildTitle(context)),
+            if (onFavoriteToggle != null) _buildFavoriteButton(context),
+          ],
+        ),
         if (showMetadata) ...[
           const SizedBox(height: AppDimensions.spacingXs),
           _buildMetadataRow(context, compact: true),
@@ -298,6 +308,27 @@ class RecipeCard extends StatelessWidget {
       style: style ?? AppTextStyles.recipeCardTitle,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  Widget _buildFavoriteButton(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isFav = recipe.isFavorite;
+    return SizedBox(
+      width: 32,
+      height: 32,
+      child: IconButton(
+        onPressed: () => onFavoriteToggle?.call(recipe),
+        icon: Icon(
+          isFav ? Icons.favorite : Icons.favorite_border,
+          size: 20,
+          color: isFav ? cs.error : cs.onSurfaceVariant,
+        ),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+        tooltip:
+            isFav ? context.l10n.favoritesRemove : context.l10n.favoritesAdd,
+      ),
     );
   }
 

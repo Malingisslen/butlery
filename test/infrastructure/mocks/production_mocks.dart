@@ -3163,6 +3163,19 @@ class MockMenuCollaborationRepository extends Mock
     return true;
   }
 
+  @override
+  Future<bool> deleteMenuComment({
+    required String menuId,
+    required String commentId,
+  }) async {
+    return true;
+  }
+
+  @override
+  Future<bool> removeMenuRating(String menuId) async {
+    return true;
+  }
+
   /// Create menu template
   @override
   Future<String?> createMenuTemplate({

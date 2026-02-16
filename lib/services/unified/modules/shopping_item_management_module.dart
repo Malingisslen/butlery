@@ -4,6 +4,9 @@ import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/shopping_category_mapper.dart';
 
 /// Shopping item management module for all item operations.
 class ShoppingItemManagementModule {
@@ -73,11 +76,17 @@ class ShoppingItemManagementModule {
       lists.firstWhere((list) => list.id == activeListId,
           orElse: () => throw StateError('Active list not found'));
 
+      // Auto-categorize when category is empty or default
+      var resolvedCategory = category ?? 'Övrigt';
+      if (resolvedCategory.isEmpty || resolvedCategory == 'Övrigt') {
+        resolvedCategory = await _autoCategorize(name);
+      }
+
       final item = UnifiedShoppingItem(
         name: name,
         amount: amount ?? 1.0,
         unit: unit ?? '',
-        category: category ?? 'Övrigt',
+        category: resolvedCategory,
         note: note,
         estimatedPrice: estimatedPrice,
         priority: priority ?? 3,
@@ -274,6 +283,22 @@ class ShoppingItemManagementModule {
       }
       return false;
     }
+  }
+
+  /// Attempt to auto-categorize an item name via IngredientLookupService.
+  Future<String> _autoCategorize(String name) async {
+    try {
+      final lookupService = ServiceLocator.get<IngredientLookupService>();
+      final result = await lookupService.lookupFromRaw([name]);
+      if (result.matched.isNotEmpty) {
+        return ShoppingCategoryMapper.categoryFromIngredientGroup(
+          result.matched.first.group,
+        );
+      }
+    } catch (_) {
+      // Silently fall back to default
+    }
+    return 'Övrigt';
   }
 
   Future<bool> clearCompletedItems() async => true;

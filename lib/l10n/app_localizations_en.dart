@@ -11100,7 +11100,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeSharingNoShares => 'Not shared with anyone';
 
   @override
+  String get menuRatingRemoveTitle => 'Remove rating?';
+
+  @override
   String get menuRatingRemoveMessage => 'Do you want to remove your rating?';
+
+  @override
+  String get menuRatingRemoveConfirm => 'Remove';
+
+  @override
+  String get menuRatingRemoveButton => 'Remove rating';
 
   @override
   String get menuRatingRemoved => 'Rating removed';

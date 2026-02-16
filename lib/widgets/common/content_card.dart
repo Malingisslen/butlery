@@ -142,6 +142,9 @@ class ContentCard extends StatelessWidget {
   /// User dietary preferences for filtering displayed dietary badges (recipe cards only)
   final Set<String>? userDietaryPrefs;
 
+  /// Favorite toggle handler for recipe cards
+  final VoidCallback? onFavoriteToggle;
+
   /// Accept action handler specifically for friend request cards
   final VoidCallback? onAccept;
 
@@ -186,6 +189,7 @@ class ContentCard extends StatelessWidget {
     this.subtitle,
     this.userAllergenPrefs,
     this.userDietaryPrefs,
+    this.onFavoriteToggle,
     this.onAccept,
     this.onDecline,
   });
@@ -231,6 +235,8 @@ class ContentCard extends StatelessWidget {
       recipe: recipe,
       onTap: onTap != null ? (_) => onTap!() : null,
       onLongPress: onLongPress != null ? (_) => onLongPress!() : null,
+      onFavoriteToggle:
+          onFavoriteToggle != null ? (_) => onFavoriteToggle!() : null,
       showImage: showImage,
       showTags: showTags,
       showMetadata: showMetadata,
