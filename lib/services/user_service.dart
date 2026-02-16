@@ -38,7 +38,7 @@ class UserService extends ChangeNotifier
   @override
   FirestoreRepository get firestoreRepository => _firestoreRepository;
 
-  // Cache för prestanda (30 minuter)
+  // Cache for performance (30 minutes)
   UserProfile? _currentUserProfile;
   final Map<String, UserProfile> _profileCache = {};
   final Map<String, DateTime> _cacheTimestamps = {};
@@ -67,7 +67,7 @@ class UserService extends ChangeNotifier
   Future<void> initialize() async {
     AppLogger.info('🔄 Initialiserar UserService...');
 
-    // Lyssna på auth state changes med StreamManagementMixin
+    // Listen to auth state changes with StreamManagementMixin
     listenToStream(
       _authRepository.authStateChanges(),
       (user) {
@@ -332,7 +332,7 @@ class UserService extends ChangeNotifier
             '👤 Ingen profil hittad - skapar automatiskt för ${user.email}');
 
         final displayName = user.displayName ??
-            user.email!.split('@')[0]; // Använd email-prefix som default
+            user.email!.split('@')[0]; // Use email prefix as default
 
         _currentUserProfile = await createOrUpdateProfile(
           displayName: displayName,

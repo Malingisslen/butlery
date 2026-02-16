@@ -64,7 +64,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
 
           return LayoutComponents.mainMenu(
             currentIndex:
-                2, // UI Redesign: nav order is recept(0), meny(1), inköp(2), lägg till(3)
+                2, // UI Redesign: nav order is recipes(0), menu(1), shopping(2), add(3)
             // UI Redesign: Use MainViewHeader with line break title
             appBar: MainViewHeader(
               title: context.l10n

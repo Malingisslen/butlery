@@ -48,7 +48,7 @@ class SmartUnitConverter {
   /// Private constructor preventing instantiation to enforce static utility usage.
   SmartUnitConverter._();
 
-  /// Konverterar enheter till mer läsbara format när det är vettigt
+  /// Converts units to more readable formats when appropriate
   /// Exempel: 15 dl → 1,5 liter, 1200 g → 1,2 kg
   static ConvertedMeasurement convertToReadableUnit(
     double quantity,
@@ -163,7 +163,7 @@ class SmartUnitConverter {
 
       case 'tsk':
         if (quantity >= 15) {
-          // 15 tsk ≈ 1 dl (fallback för stora mängder)
+          // 15 tsk = 1 dl (fallback for large amounts)
           return ConvertedMeasurement(quantity / 15, 'dl');
         } else if (quantity >= 3) {
           // 3 tsk = 1 msk
@@ -183,11 +183,11 @@ class SmartUnitConverter {
     return ConvertedMeasurement(quantity, unit);
   }
 
-  /// Kontrollerar om en konvertering förbättrar läsbarheten
+  /// Checks if a conversion improves readability
   static bool shouldConvert(double quantity, String unit) {
     final converted = convertToReadableUnit(quantity, unit);
 
-    // Konvertera om enheten faktiskt ändrades
+    // Convert if the unit actually changed
     if (converted.unit != unit) {
       // AMERIKANSKA → SVENSKA: konvertera ALLTID
       final americanUnits = {
@@ -221,17 +221,17 @@ class SmartUnitConverter {
       }
 
       // SVENSKA ENHETER: befintliga regler
-      // För volym: konvertera alltid om vi går från dl till liter
+      // For volume: always convert when going from dl to liters
       if (unit.toLowerCase() == 'dl' && converted.unit == 'l') {
         return true;
       }
 
-      // För vikt: konvertera alltid om vi går från g till kg
+      // For weight: always convert when going from g to kg
       if (unit.toLowerCase() == 'g' && converted.unit == 'kg') {
         return true;
       }
 
-      // För små enheter: konvertera alltid uppåt
+      // For small units: always convert upward
       if (unit.toLowerCase() == 'krm' && converted.unit == 'tsk') {
         return true;
       }
@@ -245,7 +245,7 @@ class SmartUnitConverter {
         return true;
       }
 
-      // För andra konverteringar: kolla om det blir mer läsbart
+      // For other conversions: check if it becomes more readable
       final originalDecimals = _countDecimals(quantity);
       final convertedDecimals = _countDecimals(converted.quantity);
 

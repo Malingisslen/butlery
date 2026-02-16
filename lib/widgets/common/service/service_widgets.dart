@@ -43,7 +43,7 @@ class ServiceWidgets {
     );
   }
 
-  /// Generic service widget för andra services
+  /// Generic service widget for other services
   static Widget genericServiceWidget<T extends Listenable>({
     required T service,
     required Widget Function(BuildContext context, T service) builder,
@@ -137,7 +137,7 @@ class ServiceWidgets {
   }
 }
 
-/// Consumer widget för att lyssna på UnifiedRecipeService
+/// Consumer widget for listening to UnifiedRecipeService
 class _RecipeServiceConsumer extends StatelessWidget {
   final Widget Function(
     BuildContext context,

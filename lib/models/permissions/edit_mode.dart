@@ -60,11 +60,11 @@ import 'package:butlery/core/l10n/app_locale.dart';
 enum EditMode {
   /// Full ownership mode with complete editing rights for original content modification.
   /// Content owners can always edit the original content with all privileges and administrative control.
-  owner, // Äger receptet - kan alltid redigera original
+  owner, // Owns the recipe - can always edit original
 
   /// Collaborative editing mode with synchronized multi-user editing capabilities.
   /// Multiple users can edit simultaneously with changes synchronized across all collaborative editors.
-  collaborative, // Kollaborativ redigering - ändringar synkas
+  collaborative, // Collaborative editing - changes are synced
 
   /// Read-only mode with fork/copy capabilities for independent content creation.
   /// Users can view content and create their own independent copies but cannot modify the original.
@@ -72,7 +72,7 @@ enum EditMode {
 
   /// No access mode with complete content access restriction.
   /// Users have no access to view or interact with the content in any way.
-  noAccess, // Ingen åtkomst
+  noAccess, // No access
 
   /// Standard edit mode with basic editing permissions for general content modification.
   /// Provides standard editing capabilities without collaborative features or ownership privileges.

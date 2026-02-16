@@ -56,7 +56,7 @@ class ShoppingAppBar {
               tooltip: context.l10n.shoppingTemplateBrowse,
             ),
 
-          // Dela med vänner-knapp (social)
+          // Share with friends button (social)
           Semantics(
             label: canShare
                 ? context.l10n.a11yShareWithFriends
@@ -156,7 +156,7 @@ class ShoppingAppBar {
           tooltip: context.l10n.shoppingTemplateBrowse,
         ),
 
-      // Dela med vänner-knapp (social)
+      // Share with friends button (social)
       if (canShare)
         IconButton(
           icon: Icon(

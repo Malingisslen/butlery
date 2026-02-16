@@ -104,7 +104,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   void initState() {
     super.initState();
 
-    // ✅ SÄKERT: Ladda data efter widget mount med safety checks
+    // Load data after widget mount with safety checks
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _safeLoadSocialData();
@@ -150,8 +150,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       if (mounted) {
         AppLogger.info('🔄 Laddar receptdata för MinaReceptView...');
 
-        // RecipeListViewModel laddar automatiskt data från RecipeService
-        // Inget explicit refresh behövs här - providern hanterar detta
+        // RecipeListViewModel loads data automatically from RecipeService
+        // No explicit refresh needed here - provider handles this
 
         AppLogger.success('✅ Receptdata redo för MinaReceptView');
       }
@@ -206,7 +206,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           SnackBarUtils.showInfo(context, context.l10n.statusSyncing);
         }
 
-        // Synka offline-ändringar
+        // Sync offline changes
         await offlineService.syncNow();
 
         // Uppdatera receptlistan
@@ -302,7 +302,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     );
   }
 
-  Widget _buildSelectionAppBar(RecipeListViewModel viewModel) {
+  PreferredSizeWidget _buildSelectionAppBar(RecipeListViewModel viewModel) {
     final cs = Theme.of(context).colorScheme;
     return AppBar(
       backgroundColor: cs.primaryContainer,
@@ -324,7 +324,27 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           icon: const Icon(Icons.delete_outline),
           tooltip: context.l10n.bulkDelete,
           onPressed: () async {
-            await viewModel.deleteSelected();
+            final count = viewModel.selectedCount;
+            final confirmed = await CommonDialogActions.showDeleteConfirmation(
+              context: context,
+              itemName: '$count recept',
+              itemType: 'recept',
+              warningMessage: context.l10n.bulkDeleteConfirmMessage,
+              icon: Icons.delete_sweep,
+            );
+            if (confirmed == true) {
+              viewModel.deleteSelected();
+              viewModel.clearSelection();
+              if (mounted) {
+                SnackBarUtils.showSuccessWithAction(
+                  context,
+                  context.l10n.bulkDeleteSuccess(count),
+                  actionLabel: context.l10n.commonUndo,
+                  onAction: () => viewModel.undoBulkDelete(),
+                  duration: const Duration(seconds: 7),
+                );
+              }
+            }
           },
         ),
       ],
@@ -341,7 +361,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
     // Selection mode uses a different app bar
     final PreferredSizeWidget appBar = viewModel.isSelectionMode
-        ? _buildSelectionAppBar(viewModel) as PreferredSizeWidget
+        ? _buildSelectionAppBar(viewModel)
         : MainViewHeader(
             title: 'dina\nrecept',
             countBadge: context.l10n.recipeCountBadge(recipeCount),
@@ -431,13 +451,14 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   }
 
   void _handleDeleteWithUndo(RecipeListViewModel viewModel, Recipe recipe) {
-    viewModel.deleteRecipe(recipe.id);
+    final id = recipe.id;
+    viewModel.deleteRecipe(id);
     if (mounted) {
       SnackBarUtils.showSuccessWithAction(
         context,
         context.l10n.recipeDeleted,
         actionLabel: context.l10n.commonUndo,
-        onAction: () => viewModel.undoDelete(),
+        onAction: () => viewModel.undoDeleteById(id),
         duration: const Duration(seconds: 5),
       );
     }

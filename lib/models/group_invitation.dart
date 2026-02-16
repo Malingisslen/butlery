@@ -13,11 +13,11 @@ import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 
 /// Invitation status: pending, accepted, rejected, expired, cancelled.
 enum GroupInvitationStatus {
-  pending, // Väntande inbjudan
+  pending, // Pending invitation
   accepted, // Accepterad
   rejected, // Avvisad
-  expired, // Utgången
-  cancelled // Avbruten av avsändare
+  expired, // Expired
+  cancelled // Cancelled by sender
 }
 
 /// Group invitation with lifecycle management and cached metadata (group name/emoji, sender name).

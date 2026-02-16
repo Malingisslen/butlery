@@ -113,10 +113,10 @@ class PersistenceService extends BaseService {
       // Konvertera hela listan till JSON-text
       final String recipesString = jsonEncode(recipesJson);
 
-      // Spara till telefonen med vår nyckel
+      // Save to phone with our key
       final success = await prefs.setString(_recipesKey, recipesString);
 
-      // Spara också när vi senast uppdaterade
+      // Also save when we last updated
       if (success) {
         await prefs.setString(
           _lastUpdatedKey,
@@ -126,19 +126,19 @@ class PersistenceService extends BaseService {
 
       return success;
     } catch (e) {
-      // Om något går fel, logga felet och returnera false
+      // If something goes wrong, log the error and return false
       AppLogger.error('Fel vid sparande av recept', e, 'Persistence');
       return false;
     }
   }
 
-  /// 📖 Laddar alla recept från lokal lagring
+  /// Loads all recipes from local storage
   /// Konverterar JSON-text tillbaka till Recipe-objekt
   Future<List<Recipe>> loadRecipes() async {
     try {
       final prefs = await _prefs;
 
-      // Försök hämta den sparade JSON-texten
+      // Try to retrieve the saved JSON text
       final String? recipesString = prefs.getString(_recipesKey);
 
       // Om ingen data finns, returnera tom lista
@@ -164,7 +164,7 @@ class PersistenceService extends BaseService {
       );
       return recipes;
     } catch (e) {
-      // Om något går fel (t.ex. korrupt data), logga och returnera tom lista
+      // If something goes wrong (e.g. corrupt data), log and return empty list
       AppLogger.error('Fel vid laddning av recept', e, 'Persistence');
       return [];
     }
@@ -225,7 +225,7 @@ class PersistenceService extends BaseService {
     }
   }
 
-  /// 📅 Hämtar när data senast uppdaterades
+  /// Gets when data was last updated
   Future<DateTime?> getLastUpdated() async {
     try {
       final prefs = await _prefs;
@@ -282,10 +282,10 @@ class PersistenceService extends BaseService {
     }
   }
 
-  /// 📊 Hämtar lagringsstatistik för debugging
+  /// Gets storage statistics for debugging
   Future<Map<String, dynamic>> getStorageInfo() async {
     try {
-      // Hämta data direkt via metoderna istället för prefs
+      // Get data directly via methods instead of prefs
       final recipes = await loadRecipes();
       final menu = await loadCurrentMenu();
       final lastUpdated = await getLastUpdated();

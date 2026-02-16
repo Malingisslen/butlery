@@ -62,4 +62,8 @@ abstract class RecipeRepository extends Repository<Recipe>
   /// Find recipes by source URL (exact match).
   /// Used for duplicate detection during import.
   Future<List<Recipe>> findBySourceUrl(String url);
+
+  /// Find recipes by title (normalized, case-insensitive match).
+  /// Used for duplicate detection during import when no source URL is available.
+  Future<List<Recipe>> findByTitle(String title);
 }

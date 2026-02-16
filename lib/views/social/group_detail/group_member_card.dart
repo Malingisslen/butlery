@@ -135,17 +135,17 @@ class GroupMemberCard {
     FriendCategory group,
     PermissionService permissionService,
   ) {
-    // Kan inte ta bort sig själv
+    // Cannot remove yourself
     if (member.uid == permissionService.currentUserId) {
       return false;
     }
 
-    // Kan inte ta bort gruppägaren
+    // Cannot remove group owner
     if (member.uid == group.ownerId) {
       return false;
     }
 
-    // Endast ägare och administratörer kan ta bort medlemmar
+    // Only owners and administrators can remove members
     return permissionService.isOwner(group.ownerId) ||
         permissionService.isGroupAdmin(group.id);
   }

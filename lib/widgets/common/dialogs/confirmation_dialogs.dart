@@ -9,7 +9,7 @@ import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 /// Confirmation dialogs for user actions
 /// Refactored to use BaseDialog classes, eliminating 50+ lines of duplicate dialog code.
 class ConfirmationDialogs {
-  /// ✅ Standard bekräftelse dialog
+  /// Standard confirmation dialog
   static Future<bool> showConfirmationDialog(
     BuildContext context, {
     required String title,

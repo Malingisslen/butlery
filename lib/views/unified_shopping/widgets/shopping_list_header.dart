@@ -33,7 +33,7 @@ class ShoppingListHeader {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Lista-väljare dropdown with management buttons
+          // List selector dropdown with management buttons
           _buildListSelector(
               context, viewModel, onRenameList, onDeleteList, onConvertList),
 
@@ -189,7 +189,7 @@ class ShoppingListHeader {
 
     return Row(
       children: [
-        // Rensa färdiga artiklar
+        // Clear completed items
         if (viewModel.boughtItems > 0)
           Expanded(
             child: OutlinedButton.icon(

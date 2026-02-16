@@ -132,7 +132,7 @@ class CreateSharedListViewModel extends ChangeNotifier {
       return null;
     }
 
-    // Kontrollera att användaren har en profil
+    // Verify that the user has a profile
     if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
       _setError(AppLocale.current.errorMustCreateProfileFirst);
       return null;
@@ -145,10 +145,10 @@ class CreateSharedListViewModel extends ChangeNotifier {
       AppLogger.info(
           '🔄 Skapar delad lista: "$trimmedTitle" med ${_selectedFriendIds.length} vänner');
 
-      // Skapa member display names map från friend IDs
+      // Create member display names map from friend IDs
       final memberDisplayNames = <String, String>{};
       for (final friendId in _selectedFriendIds) {
-        // Hämta displayName från friends service
+        // Get displayName from friends service
         final friend = _friendsService.friendsList
             .where((f) => f.uid == friendId)
             .firstOrNull;

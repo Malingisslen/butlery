@@ -29,7 +29,7 @@ class LaggTillReceptView extends StatelessWidget {
 
     return LayoutComponents.mainMenu(
       currentIndex:
-          3, // UI Redesign: nav order is recept(0), meny(1), inköp(2), lägg till(3)
+          3, // UI Redesign: nav order is recipes(0), menu(1), shopping(2), add(3)
       // UI Redesign: Use MainViewHeader with lowercase title
       appBar: MainViewHeader(
         title: context.l10n.addRecipeTitle,
@@ -82,7 +82,7 @@ class LaggTillReceptView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Row 1: Importera länk (rust) + Skriv manuellt (green)
+              // Row 1: Import link (rust) + Write manually (green)
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -104,7 +104,7 @@ class LaggTillReceptView extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: spacing),
-              // Row 2: Från bild (rust) + Scanna recept (green)
+              // Row 2: From image (rust) + Scan recipe (green)
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

@@ -68,7 +68,7 @@ class SharedMenuCard {
                 // Meny content
                 _buildMenuContent(context, sharedMenu),
 
-                // Message från delaren
+                // Message from the sharer
                 if (sharedMenu.shareMessage?.isNotEmpty == true) ...[
                   const SizedBox(height: AppDimensions.spacingS),
                   _buildShareMessage(context, sharedMenu.shareMessage!),

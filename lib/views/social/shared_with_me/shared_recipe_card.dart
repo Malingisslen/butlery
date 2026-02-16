@@ -63,7 +63,7 @@ class SharedRecipeCard {
                 // Recept content - uses denormalized fields for V2 efficiency
                 _buildRecipeContent(context, sharedRecipe),
 
-                // Message från delaren
+                // Message from the sharer
                 if (sharedRecipe.shareMessage?.isNotEmpty == true) ...[
                   const SizedBox(height: AppDimensions.spacingS),
                   _buildShareMessage(context, sharedRecipe.shareMessage!),

@@ -6,7 +6,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
-/// Status för connection monitoring
+/// Status for connection monitoring
 enum ConnectionStatus {
   unknown,
   connecting,
@@ -15,7 +15,7 @@ enum ConnectionStatus {
   reconnecting,
 }
 
-/// Monitor för real-time connection status
+/// Monitor for real-time connection status
 class ConnectionMonitor {
   final RealtimeSyncService _syncService;
   StreamSubscription<bool>? _connectionSubscription;
@@ -25,7 +25,7 @@ class ConnectionMonitor {
   DateTime? _lastConnectionChange;
   Timer? _debounceTimer;
 
-  /// Callback när connection status ändras
+  /// Callback when connection status changes
   final void Function(bool isOnline)? onConnectionChanged;
   final void Function(ConnectionStatus status)? onStatusChanged;
 
@@ -37,7 +37,7 @@ class ConnectionMonitor {
     _startMonitoring();
   }
 
-  /// Är vi online och anslutna?
+  /// Are we online and connected?
   bool get isOnline => _isConnectionStable && _syncService.isConnected;
 
   /// Aktuell connection status
@@ -52,13 +52,13 @@ class ConnectionMonitor {
     return DateTime.now().difference(_lastConnectionChange!) >= duration;
   }
 
-  /// Connection uptime (hur länge vi varit online)
+  /// Connection uptime (how long we have been online)
   Duration? get connectionUptime {
     if (!isOnline || _lastConnectionChange == null) return null;
     return DateTime.now().difference(_lastConnectionChange!);
   }
 
-  /// Starta övervakning av connection status
+  /// Start monitoring connection status
   void _startMonitoring() {
     AppLogger.info('🔌 Startar connection monitoring');
 
@@ -76,7 +76,7 @@ class ConnectionMonitor {
     _onConnectionStatusChanged(_syncService.isConnected);
   }
 
-  /// Hantera connection status ändringar med debouncing
+  /// Handle connection status changes with debouncing
   void _onConnectionStatusChanged(bool isConnected) {
     final wasOnline = isOnline;
     _isConnectionStable = isConnected;
@@ -137,7 +137,7 @@ class ConnectionMonitor {
     _onConnectionStatusChanged(_syncService.isConnected);
   }
 
-  /// Få human-readable connection status
+  /// Get human-readable connection status
   String get statusDescription {
     switch (_status) {
       case ConnectionStatus.unknown:
@@ -153,7 +153,7 @@ class ConnectionMonitor {
     }
   }
 
-  /// Få emoji för connection status
+  /// Get emoji for connection status
   String get statusEmoji {
     switch (_status) {
       case ConnectionStatus.unknown:
@@ -169,7 +169,7 @@ class ConnectionMonitor {
     }
   }
 
-  /// Statistik för debugging
+  /// Statistics for debugging
   Map<String, dynamic> get debugInfo {
     return {
       'isOnline': isOnline,

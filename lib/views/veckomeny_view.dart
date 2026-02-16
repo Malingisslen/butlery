@@ -100,7 +100,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       },
       child: LayoutComponents.mainMenu(
         currentIndex:
-            1, // UI Redesign: nav order is recept(0), meny(1), inköp(2), lägg till(3)
+            1, // UI Redesign: nav order is recipes(0), menu(1), shopping(2), add(3)
         // UI Redesign: Use MainViewHeader with week badge
         appBar: MainViewHeader(
           title: 'veckans\nmeny',

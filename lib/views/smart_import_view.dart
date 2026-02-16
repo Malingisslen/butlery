@@ -336,18 +336,27 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     }
   }
 
-  /// Check for duplicate recipes by source URL before proceeding.
+  /// Check for duplicate recipes by source URL or title before proceeding.
   /// Returns true if import should proceed, false if cancelled.
   Future<bool> _checkForDuplicates(
     BuildContext context,
     Recipe recipe,
   ) async {
-    final sourceUrl = recipe.sourceUrl;
-    if (sourceUrl == null || sourceUrl.isEmpty) return true;
-
     try {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-      final matches = await recipeService.findBySourceUrl(sourceUrl);
+
+      // Check by source URL first (most reliable match)
+      final sourceUrl = recipe.sourceUrl;
+      List<Recipe> matches = [];
+      if (sourceUrl != null && sourceUrl.isNotEmpty) {
+        matches = await recipeService.findBySourceUrl(sourceUrl);
+      }
+
+      // Fall back to title match if no URL match found
+      if (matches.isEmpty && recipe.title.isNotEmpty) {
+        matches = await recipeService.findByTitle(recipe.title);
+      }
+
       if (matches.isEmpty || !context.mounted) return true;
 
       final choice = await showDuplicateImportDialog(

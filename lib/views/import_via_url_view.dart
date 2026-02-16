@@ -12,7 +12,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
-/// ✨ UPPDATERAD IMPORT VIA URL VY MED SOURCEURL-STÖD
+/// Import via URL view with sourceUrl support
 class ImportViaUrlView extends StatelessWidget {
   const ImportViaUrlView({super.key});
 
@@ -115,7 +115,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                   ),
                   const SizedBox(height: AppDimensions.spacingXl),
 
-                  // Hämta-knapp
+                  // Fetch button
                   ActionButtons.primaryButton(
                     context,
                     label: context.l10n.importFetchText,

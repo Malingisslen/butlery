@@ -31,19 +31,19 @@ class GroupInvitationsViewModel extends ChangeNotifier
     _initializeData();
   }
 
-  /// Tillgängliga grupper som användaren kan gå med i
+  /// Available groups that the user can join
   List<FriendCategory> get availableGroups =>
       List.unmodifiable(_availableGroups);
 
-  /// Hämta medlemmar för en specifik grupp
+  /// Get members for a specific group
   List<UserProfile> getMembersForGroup(String groupId) {
     return _groupMembers[groupId] ?? [];
   }
 
-  /// Kontrollera om en specifik grupp håller på att joinas
+  /// Check if a specific group is being joined
   bool isJoiningGroup(String groupId) => _joiningGroupIds.contains(groupId);
 
-  /// Mottagna gruppinbjudningar (väntande)
+  /// Received group invitations (pending)
   List<GroupInvitation> get receivedInvitations =>
       List.unmodifiable(_receivedInvitations
           .where((inv) => inv.status == GroupInvitationStatus.pending)
@@ -53,16 +53,16 @@ class GroupInvitationsViewModel extends ChangeNotifier
   List<GroupInvitation> get allReceivedInvitations =>
       List.unmodifiable(_receivedInvitations);
 
-  /// Antal väntande inbjudningar (för badge/notification)
+  /// Number of pending invitations (for badge/notification)
   int get pendingInvitationsCount => receivedInvitations.length;
 
-  /// Kontrollera om en specifik inbjudan håller på att besvaras
+  /// Check if a specific invitation is being responded to
   bool isRespondingToInvitation(String invitationId) =>
       _respondingInvitationIds.contains(invitationId);
 
   /// isLoading, error, hasError provided by StateNotifierMixin
 
-  /// Aktuell användare
+  /// Current user
   String? get _currentUserId =>
       ServiceLocator.get<PermissionService>().currentUserId;
 
@@ -86,17 +86,17 @@ class GroupInvitationsViewModel extends ChangeNotifier
           throw Exception(AppLocale.current.errorNoUserLoggedIn);
         }
 
-        // Hämta alla grupper
+        // Fetch all groups
         final allGroups = _friendsService.categories.getAllCategories();
 
-        // Filtrera bort grupper där användaren redan är medlem eller admin
+        // Filter out groups where the user is already a member or admin
         _availableGroups = allGroups.where((group) {
-          // Hoppa över grupper där användaren redan är medlem
+          // Skip groups where the user is already a member
           if (group.friendUserIds.contains(currentUserId)) {
             return false;
           }
 
-          // Hoppa över grupper som användaren äger
+          // Skip groups that the user owns
           if (group.createdBy == currentUserId) {
             return false;
           }
@@ -108,7 +108,7 @@ class GroupInvitationsViewModel extends ChangeNotifier
           '📋 ${_availableGroups.length} tillgängliga grupper att gå med i',
         );
 
-        // Ladda medlemmar för varje grupp
+        // Load members for each group
         await _loadMembersForGroups();
       });
     } catch (e) {
@@ -120,7 +120,7 @@ class GroupInvitationsViewModel extends ChangeNotifier
   Future<void> _loadMembersForGroups() async {
     for (final group in _availableGroups) {
       try {
-        // Hämta vänprofiler för gruppmedlemmar
+        // Fetch friend profiles for group members
         final allFriends = _friendsService.management.getAllFriends();
         final groupMembers = allFriends
             .where((friend) => group.friendUserIds.contains(friend.uid))
@@ -186,7 +186,7 @@ class GroupInvitationsViewModel extends ChangeNotifier
     }
   }
 
-  /// Gå med i en grupp (befintlig funktionalitet)
+  /// Join a group (existing functionality)
   Future<void> joinGroup(String groupId) async {
     final currentUserId = _currentUserId;
     if (currentUserId == null) {
@@ -211,7 +211,7 @@ class GroupInvitationsViewModel extends ChangeNotifier
 
       AppLogger.info('🔄 Går med i grupp "${group.name}"...');
 
-      // Använd UnifiedFriendsService för att lägga till användaren som medlem
+      // Use UnifiedFriendsService to add the user as a member
       final success = await _friendsService.categories.assignFriendToCategory(
         currentUserId,
         groupId,
@@ -220,7 +220,7 @@ class GroupInvitationsViewModel extends ChangeNotifier
       if (success) {
         AppLogger.success('✅ Gick med i grupp "${group.name}" framgångsrikt!');
 
-        // Ta bort gruppen från tillgängliga grupper
+        // Remove the group from available groups
         _availableGroups.removeWhere((g) => g.id == groupId);
         _groupMembers.remove(groupId);
 
@@ -262,7 +262,7 @@ class GroupInvitationsViewModel extends ChangeNotifier
       AppLogger.info(
           '🔄 Accepterar inbjudan från "${invitation.fromUserName}"...');
 
-      // Använd UnifiedFriendsService för att acceptera inbjudan och gå med i gruppen
+      // Use UnifiedFriendsService to accept invitation and join the group
       // BUG-018 FIX: Use acceptGroupInvitation which adds user to friendUserIds
       final success =
           await _friendsService.invitations.acceptGroupInvitation(invitationId);
@@ -271,10 +271,10 @@ class GroupInvitationsViewModel extends ChangeNotifier
         AppLogger.success(
             '✅ Inbjudan accepterad från "${invitation.fromUserName}"');
 
-        // Uppdatera lokal state - ta bort från väntande inbjudningar
+        // Update local state - remove from pending invitations
         await _loadReceivedInvitations();
 
-        // Uppdatera tillgängliga grupper (ta bort gruppen eftersom vi nu är medlemmar)
+        // Update available groups (remove the group since we are now members)
         await _loadAvailableGroups();
 
         // Logga analytics event
@@ -315,7 +315,7 @@ class GroupInvitationsViewModel extends ChangeNotifier
       AppLogger.info(
           '🔄 Avvisar inbjudan från "${invitation.fromUserName}"...');
 
-      // Använd UnifiedFriendsService för att avvisa
+      // Use UnifiedFriendsService to decline
       final success =
           await _friendsService.invitations.cancelInvitation(invitationId);
 
@@ -346,20 +346,20 @@ class GroupInvitationsViewModel extends ChangeNotifier
     AppLogger.info('🔄 Refreshar gruppinbjudningsdata...');
 
     try {
-      // Refresha underliggande services först
+      // Refresh underlying services first
       // UnifiedFriendsService hanterar refresh internt
 
-      // Ladda om båda typerna av data
+      // Reload both types of data
       await _initializeData();
 
       AppLogger.success('✅ Gruppinbjudningsdata refreshad');
     } catch (e) {
       AppLogger.error('❌ Fel vid refresh av gruppinbjudningsdata', e);
-      // Visa inte fel här - användaren ser redan data från cache
+      // Do not show error here - user already sees data from cache
     }
   }
 
-  /// Hämta gruppstatistik (befintlig + ny data)
+  /// Get group statistics (existing + new data)
   Map<String, dynamic> getGroupStats() {
     return {
       'availableGroups': _availableGroups.length,
@@ -374,12 +374,12 @@ class GroupInvitationsViewModel extends ChangeNotifier
     };
   }
 
-  /// Kontrollera om en grupp är tillgänglig för medlemskap
+  /// Check if a group is available for membership
   bool isGroupAvailable(String groupId) {
     return _availableGroups.any((group) => group.id == groupId);
   }
 
-  /// Få gruppobjekt baserat på ID
+  /// Get group object by ID
   FriendCategory? getGroupById(String groupId) {
     try {
       return _availableGroups.firstWhere((group) => group.id == groupId);
@@ -395,7 +395,7 @@ class GroupInvitationsViewModel extends ChangeNotifier
     super.clearError();
   }
 
-  /// Logga analytics för gruppmedlemskap (befintlig)
+  /// Log analytics for group membership (existing)
   void _logJoinGroupEvent(FriendCategory group) {
     try {
       AppLogger.info(
@@ -406,7 +406,7 @@ class GroupInvitationsViewModel extends ChangeNotifier
     }
   }
 
-  /// ✅ NYTT: Logga analytics för accepterad inbjudan
+  /// Log analytics for accepted invitation
   void _logAcceptInvitationEvent(GroupInvitation invitation) {
     try {
       AppLogger.info(
@@ -417,7 +417,7 @@ class GroupInvitationsViewModel extends ChangeNotifier
     }
   }
 
-  /// ✅ NYTT: Logga analytics för avvisad inbjudan
+  /// Log analytics for declined invitation
   void _logRejectInvitationEvent(GroupInvitation invitation) {
     try {
       AppLogger.info(

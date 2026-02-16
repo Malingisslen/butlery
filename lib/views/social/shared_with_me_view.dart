@@ -66,7 +66,7 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
 
-    // Konfigurera svenska för timeago
+    // Configure Swedish for timeago
     timeago.setLocaleMessages('sv', timeago.SvMessages());
 
     // Trigger initial data load after first frame

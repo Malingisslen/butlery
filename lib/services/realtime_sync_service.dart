@@ -75,22 +75,22 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     );
   }
 
-  /// Är vi anslutna till Firebase?
+  /// Are we connected to Firebase?
   bool get isConnected => _connectionModule.isConnected;
 
-  /// Stream för connection status
+  /// Stream for connection status
   Stream<bool> get connectionStream => _connectionController.stream;
 
   /// Senaste synkroniseringsfel
   SyncError? get lastError => _lastError;
 
-  /// Stream för synkroniseringsfel
+  /// Stream for synchronization errors
   Stream<SyncError> get errorStream => _errorController.stream;
 
-  /// Antal aktiva listeners (för debugging)
+  /// Number of active listeners (for debugging)
   int get activeListenersCount => _activeListeners.length;
 
-  /// Aktuell användare
+  /// Current user
   String? get _currentUserId => _authRepository.currentUserId;
 
   /// Add listener for state changes
@@ -195,7 +195,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
         '💾 Uppdaterar resurs: ${resource.id} (${resource.runtimeType})');
 
     try {
-      // Kontrollera behörighet (från modellen, inte business logic här)
+      // Check permission (from the model, not business logic here)
       if (!resource.canUserEdit(_currentUserId!)) {
         throw SyncError(
           type: SyncErrorType.permissionDenied,
@@ -314,7 +314,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
             '☁️ Remote version vinner (editCount: ${remote.editCount} > ${local.editCount})');
         return remote;
       } else {
-        // Samma editCount - använd timestamp
+        // Same editCount - use timestamp
         if (local.lastEditedAt.isAfter(remote.lastEditedAt)) {
           AppLogger.info('📝 Lokal version vinner (nyare timestamp)');
           return local;
@@ -326,20 +326,20 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     } catch (e) {
       AppLogger.error('❌ Fel vid conflict resolution för ${local.id}', e);
 
-      // Vid fel i conflict resolution, välj remote version (säkrare)
+      // On conflict resolution error, choose remote version (safer)
       AppLogger.warning(
           '🛡️ Väljer remote version vid conflict resolution-fel');
       return remote;
     }
   }
 
-  /// Stäng specifik listener
+  /// Close specific listener
   Future<void> _closeListener(String resourceId) async {
     final subscription = _activeListeners.remove(resourceId);
     await subscription?.cancel();
   }
 
-  /// Stäng alla aktiva listeners
+  /// Close all active listeners
   void _closeAllListeners() {
     for (final subscription in _activeListeners.values) {
       subscription.cancel();
@@ -375,19 +375,19 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     notifyListeners();
   }
 
-  /// Tvinga uppdatering av alla aktiva listeners (för refresh)
+  /// Force update of all active listeners (for refresh)
   void refreshAllResources() {
     AppLogger.info('🔄 Tvinga refresh av alla aktiva resurser');
     // Listeners uppdateras automatiskt via Firebase snapshots
     notifyListeners();
   }
 
-  /// Hämta cached version av resurs (utan Firebase-anrop)
+  /// Get cached version of resource (without Firebase call)
   T? getCachedResource<T extends RealtimeResource>(String resourceId) {
     return _cachedResources[resourceId] as T?;
   }
 
-  /// Kontrollera om resurs är aktiv watched
+  /// Check if resource is actively watched
   bool isResourceWatched(String resourceId) {
     return _activeListeners.containsKey(resourceId);
   }

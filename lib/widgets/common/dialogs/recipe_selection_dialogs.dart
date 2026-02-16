@@ -19,7 +19,7 @@ import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_sele
 /// RecipeSelectionDialogs.showMenuRecipeSelector(context, categoryName: 'Lunch');
 /// ```
 class RecipeSelectionDialogs {
-  /// 🤝 Dialog för att välja recept att dela med en vän
+  /// Dialog for selecting recipes to share with a friend
   /// Replaces: RecipeSelectionDialog
   static Future<void> showRecipeSelector(
     BuildContext context, {
@@ -31,7 +31,7 @@ class RecipeSelectionDialogs {
     );
   }
 
-  /// 📋 Dialog för att välja recept för meny-kategori
+  /// Dialog for selecting recipes for a menu category
   /// Replaces: MenuRecipeSelectionDialog
   static Future<List<Recipe>?> showMenuRecipeSelector(
     BuildContext context, {

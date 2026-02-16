@@ -16,7 +16,7 @@ import 'package:butlery/widgets/common/indicators/realtime_status_widgets.dart';
 /// **SRP Compliance:** This file follows the facade pattern - it delegates
 /// to specialized widget modules rather than implementing widgets directly.
 class RealtimeIndicators {
-  /// ✏️ Indikator för vem som redigerar just nu
+  /// Indicator showing who is currently editing
   static Widget editIndicator({
     required String editorName,
     String? editorId,
@@ -35,7 +35,7 @@ class RealtimeIndicators {
     );
   }
 
-  /// 👥 Lista över aktiva deltagare med management
+  /// List of active participants with management
   static Widget participantList({
     required List<ParticipantActivity> activities,
     required String currentUserId,
@@ -69,7 +69,7 @@ class RealtimeIndicators {
     );
   }
 
-  /// 📢 Expanderat status banner för större visningar
+  /// Expanded status banner for larger displays
   static Widget realtimeStatusBanner({
     required bool isOnline,
     required String statusDescription,

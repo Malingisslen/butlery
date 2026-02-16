@@ -767,14 +767,39 @@ class UnifiedRecipeService extends ChangeNotifier
     notifyListeners();
   }
 
+  /// Remove recipe and return its original index for position-aware restore.
+  int optimisticRemoveWithIndex(String recipeId) {
+    final index = _recipes.indexWhere((r) => r.id == recipeId);
+    if (index >= 0) {
+      _recipes.removeAt(index);
+      notifyListeners();
+    }
+    return index;
+  }
+
   void optimisticRestore(Recipe recipe) {
     _recipes.add(recipe);
+    notifyListeners();
+  }
+
+  /// Insert recipe at a specific position for ordered restore after undo.
+  void optimisticRestoreAt(Recipe recipe, int index) {
+    if (index >= 0 && index <= _recipes.length) {
+      _recipes.insert(index, recipe);
+    } else {
+      _recipes.add(recipe);
+    }
     notifyListeners();
   }
 
   /// Find recipes by source URL for duplicate detection during import.
   Future<List<Recipe>> findBySourceUrl(String url) async {
     return await _getRecipeRepository().findBySourceUrl(url);
+  }
+
+  /// Find recipes by title for duplicate detection during import.
+  Future<List<Recipe>> findByTitle(String title) async {
+    return await _getRecipeRepository().findByTitle(title);
   }
 
   void clearError() {

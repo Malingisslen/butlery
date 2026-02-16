@@ -1,29 +1,29 @@
-// lib/viewmodels/realtime/optimistic_update_manager.dart - FIXED för kategorier
+// lib/viewmodels/realtime/optimistic_update_manager.dart - FIXED for categories
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 
-/// Manager för optimistiska uppdateringar med automatic rollback
+/// Manager for optimistic updates with automatic rollback
 class OptimisticUpdateManager {
   final Map<String, List<Recipe>> _optimisticChanges = {};
   bool _hasOptimisticChanges = false;
   Timer? _rollbackTimer;
 
-  /// Callback när optimistiska ändringar uppdateras
+  /// Callback when optimistic changes are updated
   final VoidCallback? onUpdated;
 
   OptimisticUpdateManager({this.onUpdated});
 
-  /// Har vi optimistiska ändringar?
+  /// Do we have optimistic changes?
   bool get hasChanges => _hasOptimisticChanges;
 
-  /// Alla optimistiska ändringar (för debugging)
+  /// All optimistic changes (for debugging)
   Map<String, List<Recipe>> get allChanges =>
       Map.unmodifiable(_optimisticChanges);
 
-  /// Applicera optimistisk ändring för en kategori
+  /// Apply optimistic change for a category
   void applyChange(
     String categoryName,
     List<Recipe> Function(List<Recipe>) updateFunction, [
@@ -42,7 +42,7 @@ class OptimisticUpdateManager {
     AppLogger.debug('🔄 Optimistisk ändring applicerad för $categoryName');
   }
 
-  /// Hämta recept för kategori med optimistiska ändringar
+  /// Get recipes for category with optimistic changes
   List<Recipe> getRecipesForDay(String categoryName, List<Recipe> fallback) {
     if (_hasOptimisticChanges && _optimisticChanges.containsKey(categoryName)) {
       return _optimisticChanges[categoryName]!;
@@ -50,7 +50,7 @@ class OptimisticUpdateManager {
     return fallback;
   }
 
-  /// Hämta hela menyn med optimistiska ändringar tillämpade
+  /// Get the full menu with optimistic changes applied
   Map<String, List<Recipe>> applyToMenu(Map<String, List<Recipe>> baseMenu) {
     if (!_hasOptimisticChanges) return baseMenu;
 
@@ -59,7 +59,7 @@ class OptimisticUpdateManager {
     return result;
   }
 
-  /// Rensa alla optimistiska ändringar
+  /// Clear all optimistic changes
   void clear() {
     if (_hasOptimisticChanges) {
       _optimisticChanges.clear();
@@ -76,7 +76,7 @@ class OptimisticUpdateManager {
     AppLogger.warning('⏪ Optimistiska ändringar rullades tillbaka');
   }
 
-  /// Rensa optimistiska ändringar för specifik kategori
+  /// Clear optimistic changes for specific category
   void clearCategory(String categoryName) {
     if (_optimisticChanges.remove(categoryName) != null) {
       if (_optimisticChanges.isEmpty) {

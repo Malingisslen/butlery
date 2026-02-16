@@ -309,7 +309,7 @@ class SwedishPluralization {
   static String _pluralizeWord(String word) {
     final lower = word.toLowerCase();
 
-    // Specialfall för specifika ord
+    // Special cases for specific words
     final specialCases = {
       'lasagneplatt': 'lasagneplattor',
       'krossade tomat': 'krossade tomater',
@@ -348,16 +348,16 @@ class SwedishPluralization {
     };
 
     if (specialCases.containsKey(lower)) {
-      // Behåll ursprunglig case-struktur
+      // Preserve original case structure
       final special = specialCases[lower]!;
       if (word.isNotEmpty && word[0].toUpperCase() == word[0]) {
-        // Första bokstaven stor
+        // First letter uppercase
         return special[0].toUpperCase() + special.substring(1);
       }
       return special;
     }
 
-    // Reguljära regler för pluralisering
+    // Regular rules for pluralization
     if (lower.endsWith('ing')) {
       return '${word}ar';
     }

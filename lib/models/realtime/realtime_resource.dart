@@ -13,10 +13,10 @@ enum RealtimeResourceType {
 
   const RealtimeResourceType(this.value);
 
-  /// Firestore-värde för denna typ
+  /// Firestore value for this type
   final String value;
 
-  /// Skapa från Firestore string value
+  /// Create from Firestore string value
   static RealtimeResourceType fromString(String value) {
     switch (value) {
       case 'recipe':
@@ -43,7 +43,7 @@ enum RealtimeResourceType {
     }
   }
 
-  /// Få ikon för resurstyp
+  /// Get icon for resource type
   String get icon {
     switch (this) {
       case RealtimeResourceType.recipe:
@@ -59,45 +59,45 @@ enum RealtimeResourceType {
   String toString() => value;
 }
 
-/// Abstract base class för alla realtidsresurser
+/// Abstract base class for all realtime resources
 abstract class RealtimeResource {
-  /// Unik identifierare för resursen
+  /// Unique identifier for the resource
   final String id;
 
   /// Typ av resurs (recipe, menu, shopping)
   final RealtimeResourceType type;
 
-  /// ID för användaren som äger resursen
+  /// ID of the user who owns the resource
   final String ownerId;
 
-  /// Visningsnamn för ägaren (cached för performance)
+  /// Display name of the owner (cached for performance)
   final String ownerDisplayName;
 
-  /// Mapp över alla deltagare och deras behörigheter
+  /// Map of all participants and their permissions
   final Map<String, ResourcePermission> participants;
 
-  /// Lista över deltagarnas ID:n (denormaliserad för Firestore-queries)
+  /// List of participant IDs (denormalized for Firestore queries)
   final List<String> participantIds;
 
-  /// När resursen skapades
+  /// When the resource was created
   final DateTime createdAt;
 
-  /// När resursen senast uppdaterades
+  /// When the resource was last updated
   final DateTime lastEditedAt;
 
-  /// Vem som gjorde senaste ändringen
+  /// Who made the last change
   final String lastEditedBy;
 
-  /// Visningsnamn för den som gjorde senaste ändringen (cached)
+  /// Display name of the last modifier (cached)
   final String lastEditedByDisplayName;
 
-  /// Antal gånger resursen har redigerats
+  /// Number of times the resource has been edited
   final int editCount;
 
-  /// Om resursen är aktiv eller arkiverad
+  /// Whether the resource is active or archived
   final bool isActive;
 
-  /// Extra metadata för framtida utbyggnad
+  /// Extra metadata for future expansion
   final Map<String, dynamic> metadata;
 
   RealtimeResource({
@@ -119,16 +119,16 @@ abstract class RealtimeResource {
         lastEditedAt = lastEditedAt ?? DateTime.now(),
         metadata = metadata ?? {};
 
-  /// Kontrollera om en användare har en specifik behörighet
+  /// Check if a user has a specific permission
   bool hasPermission(String userId, ResourcePermission requiredPermission) {
     // Owner always has full permission (even if not in participants map)
     if (isOwner(userId)) return true;
 
     final userPermission = participants[userId];
     if (userPermission == null) return false;
-    // Ägare har alltid full behörighet
+    // Owner always has full permissions
     if (userPermission == ResourcePermission.owner) return true;
-    // Kontrollera specifik behörighet
+    // Check specific permission
     if (requiredPermission == ResourcePermission.viewer ||
         requiredPermission == ResourcePermission.read) {
       return true; // Alla deltagare kan se
@@ -148,28 +148,28 @@ abstract class RealtimeResource {
     }
   }
 
-  /// Kontrollera om användare kan redigera innehåll
+  /// Check if user can edit content
   bool canUserEdit(String userId) {
     // Owner can always edit their own resource
     if (isOwner(userId)) return true;
     return hasPermission(userId, ResourcePermission.editor);
   }
 
-  /// Kontrollera om användare kan ta bort resursen
+  /// Check if user can delete the resource
   bool canUserDelete(String userId) {
     // Owner can always delete their own resource
     if (isOwner(userId)) return true;
     return participants[userId] == ResourcePermission.owner;
   }
 
-  /// Kontrollera om användare kan hantera behörigheter
+  /// Check if user can manage permissions
   bool canUserManagePermissions(String userId) {
     // Owner can always manage permissions
     if (isOwner(userId)) return true;
     return participants[userId] == ResourcePermission.owner;
   }
 
-  /// Kontrollera om användare kan bjuda in andra
+  /// Check if user can invite others
   bool canUserInvite(String userId) {
     // Owner can always invite
     if (isOwner(userId)) return true;
@@ -179,22 +179,22 @@ abstract class RealtimeResource {
             permission == ResourcePermission.owner);
   }
 
-  /// Kontrollera om användare kan lämna resursen
+  /// Check if user can leave the resource
   bool canUserLeave(String userId) {
     final permission = participants[userId];
     return permission != null && permission != ResourcePermission.owner;
   }
 
-  /// Kontrollera om användare är ägare
+  /// Check if user is owner
   bool isOwner(String userId) => ownerId == userId;
 
-  /// Kontrollera om användare är deltagare
+  /// Check if user is participant
   bool isParticipant(String userId) => participants.containsKey(userId);
 
   /// Antal deltagare
   int get participantCount => participants.length;
 
-  /// Antal redigerare (inklusive ägare)
+  /// Number of editors (including owner)
   int get editorCount {
     return participants.values
         .where((p) => ResourcePermissionHelper.canEditContent(
@@ -209,7 +209,7 @@ abstract class RealtimeResource {
         .length;
   }
 
-  /// Lista över alla deltagare som kan redigera
+  /// List of all participants who can edit
   List<String> get editorIds {
     return participants.entries
         .where((entry) => ResourcePermissionHelper.canEditContent(
@@ -218,7 +218,7 @@ abstract class RealtimeResource {
         .toList();
   }
 
-  /// Lista över alla deltagare som bara kan se
+  /// List of all participants with view-only access
   List<String> get viewerIds {
     return participants.entries
         .where((entry) => entry.value == ResourcePermission.viewer)
@@ -226,7 +226,7 @@ abstract class RealtimeResource {
         .toList();
   }
 
-  /// Hur länge sedan resursen redigerades
+  /// How long since the resource was edited
   Duration get timeSinceLastEdit => DateTime.now().difference(lastEditedAt);
 
   /// Text for "last edited"
@@ -249,10 +249,10 @@ abstract class RealtimeResource {
   /// Kontrollera om resursen har redigerats nyligen (senaste timmen)
   bool get hasRecentActivity => timeSinceLastEdit.inHours < 1;
 
-  /// Kontrollera om resursen är aktiv (redigerats senaste veckan)
+  /// Check if the resource is active (edited within the last week)
   bool get hasWeeklyActivity => timeSinceLastEdit.inDays < 7;
 
-  /// Kontrollera om resursen har ändrats sedan specifik tidpunkt
+  /// Check if the resource has changed since a specific point in time
   bool hasChangedSince(DateTime timestamp) {
     return lastEditedAt.isAfter(timestamp);
   }
@@ -301,7 +301,7 @@ abstract class RealtimeResource {
     }
   }
 
-  /// Subclasses måste implementera sin egen copyWith
+  /// Subclasses must implement their own copyWith
   RealtimeResource copyWithMetadata({
     Map<String, ResourcePermission>? participants,
     List<String>? participantIds,
@@ -313,7 +313,7 @@ abstract class RealtimeResource {
     Map<String, dynamic>? metadata,
   });
 
-  /// Subclasses måste implementera serialization av sitt innehåll
+  /// Subclasses must implement serialization of their content
   Map<String, dynamic> serializeContent();
 
   /// Serialisera gemensam metadata till Firestore
@@ -344,7 +344,7 @@ abstract class RealtimeResource {
     return data;
   }
 
-  /// Deserialiserare gemensam metadata från Firestore
+  /// Deserialize common metadata from Firestore
   static Map<String, dynamic> parseFirestoreMetadata(
     Map<String, dynamic> data,
     String documentId,
@@ -391,7 +391,7 @@ abstract class RealtimeResource {
     };
   }
 
-  /// JSON serialization för caching
+  /// JSON serialization for caching
   Map<String, dynamic> toJsonMetadata() {
     return {
       'id': id,
@@ -413,7 +413,7 @@ abstract class RealtimeResource {
     };
   }
 
-  /// Lägg till deltagare med specifik behörighet
+  /// Add participant with specific permission
   RealtimeResource addParticipant(
     String userId,
     String userDisplayName,
@@ -463,7 +463,7 @@ abstract class RealtimeResource {
     );
   }
 
-  /// Uppdatera deltagares behörighet
+  /// Update participant permission
   RealtimeResource updateParticipantPermission(
     String userId,
     ResourcePermission newPermission,
@@ -485,7 +485,7 @@ abstract class RealtimeResource {
     );
   }
 
-  /// Markera som redigerad av specifik användare
+  /// Mark as edited by specific user
   RealtimeResource markEditedBy(String userId, String userDisplayName) {
     return copyWithMetadata(
       lastEditedAt: DateTime.now(),
@@ -504,7 +504,7 @@ abstract class RealtimeResource {
     );
   }
 
-  /// Återaktivera resursen
+  /// Reactivate the resource
   RealtimeResource reactivate() {
     return copyWithMetadata(
       isActive: true,
@@ -513,7 +513,7 @@ abstract class RealtimeResource {
     );
   }
 
-  /// Filtrera deltagare baserat på permission
+  /// Filter participants based on permission
   Map<String, ResourcePermission> filterParticipantsByPermission(
     ResourcePermission permission,
   ) {
@@ -522,28 +522,28 @@ abstract class RealtimeResource {
     );
   }
 
-  /// Få alla ägare (borde bara vara en, men för säkerhet)
+  /// Get all owners (should be just one, but for safety)
   Map<String, ResourcePermission> get owners {
     return filterParticipantsByPermission(ResourcePermission.owner);
   }
 
-  /// Få alla redigerare
+  /// Get all editors
   Map<String, ResourcePermission> get editors {
     return filterParticipantsByPermission(ResourcePermission.editor);
   }
 
-  /// Få alla betraktare
+  /// Get all viewers
   Map<String, ResourcePermission> get viewers {
     return filterParticipantsByPermission(ResourcePermission.viewer);
   }
 
-  /// Kontrollera om resursen är tom (ingen har redigerat den)
+  /// Check if the resource is empty (no one has edited it)
   bool get isEmpty => editCount == 0;
 
-  /// Kontrollera om resursen har collaborators (fler än ägaren)
+  /// Check if the resource has collaborators (more than the owner)
   bool get hasCollaborators => participantCount > 1;
 
-  /// Få antalet aktiva collaborators (exclude owner)
+  /// Get the number of active collaborators (excluding owner)
   int get collaboratorCount => participantCount - 1;
 
   @override

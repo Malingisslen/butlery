@@ -14,6 +14,8 @@ import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/tag_editing_service.dart';
+import 'package:butlery/viewmodels/recipe_list/recipe_selection_manager.dart';
+import 'package:butlery/viewmodels/recipe_list/recipe_delete_manager.dart';
 import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 
 /// Recipe list ViewModel for search, filtering, sorting, and caching (MVVM).
@@ -59,17 +61,9 @@ class RecipeListViewModel extends ChangeNotifier {
   bool _isGridView = false;
   bool get isGridView => _isGridView;
 
-  // Multi-select / bulk operations
-  bool _isSelectionMode = false;
-  final Set<String> _selectedIds = {};
-  bool get isSelectionMode => _isSelectionMode;
-  Set<String> get selectedIds => Set.unmodifiable(_selectedIds);
-  int get selectedCount => _selectedIds.length;
-
-  // Undo delete state
-  Timer? _pendingDeleteTimer;
-  Recipe? _pendingDeleteRecipe;
-  String? _pendingDeleteId;
+  // Multi-select and delete managers
+  final RecipeSelectionManager _selectionManager = RecipeSelectionManager();
+  late final RecipeDeleteManager _deleteManager;
 
   /// Cached filtered recipe results for performance optimization and responsiveness.
   List<Recipe>? _cachedFilteredRecipes;
@@ -122,6 +116,13 @@ class RecipeListViewModel extends ChangeNotifier {
         _searchService = searchService ?? ServiceLocator.get<SearchService>(),
         _tagEditingService =
             tagEditingService ?? ServiceLocator.get<TagEditingService>() {
+    _deleteManager = RecipeDeleteManager(
+      recipeService: _recipeService,
+      invalidateCache: _invalidateCache,
+      notifyParent: notifyListeners,
+      onError: (_) => notifyListeners(),
+    );
+    _selectionManager.addListener(notifyListeners);
     _recipeService.addListener(_onRecipesChanged);
     _recipeService.initialize();
     _loadViewModePreference();
@@ -422,85 +423,25 @@ class RecipeListViewModel extends ChangeNotifier {
     }
   }
 
-  // Selection mode methods
-  void enterSelectionMode(String firstId) {
-    _isSelectionMode = true;
-    _selectedIds.add(firstId);
-    notifyListeners();
-  }
+  // Selection delegation
+  bool get isSelectionMode => _selectionManager.isSelectionMode;
+  Set<String> get selectedIds => _selectionManager.selectedIds;
+  int get selectedCount => _selectionManager.selectedCount;
+  void enterSelectionMode(String firstId) =>
+      _selectionManager.enterSelectionMode(firstId);
+  void toggleSelection(String id) => _selectionManager.toggleSelection(id);
+  void selectAll() => _selectionManager.selectAll(recipes.map((r) => r.id));
+  void clearSelection() => _selectionManager.clearSelection();
 
-  void toggleSelection(String id) {
-    if (_selectedIds.contains(id)) {
-      _selectedIds.remove(id);
-      if (_selectedIds.isEmpty) {
-        _isSelectionMode = false;
-      }
-    } else {
-      _selectedIds.add(id);
-    }
-    notifyListeners();
-  }
-
-  void selectAll() {
-    final visibleIds = recipes.map((r) => r.id);
-    _selectedIds.addAll(visibleIds);
-    notifyListeners();
-  }
-
-  void clearSelection() {
-    _selectedIds.clear();
-    _isSelectionMode = false;
-    notifyListeners();
-  }
-
-  Future<void> deleteSelected() async {
-    final idsToDelete = Set<String>.from(_selectedIds);
-    clearSelection();
-    for (final id in idsToDelete) {
-      await _recipeService.deleteRecipe(id);
-    }
-  }
-
-  // Optimistic delete with undo support (5-second window)
-  Future<void> deleteRecipe(String recipeId) async {
-    // Cancel any pending delete first
-    _commitPendingDelete();
-
-    _pendingDeleteRecipe = _recipeService.getRecipeById(recipeId);
-    _pendingDeleteId = recipeId;
-
-    // Optimistically remove from service
-    _recipeService.optimisticRemove(recipeId);
-    _invalidateCache();
-    notifyListeners();
-
-    _pendingDeleteTimer = Timer(const Duration(seconds: 5), () {
-      _commitPendingDelete();
-    });
-  }
-
-  void undoDelete() {
-    _pendingDeleteTimer?.cancel();
-    _pendingDeleteTimer = null;
-
-    if (_pendingDeleteRecipe != null) {
-      _recipeService.optimisticRestore(_pendingDeleteRecipe!);
-      _pendingDeleteRecipe = null;
-      _pendingDeleteId = null;
-      _invalidateCache();
-      notifyListeners();
-    }
-  }
-
-  void _commitPendingDelete() {
-    _pendingDeleteTimer?.cancel();
-    _pendingDeleteTimer = null;
-
-    if (_pendingDeleteId != null) {
-      _recipeService.deleteRecipe(_pendingDeleteId!);
-      _pendingDeleteRecipe = null;
-      _pendingDeleteId = null;
-    }
+  // Delete delegation
+  void deleteRecipe(String recipeId) => _deleteManager.deleteRecipe(recipeId);
+  void undoDeleteById(String id) => _deleteManager.undoDeleteById(id);
+  void undoLastDelete() => _deleteManager.undoLastDelete();
+  void deleteSelected() =>
+      _deleteManager.deleteSelected(Set.from(_selectionManager.selectedIds));
+  void undoBulkDelete() {
+    _deleteManager.undoBulkDelete();
+    _selectionManager.clearSelection();
   }
 
   /// Refreshes recipe data with pull-to-refresh coordination and service integration.
@@ -533,7 +474,7 @@ class RecipeListViewModel extends ChangeNotifier {
   /// through sophisticated caching system for optimal performance and responsive user experience.
   /// Validates cache state against all filter criteria for accurate result delivery.
   List<Recipe> _getFilteredAndSortedRecipes() {
-    // Använd cache om möjligt
+    // Use cache if possible
     if (_cachedFilteredRecipes != null &&
         _lastSearchQuery == _searchQuery &&
         _lastSortCriteria == _sortCriteria &&
@@ -557,7 +498,7 @@ class RecipeListViewModel extends ChangeNotifier {
       filtered = _applyTimeFilters(filtered);
     }
 
-    // Applicera måltidsfilter
+    // Apply meal type filter
     if (_activeMealTypeFilters.isNotEmpty) {
       filtered = _applyMealTypeFilters(filtered);
     }
@@ -595,7 +536,7 @@ class RecipeListViewModel extends ChangeNotifier {
       filtered = filtered.where((r) => r.isFavorite).toList();
     }
 
-    // Sök
+    // Search
     if (_searchQuery.isNotEmpty) {
       filtered = _searchService.searchRecipes(filtered, _searchQuery);
     }
@@ -631,7 +572,7 @@ class RecipeListViewModel extends ChangeNotifier {
   /// Time ranges: 'quick' (< 30 min), 'medium' (30-60 min), 'long' (> 60 min).
   /// Handles missing time data with fallback values for robust filtering.
   List<Recipe> _applyTimeFilters(List<Recipe> recipes) {
-    // Om flera tidsfilter är valda, visa recept som matchar NÅGOT av dem (OR)
+    // If multiple time filters are selected, show recipes matching ANY of them (OR)
     return recipes.where((recipe) {
       final time = recipe.timeMinutes ?? 999;
 
@@ -658,7 +599,7 @@ class RecipeListViewModel extends ChangeNotifier {
   /// Maps English filter IDs to Swedish meal types: 'breakfast' → 'Frukost', 'lunch' → 'Lunch',
   /// 'dinner' → 'Middag', 'snack' → 'Mellanmål', 'dessert' → 'Efterrätt'.
   List<Recipe> _applyMealTypeFilters(List<Recipe> recipes) {
-    // Mappa filter-id till måltidstyp
+    // Map filter ID to meal type
     final mealTypeMap = {
       'breakfast': 'Frukost',
       'lunch': 'Lunch',
@@ -687,7 +628,7 @@ class RecipeListViewModel extends ChangeNotifier {
   List<Recipe> _applyRatingFilters(List<Recipe> recipes) {
     double minRating = 0;
 
-    // Hitta högsta kravet
+    // Find the highest requirement
     if (_activeRatingFilters.contains('top_rated')) {
       minRating = 5.0;
     } else if (_activeRatingFilters.contains('high_rated')) {
@@ -817,7 +758,9 @@ class RecipeListViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _searchDebounceTimer?.cancel();
-    _commitPendingDelete();
+    _deleteManager.dispose();
+    _selectionManager.removeListener(notifyListeners);
+    _selectionManager.dispose();
     _recipeService.removeListener(_onRecipesChanged);
     super.dispose();
   }

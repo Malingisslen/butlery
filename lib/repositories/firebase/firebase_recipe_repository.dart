@@ -563,6 +563,25 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }
 
   @override
+  Future<List<Recipe>> findByTitle(String title) async {
+    final normalized = title.trim().toLowerCase();
+    if (normalized.isEmpty) return [];
+    final userId = currentUserId;
+    if (userId == null) return [];
+
+    try {
+      final snap = await getCollectionForUser(userId)
+          .where('core.title', isEqualTo: normalized)
+          .limit(5)
+          .get();
+      return snap.docs.map(fromFirestore).toList();
+    } catch (e) {
+      AppLogger.warning('Failed to find recipes by title: $e');
+      return [];
+    }
+  }
+
+  @override
   Future<void> addRecipes(List<Recipe> recipes) async {
     // Use the base class batch method
     await createBatch(recipes);

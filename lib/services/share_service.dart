@@ -81,13 +81,13 @@ class ShareService extends BaseService {
       buffer.writeln();
     }
 
-    // Tags istället för tips
+    // Tags instead of tips
     if (recipe.personalTagIds != null && recipe.personalTagIds!.isNotEmpty) {
       buffer.writeln('Tags: ${recipe.personalTagIds!.join(", ")}');
       buffer.writeln();
     }
 
-    // Källa
+    // Source
     if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) {
       buffer.writeln('$_sourceLabel ${recipe.sourceUrl}');
     }
@@ -127,7 +127,7 @@ class ShareService extends BaseService {
       buffer.writeln();
     }
 
-    // Ingredienser - visa alla för kompakt format också
+    // Ingredients - show all for compact format too
     if (recipe.ingredients.isNotEmpty) {
       buffer.writeln(_ingredientsTitle);
       for (final ingredient in recipe.ingredients) {
@@ -144,7 +144,7 @@ class ShareService extends BaseService {
       }
     }
 
-    // Källa om den finns
+    // Source if available
     if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) {
       buffer.writeln();
       buffer.writeln('$_sourceLabel ${recipe.sourceUrl}');
@@ -211,7 +211,7 @@ class ShareService extends BaseService {
       buffer.writeln();
     }
 
-    // Källa
+    // Source
     if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) {
       buffer.writeln('---');
       buffer.writeln(
@@ -301,7 +301,7 @@ class ShareService extends BaseService {
     buffer.writeln(AppLocale.current.shareShoppingListTitleSimple);
     buffer.writeln(
       '===========',
-    ); // Använder = direkt istället för multiplicering
+    ); // Using = directly instead of multiplication
     buffer.writeln();
 
     groupedItems.forEach((category, items) {
@@ -437,7 +437,7 @@ class ShareService extends BaseService {
     buffer.writeln('===========');
     buffer.writeln();
 
-    // Gå igenom varje kategori
+    // Go through each category
     for (final entry in menu.entries) {
       if (entry.value.isNotEmpty) {
         buffer.writeln('【${entry.key.toUpperCase()}】');
@@ -445,7 +445,7 @@ class ShareService extends BaseService {
         for (final recipe in entry.value) {
           buffer.writeln('• ${recipe.title}');
 
-          // Lägg till metadata
+          // Add metadata
           final meta = <String>[];
           if (recipe.timeMinutes != null) {
             meta.add(

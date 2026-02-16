@@ -77,7 +77,7 @@ Map<String, dynamic>? extractRecipeFromHtml(String html) {
   return null;
 }
 
-/// Privat hjälpfunktion: plockar ut JSON‐LD av typen "Recipe" om det finns.
+/// Private helper: extracts JSON-LD of type "Recipe" if present.
 Map<String, dynamic>? _extractJsonLd(String html) {
   // Hittar just <script type="application/ld+json">…</script> (dubbel‐citat).
   final jsonLdRegex = RegExp(
@@ -90,7 +90,7 @@ Map<String, dynamic>? _extractJsonLd(String html) {
     if (content == null) continue;
     try {
       final decoded = json.decode(content);
-      // Om JSON‐LD är en lista, leta igenom varje objekt
+      // If JSON-LD is a list, search through each object
       if (decoded is List) {
         for (final item in decoded) {
           if (item is Map<String, dynamic> && item['@type'] == 'Recipe') {
@@ -98,7 +98,7 @@ Map<String, dynamic>? _extractJsonLd(String html) {
           }
         }
       }
-      // Om JSON‐LD är ett enda objekt
+      // If JSON-LD is a single object
       else if (decoded is Map<String, dynamic> &&
           decoded['@type'] == 'Recipe') {
         return Map<String, dynamic>.from(decoded);
@@ -111,7 +111,7 @@ Map<String, dynamic>? _extractJsonLd(String html) {
   return null;
 }
 
-/// Privat hjälpfunktion: parsa Microdata (schema.org/Recipe) från ett DOM‐element.
+/// Private helper: parse Microdata (schema.org/Recipe) from a DOM element.
 Map<String, dynamic> _parseRecipeMicrodata(Element root) {
   final Map<String, dynamic> result = {};
 
@@ -136,7 +136,7 @@ Map<String, dynamic> _parseRecipeMicrodata(Element root) {
   final instrElems = root.querySelectorAll('[itemprop="recipeInstructions"]');
   final instructions = <String>[];
   for (final el in instrElems) {
-    // Om elementet innehåller <li>, <p> eller <span> som barn
+    // If the element contains <li>, <p> or <span> as children
     final subElems = el.querySelectorAll('li, p, span');
     if (subElems.isEmpty) {
       final parentText = el.text.trim();

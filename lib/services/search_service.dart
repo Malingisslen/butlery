@@ -24,13 +24,13 @@ class SearchService extends BaseService {
     }).toList();
   }
 
-  /// Filtrerar recept baserat på måltidstyp
+  /// Filters recipes based on meal type
   List<Recipe> filterByMealType(List<Recipe> recipes, String? mealType) {
     if (mealType == null || mealType.isEmpty) return recipes;
     return recipes.where((recipe) => recipe.mealType == mealType).toList();
   }
 
-  /// Filtrerar recept baserat på taggar (AND-logik - alla taggar måste finnas)
+  /// Filters recipes based on tags (AND logic - all tags must be present)
   List<Recipe> filterByTags(List<Recipe> recipes, List<String> tags) {
     if (tags.isEmpty) return recipes;
 
@@ -40,22 +40,22 @@ class SearchService extends BaseService {
     }).toList();
   }
 
-  /// Filtrerar bort recept som har någon av de exkluderade taggarna.
+  /// Filters out recipes that have any of the excluded tags.
   ///
-  /// Använder OR-logik för exkludering - om receptet har NÅGON av de
-  /// exkluderade taggarna så tas det bort från resultatet.
+  /// Uses OR logic for exclusion - if the recipe has ANY of the
+  /// excluded tags it is removed from the result.
   List<Recipe> filterByExcludedTags(
       List<Recipe> recipes, List<String> excludedTags) {
     if (excludedTags.isEmpty) return recipes;
 
     return recipes.where((recipe) {
       final recipeTags = recipe.personalTagIds ?? [];
-      // Behåll receptet om det INTE har någon av de exkluderade taggarna
+      // Keep the recipe if it does NOT have any of the excluded tags
       return !excludedTags.any((tag) => recipeTags.contains(tag));
     }).toList();
   }
 
-  /// Filtrerar recept baserat på maximal tid
+  /// Filters recipes based on maximum time
   List<Recipe> filterByMaxTime(List<Recipe> recipes, int? maxMinutes) {
     if (maxMinutes == null) return recipes;
 
@@ -64,7 +64,7 @@ class SearchService extends BaseService {
     }).toList();
   }
 
-  /// Filtrerar recept baserat på minimalt betyg
+  /// Filters recipes based on minimum rating
   List<Recipe> filterByMinRating(List<Recipe> recipes, double? minRating) {
     if (minRating == null) return recipes;
 
@@ -73,7 +73,7 @@ class SearchService extends BaseService {
     }).toList();
   }
 
-  /// Filtrerar recept baserat på antal portioner
+  /// Filters recipes based on number of servings
   List<Recipe> filterByPortions(
     List<Recipe> recipes,
     int? minPortions,
@@ -142,7 +142,7 @@ class SearchService extends BaseService {
     return filtered;
   }
 
-  /// Sorterar recept baserat på olika kriterier
+  /// Sorts recipes based on various criteria
   List<Recipe> sortRecipes(
     List<Recipe> recipes,
     SortCriteria criteria, {
@@ -233,19 +233,19 @@ class SearchService extends BaseService {
     final lowerPartial = partial.toLowerCase();
 
     for (final recipe in recipes) {
-      // Titel-förslag
+      // Title suggestions
       if (recipe.title.toLowerCase().contains(lowerPartial)) {
         suggestions.add(recipe.title);
       }
 
-      // Ingrediens-förslag
+      // Ingredient suggestions
       for (final ingredient in recipe.ingredients) {
         if (ingredient.toLowerCase().contains(lowerPartial)) {
           suggestions.add(ingredient);
         }
       }
 
-      // Tagg-förslag
+      // Tag suggestions
       if (recipe.personalTagIds != null) {
         for (final tag in recipe.personalTagIds!) {
           if (tag.toLowerCase().contains(lowerPartial)) {
@@ -258,23 +258,23 @@ class SearchService extends BaseService {
     return suggestions.take(10).toList()..sort();
   }
 
-  /// Hämtar populära söktermer baserat på receptdata
+  /// Gets popular search terms based on recipe data
   List<String> getPopularSearchTerms(List<Recipe> recipes) {
     final termFrequency = <String, int>{};
 
     for (final recipe in recipes) {
-      // Räkna måltidstyper
+      // Count meal types
       termFrequency[recipe.mealType] =
           (termFrequency[recipe.mealType]).orZero() + 1;
 
-      // Räkna taggar
+      // Count tags
       if (recipe.personalTagIds != null) {
         for (final tag in recipe.personalTagIds!) {
           termFrequency[tag] = (termFrequency[tag]).orZero() + 1;
         }
       }
 
-      // Räkna vanliga ingredienser
+      // Count common ingredients
       for (final ingredient in recipe.ingredients) {
         final cleaned = ingredient
             .toLowerCase()
@@ -286,14 +286,14 @@ class SearchService extends BaseService {
       }
     }
 
-    // Returnera de mest populära termerna
+    // Return the most popular terms
     final sorted = termFrequency.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
     return sorted.take(20).map((e) => e.key).toList();
   }
 
-  /// Privat hjälpfunktion för att matcha sökfrågor
+  /// Private helper function for matching search queries
   bool _matchesSearchQuery(Recipe recipe, String query) {
     // Titel
     if (recipe.title.toLowerCase().contains(query)) return true;
@@ -322,10 +322,10 @@ class SearchService extends BaseService {
       return true;
     }
 
-    // Måltidstyp
+    // Meal type
     if (recipe.mealType.toLowerCase().contains(query)) return true;
 
-    // Numeriska fält (portioner, tid, betyg)
+    // Numeric fields (servings, time, rating)
     final queryAsNumber = double.tryParse(query);
     if (queryAsNumber != null) {
       if ((recipe.portions?.toString().contains(query)).orFalse()) return true;

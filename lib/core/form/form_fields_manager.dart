@@ -95,7 +95,7 @@
 
 import 'package:flutter/material.dart';
 
-/// Hanterar TextEditingControllers för dynamiska formulärfält (Manages TextEditingControllers for dynamic form fields)
+/// Manages TextEditingControllers for dynamic form fields
 /// Denna klass tar hand om (This class handles):
 /// - Skapande och borttagning av controllers (Creation and removal of controllers)
 /// - Synkronisering mellan controllers och data (Synchronization between controllers and data)
@@ -127,7 +127,7 @@ class FormFieldsManager {
     }
   }
 
-  /// Hämta alla controllers synkroniserade med aktuella värden
+  /// Get all controllers synchronized with current values
   List<TextEditingController> getControllers(List<String> currentValues) {
     // CRITICAL FIX: Prevent race conditions with state synchronization lock
     if (_isUpdating) {
@@ -143,7 +143,7 @@ class FormFieldsManager {
 
   /// CRITICAL FIX: Extracted controller building logic with proper synchronization
   List<TextEditingController> _buildControllers() {
-    // Skapa/uppdatera controllers för varje värde
+    // Create/update controllers for each value
     final controllers = <TextEditingController>[];
 
     for (int i = 0; i < _values.length; i++) {
@@ -164,7 +164,7 @@ class FormFieldsManager {
         controller.addListener(listener);
         _controllers[key] = controller;
       } else {
-        // Uppdatera befintlig controller om texten ändrats externt
+        // Update existing controller if text changed externally
         final existingController = _controllers[key]!;
         if (existingController.text != _values[i]) {
           existingController.text = _values[i];
@@ -174,13 +174,13 @@ class FormFieldsManager {
       controllers.add(_controllers[key]!);
     }
 
-    // Rensa upp controllers som inte längre används
+    // Clean up controllers that are no longer used
     _cleanupUnusedControllers(controllers.length);
 
     return controllers;
   }
 
-  /// Lägg till ny tom controller
+  /// Add new empty controller
   void addController() {
     // CRITICAL FIX: Protect mutation with synchronization lock
     if (_isUpdating) return; // Skip if already updating
@@ -188,7 +188,7 @@ class FormFieldsManager {
     _isUpdating = true;
     try {
       _values.add('');
-      // getControllers kommer skapa den nya controllern nästa gång den anropas
+      // getControllers will create the new controller next time it is called
     } finally {
       _isUpdating = false;
     }
@@ -203,7 +203,7 @@ class FormFieldsManager {
 
     _isUpdating = true;
     try {
-      // Ta bort värdet
+      // Remove the value
       _values.removeAt(index);
 
       // CRITICAL FIX: Remove listener before disposing controller
@@ -226,7 +226,7 @@ class FormFieldsManager {
     }
   }
 
-  /// Uppdatera värde direkt (används vid programmatisk uppdatering)
+  /// Update value directly (used for programmatic updates)
   void updateValue(int index, String value) {
     if (index < 0 || index >= _values.length) return;
 
@@ -240,7 +240,7 @@ class FormFieldsManager {
 
       if (_controllers.containsKey(key)) {
         final controller = _controllers[key]!;
-        // Undvik onödiga uppdateringar som triggar listeners
+        // Avoid unnecessary updates that trigger listeners
         if (controller.text != value) {
           controller.text = value;
         }
@@ -319,10 +319,10 @@ class FormFieldsManager {
     return controllers;
   }
 
-  /// Hämta antal fält
+  /// Get field count
   int get length => _values.length;
 
-  /// Hämta alla värden
+  /// Get all values
   List<String> get values => List.unmodifiable(_values);
 
   /// Kontrollera om en specifik controller finns
@@ -350,13 +350,13 @@ class FormFieldsManager {
     _values.clear();
   }
 
-  /// Återställ till initial state
+  /// Reset to initial state
   void reset() {
     dispose();
-    _values.add(''); // Börja med ett tomt fält
+    _values.add(''); // Start with one empty field
   }
 
-  /// Synkronisera interna värden med externa
+  /// Synchronize internal values with external
   void _syncValues(List<String> currentValues) {
     // CRITICAL FIX: Use synchronization lock to prevent race conditions
     _isUpdating = true;
@@ -364,7 +364,7 @@ class FormFieldsManager {
       _values.clear();
       _values.addAll(currentValues);
 
-      // Säkerställ minst ett fält
+      // Ensure at least one field
       if (_values.isEmpty) {
         _values.add('');
       }
@@ -373,7 +373,7 @@ class FormFieldsManager {
     }
   }
 
-  /// Rensa upp controllers som inte längre används
+  /// Clean up controllers that are no longer used
   void _cleanupUnusedControllers(int activeCount) {
     final keysToRemove = <String>[];
 
@@ -406,7 +406,7 @@ class FormFieldsManager {
       final index = int.tryParse(key.replaceFirst('field_', ''));
       if (index != null) {
         if (index < removedIndex) {
-          // Behåll controllers före borttagen index
+          // Keep controllers before removed index
           newControllers[key] = controller;
           final listener = _controllerListeners[key];
           if (listener != null) {

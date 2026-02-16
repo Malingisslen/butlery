@@ -32,6 +32,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_provider.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Image selection service providing comprehensive camera and gallery access with advanced permission management.
 /// This service manages complete image selection workflows including permission handling, image optimization,
@@ -102,27 +103,27 @@ class ImagePickerService extends BaseService {
   /// - Graceful handling of permission denials and user cancellations
   /// - File system validation with detailed diagnostic information
   /// - Integration with StorageService for advanced image validation
-  Future<File?> pickImage(ImageSource source) async {
+  Future<File?> pickImage(ImageSource source, {bool enableCrop = false}) async {
     try {
       AppLogger.debug(
           '🔍 IMAGE_PICKER: Starting image selection from: ${source.name}');
-      AppLogger.info('🔍 Startar bildval från: ${source.name}');
+      AppLogger.info('🔍 Starting image selection from: ${source.name}');
 
-      // Kontrollera permissions
+      // Check permissions
       AppLogger.debug('🔍 IMAGE_PICKER: Checking permissions...');
       final hasPermission = await _checkAndRequestPermission(source);
       AppLogger.debug('🔑 IMAGE_PICKER: Permission result: $hasPermission');
-      AppLogger.info('🔑 Permission resultat: $hasPermission');
+      AppLogger.info('🔑 Permission result: $hasPermission');
 
       if (!hasPermission) {
         AppLogger.warning(
             '❌ IMAGE_PICKER: Permission denied for ${source.name}');
-        AppLogger.warning('❌ Permission nekad för ${source.name}');
+        AppLogger.warning('❌ Permission denied for ${source.name}');
         return null;
       }
 
       AppLogger.debug('📱 IMAGE_PICKER: Calling image picker provider...');
-      AppLogger.info('📱 Anropar image picker...');
+      AppLogger.info('📱 Calling image picker...');
       final XFile? pickedFile = await _imagePickerProvider.pickImage(
         source: source,
         maxWidth: 2400,
@@ -133,12 +134,12 @@ class ImagePickerService extends BaseService {
       if (pickedFile == null) {
         AppLogger.info(
             '❌ IMAGE_PICKER: No image selected (user cancelled or error)');
-        AppLogger.info('❌ Ingen bild vald (användaren avbröt)');
+        AppLogger.info('❌ No image selected (user cancelled)');
         return null;
       }
 
       AppLogger.info('✅ IMAGE_PICKER: Image selected: ${pickedFile.path}');
-      AppLogger.info('✅ Bild vald: ${pickedFile.path}');
+      AppLogger.info('✅ Image selected: ${pickedFile.path}');
 
       // Store the XFile for web platform
       _lastPickedXFile = pickedFile;
@@ -155,32 +156,39 @@ class ImagePickerService extends BaseService {
       // On mobile platforms, proceed with normal File handling
       final file = File(pickedFile.path);
 
-      // Kontrollera att filen existerar
+      // Check that the file exists
       final exists = await file.exists();
-      AppLogger.info('📁 Fil existerar: $exists');
+      AppLogger.info('📁 File exists: $exists');
 
       if (!exists) {
-        AppLogger.error('❌ Filen existerar inte på disk');
+        AppLogger.error('❌ File does not exist on disk');
         return null;
       }
 
-      // Kontrollera filstorlek
+      // Check file size
       final size = await file.length();
-      AppLogger.info('📊 Filstorlek: $size bytes (${_formatBytes(size)})');
+      AppLogger.info('📊 File size: $size bytes (${_formatBytes(size)})');
 
-      // Validera filen
+      // Validate the file
       final isValid = _imageValidator.isValidImageFile(file);
-      AppLogger.info('✅ Fil är giltig: $isValid');
+      AppLogger.info('✅ File is valid: $isValid');
 
       if (!isValid) {
-        AppLogger.error('❌ Ogiltig bildfil: ${file.path}');
+        AppLogger.error('❌ Invalid image file: ${file.path}');
         return null;
       }
 
-      AppLogger.success('🎉 Bildval framgångsrikt!');
+      AppLogger.success('🎉 Image selection successful!');
+
+      // Crop if requested (mobile only — web returns early above)
+      if (enableCrop) {
+        final cropped = await cropImage(file);
+        return cropped ?? file;
+      }
+
       return file;
     } catch (e, stackTrace) {
-      AppLogger.error('💥 Fel vid bildval: $e');
+      AppLogger.error('💥 Error during image selection: $e');
       AppLogger.error('📍 Stack trace: $stackTrace');
       return null;
     }
@@ -210,20 +218,20 @@ class ImagePickerService extends BaseService {
   /// - Detailed logging for each step of the validation process
   Future<List<File>> pickMultipleImages({int maxImages = 5}) async {
     try {
-      AppLogger.info('🔍 Startar val av flera bilder (max: $maxImages)');
+      AppLogger.info('🔍 Starting multiple image selection (max: $maxImages)');
 
-      // Kontrollera gallery permission
+      // Check gallery permission
       final hasPermission = await _checkAndRequestPermission(
         ImageSource.gallery,
       );
       AppLogger.info('🔑 Gallery permission: $hasPermission');
 
       if (!hasPermission) {
-        AppLogger.warning('❌ Gallery permission nekad');
+        AppLogger.warning('❌ Gallery permission denied');
         return [];
       }
 
-      AppLogger.info('📱 Anropar multiple image picker...');
+      AppLogger.info('📱 Calling multiple image picker...');
 
       final List<XFile> pickedFiles = await _imagePickerProvider.pickMultiImage(
         maxWidth: 2400,
@@ -232,52 +240,52 @@ class ImagePickerService extends BaseService {
       );
 
       if (pickedFiles.isEmpty) {
-        AppLogger.info('❌ Inga bilder valda');
+        AppLogger.info('❌ No images selected');
         return [];
       }
 
-      AppLogger.info('📸 ${pickedFiles.length} bilder valda från picker');
+      AppLogger.info('📸 ${pickedFiles.length} images selected from picker');
 
-      // Begränsa antal bilder
+      // Limit number of images
       final limitedFiles = pickedFiles.take(maxImages).toList();
 
       if (pickedFiles.length > maxImages) {
         AppLogger.info(
-          '✂️ Begränsar från ${pickedFiles.length} till $maxImages bilder',
+          '✂️ Limiting from ${pickedFiles.length} to $maxImages images',
         );
       }
 
-      // Konvertera till File och validera
+      // Convert to File and validate
       final files = <File>[];
       for (int i = 0; i < limitedFiles.length; i++) {
         final xFile = limitedFiles[i];
-        AppLogger.info('🔍 Bearbetar bild ${i + 1}: ${xFile.path}');
+        AppLogger.info('🔍 Processing image ${i + 1}: ${xFile.path}');
 
         final file = File(xFile.path);
 
-        // Kontrollera att filen existerar
+        // Check that the file exists
         final exists = await file.exists();
         if (!exists) {
-          AppLogger.warning('⚠️ Fil ${i + 1} existerar inte: ${file.path}');
+          AppLogger.warning('⚠️ File ${i + 1} does not exist: ${file.path}');
           continue;
         }
 
-        // Kontrollera filstorlek
+        // Check file size
         final size = await file.length();
-        AppLogger.info('📊 Bild ${i + 1} storlek: ${_formatBytes(size)}');
+        AppLogger.info('📊 Image ${i + 1} size: ${_formatBytes(size)}');
 
         if (_imageValidator.isValidImageFile(file)) {
           files.add(file);
-          AppLogger.info('✅ Bild ${i + 1} godkänd');
+          AppLogger.info('✅ Image ${i + 1} approved');
         } else {
-          AppLogger.warning('❌ Bild ${i + 1} är ogiltig: ${file.path}');
+          AppLogger.warning('❌ Image ${i + 1} is invalid: ${file.path}');
         }
       }
 
-      AppLogger.success('🎉 ${files.length} giltiga bilder valda');
+      AppLogger.success('🎉 ${files.length} valid images selected');
       return files;
     } catch (e, stackTrace) {
-      AppLogger.error('💥 Fel vid val av flera bilder: $e');
+      AppLogger.error('💥 Error during multiple image selection: $e');
       AppLogger.error('📍 Stack trace: $stackTrace');
       return [];
     }
@@ -299,12 +307,12 @@ class ImagePickerService extends BaseService {
         compressQuality: 90,
         uiSettings: [
           AndroidUiSettings(
-            toolbarTitle: 'Beskär bild',
+            toolbarTitle: AppLocale.current.imageCropTitle,
             lockAspectRatio: false,
             hideBottomControls: false,
           ),
           IOSUiSettings(
-            title: 'Beskär bild',
+            title: AppLocale.current.imageCropTitle,
             aspectRatioLockEnabled: false,
             rotateButtonsHidden: false,
           ),
@@ -320,11 +328,11 @@ class ImagePickerService extends BaseService {
       return File(croppedFile.path);
     } catch (e) {
       AppLogger.error('Image crop failed: $e');
-      return null;
+      return imageFile;
     }
   }
 
-  /// Kontrollera och begär permissions MED DEBUG
+  /// Check and request permissions with debug logging
   Future<bool> _checkAndRequestPermission(ImageSource source) async {
     try {
       // Check if we're on web platform - permissions are handled by browser
@@ -336,50 +344,50 @@ class ImagePickerService extends BaseService {
 
       if (source == ImageSource.camera) {
         AppLogger.debug('🔍 PERMISSION: Checking camera permission...');
-        AppLogger.info('🔍 Kontrollerar kamera-permission...');
+        AppLogger.info('🔍 Checking camera permission...');
         final status =
             await _permissionProvider.checkPermission(Permission.camera);
         AppLogger.debug('📷 PERMISSION: Camera status: ${status.name}');
-        AppLogger.info('📷 Kamera permission status: ${status.name}');
+        AppLogger.info('📷 Camera permission status: ${status.name}');
 
         if (status.isDenied) {
           AppLogger.debug('🔑 PERMISSION: Requesting camera permission...');
-          AppLogger.info('🔑 Begär kamera-permission...');
+          AppLogger.info('🔑 Requesting camera permission...');
           final result =
               await _permissionProvider.requestPermission(Permission.camera);
           AppLogger.debug(
               '📷 PERMISSION: Camera request result: ${result.name}');
-          AppLogger.info('📷 Kamera permission resultat: ${result.name}');
+          AppLogger.info('📷 Camera permission result: ${result.name}');
           return result.isGranted;
         }
         return status.isGranted;
       } else {
-        // För galleri - hantera både photos och storage permissions smart
+        // For gallery - handle both photos and storage permissions smartly
         AppLogger.debug('🔍 PERMISSION: Checking gallery permission...');
-        AppLogger.info('🔍 Kontrollerar galleri-permission...');
+        AppLogger.info('🔍 Checking gallery permission...');
         final status =
             await _permissionProvider.checkPermission(Permission.photos);
         AppLogger.debug('🖼️ PERMISSION: Gallery status: ${status.name}');
-        AppLogger.info('🖼️ Galleri permission status: ${status.name}');
+        AppLogger.info('🖼️ Gallery permission status: ${status.name}');
 
-        // LIMITED är OK för galleri - användaren har valt vissa bilder
+        // LIMITED is OK for gallery - user has selected certain photos
         if (status.isGranted || status.isLimited) {
           return true;
         }
 
         if (status.isDenied) {
-          AppLogger.info('🔑 Begär galleri-permission...');
+          AppLogger.info('🔑 Requesting gallery permission...');
           final result =
               await _permissionProvider.requestPermission(Permission.photos);
-          AppLogger.info('🖼️ Galleri permission resultat: ${result.name}');
+          AppLogger.info('🖼️ Gallery permission result: ${result.name}');
 
-          // LIMITED är också OK
+          // LIMITED is also OK
           if (result.isGranted || result.isLimited) {
             return true;
           }
         }
 
-        // Om photos permission är permanently denied, testa storage (äldre Android)
+        // If photos permission is permanently denied, try storage (older Android)
         if (status.isPermanentlyDenied) {
           final storageStatus =
               await _permissionProvider.checkPermission(Permission.storage);
@@ -395,38 +403,38 @@ class ImagePickerService extends BaseService {
         return false;
       }
     } catch (e) {
-      AppLogger.error('💥 Fel vid permission-kontroll: $e');
+      AppLogger.error('💥 Error during permission check: $e');
       return false;
     }
   }
 
-  /// Formatera bytes till läsbar text
+  /// Format bytes to human-readable text
   String _formatBytes(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
-  /// Debug-metod för att testa permissions manuellt
+  /// Debug method for testing permissions manually
   Future<void> debugPermissions() async {
-    AppLogger.info('🔍 DEBUG: Kontrollerar alla permissions...');
+    AppLogger.info('🔍 DEBUG: Checking all permissions...');
 
-    // Kamera
+    // Camera
     final cameraStatus =
         await _permissionProvider.checkPermission(Permission.camera);
-    AppLogger.info('📷 Kamera: ${cameraStatus.name}');
+    AppLogger.info('📷 Camera: ${cameraStatus.name}');
 
     // Photos
     final photosStatus =
         await _permissionProvider.checkPermission(Permission.photos);
     AppLogger.info('🖼️ Photos: ${photosStatus.name}');
 
-    // Storage (äldre Android)
+    // Storage (older Android)
     final storageStatus =
         await _permissionProvider.checkPermission(Permission.storage);
     AppLogger.info('💾 Storage: ${storageStatus.name}');
 
-    // Media (nyare Android)
+    // Media (newer Android)
     final mediaStatus =
         await _permissionProvider.checkPermission(Permission.mediaLibrary);
     AppLogger.info('📱 Media: ${mediaStatus.name}');

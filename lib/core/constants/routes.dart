@@ -83,7 +83,7 @@ class Routes {
   // Route aliases
   static const Map<String, String> aliases = {
     '/home': home, // Explicit hem-alias
-    '/shopping': inkopslista, // Alias för unified shopping
+    '/shopping': inkopslista, // Alias for unified shopping
   };
 
   /// Routes requiring authentication

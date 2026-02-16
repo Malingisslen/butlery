@@ -9,7 +9,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 /// LoadingWidgets - Loading and error utility components
 /// Provides loading overlays, error boundaries, and responsive wrappers.
 class LoadingWidgets {
-  /// Loading overlay som visas över existerande innehåll
+  /// Loading overlay shown over existing content
   static Widget loadingOverlay({
     Widget? child,
     bool isLoading = false,
@@ -112,7 +112,7 @@ class LoadingWidgets {
     );
   }
 
-  /// Responsive wrapper för adaptiv layout
+  /// Responsive wrapper for adaptive layout
   static Widget responsiveWrapper({
     required Widget child,
     double? maxWidth,

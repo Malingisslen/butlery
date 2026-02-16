@@ -5,7 +5,7 @@ import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
-/// Data för en deltagares aktivitet
+/// Data for a participant's activity
 class ParticipantActivity {
   final String userId;
   final String displayName;
@@ -29,12 +29,12 @@ class ParticipantActivity {
       'ParticipantActivity($displayName, $lastSeen, online: $isOnline)';
 }
 
-/// Tracker för deltagares aktivitet i realtidsresurser
+/// Tracker for participant activity in realtime resources
 class ParticipantTracker {
   final Map<String, DateTime> _participantActivity = {};
   final Map<String, String> _participantNames = {};
 
-  /// Callback när participant data uppdateras
+  /// Callback when participant data is updated
   final VoidCallback? onUpdated;
 
   ParticipantTracker({this.onUpdated});
@@ -42,7 +42,7 @@ class ParticipantTracker {
   /// Antal aktiva deltagare
   int get activeCount => _participantActivity.length;
 
-  /// Lista över aktiva deltagare
+  /// List of active participants
   List<String> get activeParticipantIds => _participantActivity.keys.toList();
 
   /// Alla participant activities
@@ -55,21 +55,21 @@ class ParticipantTracker {
         isOnline: wasRecentlyActive(entry.key, const Duration(minutes: 5)),
       );
     }).toList()
-      ..sort((a, b) => b.lastSeen.compareTo(a.lastSeen)); // Senaste först
+      ..sort((a, b) => b.lastSeen.compareTo(a.lastSeen)); // Most recent first
   }
 
-  /// Uppdatera deltagares aktivitet baserat på menu-ändringar
+  /// Update participant activity based on menu changes
   void updateFromMenu(RealtimeMenu menu) {
-    // Uppdatera senaste aktivitet för den som redigerade
+    // Update latest activity for the editor
     if (menu.lastEditedBy.isNotEmpty) {
       _participantActivity[menu.lastEditedBy] = menu.lastEditedAt;
       _participantNames[menu.lastEditedBy] = menu.lastEditedByDisplayName;
     }
 
-    // Cache alla deltagares namn från menu participants
+    // Cache all participant names from menu participants
     for (final userId in menu.participants.keys) {
       if (!_participantNames.containsKey(userId)) {
-        // Försök att hitta display name från andra källor
+        // Try to find display name from other sources
         if (userId == menu.ownerId) {
           _participantNames[userId] = menu.ownerDisplayName;
         } else {
@@ -85,7 +85,7 @@ class ParticipantTracker {
     AppLogger.debug('👥 Participant aktivitet uppdaterad: $activeCount aktiva');
   }
 
-  /// Hämta display name för deltagare
+  /// Get display name for participant
   String getDisplayName(String userId) {
     return _participantNames[userId] ?? AppLocale.current.displayUnknownUser;
   }
@@ -98,12 +98,12 @@ class ParticipantTracker {
     return DateTime.now().difference(lastSeen) <= within;
   }
 
-  /// Hämta senaste aktivitet för deltagare
+  /// Get latest activity for participant
   DateTime? getLastActivity(String userId) {
     return _participantActivity[userId];
   }
 
-  /// Få lista över deltagare som är online nu (aktiva senaste 5 min)
+  /// Get list of participants who are online now (active in last 5 min)
   List<String> get onlineParticipants {
     return _participantActivity.entries
         .where(
@@ -121,7 +121,7 @@ class ParticipantTracker {
         .toList();
   }
 
-  /// Uppdatera display name för deltagare (från andra källor)
+  /// Update display name for participant (from other sources)
   void updateDisplayName(String userId, String displayName) {
     if (_participantNames[userId] != displayName) {
       _participantNames[userId] = displayName;
@@ -138,7 +138,7 @@ class ParticipantTracker {
     AppLogger.debug('✅ $displayName markerad som aktiv');
   }
 
-  /// Rensa gamla aktiviteter (äldre än 1 timme)
+  /// Clean up old activities (older than 1 hour)
   void _cleanupOldActivity() {
     final cutoff = DateTime.now().subtract(const Duration(hours: 1));
     final oldCount = _participantActivity.length;
@@ -152,7 +152,7 @@ class ParticipantTracker {
     }
   }
 
-  /// Tvinga cleanup av old activity (för manuell rensning)
+  /// Force cleanup of old activity (for manual cleanup)
   void forceCleanup() {
     _cleanupOldActivity();
     onUpdated?.call();
@@ -171,7 +171,7 @@ class ParticipantTracker {
     }
   }
 
-  /// Ta bort specifik deltagare från tracking
+  /// Remove specific participant from tracking
   void removeParticipant(String userId) {
     final removed = _participantActivity.remove(userId) != null;
     _participantNames.remove(userId);

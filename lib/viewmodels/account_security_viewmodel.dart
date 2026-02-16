@@ -4,6 +4,7 @@ import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
 
 class AccountSecurityViewModel extends ChangeNotifier
     with StateNotifierMixin, AsyncOperationMixin {
@@ -16,6 +17,22 @@ class AccountSecurityViewModel extends ChangeNotifier
     required String newPassword,
     required String confirmPassword,
   }) async {
+    if (currentPassword.isEmpty) {
+      setError(AppLocale.current.validationPasswordRequired);
+      return false;
+    }
+    if (newPassword.isEmpty) {
+      setError(AppLocale.current.validationPasswordRequired);
+      return false;
+    }
+    if (confirmPassword.isEmpty) {
+      setError(AppLocale.current.validationPasswordRequired);
+      return false;
+    }
+    if (newPassword.length < 6) {
+      setError(AppLocale.current.validationPasswordTooShort);
+      return false;
+    }
     if (newPassword != confirmPassword) {
       setError(AppLocale.current.accountSecurityPasswordMismatch);
       return false;
@@ -46,6 +63,16 @@ class AccountSecurityViewModel extends ChangeNotifier
     required String currentPassword,
     required String newEmail,
   }) async {
+    if (currentPassword.isEmpty) {
+      setError(AppLocale.current.validationPasswordRequired);
+      return false;
+    }
+    final emailError = ValidationUtils.validateEmail(newEmail);
+    if (emailError != null) {
+      setError(emailError);
+      return false;
+    }
+
     clearError();
     setLoading(true);
 
