@@ -19,6 +19,9 @@ import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/utils/social_content_features.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
+import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// PHASE 2: Validation result for sharing operations
@@ -411,7 +414,10 @@ class UniversalShareDialogViewModel extends ChangeNotifier
 
     try {
       final personalTagService = ServiceLocator.get<PersonalTagService>();
-      final shareId = await personalTagService.shareTag(tagId);
+      final shareId = await personalTagService.shareTag(
+        tagId,
+        recipientUserIds: friendUserIds,
+      );
 
       if (shareId == null) {
         throw Exception(AppLocale.current
@@ -421,6 +427,21 @@ class UniversalShareDialogViewModel extends ChangeNotifier
       AppLogger.info(
         'Personal tag "$tagName" shared with ID: $shareId to ${friendUserIds.length} friends',
       );
+
+      // Send notification to recipients
+      try {
+        final notificationService = ServiceLocator.get<NotificationService>();
+        final userService = ServiceLocator.get<UserService>();
+        final senderName = userService.currentUserProfile?.displayName ?? '';
+        await notificationService.sendImmediateNotification(
+          targetUserIds: friendUserIds,
+          strategy: NotificationStrategy.tagShared,
+          variables: {'senderName': senderName, 'tagName': tagName},
+          additionalData: {'shareId': shareId, 'type': 'shared_tag'},
+        );
+      } catch (e) {
+        AppLogger.warning('Failed to send tag share notification: $e');
+      }
 
       return true;
     } catch (e) {

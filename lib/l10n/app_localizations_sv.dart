@@ -12098,4 +12098,19 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get errorDeleteFailed =>
       'Kunde inte ta bort receptet. Det har återställts.';
+
+  @override
+  String get profileFaq => 'Vanliga frågor';
+
+  @override
+  String get profileFaqSubtitle => 'Hjälp och svar på vanliga frågor';
+
+  @override
+  String get sharedWithYou => 'Delade med dig';
+
+  @override
+  String get importTag => 'Importera';
+
+  @override
+  String get tagImportedSuccess => 'Taggen importerades';
 }

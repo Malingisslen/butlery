@@ -13,6 +13,11 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// Simple string constants have been fully migrated to l10n.
 /// Use `context.l10n.key` or `AppLocale.current.key` for those.
 /// This class retains only computed helpers that delegate to l10n.
+///
+/// ## l10n Access Patterns
+/// - **Preferred**: `context.l10n.stringKey` directly
+/// - **Bridge methods**: `AppStrings.saveL10n(context)` - context-aware methods using l10n
+/// - **Static helpers**: `AppStrings.formatDuration(minutes)` - use AppLocale.current
 class AppStrings {
   AppStrings._();
 
@@ -87,7 +92,7 @@ class AppStrings {
   static String confirmDelete(String itemName) =>
       AppLocale.current.confirmDeleteItem(itemName);
 
-  // Draft recovery
+  // Draft recovery messages
   static String fieldsFilledCount(int count) =>
       AppLocale.current.fieldsFilledCount(count);
   static String draftRestoredWithCount(int count) =>

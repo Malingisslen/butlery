@@ -320,12 +320,12 @@ class UnifiedShoppingItem {
   /// - 1.5 → "1.5"
   /// - 10.0 → "10"
   String get formattedAmount {
-    // If it is a whole number, display without decimals
+    // If it's a whole number, display without decimals
     if (amount == amount.roundToDouble()) {
       return amount.round().toString();
     }
 
-    // Annars visa med minimal precision
+    // Otherwise show with minimal precision
     return amount.toString();
   }
 
@@ -379,22 +379,22 @@ class UnifiedShoppingItem {
     final amountStr = formattedAmount;
     final unitStr = formattedUnit;
 
-    // If amount is 0, just show the name (for ingredients that already have quantity)
+    // If amount is 0, show only the name (for ingredients that already have quantity)
     if (amount == 0.0) {
       return name;
     }
 
-    // Om vi har enhet, visa: "1,5 l Mjölk" eller "2 st Ägg"
+    // If we have a unit, show: "1,5 l Mjölk" or "2 st Ägg"
     if (unitStr.isNotEmpty) {
       return '$amountStr $unitStr $name';
     }
 
-    // Om bara amount utan enhet: "3 Bananer"
+    // If only amount without unit: "3 Bananer"
     if (amount != 1.0) {
       return '$amountStr $name';
     }
 
-    // Om amount är 1 utan enhet, visa bara namnet: "Bröd"
+    // If amount is 1 without unit, show only the name: "Bröd"
     return name;
   }
 

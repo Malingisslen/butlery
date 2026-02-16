@@ -859,7 +859,10 @@ class PersonalTagService extends BaseService {
   /// Shares a personal tag by creating a snapshot in the shared collection.
   ///
   /// Returns the share ID that can be sent to other users for import.
-  Future<String?> shareTag(String tagId) async {
+  Future<String?> shareTag(
+    String tagId, {
+    List<String> recipientUserIds = const [],
+  }) async {
     return await executeServiceOperation(
       () async {
         final tag = await _tagRepository.read(tagId);
@@ -899,6 +902,7 @@ class PersonalTagService extends BaseService {
           sharedByDisplayName: displayName,
           matchingRecipeIds: matchingRecipeIds,
           tagRules: serializedRules,
+          recipientUserIds: recipientUserIds,
         );
 
         final repo = ServiceLocator.get<FirebaseSharedPersonalTagRepository>();

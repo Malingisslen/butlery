@@ -34,7 +34,7 @@ class ShareService extends BaseService {
   String formatRecipeComplete(Recipe recipe) {
     final buffer = StringBuffer();
 
-    // Rubrik
+    // Title
     buffer.writeln(recipe.title);
     buffer.writeln('=' * recipe.title.length);
 
@@ -55,13 +55,13 @@ class ShareService extends BaseService {
       buffer.writeln();
     }
 
-    // Beskrivning
+    // Description
     if (recipe.description.isNotEmpty) {
       buffer.writeln(recipe.description);
       buffer.writeln();
     }
 
-    // Ingredienser
+    // Ingredients
     if (recipe.ingredients.isNotEmpty) {
       buffer.writeln(_ingredientsTitle);
       for (final ingredient in recipe.ingredients) {
@@ -70,7 +70,7 @@ class ShareService extends BaseService {
       buffer.writeln();
     }
 
-    // Instruktioner
+    // Instructions
     if (recipe.instructions.isNotEmpty) {
       buffer.writeln(_instructionsTitle);
       for (int i = 0; i < recipe.instructions.length; i++) {
@@ -99,10 +99,10 @@ class ShareService extends BaseService {
   String formatRecipeCompact(Recipe recipe) {
     final buffer = StringBuffer();
 
-    // Emoji och titel
+    // Emoji and title
     buffer.writeln('$_recipeEmoji ${recipe.title}');
 
-    // Metadata med emojis
+    // Metadata with emojis
     final metadata = <String>[];
     if (recipe.timeMinutes != null) {
       metadata.add(
@@ -121,7 +121,7 @@ class ShareService extends BaseService {
       buffer.writeln();
     }
 
-    // Beskrivning
+    // Description
     if (recipe.description.isNotEmpty) {
       buffer.writeln(recipe.description);
       buffer.writeln();
@@ -136,7 +136,7 @@ class ShareService extends BaseService {
       buffer.writeln();
     }
 
-    // Snabbinstruktioner
+    // Quick instructions
     if (recipe.instructions.isNotEmpty) {
       buffer.writeln(AppLocale.current.shareInstructionsLabelCompact);
       for (int i = 0; i < recipe.instructions.length; i++) {
@@ -153,11 +153,11 @@ class ShareService extends BaseService {
     return buffer.toString();
   }
 
-  /// Formattera recept som Markdown
+  /// Format recipe as Markdown
   String formatRecipeMarkdown(Recipe recipe) {
     final buffer = StringBuffer();
 
-    // Huvudrubrik
+    // Main heading
     buffer.writeln('# ${recipe.title}');
     buffer.writeln();
 
@@ -180,13 +180,13 @@ class ShareService extends BaseService {
     }
     buffer.writeln();
 
-    // Beskrivning
+    // Description
     if (recipe.description.isNotEmpty) {
       buffer.writeln('> ${recipe.description}');
       buffer.writeln();
     }
 
-    // Ingredienser
+    // Ingredients
     if (recipe.ingredients.isNotEmpty) {
       buffer.writeln('## $_ingredientsTitle');
       for (final ingredient in recipe.ingredients) {
@@ -195,7 +195,7 @@ class ShareService extends BaseService {
       buffer.writeln();
     }
 
-    // Instruktioner
+    // Instructions
     if (recipe.instructions.isNotEmpty) {
       buffer.writeln('## $_instructionsTitle');
       for (int i = 0; i < recipe.instructions.length; i++) {
@@ -264,7 +264,7 @@ class ShareService extends BaseService {
     buffer.writeln('===========');
     buffer.writeln();
 
-    // Gruppera efter kategori om det finns kategorier
+    // Group by category if categories exist
     final groupedItems = <String, List<UnifiedShoppingItem>>{};
     for (final item in items) {
       final category =
@@ -272,14 +272,14 @@ class ShareService extends BaseService {
       groupedItems.putIfAbsent(category, () => []).add(item);
     }
 
-    // Om bara en kategori, visa som enkel lista
+    // If only one category, show as simple list
     if (groupedItems.length == 1) {
       for (final item in items) {
         final checkbox = item.bought ? '☑' : '☐';
         buffer.writeln('$checkbox ${item.toString()}');
       }
     } else {
-      // Visa grupperat
+      // Show grouped
       for (final entry in groupedItems.entries) {
         buffer.writeln('【${_categoryDisplayName(entry.key).toUpperCase()}】');
         for (final item in entry.value) {
@@ -437,7 +437,7 @@ class ShareService extends BaseService {
     buffer.writeln('===========');
     buffer.writeln();
 
-    // Go through each category
+    // Iterate through each category
     for (final entry in menu.entries) {
       if (entry.value.isNotEmpty) {
         buffer.writeln('【${entry.key.toUpperCase()}】');
@@ -468,7 +468,7 @@ class ShareService extends BaseService {
       }
     }
 
-    // Sammanfattning
+    // Summary
     final totalRecipes = menu.values.fold(0, (sum, list) => sum + list.length);
     final totalCategories =
         menu.keys.where((key) => menu[key]!.isNotEmpty).length;
