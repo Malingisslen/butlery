@@ -22,7 +22,7 @@ import 'package:butlery/widgets/common/share_dialog/share_dialog_states.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_actions.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_helpers.dart';
 
-/// Typ av innehåll som kan delas
+/// Type of content that can be shared
 enum ShareContentType {
   recipe,
   menu,
@@ -30,23 +30,23 @@ enum ShareContentType {
   personalTag,
 }
 
-/// Delningssätt
+/// Sharing method
 enum ShareMode {
   staticCopy, // Statisk kopia - som tidigare
-  realtime, // Realtidsdelning (för recept/menyer)
+  realtime, // Realtime sharing (for recipes/menus)
 }
 
 /// Universell delningsdialog som hanterar alla content-typer
 class UniversalShareDialog extends StatefulWidget {
   // Generisk content - kan vara Recipe, Map<String, List<Recipe>>, eller UnifiedShoppingList
-  // För bulk sharing: List<dynamic> med flera items
+  // For bulk sharing: List<dynamic> with multiple items
   final dynamic content;
   final ShareContentType contentType;
   final String? initialMessage;
   final List<UserProfile>? availableFriends;
   final List<FriendCategory>? availableGroups;
   final UniversalShareDialogViewModel viewModel;
-  final bool isBulkSharing; // Indikerar om detta är bulk sharing
+  final bool isBulkSharing; // Indicates if this is bulk sharing
   final String? menuName; // Optional menu name for menu sharing
 
   const UniversalShareDialog({
@@ -61,7 +61,7 @@ class UniversalShareDialog extends StatefulWidget {
     this.menuName,
   });
 
-  /// Factory constructors för type safety
+  /// Factory constructors for type safety
   factory UniversalShareDialog.recipe({
     required Recipe recipe,
     required UniversalShareDialogViewModel viewModel,
@@ -115,11 +115,11 @@ class UniversalShareDialog extends StatefulWidget {
     );
   }
 
-  /// Factory constructor för bulk sharing av flera items
+  /// Factory constructor for bulk sharing of multiple items
   factory UniversalShareDialog.bulkShare({
     required List<dynamic> contentItems,
     required ShareContentType
-        primaryContentType, // Typ för majoriteten av items
+        primaryContentType, // Type for the majority of items
     required UniversalShareDialogViewModel viewModel,
     String? initialMessage,
     List<UserProfile>? availableFriends,
@@ -181,7 +181,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
     _messageController =
         TextEditingController(text: widget.initialMessage ?? '');
 
-    // Bestäm om realtidsdelning stöds
+    // Determine if realtime sharing is supported
     _supportsRealtimeSharing =
         ShareDialogHelpers.supportsRealtimeSharing(widget.contentType);
 
@@ -191,7 +191,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
         ? ShareMode.realtime
         : ShareMode.staticCopy;
 
-    // Kontrollera om vi har vänner eller grupper
+    // Check if we have friends or groups
     _hasFriends = (widget.availableFriends?.isNotEmpty ?? false) ||
         (widget.availableGroups?.isNotEmpty ?? false);
   }

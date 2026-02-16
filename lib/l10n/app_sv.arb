@@ -7886,5 +7886,10 @@
   "duplicateImportMessage": "Ett recept med samma källa finns redan: {recipeName}",
   "@duplicateImportMessage": { "placeholders": { "recipeName": {"type": "String"} } },
   "duplicateImportViewExisting": "Visa befintligt",
-  "duplicateImportAnyway": "Importera ändå"
+  "duplicateImportAnyway": "Importera ändå",
+  "imageCropTitle": "Beskär bild",
+  "bulkDeleteConfirmMessage": "De valda recepten kommer att tas bort.",
+  "bulkDeleteSuccess": "{count} recept borttagna",
+  "@bulkDeleteSuccess": { "placeholders": { "count": {"type": "int"} } },
+  "errorDeleteFailed": "Kunde inte ta bort receptet. Det har återställts."
 }

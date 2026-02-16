@@ -32,7 +32,7 @@ class FranSocialaMedierView extends StatelessWidget {
       create: (_) {
         final viewModel = ServiceLocator.get<TextImportViewModel>();
 
-        // Sätt sourceUrl om den finns
+        // Set sourceUrl if available
         if (sourceUrl != null) {
           viewModel.setSourceUrl(sourceUrl!);
         }
@@ -72,7 +72,7 @@ class _FranSocialaMedierViewContentState
 
     _textController = TextEditingController(text: widget.initialText ?? '');
 
-    // Uppdatera ViewModel med initial text efter att widgeten är byggd
+    // Update ViewModel with initial text after widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.initialText != null && widget.initialText!.isNotEmpty) {
         final viewModel = context.read<TextImportViewModel>();
@@ -104,7 +104,7 @@ class _FranSocialaMedierViewContentState
         ),
       );
     } else if (context.mounted && viewModel.hasError) {
-      // ✅ MIGRERAD: Använd UtilityComponents.showErrorSnackbar
+      // Use UtilityComponents.showErrorSnackbar
       UtilityComponents.showErrorSnackbar(context, viewModel.error!);
     }
   }
@@ -136,13 +136,13 @@ class _FranSocialaMedierViewContentState
                   _buildInstructions(context),
                   const SizedBox(height: AppDimensions.spacingXl),
 
-                  // Visa om receptet kommer från URL
+                  // Show if recipe comes from URL
                   if (viewModel.sourceUrl != null) ...[
                     SourceUrlDisplay(sourceUrl: viewModel.sourceUrl!),
                     const SizedBox(height: AppDimensions.spacingM),
                   ],
 
-                  // Textfält för recept
+                  // Text field for recipe
                   _buildTextInput(context, viewModel),
                   const SizedBox(height: AppDimensions.spacingXl),
 
@@ -214,7 +214,7 @@ class _FranSocialaMedierViewContentState
   }
 
   Widget _buildTextInput(BuildContext context, TextImportViewModel viewModel) {
-    // Synkronisera ViewModel-text med controller om de skiljer sig åt
+    // Synchronize ViewModel text with controller if they differ
     if (_isInitialized && _textController.text != viewModel.inputText) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_textController.text != viewModel.inputText) {

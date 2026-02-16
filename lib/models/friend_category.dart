@@ -188,7 +188,7 @@ class FriendCategory {
   /// Compatibility getter for operations that expect memberIds
   List<String> get memberIds => friendUserIds;
 
-  /// ✅ LAGT TILL: Alias för ownerId för kompatibilitet med permissions
+  /// Added: Alias for ownerId for compatibility with permissions
   String get createdBy => ownerId;
 
   /// Check if friend is in this category
@@ -250,7 +250,7 @@ class FriendCategory {
     );
   }
 
-  /// JSON serialization för caching
+  /// JSON serialization for caching
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -330,7 +330,7 @@ class FriendCategory {
   }
 }
 
-/// Predefined category data för snabb setup
+/// Predefined category data for quick setup
 class DefaultFriendCategories {
   static List<Map<String, dynamic>> get defaults => [
         {
@@ -379,7 +379,7 @@ class DefaultFriendCategories {
   }
 }
 
-/// Category statistics för analytics
+/// Category statistics for analytics
 class CategoryStats {
   final String categoryId;
   final String categoryName;

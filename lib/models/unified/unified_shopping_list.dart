@@ -67,10 +67,10 @@ enum SyncStatus {
   synced, // Synkad med Firebase
 
   /// Pending synchronization with backend, changes waiting to be uploaded.
-  pending, // Väntar på synk
+  pending, // Waiting for sync
 
   /// Synchronization conflict detected, requires user resolution.
-  conflict, // Konflikt som behöver lösas
+  conflict, // Conflict that needs resolution
 
   /// Local-only data, not synchronized with backend (offline mode).
   local, // Endast lokal (offline)
@@ -90,7 +90,7 @@ enum ListType {
   collaborative, // Delad med andra, real-time sync
 
   /// Template shopping list for reuse and duplication across users.
-  template, // Mall-lista för återanvändning
+  template, // Template list for reuse
 }
 
 /// Alias for backward compatibility with legacy code.
@@ -104,10 +104,10 @@ enum SharedListPermission {
   view, // Kan bara se listan
 
   /// Edit permission, can add, remove, and modify items in the list.
-  edit, // Kan lägga till/ta bort items
+  edit, // Can add/remove items
 
   /// Administrative permission, can manage permissions and delete the list.
-  admin, // Kan redigera behörigheter och ta bort lista
+  admin, // Can edit permissions and delete list
 }
 
 /// Comprehensive unified shopping list with triple-mode support and collaborative features.
@@ -179,7 +179,7 @@ class UnifiedShoppingList {
 
   /// Flexible settings container for future feature extensions.
   /// Extensible settings system for storing list-specific configuration and preferences.
-  final Map<String, dynamic> settings; // Framtida inställningar
+  final Map<String, dynamic> settings; // Future settings
 
   /// List of friend category IDs for bulk sharing operations.
   /// References friend categories that can be used for efficient bulk sharing of the shopping list.

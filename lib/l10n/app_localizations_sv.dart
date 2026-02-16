@@ -12082,4 +12082,20 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get duplicateImportAnyway => 'Importera ändå';
+
+  @override
+  String get imageCropTitle => 'Beskär bild';
+
+  @override
+  String get bulkDeleteConfirmMessage =>
+      'De valda recepten kommer att tas bort.';
+
+  @override
+  String bulkDeleteSuccess(int count) {
+    return '$count recept borttagna';
+  }
+
+  @override
+  String get errorDeleteFailed =>
+      'Kunde inte ta bort receptet. Det har återställts.';
 }

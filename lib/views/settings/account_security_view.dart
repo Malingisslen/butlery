@@ -21,6 +21,11 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
   final _emailPasswordController = TextEditingController();
   final _newEmailController = TextEditingController();
 
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+  bool _obscureEmailPassword = true;
+
   @override
   void dispose() {
     _currentPasswordController.dispose();
@@ -137,28 +142,58 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
         const SizedBox(height: AppDimensions.spacingMd),
         TextField(
           controller: _currentPasswordController,
-          obscureText: true,
+          obscureText: _obscureCurrentPassword,
           decoration: InputDecoration(
             labelText: context.l10n.accountSecurityCurrentPassword,
             border: const OutlineInputBorder(),
+            suffixIcon: IconButton(
+              icon: Icon(_obscureCurrentPassword
+                  ? Icons.visibility_off
+                  : Icons.visibility),
+              tooltip: _obscureCurrentPassword
+                  ? context.l10n.a11yShowPassword
+                  : context.l10n.a11yHidePassword,
+              onPressed: () => setState(
+                  () => _obscureCurrentPassword = !_obscureCurrentPassword),
+            ),
           ),
         ),
         const SizedBox(height: AppDimensions.spacingSm),
         TextField(
           controller: _newPasswordController,
-          obscureText: true,
+          obscureText: _obscureNewPassword,
           decoration: InputDecoration(
             labelText: context.l10n.accountSecurityNewPassword,
             border: const OutlineInputBorder(),
+            suffixIcon: IconButton(
+              icon: Icon(_obscureNewPassword
+                  ? Icons.visibility_off
+                  : Icons.visibility),
+              tooltip: _obscureNewPassword
+                  ? context.l10n.a11yShowPassword
+                  : context.l10n.a11yHidePassword,
+              onPressed: () =>
+                  setState(() => _obscureNewPassword = !_obscureNewPassword),
+            ),
           ),
         ),
         const SizedBox(height: AppDimensions.spacingSm),
         TextField(
           controller: _confirmPasswordController,
-          obscureText: true,
+          obscureText: _obscureConfirmPassword,
           decoration: InputDecoration(
             labelText: context.l10n.accountSecurityConfirmPassword,
             border: const OutlineInputBorder(),
+            suffixIcon: IconButton(
+              icon: Icon(_obscureConfirmPassword
+                  ? Icons.visibility_off
+                  : Icons.visibility),
+              tooltip: _obscureConfirmPassword
+                  ? context.l10n.a11yShowPassword
+                  : context.l10n.a11yHidePassword,
+              onPressed: () => setState(
+                  () => _obscureConfirmPassword = !_obscureConfirmPassword),
+            ),
           ),
         ),
         const SizedBox(height: AppDimensions.spacingMd),
@@ -208,10 +243,20 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           ),
         TextField(
           controller: _emailPasswordController,
-          obscureText: true,
+          obscureText: _obscureEmailPassword,
           decoration: InputDecoration(
             labelText: context.l10n.accountSecurityCurrentPassword,
             border: const OutlineInputBorder(),
+            suffixIcon: IconButton(
+              icon: Icon(_obscureEmailPassword
+                  ? Icons.visibility_off
+                  : Icons.visibility),
+              tooltip: _obscureEmailPassword
+                  ? context.l10n.a11yShowPassword
+                  : context.l10n.a11yHidePassword,
+              onPressed: () => setState(
+                  () => _obscureEmailPassword = !_obscureEmailPassword),
+            ),
           ),
         ),
         const SizedBox(height: AppDimensions.spacingSm),

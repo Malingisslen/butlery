@@ -228,7 +228,7 @@ class _UserProfileEditViewContentState
         }
       },
       child: LayoutComponents.mainMenu(
-        // ✅ UPPDATERAD: LayoutComponents istället för MainLayoutMenu
+        // Use LayoutComponents instead of MainLayoutMenu
         currentIndex: null,
         body: SafeArea(
           // ✅ RESPONSIVE: Center and constrain content on large screens

@@ -6,7 +6,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
-/// Status för realtidsmeny-operationer
+/// Status for realtime menu operations
 enum RealtimeMenuStatus {
   idle,
   loading,
@@ -49,7 +49,7 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
   /// Alla kategorier i nuvarande meny
   List<String> get categories => _currentMenu?.categories ?? [];
 
-  /// Recept för vald kategori
+  /// Recipes for selected category
   List<Recipe> get selectedCategoryRecipes {
     if (_selectedCategory == null || _currentMenu == null) return [];
     return _currentMenu!.getRecipesForCategory(_selectedCategory!);

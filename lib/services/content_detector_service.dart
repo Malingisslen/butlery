@@ -171,7 +171,7 @@ class ContentDetectorService extends BaseService {
   @override
   String get serviceName => 'ContentDetectorService';
 
-  /// Regex-mönster för olika plattformar (lätt att uppdatera)
+  /// Regex patterns for different platforms (easy to update)
   static final Map<SourcePlatform, List<RegExp>> _platformPatterns = {
     SourcePlatform.instagram: [
       RegExp(r'instagram\.com/p/[A-Za-z0-9_-]+'),
@@ -195,7 +195,7 @@ class ContentDetectorService extends BaseService {
     ],
   };
 
-  /// Nyckelord som indikerar recept (från TextImportViewModel)
+  /// Keywords indicating recipes (from TextImportViewModel)
   static final List<String> _recipeKeywords = [
     // Svenska
     'recept', 'ingredienser', 'instruktioner', 'tillredning',
@@ -203,7 +203,7 @@ class ContentDetectorService extends BaseService {
     'matsked', 'tesked', 'deciliter', 'liter', 'gram',
     'servera', 'blanda', 'vispa', 'häll', 'stek',
 
-    // Engelska (för internationella recept)
+    // English (for international recipes)
     'recipe', 'ingredients', 'instructions', 'directions',
     'servings', 'cooking', 'oven', 'degrees', 'minutes',
     'tablespoon', 'teaspoon', 'cup', 'cups', 'grams',
@@ -258,13 +258,13 @@ class ContentDetectorService extends BaseService {
     // Trimma och normalisera
     final normalizedContent = content.trim().toLowerCase();
 
-    // 1. Kolla om det är en URL (VANLIGAST från social media shares)
+    // 1. Check if it is a URL (MOST COMMON from social media shares)
     final urlMatch = _extractUrl(content);
     if (urlMatch != null) {
       // Identifiera plattform
       final platform = _identifyPlatform(urlMatch);
 
-      // Om det är social media, behöver vi alltid WebView för att extrahera
+      // If it is social media, we always need WebView to extract
       if (platform == SourcePlatform.instagram ||
           platform == SourcePlatform.facebook ||
           platform == SourcePlatform.tiktok) {
@@ -289,7 +289,7 @@ class ContentDetectorService extends BaseService {
       );
     }
 
-    // 2. Ingen URL = troligen kopierad text eller delad från notes-app
+    // 2. No URL = likely copied text or shared from notes app
     if (_containsRecipeKeywords(normalizedContent)) {
       return ContentDetectionResult(
         type: ContentType.recipeText,
@@ -308,9 +308,9 @@ class ContentDetectorService extends BaseService {
     );
   }
 
-  /// Extraherar URL från text
+  /// Extracts URL from text
   String? _extractUrl(String content) {
-    // Generellt URL-mönster
+    // General URL pattern
     final urlRegex = RegExp(
       r'https?://[^\s<>"{}|\\^`\[\]]+',
       caseSensitive: false,
@@ -320,7 +320,7 @@ class ContentDetectorService extends BaseService {
     return match?.group(0);
   }
 
-  /// Identifierar plattform från URL
+  /// Identifies platform from URL
   SourcePlatform _identifyPlatform(String url) {
     final normalizedUrl = url.toLowerCase();
 
@@ -332,7 +332,7 @@ class ContentDetectorService extends BaseService {
       }
     }
 
-    // Kolla om det är en generisk webbsida
+    // Check if it is a generic webpage
     if (normalizedUrl.startsWith('http')) {
       return SourcePlatform.website;
     }
@@ -340,7 +340,7 @@ class ContentDetectorService extends BaseService {
     return SourcePlatform.unknown;
   }
 
-  /// Kontrollerar om text innehåller recept-nyckelord
+  /// Checks if text contains recipe keywords
   bool _containsRecipeKeywords(String text) {
     return _recipeKeywords.any((keyword) => text.contains(keyword));
   }
@@ -350,8 +350,8 @@ class ContentDetectorService extends BaseService {
     return _recipeKeywords.where((keyword) => text.contains(keyword)).toList();
   }
 
-  /// Validerar om en URL är giltig och nåbar
-  /// (Kan utökas med faktisk nätverkskontroll i framtiden)
+  /// Validates if a URL is valid and reachable
+  /// (Can be extended with actual network check in the future)
   bool isValidUrl(String? url) {
     if (url == null || url.isEmpty) return false;
 

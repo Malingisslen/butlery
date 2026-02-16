@@ -96,7 +96,7 @@ class RecipeDetailViewModel extends ChangeNotifier
             recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
         _analyticsService =
             analyticsService ?? ServiceLocator.get<AnalyticsService>() {
-    // Lyssna på UnifiedRecipeService för uppdateringar
+    // Listen to UnifiedRecipeService for updates
     _recipeService.addListener(_onRecipeServiceUpdate);
   }
 
@@ -115,7 +115,7 @@ class RecipeDetailViewModel extends ChangeNotifier
   /// recipe data changes are immediately reflected with change detection and automatic UI updates
   /// for consistent user experience and real-time recipe status coordination.
   void _onRecipeServiceUpdate() {
-    // Uppdatera vårt recept om det har ändrats i service
+    // Update our recipe if it has changed in service
     final updatedRecipe = _recipeService.getRecipeById(_recipe.id);
     if (updatedRecipe != null && updatedRecipe.updatedAt != _recipe.updatedAt) {
       _recipe = updatedRecipe;
@@ -209,7 +209,7 @@ class RecipeDetailViewModel extends ChangeNotifier
         final success = await _recipeService.deleteRecipe(_recipe.id);
 
         if (success) {
-          // Logga analytics för recipe deletion
+          // Log analytics for recipe deletion
           await _analyticsService.logRecipeDeleted(
             recipeId: _recipe.id,
             recipeTitle: _recipe.title,
@@ -265,7 +265,7 @@ class RecipeDetailViewModel extends ChangeNotifier
         _recipe = updatedRecipe;
         notifyListeners();
 
-        // Logga analytics med rätt metod
+        // Log analytics with correct method
         await _analyticsService.logRecipeCooked(
           recipeId: _recipe.id,
           recipeTitle: _recipe.title,

@@ -125,7 +125,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
         arguments: _detectionResult.extractedUrl,
       );
     } else {
-      // Om ingen URL, gå till text import istället
+      // If no URL, go to text import instead
       _navigateToTextImport();
     }
   }
@@ -195,7 +195,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
       customErrorMessage: null, // Handle error in catch block below
     ).catchError((e) {
       if (mounted) {
-        // Logga oväntat fel
+        // Log unexpected error
         _analytics.logExtractionError(
           url: _detectionResult.extractedUrl!,
           platform: _detectionResult.platform ??
@@ -217,7 +217,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
 
   /// Show manual copy instructions and navigate to text import.
   void _handleManualCopy() {
-    // Logga att användaren valde manuell kopiering
+    // Log that the user chose manual copying
     _analytics.logManualCopyFallback(
       platform:
           _detectionResult.platform ?? content_detector.SourcePlatform.unknown,
@@ -364,7 +364,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
   Widget _buildActionButtons() {
     switch (_detectionResult.type) {
       case content_detector.ContentType.socialMediaUrl:
-        // För sociala medier - vi kan nu extrahera automatiskt!
+        // For social media - we can now extract automatically!
         return Column(
           children: [
             if (_extractionError != null) ...[

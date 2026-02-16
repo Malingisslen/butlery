@@ -7335,5 +7335,10 @@
   "duplicateImportMessage": "A recipe with the same source already exists: {recipeName}",
   "@duplicateImportMessage": { "placeholders": { "recipeName": {"type": "String"} } },
   "duplicateImportViewExisting": "View Existing",
-  "duplicateImportAnyway": "Import Anyway"
+  "duplicateImportAnyway": "Import Anyway",
+  "imageCropTitle": "Crop image",
+  "bulkDeleteConfirmMessage": "The selected recipes will be removed.",
+  "bulkDeleteSuccess": "{count} recipes deleted",
+  "@bulkDeleteSuccess": { "placeholders": { "count": {"type": "int"} } },
+  "errorDeleteFailed": "Could not delete recipe. It has been restored."
 }

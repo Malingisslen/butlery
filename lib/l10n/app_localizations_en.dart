@@ -12053,4 +12053,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get duplicateImportAnyway => 'Import Anyway';
+
+  @override
+  String get imageCropTitle => 'Crop image';
+
+  @override
+  String get bulkDeleteConfirmMessage =>
+      'The selected recipes will be removed.';
+
+  @override
+  String bulkDeleteSuccess(int count) {
+    return '$count recipes deleted';
+  }
+
+  @override
+  String get errorDeleteFailed =>
+      'Could not delete recipe. It has been restored.';
 }

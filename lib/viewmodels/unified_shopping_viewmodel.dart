@@ -219,7 +219,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     return await _shoppingService.addItemsBatch(items);
   }
 
-  /// Lägg till artikel (original API)
+  /// Add item (original API)
   Future<bool> addItem({
     required String name,
     required double amount,
@@ -266,7 +266,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     }
   }
 
-  /// ✅ NY: Lägg till artikel (ShoppingListSelector API)
+  /// Add item (ShoppingListSelector API)
   Future<bool> addItemToActiveList({
     required String name,
     required double amount,
@@ -348,7 +348,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     );
   }
 
-  /// ✅ NY: Ta bort artikel (alias för kompatibilitet)
+  /// Remove item (alias for compatibility)
   Future<bool> removeItemFromActiveList(String itemId) async {
     return await removeItem(itemId);
   }
@@ -384,7 +384,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   List<UnifiedShoppingItem> searchItems(String query) =>
       _itemOpsManager.searchItems(items, query);
 
-  /// Kontrollera om användaren kan redigera aktiv lista
+  /// Check if the user can edit the active list
   bool get canEditActiveList {
     if (activeList == null || currentUserId == null) {
       AppLogger.warning(
@@ -402,7 +402,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     return canEdit;
   }
 
-  /// Kontrollera om användaren kan hantera aktiv lista
+  /// Check if the user can manage the active list
   bool get canManageActiveList {
     if (activeList == null || currentUserId == null) return false;
 
@@ -411,7 +411,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier
         .canManageShoppingList(activeList!.id);
   }
 
-  /// Få medlemmar i aktiv lista
+  /// Get members of the active list
   List<String> get activeListMembers {
     if (activeList == null || !activeList!.isCollaborative) return [];
     return activeList!.memberPermissions.keys.toList();
@@ -438,7 +438,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     super.dispose();
   }
 
-  /// Debug info för utveckling
+  /// Debug info for development
   Map<String, dynamic> get debugInfo {
     return {
       'listsCount': lists.length,

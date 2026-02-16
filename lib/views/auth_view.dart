@@ -73,7 +73,7 @@ class _AuthViewState extends State<AuthView> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Logo/Header område
+                        // Logo/Header area
                         _buildHeader(context),
                         SizedBox(
                           height: LayoutComponents.valueFor(
@@ -126,20 +126,20 @@ class _AuthViewState extends State<AuthView> {
               ),
               const SizedBox(height: AppDimensions.spacingXl),
 
-              // Namn-fält (bara vid registrering)
+              // Name field (only for registration)
               if (!viewModel.isLoginMode) ...[
                 _buildNameField(viewModel),
                 const SizedBox(height: AppDimensions.spacingXl),
               ],
 
-              // Email-fält
+              // Email field
               _buildEmailField(viewModel),
               const SizedBox(height: AppDimensions.spacingXl),
 
-              // Lösenords-fält
+              // Password field
               _buildPasswordField(viewModel),
 
-              // Glömt lösenord (bara vid login)
+              // Forgot password (only for login)
               if (viewModel.isLoginMode) ...[
                 const SizedBox(height: AppDimensions.spacingM),
                 _buildForgotPasswordButton(context, viewModel),
@@ -285,12 +285,12 @@ class _AuthViewState extends State<AuthView> {
     // Rensa tidigare fel
     viewModel.clearError();
 
-    // Validera formulär
+    // Validate form
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    // Stäng tangentbordet
+    // Close keyboard
     FocusScope.of(context).unfocus();
 
     bool success;

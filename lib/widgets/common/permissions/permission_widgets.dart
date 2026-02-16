@@ -10,8 +10,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 /// PermissionWidgets - Permission-based action buttons
 /// Provides action buttons that adapt based on user permissions.
 class PermissionWidgets {
-  /// Action buttons baserat på användares permissions för kollaborativ redigering
-  /// Visar olika knappar beroende på användarens rättigheter:
+  /// Action buttons based on user permissions for collaborative editing
+  /// Shows different buttons depending on user permissions:
   /// - Ägare: "Spara ändringar" (standard save)
   /// - Collaborator: "Spara ändringar" + "Spara min kopia" (både save och fork)
   /// - Viewer: "Spara min kopia" (endast fork)
@@ -26,7 +26,7 @@ class PermissionWidgets {
     String? forkLabel,
     bool isExpanded = true,
   }) {
-    // Dynamiska labels baserat på edit mode
+    // Dynamic labels based on edit mode
     final effectiveSaveLabel = saveLabel ?? _getSaveLabel(context, editMode);
     final effectiveForkLabel = forkLabel ?? _getForkLabel(context, editMode);
 
@@ -101,7 +101,7 @@ class PermissionWidgets {
     }
   }
 
-  /// Horizontal layout för permissions buttons (för mindre skärmar)
+  /// Horizontal layout for permissions buttons (for smaller screens)
   static Widget permissionsActionButtonsHorizontal({
     required BuildContext context,
     required EditMode editMode,
@@ -165,7 +165,7 @@ class PermissionWidgets {
         );
 
       case EditMode.noAccess:
-        return const SizedBox.shrink(); // Ingen knapp för ingen åtkomst
+        return const SizedBox.shrink(); // No button for no access
     }
   }
 

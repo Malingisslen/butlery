@@ -17,7 +17,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Core state management for recipe form with intelligent auto-save
 class RecipeFormState extends ChangeNotifier {
-  // FormFieldsManagers för dynamiska fält
+  // FormFieldsManagers for dynamic fields
   late final FormFieldsManager _ingredientsManager;
   late final FormFieldsManager _instructionsManager;
   late final FormFieldsManager _tagsManager;
@@ -660,7 +660,7 @@ class RecipeFormState extends ChangeNotifier {
     return _serializeFormData();
   }
 
-  /// Skapa Recipe från nuvarande form state
+  /// Create Recipe from current form state
   Recipe createRecipe({String? recipeId, List<String>? imageUrls}) {
     final cleanIngredients = _ingredientsManager.values
         .where((ingredient) => ingredient.trim().isNotEmpty)

@@ -127,7 +127,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
       case 'delete':
         _showDeleteGroupDialog(group);
         break;
-      case 'leave_group': // ✅ NYTT: Hantera lämna grupp från popup menu
+      case 'leave_group': // Handle leave group from popup menu
         _leaveGroup(group);
         break;
     }
@@ -227,7 +227,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
     return GroupDetailStats.build(context, group, members);
   }
 
-  /// Visa både medlemmar och pending inbjudningar
+  /// Show both members and pending invitations
   Widget _buildMembersSection(List<UserProfile> members) {
     return GroupMembersList.build(
       context,

@@ -225,7 +225,7 @@ class FormValidators {
   static FormFieldValidator<String> shareMessage() {
     return (value) {
       if (value == null || value.isEmpty) {
-        return null; // Delningsmeddelande är valfritt
+        return null; // Share message is optional
       }
 
       if (value.length > 200) {

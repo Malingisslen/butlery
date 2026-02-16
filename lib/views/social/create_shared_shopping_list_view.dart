@@ -126,11 +126,11 @@ class _CreateSharedShoppingListViewState
             _buildListDetails(context, viewModel),
             const SizedBox(height: AppDimensions.spacingXl),
 
-            // Vän selection
+            // Friend selection
             _buildFriendSelection(context, viewModel),
             const SizedBox(height: AppDimensions.spacingXl),
 
-            // Info om vad som händer
+            // Info about what happens
             _buildInfoSection(context),
 
             // Error display
@@ -310,7 +310,7 @@ class _CreateSharedShoppingListViewState
     return BottomActionContainer(
       child: Row(
         children: [
-          // Selection summary från ViewModel
+          // Selection summary from ViewModel
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -363,6 +363,6 @@ class _CreateSharedShoppingListViewState
       // Success - return listId using stored navigator
       navigator.pop(listId);
     }
-    // Error handling sköts av ViewModel och visas i UI automatiskt
+    // Error handling is managed by ViewModel and shown in UI automatically
   }
 }

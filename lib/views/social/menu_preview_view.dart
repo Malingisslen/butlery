@@ -1,5 +1,5 @@
 // lib/views/social/menu_preview_view.dart
-// ✅ FÖRHANDSVISNING av delade menyer med alla recept
+// Preview of shared menus with all recipes
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -34,7 +34,7 @@ class MenuPreviewView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Konfigurera svenska för timeago
+    // Configure Swedish for timeago
     timeago.setLocaleMessages('sv', timeago.SvMessages());
 
     return Scaffold(
@@ -222,7 +222,7 @@ class MenuPreviewView extends StatelessWidget {
   }
 
   Widget _buildMenuContent(BuildContext context) {
-    // Gruppera recept per kategori från menuSnapshot
+    // Group recipes by category from menuSnapshot
     final menuContent = sharedMenu.menuSnapshot;
 
     if (menuContent.isEmpty) {
@@ -450,7 +450,7 @@ class MenuPreviewView extends StatelessWidget {
     BuildContext context,
     SharedContentCoordinatorViewModel viewModel,
   ) async {
-    // Visa bekräftelsedialog
+    // Show confirmation dialog
     final shouldDismiss = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(

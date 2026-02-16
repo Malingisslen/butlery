@@ -108,7 +108,7 @@ class _SkeletonBoxState extends State<_SkeletonBox>
   }
 }
 
-/// Transform för shimmer-effekt
+/// Transform for shimmer effect
 class _GradientRotation extends GradientTransform {
   final Animation<double> animation;
 

@@ -1,6 +1,6 @@
 // lib/widgets/common/state/state_enums.dart
 
-/// Enum för olika state-typer
+/// Enum for different state types
 enum StateType {
   loading,
   skeleton,
@@ -11,7 +11,7 @@ enum StateType {
   warning,
 }
 
-/// Enum för olika empty state varianter
+/// Enum for different empty state variants
 enum EmptyStateVariant {
   noRecipes,
   noSearchResults,
@@ -27,7 +27,7 @@ enum EmptyStateVariant {
   generic,
 }
 
-/// Enum för olika loading varianter
+/// Enum for different loading variants
 enum LoadingVariant {
   /// Standard circular progress indicator
   spinner,

@@ -137,17 +137,16 @@ class RecipeSelectionViewModel extends ChangeNotifier
   bool get hasFilteredRecipes => _filteredRecipes.isNotEmpty;
   bool get canShare => _selectedRecipeIds.isNotEmpty && !_isSharing;
   Set<String> get selectedRecipeIds => _selectedRecipeIds;
-  Set<String> get alreadySharedRecipeIds =>
-      _alreadySharedRecipeIds; // ✅ NY: För UI
+  Set<String> get alreadySharedRecipeIds => _alreadySharedRecipeIds; // For UI
 
-  /// Lista över valda recept (inklusive kompletta Recipe-objekt)
+  /// List of selected recipes (including complete Recipe objects)
   List<Recipe> get selectedRecipes {
     return _allRecipes
         .where((recipe) => _selectedRecipeIds.contains(recipe.id))
         .toList();
   }
 
-  /// Indikator om receptet redan är delat med vald vän
+  /// Indicator whether the recipe is already shared with selected friend
   bool isRecipeAlreadyShared(String recipeId) =>
       _alreadySharedRecipeIds.contains(recipeId);
 
@@ -173,7 +172,7 @@ class RecipeSelectionViewModel extends ChangeNotifier
     }
   }
 
-  /// Sök i recept
+  /// Search recipes
   void updateSearchQuery(String query) {
     if (_searchQuery == query) return;
 
@@ -230,7 +229,7 @@ class RecipeSelectionViewModel extends ChangeNotifier
     }
   }
 
-  /// Dela valda recept med vännen
+  /// Share selected recipes with the friend
   Future<bool> shareSelectedRecipes() async {
     if (_selectedRecipeIds.isEmpty || _isSharing) return false;
 
@@ -256,7 +255,7 @@ class RecipeSelectionViewModel extends ChangeNotifier
         }
       }
 
-      // Lägg till delade recept i redan-delat lista
+      // Add shared recipes to already-shared list
       _alreadySharedRecipeIds.addAll(_selectedRecipeIds);
       clearSelection(); // Rensa valet efter lyckad delning
 
@@ -312,13 +311,13 @@ class RecipeSelectionViewModel extends ChangeNotifier
         '🔍 Filtrerade recept: ${_filteredRecipes.length}/${_allRecipes.length}');
   }
 
-  /// Uppdatera recept från service
+  /// Update recipes from service
   Future<void> refresh() async {
     AppLogger.debug('🔄 Uppdaterar receptlista...');
     await loadRecipes();
   }
 
-  /// Statusinformation för delning
+  /// Status information for sharing
   String getSelectionSummary() {
     if (_selectedRecipeIds.isEmpty) {
       return AppLocale.current.selectionNoRecipesSelected;
@@ -327,7 +326,7 @@ class RecipeSelectionViewModel extends ChangeNotifier
         .selectionRecipesSelected(_selectedRecipeIds.length);
   }
 
-  /// Få delningsmeddelande för valda recept
+  /// Get share message for selected recipes
   String getShareMessage() {
     if (_selectedRecipeIds.isEmpty) return '';
 

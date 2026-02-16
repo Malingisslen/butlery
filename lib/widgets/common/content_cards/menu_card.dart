@@ -437,6 +437,6 @@ class MenuCard extends StatelessWidget {
 /// Menu card display styles
 enum MenuCardStyle {
   detailed, // Full visning med alla detaljer
-  compact, // Kompakt visning för listor
-  grid, // För grid-layout
+  compact, // Compact display for lists
+  grid, // For grid layout
 }

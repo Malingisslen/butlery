@@ -236,7 +236,7 @@ class InvitationTarget {
     if (targetId.isEmpty || displayName.isEmpty) return false;
 
     if (isGroup) {
-      // Grupper måste ha medlemmar
+      // Groups must have members
       return memberIds?.isNotEmpty == true;
     }
 
@@ -473,7 +473,7 @@ class InvitationTarget {
   /// consistent target list organization in invitation interfaces.
   /// Returns negative value if this target should appear before the other target.
   int compareTo(InvitationTarget other) {
-    // Grupper först
+    // Groups first
     if (isGroup && !other.isGroup) return -1;
     if (!isGroup && other.isGroup) return 1;
 
@@ -572,17 +572,17 @@ class InvitationTarget {
     final query = searchText.toLowerCase();
 
     return targets.where((target) {
-      // Sök i namn
+      // Search in name
       if (target.displayName.toLowerCase().contains(query)) {
         return true;
       }
 
-      // Sök i beskrivning
+      // Search in description
       if (target.description.toLowerCase().contains(query)) {
         return true;
       }
 
-      // För grupper: sök i beskrivning från metadata
+      // For groups: search in description from metadata
       if (target.isGroup) {
         final description = target.metadata?['description'] as String? ?? '';
         if (description.toLowerCase().contains(query)) {

@@ -54,7 +54,7 @@ class FriendProfileView extends StatelessWidget {
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 child: Column(
                   children: [
-                    // Avatar och grundläggande info
+                    // Avatar and basic info
                     Center(
                       child: Column(
                         children: [

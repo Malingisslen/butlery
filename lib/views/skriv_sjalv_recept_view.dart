@@ -190,7 +190,7 @@ class _SkrivSjalvReceptViewContentState
           Navigator.of(context)
               .pop(savedRecipe); // Return to previous screen with saved recipe
         } else {
-          // ✅ MIGRERAD: Använd UtilityComponents.showErrorSnackbar
+          // Use UtilityComponents.showErrorSnackbar
           UtilityComponents.showErrorSnackbar(
               context, viewModel.error ?? context.l10n.recipeCouldNotSave);
         }
@@ -331,7 +331,7 @@ class _SkrivSjalvReceptViewContentState
                     key: _formKey,
                     child: ListView(
                       children: [
-                        // Måltidstyp - Custom layout to fix text cutoff
+                        // Meal type - Custom layout to fix text cutoff
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -506,7 +506,7 @@ class _SkrivSjalvReceptViewContentState
                         ),
                         const SizedBox(height: AppDimensions.spacingXl),
 
-                        // Source URL-fält
+                        // Source URL field
                         StyledInput(
                           controller: _sourceUrlController,
                           label: context.l10n.recipeSourceUrl,

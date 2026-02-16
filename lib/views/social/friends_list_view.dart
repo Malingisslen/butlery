@@ -251,10 +251,10 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                       child: IndexedStack(
                         index: _currentTabIndex,
                         children: [
-                          _buildFriendsTab(viewModel), // Vänner
+                          _buildFriendsTab(viewModel), // Friends
                           _buildGroupsTab(
                               friendsService), // Grupper (with search)
-                          _buildDiscoveryTab(viewModel), // Hitta Vänner
+                          _buildDiscoveryTab(viewModel), // Find Friends
                         ],
                       ),
                     ),

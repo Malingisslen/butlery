@@ -16,7 +16,7 @@ enum ImageType {
   cached,
 }
 
-/// Visningsläge för image manager
+/// Display mode for image manager
 enum ImageDisplayMode {
   readonly,
   editable,
@@ -26,7 +26,7 @@ enum ImageDisplayMode {
   picker,
 }
 
-/// Storlek för image display
+/// Size for image display
 enum ImageSize {
   small,
   medium,
@@ -39,7 +39,7 @@ enum ImageSize {
   custom,
 }
 
-/// Optimerad konfiguration för ImageManager
+/// Optimized configuration for ImageManager
 class ImageConfig {
   final ImageType type;
   final ImageDisplayMode mode;

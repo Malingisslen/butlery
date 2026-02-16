@@ -86,13 +86,13 @@ class AddMembersToGroupViewModel extends ChangeNotifier
   Future<void> _initializeData() async {
     try {
       await executeNamedOperation('initializeData', () async {
-        // Hämta gruppinformation
+        // Fetch group information
         _group = _friendsService.categories.getCategoryById(groupId);
         if (_group == null) {
           throw Exception(AppLocale.current.errorGroupNotFound);
         }
 
-        // Hämta tillgängliga vänner (som inte redan är medlemmar)
+        // Fetch available friends (who are not already members)
         await _loadAvailableFriends();
 
         AppLogger.success(
@@ -110,10 +110,10 @@ class AddMembersToGroupViewModel extends ChangeNotifier
       return;
     }
 
-    // Hämta alla vänner
+    // Fetch all friends
     final allFriends = _friendsService.management.getAllFriends();
 
-    // Filtrera bort befintliga gruppmedlemmar och grupp-ägaren
+    // Filter out existing group members and group owner
     final currentMemberIds = _group!.friendUserIds.toSet();
     final currentUserId =
         _friendsService.currentUserId; // ✅ FIXED: Filter out group owner
@@ -125,9 +125,9 @@ class AddMembersToGroupViewModel extends ChangeNotifier
                 currentUserId) // ✅ FIXED: Prevent owner from inviting themselves
         .toList();
 
-    // ✅ NYTT: Filtrera även bort de som redan har väntande inbjudningar
+    // Filter out those who already have pending invitations
     _availableFriends = _availableFriends.where((friend) {
-      // Kontrollera om det redan finns en väntande inbjudan
+      // Check if there is already a pending invitation
       final existingInvitation = _friendsService.invitations
           .getSentInvitations()
           .where((inv) =>
@@ -160,7 +160,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier
   void selectAllVisible() => _selectionManager.selectAllVisible();
   void clearAllSelections() => _selectionManager.clearAllSelections();
 
-  /// ✅ UPPDATERAD: Skicka RIKTIGA gruppinbjudningar till valda vänner
+  /// Send group invitations to selected friends
   Future<bool> sendInvitations({String? personalMessage}) async {
     if (!canSendInvitations || _group == null) {
       AppLogger.warning(
@@ -190,7 +190,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier
         results[userId] = success;
       }
 
-      // Uppdatera status baserat på resultat
+      // Update status based on results
       int successCount = 0;
       int failureCount = 0;
 
@@ -213,7 +213,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier
       if (failureCount > 0) {
         AppLogger.warning('⚠️ $failureCount gruppinbjudningar misslyckades');
 
-        // Visa specifikt fel från UnifiedFriendsService om det finns
+        // Show specific error from UnifiedFriendsService if available
         if (_friendsService.hasError) {
           _setInvitationError(_friendsService.error!);
         } else if (successCount == 0 && failureCount > 0) {
@@ -222,11 +222,11 @@ class AddMembersToGroupViewModel extends ChangeNotifier
         }
       }
 
-      // Rensa val efter framgångsrika inbjudningar
+      // Clear selections after successful invitations
       if (successCount > 0) {
         _selectionManager.clearAllSelections();
 
-        // ✅ NYTT: Ladda om tillgängliga vänner för att ta bort de som nu har väntande inbjudningar
+        // Reload available friends to remove those who now have pending invitations
         await _loadAvailableFriends();
       }
 
@@ -241,17 +241,17 @@ class AddMembersToGroupViewModel extends ChangeNotifier
     }
   }
 
-  /// Hämta status för en specifik inbjudan
+  /// Get status for a specific invitation
   String? getInvitationStatusForUser(String userId) {
     return _invitationStatus[userId];
   }
 
-  /// Kontrollera om en användare har väntande inbjudan
+  /// Check if a user has a pending invitation
   bool hasInvitationStatus(String userId) {
     return _invitationStatus.containsKey(userId);
   }
 
-  /// ✅ NYTT: Kontrollera om en användare redan har väntande gruppinbjudan
+  /// Check if a user already has a pending group invitation
   bool hasExistingInvitation(String userId) {
     final hasInvitation = _friendsService.invitations
         .getSentInvitations()
@@ -262,7 +262,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier
     return hasInvitation;
   }
 
-  /// ✅ NYTT: Hämta information om skickade inbjudningar för denna grupp
+  /// Get information about sent invitations for this group
   List<dynamic> getSentInvitationsForGroup() {
     final invitations = _friendsService.invitations
         .getSentInvitations()
@@ -275,7 +275,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier
   Future<void> refresh() async {
     AppLogger.info('🔄 Refreshar AddMembersToGroupViewModel data');
 
-    // ✅ NYTT: Refresha även UnifiedFriendsService
+    // Also refresh UnifiedFriendsService
     await _friendsService.refresh();
 
     await _initializeData();

@@ -20703,6 +20703,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Importera ändå'**
   String get duplicateImportAnyway;
+
+  /// No description provided for @imageCropTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beskär bild'**
+  String get imageCropTitle;
+
+  /// No description provided for @bulkDeleteConfirmMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'De valda recepten kommer att tas bort.'**
+  String get bulkDeleteConfirmMessage;
+
+  /// No description provided for @bulkDeleteSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept borttagna'**
+  String bulkDeleteSuccess(int count);
+
+  /// No description provided for @errorDeleteFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort receptet. Det har återställts.'**
+  String get errorDeleteFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -296,7 +296,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
           await ImagePickerDialogs.showImageSourceDialog(context);
 
       if (imageSource != null) {
-        final pickedFile = await _imagePickerService.pickImage(imageSource);
+        final pickedFile =
+            await _imagePickerService.pickImage(imageSource, enableCrop: true);
 
         if (pickedFile != null) {
           final xFile = XFile(pickedFile.path);
@@ -323,8 +324,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       _clearImageUploadError();
       _setUploadingImage(true);
 
-      final pickedFile =
-          await _imagePickerService.pickImage(ImageSource.camera);
+      final pickedFile = await _imagePickerService.pickImage(ImageSource.camera,
+          enableCrop: true);
 
       if (pickedFile != null) {
         final xFile = XFile(pickedFile.path);
@@ -352,8 +353,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       _clearImageUploadError();
       _setUploadingImage(true);
 
-      final pickedFile =
-          await _imagePickerService.pickImage(ImageSource.gallery);
+      final pickedFile = await _imagePickerService
+          .pickImage(ImageSource.gallery, enableCrop: true);
 
       if (pickedFile != null) {
         final xFile = XFile(pickedFile.path);

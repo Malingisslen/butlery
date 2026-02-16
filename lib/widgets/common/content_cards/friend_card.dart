@@ -372,6 +372,6 @@ class FriendRequestCard extends StatelessWidget {
 /// Friend card display styles
 enum FriendCardStyle {
   detailed, // Full visning med avatar och metadata
-  compact, // Kompakt visning för listor
+  compact, // Compact display for lists
   list, // ListTile-baserad visning
 }

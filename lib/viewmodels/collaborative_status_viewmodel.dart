@@ -9,14 +9,14 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
-/// 🎯 Content type enum för type safety
+/// Content type enum for type safety
 enum CollaborativeContentType {
   recipe,
   menu,
   shoppingList,
 }
 
-/// 📊 Status result class för rik data
+/// Status result class for rich data
 class CollaborativeStatus {
   final bool isCollaborative;
   final List<UserProfile> participants;
@@ -48,7 +48,7 @@ class CollaborativeStatus {
 }
 
 /// 🤝 Enhanced Collaborative Status ViewModel
-/// Skalbar system för att hantera kollaborativ status över alla content-typer
+/// Scalable system for managing collaborative status across all content types
 /// med robust caching, batch operations och comprehensive error handling
 class CollaborativeStatusViewModel extends ChangeNotifier
     with ErrorHandlingMixin {
@@ -57,13 +57,13 @@ class CollaborativeStatusViewModel extends ChangeNotifier
   /// Flag to track if ViewModel has been disposed
   bool _isDisposed = false;
 
-  /// Universal cache för alla content types
+  /// Universal cache for all content types
   final Map<String, CollaborativeStatus> _statusCache = {};
 
-  /// Set av keys som håller på att checkas
+  /// Set of keys being checked
   final Set<String> _checkingKeys = {};
 
-  /// Cache TTL (5 minuter för collaborative status)
+  /// Cache TTL (5 minutes for collaborative status)
   static const Duration _cacheTtl = Duration(minutes: 5);
   CollaborativeStatusViewModel({
     SocialRecipeService? socialRecipeService,
@@ -79,7 +79,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     }
   }
 
-  /// Hämta cached status för content
+  /// Get cached status for content
   CollaborativeStatus? getCachedStatus(
       String contentId, CollaborativeContentType type) {
     final key = _buildCacheKey(contentId, type);
@@ -99,7 +99,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     return cached;
   }
 
-  /// 🍳 Hämta kollaborativ status för recept (modern API)
+  /// Get collaborative status for recipe (modern API)
   CollaborativeStatus getRecipeCollaborativeStatus(
       String recipeId, Recipe? recipe) {
     final cached = getCachedStatus(recipeId, CollaborativeContentType.recipe);
@@ -108,20 +108,20 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     // Starta async check i bakgrunden
     _checkContentStatusAsync(recipeId, CollaborativeContentType.recipe);
 
-    // Returnera intelligent fallback medan vi väntar
+    // Return intelligent fallback while waiting
     final metadataResult = _analyzeRecipeMetadata(recipe);
     return CollaborativeStatus(
       isCollaborative: metadataResult,
-      lastChecked: null, // Indikerar att detta är fallback
+      lastChecked: null, // Indicates this is a fallback
     );
   }
 
-  /// Legacy support för boolean API (för bakåtkompatibilitet)
+  /// Legacy support for boolean API (for backward compatibility)
   bool getRecipeCollaborativeStatusLegacy(String recipeId, Recipe? recipe) {
     return getRecipeCollaborativeStatus(recipeId, recipe).isCollaborative;
   }
 
-  /// 📅 Hämta kollaborativ status för meny
+  /// Get collaborative status for menu
   CollaborativeStatus getMenuCollaborativeStatus(
       String menuId, Map<String, List<Recipe>>? menuData) {
     final cached = getCachedStatus(menuId, CollaborativeContentType.menu);
@@ -136,13 +136,13 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     );
   }
 
-  /// Legacy support för boolean API
+  /// Legacy support for boolean API
   bool getMenuCollaborativeStatusLegacy(
       String menuId, Map<String, List<Recipe>>? menuData) {
     return getMenuCollaborativeStatus(menuId, menuData).isCollaborative;
   }
 
-  /// 🛒 Hämta kollaborativ status för inköpslista
+  /// Get collaborative status for shopping list
   CollaborativeStatus getShoppingListCollaborativeStatus(String listId) {
     final cached =
         getCachedStatus(listId, CollaborativeContentType.shoppingList);
@@ -150,14 +150,14 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
     _checkContentStatusAsync(listId, CollaborativeContentType.shoppingList);
 
-    // Ingen metadata-analys för shopping lists än
+    // No metadata analysis for shopping lists yet
     return const CollaborativeStatus(
       isCollaborative: false,
       lastChecked: null,
     );
   }
 
-  /// 🔄 Universal async check för alla content types
+  /// Universal async check for all content types
   Future<void> _checkContentStatusAsync(
       String contentId, CollaborativeContentType type) async {
     final userId = currentUserId;
@@ -168,7 +168,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
     _checkingKeys.add(key);
 
-    // Sätt loading state
+    // Set loading state
     _statusCache[key] = CollaborativeStatus.loading();
 
     // Defer notification to avoid setState during build
@@ -180,7 +180,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
       AppLogger.info(
           '🔍 Async check: ${type.name} $contentId collaborative status');
 
-      // Anropa rätt service-metod baserat på type
+      // Call the correct service method based on type
       late bool isShared;
       late List<UserProfile> participants;
 
@@ -248,7 +248,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     }
   }
 
-  /// 📋 Analysera recept metadata för collaborative indicators
+  /// Analyze recipe metadata for collaborative indicators
   bool _analyzeRecipeMetadata(Recipe? recipe) {
     if (recipe == null) return false;
 
@@ -293,7 +293,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
   bool _analyzeMenuMetadata(Map<String, List<Recipe>>? menuData) {
     if (menuData == null || menuData.isEmpty) return false;
 
-    // Kolla om någon av recepten i menyn är kollaborativ
+    // Check if any of the recipes in the menu are collaborative
     for (final dayRecipes in menuData.values) {
       for (final recipe in dayRecipes) {
         if (_analyzeRecipeMetadata(recipe)) {
@@ -305,7 +305,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     return false;
   }
 
-  /// 🚀 Batch check för mixed content types
+  /// Batch check for mixed content types
   Future<void> batchCheckContent({
     List<String>? recipeIds,
     List<String>? menuIds,
@@ -343,7 +343,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     AppLogger.info('🚀 Batch checking: ${recipesToCheck.length} recipes, '
         '${menusToCheck.length} menus, ${shoppingToCheck.length} shopping lists');
 
-    // Parallell processing för alla content types
+    // Parallel processing for all content types
     final futures = <Future<void>>[];
 
     // Recept
@@ -358,13 +358,13 @@ class CollaborativeStatusViewModel extends ChangeNotifier
           .add(_checkContentStatusAsync(menuId, CollaborativeContentType.menu));
     }
 
-    // Inköpslistor
+    // Shopping lists
     for (final listId in shoppingToCheck) {
       futures.add(_checkContentStatusAsync(
           listId, CollaborativeContentType.shoppingList));
     }
 
-    // Vänta på alla checks
+    // Wait for all checks
     await Future.wait(futures);
   }
 
@@ -381,7 +381,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     AppLogger.info('🗑️ Invalidated cache för ${type.name} $contentId');
   }
 
-  /// Legacy methods för bakåtkompatibilitet
+  /// Legacy methods for backward compatibility
   void invalidateRecipeStatus(String recipeId) =>
       invalidateContent(recipeId, CollaborativeContentType.recipe);
 

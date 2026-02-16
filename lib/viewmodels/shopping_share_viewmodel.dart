@@ -177,7 +177,7 @@ class ShoppingShareViewModel extends ChangeNotifier
     _clearError();
 
     try {
-      // Dela med varje vald vän via UnifiedShoppingService
+      // Share with each selected friend via UnifiedShoppingService
       bool allSuccessful = true;
       for (final friendId in _selectedFriendIds) {
         try {

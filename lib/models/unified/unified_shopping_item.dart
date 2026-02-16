@@ -320,7 +320,7 @@ class UnifiedShoppingItem {
   /// - 1.5 → "1.5"
   /// - 10.0 → "10"
   String get formattedAmount {
-    // Om det är ett heltal, visa utan decimaler
+    // If it is a whole number, display without decimals
     if (amount == amount.roundToDouble()) {
       return amount.round().toString();
     }
@@ -342,7 +342,7 @@ class UnifiedShoppingItem {
   String get formattedUnit {
     if (unit.isEmpty) return '';
 
-    // Mappa långa enhetsnamn till korta för visning
+    // Map long unit names to short abbreviations for display
     final unitMappings = {
       'liter': 'l',
       'styck': 'st',
@@ -379,7 +379,7 @@ class UnifiedShoppingItem {
     final amountStr = formattedAmount;
     final unitStr = formattedUnit;
 
-    // Om amount är 0, visa bara namnet (för ingredienser som redan har kvantitet)
+    // If amount is 0, just show the name (for ingredients that already have quantity)
     if (amount == 0.0) {
       return name;
     }

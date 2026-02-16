@@ -123,7 +123,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     try {
       AppLogger.debug('🖼️ VIEWMODEL: Starting avatar upload');
 
-      // Pick image från gallery - do NOT use safeExecute here as it swallows errors
+      // Pick image from gallery - do NOT use safeExecute here as it swallows errors
       AppLogger.debug('🖼️ VIEWMODEL: Calling image picker service');
       final imageFile =
           await _imagePickerService.pickImage(ImageSource.gallery);
