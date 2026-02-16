@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-
 /// Comprehensive MinaReceptView test suite using ultrathink methodology and gold standard patterns.
 ///
 /// This test suite validates MinaReceptView's complex multi-provider architecture, Swedish localization,
@@ -48,7 +46,7 @@ import 'package:butlery/services/offline_service.dart' as offline_service;
 // Model imports for mock data
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/offline/sync_result.dart';
 
@@ -670,10 +668,12 @@ void main() {
         await tester.pumpAndSettle();
 
         // Assert: Should show exit confirmation dialog
-        expect(find.text(AppStrings.exitApp), findsOneWidget);
-        expect(find.text(AppStrings.exitAppConfirmation), findsOneWidget);
-        ViewTestHelpers.expectSwedishText(tester, AppStrings.cancel);
-        ViewTestHelpers.expectSwedishText(tester, AppStrings.exit);
+        expect(find.text(AppLocale.current.navExitApp), findsOneWidget);
+        expect(find.text(AppLocale.current.navExitAppConfirmation),
+            findsOneWidget);
+        ViewTestHelpers.expectSwedishText(
+            tester, AppLocale.current.commonCancel);
+        ViewTestHelpers.expectSwedishText(tester, AppLocale.current.navExit);
       });
 
       testWidgets('should handle profile menu actions', (tester) async {

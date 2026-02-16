@@ -1,10 +1,8 @@
-// ignore_for_file: deprecated_member_use_from_same_package
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/state/empty_states.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
-import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import '../../test_support/base_unit_test.dart';
 
@@ -160,10 +158,10 @@ void main() {
           );
 
           // Assert
-          expect(find.text(AppStrings.noResults), findsOneWidget);
+          expect(find.text(AppLocale.current.noResults), findsOneWidget);
           expect(
             find.text(
-                'Lägg till ditt första recept genom att trycka på "${AppStrings.add}"'),
+                'Lägg till ditt första recept genom att trycka på "${AppLocale.current.commonAdd}"'),
             findsOneWidget,
           );
           expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
@@ -188,7 +186,7 @@ void main() {
           );
 
           // Assert
-          expect(find.text(AppStrings.noResults), findsOneWidget);
+          expect(find.text(AppLocale.current.noResults), findsOneWidget);
           expect(find.byIcon(Icons.search_off), findsOneWidget);
         });
       });

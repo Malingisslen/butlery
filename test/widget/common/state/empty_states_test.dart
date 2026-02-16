@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/state/empty_states.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
-import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 void main() {
@@ -104,7 +104,7 @@ void main() {
           ),
         );
 
-        expect(find.text(AppStrings.noResults), findsOneWidget);
+        expect(find.text(AppLocale.current.noResults), findsOneWidget);
         expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
         expect(find.textContaining('Lägg till ditt första recept'),
             findsOneWidget);
@@ -154,7 +154,7 @@ void main() {
           ),
         );
 
-        expect(find.text(AppStrings.noResults), findsOneWidget);
+        expect(find.text(AppLocale.current.noResults), findsOneWidget);
         expect(find.byIcon(Icons.search_off), findsOneWidget);
         expect(find.text('Prova att söka på något annat eller rensa sökningen'),
             findsOneWidget);

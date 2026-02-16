@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/state/empty_states.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 void main() {
   group('EmptyStates Widget Tests - ULTRATHINK METHODOLOGY', () {
@@ -92,7 +92,7 @@ void main() {
         expect(find.byIcon(customIcon), findsOneWidget);
 
         // Should not show config values
-        expect(find.text(AppStrings.noResults), findsNothing);
+        expect(find.text(AppLocale.current.noResults), findsNothing);
       });
 
       testWidgets('should hide icon when Icons.clear is provided',
@@ -125,7 +125,7 @@ void main() {
         ));
 
         expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
-        expect(find.text(AppStrings.noResults), findsOneWidget);
+        expect(find.text(AppLocale.current.noResults), findsOneWidget);
         expect(find.textContaining('Lägg till ditt första recept'),
             findsOneWidget);
       });
@@ -142,7 +142,7 @@ void main() {
         ));
 
         expect(find.byIcon(Icons.search_off), findsOneWidget);
-        expect(find.text(AppStrings.noResults), findsOneWidget);
+        expect(find.text(AppLocale.current.noResults), findsOneWidget);
         expect(find.textContaining('Prova att söka på något annat'),
             findsOneWidget);
       });
