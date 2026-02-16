@@ -2474,7 +2474,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shareMenuTitle => 'Dela meny';
 
   @override
-  String get shareShoppingListTitle => 'Dela inköpslista';
+  String get shareShoppingListTitle => '🛒 INKÖPSLISTA';
 
   @override
   String get shareCreateAndShare => 'Skapa & Dela';
@@ -3237,8 +3237,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get groupDeleteTheGroup => 'Ta bort gruppen';
 
   @override
-  String get groupDeleteWarning =>
-      'Detta kan inte ångras. Alla medlemmar kommer att tas bort från gruppen.';
+  String get groupDeleteWarning => 'Alla medlemmar kommer att lämna gruppen.';
 
   @override
   String get groupDeleteWhenLeaving =>
@@ -7529,6 +7528,15 @@ class AppLocalizationsSv extends AppLocalizations {
   String get categoryOther => 'Övrigt';
 
   @override
+  String get categorySpices => 'Kryddor';
+
+  @override
+  String get categoryCanned => 'Konserver';
+
+  @override
+  String get categoryDryGoods => 'Torrvaror';
+
+  @override
   String get privacyEmailSubject => 'Integritetsfråga';
 
   @override
@@ -8183,7 +8191,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get pollCancel => 'Avbryt';
 
   @override
-  String get pollCreate => 'Skapa';
+  String get pollCreate => 'Skapa omröstning';
 
   @override
   String pollVoteCount(int count) {
@@ -11624,4 +11632,454 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get unknownActivity => 'Okänd aktivitet';
+
+  @override
+  String get shareMinutesAbbrev => 'min';
+
+  @override
+  String get sharePortionsAbbrev => 'port';
+
+  @override
+  String get shareTimeLabel => 'Tid:';
+
+  @override
+  String get shareTimeLabelBold => '**Tid:**';
+
+  @override
+  String get sharePortionsLabel => 'Portioner:';
+
+  @override
+  String get sharePortionsLabelBold => '**Portioner:**';
+
+  @override
+  String get shareRatingLabel => 'Betyg:';
+
+  @override
+  String get shareRatingLabelBold => '**Betyg:**';
+
+  @override
+  String get shareTypeLabel => 'Typ:';
+
+  @override
+  String get shareTypeLabelBold => '**Typ:**';
+
+  @override
+  String get shareTagsLabel => 'Tags';
+
+  @override
+  String get shareInstructionsLabelCompact => 'Instruktioner:';
+
+  @override
+  String get shareShoppingListTitleSimple => 'Inköpslista';
+
+  @override
+  String get shareWeekMenuTitle => 'Veckomeny';
+
+  @override
+  String get shareWeekMenuTitleEmoji => '🍽 VECKOMENY';
+
+  @override
+  String get shareSummaryLabel => '📊 Sammanfattning:';
+
+  @override
+  String shareSummaryRecipesInCategories(int recipeCount, int categoryCount) {
+    return '$recipeCount recept i $categoryCount kategorier';
+  }
+
+  @override
+  String get unsavedChangesTitle => 'Osparade ändringar';
+
+  @override
+  String get unsavedChangesMessage =>
+      'Du har osparade ändringar. Vill du verkligen avbryta?';
+
+  @override
+  String get cancelWithoutSaving => 'Avbryt utan att spara';
+
+  @override
+  String get deleteActionIrreversible => 'Denna åtgärd kan inte ångras.';
+
+  @override
+  String get deleteConfirmMessage => 'Vill du verkligen ta bort';
+
+  @override
+  String get groupLeaveTitle => 'Lämna grupp?';
+
+  @override
+  String groupLeaveMessage(String name) {
+    return 'Vill du verkligen lämna gruppen \"$name\"?';
+  }
+
+  @override
+  String get groupLeaveAction => 'Lämna grupp';
+
+  @override
+  String shareItemTitle(String type) {
+    return 'Dela $type?';
+  }
+
+  @override
+  String shareItemMessage(String type, String recipients) {
+    return 'Vill du dela $type med $recipients?';
+  }
+
+  @override
+  String shareRecipientsMore(int count) {
+    return 'och $count till';
+  }
+
+  @override
+  String get recipeDeleteWarning => 'Receptet kommer att tas bort permanent.';
+
+  @override
+  String get shoppingListDeleteWarning =>
+      'Alla varor på listan kommer att försvinna.';
+
+  @override
+  String itemDeletedSuccess(String type) {
+    return '$type har tagits bort';
+  }
+
+  @override
+  String itemDeleteError(String type) {
+    return 'Kunde inte ta bort $type';
+  }
+
+  @override
+  String get commentDeleteError => 'Kunde inte ta bort kommentaren';
+
+  @override
+  String get reactionUpdateError => 'Kunde inte uppdatera reaktion';
+
+  @override
+  String get activityRecipeCreated => '👨‍🍳 Recept skapat';
+
+  @override
+  String get activityMenuCreated => '📋 Meny skapad';
+
+  @override
+  String get activityShoppingListCreated => '🛒 Inköpslista skapad';
+
+  @override
+  String get activityRecipeShared => '📤 Recept delat';
+
+  @override
+  String get activityMenuShared => '📤 Meny delad';
+
+  @override
+  String get activityShoppingListShared => '📤 Inköpslista delad';
+
+  @override
+  String get activityCommentAdded => '💬 Kommentar';
+
+  @override
+  String get activityReactionAdded => '❤️ Reaktion';
+
+  @override
+  String get activityRecipeRated => '⭐ Betyg';
+
+  @override
+  String get activityGroupJoined => '👥 Gick med i grupp';
+
+  @override
+  String get activityInvitationSent => '📩 Inbjudan skickad';
+
+  @override
+  String get activityInvitationAccepted => '✅ Inbjudan accepterad';
+
+  @override
+  String get activityAchievementUnlocked => '🏆 Bedrift';
+
+  @override
+  String get activityMilestoneReached => '🎯 Milstolpe';
+
+  @override
+  String get activityUnknown => '❓ Okänd aktivitet';
+
+  @override
+  String get pollVoteSingular => 'röst';
+
+  @override
+  String get pollVotePlural => 'röster';
+
+  @override
+  String get pollClosed => 'Avslutad';
+
+  @override
+  String get pollCloseAction => 'Stäng omröstning';
+
+  @override
+  String get chatGroupChatDefault => 'Gruppchatt';
+
+  @override
+  String chatGroupCreatedMessage(String name, String title) {
+    return '$name skapade gruppen \"$title\"';
+  }
+
+  @override
+  String chatParticipantAdded(String name) {
+    return '$name har lagts till i gruppen';
+  }
+
+  @override
+  String chatParticipantLeft(String name) {
+    return '$name har lämnat gruppen';
+  }
+
+  @override
+  String get authRequiredError => 'Du måste vara inloggad';
+
+  @override
+  String get shoppingListEditPermissionDenied =>
+      'Du har inte behörighet att redigera denna delade inköpslista';
+
+  @override
+  String get tagShareError => 'Kunde inte dela taggen';
+
+  @override
+  String get userStatusOffline => 'Offline';
+
+  @override
+  String get userStatusAway => 'Away';
+
+  @override
+  String get userStatusBusy => 'Busy';
+
+  @override
+  String participantsCount(int count) {
+    return 'Deltagare ($count)';
+  }
+
+  @override
+  String participantsOnlineCount(int count) {
+    return '$count online';
+  }
+
+  @override
+  String get socialPermissionOwnerLabel => 'Ägare';
+
+  @override
+  String get socialPermissionAdminLabel => 'Admin';
+
+  @override
+  String get socialPermissionEditorLabel => 'Redigera';
+
+  @override
+  String get socialPermissionViewerLabel => 'Läsa';
+
+  @override
+  String get restoreDraft => 'Återställ';
+
+  @override
+  String get startFresh => 'Börja om';
+
+  @override
+  String get couldNotRestoreDraft =>
+      'Kunde inte återställa utkast. Börjar med tomt formulär.';
+
+  @override
+  String get restoringDraft => 'Återställer utkast...';
+
+  @override
+  String get unnamedRecipe => 'Namnlöst recept';
+
+  @override
+  String fieldsFilledCount(int count) {
+    return '$count fält ifyllda';
+  }
+
+  @override
+  String get showTechnicalDetails => 'Visa tekniska detaljer';
+
+  @override
+  String get hideTechnicalDetails => 'Dölj tekniska detaljer';
+
+  @override
+  String get contactSupport => 'Kontakta support';
+
+  @override
+  String get tryAgainLater => 'Försök igen senare';
+
+  @override
+  String get offlineMode => 'Offline-läge aktiverat';
+
+  @override
+  String get syncingPendingChanges => 'Synkroniserar väntande ändringar...';
+
+  @override
+  String get localChangesSaved => 'Ändringar sparade lokalt';
+
+  @override
+  String get willSyncWhenOnline => 'Synkroniseras när du är online igen';
+
+  @override
+  String get insufficientPermissions => 'Otillräckliga behörigheter';
+
+  @override
+  String get readOnlyAccess => 'Endast läsrättigheter';
+
+  @override
+  String get ownerOnlyAction => 'Endast ägaren kan utföra denna åtgärd';
+
+  @override
+  String get requestEditAccess => 'Be om redigeringsrättigheter';
+
+  @override
+  String get noItemsFound => 'Inga objekt hittades.';
+
+  @override
+  String get noResults => 'Inga resultat hittades.';
+
+  @override
+  String get noFriends => 'Du har inga vänner än.';
+
+  @override
+  String get noRecipes => 'Du har inga recept än.';
+
+  @override
+  String get noShoppingLists => 'Du har inga inköpslistor än.';
+
+  @override
+  String get addRecipe => 'Lägg till recept';
+
+  @override
+  String get editRecipe => 'Redigera recept';
+
+  @override
+  String get deleteRecipeAction => 'Ta bort recept';
+
+  @override
+  String get searchPlaceholder => 'Sök...';
+
+  @override
+  String get namePlaceholder => 'Ange namn';
+
+  @override
+  String get descriptionPlaceholder => 'Ange beskrivning (valfritt)';
+
+  @override
+  String get emailPlaceholder => 'din@email.com';
+
+  @override
+  String get urlPlaceholder => 'https://exempel.se';
+
+  @override
+  String get phonePlaceholder => '+46 70 123 45 67';
+
+  @override
+  String get makePersonalCopy => 'Skapa personlig kopia';
+
+  @override
+  String get checkConnection => 'Kontrollera internetanslutningen';
+
+  @override
+  String get loginAgain => 'Logga in på nytt';
+
+  @override
+  String get contactOwner => 'Kontakta ägaren';
+
+  @override
+  String get waitAndRetry => 'Vänta och försök igen';
+
+  @override
+  String get checkPermissions => 'Kontrollera behörigheter';
+
+  @override
+  String get ingredientParseError => 'Kunde inte tolka ingrediens';
+
+  @override
+  String get portionsUnit => 'portioner';
+
+  @override
+  String sharedRecipeFallback(int count) {
+    return 'Delat recept • $count medlemmar';
+  }
+
+  @override
+  String sharedMenuFallback(int count) {
+    return 'Delad meny • $count medlemmar';
+  }
+
+  @override
+  String get sharedFallback => 'Delat';
+
+  @override
+  String deleteItemType(String itemType) {
+    return 'Ta bort $itemType?';
+  }
+
+  @override
+  String get accountSecurityTitle => 'Kontosäkerhet';
+
+  @override
+  String get accountSecurityChangePassword => 'Byt lösenord';
+
+  @override
+  String get accountSecurityChangeEmail => 'Byt e-postadress';
+
+  @override
+  String get accountSecurityCurrentPassword => 'Nuvarande lösenord';
+
+  @override
+  String get accountSecurityNewPassword => 'Nytt lösenord';
+
+  @override
+  String get accountSecurityConfirmPassword => 'Bekräfta lösenord';
+
+  @override
+  String get accountSecurityNewEmail => 'Ny e-postadress';
+
+  @override
+  String get accountSecurityMfaSettings => 'Tvåfaktorsautentisering';
+
+  @override
+  String get accountSecurityPasswordChanged => 'Lösenordet har ändrats';
+
+  @override
+  String get accountSecurityEmailVerificationSent =>
+      'Verifieringslänk skickad till ny e-postadress';
+
+  @override
+  String get accountSecurityPasswordMismatch => 'Lösenorden matchar inte';
+
+  @override
+  String get profileAccountSecurity => 'Kontosäkerhet';
+
+  @override
+  String get profileAccountSecuritySubtitle =>
+      'Lösenord, e-post och tvåfaktorsautentisering';
+
+  @override
+  String bulkSelectedCount(int count) {
+    return '$count valda';
+  }
+
+  @override
+  String get bulkSelectAll => 'Välj alla';
+
+  @override
+  String get bulkDelete => 'Ta bort valda';
+
+  @override
+  String get bulkShare => 'Dela valda';
+
+  @override
+  String get viewModeGrid => 'Rutnätsvy';
+
+  @override
+  String get viewModeList => 'Listvy';
+
+  @override
+  String get duplicateImportTitle => 'Receptet kan redan finnas';
+
+  @override
+  String duplicateImportMessage(String recipeName) {
+    return 'Ett recept med samma källa finns redan: $recipeName';
+  }
+
+  @override
+  String get duplicateImportViewExisting => 'Visa befintligt';
+
+  @override
+  String get duplicateImportAnyway => 'Importera ändå';
 }

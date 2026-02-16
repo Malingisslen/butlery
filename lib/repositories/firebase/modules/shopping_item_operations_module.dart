@@ -5,6 +5,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Module handling shopping item operations with dual storage support.
@@ -155,7 +156,7 @@ class ShoppingItemOperationsModule {
             'PERMISSION DENIED: User $uid cannot edit collaborative list ${list.id} (permission: $userPermission)',
             'ShoppingRepository');
         throw PermissionDeniedException(
-          'Du har inte behörighet att redigera denna delade inköpslista',
+          AppLocale.current.shoppingListEditPermissionDenied,
           resource: 'collaborative_list:${list.id}',
           userId: uid,
         );

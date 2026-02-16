@@ -1,4 +1,4 @@
-import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart'; // ShoppingCategory + UnifiedShoppingItem
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
@@ -98,7 +98,7 @@ class CollaborativeShoppingOperations {
     required String name,
     required double amount,
     String unit = '',
-    String category = 'Övrigt',
+    String category = ShoppingCategory.other,
     String? note,
     double? estimatedPrice,
     int priority = 3,

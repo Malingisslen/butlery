@@ -17,7 +17,7 @@ class ListItemOperations {
     required String name,
     required double amount,
     String unit = '',
-    String category = 'Övrigt',
+    String category = ShoppingCategory.other,
     String? note,
     double? estimatedPrice,
     int priority = 3,

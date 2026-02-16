@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/search_service.dart';
+import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/tag_editing_service.dart';
@@ -53,6 +54,22 @@ class RecipeListViewModel extends ChangeNotifier {
 
   /// Whether to show only favorite recipes.
   bool _favoritesOnly = false;
+
+  // Grid/list view toggle
+  bool _isGridView = false;
+  bool get isGridView => _isGridView;
+
+  // Multi-select / bulk operations
+  bool _isSelectionMode = false;
+  final Set<String> _selectedIds = {};
+  bool get isSelectionMode => _isSelectionMode;
+  Set<String> get selectedIds => Set.unmodifiable(_selectedIds);
+  int get selectedCount => _selectedIds.length;
+
+  // Undo delete state
+  Timer? _pendingDeleteTimer;
+  Recipe? _pendingDeleteRecipe;
+  String? _pendingDeleteId;
 
   /// Cached filtered recipe results for performance optimization and responsiveness.
   List<Recipe>? _cachedFilteredRecipes;
@@ -105,10 +122,19 @@ class RecipeListViewModel extends ChangeNotifier {
         _searchService = searchService ?? ServiceLocator.get<SearchService>(),
         _tagEditingService =
             tagEditingService ?? ServiceLocator.get<TagEditingService>() {
-    // Lyssna på ändringar från UnifiedRecipeService
     _recipeService.addListener(_onRecipesChanged);
-    // Initialize service to ensure recipes are loaded
     _recipeService.initialize();
+    _loadViewModePreference();
+  }
+
+  Future<void> _loadViewModePreference() async {
+    try {
+      final persistence = ServiceLocator.get<PersistenceService>();
+      _isGridView = await persistence.getIsGridView();
+      notifyListeners();
+    } catch (_) {
+      // Persistence not available, keep default (list view)
+    }
   }
 
   /// Filtered and sorted recipe collection with performance caching and intelligent optimization.
@@ -385,15 +411,96 @@ class RecipeListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Deletes recipe with service coordination and automatic state management.
-  /// [recipeId] Unique identifier for recipe deletion
-  /// Performs recipe deletion through UnifiedRecipeService with automatic list updates.
-  /// Service handles state notifications and cache invalidation automatically
-  /// for seamless recipe management and UI synchronization.
+  void toggleViewMode() {
+    _isGridView = !_isGridView;
+    notifyListeners();
+    try {
+      final persistence = ServiceLocator.get<PersistenceService>();
+      persistence.setIsGridView(_isGridView);
+    } catch (_) {
+      // Persistence not available, toggle still works in-memory
+    }
+  }
+
+  // Selection mode methods
+  void enterSelectionMode(String firstId) {
+    _isSelectionMode = true;
+    _selectedIds.add(firstId);
+    notifyListeners();
+  }
+
+  void toggleSelection(String id) {
+    if (_selectedIds.contains(id)) {
+      _selectedIds.remove(id);
+      if (_selectedIds.isEmpty) {
+        _isSelectionMode = false;
+      }
+    } else {
+      _selectedIds.add(id);
+    }
+    notifyListeners();
+  }
+
+  void selectAll() {
+    final visibleIds = recipes.map((r) => r.id);
+    _selectedIds.addAll(visibleIds);
+    notifyListeners();
+  }
+
+  void clearSelection() {
+    _selectedIds.clear();
+    _isSelectionMode = false;
+    notifyListeners();
+  }
+
+  Future<void> deleteSelected() async {
+    final idsToDelete = Set<String>.from(_selectedIds);
+    clearSelection();
+    for (final id in idsToDelete) {
+      await _recipeService.deleteRecipe(id);
+    }
+  }
+
+  // Optimistic delete with undo support (5-second window)
   Future<void> deleteRecipe(String recipeId) async {
-    await _recipeService.deleteRecipe(recipeId);
-    // UnifiedRecipeService hanterar notifications, vi behöver inte göra något här
-    return;
+    // Cancel any pending delete first
+    _commitPendingDelete();
+
+    _pendingDeleteRecipe = _recipeService.getRecipeById(recipeId);
+    _pendingDeleteId = recipeId;
+
+    // Optimistically remove from service
+    _recipeService.optimisticRemove(recipeId);
+    _invalidateCache();
+    notifyListeners();
+
+    _pendingDeleteTimer = Timer(const Duration(seconds: 5), () {
+      _commitPendingDelete();
+    });
+  }
+
+  void undoDelete() {
+    _pendingDeleteTimer?.cancel();
+    _pendingDeleteTimer = null;
+
+    if (_pendingDeleteRecipe != null) {
+      _recipeService.optimisticRestore(_pendingDeleteRecipe!);
+      _pendingDeleteRecipe = null;
+      _pendingDeleteId = null;
+      _invalidateCache();
+      notifyListeners();
+    }
+  }
+
+  void _commitPendingDelete() {
+    _pendingDeleteTimer?.cancel();
+    _pendingDeleteTimer = null;
+
+    if (_pendingDeleteId != null) {
+      _recipeService.deleteRecipe(_pendingDeleteId!);
+      _pendingDeleteRecipe = null;
+      _pendingDeleteId = null;
+    }
   }
 
   /// Refreshes recipe data with pull-to-refresh coordination and service integration.
@@ -710,6 +817,7 @@ class RecipeListViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _searchDebounceTimer?.cancel();
+    _commitPendingDelete();
     _recipeService.removeListener(_onRecipesChanged);
     super.dispose();
   }

@@ -6,6 +6,7 @@ import 'package:butlery/repositories/firebase/modules/conversation_participant_m
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Conversation mutation module for write operations.
@@ -143,8 +144,8 @@ class ConversationMutationModule {
       // Send system message about group creation
       final systemMessage = Message.system(
         conversationId: createdConversation.id,
-        content:
-            '${participantDisplayNames[creatorId]} skapade gruppen "$title"',
+        content: AppLocale.current.chatGroupCreatedMessage(
+            participantDisplayNames[creatorId] ?? '?', title),
       );
 
       await sendMessageFn(systemMessage);
@@ -244,7 +245,8 @@ class ConversationMutationModule {
       // Also write to subcollections
       await participantModule?.addParticipants(
         conversationId: conversationId,
-        conversationTitle: conversation.title ?? 'Gruppchatt',
+        conversationTitle:
+            conversation.title ?? AppLocale.current.chatGroupChatDefault,
         isGroup: true,
         participantDisplayNames: participantDisplayNames,
         participantAvatarUrls: participantAvatarUrls,
@@ -255,7 +257,7 @@ class ConversationMutationModule {
         final displayName = participantDisplayNames[participantId] ?? '?';
         final systemMessage = Message.system(
           conversationId: conversationId,
-          content: '$displayName har lagts till i gruppen',
+          content: AppLocale.current.chatParticipantAdded(displayName),
         );
         await sendMessageFn(systemMessage);
       }
@@ -323,7 +325,7 @@ class ConversationMutationModule {
           conversation.participantDisplayNames[participantId] ?? '?';
       final systemMessage = Message.system(
         conversationId: conversationId,
-        content: '$displayName har lämnat gruppen',
+        content: AppLocale.current.chatParticipantLeft(displayName),
       );
       await sendMessageFn(systemMessage);
 

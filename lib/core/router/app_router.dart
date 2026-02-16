@@ -34,6 +34,7 @@ import 'package:butlery/views/unified_shopping_view.dart';
 // Settings views
 import 'package:butlery/views/settings/allergen_preferences_view.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
+import 'package:butlery/views/settings/account_security_view.dart';
 import 'package:butlery/views/personal_tags_view.dart';
 
 // Cooking mode
@@ -261,6 +262,10 @@ class AppRouter {
 
         case Routes.settingsNotifications:
           return _buildRoute(const NotificationPreferencesView(), settings,
+              RouteAnimationType.slideFromRight);
+
+        case Routes.settingsAccountSecurity:
+          return _buildRoute(const AccountSecurityView(), settings,
               RouteAnimationType.slideFromRight);
 
         case Routes.faq:

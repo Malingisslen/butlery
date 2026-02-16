@@ -20,8 +20,10 @@ import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_vie
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/views/personal_tags_view.dart';
 
+// Models
+import 'package:butlery/models/recipe_unified.dart';
+
 // Constants and theming
-// AppStrings import removed — using context.l10n
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -300,95 +302,127 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     );
   }
 
+  Widget _buildSelectionAppBar(RecipeListViewModel viewModel) {
+    final cs = Theme.of(context).colorScheme;
+    return AppBar(
+      backgroundColor: cs.primaryContainer,
+      leading: IconButton(
+        icon: const Icon(Icons.close),
+        onPressed: viewModel.clearSelection,
+      ),
+      title: Text(
+        context.l10n.bulkSelectedCount(viewModel.selectedCount),
+        style: AppTextStyles.titleMedium,
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.select_all),
+          tooltip: context.l10n.bulkSelectAll,
+          onPressed: viewModel.selectAll,
+        ),
+        IconButton(
+          icon: const Icon(Icons.delete_outline),
+          tooltip: context.l10n.bulkDelete,
+          onPressed: () async {
+            await viewModel.deleteSelected();
+          },
+        ),
+      ],
+    );
+  }
+
   /// Build recipe interface with filtering, search, sorting, and social integration.
   @override
   Widget build(BuildContext context) {
-    // ✅ FIXAT: Nu kan vi använda watch för RecipeListViewModel eftersom den finns i MultiProvider
     final viewModel = context.watch<RecipeListViewModel>();
     final offlineService = context.watch<offline_service.OfflineService>();
     final personalTagViewModel = context.watch<PersonalTagViewModel>();
     final recipeCount = viewModel.recipes.length;
 
+    // Selection mode uses a different app bar
+    final PreferredSizeWidget appBar = viewModel.isSelectionMode
+        ? _buildSelectionAppBar(viewModel) as PreferredSizeWidget
+        : MainViewHeader(
+            title: 'dina\nrecept',
+            countBadge: context.l10n.recipeCountBadge(recipeCount),
+            trailing: const RecipeListAvatarBadge(),
+            actions: [
+              IconButton(
+                icon: Icon(
+                  viewModel.isGridView ? Icons.view_list : Icons.grid_view,
+                ),
+                tooltip: viewModel.isGridView
+                    ? context.l10n.viewModeList
+                    : context.l10n.viewModeGrid,
+                onPressed: viewModel.toggleViewMode,
+              ),
+              LayoutComponents.offlineStatusIcon(),
+            ],
+          );
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) {
         if (!didPop) {
-          _showExitDialog(context);
+          if (viewModel.isSelectionMode) {
+            viewModel.clearSelection();
+          } else {
+            _showExitDialog(context);
+          }
         }
       },
       child: LayoutComponents.mainMenu(
         currentIndex: 0,
-        // UI Redesign: Use MainViewHeader with large title and count badge
-        appBar: MainViewHeader(
-          title: 'dina\nrecept',
-          countBadge: context.l10n.recipeCountBadge(recipeCount),
-          trailing: const RecipeListAvatarBadge(),
-          actions: [
-            // Offline status
-            LayoutComponents.offlineStatusIcon(),
-          ],
-        ),
+        appBar: appBar,
         body: Column(
           children: [
-            // OFFLINE INDICATOR
             LayoutComponents.offlineIndicator(),
-
-            // UI Redesign: Search box with new styling
-            SearchFilterWidget(
-              searchQuery: viewModel.searchQuery,
-              onSearchChanged: viewModel.updateSearch,
-              searchHint: context.l10n.recipeSearchHint,
-
-              // Filter properties
-              activeTimeFilters: viewModel.activeTimeFilters,
-              activeMealTypeFilters: viewModel.activeMealTypeFilters,
-              activeRatingFilters: viewModel.activeRatingFilters,
-              activeAllergenFilters: viewModel.activeAllergenFilters,
-              activeDietaryFilters: viewModel.activeDietaryFilters,
-              onTimeFilterToggle: viewModel.toggleTimeFilter,
-              onMealTypeFilterToggle: viewModel.toggleMealTypeFilter,
-              onRatingFilterToggle: viewModel.toggleRatingFilter,
-              onAllergenFilterToggle: viewModel.toggleAllergenFilter,
-              onDietaryFilterToggle: viewModel.toggleDietaryFilter,
-
-              // Personal tag filters
-              personalTagIds: personalTagViewModel.tags,
-              activePersonalTagFilters: viewModel.activePersonalTagFilters,
-              excludedPersonalTagFilters: viewModel.excludedPersonalTagFilters,
-              onPersonalTagFilterToggle: viewModel.togglePersonalTagFilter,
-              onExcludedPersonalTagFilterToggle:
-                  viewModel.toggleExcludedPersonalTagFilter,
-              onManagePersonalTags: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const PersonalTagsView(),
-                  ),
-                );
-              },
-
-              // UI state
-              showFilters: _showFilters,
-              onToggleFilters: () =>
-                  setState(() => _showFilters = !_showFilters),
-              hasActiveFilters: viewModel.hasActiveFilters,
-              onClearAllFilters: viewModel.clearAllFilters,
-
-              // Results info - hidden since we show count in header
-              resultCount: recipeCount,
-              showStats: false,
-            ),
-
-            // UI Redesign: Quick filter chips for fast filtering
-            QuickFilterChips(
-              options: QuickFilterChips.getDefaultRecipeFilters(context),
-              selectedIds: _getQuickFilterIds(viewModel),
-              onFilterToggle: (filterId) =>
-                  _onQuickFilterToggle(viewModel, filterId),
-              trailing: _buildSortChip(viewModel),
-            ),
-
-            // Huvudinnehåll
+            if (!viewModel.isSelectionMode) ...[
+              SearchFilterWidget(
+                searchQuery: viewModel.searchQuery,
+                onSearchChanged: viewModel.updateSearch,
+                searchHint: context.l10n.recipeSearchHint,
+                activeTimeFilters: viewModel.activeTimeFilters,
+                activeMealTypeFilters: viewModel.activeMealTypeFilters,
+                activeRatingFilters: viewModel.activeRatingFilters,
+                activeAllergenFilters: viewModel.activeAllergenFilters,
+                activeDietaryFilters: viewModel.activeDietaryFilters,
+                onTimeFilterToggle: viewModel.toggleTimeFilter,
+                onMealTypeFilterToggle: viewModel.toggleMealTypeFilter,
+                onRatingFilterToggle: viewModel.toggleRatingFilter,
+                onAllergenFilterToggle: viewModel.toggleAllergenFilter,
+                onDietaryFilterToggle: viewModel.toggleDietaryFilter,
+                personalTagIds: personalTagViewModel.tags,
+                activePersonalTagFilters: viewModel.activePersonalTagFilters,
+                excludedPersonalTagFilters:
+                    viewModel.excludedPersonalTagFilters,
+                onPersonalTagFilterToggle: viewModel.togglePersonalTagFilter,
+                onExcludedPersonalTagFilterToggle:
+                    viewModel.toggleExcludedPersonalTagFilter,
+                onManagePersonalTags: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PersonalTagsView(),
+                    ),
+                  );
+                },
+                showFilters: _showFilters,
+                onToggleFilters: () =>
+                    setState(() => _showFilters = !_showFilters),
+                hasActiveFilters: viewModel.hasActiveFilters,
+                onClearAllFilters: viewModel.clearAllFilters,
+                resultCount: recipeCount,
+                showStats: false,
+              ),
+              QuickFilterChips(
+                options: QuickFilterChips.getDefaultRecipeFilters(context),
+                selectedIds: _getQuickFilterIds(viewModel),
+                onFilterToggle: (filterId) =>
+                    _onQuickFilterToggle(viewModel, filterId),
+                trailing: _buildSortChip(viewModel),
+              ),
+            ],
             Expanded(child: _buildContent(viewModel, offlineService)),
           ],
         ),
@@ -396,21 +430,141 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     );
   }
 
+  void _handleDeleteWithUndo(RecipeListViewModel viewModel, Recipe recipe) {
+    viewModel.deleteRecipe(recipe.id);
+    if (mounted) {
+      SnackBarUtils.showSuccessWithAction(
+        context,
+        context.l10n.recipeDeleted,
+        actionLabel: context.l10n.commonUndo,
+        onAction: () => viewModel.undoDelete(),
+        duration: const Duration(seconds: 5),
+      );
+    }
+  }
+
+  Widget _buildRecipeCard(
+    RecipeListViewModel viewModel,
+    Recipe recipe,
+  ) {
+    final userService = context.watch<UserService>();
+    final allergenPrefs = userService.allergenPreferences;
+    final isSelected = viewModel.selectedIds.contains(recipe.id);
+    final cs = Theme.of(context).colorScheme;
+
+    Widget card = ContentCard(
+      key: ValueKey(recipe.id),
+      item: recipe,
+      type: ContentCardType.recipe,
+      style: viewModel.isGridView
+          ? ContentCardStyle.grid
+          : ContentCardStyle.detailed,
+      userAllergenPrefs:
+          allergenPrefs.showOnCards ? allergenPrefs.trackedAllergens : null,
+      userDietaryPrefs:
+          allergenPrefs.showOnCards ? allergenPrefs.trackedDietary : null,
+      onFavoriteToggle: viewModel.isSelectionMode
+          ? null
+          : () => viewModel.toggleFavorite(recipe.id),
+      onTap: viewModel.isSelectionMode
+          ? () => viewModel.toggleSelection(recipe.id)
+          : () async {
+              await Navigator.pushNamed(
+                context,
+                Routes.receptDetalj,
+                arguments: recipe,
+              );
+            },
+      onLongPress: viewModel.isSelectionMode
+          ? null
+          : () => viewModel.enterSelectionMode(recipe.id),
+    );
+
+    // Selection overlay
+    if (viewModel.isSelectionMode) {
+      card = Stack(
+        children: [
+          card,
+          if (isSelected)
+            Positioned.fill(
+              child: Container(
+                color: cs.primary.withValues(alpha: 0.15),
+              ),
+            ),
+          Positioned(
+            top: AppDimensions.spacingSm,
+            left: AppDimensions.spacingSm,
+            child: Icon(
+              isSelected ? Icons.check_circle : Icons.circle_outlined,
+              color: isSelected ? cs.primary : cs.outline,
+              size: AppDimensions.iconSizeM,
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Swipe gestures only in normal mode
+    if (!viewModel.isSelectionMode) {
+      card = Dismissible(
+        key: Key('recipe-${recipe.id}'),
+        direction: DismissDirection.horizontal,
+        confirmDismiss: (direction) async {
+          if (direction == DismissDirection.endToStart) {
+            final confirmed =
+                await CommonDialogActions.showRecipeDeleteConfirmation(
+              context: context,
+              recipeName: recipe.title,
+            );
+            if (confirmed == true) {
+              _handleDeleteWithUndo(viewModel, recipe);
+            }
+            return false;
+          } else if (direction == DismissDirection.startToEnd) {
+            Navigator.pushNamed(
+              context,
+              Routes.redigeraRecept,
+              arguments: recipe,
+            );
+            return false;
+          }
+          return false;
+        },
+        background: Container(
+          alignment: Alignment.centerLeft,
+          padding:
+              const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
+          color: cs.primary,
+          child: Icon(Icons.edit,
+              color: cs.onPrimary, size: AppDimensions.iconSize28),
+        ),
+        secondaryBackground: Container(
+          alignment: Alignment.centerRight,
+          padding:
+              const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
+          color: cs.error,
+          child: Icon(Icons.delete,
+              color: cs.onError, size: AppDimensions.iconSize28),
+        ),
+        child: card,
+      );
+    }
+
+    return card;
+  }
+
   Widget _buildContent(
     RecipeListViewModel viewModel,
     offline_service.OfflineService offlineService,
   ) {
-    // Loading state
     if (viewModel.isLoading) {
       return Column(
         children: [
-          // ✅ MIGRATION: StateWidget skeleton loader
           Expanded(child: StateWidget.skeletonRecipeList(itemCount: 5)),
         ],
       );
     }
 
-    // Error state - uses StateWidget for consistency
     if (viewModel.hasError) {
       return StateWidget.error(
         message: viewModel.error!,
@@ -422,17 +576,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       );
     }
 
-    // Hämta filtrerade och sorterade recept från ViewModel
     final recipes = viewModel.recipes;
 
-    // Empty states
     if (recipes.isEmpty) {
       return viewModel.searchQuery.isEmpty && !viewModel.hasActiveFilters
-          // ✅ MIGRATION: StateWidget no recipes
           ? StateWidget.noRecipes(
               onAction: () => Navigator.pushNamed(context, '/laggTill'),
             )
-          // ✅ MIGRATION: StateWidget no search results
           : StateWidget.noSearchResults(
               onAction: viewModel.searchQuery.isNotEmpty
                   ? () => viewModel.updateSearch('')
@@ -443,14 +593,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             );
     }
 
-    // Responsive recipe list/grid with RefreshIndicator
     return RefreshIndicator(
       onRefresh: () async {
-        // Om online, synka först
         if (offlineService.isOnline) {
           await _syncWithOnline();
         } else {
-          // Om offline, bara refresh från lokal cache
           await viewModel.refresh();
           if (mounted) {
             SnackBarUtils.showWarning(
@@ -461,92 +608,38 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       child: Column(
         children: [
           Expanded(
-            // ✅ RESPONSIVE: Automatically switches between ListView (mobile) and GridView (tablet/desktop)
-            child: LayoutComponents.responsiveListGrid(
-              items: recipes,
-              tabletColumns: 2, // 2 columns on tablet
-              desktopColumns: 3, // 3 columns on desktop
-              spacing: AppDimensions.responsiveGridSpacing(context),
-              padding: AppDimensions.responsiveContentPadding(context),
-              shrinkWrap: false,
-              gridChildAspectRatio: 0.75, // Recipe cards are taller than wide
-              animate: true, // Staggered entrance animations
-              itemBuilder: (context, recipe) {
-                // Get allergen preferences for recipe cards
-                final userService = context.watch<UserService>();
-                final allergenPrefs = userService.allergenPreferences;
-
-                return Dismissible(
-                  key: Key('recipe-${recipe.id}'),
-                  direction: DismissDirection.horizontal,
-                  confirmDismiss: (direction) async {
-                    if (direction == DismissDirection.endToStart) {
-                      // Left swipe = delete with reusable confirmation dialog
-                      final confirmed = await CommonDialogActions
-                          .showRecipeDeleteConfirmation(
-                        context: context,
-                        recipeName: recipe.title,
-                      );
-                      if (confirmed == true) {
-                        viewModel.deleteRecipe(recipe.id);
-                      }
-                      // Never auto-dismiss — viewmodel handles list update
-                      return false;
-                    } else if (direction == DismissDirection.startToEnd) {
-                      // Right swipe = navigate to edit view
-                      Navigator.pushNamed(
-                        context,
-                        Routes.redigeraRecept,
-                        arguments: recipe,
-                      );
-                      return false;
-                    }
-                    return false;
-                  },
-                  background: Container(
-                    // Right swipe background (edit) - green
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingLg),
-                    color: Theme.of(context).colorScheme.primary,
-                    child: Icon(Icons.edit,
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        size: AppDimensions.iconSize28),
+            child: viewModel.isGridView
+                ? GridView.builder(
+                    padding: AppDimensions.responsiveContentPadding(context),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: LayoutComponents.isMobile(context)
+                          ? 2
+                          : LayoutComponents.isTablet(context)
+                              ? 3
+                              : 4,
+                      crossAxisSpacing:
+                          AppDimensions.responsiveGridSpacing(context),
+                      mainAxisSpacing:
+                          AppDimensions.responsiveGridSpacing(context),
+                      childAspectRatio: 0.75,
+                    ),
+                    itemCount: recipes.length,
+                    itemBuilder: (context, index) =>
+                        _buildRecipeCard(viewModel, recipes[index]),
+                  )
+                : LayoutComponents.responsiveListGrid(
+                    items: recipes,
+                    tabletColumns: 2,
+                    desktopColumns: 3,
+                    spacing: AppDimensions.responsiveGridSpacing(context),
+                    padding: AppDimensions.responsiveContentPadding(context),
+                    shrinkWrap: false,
+                    gridChildAspectRatio: 0.75,
+                    animate: true,
+                    itemBuilder: (context, recipe) =>
+                        _buildRecipeCard(viewModel, recipe),
                   ),
-                  secondaryBackground: Container(
-                    // Left swipe background (delete) - red
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingLg),
-                    color: Theme.of(context).colorScheme.error,
-                    child: Icon(Icons.delete,
-                        color: Theme.of(context).colorScheme.onError,
-                        size: AppDimensions.iconSize28),
-                  ),
-                  child: ContentCard(
-                    key: ValueKey(recipe.id),
-                    item: recipe,
-                    type: ContentCardType.recipe,
-                    userAllergenPrefs: allergenPrefs.showOnCards
-                        ? allergenPrefs.trackedAllergens
-                        : null,
-                    userDietaryPrefs: allergenPrefs.showOnCards
-                        ? allergenPrefs.trackedDietary
-                        : null,
-                    onFavoriteToggle: () => viewModel.toggleFavorite(recipe.id),
-                    onTap: () async {
-                      await Navigator.pushNamed(
-                        context,
-                        Routes.receptDetalj,
-                        arguments: recipe,
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
           ),
-          // PERFORMANCE FIX: Load More button for pagination
           if (viewModel.canLoadMore)
             Padding(
               padding: AppDimensions.responsiveContentPadding(context),

@@ -68,6 +68,40 @@ class ShoppingListContentWidget extends StatefulWidget {
 class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
   final Set<String> _collapsedCategories = {};
 
+  /// Translate language-neutral category constant to localized display name.
+  String _categoryDisplayName(BuildContext context, String category) {
+    switch (category) {
+      case ShoppingCategory.fruitVeg:
+        return context.l10n.categoryFruitVeg;
+      case ShoppingCategory.dairy:
+        return context.l10n.categoryDairy;
+      case ShoppingCategory.meatFish:
+        return context.l10n.categoryMeatFish;
+      case ShoppingCategory.breadGrain:
+        return context.l10n.categoryBread;
+      case ShoppingCategory.pantry:
+        return context.l10n.categoryPantry;
+      case ShoppingCategory.frozen:
+        return context.l10n.categoryFrozen;
+      case ShoppingCategory.drinks:
+        return context.l10n.categoryBeverage;
+      case ShoppingCategory.snacks:
+        return context.l10n.categorySnacks;
+      case ShoppingCategory.cleaning:
+        return context.l10n.categoryHygiene;
+      case ShoppingCategory.spices:
+        return context.l10n.categorySpices;
+      case ShoppingCategory.canned:
+        return context.l10n.categoryCanned;
+      case ShoppingCategory.dryGoods:
+        return context.l10n.categoryDryGoods;
+      case ShoppingCategory.other:
+        return context.l10n.categoryOther;
+      default:
+        return category;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = widget.viewModel;
@@ -135,9 +169,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
   ) {
     final result = <String, ({int total, int completed})>{};
     for (final item in viewModel.items) {
-      final category = item.category.isEmpty
-          ? context.l10n.shoppingCategoryOther
-          : item.category;
+      final category =
+          item.category.isEmpty ? ShoppingCategory.other : item.category;
       final existing = result[category] ?? (total: 0, completed: 0);
       result[category] = (
         total: existing.total + 1,
@@ -158,9 +191,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
 
     final categorizedItems = <String, List<UnifiedShoppingItem>>{};
     for (final item in pendingItems) {
-      final category = item.category.isEmpty
-          ? context.l10n.shoppingCategoryOther
-          : item.category;
+      final category =
+          item.category.isEmpty ? ShoppingCategory.other : item.category;
       categorizedItems.putIfAbsent(category, () => []).add(item);
     }
 
@@ -186,9 +218,8 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
 
     final categorizedItems = <String, List<UnifiedShoppingItem>>{};
     for (final item in completedItems) {
-      final category = item.category.isEmpty
-          ? context.l10n.shoppingCategoryOther
-          : item.category;
+      final category =
+          item.category.isEmpty ? ShoppingCategory.other : item.category;
       categorizedItems.putIfAbsent(category, () => []).add(item);
     }
 
@@ -254,7 +285,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       child: Text(
-                        category.toUpperCase(),
+                        _categoryDisplayName(context, category).toUpperCase(),
                         style: AppTextStyles.labelMedium.copyWith(
                           color: cs.onPrimary,
                           fontWeight: FontWeight.w700,
@@ -326,24 +357,30 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
   /// Get category-specific color from ButleryColors.
   static Color _getCategoryColor(BuildContext context, String category) {
     final bc = context.butleryColors;
-    switch (category.toLowerCase()) {
-      case 'kött & fisk':
-      case 'kött':
-      case 'fisk':
+    switch (category) {
+      case ShoppingCategory.meatFish:
         return bc.categoryMeatFish;
-      case 'mejeri':
+      case ShoppingCategory.dairy:
         return bc.categoryDairy;
-      case 'frukt & grönt':
-      case 'grönsaker':
-      case 'frukt':
+      case ShoppingCategory.fruitVeg:
         return bc.categoryVegetables;
-      case 'bröd':
-      case 'bröd & spannmål':
+      case ShoppingCategory.breadGrain:
         return bc.categoryBreadGrains;
-      case 'fryst':
+      case ShoppingCategory.frozen:
         return bc.categoryFrozen;
-      case 'skafferi':
+      case ShoppingCategory.pantry:
+      case ShoppingCategory.dryGoods:
         return bc.categoryDryGoods;
+      case ShoppingCategory.spices:
+        return bc.categoryDryGoods;
+      case ShoppingCategory.canned:
+        return bc.categoryOther;
+      case ShoppingCategory.drinks:
+        return bc.categoryOther;
+      case ShoppingCategory.snacks:
+        return bc.categoryOther;
+      case ShoppingCategory.cleaning:
+        return bc.categoryOther;
       default:
         return bc.categoryOther;
     }

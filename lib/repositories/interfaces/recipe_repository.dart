@@ -58,4 +58,8 @@ abstract class RecipeRepository extends Repository<Recipe>
   /// Counts recipes that have a specific personal tag ID.
   /// Uses Firestore arrayContains query on personalTagIds.
   Future<int> countRecipesByTagId(String tagId);
+
+  /// Find recipes by source URL (exact match).
+  /// Used for duplicate detection during import.
+  Future<List<Recipe>> findBySourceUrl(String url);
 }

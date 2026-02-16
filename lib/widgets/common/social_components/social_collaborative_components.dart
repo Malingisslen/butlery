@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -18,7 +19,9 @@ class SocialCollaborativeComponents {
     EdgeInsets? padding,
   }) {
     return SocialFacade.collaborativeStatusBadge(
-      text: text ?? context?.l10n.socialShared ?? 'Delat',
+      text: text ??
+          context?.l10n.socialShared ??
+          AppLocale.current.sharedFallback,
       icon: icon,
       color: color,
       padding: padding,
@@ -181,7 +184,8 @@ class SocialCollaborativeComponents {
       subtitle: context != null
           ? context.l10n.socialSharedRecipeMembers(
               recipe.socialData?.memberPermissions?.length ?? 0)
-          : 'Delat recept \u2022 ${recipe.socialData?.memberPermissions?.length ?? 0} medlemmar',
+          : AppLocale.current.sharedRecipeFallback(
+              recipe.socialData?.memberPermissions?.length ?? 0),
       contentId: recipe.id,
       contentType: 'recipe',
       onTap: onTap,
@@ -204,7 +208,7 @@ class SocialCollaborativeComponents {
       title: menuTitle,
       subtitle: context != null
           ? context.l10n.socialSharedMenuMembers(memberCount)
-          : 'Delad meny \u2022 $memberCount medlemmar',
+          : AppLocale.current.sharedMenuFallback(memberCount),
       contentId: menuId,
       contentType: 'menu',
       onTap: onTap,

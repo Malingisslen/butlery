@@ -27,14 +27,14 @@
 ///   name: 'Mjölk',
 ///   amount: 1.5,
 ///   unit: 'liter',
-///   category: 'Mejeri',
+///   category: ShoppingCategory.dairy,
 /// );
 /// // Create collaborative item for shared lists
 /// final collabItem = UnifiedShoppingItem.collaborative(
 ///   name: 'Ägg',
 ///   amount: 12,
 ///   unit: 'styck',
-///   category: 'Mejeri',
+///   category: ShoppingCategory.dairy,
 ///   addedByUserId: currentUserId,
 ///   addedByDisplayName: 'Anna Andersson',
 ///   note: 'Ekologiska om möjligt',
@@ -61,6 +61,25 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+
+/// Language-neutral shopping category constants for Firestore storage.
+/// Display labels should use l10n: AppLocale.current.shoppingCat* or context.l10n.shoppingCat*
+class ShoppingCategory {
+  ShoppingCategory._();
+  static const String other = 'other';
+  static const String dairy = 'dairy';
+  static const String meatFish = 'meat_fish';
+  static const String fruitVeg = 'fruit_veg';
+  static const String breadGrain = 'bread_grain';
+  static const String pantry = 'pantry';
+  static const String frozen = 'frozen';
+  static const String drinks = 'drinks';
+  static const String snacks = 'snacks';
+  static const String cleaning = 'cleaning';
+  static const String spices = 'spices';
+  static const String canned = 'canned';
+  static const String dryGoods = 'dry_goods';
+}
 
 /// Comprehensive unified shopping item with dual-mode support and collaborative features.
 /// Represents a complete shopping item with all associated metadata including basic shopping data,
@@ -148,7 +167,7 @@ class UnifiedShoppingItem {
   /// [name] Required item name for identification and display
   /// [amount] Required quantity amount with decimal precision support
   /// [unit] Unit of measurement, defaults to empty string for unitless items
-  /// [category] Item category for organization, defaults to 'Övrigt' (Other)
+  /// [category] Item category for organization, defaults to ShoppingCategory.other
   /// [bought] Purchase status, defaults to false for new items
   /// [addedByUserId] Optional user ID who added the item for collaborative tracking
   /// [addedByDisplayName] Optional display name for collaborative attribution
@@ -167,7 +186,7 @@ class UnifiedShoppingItem {
     required this.name,
     required this.amount,
     this.unit = '',
-    this.category = 'Övrigt',
+    this.category = ShoppingCategory.other,
     this.bought = false,
     this.addedByUserId,
     this.addedByDisplayName,
@@ -192,14 +211,14 @@ class UnifiedShoppingItem {
   /// [name] Required item name for identification and display
   /// [amount] Required quantity amount with decimal precision support
   /// [unit] Unit of measurement, defaults to empty string for unitless items
-  /// [category] Item category for organization, defaults to 'Övrigt' (Other)
+  /// [category] Item category for organization, defaults to ShoppingCategory.other
   /// [bought] Purchase status, defaults to false for new items
   /// Returns a new [UnifiedShoppingItem] with basic configuration and auto-generated ID.
   factory UnifiedShoppingItem.basic({
     required String name,
     required double amount,
     String unit = '',
-    String category = 'Övrigt',
+    String category = ShoppingCategory.other,
     bool bought = false,
   }) {
     return UnifiedShoppingItem(
@@ -218,7 +237,7 @@ class UnifiedShoppingItem {
   /// [name] Required item name for identification and display
   /// [amount] Required quantity amount with decimal precision support
   /// [unit] Unit of measurement, defaults to empty string for unitless items
-  /// [category] Item category for organization, defaults to 'Övrigt' (Other)
+  /// [category] Item category for organization, defaults to ShoppingCategory.other
   /// [addedByUserId] Required user ID who added the item for attribution
   /// [addedByDisplayName] Required display name for collaborative UI display
   /// [note] Optional note or comment for additional context and communication
@@ -229,7 +248,7 @@ class UnifiedShoppingItem {
     required String name,
     required double amount,
     String unit = '',
-    String category = 'Övrigt',
+    String category = ShoppingCategory.other,
     required String addedByUserId,
     required String addedByDisplayName,
     String? note,
@@ -265,7 +284,7 @@ class UnifiedShoppingItem {
       name: oldItem.name,
       amount: oldItem.amount,
       unit: oldItem.unit ?? '',
-      category: oldItem.category ?? 'Övrigt',
+      category: oldItem.category ?? ShoppingCategory.other,
       bought: oldItem.bought ?? false,
     );
   }
@@ -557,7 +576,7 @@ class UnifiedShoppingItem {
       name: json['name'] as String,
       amount: (json['amount'] as num).toDouble(),
       unit: (json['unit'] as String?).orEmpty(),
-      category: (json['category'] as String?).orDefault('Övrigt'),
+      category: (json['category'] as String?).orDefault(ShoppingCategory.other),
       bought: (json['bought'] as bool?).orFalse(),
       addedByUserId: json['addedByUserId'] as String?,
       addedByDisplayName: json['addedByDisplayName'] as String?,
@@ -591,7 +610,7 @@ class UnifiedShoppingItem {
       amount: SerializationUtils.safeDouble(data, 'amount'),
       unit: SerializationUtils.safeString(data, 'unit'),
       category: SerializationUtils.safeString(data, 'category',
-          defaultValue: 'Övrigt'),
+          defaultValue: ShoppingCategory.other),
       bought: SerializationUtils.safeBool(data, 'bought'),
       addedByUserId:
           SerializationUtils.safeNullableString(data, 'addedByUserId'),

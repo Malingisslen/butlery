@@ -1,5 +1,6 @@
 // lib/core/utils/permission_helper.dart
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Permission helper utilities for authentication and authorization checks
@@ -28,7 +29,7 @@ class PermissionHelper {
   /// **Parameters:**
   /// - [getCurrentUserId]: Function to get current user ID
   /// - [operationName]: Human-readable operation description for logging
-  /// - [errorMessage]: Optional custom error message (default: 'Du måste vara inloggad')
+  /// - [errorMessage]: Optional custom error message (default: AppLocale.current.authRequiredError)
   /// **Returns:** User ID if authenticated, null otherwise
   static String? requireAuth({
     required String? Function() getCurrentUserId,
@@ -38,7 +39,7 @@ class PermissionHelper {
     final userId = getCurrentUserId();
 
     if (userId == null) {
-      final message = errorMessage ?? 'Du måste vara inloggad';
+      final message = errorMessage ?? AppLocale.current.authRequiredError;
       AppLogger.error('❌ $operationName failed: $message');
       return null;
     }
@@ -63,7 +64,7 @@ class PermissionHelper {
     final userId = getCurrentUserId();
 
     if (userId == null) {
-      final message = errorMessage ?? 'Du måste vara inloggad';
+      final message = errorMessage ?? AppLocale.current.authRequiredError;
       setError(message);
       AppLogger.error('❌ $operationName failed: $message');
       return null;

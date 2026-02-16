@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 
@@ -76,7 +78,7 @@ abstract class BaseActionHandler {
     required String confirmationTitle,
     required String confirmationMessage,
     required String confirmActionText,
-    String cancelActionText = 'Avbryt',
+    String? cancelActionText,
     IconData? confirmationIcon,
     bool isDangerous = false,
     String? successMessage,
@@ -92,7 +94,7 @@ abstract class BaseActionHandler {
       title: confirmationTitle,
       message: confirmationMessage,
       confirmText: confirmActionText,
-      cancelText: cancelActionText,
+      cancelText: cancelActionText ?? context.l10n.commonCancel,
       icon: confirmationIcon,
       isDangerous: isDangerous,
     );
@@ -151,8 +153,9 @@ abstract class BaseActionHandler {
     final result = await executeAction<bool>(
       context: context,
       action: deleteAction,
-      successMessage: successMessage ?? '$itemType har tagits bort',
-      errorMessage: errorMessage ?? 'Kunde inte ta bort $itemType',
+      successMessage:
+          successMessage ?? AppLocale.current.itemDeletedSuccess(itemType),
+      errorMessage: errorMessage ?? AppLocale.current.itemDeleteError(itemType),
       popOnSuccess: popOnSuccess,
       metadata: metadata,
     );

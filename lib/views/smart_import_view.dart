@@ -21,7 +21,9 @@ import 'package:butlery/widgets/import/platform_badge_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/rate_limit_dialog.dart';
+import 'package:butlery/widgets/recipe/duplicate_import_dialog.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Main view for unified recipe imports.
@@ -180,7 +182,10 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     // Handle result
     switch (result) {
       case ImportSucceeded(:final recipe):
-        _navigateToRecipeEditor(context, recipe);
+        final proceed = await _checkForDuplicates(context, recipe);
+        if (proceed && context.mounted) {
+          _navigateToRecipeEditor(context, recipe);
+        }
 
       case ImportNeedsUserHelp():
         await _showAssistedImportDialog(context, viewModel, result);
@@ -328,6 +333,46 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
       case FallbackAction.useCache:
         // User chose to retry later or use cache, just close
         break;
+    }
+  }
+
+  /// Check for duplicate recipes by source URL before proceeding.
+  /// Returns true if import should proceed, false if cancelled.
+  Future<bool> _checkForDuplicates(
+    BuildContext context,
+    Recipe recipe,
+  ) async {
+    final sourceUrl = recipe.sourceUrl;
+    if (sourceUrl == null || sourceUrl.isEmpty) return true;
+
+    try {
+      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+      final matches = await recipeService.findBySourceUrl(sourceUrl);
+      if (matches.isEmpty || !context.mounted) return true;
+
+      final choice = await showDuplicateImportDialog(
+        context: context,
+        existingRecipe: matches.first,
+      );
+
+      if (!context.mounted) return false;
+
+      switch (choice) {
+        case DuplicateImportChoice.viewExisting:
+          Navigator.of(context).pushReplacementNamed(
+            Routes.receptDetalj,
+            arguments: matches.first.id,
+          );
+          return false;
+        case DuplicateImportChoice.importAnyway:
+          return true;
+        case DuplicateImportChoice.cancel:
+        case null:
+          return false;
+      }
+    } catch (_) {
+      // If duplicate check fails, let user proceed with import
+      return true;
     }
   }
 

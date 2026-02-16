@@ -224,4 +224,21 @@ class FirebaseAuthRepository implements AuthRepository {
     AppLogger.success(
         'Re-authentication successful for: ${user.email}', 'AuthRepository');
   }
+
+  @override
+  Future<void> updatePassword(String newPassword) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) throw Exception('No authenticated user');
+    await user.updatePassword(newPassword);
+    AppLogger.success('Password updated successfully', 'AuthRepository');
+  }
+
+  @override
+  Future<void> verifyBeforeUpdateEmail(String newEmail) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) throw Exception('No authenticated user');
+    await user.verifyBeforeUpdateEmail(newEmail);
+    AppLogger.success(
+        'Verification email sent to: $newEmail', 'AuthRepository');
+  }
 }
