@@ -27,6 +27,7 @@ import 'package:butlery/repositories/firebase/firebase_messaging_repository.dart
 
 // Messaging services
 import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/services/messaging/message_reactions_service.dart';
 import 'package:butlery/services/presence_service.dart';
 
 // Firestore repository
@@ -59,6 +60,7 @@ class MessagingModule implements DIModule {
   List<Type> get provides => [
         MessagingRepository,
         MessagingService,
+        MessageReactionsService,
         PresenceService,
         NotificationsRepository, // Also provides notifications repository
       ];
@@ -86,10 +88,19 @@ class MessagingModule implements DIModule {
               authRepository: container<AuthRepository>()),
         );
       }
+      // MessageReactionsService - handles emoji reactions on messages
+      container.registerSingleton<MessageReactionsService>(
+        MessageReactionsService(
+          firestoreRepository: container<FirestoreRepository>(),
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
       // MessagingService - handles direct messaging with FCM integration
       container.registerSingleton<MessagingService>(MessagingService(
         messagingRepository: container<MessagingRepository>(),
         authRepository: container<AuthRepository>(),
+        reactionsService: container<MessageReactionsService>(),
       ));
 
       // PresenceService - handles online/offline status and typing indicators
@@ -124,6 +135,10 @@ class MessagingModule implements DIModule {
       // Initialize PresenceService for online/offline tracking
       final presenceService = container<PresenceService>();
       await presenceService.initialize();
+
+      // Validate MessageReactionsService is accessible
+      final reactionsService = container<MessageReactionsService>();
+      reactionsService.toString();
     } catch (e) {
       throw DIModuleException(
         name,
@@ -143,6 +158,7 @@ class MessagingModule implements DIModule {
       final services = <String, dynamic>{
         'MessagingRepository': container<MessagingRepository>(),
         'MessagingService': container<MessagingService>(),
+        'MessageReactionsService': container<MessageReactionsService>(),
         'PresenceService': container<PresenceService>(),
       };
 

@@ -1,6 +1,7 @@
 // lib/widgets/messaging/poll_creation_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -89,7 +90,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Skapa omröstning',
+                context.l10n.pollCreateTitle,
                 style: AppTextStyles.titleMedium,
               ),
               const SizedBox(height: AppDimensions.spacingMd),
@@ -98,8 +99,8 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
               TextField(
                 controller: _questionController,
                 decoration: InputDecoration(
-                  labelText: 'Fråga',
-                  hintText: 'Vad vill du fråga?',
+                  labelText: context.l10n.pollQuestionLabel,
+                  hintText: context.l10n.pollQuestionHint,
                   border: const OutlineInputBorder(
                     borderRadius: BorderRadius.all(
                         Radius.circular(AppDimensions.borderRadiusS)),
@@ -123,7 +124,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                         child: TextField(
                           controller: _optionControllers[index],
                           decoration: InputDecoration(
-                            labelText: 'Alternativ ${index + 1}',
+                            labelText: context.l10n.pollOptionLabel(index + 1),
                             border: const OutlineInputBorder(
                               borderRadius: BorderRadius.all(
                                   Radius.circular(AppDimensions.borderRadiusS)),
@@ -138,7 +139,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                         IconButton(
                           onPressed: () => _removeOption(index),
                           icon: Icon(Icons.close, color: cs.error, size: 20),
-                          tooltip: 'Ta bort alternativ',
+                          tooltip: context.l10n.tooltipRemoveOption,
                         ),
                     ],
                   ),
@@ -153,7 +154,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                     onPressed: _addOption,
                     icon: const Icon(Icons.add, size: 18),
                     label: Text(
-                      'Lägg till alternativ',
+                      context.l10n.pollAddOption,
                       style:
                           AppTextStyles.labelMedium.copyWith(color: cs.primary),
                     ),
@@ -172,7 +173,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                   ),
                   const SizedBox(width: AppDimensions.spacingSm),
                   Text(
-                    'Tillåt flera val',
+                    context.l10n.pollAllowMultiple,
                     style: AppTextStyles.bodyMedium,
                   ),
                 ],
@@ -187,7 +188,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     child: Text(
-                      'Avbryt',
+                      context.l10n.pollCancel,
                       style: AppTextStyles.labelMedium
                           .copyWith(color: cs.onSurfaceVariant),
                     ),
@@ -203,7 +204,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                             Radius.circular(AppDimensions.borderRadiusS)),
                       ),
                     ),
-                    child: const Text('Skapa'),
+                    child: Text(context.l10n.pollCreate),
                   ),
                 ],
               ),

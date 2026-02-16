@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/services/messaging/message_reactions_service.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -13,6 +14,9 @@ import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
+
+class MockMessageReactionsService extends Mock
+    implements MessageReactionsService {}
 
 // ============= EXCEPTION CLASSES =============
 
@@ -185,6 +189,7 @@ void main() {
       messagingService = MessagingService(
         messagingRepository: mockMessagingRepo,
         authRepository: mockAuthRepo,
+        reactionsService: MockMessageReactionsService(),
       );
     });
 

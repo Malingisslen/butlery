@@ -86,7 +86,7 @@ class RealtimeIngredientOperations {
     required int toIndex,
   }) async {
     if (fromIndex < 0 || toIndex < 0) {
-      context.setError('Ogiltiga ingrediens-index');
+      context.setError(AppLocale.current.errorInvalidIngredientIndex);
       return false;
     }
     if (fromIndex == toIndex) {

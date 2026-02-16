@@ -5,6 +5,7 @@ import 'package:butlery/models/ingredient_substitution.dart';
 import 'package:butlery/services/ingredient_substitution_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Bottom sheet displaying substitution options for an ingredient.
 class IngredientSubstitutionSheet extends StatefulWidget {
@@ -108,7 +109,7 @@ class _IngredientSubstitutionSheetState
       padding: const EdgeInsets.all(AppDimensions.spacingXl),
       child: Center(
         child: Text(
-          'Inga ersattningar hittades',
+          context.l10n.substitutionEmptyState,
           style: AppTextStyles.bodyMedium.copyWith(
             color: cs.onSurfaceVariant,
             fontStyle: FontStyle.italic,

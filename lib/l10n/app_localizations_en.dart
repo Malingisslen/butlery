@@ -11221,4 +11221,378 @@ class AppLocalizationsEn extends AppLocalizations {
   String timeCompactMonths(int count) {
     return '${count}mo';
   }
+
+  @override
+  String validationFieldCannotBeEmpty(String fieldName) {
+    return '$fieldName cannot be empty';
+  }
+
+  @override
+  String validationMustBeNumber(String fieldName) {
+    return '$fieldName must be a number';
+  }
+
+  @override
+  String validationMinValue(String fieldName, String min) {
+    return '$fieldName must be at least $min';
+  }
+
+  @override
+  String validationMaxValue(String fieldName, String max) {
+    return '$fieldName must be at most $max';
+  }
+
+  @override
+  String get validationDefaultValueLabel => 'The value';
+
+  @override
+  String get validationInvalidUrlHint =>
+      'Enter a valid URL (starting with http:// or https://)';
+
+  @override
+  String get validationFieldRating => 'Rating';
+
+  @override
+  String get validationFieldPortions => 'Number of portions';
+
+  @override
+  String get validationFieldCookingTime => 'Cooking time';
+
+  @override
+  String get validationDisplayNameEmpty => 'Display name cannot be empty';
+
+  @override
+  String get validationDisplayNameTooShort =>
+      'Display name must be at least 2 characters';
+
+  @override
+  String get validationDisplayNameTooLong =>
+      'Display name must be at most 30 characters';
+
+  @override
+  String get validationDisplayNameInvalidChars =>
+      'Display name can only contain letters, numbers, spaces and - _ .';
+
+  @override
+  String get validationDisplayNameNoLetters =>
+      'Display name must contain at least one letter or number';
+
+  @override
+  String get validationDisplayNameNoSpaces =>
+      'Display name cannot start or end with spaces';
+
+  @override
+  String get validationCommentEmpty => 'Comment cannot be empty';
+
+  @override
+  String get validationCommentTooShort =>
+      'Comment must be at least 3 characters';
+
+  @override
+  String get validationCommentTooLong =>
+      'Comment must be at most 500 characters';
+
+  @override
+  String validationMessageMaxLength(int max) {
+    return 'Message must be at most $max characters';
+  }
+
+  @override
+  String get validationNameTooShort => 'Name must be at least 2 characters';
+
+  @override
+  String get validationEmailInvalidHint => 'Enter a valid email address';
+
+  @override
+  String get validationShoppingItemRequired => 'Enter item name';
+
+  @override
+  String get validationAmountRequired => 'Enter amount';
+
+  @override
+  String get validationTagMinLength => 'Each tag must be at least 2 characters';
+
+  @override
+  String get validationTagMaxLength => 'Each tag must be at most 20 characters';
+
+  @override
+  String validationFieldNotEmpty(String fieldName) {
+    return '$fieldName cannot be empty';
+  }
+
+  @override
+  String get validationPasswordMinEight =>
+      'Password must be at least 8 characters';
+
+  @override
+  String get validationPasswordNeedsUppercase =>
+      'Password must contain at least one uppercase letter';
+
+  @override
+  String get validationPasswordNeedsLowercase =>
+      'Password must contain at least one lowercase letter';
+
+  @override
+  String get validationPasswordNeedsDigit =>
+      'Password must contain at least one digit';
+
+  @override
+  String get validationDisplayNameLabel => 'Display name';
+
+  @override
+  String get validationCommentLabel => 'Comment';
+
+  @override
+  String get validationAmountMustBePositive =>
+      'Amount must be a positive number';
+
+  @override
+  String get validationUserIdRequired => 'User ID required for this operation';
+
+  @override
+  String get validationFieldRecipeName => 'Recipe name';
+
+  @override
+  String get validationFieldGroupName => 'Group name';
+
+  @override
+  String get validationFieldArticle => 'Item';
+
+  @override
+  String errorImageUploadFailed(String message) {
+    return 'Image upload failed: $message';
+  }
+
+  @override
+  String errorRecipeServiceFailed(String message) {
+    return 'Recipe management failed: $message';
+  }
+
+  @override
+  String errorPermissionFailed(String message) {
+    return 'Permission error: $message';
+  }
+
+  @override
+  String errorNetworkWithDetail(String message) {
+    return 'Network error: $message';
+  }
+
+  @override
+  String errorStorageFailed(String message) {
+    return 'Storage error: $message';
+  }
+
+  @override
+  String errorCollaborationFailed(String message) {
+    return 'Collaboration error: $message';
+  }
+
+  @override
+  String errorAutoSaveFailed(String message) {
+    return 'Auto-save failed: $message';
+  }
+
+  @override
+  String errorSystemFailed(String message) {
+    return 'System error: $message';
+  }
+
+  @override
+  String get actionRefresh => 'Refresh';
+
+  @override
+  String get actionGoBack => 'Go back';
+
+  @override
+  String get actionReport => 'Report';
+
+  @override
+  String get shoppingCatMeatFish => 'Meat & fish';
+
+  @override
+  String get shoppingCatDairy => 'Dairy';
+
+  @override
+  String get shoppingCatFruitVeg => 'Fruit & vegetables';
+
+  @override
+  String get shoppingCatBreadGrain => 'Bread & grain';
+
+  @override
+  String get shoppingCatPantry => 'Pantry';
+
+  @override
+  String get shareIngredientsLabel => 'Ingredients:';
+
+  @override
+  String get shareInstructionsLabel => 'Instructions:';
+
+  @override
+  String get shareSourceLabel => 'Source:';
+
+  @override
+  String get sharePortionsUnit => 'portions';
+
+  @override
+  String get shareMinutesUnit => 'minutes';
+
+  @override
+  String uploadNotificationTitle(int percentage) {
+    return 'Upload $percentage% complete';
+  }
+
+  @override
+  String uploadNotificationMessage(int percentage) {
+    return 'Image upload progress - $percentage% complete';
+  }
+
+  @override
+  String get feedbackDescriptionRequired => 'Enter a description';
+
+  @override
+  String get feedbackThanks => 'Thank you for your feedback!';
+
+  @override
+  String get feedbackSendFailed => 'Could not send feedback. Try again.';
+
+  @override
+  String get tooltipRemoveOption => 'Remove option';
+
+  @override
+  String get personalTagCouldNotShare => 'Could not share tag';
+
+  @override
+  String get reactionThumbsUp => 'Thumbs up';
+
+  @override
+  String get reactionHeart => 'Heart';
+
+  @override
+  String get reactionFire => 'Fire';
+
+  @override
+  String get reactionLaughing => 'Laughing';
+
+  @override
+  String get reactionYum => 'Yummy';
+
+  @override
+  String get reactionThinking => 'Thinking';
+
+  @override
+  String menuCompletionPercent(int percentage) {
+    return '$percentage% complete';
+  }
+
+  @override
+  String networkErrorNoConnection(String operation) {
+    return 'No internet connection. $operation will be saved locally and synced when you\'re back online.';
+  }
+
+  @override
+  String networkErrorNoConnectionShort(String operation) {
+    return 'No internet connection for $operation.';
+  }
+
+  @override
+  String networkErrorMobileData(String operation) {
+    return 'Using mobile data for $operation. This may take longer or affect your data usage.';
+  }
+
+  @override
+  String networkErrorMobileShort(String operation) {
+    return 'Mobile connection for $operation.';
+  }
+
+  @override
+  String networkErrorLimited(String operation) {
+    return 'Limited connection detected. $operation may take longer or be saved locally.';
+  }
+
+  @override
+  String networkErrorLimitedShort(String operation) {
+    return 'Limited connection for $operation.';
+  }
+
+  @override
+  String networkErrorDefault(String operation) {
+    return 'Network error during $operation. Check your connection and try again.';
+  }
+
+  @override
+  String permissionErrorAction(String action, String resource) {
+    return 'You cannot $action this $resource';
+  }
+
+  @override
+  String permissionErrorBecause(String reason) {
+    return 'because $reason';
+  }
+
+  @override
+  String permissionErrorSuggestion(String suggestion) {
+    return 'Suggestion: $suggestion';
+  }
+
+  @override
+  String errorDuringAction(String action, String issue) {
+    return 'Problem while $action: $issue';
+  }
+
+  @override
+  String errorDuringActionRecovery(
+      String action, String issue, String recovery) {
+    return 'Problem while $action: $issue\n\nSuggestion: $recovery';
+  }
+
+  @override
+  String get formatPortionSingle => '1 portion';
+
+  @override
+  String formatPortionPlural(int count) {
+    return '$count portions';
+  }
+
+  @override
+  String validationFailedWith(String error) {
+    return 'Validation failed: $error';
+  }
+
+  @override
+  String get snackbarNoInternet =>
+      'No internet connection. Check your connection.';
+
+  @override
+  String get errorInvalidYoutubeUrl => 'Invalid YouTube URL';
+
+  @override
+  String get errorInvalidInstructionIndex => 'Invalid instruction indices';
+
+  @override
+  String get errorInvalidIngredientIndex => 'Invalid ingredient indices';
+
+  @override
+  String errorInvalidCategoryNamesFromTo(
+      String fromCategory, String toCategory) {
+    return 'Invalid category names: $fromCategory -> $toCategory';
+  }
+
+  @override
+  String get unknownUser => 'Unknown user';
+
+  @override
+  String get validationTitleMissing => 'Title is missing';
+
+  @override
+  String get validationIngredientsMissing => 'Ingredients are missing';
+
+  @override
+  String get validationInstructionsMissing => 'Instructions are missing';
+
+  @override
+  String get validationMealTypeMissing => 'Meal type is missing';
+
+  @override
+  String get unknownActivity => 'Unknown activity';
 }

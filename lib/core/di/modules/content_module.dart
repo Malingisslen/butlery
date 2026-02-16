@@ -307,7 +307,9 @@ class ContentModule implements DIModule {
 
       // Ingredient substitution service for replacement suggestions
       container.registerLazySingleton<IngredientSubstitutionService>(
-        () => IngredientSubstitutionService(),
+        () => IngredientSubstitutionService(
+          firestoreRepository: container<FirestoreRepository>(),
+        ),
       );
 
       // Menu service for meal planning

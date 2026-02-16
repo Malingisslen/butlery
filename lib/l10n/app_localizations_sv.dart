@@ -11251,4 +11251,377 @@ class AppLocalizationsSv extends AppLocalizations {
   String timeCompactMonths(int count) {
     return '${count}mån';
   }
+
+  @override
+  String validationFieldCannotBeEmpty(String fieldName) {
+    return '$fieldName får inte vara tom';
+  }
+
+  @override
+  String validationMustBeNumber(String fieldName) {
+    return '$fieldName måste vara ett nummer';
+  }
+
+  @override
+  String validationMinValue(String fieldName, String min) {
+    return '$fieldName måste vara minst $min';
+  }
+
+  @override
+  String validationMaxValue(String fieldName, String max) {
+    return '$fieldName får vara max $max';
+  }
+
+  @override
+  String get validationDefaultValueLabel => 'Värdet';
+
+  @override
+  String get validationInvalidUrlHint =>
+      'Ange en giltig URL (börja med http:// eller https://)';
+
+  @override
+  String get validationFieldRating => 'Betyg';
+
+  @override
+  String get validationFieldPortions => 'Antal portioner';
+
+  @override
+  String get validationFieldCookingTime => 'Tillagningstid';
+
+  @override
+  String get validationDisplayNameEmpty => 'Visningsnamn får inte vara tomt';
+
+  @override
+  String get validationDisplayNameTooShort =>
+      'Visningsnamn måste vara minst 2 tecken';
+
+  @override
+  String get validationDisplayNameTooLong =>
+      'Visningsnamn får vara max 30 tecken';
+
+  @override
+  String get validationDisplayNameInvalidChars =>
+      'Visningsnamn får bara innehålla bokstäver, siffror, mellanslag och - _ .';
+
+  @override
+  String get validationDisplayNameNoLetters =>
+      'Visningsnamn måste innehålla minst en bokstav eller siffra';
+
+  @override
+  String get validationDisplayNameNoSpaces =>
+      'Visningsnamn får inte börja eller sluta med mellanslag';
+
+  @override
+  String get validationCommentEmpty => 'Kommentar får inte vara tom';
+
+  @override
+  String get validationCommentTooShort => 'Kommentar måste vara minst 3 tecken';
+
+  @override
+  String get validationCommentTooLong => 'Kommentar får vara max 500 tecken';
+
+  @override
+  String validationMessageMaxLength(int max) {
+    return 'Meddelande får vara max $max tecken';
+  }
+
+  @override
+  String get validationNameTooShort => 'Namnet måste vara minst 2 tecken';
+
+  @override
+  String get validationEmailInvalidHint => 'Ange en giltig e-postadress';
+
+  @override
+  String get validationShoppingItemRequired => 'Ange artikelnamn';
+
+  @override
+  String get validationAmountRequired => 'Ange antal';
+
+  @override
+  String get validationTagMinLength => 'Varje tagg måste vara minst 2 tecken';
+
+  @override
+  String get validationTagMaxLength => 'Varje tagg får vara max 20 tecken';
+
+  @override
+  String validationFieldNotEmpty(String fieldName) {
+    return '$fieldName får inte vara tomt';
+  }
+
+  @override
+  String get validationPasswordMinEight =>
+      'Lösenordet måste vara minst 8 tecken';
+
+  @override
+  String get validationPasswordNeedsUppercase =>
+      'Lösenordet måste innehålla minst en stor bokstav';
+
+  @override
+  String get validationPasswordNeedsLowercase =>
+      'Lösenordet måste innehålla minst en liten bokstav';
+
+  @override
+  String get validationPasswordNeedsDigit =>
+      'Lösenordet måste innehålla minst en siffra';
+
+  @override
+  String get validationDisplayNameLabel => 'Visningsnamn';
+
+  @override
+  String get validationCommentLabel => 'Kommentar';
+
+  @override
+  String get validationAmountMustBePositive =>
+      'Antal måste vara ett positivt nummer';
+
+  @override
+  String get validationUserIdRequired =>
+      'Användar-ID krävs för denna operation';
+
+  @override
+  String get validationFieldRecipeName => 'Receptnamn';
+
+  @override
+  String get validationFieldGroupName => 'Gruppnamn';
+
+  @override
+  String get validationFieldArticle => 'Artikel';
+
+  @override
+  String errorImageUploadFailed(String message) {
+    return 'Bilduppladdning misslyckades: $message';
+  }
+
+  @override
+  String errorRecipeServiceFailed(String message) {
+    return 'Recepthantering misslyckades: $message';
+  }
+
+  @override
+  String errorPermissionFailed(String message) {
+    return 'Behörighetsfel: $message';
+  }
+
+  @override
+  String errorNetworkWithDetail(String message) {
+    return 'Nätverksfel: $message';
+  }
+
+  @override
+  String errorStorageFailed(String message) {
+    return 'Lagringsfel: $message';
+  }
+
+  @override
+  String errorCollaborationFailed(String message) {
+    return 'Samarbetsfel: $message';
+  }
+
+  @override
+  String errorAutoSaveFailed(String message) {
+    return 'Autosparning misslyckades: $message';
+  }
+
+  @override
+  String errorSystemFailed(String message) {
+    return 'Systemfel: $message';
+  }
+
+  @override
+  String get actionRefresh => 'Uppdatera';
+
+  @override
+  String get actionGoBack => 'Gå tillbaka';
+
+  @override
+  String get actionReport => 'Rapportera';
+
+  @override
+  String get shoppingCatMeatFish => 'Kött & fisk';
+
+  @override
+  String get shoppingCatDairy => 'Mejeri';
+
+  @override
+  String get shoppingCatFruitVeg => 'Frukt & grönt';
+
+  @override
+  String get shoppingCatBreadGrain => 'Bröd & spannmål';
+
+  @override
+  String get shoppingCatPantry => 'Skafferi';
+
+  @override
+  String get shareIngredientsLabel => 'Ingredienser:';
+
+  @override
+  String get shareInstructionsLabel => 'Gör så här:';
+
+  @override
+  String get shareSourceLabel => 'Källa:';
+
+  @override
+  String get sharePortionsUnit => 'portioner';
+
+  @override
+  String get shareMinutesUnit => 'minuter';
+
+  @override
+  String uploadNotificationTitle(int percentage) {
+    return 'Uppladdning $percentage% klar';
+  }
+
+  @override
+  String uploadNotificationMessage(int percentage) {
+    return 'Bilduppladdning gör framsteg - $percentage% slutförd';
+  }
+
+  @override
+  String get feedbackDescriptionRequired => 'Ange en beskrivning';
+
+  @override
+  String get feedbackThanks => 'Tack för din feedback!';
+
+  @override
+  String get feedbackSendFailed => 'Kunde inte skicka feedback. Försök igen.';
+
+  @override
+  String get tooltipRemoveOption => 'Ta bort alternativ';
+
+  @override
+  String get personalTagCouldNotShare => 'Kunde inte dela taggen';
+
+  @override
+  String get reactionThumbsUp => 'Tummen upp';
+
+  @override
+  String get reactionHeart => 'Hjärta';
+
+  @override
+  String get reactionFire => 'Eld';
+
+  @override
+  String get reactionLaughing => 'Skratt';
+
+  @override
+  String get reactionYum => 'Gott';
+
+  @override
+  String get reactionThinking => 'Funderar';
+
+  @override
+  String menuCompletionPercent(int percentage) {
+    return '$percentage% färdig';
+  }
+
+  @override
+  String networkErrorNoConnection(String operation) {
+    return 'Ingen internetanslutning. $operation kommer att sparas lokalt och synkroniseras när du är online igen.';
+  }
+
+  @override
+  String networkErrorNoConnectionShort(String operation) {
+    return 'Ingen internetanslutning för $operation.';
+  }
+
+  @override
+  String networkErrorMobileData(String operation) {
+    return 'Använder mobildata för $operation. Detta kan ta längre tid eller påverka din dataförbrukning.';
+  }
+
+  @override
+  String networkErrorMobileShort(String operation) {
+    return 'Mobilanslutning för $operation.';
+  }
+
+  @override
+  String networkErrorLimited(String operation) {
+    return 'Begränsad anslutning upptäckt. $operation kan ta längre tid eller sparas lokalt.';
+  }
+
+  @override
+  String networkErrorLimitedShort(String operation) {
+    return 'Begränsad anslutning för $operation.';
+  }
+
+  @override
+  String networkErrorDefault(String operation) {
+    return 'Nätverksfel under $operation. Kontrollera din anslutning och försök igen.';
+  }
+
+  @override
+  String permissionErrorAction(String action, String resource) {
+    return 'Du kan inte $action detta $resource';
+  }
+
+  @override
+  String permissionErrorBecause(String reason) {
+    return 'eftersom $reason';
+  }
+
+  @override
+  String permissionErrorSuggestion(String suggestion) {
+    return 'Förslag: $suggestion';
+  }
+
+  @override
+  String errorDuringAction(String action, String issue) {
+    return 'Problem medan $action: $issue';
+  }
+
+  @override
+  String errorDuringActionRecovery(
+      String action, String issue, String recovery) {
+    return 'Problem medan $action: $issue\n\nFörslag: $recovery';
+  }
+
+  @override
+  String get formatPortionSingle => '1 portion';
+
+  @override
+  String formatPortionPlural(int count) {
+    return '$count portioner';
+  }
+
+  @override
+  String validationFailedWith(String error) {
+    return 'Validering misslyckades: $error';
+  }
+
+  @override
+  String get snackbarNoInternet =>
+      'Ingen internetanslutning. Kontrollera din anslutning.';
+
+  @override
+  String get errorInvalidYoutubeUrl => 'Ogiltig YouTube-URL';
+
+  @override
+  String get errorInvalidInstructionIndex => 'Ogiltiga instruktions-index';
+
+  @override
+  String get errorInvalidIngredientIndex => 'Ogiltiga ingrediens-index';
+
+  @override
+  String errorInvalidCategoryNamesFromTo(
+      String fromCategory, String toCategory) {
+    return 'Ogiltiga kategorinamn: $fromCategory -> $toCategory';
+  }
+
+  @override
+  String get unknownUser => 'Okänd användare';
+
+  @override
+  String get validationTitleMissing => 'Titel saknas';
+
+  @override
+  String get validationIngredientsMissing => 'Ingredienser saknas';
+
+  @override
+  String get validationInstructionsMissing => 'Instruktioner saknas';
+
+  @override
+  String get validationMealTypeMissing => 'Måltidstyp saknas';
+
+  @override
+  String get unknownActivity => 'Okänd aktivitet';
 }

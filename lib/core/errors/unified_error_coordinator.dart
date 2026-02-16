@@ -1,3 +1,5 @@
+import 'package:butlery/core/l10n/app_locale.dart';
+
 /// Unified error state management coordinator providing centralized error handling across recipe form components.
 /// This coordinator manages error states across RecipeFormViewModel, RecipeImageManager, FormFieldsManager,
 /// and other recipe form components, providing consistent error presentation, recovery mechanisms, and user feedback.
@@ -138,21 +140,21 @@ class UnifiedErrorInfo {
       case ErrorSource.formValidation:
         return message;
       case ErrorSource.imageUpload:
-        return 'Bilduppladdning misslyckades: $message';
+        return AppLocale.current.errorImageUploadFailed(message);
       case ErrorSource.recipeService:
-        return 'Recepthantering misslyckades: $message';
+        return AppLocale.current.errorRecipeServiceFailed(message);
       case ErrorSource.permissions:
-        return 'Behörighetsfel: $message';
+        return AppLocale.current.errorPermissionFailed(message);
       case ErrorSource.network:
-        return 'Nätverksfel: $message';
+        return AppLocale.current.errorNetworkWithDetail(message);
       case ErrorSource.storage:
-        return 'Lagringsfel: $message';
+        return AppLocale.current.errorStorageFailed(message);
       case ErrorSource.collaboration:
-        return 'Samarbetsfel: $message';
+        return AppLocale.current.errorCollaborationFailed(message);
       case ErrorSource.autoSave:
-        return 'Autosparning misslyckades: $message';
+        return AppLocale.current.errorAutoSaveFailed(message);
       case ErrorSource.system:
-        return 'Systemfel: $message';
+        return AppLocale.current.errorSystemFailed(message);
     }
   }
 
@@ -160,15 +162,15 @@ class UnifiedErrorInfo {
   String getActionText(ErrorRecoveryAction action) {
     switch (action) {
       case ErrorRecoveryAction.retry:
-        return 'Försök igen';
+        return AppLocale.current.commonRetry;
       case ErrorRecoveryAction.refresh:
-        return 'Uppdatera';
+        return AppLocale.current.actionRefresh;
       case ErrorRecoveryAction.navigate:
-        return 'Gå tillbaka';
+        return AppLocale.current.actionGoBack;
       case ErrorRecoveryAction.ignore:
-        return 'OK';
+        return AppLocale.current.commonOk;
       case ErrorRecoveryAction.escalate:
-        return 'Rapportera';
+        return AppLocale.current.actionReport;
     }
   }
 }

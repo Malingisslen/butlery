@@ -47,7 +47,7 @@
 /// }
 /// ```
 
-// AppStrings import removed — validation messages inlined for service-layer l10n compatibility
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Comprehensive validation utility class providing centralized validation patterns and business rule enforcement.
 /// This utility class serves as the centralized validation hub for the entire application, consolidating validation
@@ -143,7 +143,9 @@ class ValidationUtils {
   /// Replaces duplicate validation patterns across form fields
   static String? validateRequired(String? value, {String? fieldName}) {
     if (isNullOrWhitespace(value)) {
-      return fieldName != null ? '$fieldName krävs' : 'Detta fält krävs';
+      return fieldName != null
+          ? AppLocale.current.validationFieldRequired(fieldName)
+          : AppLocale.current.validationGenericRequired;
     }
     return null;
   }
@@ -159,15 +161,15 @@ class ValidationUtils {
     if (value == null) return null;
 
     if (minLength != null && value.length < minLength) {
-      return fieldName != null
-          ? '$fieldName måste vara minst $minLength tecken'
-          : 'Minimum length is $minLength characters';
+      return AppLocale.current.validationFieldTooShort(
+          fieldName ?? AppLocale.current.validationDefaultValueLabel,
+          minLength);
     }
 
     if (maxLength != null && value.length > maxLength) {
-      return fieldName != null
-          ? '$fieldName får vara max $maxLength tecken'
-          : 'Maximum length is $maxLength characters';
+      return AppLocale.current.validationFieldTooLong(
+          fieldName ?? AppLocale.current.validationDefaultValueLabel,
+          maxLength);
     }
 
     return null;
@@ -176,12 +178,12 @@ class ValidationUtils {
   /// Email validation - consolidates patterns from 23+ files
   static String? validateEmail(String? email, {bool required = true}) {
     if (isNullOrWhitespace(email)) {
-      return required ? 'E-post krävs' : null;
+      return required ? AppLocale.current.validationEmailRequired : null;
     }
 
     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
     if (!emailRegex.hasMatch(email!)) {
-      return 'Ogiltig e-postadress';
+      return AppLocale.current.validationEmailInvalid;
     }
 
     return null;
@@ -189,40 +191,49 @@ class ValidationUtils {
 
   /// Recipe name validation - consolidates patterns from recipe-related files
   static String? validateRecipeName(String? name) {
-    final requiredCheck = validateRequired(name, fieldName: 'Receptnamn');
+    final requiredCheck = validateRequired(name,
+        fieldName: AppLocale.current.validationFieldRecipeName);
     if (requiredCheck != null) return requiredCheck;
 
     return validateLength(name,
-        minLength: 2, maxLength: 100, fieldName: 'Receptnamn');
+        minLength: 2,
+        maxLength: 100,
+        fieldName: AppLocale.current.validationFieldRecipeName);
   }
 
   /// Group name validation - consolidates patterns from group-related files
   static String? validateGroupName(String? name) {
-    final requiredCheck = validateRequired(name, fieldName: 'Gruppnamn');
+    final requiredCheck = validateRequired(name,
+        fieldName: AppLocale.current.validationFieldGroupName);
     if (requiredCheck != null) return requiredCheck;
 
     return validateLength(name,
-        minLength: 2, maxLength: 50, fieldName: 'Gruppnamn');
+        minLength: 2,
+        maxLength: 50,
+        fieldName: AppLocale.current.validationFieldGroupName);
   }
 
   /// Shopping item validation - consolidates patterns from shopping files
   static String? validateShoppingItemName(String? name) {
-    final requiredCheck = validateRequired(name, fieldName: 'Artikel');
+    final requiredCheck = validateRequired(name,
+        fieldName: AppLocale.current.validationFieldArticle);
     if (requiredCheck != null) return requiredCheck;
 
     return validateLength(name,
-        minLength: 1, maxLength: 100, fieldName: 'Artikel');
+        minLength: 1,
+        maxLength: 100,
+        fieldName: AppLocale.current.validationFieldArticle);
   }
 
   /// Amount validation - consolidates numeric validation patterns
   static String? validateAmount(String? amount) {
     if (isNullOrWhitespace(amount)) {
-      return 'Antal krävs';
+      return AppLocale.current.validationAmountRequired;
     }
 
     final numericValue = double.tryParse(amount!);
     if (numericValue == null || numericValue <= 0) {
-      return 'Antal måste vara ett positivt nummer';
+      return AppLocale.current.validationAmountMustBePositive;
     }
 
     return null;
@@ -244,7 +255,7 @@ class ValidationUtils {
   /// Replaces patterns found in 67+ service files
   static String? validateUserId(String? userId) {
     if (isNullOrWhitespace(userId)) {
-      return 'Användar-ID krävs för denna operation';
+      return AppLocale.current.validationUserIdRequired;
     }
     return null;
   }
@@ -285,7 +296,7 @@ class ValidationUtils {
       final result = await validator();
       return syncValidator(result);
     } catch (e) {
-      return 'Validering misslyckades: $e';
+      return AppLocale.current.validationFailedWith('$e');
     }
   }
 

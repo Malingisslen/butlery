@@ -1,6 +1,7 @@
 /// Allergen selection page for the onboarding wizard.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
@@ -8,17 +9,31 @@ import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 class OnboardingAllergenPage extends StatelessWidget {
   const OnboardingAllergenPage({super.key});
 
-  // Core allergens for onboarding (subset of full list in settings)
-  static const Map<String, _AllergenItem> _allergens = {
-    'gluten': _AllergenItem('Gluten', Icons.grain),
-    'mjolk': _AllergenItem('Mjolk', Icons.water_drop_outlined),
-    'notter': _AllergenItem('Notter', Icons.eco_outlined),
-    'agg': _AllergenItem('Agg', Icons.egg_outlined),
-    'soja': _AllergenItem('Soja', Icons.spa_outlined),
-    'fisk': _AllergenItem('Fisk', Icons.set_meal_outlined),
-    'skaldjur': _AllergenItem('Skaldjur', Icons.catching_pokemon),
-    'sesam': _AllergenItem('Sesam', Icons.grass_outlined),
+  static const Map<String, IconData> _allergenIcons = {
+    'gluten': Icons.grain,
+    'mjolk': Icons.water_drop_outlined,
+    'notter': Icons.eco_outlined,
+    'agg': Icons.egg_outlined,
+    'soja': Icons.spa_outlined,
+    'fisk': Icons.set_meal_outlined,
+    'skaldjur': Icons.catching_pokemon,
+    'sesam': Icons.grass_outlined,
   };
+
+  static String _allergenLabel(BuildContext context, String key) {
+    final l10n = context.l10n;
+    return switch (key) {
+      'gluten' => l10n.onboardingAllergenGluten,
+      'mjolk' => l10n.onboardingAllergenMilk,
+      'notter' => l10n.onboardingAllergenNuts,
+      'agg' => l10n.onboardingAllergenEgg,
+      'soja' => l10n.onboardingAllergenSoy,
+      'fisk' => l10n.onboardingAllergenFish,
+      'skaldjur' => l10n.onboardingAllergenShellfish,
+      'sesam' => l10n.onboardingAllergenSesame,
+      _ => key,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,14 +47,14 @@ class OnboardingAllergenPage extends StatelessWidget {
         children: [
           const SizedBox(height: AppDimensions.spacingXl),
           Text(
-            'Allergier & intoleranser',
+            context.l10n.onboardingAllergenTitle,
             style: AppTextStyles.headlineMedium.copyWith(
               color: cs.primary,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
-            'Valj de allergener du vill spara och filtrera recept efter.',
+            context.l10n.onboardingAllergenDescription,
             style: AppTextStyles.bodyMedium.copyWith(
               color: cs.onSurfaceVariant,
             ),
@@ -53,13 +68,13 @@ class OnboardingAllergenPage extends StatelessWidget {
                 mainAxisSpacing: AppDimensions.spacingSm,
                 childAspectRatio: 2.5,
               ),
-              itemCount: _allergens.length,
+              itemCount: _allergenIcons.length,
               itemBuilder: (context, index) {
-                final entry = _allergens.entries.elementAt(index);
+                final entry = _allergenIcons.entries.elementAt(index);
                 final isSelected = viewModel.isAllergenSelected(entry.key);
                 return _AllergenToggleCard(
-                  label: entry.value.label,
-                  icon: entry.value.icon,
+                  label: _allergenLabel(context, entry.key),
+                  icon: entry.value,
                   isSelected: isSelected,
                   onTap: () => viewModel.toggleAllergen(entry.key),
                 );
@@ -70,12 +85,6 @@ class OnboardingAllergenPage extends StatelessWidget {
       ),
     );
   }
-}
-
-class _AllergenItem {
-  final String label;
-  final IconData icon;
-  const _AllergenItem(this.label, this.icon);
 }
 
 class _AllergenToggleCard extends StatelessWidget {

@@ -19279,6 +19279,596 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{count}mån'**
   String timeCompactMonths(int count);
+
+  /// No description provided for @validationFieldCannotBeEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'{fieldName} får inte vara tom'**
+  String validationFieldCannotBeEmpty(String fieldName);
+
+  /// No description provided for @validationMustBeNumber.
+  ///
+  /// In sv, this message translates to:
+  /// **'{fieldName} måste vara ett nummer'**
+  String validationMustBeNumber(String fieldName);
+
+  /// No description provided for @validationMinValue.
+  ///
+  /// In sv, this message translates to:
+  /// **'{fieldName} måste vara minst {min}'**
+  String validationMinValue(String fieldName, String min);
+
+  /// No description provided for @validationMaxValue.
+  ///
+  /// In sv, this message translates to:
+  /// **'{fieldName} får vara max {max}'**
+  String validationMaxValue(String fieldName, String max);
+
+  /// No description provided for @validationDefaultValueLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Värdet'**
+  String get validationDefaultValueLabel;
+
+  /// No description provided for @validationInvalidUrlHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange en giltig URL (börja med http:// eller https://)'**
+  String get validationInvalidUrlHint;
+
+  /// No description provided for @validationFieldRating.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyg'**
+  String get validationFieldRating;
+
+  /// No description provided for @validationFieldPortions.
+  ///
+  /// In sv, this message translates to:
+  /// **'Antal portioner'**
+  String get validationFieldPortions;
+
+  /// No description provided for @validationFieldCookingTime.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillagningstid'**
+  String get validationFieldCookingTime;
+
+  /// No description provided for @validationDisplayNameEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visningsnamn får inte vara tomt'**
+  String get validationDisplayNameEmpty;
+
+  /// No description provided for @validationDisplayNameTooShort.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visningsnamn måste vara minst 2 tecken'**
+  String get validationDisplayNameTooShort;
+
+  /// No description provided for @validationDisplayNameTooLong.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visningsnamn får vara max 30 tecken'**
+  String get validationDisplayNameTooLong;
+
+  /// No description provided for @validationDisplayNameInvalidChars.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visningsnamn får bara innehålla bokstäver, siffror, mellanslag och - _ .'**
+  String get validationDisplayNameInvalidChars;
+
+  /// No description provided for @validationDisplayNameNoLetters.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visningsnamn måste innehålla minst en bokstav eller siffra'**
+  String get validationDisplayNameNoLetters;
+
+  /// No description provided for @validationDisplayNameNoSpaces.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visningsnamn får inte börja eller sluta med mellanslag'**
+  String get validationDisplayNameNoSpaces;
+
+  /// No description provided for @validationCommentEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar får inte vara tom'**
+  String get validationCommentEmpty;
+
+  /// No description provided for @validationCommentTooShort.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar måste vara minst 3 tecken'**
+  String get validationCommentTooShort;
+
+  /// No description provided for @validationCommentTooLong.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar får vara max 500 tecken'**
+  String get validationCommentTooLong;
+
+  /// No description provided for @validationMessageMaxLength.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meddelande får vara max {max} tecken'**
+  String validationMessageMaxLength(int max);
+
+  /// No description provided for @validationNameTooShort.
+  ///
+  /// In sv, this message translates to:
+  /// **'Namnet måste vara minst 2 tecken'**
+  String get validationNameTooShort;
+
+  /// No description provided for @validationEmailInvalidHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange en giltig e-postadress'**
+  String get validationEmailInvalidHint;
+
+  /// No description provided for @validationShoppingItemRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange artikelnamn'**
+  String get validationShoppingItemRequired;
+
+  /// No description provided for @validationAmountRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange antal'**
+  String get validationAmountRequired;
+
+  /// No description provided for @validationTagMinLength.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varje tagg måste vara minst 2 tecken'**
+  String get validationTagMinLength;
+
+  /// No description provided for @validationTagMaxLength.
+  ///
+  /// In sv, this message translates to:
+  /// **'Varje tagg får vara max 20 tecken'**
+  String get validationTagMaxLength;
+
+  /// No description provided for @validationFieldNotEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'{fieldName} får inte vara tomt'**
+  String validationFieldNotEmpty(String fieldName);
+
+  /// No description provided for @validationPasswordMinEight.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet måste vara minst 8 tecken'**
+  String get validationPasswordMinEight;
+
+  /// No description provided for @validationPasswordNeedsUppercase.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet måste innehålla minst en stor bokstav'**
+  String get validationPasswordNeedsUppercase;
+
+  /// No description provided for @validationPasswordNeedsLowercase.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet måste innehålla minst en liten bokstav'**
+  String get validationPasswordNeedsLowercase;
+
+  /// No description provided for @validationPasswordNeedsDigit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenordet måste innehålla minst en siffra'**
+  String get validationPasswordNeedsDigit;
+
+  /// No description provided for @validationDisplayNameLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visningsnamn'**
+  String get validationDisplayNameLabel;
+
+  /// No description provided for @validationCommentLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentar'**
+  String get validationCommentLabel;
+
+  /// No description provided for @validationAmountMustBePositive.
+  ///
+  /// In sv, this message translates to:
+  /// **'Antal måste vara ett positivt nummer'**
+  String get validationAmountMustBePositive;
+
+  /// No description provided for @validationUserIdRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Användar-ID krävs för denna operation'**
+  String get validationUserIdRequired;
+
+  /// No description provided for @validationFieldRecipeName.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptnamn'**
+  String get validationFieldRecipeName;
+
+  /// No description provided for @validationFieldGroupName.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppnamn'**
+  String get validationFieldGroupName;
+
+  /// No description provided for @validationFieldArticle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Artikel'**
+  String get validationFieldArticle;
+
+  /// No description provided for @errorImageUploadFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilduppladdning misslyckades: {message}'**
+  String errorImageUploadFailed(String message);
+
+  /// No description provided for @errorRecipeServiceFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recepthantering misslyckades: {message}'**
+  String errorRecipeServiceFailed(String message);
+
+  /// No description provided for @errorPermissionFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Behörighetsfel: {message}'**
+  String errorPermissionFailed(String message);
+
+  /// No description provided for @errorNetworkWithDetail.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nätverksfel: {message}'**
+  String errorNetworkWithDetail(String message);
+
+  /// No description provided for @errorStorageFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lagringsfel: {message}'**
+  String errorStorageFailed(String message);
+
+  /// No description provided for @errorCollaborationFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Samarbetsfel: {message}'**
+  String errorCollaborationFailed(String message);
+
+  /// No description provided for @errorAutoSaveFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Autosparning misslyckades: {message}'**
+  String errorAutoSaveFailed(String message);
+
+  /// No description provided for @errorSystemFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Systemfel: {message}'**
+  String errorSystemFailed(String message);
+
+  /// No description provided for @actionRefresh.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppdatera'**
+  String get actionRefresh;
+
+  /// No description provided for @actionGoBack.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gå tillbaka'**
+  String get actionGoBack;
+
+  /// No description provided for @actionReport.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rapportera'**
+  String get actionReport;
+
+  /// No description provided for @shoppingCatMeatFish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kött & fisk'**
+  String get shoppingCatMeatFish;
+
+  /// No description provided for @shoppingCatDairy.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mejeri'**
+  String get shoppingCatDairy;
+
+  /// No description provided for @shoppingCatFruitVeg.
+  ///
+  /// In sv, this message translates to:
+  /// **'Frukt & grönt'**
+  String get shoppingCatFruitVeg;
+
+  /// No description provided for @shoppingCatBreadGrain.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bröd & spannmål'**
+  String get shoppingCatBreadGrain;
+
+  /// No description provided for @shoppingCatPantry.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skafferi'**
+  String get shoppingCatPantry;
+
+  /// No description provided for @shareIngredientsLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser:'**
+  String get shareIngredientsLabel;
+
+  /// No description provided for @shareInstructionsLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gör så här:'**
+  String get shareInstructionsLabel;
+
+  /// No description provided for @shareSourceLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Källa:'**
+  String get shareSourceLabel;
+
+  /// No description provided for @sharePortionsUnit.
+  ///
+  /// In sv, this message translates to:
+  /// **'portioner'**
+  String get sharePortionsUnit;
+
+  /// No description provided for @shareMinutesUnit.
+  ///
+  /// In sv, this message translates to:
+  /// **'minuter'**
+  String get shareMinutesUnit;
+
+  /// No description provided for @uploadNotificationTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppladdning {percentage}% klar'**
+  String uploadNotificationTitle(int percentage);
+
+  /// No description provided for @uploadNotificationMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bilduppladdning gör framsteg - {percentage}% slutförd'**
+  String uploadNotificationMessage(int percentage);
+
+  /// No description provided for @feedbackDescriptionRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ange en beskrivning'**
+  String get feedbackDescriptionRequired;
+
+  /// No description provided for @feedbackThanks.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tack för din feedback!'**
+  String get feedbackThanks;
+
+  /// No description provided for @feedbackSendFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte skicka feedback. Försök igen.'**
+  String get feedbackSendFailed;
+
+  /// No description provided for @tooltipRemoveOption.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort alternativ'**
+  String get tooltipRemoveOption;
+
+  /// No description provided for @personalTagCouldNotShare.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte dela taggen'**
+  String get personalTagCouldNotShare;
+
+  /// No description provided for @reactionThumbsUp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tummen upp'**
+  String get reactionThumbsUp;
+
+  /// No description provided for @reactionHeart.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hjärta'**
+  String get reactionHeart;
+
+  /// No description provided for @reactionFire.
+  ///
+  /// In sv, this message translates to:
+  /// **'Eld'**
+  String get reactionFire;
+
+  /// No description provided for @reactionLaughing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skratt'**
+  String get reactionLaughing;
+
+  /// No description provided for @reactionYum.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gott'**
+  String get reactionYum;
+
+  /// No description provided for @reactionThinking.
+  ///
+  /// In sv, this message translates to:
+  /// **'Funderar'**
+  String get reactionThinking;
+
+  /// No description provided for @menuCompletionPercent.
+  ///
+  /// In sv, this message translates to:
+  /// **'{percentage}% färdig'**
+  String menuCompletionPercent(int percentage);
+
+  /// No description provided for @networkErrorNoConnection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen internetanslutning. {operation} kommer att sparas lokalt och synkroniseras när du är online igen.'**
+  String networkErrorNoConnection(String operation);
+
+  /// No description provided for @networkErrorNoConnectionShort.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen internetanslutning för {operation}.'**
+  String networkErrorNoConnectionShort(String operation);
+
+  /// No description provided for @networkErrorMobileData.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använder mobildata för {operation}. Detta kan ta längre tid eller påverka din dataförbrukning.'**
+  String networkErrorMobileData(String operation);
+
+  /// No description provided for @networkErrorMobileShort.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mobilanslutning för {operation}.'**
+  String networkErrorMobileShort(String operation);
+
+  /// No description provided for @networkErrorLimited.
+  ///
+  /// In sv, this message translates to:
+  /// **'Begränsad anslutning upptäckt. {operation} kan ta längre tid eller sparas lokalt.'**
+  String networkErrorLimited(String operation);
+
+  /// No description provided for @networkErrorLimitedShort.
+  ///
+  /// In sv, this message translates to:
+  /// **'Begränsad anslutning för {operation}.'**
+  String networkErrorLimitedShort(String operation);
+
+  /// No description provided for @networkErrorDefault.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nätverksfel under {operation}. Kontrollera din anslutning och försök igen.'**
+  String networkErrorDefault(String operation);
+
+  /// No description provided for @permissionErrorAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan inte {action} detta {resource}'**
+  String permissionErrorAction(String action, String resource);
+
+  /// No description provided for @permissionErrorBecause.
+  ///
+  /// In sv, this message translates to:
+  /// **'eftersom {reason}'**
+  String permissionErrorBecause(String reason);
+
+  /// No description provided for @permissionErrorSuggestion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslag: {suggestion}'**
+  String permissionErrorSuggestion(String suggestion);
+
+  /// No description provided for @errorDuringAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Problem medan {action}: {issue}'**
+  String errorDuringAction(String action, String issue);
+
+  /// No description provided for @errorDuringActionRecovery.
+  ///
+  /// In sv, this message translates to:
+  /// **'Problem medan {action}: {issue}\n\nFörslag: {recovery}'**
+  String errorDuringActionRecovery(
+      String action, String issue, String recovery);
+
+  /// No description provided for @formatPortionSingle.
+  ///
+  /// In sv, this message translates to:
+  /// **'1 portion'**
+  String get formatPortionSingle;
+
+  /// No description provided for @formatPortionPlural.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} portioner'**
+  String formatPortionPlural(int count);
+
+  /// No description provided for @validationFailedWith.
+  ///
+  /// In sv, this message translates to:
+  /// **'Validering misslyckades: {error}'**
+  String validationFailedWith(String error);
+
+  /// No description provided for @snackbarNoInternet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen internetanslutning. Kontrollera din anslutning.'**
+  String get snackbarNoInternet;
+
+  /// No description provided for @errorInvalidYoutubeUrl.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltig YouTube-URL'**
+  String get errorInvalidYoutubeUrl;
+
+  /// No description provided for @errorInvalidInstructionIndex.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltiga instruktions-index'**
+  String get errorInvalidInstructionIndex;
+
+  /// No description provided for @errorInvalidIngredientIndex.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltiga ingrediens-index'**
+  String get errorInvalidIngredientIndex;
+
+  /// No description provided for @errorInvalidCategoryNamesFromTo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ogiltiga kategorinamn: {fromCategory} -> {toCategory}'**
+  String errorInvalidCategoryNamesFromTo(
+      String fromCategory, String toCategory);
+
+  /// No description provided for @unknownUser.
+  ///
+  /// In sv, this message translates to:
+  /// **'Okänd användare'**
+  String get unknownUser;
+
+  /// No description provided for @validationTitleMissing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Titel saknas'**
+  String get validationTitleMissing;
+
+  /// No description provided for @validationIngredientsMissing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser saknas'**
+  String get validationIngredientsMissing;
+
+  /// No description provided for @validationInstructionsMissing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Instruktioner saknas'**
+  String get validationInstructionsMissing;
+
+  /// No description provided for @validationMealTypeMissing.
+  ///
+  /// In sv, this message translates to:
+  /// **'Måltidstyp saknas'**
+  String get validationMealTypeMissing;
+
+  /// No description provided for @unknownActivity.
+  ///
+  /// In sv, this message translates to:
+  /// **'Okänd aktivitet'**
+  String get unknownActivity;
 }
 
 class _AppLocalizationsDelegate
