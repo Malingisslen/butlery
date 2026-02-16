@@ -375,7 +375,7 @@ class RecipeMemberManager {
     required String newMemberName,
     required ResourcePermission permission,
   }) async {
-    final currentUserName = _parent.currentUserDisplayName ?? 'En användare';
+    final currentUserName = _parent.currentUserDisplayName ?? '?';
 
     await NotificationHelper.sendImmediateSafely(
       notificationService: _notificationService,
@@ -403,7 +403,7 @@ class RecipeMemberManager {
     required String recipeTitle,
     required String removedMemberId,
   }) async {
-    final currentUserName = _parent.currentUserDisplayName ?? 'En användare';
+    final currentUserName = _parent.currentUserDisplayName ?? '?';
 
     await NotificationHelper.sendSilentSafely(
       notificationService: _notificationService,

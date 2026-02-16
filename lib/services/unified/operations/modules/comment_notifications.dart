@@ -1,5 +1,6 @@
 // lib/services/unified/operations/modules/comment_notifications.dart
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -252,17 +253,20 @@ class CommentNotifications {
   }) {
     if (comments.isEmpty) return '';
 
+    final l = AppLocale.current;
     if (comments.length == 1) {
       final comment = comments.first;
-      return '${comment.authorDisplayName} kommenterade på "$recipeName"';
+      return l.notificationCommentSingle(comment.authorDisplayName, recipeName);
     }
 
     final uniqueCommenters = comments.map((c) => c.authorDisplayName).toSet();
     if (uniqueCommenters.length == 1) {
-      return '${uniqueCommenters.first} skrev ${comments.length} kommentarer på "$recipeName"';
+      return l.notificationCommentMultipleSameAuthor(
+          uniqueCommenters.first, comments.length, recipeName);
     }
 
-    return '${uniqueCommenters.length} personer skrev ${comments.length} kommentarer på "$recipeName"';
+    return l.notificationCommentMultipleAuthors(
+        uniqueCommenters.length, comments.length, recipeName);
   }
 
   /// Generate notification batch key for comment notifications

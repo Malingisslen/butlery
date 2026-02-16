@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -47,14 +48,7 @@ class DraftMetadata {
   bool get isRecent => DateTime.now().difference(lastModifiedAt).inHours < 24;
 
   /// Get human-readable time since last modification
-  String get timeAgo {
-    final difference = DateTime.now().difference(lastModifiedAt);
-    if (difference.inMinutes < 1) return 'precis nu';
-    if (difference.inMinutes < 60) return '${difference.inMinutes}m sedan';
-    if (difference.inHours < 24) return '${difference.inHours}h sedan';
-    if (difference.inDays < 7) return '${difference.inDays}d sedan';
-    return '${difference.inDays ~/ 7}v sedan';
-  }
+  String get timeAgo => TimeAgoFormatter.compact(lastModifiedAt);
 }
 
 /// Intelligent auto-save manager for recipe forms with draft persistence and recovery

@@ -1,3 +1,5 @@
+import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 import 'package:butlery/models/shared_content/shared_content_status_mixin.dart';
 import 'package:butlery/models/shared_content/copy_on_write_mixin.dart';
@@ -60,7 +62,8 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     bool allowCollaboration = false,
     String? realtimeMenuId,
   }) {
-    final title = menuTitle ?? '${sharedByDisplayName}s veckomeny';
+    final title = menuTitle ??
+        AppLocale.current.sharedMenuTitlePattern(sharedByDisplayName);
 
     return SharedMenu(
       id: const Uuid().v4(),
@@ -177,10 +180,10 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     menuSnapshot.forEach((category, recipes) {
       importedMenu[category] = recipes.map((recipe) {
         final attribution =
-            '\n\n📋 Importerat från ${sharedByDisplayName}s meny "$menuTitle"';
+            '\n\n📋 ${AppLocale.current.importedFromMenu(sharedByDisplayName, menuTitle)}';
         final newDescription = recipe.description.isNotEmpty
             ? '${recipe.description}$attribution'
-            : 'Importerat recept$attribution';
+            : '${AppLocale.current.importedRecipeLabel}$attribution';
 
         return recipe.copyWith(
           description: newDescription,
@@ -208,20 +211,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
 
   @override
   String get timeAgoText {
-    final now = DateTime.now();
-    final difference = now.difference(sharedAt);
-
-    if (difference.inMinutes < 1) {
-      return 'Nu';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes} min sedan';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours} tim sedan';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} dagar sedan';
-    } else {
-      return '${(difference.inDays / 7).floor()} veckor sedan';
-    }
+    return TimeAgoFormatter.standard(sharedAt);
   }
 
   @override
@@ -361,7 +351,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
         engagementCount: commonFields['engagementCount'] as int,
         dismissalCount: commonFields['dismissalCount'] as int,
         menuTitle: utils.SerializationUtils.safeString(data, 'menuTitle',
-            defaultValue: 'Delad meny'),
+            defaultValue: '?'),
         menuSnapshot: reconstructedMenu,
         allowCollaboration: utils.SerializationUtils.safeBool(
             data, 'allowCollaboration',
@@ -428,7 +418,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       viewCount: commonFields['viewCount'] as int,
       engagementCount: commonFields['engagementCount'] as int,
       dismissalCount: commonFields['dismissalCount'] as int,
-      menuTitle: (json['menuTitle'] as String?).orDefault('Delad meny'),
+      menuTitle: (json['menuTitle'] as String?).orDefault('?'),
       menuSnapshot: reconstructedMenu,
       allowCollaboration: (json['allowCollaboration'] as bool?).orFalse(),
       realtimeMenuId: json['realtimeMenuId'] as String?,

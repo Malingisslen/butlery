@@ -1,5 +1,6 @@
 /// Friend request model with lifecycle management and optional messaging.
 import 'package:butlery/core/types/app_timestamp.dart';
+import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
@@ -81,20 +82,7 @@ class FriendRequest with JsonSerializableMixin {
   bool get isExpired => DateTime.now().difference(sentAt).inDays > 7;
 
   String get timeAgoText {
-    final now = DateTime.now();
-    final difference = now.difference(sentAt);
-
-    if (difference.inMinutes < 1) {
-      return 'Nu';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes} min sedan';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours} tim sedan';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} dagar sedan';
-    } else {
-      return '${(difference.inDays / 7).floor()} veckor sedan';
-    }
+    return TimeAgoFormatter.standard(sentAt);
   }
 
   Map<String, dynamic> toFirestore() {

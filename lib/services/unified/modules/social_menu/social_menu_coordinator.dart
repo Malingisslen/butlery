@@ -531,7 +531,7 @@ class SocialMenuCoordinator
 
   /// Get menu summary for display
   String getMenuSummary(Map<String, List<Recipe>> menu) {
-    if (menu.isEmpty) return 'Tom meny';
+    if (menu.isEmpty) return AppLocale.current.labelEmptyMenu;
 
     final parts = <String>[];
     menu.forEach((category, recipes) {
@@ -540,7 +540,7 @@ class SocialMenuCoordinator
       }
     });
 
-    return parts.isEmpty ? 'Tom meny' : parts.join(', ');
+    return parts.isEmpty ? AppLocale.current.labelEmptyMenu : parts.join(', ');
   }
 
   /// Get total recipe count in menu

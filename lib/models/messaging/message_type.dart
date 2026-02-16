@@ -44,6 +44,7 @@
 /// ```
 
 // lib/models/messaging/message_type.dart
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Enumeration defining comprehensive message content types for messaging infrastructure classification.
 /// Provides complete content type classification for messaging system with support for text communication,
@@ -131,23 +132,24 @@ extension MessageTypeExtension on MessageType {
   /// terminology for enhanced user experience and cultural adaptation.
   /// Returns Swedish display name appropriate for UI elements and user communication.
   String get displayName {
+    final l = AppLocale.current;
     switch (this) {
       case MessageType.text:
-        return 'Textmeddelande';
+        return l.messageTypeText;
       case MessageType.recipeShare:
-        return 'Receptdelning';
+        return l.messageTypeRecipeShare;
       case MessageType.menuShare:
-        return 'Menydelning';
+        return l.messageTypeMenuShare;
       case MessageType.shoppingListShare:
-        return 'Inköpslistedelning';
+        return l.messageTypeShoppingListShare;
       case MessageType.system:
-        return 'Systemmeddelande';
+        return l.messageTypeSystem;
       case MessageType.image:
-        return 'Bild';
+        return l.messageTypeImage;
       case MessageType.voice:
-        return 'Röstmeddelande';
+        return l.messageTypeVoice;
       case MessageType.poll:
-        return 'Omröstning';
+        return l.messageTypePoll;
     }
   }
 
@@ -189,17 +191,18 @@ extension MessageStatusExtension on MessageStatus {
   /// Swedish terminology for enhanced user experience and delivery status communication.
   /// Returns Swedish display name appropriate for delivery status communication and UI elements.
   String get displayName {
+    final l = AppLocale.current;
     switch (this) {
       case MessageStatus.sending:
-        return 'Skickar...';
+        return l.messageStatusSending;
       case MessageStatus.sent:
-        return 'Skickat';
+        return l.messageStatusSent;
       case MessageStatus.delivered:
-        return 'Levererat';
+        return l.messageStatusDelivered;
       case MessageStatus.read:
-        return 'Läst';
+        return l.messageStatusRead;
       case MessageStatus.failed:
-        return 'Misslyckades';
+        return l.messageStatusFailed;
     }
   }
 

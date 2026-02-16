@@ -352,7 +352,7 @@ class BatchingConfig {
       if (notifications.length == 1) {
         return notifications.first.body;
       }
-      return '${notifications.length} nya kommentarer på dina recept';
+      return AppLocale.current.notificationBatchComments(notifications.length);
     },
   );
 

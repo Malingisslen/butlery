@@ -1,4 +1,6 @@
 /// Recipe comment with threading, likes, and cached author metadata.
+import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
@@ -104,7 +106,7 @@ class RecipeComment {
   /// Preserves the comment structure for threading while removing inappropriate content.
   /// Returns a new [RecipeComment] instance marked as deleted with Swedish deletion message.
   RecipeComment delete() {
-    return copyWith(isDeleted: true, text: '[Kommentar borttagen]');
+    return copyWith(isDeleted: true, text: AppLocale.current.commentDeleted);
   }
 
   /// Comment analysis and utility methods for UI integration and business logic.
@@ -134,20 +136,7 @@ class RecipeComment {
   /// language formatting for improved user experience and temporal context.
   /// Returns Swedish time format: 'Nu', '5 min sedan', '2 tim sedan', '3 dagar sedan', '2 veckor sedan'.
   String get timeAgoText {
-    final now = DateTime.now();
-    final difference = now.difference(createdAt);
-
-    if (difference.inMinutes < 1) {
-      return 'Nu';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes} min sedan';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours} tim sedan';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} dagar sedan';
-    } else {
-      return '${(difference.inDays / 7).floor()} veckor sedan';
-    }
+    return TimeAgoFormatter.standard(createdAt);
   }
 
   /// Data persistence and serialization methods for Firestore and caching integration.
@@ -182,7 +171,7 @@ class RecipeComment {
       authorId: SerializationUtils.safeString(data, 'authorId'),
       authorDisplayName: SerializationUtils.safeString(
           data, 'authorDisplayName',
-          defaultValue: 'Användare'),
+          defaultValue: '?'),
       authorAvatarUrl:
           SerializationUtils.safeNullableString(data, 'authorAvatarUrl'),
       text: SerializationUtils.safeString(data, 'text'),
@@ -235,7 +224,7 @@ class RecipeComment {
       id: json['id'] as String,
       recipeId: json['recipeId'] as String,
       authorId: json['authorId'] as String,
-      authorDisplayName: json['authorDisplayName'] as String? ?? 'Användare',
+      authorDisplayName: json['authorDisplayName'] as String? ?? '?',
       authorAvatarUrl: json['authorAvatarUrl'] as String?,
       text: json['text'] as String? ?? '',
       createdAt: DateTime.parse(json['createdAt'] as String),

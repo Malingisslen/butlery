@@ -153,7 +153,7 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
           invitationId,
           inviteeId,
           addedBy: currentUserId,
-          displayName: profile?.displayName ?? 'Användare',
+          displayName: profile?.displayName ?? '?',
           avatarUrl: profile?.avatarUrl,
         );
         AppLogger.info('🔍 DEBUG: Member $inviteeId added successfully');

@@ -4,7 +4,9 @@
 
 // lib/models/group_invitation.dart
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
+import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
@@ -177,20 +179,7 @@ class GroupInvitation with JsonSerializableMixin {
   /// language formatting for improved user experience and temporal context.
   /// Returns Swedish time format: 'Nu', '5 min sedan', '2 tim sedan', '3 dagar sedan', '2 veckor sedan'.
   String get timeAgoText {
-    final now = DateTime.now();
-    final difference = now.difference(sentAt);
-
-    if (difference.inMinutes < 1) {
-      return 'Nu';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes} min sedan';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours} tim sedan';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} dagar sedan';
-    } else {
-      return '${(difference.inDays / 7).floor()} veckor sedan';
-    }
+    return TimeAgoFormatter.standard(sentAt);
   }
 
   /// Gets user-friendly Swedish text for remaining time until expiration.
@@ -198,19 +187,18 @@ class GroupInvitation with JsonSerializableMixin {
   /// Shows remaining time until invitation becomes invalid and requires renewal.
   /// Returns Swedish countdown format: 'Utgången', '3 dagar kvar', '5 timmar kvar', 'Går ut snart'.
   String get expiresInText {
-    if (isExpired) return 'Utgången';
-
+    if (isExpired) return AppLocale.current.expiresExpired;
     final now = DateTime.now();
     final difference = expiresAt.difference(now);
-
+    final l = AppLocale.current;
     if (difference.inDays > 1) {
-      return '${difference.inDays} dagar kvar';
+      return l.expiresDaysRemaining(difference.inDays);
     } else if (difference.inHours > 1) {
-      return '${difference.inHours} timmar kvar';
+      return l.expiresHoursRemaining(difference.inHours);
     } else if (difference.inMinutes > 1) {
-      return '${difference.inMinutes} minuter kvar';
+      return l.expiresMinutesRemaining(difference.inMinutes);
     } else {
-      return 'Går ut snart';
+      return l.expiresSoon;
     }
   }
 
@@ -219,10 +207,13 @@ class GroupInvitation with JsonSerializableMixin {
   /// and optional personal message for rich notification display and context.
   /// Returns formatted Swedish notification with optional message inclusion.
   String get notificationText {
+    final l = AppLocale.current;
     if (personalMessage?.isNotEmpty == true) {
-      return '$fromUserName bjöd in dig till gruppen $groupEmoji $groupName: "$personalMessage"';
+      return l.groupInvitationNotificationWithMessage(
+          fromUserName, groupEmoji, groupName, personalMessage!);
     } else {
-      return '$fromUserName bjöd in dig till gruppen $groupEmoji $groupName';
+      return l.groupInvitationNotificationSimple(
+          fromUserName, groupEmoji, groupName);
     }
   }
 
@@ -257,17 +248,20 @@ class GroupInvitation with JsonSerializableMixin {
   /// status badges, and user communication with natural language formatting.
   /// Returns Swedish status text: 'Väntande', 'Accepterad', 'Avvisad', 'Avbruten', 'Utgången'.
   String get statusText {
+    final l = AppLocale.current;
     switch (status) {
       case GroupInvitationStatus.pending:
-        return isExpired ? 'Utgången' : 'Väntande';
+        return isExpired
+            ? l.invitationStatusExpired
+            : l.invitationStatusPending;
       case GroupInvitationStatus.accepted:
-        return 'Accepterad';
+        return l.invitationStatusAccepted;
       case GroupInvitationStatus.rejected:
-        return 'Avvisad';
+        return l.invitationStatusRejected;
       case GroupInvitationStatus.cancelled:
-        return 'Avbruten';
+        return l.invitationStatusCancelled;
       case GroupInvitationStatus.expired:
-        return 'Utgången';
+        return l.invitationStatusExpired;
     }
   }
 

@@ -615,7 +615,7 @@ void main() {
         final comment = RecipeComment.fromMap('comment_123', minimalData);
 
         expect(
-            comment.authorDisplayName, equals('Användare')); // Swedish default
+            comment.authorDisplayName, equals('?')); // Language-neutral default
         expect(comment.authorAvatarUrl, isNull);
         expect(comment.likesCount, equals(0));
         expect(comment.replyCount, equals(0));

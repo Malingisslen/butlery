@@ -213,8 +213,8 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   Future<void> reauthenticateWithPassword(String password) async {
     final user = _firebaseAuth.currentUser;
-    if (user == null) throw Exception('Ingen inloggad användare');
-    if (user.email == null) throw Exception('Användaren saknar e-postadress');
+    if (user == null) throw Exception('No authenticated user');
+    if (user.email == null) throw Exception('User has no email address');
 
     final credential = EmailAuthProvider.credential(
       email: user.email!,

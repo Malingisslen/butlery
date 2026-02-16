@@ -5247,222 +5247,6 @@ abstract class AppLocalizations {
   /// **'Laddar gemensam lista...'**
   String get collaborativeLoadingSharedList;
 
-  /// No description provided for @discoveryActivity.
-  ///
-  /// In sv, this message translates to:
-  /// **'Aktivitet'**
-  String get discoveryActivity;
-
-  /// No description provided for @discoveryByAuthor.
-  ///
-  /// In sv, this message translates to:
-  /// **'Av {name}'**
-  String discoveryByAuthor(String name);
-
-  /// No description provided for @discoveryCategories.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kategorier'**
-  String get discoveryCategories;
-
-  /// No description provided for @discoveryContentType.
-  ///
-  /// In sv, this message translates to:
-  /// **'Innehållstyp'**
-  String get discoveryContentType;
-
-  /// No description provided for @discoveryCustomizeExperience.
-  ///
-  /// In sv, this message translates to:
-  /// **'Anpassa din upptäcktsupplevelse'**
-  String get discoveryCustomizeExperience;
-
-  /// No description provided for @discoveryDiscover.
-  ///
-  /// In sv, this message translates to:
-  /// **'Upptäck'**
-  String get discoveryDiscover;
-
-  /// No description provided for @discoveryDiscoverNewContent.
-  ///
-  /// In sv, this message translates to:
-  /// **'Upptäck nytt innehåll'**
-  String get discoveryDiscoverNewContent;
-
-  /// No description provided for @discoveryFeedbackHint.
-  ///
-  /// In sv, this message translates to:
-  /// **'Hjälp oss att förbättra Butlery! Beskriv din feedback här...'**
-  String get discoveryFeedbackHint;
-
-  /// No description provided for @discoveryFeedbackThanks.
-  ///
-  /// In sv, this message translates to:
-  /// **'Tack för din feedback! Vi kommer att granska den.'**
-  String get discoveryFeedbackThanks;
-
-  /// No description provided for @discoveryFilterContent.
-  ///
-  /// In sv, this message translates to:
-  /// **'Filtrera innehåll'**
-  String get discoveryFilterContent;
-
-  /// No description provided for @discoveryFindPopularContent.
-  ///
-  /// In sv, this message translates to:
-  /// **'Hitta populära recept, menyer och listor'**
-  String get discoveryFindPopularContent;
-
-  /// No description provided for @discoveryForYou.
-  ///
-  /// In sv, this message translates to:
-  /// **'För dig'**
-  String get discoveryForYou;
-
-  /// No description provided for @discoveryGiveFeedback.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ge feedback'**
-  String get discoveryGiveFeedback;
-
-  /// No description provided for @discoveryItemCount.
-  ///
-  /// In sv, this message translates to:
-  /// **'{count} objekt'**
-  String discoveryItemCount(int count);
-
-  /// No description provided for @discoveryLoading.
-  ///
-  /// In sv, this message translates to:
-  /// **'Laddar upptäcktsinnehåll...'**
-  String get discoveryLoading;
-
-  /// No description provided for @discoveryMenus.
-  ///
-  /// In sv, this message translates to:
-  /// **'Menyer'**
-  String get discoveryMenus;
-
-  /// No description provided for @discoveryNotifications.
-  ///
-  /// In sv, this message translates to:
-  /// **'Aviseringar'**
-  String get discoveryNotifications;
-
-  /// No description provided for @discoveryPopularNow.
-  ///
-  /// In sv, this message translates to:
-  /// **'Populärt just nu'**
-  String get discoveryPopularNow;
-
-  /// No description provided for @discoveryPushNotifications.
-  ///
-  /// In sv, this message translates to:
-  /// **'Push-aviseringar'**
-  String get discoveryPushNotifications;
-
-  /// No description provided for @discoveryPushNotificationsDescription.
-  ///
-  /// In sv, this message translates to:
-  /// **'Få aviseringar om nytt innehåll'**
-  String get discoveryPushNotificationsDescription;
-
-  /// No description provided for @discoveryRecipes.
-  ///
-  /// In sv, this message translates to:
-  /// **'Recept'**
-  String get discoveryRecipes;
-
-  /// No description provided for @discoverySeeAll.
-  ///
-  /// In sv, this message translates to:
-  /// **'Se allt'**
-  String get discoverySeeAll;
-
-  /// No description provided for @discoverySendFeedback.
-  ///
-  /// In sv, this message translates to:
-  /// **'Skicka feedback'**
-  String get discoverySendFeedback;
-
-  /// No description provided for @discoverySettings.
-  ///
-  /// In sv, this message translates to:
-  /// **'Upptäcktsinställningar'**
-  String get discoverySettings;
-
-  /// No description provided for @discoverySettingsSaved.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inställningar sparade!'**
-  String get discoverySettingsSaved;
-
-  /// No description provided for @discoveryShoppingLists.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inköpslistor'**
-  String get discoveryShoppingLists;
-
-  /// No description provided for @discoveryShowFriendActivity.
-  ///
-  /// In sv, this message translates to:
-  /// **'Visa vänaktivitet'**
-  String get discoveryShowFriendActivity;
-
-  /// No description provided for @discoveryShowFriendActivityDescription.
-  ///
-  /// In sv, this message translates to:
-  /// **'Visa vad dina vänner gör'**
-  String get discoveryShowFriendActivityDescription;
-
-  /// No description provided for @discoveryShowMenuResults.
-  ///
-  /// In sv, this message translates to:
-  /// **'Visa menyresultat'**
-  String get discoveryShowMenuResults;
-
-  /// No description provided for @discoveryShowRecipeResults.
-  ///
-  /// In sv, this message translates to:
-  /// **'Visa receptresultat'**
-  String get discoveryShowRecipeResults;
-
-  /// No description provided for @discoveryShowRecommendations.
-  ///
-  /// In sv, this message translates to:
-  /// **'Visa rekommendationer'**
-  String get discoveryShowRecommendations;
-
-  /// No description provided for @discoveryShowRecommendationsDescription.
-  ///
-  /// In sv, this message translates to:
-  /// **'Visa personliga rekommendationer'**
-  String get discoveryShowRecommendationsDescription;
-
-  /// No description provided for @discoveryShowShoppingLists.
-  ///
-  /// In sv, this message translates to:
-  /// **'Visa inköpslistor'**
-  String get discoveryShowShoppingLists;
-
-  /// No description provided for @discoveryShowTrends.
-  ///
-  /// In sv, this message translates to:
-  /// **'Visa trender'**
-  String get discoveryShowTrends;
-
-  /// No description provided for @discoveryShowTrendsDescription.
-  ///
-  /// In sv, this message translates to:
-  /// **'Visa populärt innehåll från communityn'**
-  String get discoveryShowTrendsDescription;
-
-  /// No description provided for @discoveryToDiscover.
-  ///
-  /// In sv, this message translates to:
-  /// **'att upptäcka'**
-  String get discoveryToDiscover;
-
   /// No description provided for @allergenCrustacean.
   ///
   /// In sv, this message translates to:
@@ -10305,318 +10089,6 @@ abstract class AppLocalizations {
   /// **'Starta'**
   String get commonStart;
 
-  /// No description provided for @discoveryAllRecommendationsComingSoon.
-  ///
-  /// In sv, this message translates to:
-  /// **'Visa alla rekommendationer kommer snart!'**
-  String get discoveryAllRecommendationsComingSoon;
-
-  /// No description provided for @discoveryBuildingRecommendations.
-  ///
-  /// In sv, this message translates to:
-  /// **'Bygger rekommendationer'**
-  String get discoveryBuildingRecommendations;
-
-  /// No description provided for @discoveryCouldNotHideRecommendation.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte dölja rekommendation just nu.'**
-  String get discoveryCouldNotHideRecommendation;
-
-  /// No description provided for @discoveryCouldNotRestoreRecommendation.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte återställa rekommendation.'**
-  String get discoveryCouldNotRestoreRecommendation;
-
-  /// No description provided for @discoveryCouldNotSendFeedback.
-  ///
-  /// In sv, this message translates to:
-  /// **'Kunde inte skicka feedback just nu.'**
-  String get discoveryCouldNotSendFeedback;
-
-  /// No description provided for @discoveryFeedbackThanksImproving.
-  ///
-  /// In sv, this message translates to:
-  /// **'Tack för din feedback! Vi förbättrar rekommendationerna.'**
-  String get discoveryFeedbackThanksImproving;
-
-  /// No description provided for @discoveryFriendActivity.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vänners aktivitet'**
-  String get discoveryFriendActivity;
-
-  /// No description provided for @discoveryFriendActivityDescription.
-  ///
-  /// In sv, this message translates to:
-  /// **'När dina vänner delar recept, menyer eller inköpslistor visas de här.'**
-  String get discoveryFriendActivityDescription;
-
-  /// No description provided for @discoveryFriendActivityWillAppearHere.
-  ///
-  /// In sv, this message translates to:
-  /// **'Aktivitet från dina vänner visas här'**
-  String get discoveryFriendActivityWillAppearHere;
-
-  /// No description provided for @discoveryFriendsChoice.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vänners val'**
-  String get discoveryFriendsChoice;
-
-  /// No description provided for @discoveryLearningPreferences.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vi lär oss dina preferenser för att ge bättre rekommendationer.'**
-  String get discoveryLearningPreferences;
-
-  /// No description provided for @discoveryLike.
-  ///
-  /// In sv, this message translates to:
-  /// **'Gilla'**
-  String get discoveryLike;
-
-  /// No description provided for @discoveryListening.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lyssnar...'**
-  String get discoveryListening;
-
-  /// No description provided for @discoveryLists.
-  ///
-  /// In sv, this message translates to:
-  /// **'Listor'**
-  String get discoveryLists;
-
-  /// No description provided for @discoveryLoadingPopularContent.
-  ///
-  /// In sv, this message translates to:
-  /// **'Laddar populärt innehåll...'**
-  String get discoveryLoadingPopularContent;
-
-  /// No description provided for @discoveryNoFriendActivityYet.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ingen vänaktivitet än'**
-  String get discoveryNoFriendActivityYet;
-
-  /// No description provided for @discoveryNoPopularRecipesYet.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga populära recept än'**
-  String get discoveryNoPopularRecipesYet;
-
-  /// No description provided for @discoveryPerformedAction.
-  ///
-  /// In sv, this message translates to:
-  /// **'Utförde en aktivitet'**
-  String get discoveryPerformedAction;
-
-  /// No description provided for @discoveryPopular.
-  ///
-  /// In sv, this message translates to:
-  /// **'Populärt'**
-  String get discoveryPopular;
-
-  /// No description provided for @discoveryPopularContent.
-  ///
-  /// In sv, this message translates to:
-  /// **'Populärt innehåll'**
-  String get discoveryPopularContent;
-
-  /// No description provided for @discoveryPopularMenus.
-  ///
-  /// In sv, this message translates to:
-  /// **'Populära menyer'**
-  String get discoveryPopularMenus;
-
-  /// No description provided for @discoveryPopularRecipes.
-  ///
-  /// In sv, this message translates to:
-  /// **'Populära recept'**
-  String get discoveryPopularRecipes;
-
-  /// No description provided for @discoveryPopularShoppingLists.
-  ///
-  /// In sv, this message translates to:
-  /// **'Populära inköpslistor'**
-  String get discoveryPopularShoppingLists;
-
-  /// No description provided for @discoveryPopularWithFriends.
-  ///
-  /// In sv, this message translates to:
-  /// **'Populärt bland vänner'**
-  String get discoveryPopularWithFriends;
-
-  /// No description provided for @discoveryPopularWithFriendsDescription.
-  ///
-  /// In sv, this message translates to:
-  /// **'Innehåll som dina vänner gillar och delar'**
-  String get discoveryPopularWithFriendsDescription;
-
-  /// No description provided for @discoveryPortions.
-  ///
-  /// In sv, this message translates to:
-  /// **'{count} portioner'**
-  String discoveryPortions(int count);
-
-  /// No description provided for @discoveryRecently.
-  ///
-  /// In sv, this message translates to:
-  /// **'Nyligen'**
-  String get discoveryRecently;
-
-  /// No description provided for @discoveryRecentlyShared.
-  ///
-  /// In sv, this message translates to:
-  /// **'Nyligen delat'**
-  String get discoveryRecentlyShared;
-
-  /// No description provided for @discoveryRecentlySharedDescription.
-  ///
-  /// In sv, this message translates to:
-  /// **'Senast delade innehåll i ditt nätverk'**
-  String get discoveryRecentlySharedDescription;
-
-  /// No description provided for @discoveryRecommendationHidden.
-  ///
-  /// In sv, this message translates to:
-  /// **'Rekommendation dold. Vi visar inte liknande innehåll.'**
-  String get discoveryRecommendationHidden;
-
-  /// No description provided for @discoveryRecommendationRestored.
-  ///
-  /// In sv, this message translates to:
-  /// **'Rekommendation återställd.'**
-  String get discoveryRecommendationRestored;
-
-  /// No description provided for @discoveryRecommended.
-  ///
-  /// In sv, this message translates to:
-  /// **'Rekommenderat'**
-  String get discoveryRecommended;
-
-  /// No description provided for @discoveryRecommendedForYou.
-  ///
-  /// In sv, this message translates to:
-  /// **'Rekommenderat för dig'**
-  String get discoveryRecommendedForYou;
-
-  /// No description provided for @discoverySearchFilters.
-  ///
-  /// In sv, this message translates to:
-  /// **'Sökfilter'**
-  String get discoverySearchFilters;
-
-  /// No description provided for @discoverySearchHint.
-  ///
-  /// In sv, this message translates to:
-  /// **'Sök recept, menyer, inköpslistor...'**
-  String get discoverySearchHint;
-
-  /// No description provided for @discoverySearchResultsFor.
-  ///
-  /// In sv, this message translates to:
-  /// **'{count} resultat för \"{query}\"'**
-  String discoverySearchResultsFor(int count, String query);
-
-  /// No description provided for @discoverySeasonal.
-  ///
-  /// In sv, this message translates to:
-  /// **'Säsong'**
-  String get discoverySeasonal;
-
-  /// No description provided for @discoverySharedBy.
-  ///
-  /// In sv, this message translates to:
-  /// **'Delad av {name}'**
-  String discoverySharedBy(String name);
-
-  /// No description provided for @discoverySharing.
-  ///
-  /// In sv, this message translates to:
-  /// **'delning'**
-  String get discoverySharing;
-
-  /// No description provided for @discoverySimilarToShared.
-  ///
-  /// In sv, this message translates to:
-  /// **'Liknar delat'**
-  String get discoverySimilarToShared;
-
-  /// No description provided for @discoveryTimeAgoDays.
-  ///
-  /// In sv, this message translates to:
-  /// **'{count}d sedan'**
-  String discoveryTimeAgoDays(int count);
-
-  /// No description provided for @discoveryTimeAgoHours.
-  ///
-  /// In sv, this message translates to:
-  /// **'{count}h sedan'**
-  String discoveryTimeAgoHours(int count);
-
-  /// No description provided for @discoveryTimeAgoMinutes.
-  ///
-  /// In sv, this message translates to:
-  /// **'{count}m sedan'**
-  String discoveryTimeAgoMinutes(int count);
-
-  /// No description provided for @discoveryTimeAgoNow.
-  ///
-  /// In sv, this message translates to:
-  /// **'Nu'**
-  String get discoveryTimeAgoNow;
-
-  /// No description provided for @discoveryUnknownContent.
-  ///
-  /// In sv, this message translates to:
-  /// **'Okänt innehåll'**
-  String get discoveryUnknownContent;
-
-  /// No description provided for @discoveryUnknownUser.
-  ///
-  /// In sv, this message translates to:
-  /// **'Okänd användare'**
-  String get discoveryUnknownUser;
-
-  /// No description provided for @discoveryUserSharedType.
-  ///
-  /// In sv, this message translates to:
-  /// **'{user} delade {type}'**
-  String discoveryUserSharedType(String user, String type);
-
-  /// No description provided for @discoveryVoiceSearch.
-  ///
-  /// In sv, this message translates to:
-  /// **'Röstsökning'**
-  String get discoveryVoiceSearch;
-
-  /// No description provided for @discoveryVoiceSearchInstruction.
-  ///
-  /// In sv, this message translates to:
-  /// **'Tryck på mikrofonen och börja prata'**
-  String get discoveryVoiceSearchInstruction;
-
-  /// No description provided for @discoveryVoiceSearchPreview.
-  ///
-  /// In sv, this message translates to:
-  /// **'Sökning startad! (Röstsökning är en förhandsversion)'**
-  String get discoveryVoiceSearchPreview;
-
-  /// No description provided for @discoveryVoiceSearchPrompt.
-  ///
-  /// In sv, this message translates to:
-  /// **'Säg vad du vill söka efter...'**
-  String get discoveryVoiceSearchPrompt;
-
-  /// No description provided for @discoveryVoiceSearchResult.
-  ///
-  /// In sv, this message translates to:
-  /// **'Röstsökning: \"pasta recept\"'**
-  String get discoveryVoiceSearchResult;
-
   /// No description provided for @groupInvitationsCount.
   ///
   /// In sv, this message translates to:
@@ -11192,12 +10664,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Visa'**
   String get commonView;
-
-  /// No description provided for @discoveryClearSearch.
-  ///
-  /// In sv, this message translates to:
-  /// **'Rensa sökning'**
-  String get discoveryClearSearch;
 
   /// No description provided for @groupCancelInvitation.
   ///
@@ -19160,6 +18626,641 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Generella notiser från Butlery'**
   String get fcmChannelGeneralDescription;
+
+  /// No description provided for @timeAgoNow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nu'**
+  String get timeAgoNow;
+
+  /// No description provided for @timeAgoMinutesAbbr.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} min sedan'**
+  String timeAgoMinutesAbbr(int count);
+
+  /// No description provided for @timeAgoHoursAbbr.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} tim sedan'**
+  String timeAgoHoursAbbr(int count);
+
+  /// No description provided for @timeAgoDays.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} dagar sedan'**
+  String timeAgoDays(int count);
+
+  /// No description provided for @timeAgoWeeks.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} veckor sedan'**
+  String timeAgoWeeks(int count);
+
+  /// No description provided for @timeAgoJustNow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nyss'**
+  String get timeAgoJustNow;
+
+  /// No description provided for @timeAgoMinutesFull.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} minuter sedan'**
+  String timeAgoMinutesFull(int count);
+
+  /// No description provided for @timeAgoHoursFull.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} timmar sedan'**
+  String timeAgoHoursFull(int count);
+
+  /// No description provided for @timeCompactMinutes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count}m'**
+  String timeCompactMinutes(int count);
+
+  /// No description provided for @timeCompactHours.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count}h'**
+  String timeCompactHours(int count);
+
+  /// No description provided for @timeCompactDays.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count}d'**
+  String timeCompactDays(int count);
+
+  /// No description provided for @timeCompactWeeks.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count}w'**
+  String timeCompactWeeks(int count);
+
+  /// No description provided for @expiresExpired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Utgången'**
+  String get expiresExpired;
+
+  /// No description provided for @expiresDaysRemaining.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} dagar kvar'**
+  String expiresDaysRemaining(int count);
+
+  /// No description provided for @expiresHoursRemaining.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} timmar kvar'**
+  String expiresHoursRemaining(int count);
+
+  /// No description provided for @expiresMinutesRemaining.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} minuter kvar'**
+  String expiresMinutesRemaining(int count);
+
+  /// No description provided for @expiresSoon.
+  ///
+  /// In sv, this message translates to:
+  /// **'Går ut snart'**
+  String get expiresSoon;
+
+  /// No description provided for @groupInvitationNotificationWithMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'{sender} bjöd in dig till gruppen {emoji} {group}: \"{message}\"'**
+  String groupInvitationNotificationWithMessage(
+      String sender, String emoji, String group, String message);
+
+  /// No description provided for @groupInvitationNotificationSimple.
+  ///
+  /// In sv, this message translates to:
+  /// **'{sender} bjöd in dig till gruppen {emoji} {group}'**
+  String groupInvitationNotificationSimple(
+      String sender, String emoji, String group);
+
+  /// No description provided for @invitationStatusPending.
+  ///
+  /// In sv, this message translates to:
+  /// **'Väntande'**
+  String get invitationStatusPending;
+
+  /// No description provided for @invitationStatusAccepted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Accepterad'**
+  String get invitationStatusAccepted;
+
+  /// No description provided for @invitationStatusRejected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avvisad'**
+  String get invitationStatusRejected;
+
+  /// No description provided for @invitationStatusCancelled.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avbruten'**
+  String get invitationStatusCancelled;
+
+  /// No description provided for @invitationStatusExpired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Utgången'**
+  String get invitationStatusExpired;
+
+  /// No description provided for @messageContentRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get messageContentRecipe;
+
+  /// No description provided for @messageContentMenu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Meny'**
+  String get messageContentMenu;
+
+  /// No description provided for @messageContentShoppingList.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inköpslista'**
+  String get messageContentShoppingList;
+
+  /// No description provided for @messageContentImage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bild'**
+  String get messageContentImage;
+
+  /// No description provided for @messageContentVoice.
+  ///
+  /// In sv, this message translates to:
+  /// **'Röstmeddelande'**
+  String get messageContentVoice;
+
+  /// No description provided for @conversationGroupChat.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppchatt'**
+  String get conversationGroupChat;
+
+  /// No description provided for @editModeOwner.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du äger detta recept'**
+  String get editModeOwner;
+
+  /// No description provided for @editModeCollaborative.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du redigerar tillsammans med andra'**
+  String get editModeCollaborative;
+
+  /// No description provided for @editModeReadOnlyWithFork.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skrivskyddat - du kan spara din egen kopia'**
+  String get editModeReadOnlyWithFork;
+
+  /// No description provided for @editModeNoAccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen åtkomst'**
+  String get editModeNoAccess;
+
+  /// No description provided for @editModeEdit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigeringsläge'**
+  String get editModeEdit;
+
+  /// No description provided for @editModeView.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visningsläge'**
+  String get editModeView;
+
+  /// No description provided for @changeTypeAdded.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillagd'**
+  String get changeTypeAdded;
+
+  /// No description provided for @changeTypeModified.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändrad'**
+  String get changeTypeModified;
+
+  /// No description provided for @changeTypeRemoved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Borttagen'**
+  String get changeTypeRemoved;
+
+  /// No description provided for @memberSinceDays.
+  ///
+  /// In sv, this message translates to:
+  /// **'Medlem i {count} dagar'**
+  String memberSinceDays(int count);
+
+  /// No description provided for @memberSinceMonths.
+  ///
+  /// In sv, this message translates to:
+  /// **'Medlem i {count} månader'**
+  String memberSinceMonths(int count);
+
+  /// No description provided for @memberSinceYears.
+  ///
+  /// In sv, this message translates to:
+  /// **'Medlem i {count} år'**
+  String memberSinceYears(int count);
+
+  /// No description provided for @commentDeleted.
+  ///
+  /// In sv, this message translates to:
+  /// **'[Kommentar borttagen]'**
+  String get commentDeleted;
+
+  /// No description provided for @labelSharedMenu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delad meny'**
+  String get labelSharedMenu;
+
+  /// No description provided for @sharedMenuTitlePattern.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name}s veckomeny'**
+  String sharedMenuTitlePattern(String name);
+
+  /// No description provided for @importedFromMenu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importerat från {name}s meny \"{title}\"'**
+  String importedFromMenu(String name, String title);
+
+  /// No description provided for @importedRecipeLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'Importerat recept'**
+  String get importedRecipeLabel;
+
+  /// No description provided for @activityCreatedRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'skapade ett recept'**
+  String get activityCreatedRecipe;
+
+  /// No description provided for @activitySharedRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'delade ett recept'**
+  String get activitySharedRecipe;
+
+  /// No description provided for @activityRatedRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'betygsatte ett recept ({rating}⭐)'**
+  String activityRatedRecipe(int rating);
+
+  /// No description provided for @activityCommentedRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'kommenterade ett recept'**
+  String get activityCommentedRecipe;
+
+  /// No description provided for @activityReactedRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'reagerade på ett recept ({reaction})'**
+  String activityReactedRecipe(String reaction);
+
+  /// No description provided for @activityCreatedMenu.
+  ///
+  /// In sv, this message translates to:
+  /// **'skapade en meny'**
+  String get activityCreatedMenu;
+
+  /// No description provided for @activitySharedMenu.
+  ///
+  /// In sv, this message translates to:
+  /// **'delade en meny'**
+  String get activitySharedMenu;
+
+  /// No description provided for @activityCreatedShoppingList.
+  ///
+  /// In sv, this message translates to:
+  /// **'skapade en inköpslista'**
+  String get activityCreatedShoppingList;
+
+  /// No description provided for @activitySharedShoppingList.
+  ///
+  /// In sv, this message translates to:
+  /// **'delade en inköpslista'**
+  String get activitySharedShoppingList;
+
+  /// No description provided for @activityJoinedGroup.
+  ///
+  /// In sv, this message translates to:
+  /// **'gick med i en grupp'**
+  String get activityJoinedGroup;
+
+  /// No description provided for @activityUnlockedAchievement.
+  ///
+  /// In sv, this message translates to:
+  /// **'låste upp en bedrift: {achievement}'**
+  String activityUnlockedAchievement(String achievement);
+
+  /// No description provided for @activityDidSomething.
+  ///
+  /// In sv, this message translates to:
+  /// **'gjorde något'**
+  String get activityDidSomething;
+
+  /// No description provided for @labelEmptyMenu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tom meny'**
+  String get labelEmptyMenu;
+
+  /// No description provided for @labelMultipleChanges.
+  ///
+  /// In sv, this message translates to:
+  /// **'Flera ändringar'**
+  String get labelMultipleChanges;
+
+  /// No description provided for @errorVideoNoSubtitles.
+  ///
+  /// In sv, this message translates to:
+  /// **'Video saknar undertexter'**
+  String get errorVideoNoSubtitles;
+
+  /// No description provided for @errorNetworkFallback.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nätverksfel'**
+  String get errorNetworkFallback;
+
+  /// No description provided for @recipeCollaborationEnable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktivera samarbete'**
+  String get recipeCollaborationEnable;
+
+  /// No description provided for @recipeCollaborationDisable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avaktivera samarbete'**
+  String get recipeCollaborationDisable;
+
+  /// No description provided for @menuCommentDeletedSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kommentaren borttagen'**
+  String get menuCommentDeletedSuccess;
+
+  /// No description provided for @recipeSharingStatus.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delningsstatus'**
+  String get recipeSharingStatus;
+
+  /// No description provided for @recipeSharingSharedWith.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delat med'**
+  String get recipeSharingSharedWith;
+
+  /// No description provided for @recipeSharingStopAll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sluta dela med alla'**
+  String get recipeSharingStopAll;
+
+  /// No description provided for @recipeSharingStopAllConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Är du säker på att du vill sluta dela med alla?'**
+  String get recipeSharingStopAllConfirm;
+
+  /// No description provided for @recipeSharingStopAllSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delning avslutad med alla'**
+  String get recipeSharingStopAllSuccess;
+
+  /// No description provided for @recipeSharingRevoke.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort delning'**
+  String get recipeSharingRevoke;
+
+  /// No description provided for @recipeSharingRevokeConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sluta dela med {name}?'**
+  String recipeSharingRevokeConfirm(String name);
+
+  /// No description provided for @recipeSharingRevokeSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Delning med {name} avslutad'**
+  String recipeSharingRevokeSuccess(String name);
+
+  /// No description provided for @recipeSharingFriends.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner'**
+  String get recipeSharingFriends;
+
+  /// No description provided for @recipeSharingGroups.
+  ///
+  /// In sv, this message translates to:
+  /// **'Grupper'**
+  String get recipeSharingGroups;
+
+  /// No description provided for @recipeSharingNoShares.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte delat med någon'**
+  String get recipeSharingNoShares;
+
+  /// No description provided for @menuRatingRemoveMessage.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vill du ta bort ditt betyg?'**
+  String get menuRatingRemoveMessage;
+
+  /// No description provided for @menuRatingRemoved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Betyget borttaget'**
+  String get menuRatingRemoved;
+
+  /// No description provided for @menuRatingRemoveError.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort betyg'**
+  String get menuRatingRemoveError;
+
+  /// No description provided for @shoppingTemplates.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inköpsmallar'**
+  String get shoppingTemplates;
+
+  /// No description provided for @shoppingTemplateBrowse.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa mallar'**
+  String get shoppingTemplateBrowse;
+
+  /// No description provided for @shoppingTemplateEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga sparade mallar'**
+  String get shoppingTemplateEmpty;
+
+  /// No description provided for @shoppingTemplateEmptyDescription.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara en inköpslista som mall för snabb återskapning'**
+  String get shoppingTemplateEmptyDescription;
+
+  /// No description provided for @shoppingTemplateUse.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd mall'**
+  String get shoppingTemplateUse;
+
+  /// No description provided for @shoppingTemplateDelete.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort mall'**
+  String get shoppingTemplateDelete;
+
+  /// No description provided for @shoppingTemplateDeleteConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vill du ta bort mallen \"{name}\"?'**
+  String shoppingTemplateDeleteConfirm(String name);
+
+  /// No description provided for @shoppingTemplateDeleted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Mall borttagen'**
+  String get shoppingTemplateDeleted;
+
+  /// No description provided for @shoppingTemplateCreated.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lista skapad från mall'**
+  String get shoppingTemplateCreated;
+
+  /// No description provided for @shoppingTemplateItemCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} varor'**
+  String shoppingTemplateItemCount(int count);
+
+  /// No description provided for @shoppingTemplateUsedCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'Använd {count} gånger'**
+  String shoppingTemplateUsedCount(int count);
+
+  /// No description provided for @shoppingCategoryCollapse.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fäll ihop'**
+  String get shoppingCategoryCollapse;
+
+  /// No description provided for @shoppingCategoryExpand.
+  ///
+  /// In sv, this message translates to:
+  /// **'Expandera'**
+  String get shoppingCategoryExpand;
+
+  /// No description provided for @labelButleryUser.
+  ///
+  /// In sv, this message translates to:
+  /// **'Butlery-användare'**
+  String get labelButleryUser;
+
+  /// No description provided for @shoppingListSummaryEmpty.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tom handlingslista'**
+  String get shoppingListSummaryEmpty;
+
+  /// No description provided for @shoppingListSummaryAllDone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla {count} artiklar klara'**
+  String shoppingListSummaryAllDone(int count);
+
+  /// No description provided for @shoppingListSummaryToBuy.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} artiklar att köpa'**
+  String shoppingListSummaryToBuy(int count);
+
+  /// No description provided for @shoppingListSummaryRemaining.
+  ///
+  /// In sv, this message translates to:
+  /// **'{remaining} av {total} artiklar kvar'**
+  String shoppingListSummaryRemaining(int remaining, int total);
+
+  /// No description provided for @notificationBatchComments.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} nya kommentarer på dina recept'**
+  String notificationBatchComments(int count);
+
+  /// No description provided for @notificationCommentSingle.
+  ///
+  /// In sv, this message translates to:
+  /// **'{author} kommenterade på \"{recipe}\"'**
+  String notificationCommentSingle(String author, String recipe);
+
+  /// No description provided for @notificationCommentMultipleSameAuthor.
+  ///
+  /// In sv, this message translates to:
+  /// **'{author} skrev {count} kommentarer på \"{recipe}\"'**
+  String notificationCommentMultipleSameAuthor(
+      String author, int count, String recipe);
+
+  /// No description provided for @notificationCommentMultipleAuthors.
+  ///
+  /// In sv, this message translates to:
+  /// **'{authorCount} personer skrev {commentCount} kommentarer på \"{recipe}\"'**
+  String notificationCommentMultipleAuthors(
+      int authorCount, int commentCount, String recipe);
+
+  /// No description provided for @notificationRatingSingle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt recept \"{recipe}\" fick {count} nya betyg denna {period}!'**
+  String notificationRatingSingle(String recipe, int count, String period);
+
+  /// No description provided for @notificationRatingMultiple.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina recept fick totalt {totalRatings} nya betyg på {recipeCount} recept denna {period}!'**
+  String notificationRatingMultiple(
+      int totalRatings, int recipeCount, String period);
+
+  /// No description provided for @timeCompactMonths.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count}mån'**
+  String timeCompactMonths(int count);
 }
 
 class _AppLocalizationsDelegate

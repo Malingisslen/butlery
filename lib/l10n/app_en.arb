@@ -168,33 +168,47 @@
   "selectionFriendSelectedWithName": "{name} selected",
   "@selectionFriendSelectedWithName": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "selectionFriendsSelectedWithNames": "{count} selected: {names}",
   "@selectionFriendsSelectedWithNames": {
     "placeholders": {
-      "count": { "type": "int" },
-      "names": { "type": "String" }
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
     }
   },
   "selectionFriendsSelectedCount": "{count} friends selected",
   "@selectionFriendsSelectedCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "sharePartialSuccessSingular": "1 person is already a member. Inviting {newCount} new.",
   "@sharePartialSuccessSingular": {
     "placeholders": {
-      "newCount": { "type": "int" }
+      "newCount": {
+        "type": "int"
+      }
     }
   },
   "sharePartialSuccessPlural": "{existingCount} people are already members. Inviting {newCount} new.",
   "@sharePartialSuccessPlural": {
     "placeholders": {
-      "existingCount": { "type": "int" },
-      "newCount": { "type": "int" }
+      "existingCount": {
+        "type": "int"
+      },
+      "newCount": {
+        "type": "int"
+      }
     }
   },
   "nounShoppingList": "shopping list",
@@ -1766,56 +1780,6 @@
   "collaborativeListNoAccess": "The list may have been deleted or you no longer have access",
   "collaborativeListNotFound": "List not found",
   "collaborativeLoadingSharedList": "Loading shared list...",
-  "discoveryActivity": "Activity",
-  "discoveryByAuthor": "By {name}",
-  "@discoveryByAuthor": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "discoveryCategories": "Categories",
-  "discoveryContentType": "Content type",
-  "discoveryCustomizeExperience": "Customize your discovery experience",
-  "discoveryDiscover": "Discover",
-  "discoveryDiscoverNewContent": "Discover new content",
-  "discoveryFeedbackHint": "Help us improve Butlery! Describe your feedback here...",
-  "discoveryFeedbackThanks": "Thank you for your feedback! We will review it.",
-  "discoveryFilterContent": "Filter content",
-  "discoveryFindPopularContent": "Find popular recipes, menus and lists",
-  "discoveryForYou": "For you",
-  "discoveryGiveFeedback": "Give feedback",
-  "discoveryItemCount": "{count} items",
-  "@discoveryItemCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "discoveryLoading": "Loading discovery content...",
-  "discoveryMenus": "Menus",
-  "discoveryNotifications": "Notifications",
-  "discoveryPopularNow": "Popular right now",
-  "discoveryPushNotifications": "Push notifications",
-  "discoveryPushNotificationsDescription": "Get notifications about new content",
-  "discoveryRecipes": "Recipes",
-  "discoverySeeAll": "See all",
-  "discoverySendFeedback": "Send feedback",
-  "discoverySettings": "Discovery settings",
-  "discoverySettingsSaved": "Settings saved!",
-  "discoveryShoppingLists": "Shopping lists",
-  "discoveryShowFriendActivity": "Show friend activity",
-  "discoveryShowFriendActivityDescription": "Show what your friends are doing",
-  "discoveryShowMenuResults": "Show menu results",
-  "discoveryShowRecipeResults": "Show recipe results",
-  "discoveryShowRecommendations": "Show recommendations",
-  "discoveryShowRecommendationsDescription": "Show personal recommendations",
-  "discoveryShowShoppingLists": "Show shopping lists",
-  "discoveryShowTrends": "Show trends",
-  "discoveryShowTrendsDescription": "Show popular content from the community",
-  "discoveryToDiscover": "to discover",
   "allergenCrustacean": "Crustacean",
   "allergenDairy": "Dairy",
   "allergenEgg": "Egg",
@@ -3682,113 +3646,6 @@
   "stateCreateWeeklyMenu": "Create weekly menu",
   "stateGenerateMenu": "Generate menu",
   "commonStart": "Start",
-  "discoveryAllRecommendationsComingSoon": "Show all recommendations coming soon!",
-  "discoveryBuildingRecommendations": "Building recommendations",
-  "discoveryCouldNotHideRecommendation": "Could not hide recommendation right now.",
-  "discoveryCouldNotRestoreRecommendation": "Could not restore recommendation.",
-  "discoveryCouldNotSendFeedback": "Could not send feedback right now.",
-  "discoveryFeedbackThanksImproving": "Thanks for your feedback! We are improving recommendations.",
-  "discoveryFriendActivity": "Friend activity",
-  "discoveryFriendActivityDescription": "When your friends share recipes, menus or shopping lists they will appear here.",
-  "discoveryFriendActivityWillAppearHere": "Activity from your friends will appear here",
-  "discoveryFriendsChoice": "Friends' choice",
-  "discoveryLearningPreferences": "We are learning your preferences to give better recommendations.",
-  "discoveryLike": "Like",
-  "discoveryListening": "Listening...",
-  "discoveryLists": "Lists",
-  "discoveryLoadingPopularContent": "Loading popular content...",
-  "discoveryNoFriendActivityYet": "No friend activity yet",
-  "discoveryNoPopularRecipesYet": "No popular recipes yet",
-  "discoveryPerformedAction": "Performed an action",
-  "discoveryPopular": "Popular",
-  "discoveryPopularContent": "Popular content",
-  "discoveryPopularMenus": "Popular menus",
-  "discoveryPopularRecipes": "Popular recipes",
-  "discoveryPopularShoppingLists": "Popular shopping lists",
-  "discoveryPopularWithFriends": "Popular with friends",
-  "discoveryPopularWithFriendsDescription": "Content that your friends like and share",
-  "discoveryPortions": "{count} portions",
-  "@discoveryPortions": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "discoveryRecently": "Recently",
-  "discoveryRecentlyShared": "Recently shared",
-  "discoveryRecentlySharedDescription": "Latest shared content in your network",
-  "discoveryRecommendationHidden": "Recommendation hidden. We won't show similar content.",
-  "discoveryRecommendationRestored": "Recommendation restored.",
-  "discoveryRecommended": "Recommended",
-  "discoveryRecommendedForYou": "Recommended for you",
-  "discoverySearchFilters": "Search filters",
-  "discoverySearchHint": "Search recipes, menus, shopping lists...",
-  "discoverySearchResultsFor": "{count} results for \"{query}\"",
-  "@discoverySearchResultsFor": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      },
-      "query": {
-        "type": "String"
-      }
-    }
-  },
-  "discoverySeasonal": "Seasonal",
-  "discoverySharedBy": "Shared by {name}",
-  "@discoverySharedBy": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "discoverySharing": "sharing",
-  "discoverySimilarToShared": "Similar to shared",
-  "discoveryTimeAgoDays": "{count}d ago",
-  "@discoveryTimeAgoDays": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "discoveryTimeAgoHours": "{count}h ago",
-  "@discoveryTimeAgoHours": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "discoveryTimeAgoMinutes": "{count}m ago",
-  "@discoveryTimeAgoMinutes": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "discoveryTimeAgoNow": "Now",
-  "discoveryUnknownContent": "Unknown content",
-  "discoveryUnknownUser": "Unknown user",
-  "discoveryUserSharedType": "{user} shared {type}",
-  "@discoveryUserSharedType": {
-    "placeholders": {
-      "user": {
-        "type": "String"
-      },
-      "type": {
-        "type": "String"
-      }
-    }
-  },
-  "discoveryVoiceSearch": "Voice search",
-  "discoveryVoiceSearchInstruction": "Press the microphone and start speaking",
-  "discoveryVoiceSearchPreview": "Search started! (Voice search is a preview)",
-  "discoveryVoiceSearchPrompt": "Say what you want to search for...",
-  "discoveryVoiceSearchResult": "Voice search: \"pasta recipe\"",
   "groupInvitationsCount": "Group invitations ({count})",
   "@groupInvitationsCount": {
     "placeholders": {
@@ -3972,7 +3829,6 @@
   "commonType": "Type",
   "commonUnknownError": "An unknown error occurred",
   "commonView": "View",
-  "discoveryClearSearch": "Clear search",
   "groupCancelInvitation": "Cancel invitation",
   "groupCancelInvitationConfirm": "Are you sure you want to cancel this invitation?",
   "groupCancelInvitationMessage": "Do you want to cancel the invitation to {name}?",
@@ -4439,10 +4295,10 @@
       }
     }
   },
-  "shoppingItemAdded": "{name} added",
+  "shoppingItemAdded": "Added \"{itemName}\"",
   "@shoppingItemAdded": {
     "placeholders": {
-      "name": {
+      "itemName": {
         "type": "String"
       }
     }
@@ -5440,16 +5296,13 @@
       }
     }
   },
-
   "onboardingSkip": "Skip",
   "onboardingBack": "Back",
   "onboardingNext": "Next",
   "onboardingComplete": "Finish",
-
   "onboardingWelcomeTitle": "Welcome to Butlery!",
   "onboardingWelcomeDescription": "Let us set up your preferences so you get the best experience from the start.",
   "onboardingWelcomeNote": "You can always change these in settings later.",
-
   "onboardingAllergenTitle": "Allergies & intolerances",
   "onboardingAllergenDescription": "Choose the allergens you want to track and filter recipes by.",
   "onboardingAllergenGluten": "Gluten",
@@ -5460,7 +5313,6 @@
   "onboardingAllergenFish": "Fish",
   "onboardingAllergenShellfish": "Shellfish",
   "onboardingAllergenSesame": "Sesame",
-
   "onboardingDietaryTitle": "Dietary preferences",
   "onboardingDietaryDescription": "Do you have any dietary preferences? We can filter recipes for you.",
   "onboardingDietaryVegetarian": "Vegetarian",
@@ -5469,7 +5321,6 @@
   "onboardingDietaryVegetarianDesc": "No meat or fish products",
   "onboardingDietaryVeganDesc": "No animal products",
   "onboardingDietaryPescetarianDesc": "Fish but no meat",
-
   "onboardingImportTitle": "Import your first recipe",
   "onboardingImportDescription": "Get started quickly by importing a recipe from the web or a photo.",
   "onboardingImportUrlTitle": "From a web address",
@@ -5477,9 +5328,7 @@
   "onboardingImportPhotoTitle": "Import from photo",
   "onboardingImportPhotoDescription": "Take a photo or choose from gallery",
   "onboardingImportSkipNote": "You can skip this step and import later.",
-
   "cookingModePortions": "Portions",
-
   "faqTitle": "Frequently asked questions",
   "faqImportQuestion": "How do I import recipes?",
   "faqImportAnswer": "You can import recipes in several ways: paste a URL from a recipe site, take a photo of a recipe, or paste recipe text directly. Tap \"Add\" on the home page and choose a method.",
@@ -5491,7 +5340,6 @@
   "faqTagsAnswer": "Go to your profile and select \"My tags\". There you can create tags like \"Everyday food\" or \"Party food\" and assign them to your recipes for easy filtering.",
   "faqReportQuestion": "How do I report problems?",
   "faqReportAnswer": "Tap the \"!\" button visible at the bottom right of every page. There you can describe the problem, choose a category, and attach a screenshot. We read all feedback!",
-
   "feedbackSendLabel": "Send feedback",
   "feedbackCategoryLabel": "Category",
   "feedbackCategoryBug": "Bug",
@@ -5506,9 +5354,7 @@
   "feedbackValidationEmpty": "Please enter a description",
   "feedbackSuccessMessage": "Thanks for your feedback!",
   "feedbackErrorMessage": "Could not send feedback. Try again.",
-
   "substitutionEmptyState": "No substitutions found",
-
   "pollCreateTitle": "Create poll",
   "pollQuestionLabel": "Question",
   "pollQuestionHint": "What do you want to ask?",
@@ -5535,7 +5381,6 @@
   },
   "pollEnded": "Ended",
   "pollClose": "Close poll",
-
   "messageTypeText": "Text message",
   "messageTypeRecipeShare": "Recipe share",
   "messageTypeMenuShare": "Menu share",
@@ -5544,13 +5389,11 @@
   "messageTypeImage": "Image",
   "messageTypeVoice": "Voice message",
   "messageTypePoll": "Poll",
-
   "messageStatusSending": "Sending...",
   "messageStatusSent": "Sent",
   "messageStatusDelivered": "Delivered",
   "messageStatusRead": "Read",
   "messageStatusFailed": "Failed",
-
   "errorDnsResolution": "Connection issue detected. Attempting to reconnect...",
   "errorServiceUnavailable": "Service temporarily unavailable. Please try again later.",
   "errorNoItemsFound": "No items found.",
@@ -5935,14 +5778,12 @@
   "statusNoInternet": "No internet connection",
   "statusDisconnected": "Disconnected",
   "statusCheckingConnection": "Checking connection...",
-  "statusConnecting": "Connecting...",
   "statusReconnecting": "Reconnecting...",
   "statusFetchingContent": "Fetching content...",
   "statusAnalyzingRecipe": "Analyzing recipe...",
   "statusCreatingRecipe": "Creating recipe...",
   "statusDone": "Done!",
   "statusNeedsHelp": "Needs your help",
-  "categoryOther": "Other",
   "displayUnknownContent": "Unknown content",
   "displayEmptyList": "Empty list",
   "displayOnlyYou": "Only you",
@@ -5995,7 +5836,9 @@
   "errorRateLimitExceeded": "Too many requests. Try again in {seconds} seconds.",
   "@errorRateLimitExceeded": {
     "placeholders": {
-      "seconds": {"type": "int"}
+      "seconds": {
+        "type": "int"
+      }
     }
   },
   "errorCouldNotImportRecipes": "Could not import recipes",
@@ -6014,7 +5857,9 @@
   "errorSyncErrorFor": "Sync error for {syncType}",
   "@errorSyncErrorFor": {
     "placeholders": {
-      "syncType": {"type": "String"}
+      "syncType": {
+        "type": "String"
+      }
     }
   },
   "errorCouldNotUpdateNotificationToken": "Could not update notification token",
@@ -6034,10 +5879,11 @@
   "errorGroupNameExistsWithName": "A group with the name \"{name}\" already exists",
   "@errorGroupNameExistsWithName": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
-
   "errorAuthenticationPleaseLogin": "Authentication error. Please log in again.",
   "errorCouldNotShareRecipeWithGroups": "Could not share recipe with groups",
   "shoppingListNotFound": "List not found",
@@ -6048,7 +5894,9 @@
   "shoppingPurchaseForRecipe": "Shopping for {recipeName}",
   "@shoppingPurchaseForRecipe": {
     "placeholders": {
-      "recipeName": {"type": "String"}
+      "recipeName": {
+        "type": "String"
+      }
     }
   },
   "shoppingCategoryImported": "Imported",
@@ -6057,117 +5905,165 @@
   "labelParticipantCount": "{count} participants",
   "@labelParticipantCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "errorCouldNotSend": "Could not send {itemType}",
   "@errorCouldNotSend": {
     "placeholders": {
-      "itemType": {"type": "String"}
+      "itemType": {
+        "type": "String"
+      }
     }
   },
   "errorCouldNotShare": "Could not share {itemType}",
   "@errorCouldNotShare": {
     "placeholders": {
-      "itemType": {"type": "String"}
+      "itemType": {
+        "type": "String"
+      }
     }
   },
-
   "uploadStatusUploading": "Uploading {active} images ({progress}% done, {pending} waiting)",
   "@uploadStatusUploading": {
     "placeholders": {
-      "active": {"type": "int"},
-      "progress": {"type": "int"},
-      "pending": {"type": "int"}
+      "active": {
+        "type": "int"
+      },
+      "progress": {
+        "type": "int"
+      },
+      "pending": {
+        "type": "int"
+      }
     }
   },
   "uploadStatusUploadingNoPending": "Uploading {active} images ({progress}% done)",
   "@uploadStatusUploadingNoPending": {
     "placeholders": {
-      "active": {"type": "int"},
-      "progress": {"type": "int"}
+      "active": {
+        "type": "int"
+      },
+      "progress": {
+        "type": "int"
+      }
     }
   },
   "uploadStatusWaiting": "Waiting to upload {pending} images...",
   "@uploadStatusWaiting": {
     "placeholders": {
-      "pending": {"type": "int"}
+      "pending": {
+        "type": "int"
+      }
     }
   },
   "uploadStatusPartialFailure": "{completed} of {total} images uploaded, {failed} failed",
   "@uploadStatusPartialFailure": {
     "placeholders": {
-      "completed": {"type": "int"},
-      "total": {"type": "int"},
-      "failed": {"type": "int"}
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
     }
   },
   "uploadStatusAllFailed": "{failed} of {total} images failed - tap to retry",
   "@uploadStatusAllFailed": {
     "placeholders": {
-      "failed": {"type": "int"},
-      "total": {"type": "int"}
+      "failed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "uploadStatusAllSuccess": "All {total} images uploaded successfully",
   "@uploadStatusAllSuccess": {
     "placeholders": {
-      "total": {"type": "int"}
+      "total": {
+        "type": "int"
+      }
     }
   },
   "uploadProgressWithTime": "{progress}% done - {time} remaining",
   "@uploadProgressWithTime": {
     "placeholders": {
-      "progress": {"type": "int"},
-      "time": {"type": "String"}
+      "progress": {
+        "type": "int"
+      },
+      "time": {
+        "type": "String"
+      }
     }
   },
   "uploadProgressPercent": "{progress}% done",
   "@uploadProgressPercent": {
     "placeholders": {
-      "progress": {"type": "int"}
+      "progress": {
+        "type": "int"
+      }
     }
   },
   "uploadComplete": "Upload complete",
   "uploadAllSuccessWithTime": "All images uploaded{time} (100% success)",
   "@uploadAllSuccessWithTime": {
     "placeholders": {
-      "time": {"type": "String"}
+      "time": {
+        "type": "String"
+      }
     }
   },
   "uploadCompletionOf": "{completed} of {total} completed",
   "@uploadCompletionOf": {
     "placeholders": {
-      "completed": {"type": "int"},
-      "total": {"type": "int"}
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "uploadFailureCount": ", {failed} failed",
   "@uploadFailureCount": {
     "placeholders": {
-      "failed": {"type": "int"}
+      "failed": {
+        "type": "int"
+      }
     }
   },
   "uploadSuccessRate": " ({rate}% success)",
   "@uploadSuccessRate": {
     "placeholders": {
-      "rate": {"type": "int"}
+      "rate": {
+        "type": "int"
+      }
     }
   },
   "uploadPreparing": "Preparing upload...",
-
   "errorNoImageSelected": "No image selected",
   "errorImageFormatUnsupported": "Image format not supported. Use JPEG or PNG format.",
   "errorImageTooLarge": "Image is too large ({size} MB). Use a smaller image or compress it.",
   "@errorImageTooLarge": {
     "placeholders": {
-      "size": {"type": "String"}
+      "size": {
+        "type": "String"
+      }
     }
   },
   "errorImageQualityTooLow": "Image quality is too low for OCR ({quality}%).",
   "@errorImageQualityTooLow": {
     "placeholders": {
-      "quality": {"type": "int"}
+      "quality": {
+        "type": "int"
+      }
     }
   },
   "errorOcrServicesUnavailable": "OCR services are temporarily unavailable. Try again in a few minutes.",
@@ -6175,135 +6071,195 @@
   "labelImprovementSuggestions": "Improvement suggestions:",
   "ocrQualityTips": "Tips for better results:\n• Make sure the image is well-lit and sharp\n• Avoid shadows and reflections\n• Hold the camera straight at the text",
   "ocrRetryOrManual": "You can try again with a new image or continue with manual input.",
-
   "errorAiEnhancementFailed": "AI enhancement failed.",
-
   "errorCouldNotCreateRealtimeRecipe": "Could not create realtime recipe: {error}",
   "@errorCouldNotCreateRealtimeRecipe": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "errorCouldNotWatchRecipe": "Could not start watching recipe: {error}",
   "@errorCouldNotWatchRecipe": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "errorCouldNotPerformOperation": "Could not {operation}: {error}",
   "@errorCouldNotPerformOperation": {
     "placeholders": {
-      "operation": {"type": "String"},
-      "error": {"type": "String"}
+      "operation": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
     }
   },
   "errorCouldNotDeleteRealtimeRecipe": "Could not delete realtime recipe: {error}",
   "@errorCouldNotDeleteRealtimeRecipe": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "errorCouldNotCreateRealtimeMenu": "Could not create realtime menu: {error}",
   "@errorCouldNotCreateRealtimeMenu": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "errorCouldNotWatchMenu": "Could not start watching menu: {error}",
   "@errorCouldNotWatchMenu": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
   "errorCouldNotDeleteRealtimeMenu": "Could not delete realtime menu: {error}",
   "@errorCouldNotDeleteRealtimeMenu": {
     "placeholders": {
-      "error": {"type": "String"}
+      "error": {
+        "type": "String"
+      }
     }
   },
-
   "ocrImageTooLarge": "Image is too large",
   "ocrCompressImage": "Compress the image",
   "ocrImageTooSmall": "Image is too small",
   "ocrUseHigherResolution": "Use higher resolution",
   "ocrImageFormatNotOptimal": "Image format not optimally supported",
   "ocrUseJpegOrPng": "Use JPEG or PNG",
-
   "syncErrorParsingResource": "Error parsing resource",
   "syncErrorWatchingResource": "Error watching resource {resourceId}",
-  "@syncErrorWatchingResource": { "placeholders": { "resourceId": {"type": "String"} } },
-
+  "@syncErrorWatchingResource": {
+    "placeholders": {
+      "resourceId": {
+        "type": "String"
+      }
+    }
+  },
   "notificationDefaultTitle": "New activity",
   "notificationDefaultBody": "You have new activity in Butlery",
   "notificationActionAccept": "Accept",
   "notificationActionDecline": "Decline",
   "notificationActionViewRecipe": "View recipe",
   "notificationActionJoin": "Join",
-
   "fcmChannelSocialTitle": "Social notifications",
   "fcmChannelSocialDescription": "Friend requests, shares, and comments",
   "fcmChannelMessagingTitle": "Messages",
   "fcmChannelMessagingDescription": "Chat messages from friends",
-
   "tagValidationEmpty": "Tag name cannot be empty",
   "tagValidationTooShort": "Tag name must be at least 2 characters",
   "tagValidationTooLong": "Tag name can be max 50 characters",
   "tagValidationReserved": "This name is reserved for system tags",
-
   "menuAttributionText": "Inspired by menu from {displayName}",
-  "@menuAttributionText": { "placeholders": { "displayName": {"type": "String"} } },
-
+  "@menuAttributionText": {
+    "placeholders": {
+      "displayName": {
+        "type": "String"
+      }
+    }
+  },
   "llmEnhancementNotEnoughData": "Not enough data for AI enhancement.",
-
   "realtimeIngredientEmptyError": "Ingredient cannot be empty",
   "realtimeIngredientInvalidIndex": "Invalid ingredient index",
   "realtimeInstructionEmptyError": "Instruction cannot be empty",
   "realtimeInstructionInvalidIndex": "Invalid instruction index",
-
   "menuDefaultTitle": "Menu from {displayName}",
-  "@menuDefaultTitle": { "placeholders": { "displayName": {"type": "String"} } },
+  "@menuDefaultTitle": {
+    "placeholders": {
+      "displayName": {
+        "type": "String"
+      }
+    }
+  },
   "menuShareGroupFallback": "Group",
   "menuShareGroupTitle": "Menu for {categoryName}",
-  "@menuShareGroupTitle": { "placeholders": { "categoryName": {"type": "String"} } },
-
+  "@menuShareGroupTitle": {
+    "placeholders": {
+      "categoryName": {
+        "type": "String"
+      }
+    }
+  },
   "menuTitleEmpty": "Empty menu",
   "menuTitleSingleCategory": "{category} menu ({count} recipes)",
-  "@menuTitleSingleCategory": { "placeholders": { "category": {"type": "String"}, "count": {"type": "int"} } },
+  "@menuTitleSingleCategory": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "menuTitleMultiCategory": "Weekly menu with {categories} ({count} recipes)",
-  "@menuTitleMultiCategory": { "placeholders": { "categories": {"type": "String"}, "count": {"type": "int"} } },
-
+  "@menuTitleMultiCategory": {
+    "placeholders": {
+      "categories": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "recipeAttributionText": "Inspired by recipe from {displayName}",
-  "@recipeAttributionText": { "placeholders": { "displayName": {"type": "String"} } },
-
+  "@recipeAttributionText": {
+    "placeholders": {
+      "displayName": {
+        "type": "String"
+      }
+    }
+  },
   "tiktokOriginalText": "Original text from TikTok:",
   "tiktokIdentifiedIngredients": "Identified ingredients:",
-
   "groupShareWarningManyGroups": "Sharing to many groups ({count}) may take a while",
-  "@groupShareWarningManyGroups": { "placeholders": { "count": {"type": "int"} } },
+  "@groupShareWarningManyGroups": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "groupShareWarningManyItems": "Sharing a lot of content ({count} items) may take a while",
-  "@groupShareWarningManyItems": { "placeholders": { "count": {"type": "int"} } },
+  "@groupShareWarningManyItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "groupShareWarningLargeOperation": "Large operation ({count} shares) - consider splitting it up",
-  "@groupShareWarningLargeOperation": { "placeholders": { "count": {"type": "int"} } },
-
+  "@groupShareWarningLargeOperation": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "textImportSourceUrl": "Imported from text",
-
   "assistedImportSelectInstructionsError": "Select at least one instruction",
   "assistedImportEnterRecipeName": "Enter a recipe name",
   "assistedImportAddIngredientError": "Add at least one ingredient",
   "assistedImportAddInstructionError": "Add at least one instruction",
-
   "formValidationIngredientRequired": "Ingredient required",
   "formValidationIngredientTooLong": "Ingredient too long (max 200 characters)",
   "formValidationInstructionRequired": "Instruction required",
   "formValidationInstructionTooLong": "Instruction too long (max 500 characters)",
   "formValidationTagTooLong": "Tag too long (max 50 characters)",
   "formValidationTagNoCommas": "Tags cannot contain commas",
-
-  "shoppingItemAdded": "Added \"{itemName}\"",
-  "@shoppingItemAdded": { "placeholders": { "itemName": {"type": "String"} } },
   "shoppingItemMarkedComplete": "Marked as complete",
   "shoppingItemMarkedIncomplete": "Marked as incomplete",
-
   "menuSuggestionVegetarian": "Vegetarian weekly menu for 2 people",
   "menuSuggestionQuickDinners": "Quick dinners for the whole week",
   "menuSuggestionMeatFish": "Varied meat and fish menu",
@@ -6312,79 +6268,179 @@
   "menuSuggestionBudget": "Budget-friendly weekly menu",
   "menuSuggestionItalian": "Italian theme menu",
   "menuSuggestionAsian": "Asian-inspired weekly menu",
-
   "recipeAutoTitleWithIngredient": "Recipe with {ingredient}",
-  "@recipeAutoTitleWithIngredient": { "placeholders": { "ingredient": {"type": "String"} } },
+  "@recipeAutoTitleWithIngredient": {
+    "placeholders": {
+      "ingredient": {
+        "type": "String"
+      }
+    }
+  },
   "recipeAutoTitleUntitled": "Untitled recipe",
-
   "importPhaseFetching": "Fetching content...",
   "importPhaseAnalyzing": "Analyzing recipe...",
   "importPhaseCreating": "Creating recipe...",
   "importPhaseComplete": "Done!",
   "importPhaseNeedsHelp": "Needs your help",
   "importPhaseError": "An error occurred",
-
   "shoppingSharingSummary": "Share with: {friendNames}",
-  "@shoppingSharingSummary": { "placeholders": { "friendNames": {"type": "String"} } },
-
+  "@shoppingSharingSummary": {
+    "placeholders": {
+      "friendNames": {
+        "type": "String"
+      }
+    }
+  },
   "imageUploadTooLarge": "Image is too large (max {maxSize}MB)",
-  "@imageUploadTooLarge": { "placeholders": { "maxSize": {"type": "String"} } },
-
+  "@imageUploadTooLarge": {
+    "placeholders": {
+      "maxSize": {
+        "type": "String"
+      }
+    }
+  },
   "shareMessageRecipeWithTitle": "Check out this recipe: \"{title}\"! 👩‍🍳",
-  "@shareMessageRecipeWithTitle": { "placeholders": { "title": {"type": "String"} } },
+  "@shareMessageRecipeWithTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "shareMessageRecipeDefault": "I found an amazing recipe I wanted to share with you! 👩‍🍳",
   "shareMessageMenuWithTitle": "Here's my weekly menu: \"{title}\" 📋",
-  "@shareMessageMenuWithTitle": { "placeholders": { "title": {"type": "String"} } },
+  "@shareMessageMenuWithTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "shareMessageMenuDefault": "Here's my weekly menu that might inspire you! 📋",
   "shareMessageShoppingListWithTitle": "Want to help me with the shopping list: \"{title}\"? 🛒",
-  "@shareMessageShoppingListWithTitle": { "placeholders": { "title": {"type": "String"} } },
+  "@shareMessageShoppingListWithTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "shareMessageShoppingListDefault": "Want to help me with shopping this week? 🛒",
-
   "textImportSuggestionIngredients": "Include ingredient list for better interpretation",
   "textImportSuggestionInstructions": "Include cooking instructions or steps",
   "textImportSuggestionTime": "Include cooking time if available",
   "textImportSuggestionPortions": "Include number of portions if known",
   "textImportSuggestionLooksGood": "Text looks good for recipe interpretation",
-
   "recipeFormPermissionsError": "Error loading permissions",
   "createSharedListError": "Error creating shared list: {error}",
-  "@createSharedListError": { "placeholders": { "error": {"type": "String"} } },
-
+  "@createSharedListError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "userStatusOnline": "Online",
   "userStatusJustActive": "Active just now",
   "userStatusActiveMinutesAgo": "Active {minutes} min ago",
-  "@userStatusActiveMinutesAgo": { "placeholders": { "minutes": {"type": "int"} } },
+  "@userStatusActiveMinutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "userStatusActiveHoursAgo": "Active {hours} hours ago",
-  "@userStatusActiveHoursAgo": { "placeholders": { "hours": {"type": "int"} } },
+  "@userStatusActiveHoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
   "userStatusActiveDaysAgo": "Active {days} days ago",
-  "@userStatusActiveDaysAgo": { "placeholders": { "days": {"type": "int"} } },
+  "@userStatusActiveDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "userStatusActiveWeeksAgo": "Active {weeks} weeks ago",
-  "@userStatusActiveWeeksAgo": { "placeholders": { "weeks": {"type": "int"} } },
-
+  "@userStatusActiveWeeksAgo": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
   "recipeCookTimeMinutes": "{minutes} minutes",
-  "@recipeCookTimeMinutes": { "placeholders": { "minutes": {"type": "int"} } },
+  "@recipeCookTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "recipeLastCookedToday": "Cooked today",
   "recipeLastCookedYesterday": "Cooked yesterday",
   "recipeLastCookedDaysAgo": "Cooked {days} days ago",
-  "@recipeLastCookedDaysAgo": { "placeholders": { "days": {"type": "int"} } },
-
+  "@recipeLastCookedDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "messageSharedRecipe": "Shared a recipe: {title}",
-  "@messageSharedRecipe": { "placeholders": { "title": {"type": "String"} } },
+  "@messageSharedRecipe": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "messageSharedMenu": "Shared a menu: {title}",
-  "@messageSharedMenu": { "placeholders": { "title": {"type": "String"} } },
+  "@messageSharedMenu": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "messageSharedShoppingList": "Shared a shopping list: {title}",
-  "@messageSharedShoppingList": { "placeholders": { "title": {"type": "String"} } },
-
+  "@messageSharedShoppingList": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "conversationNoMessagesYet": "No messages yet",
-
   "sharedRecipeAttributionText": "Inspired by recipe from {displayName}",
-  "@sharedRecipeAttributionText": { "placeholders": { "displayName": {"type": "String"} } },
-
+  "@sharedRecipeAttributionText": {
+    "placeholders": {
+      "displayName": {
+        "type": "String"
+      }
+    }
+  },
   "realtimeRecipeCopyTitle": "Copy of {title}",
-  "@realtimeRecipeCopyTitle": { "placeholders": { "title": {"type": "String"} } },
+  "@realtimeRecipeCopyTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "realtimeRecipeSharedFrom": "Shared from {displayName}",
-  "@realtimeRecipeSharedFrom": { "placeholders": { "displayName": {"type": "String"} } },
-
+  "@realtimeRecipeSharedFrom": {
+    "placeholders": {
+      "displayName": {
+        "type": "String"
+      }
+    }
+  },
   "friendCategoryDefaultFriends": "Friends",
   "friendCategoryDefaultFriendsDesc": "Close friends",
   "friendCategoryDefaultNeighbors": "Neighbors",
@@ -6400,128 +6456,564 @@
   "friendSummaryCount": "{count} friends",
   "@friendSummaryCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
-
   "shoppingListSharedBy": "Shared by {displayName}",
-  "@shoppingListSharedBy": { "placeholders": { "displayName": {"type": "String"} } },
+  "@shoppingListSharedBy": {
+    "placeholders": {
+      "displayName": {
+        "type": "String"
+      }
+    }
+  },
   "shoppingListOriginallySharedBy": "Originally shared by {displayName}",
-  "@shoppingListOriginallySharedBy": { "placeholders": { "displayName": {"type": "String"} } },
-
+  "@shoppingListOriginallySharedBy": {
+    "placeholders": {
+      "displayName": {
+        "type": "String"
+      }
+    }
+  },
   "collaborationNotAllowed": "No collaboration allowed",
   "collaborationReady": "Ready for collaboration",
   "collaborationVersionCreated": "Collaborative version created",
   "collaborationOneActive": "1 active collaborator",
   "collaborationMultipleActive": "{count} active collaborators",
-  "@collaborationMultipleActive": { "placeholders": { "count": {"type": "int"} } },
-
+  "@collaborationMultipleActive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "recipeCopiedFrom": "Copied from: {title}",
-  "@recipeCopiedFrom": { "placeholders": { "title": {"type": "String"} } },
-
+  "@recipeCopiedFrom": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "statusEmptyList": "Empty list",
   "statusCompleted": "Done",
   "statusInProgress": "In progress",
   "statusNoActivity": "No activity",
   "statusPurchased": "Purchased",
-
   "timeJustNow": "just now",
   "timeMinutesAgo": "{minutes}m ago",
-  "@timeMinutesAgo": { "placeholders": { "minutes": {"type": "int"} } },
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "timeHoursAgo": "{hours}h ago",
-  "@timeHoursAgo": { "placeholders": { "hours": {"type": "int"} } },
+  "@timeHoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
   "timeMinutesAgoLong": "{minutes} min ago",
-  "@timeMinutesAgoLong": { "placeholders": { "minutes": {"type": "int"} } },
+  "@timeMinutesAgoLong": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "timeHoursAgoLong": "{hours} hrs ago",
-  "@timeHoursAgoLong": { "placeholders": { "hours": {"type": "int"} } },
+  "@timeHoursAgoLong": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
   "timeDaysAgoLong": "{days} days ago",
-  "@timeDaysAgoLong": { "placeholders": { "days": {"type": "int"} } },
+  "@timeDaysAgoLong": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "timeWeeksAgo": "{weeks} weeks ago",
-  "@timeWeeksAgo": { "placeholders": { "weeks": {"type": "int"} } },
+  "@timeWeeksAgo": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
   "timeNow": "Now",
-
   "dateTomorrow": "Tomorrow",
   "dateNoDate": "No date",
   "dateDaysAhead": "{days} days ahead",
-  "@dateDaysAhead": { "placeholders": { "days": {"type": "int"} } },
-
+  "@dateDaysAhead": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "labelMemberCount": "{count, plural, =1{1 member} other{{count} members}}",
-  "@labelMemberCount": { "placeholders": { "count": {"type": "int"} } },
+  "@labelMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "labelParticipantFallback": "Participant",
   "labelRecipes": "Recipes",
   "labelMenus": "Menus",
   "labelShopping": "Shopping",
   "labelCollaborativeMenu": "Collaborative menu",
-
   "errorInvalidUrlFormat": "Invalid URL format",
   "errorUrlMissingScheme": "URL must include http:// or https://",
   "errorUrlUnsupportedScheme": "Only HTTP and HTTPS URLs are supported",
   "errorUrlMissingDomain": "URL must include a domain name",
   "errorInvalidCategoryName": "Invalid category name: {name}",
-  "@errorInvalidCategoryName": { "placeholders": { "name": {"type": "String"} } },
-
+  "@errorInvalidCategoryName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "platformYouTube": "YouTube video",
   "platformTikTok": "TikTok video",
   "platformInstagram": "Instagram post",
   "platformWebsite": "Website",
   "platformPastedText": "Pasted text",
-
   "selectionNoFriendsSelected": "No friends selected",
   "selectionFriendsSelected": "{count, plural, =1{1 friend selected} other{{count} friends selected}}",
-  "@selectionFriendsSelected": { "placeholders": { "count": {"type": "int"} } },
+  "@selectionFriendsSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "selectionNoRecipesSelected": "No recipes selected",
   "selectionRecipesSelected": "{count, plural, =1{1 recipe selected} other{{count} recipes selected}}",
-  "@selectionRecipesSelected": { "placeholders": { "count": {"type": "int"} } },
-
+  "@selectionRecipesSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "buttonCreating": "Creating...",
   "buttonCreateAndShare": "Create & Share",
-
   "analysisNoContentExtracted": "No content extracted",
   "analysisContainsIngredients": "Contains ingredients",
   "analysisNoIngredientsFound": "No ingredients section found",
   "analysisContainsInstructions": "Contains instructions",
   "analysisNoInstructionsFound": "No instructions found",
-
   "labelNoCategories": "No categories",
   "labelGroup": "Group",
   "labelYou": "You",
-
   "validationSelectIngredient": "Select at least one ingredient",
   "statusListLoaded": "List loaded",
-  "errorListNotFound": "List not found",
   "errorCouldNotLoadListDetail": "Could not load list: {detail}",
-  "@errorCouldNotLoadListDetail": { "placeholders": { "detail": {"type": "String"} } },
+  "@errorCouldNotLoadListDetail": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
   "labelUntitledMenu": "Untitled menu",
   "labelUntitledList": "Untitled list",
   "labelUntitledRecipe": "Untitled recipe",
   "labelUnknownContent": "Unknown content",
-
   "analysisContainsTimeInfo": "Contains time information",
   "analysisContainsPortionInfo": "Contains portion information",
   "analysisGoodContentLength": "Good content length",
   "analysisContentTooShort": "Content seems too short",
   "analysisContainsRecipeKeywords": "Contains recipe keywords",
-
   "hintPasteOrTypeRecipe": "Paste or type recipe text to get started",
-
   "errorFriendAlreadyHasAccess": "The selected friend already has access to the list",
   "errorAllFriendsAlreadyHaveAccess": "All selected friends already have access to the list",
   "shareInvitationsSentWithSkipped": "{invitedCount} invitations sent. {skippedCount} friends skipped (already have access).",
-  "@shareInvitationsSentWithSkipped": { "placeholders": { "invitedCount": {"type": "int"}, "skippedCount": {"type": "int"} } },
+  "@shareInvitationsSentWithSkipped": {
+    "placeholders": {
+      "invitedCount": {
+        "type": "int"
+      },
+      "skippedCount": {
+        "type": "int"
+      }
+    }
+  },
   "errorCouldNotSendInvitations": "Could not send invitations",
   "shareDefaultShoppingListMessage": "Want to share this shopping list with you!",
-
   "shoppingListEmpty": "Empty shopping list",
   "shoppingListAllDone": "All {count} items done",
-  "@shoppingListAllDone": { "placeholders": { "count": {"type": "int"} } },
+  "@shoppingListAllDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "shoppingListItemsToBuy": "{count} items to buy",
-  "@shoppingListItemsToBuy": { "placeholders": { "count": {"type": "int"} } },
+  "@shoppingListItemsToBuy": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "shoppingListItemsRemaining": "{remaining} of {total} items remaining",
-  "@shoppingListItemsRemaining": { "placeholders": { "remaining": {"type": "int"}, "total": {"type": "int"} } },
-
+  "@shoppingListItemsRemaining": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "errorDailyQuotaReached": "Daily quota reached",
   "errorGenericOccurred": "An error occurred",
-
   "fcmChannelGeneralTitle": "General notifications",
-  "fcmChannelGeneralDescription": "General notifications from Butlery"
+  "fcmChannelGeneralDescription": "General notifications from Butlery",
+  "timeAgoNow": "Now",
+  "timeAgoMinutesAbbr": "{count} min ago",
+  "@timeAgoMinutesAbbr": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoHoursAbbr": "{count}h ago",
+  "@timeAgoHoursAbbr": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoDays": "{count} days ago",
+  "@timeAgoDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoWeeks": "{count} weeks ago",
+  "@timeAgoWeeks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoJustNow": "Just now",
+  "timeAgoMinutesFull": "{count} minutes ago",
+  "@timeAgoMinutesFull": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeAgoHoursFull": "{count} hours ago",
+  "@timeAgoHoursFull": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeCompactMinutes": "{count}m",
+  "@timeCompactMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeCompactHours": "{count}h",
+  "@timeCompactHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeCompactDays": "{count}d",
+  "@timeCompactDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeCompactWeeks": "{count}w",
+  "@timeCompactWeeks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expiresExpired": "Expired",
+  "expiresDaysRemaining": "{count} days left",
+  "@expiresDaysRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expiresHoursRemaining": "{count} hours left",
+  "@expiresHoursRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expiresMinutesRemaining": "{count} minutes left",
+  "@expiresMinutesRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "expiresSoon": "Expires soon",
+  "groupInvitationNotificationWithMessage": "{sender} invited you to group {emoji} {group}: \"{message}\"",
+  "@groupInvitationNotificationWithMessage": {
+    "placeholders": {
+      "sender": {
+        "type": "String"
+      },
+      "emoji": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "groupInvitationNotificationSimple": "{sender} invited you to group {emoji} {group}",
+  "@groupInvitationNotificationSimple": {
+    "placeholders": {
+      "sender": {
+        "type": "String"
+      },
+      "emoji": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "invitationStatusPending": "Pending",
+  "invitationStatusAccepted": "Accepted",
+  "invitationStatusRejected": "Rejected",
+  "invitationStatusCancelled": "Cancelled",
+  "invitationStatusExpired": "Expired",
+  "messageContentRecipe": "Recipe",
+  "messageContentMenu": "Menu",
+  "messageContentShoppingList": "Shopping list",
+  "messageContentImage": "Image",
+  "messageContentVoice": "Voice message",
+  "conversationGroupChat": "Group chat",
+  "editModeOwner": "You own this recipe",
+  "editModeCollaborative": "You are editing together with others",
+  "editModeReadOnlyWithFork": "Read-only - you can save your own copy",
+  "editModeNoAccess": "No access",
+  "editModeEdit": "Edit mode",
+  "editModeView": "View mode",
+  "changeTypeAdded": "Added",
+  "changeTypeModified": "Modified",
+  "changeTypeRemoved": "Removed",
+  "memberSinceDays": "Member for {count} days",
+  "@memberSinceDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memberSinceMonths": "Member for {count} months",
+  "@memberSinceMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memberSinceYears": "Member for {count} years",
+  "@memberSinceYears": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commentDeleted": "[Comment deleted]",
+  "labelSharedMenu": "Shared menu",
+  "sharedMenuTitlePattern": "{name}'s weekly menu",
+  "@sharedMenuTitlePattern": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "importedFromMenu": "Imported from {name}'s menu \"{title}\"",
+  "@importedFromMenu": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "importedRecipeLabel": "Imported recipe",
+  "activityCreatedRecipe": "created a recipe",
+  "activitySharedRecipe": "shared a recipe",
+  "activityRatedRecipe": "rated a recipe ({rating}⭐)",
+  "@activityRatedRecipe": {
+    "placeholders": {
+      "rating": {
+        "type": "int"
+      }
+    }
+  },
+  "activityCommentedRecipe": "commented on a recipe",
+  "activityReactedRecipe": "reacted to a recipe ({reaction})",
+  "@activityReactedRecipe": {
+    "placeholders": {
+      "reaction": {
+        "type": "String"
+      }
+    }
+  },
+  "activityCreatedMenu": "created a menu",
+  "activitySharedMenu": "shared a menu",
+  "activityCreatedShoppingList": "created a shopping list",
+  "activitySharedShoppingList": "shared a shopping list",
+  "activityJoinedGroup": "joined a group",
+  "activityUnlockedAchievement": "unlocked an achievement: {achievement}",
+  "@activityUnlockedAchievement": {
+    "placeholders": {
+      "achievement": {
+        "type": "String"
+      }
+    }
+  },
+  "activityDidSomething": "did something",
+  "labelEmptyMenu": "Empty menu",
+  "labelMultipleChanges": "Multiple changes",
+  "errorVideoNoSubtitles": "Video has no subtitles",
+  "errorNetworkFallback": "Network error",
+  "recipeCollaborationEnable": "Enable collaboration",
+  "recipeCollaborationDisable": "Disable collaboration",
+  "menuCommentDeletedSuccess": "Comment deleted",
+  "recipeSharingStatus": "Sharing status",
+  "recipeSharingSharedWith": "Shared with",
+  "recipeSharingStopAll": "Stop sharing with all",
+  "recipeSharingStopAllConfirm": "Are you sure you want to stop sharing with everyone?",
+  "recipeSharingStopAllSuccess": "Sharing stopped with everyone",
+  "recipeSharingRevoke": "Revoke sharing",
+  "recipeSharingRevokeConfirm": "Stop sharing with {name}?",
+  "@recipeSharingRevokeConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSharingRevokeSuccess": "Sharing with {name} stopped",
+  "@recipeSharingRevokeSuccess": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSharingFriends": "Friends",
+  "recipeSharingGroups": "Groups",
+  "recipeSharingNoShares": "Not shared with anyone",
+  "menuRatingRemoveMessage": "Do you want to remove your rating?",
+  "menuRatingRemoved": "Rating removed",
+  "menuRatingRemoveError": "Could not remove rating",
+  "shoppingTemplates": "Shopping templates",
+  "shoppingTemplateBrowse": "Browse templates",
+  "shoppingTemplateEmpty": "No saved templates",
+  "shoppingTemplateEmptyDescription": "Save a shopping list as a template for quick recreation",
+  "shoppingTemplateUse": "Use template",
+  "shoppingTemplateDelete": "Delete template",
+  "shoppingTemplateDeleteConfirm": "Do you want to delete the template \"{name}\"?",
+  "@shoppingTemplateDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingTemplateDeleted": "Template deleted",
+  "shoppingTemplateCreated": "List created from template",
+  "shoppingTemplateItemCount": "{count} items",
+  "@shoppingTemplateItemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingTemplateUsedCount": "Used {count} times",
+  "@shoppingTemplateUsedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingCategoryCollapse": "Collapse",
+  "shoppingCategoryExpand": "Expand",
+  "labelButleryUser": "Butlery user",
+  "shoppingListSummaryEmpty": "Empty shopping list",
+  "shoppingListSummaryAllDone": "All {count} items done",
+  "@shoppingListSummaryAllDone": { "placeholders": { "count": {"type": "int"} } },
+  "shoppingListSummaryToBuy": "{count} items to buy",
+  "@shoppingListSummaryToBuy": { "placeholders": { "count": {"type": "int"} } },
+  "shoppingListSummaryRemaining": "{remaining} of {total} items remaining",
+  "@shoppingListSummaryRemaining": { "placeholders": { "remaining": {"type": "int"}, "total": {"type": "int"} } },
+  "notificationBatchComments": "{count} new comments on your recipes",
+  "@notificationBatchComments": { "placeholders": { "count": {"type": "int"} } },
+  "notificationCommentSingle": "{author} commented on \"{recipe}\"",
+  "@notificationCommentSingle": { "placeholders": { "author": {"type": "String"}, "recipe": {"type": "String"} } },
+  "notificationCommentMultipleSameAuthor": "{author} wrote {count} comments on \"{recipe}\"",
+  "@notificationCommentMultipleSameAuthor": { "placeholders": { "author": {"type": "String"}, "count": {"type": "int"}, "recipe": {"type": "String"} } },
+  "notificationCommentMultipleAuthors": "{authorCount} people wrote {commentCount} comments on \"{recipe}\"",
+  "@notificationCommentMultipleAuthors": { "placeholders": { "authorCount": {"type": "int"}, "commentCount": {"type": "int"}, "recipe": {"type": "String"} } },
+  "notificationRatingSingle": "Your recipe \"{recipe}\" received {count} new ratings this {period}!",
+  "@notificationRatingSingle": { "placeholders": { "recipe": {"type": "String"}, "count": {"type": "int"}, "period": {"type": "String"} } },
+  "notificationRatingMultiple": "Your recipes received {totalRatings} new ratings across {recipeCount} recipes this {period}!",
+  "@notificationRatingMultiple": { "placeholders": { "totalRatings": {"type": "int"}, "recipeCount": {"type": "int"}, "period": {"type": "String"} } },
+  "timeCompactMonths": "{count}mo",
+  "@timeCompactMonths": { "placeholders": { "count": {"type": "int"} } }
 }

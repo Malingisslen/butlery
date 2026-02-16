@@ -1,6 +1,7 @@
 // lib/services/messaging/message_sending_operations.dart
 
 import 'package:uuid/uuid.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
@@ -264,7 +265,7 @@ class MessageSendingOperations {
       String body;
 
       if (conversation.isGroup) {
-        title = conversation.title ?? 'Gruppchatt';
+        title = conversation.title ?? AppLocale.current.conversationGroupChat;
         body = '${message.senderDisplayName}: ${message.displayContent}';
       } else {
         title = message.senderDisplayName;

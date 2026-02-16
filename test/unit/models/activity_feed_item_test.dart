@@ -176,7 +176,7 @@ void main() {
         final item =
             ActivityFeedItem.fromFirestore('activity_123', firestoreData);
 
-        expect(item.userDisplayName, equals('Okänd användare'));
+        expect(item.userDisplayName, equals('?'));
         expect(item.userAvatarUrl, isNull);
         expect(item.parentId, isNull);
         expect(item.visibility, equals(['all_friends']));
@@ -656,7 +656,7 @@ void main() {
         final item = ActivityFeedItem.fromJson(jsonData);
 
         expect(item.userId, equals(''));
-        expect(item.userDisplayName, equals('Okänd användare'));
+        expect(item.userDisplayName, equals('?'));
         expect(item.type, equals(ActivityType.unknown));
         expect(item.targetId, equals(''));
         expect(item.visibility, equals(['all_friends']));

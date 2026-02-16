@@ -248,7 +248,7 @@ class RecipeSharingManager {
 
     // Get current user display name for notification
     final currentUserId = _parent.currentUserId;
-    final currentUserName = _parent.currentUserDisplayName ?? 'En vän';
+    final currentUserName = _parent.currentUserDisplayName ?? '?';
 
     // Send notifications to all invited members using safe helper
     await NotificationHelper.sendImmediateSafely(
@@ -277,7 +277,7 @@ class RecipeSharingManager {
     required String recipeTitle,
     required List<String> memberIds,
   }) async {
-    final currentUserName = _parent.currentUserDisplayName ?? 'En användare';
+    final currentUserName = _parent.currentUserDisplayName ?? '?';
 
     await NotificationHelper.sendImmediateSafely(
       notificationService: _notificationService,

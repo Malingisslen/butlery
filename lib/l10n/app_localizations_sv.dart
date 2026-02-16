@@ -2955,125 +2955,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get collaborativeLoadingSharedList => 'Laddar gemensam lista...';
 
   @override
-  String get discoveryActivity => 'Aktivitet';
-
-  @override
-  String discoveryByAuthor(String name) {
-    return 'Av $name';
-  }
-
-  @override
-  String get discoveryCategories => 'Kategorier';
-
-  @override
-  String get discoveryContentType => 'Innehållstyp';
-
-  @override
-  String get discoveryCustomizeExperience => 'Anpassa din upptäcktsupplevelse';
-
-  @override
-  String get discoveryDiscover => 'Upptäck';
-
-  @override
-  String get discoveryDiscoverNewContent => 'Upptäck nytt innehåll';
-
-  @override
-  String get discoveryFeedbackHint =>
-      'Hjälp oss att förbättra Butlery! Beskriv din feedback här...';
-
-  @override
-  String get discoveryFeedbackThanks =>
-      'Tack för din feedback! Vi kommer att granska den.';
-
-  @override
-  String get discoveryFilterContent => 'Filtrera innehåll';
-
-  @override
-  String get discoveryFindPopularContent =>
-      'Hitta populära recept, menyer och listor';
-
-  @override
-  String get discoveryForYou => 'För dig';
-
-  @override
-  String get discoveryGiveFeedback => 'Ge feedback';
-
-  @override
-  String discoveryItemCount(int count) {
-    return '$count objekt';
-  }
-
-  @override
-  String get discoveryLoading => 'Laddar upptäcktsinnehåll...';
-
-  @override
-  String get discoveryMenus => 'Menyer';
-
-  @override
-  String get discoveryNotifications => 'Aviseringar';
-
-  @override
-  String get discoveryPopularNow => 'Populärt just nu';
-
-  @override
-  String get discoveryPushNotifications => 'Push-aviseringar';
-
-  @override
-  String get discoveryPushNotificationsDescription =>
-      'Få aviseringar om nytt innehåll';
-
-  @override
-  String get discoveryRecipes => 'Recept';
-
-  @override
-  String get discoverySeeAll => 'Se allt';
-
-  @override
-  String get discoverySendFeedback => 'Skicka feedback';
-
-  @override
-  String get discoverySettings => 'Upptäcktsinställningar';
-
-  @override
-  String get discoverySettingsSaved => 'Inställningar sparade!';
-
-  @override
-  String get discoveryShoppingLists => 'Inköpslistor';
-
-  @override
-  String get discoveryShowFriendActivity => 'Visa vänaktivitet';
-
-  @override
-  String get discoveryShowFriendActivityDescription =>
-      'Visa vad dina vänner gör';
-
-  @override
-  String get discoveryShowMenuResults => 'Visa menyresultat';
-
-  @override
-  String get discoveryShowRecipeResults => 'Visa receptresultat';
-
-  @override
-  String get discoveryShowRecommendations => 'Visa rekommendationer';
-
-  @override
-  String get discoveryShowRecommendationsDescription =>
-      'Visa personliga rekommendationer';
-
-  @override
-  String get discoveryShowShoppingLists => 'Visa inköpslistor';
-
-  @override
-  String get discoveryShowTrends => 'Visa trender';
-
-  @override
-  String get discoveryShowTrendsDescription =>
-      'Visa populärt innehåll från communityn';
-
-  @override
-  String get discoveryToDiscover => 'att upptäcka';
-
-  @override
   String get allergenCrustacean => 'Kräftdjur';
 
   @override
@@ -5881,189 +5762,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commonStart => 'Starta';
 
   @override
-  String get discoveryAllRecommendationsComingSoon =>
-      'Visa alla rekommendationer kommer snart!';
-
-  @override
-  String get discoveryBuildingRecommendations => 'Bygger rekommendationer';
-
-  @override
-  String get discoveryCouldNotHideRecommendation =>
-      'Kunde inte dölja rekommendation just nu.';
-
-  @override
-  String get discoveryCouldNotRestoreRecommendation =>
-      'Kunde inte återställa rekommendation.';
-
-  @override
-  String get discoveryCouldNotSendFeedback =>
-      'Kunde inte skicka feedback just nu.';
-
-  @override
-  String get discoveryFeedbackThanksImproving =>
-      'Tack för din feedback! Vi förbättrar rekommendationerna.';
-
-  @override
-  String get discoveryFriendActivity => 'Vänners aktivitet';
-
-  @override
-  String get discoveryFriendActivityDescription =>
-      'När dina vänner delar recept, menyer eller inköpslistor visas de här.';
-
-  @override
-  String get discoveryFriendActivityWillAppearHere =>
-      'Aktivitet från dina vänner visas här';
-
-  @override
-  String get discoveryFriendsChoice => 'Vänners val';
-
-  @override
-  String get discoveryLearningPreferences =>
-      'Vi lär oss dina preferenser för att ge bättre rekommendationer.';
-
-  @override
-  String get discoveryLike => 'Gilla';
-
-  @override
-  String get discoveryListening => 'Lyssnar...';
-
-  @override
-  String get discoveryLists => 'Listor';
-
-  @override
-  String get discoveryLoadingPopularContent => 'Laddar populärt innehåll...';
-
-  @override
-  String get discoveryNoFriendActivityYet => 'Ingen vänaktivitet än';
-
-  @override
-  String get discoveryNoPopularRecipesYet => 'Inga populära recept än';
-
-  @override
-  String get discoveryPerformedAction => 'Utförde en aktivitet';
-
-  @override
-  String get discoveryPopular => 'Populärt';
-
-  @override
-  String get discoveryPopularContent => 'Populärt innehåll';
-
-  @override
-  String get discoveryPopularMenus => 'Populära menyer';
-
-  @override
-  String get discoveryPopularRecipes => 'Populära recept';
-
-  @override
-  String get discoveryPopularShoppingLists => 'Populära inköpslistor';
-
-  @override
-  String get discoveryPopularWithFriends => 'Populärt bland vänner';
-
-  @override
-  String get discoveryPopularWithFriendsDescription =>
-      'Innehåll som dina vänner gillar och delar';
-
-  @override
-  String discoveryPortions(int count) {
-    return '$count portioner';
-  }
-
-  @override
-  String get discoveryRecently => 'Nyligen';
-
-  @override
-  String get discoveryRecentlyShared => 'Nyligen delat';
-
-  @override
-  String get discoveryRecentlySharedDescription =>
-      'Senast delade innehåll i ditt nätverk';
-
-  @override
-  String get discoveryRecommendationHidden =>
-      'Rekommendation dold. Vi visar inte liknande innehåll.';
-
-  @override
-  String get discoveryRecommendationRestored => 'Rekommendation återställd.';
-
-  @override
-  String get discoveryRecommended => 'Rekommenderat';
-
-  @override
-  String get discoveryRecommendedForYou => 'Rekommenderat för dig';
-
-  @override
-  String get discoverySearchFilters => 'Sökfilter';
-
-  @override
-  String get discoverySearchHint => 'Sök recept, menyer, inköpslistor...';
-
-  @override
-  String discoverySearchResultsFor(int count, String query) {
-    return '$count resultat för \"$query\"';
-  }
-
-  @override
-  String get discoverySeasonal => 'Säsong';
-
-  @override
-  String discoverySharedBy(String name) {
-    return 'Delad av $name';
-  }
-
-  @override
-  String get discoverySharing => 'delning';
-
-  @override
-  String get discoverySimilarToShared => 'Liknar delat';
-
-  @override
-  String discoveryTimeAgoDays(int count) {
-    return '${count}d sedan';
-  }
-
-  @override
-  String discoveryTimeAgoHours(int count) {
-    return '${count}h sedan';
-  }
-
-  @override
-  String discoveryTimeAgoMinutes(int count) {
-    return '${count}m sedan';
-  }
-
-  @override
-  String get discoveryTimeAgoNow => 'Nu';
-
-  @override
-  String get discoveryUnknownContent => 'Okänt innehåll';
-
-  @override
-  String get discoveryUnknownUser => 'Okänd användare';
-
-  @override
-  String discoveryUserSharedType(String user, String type) {
-    return '$user delade $type';
-  }
-
-  @override
-  String get discoveryVoiceSearch => 'Röstsökning';
-
-  @override
-  String get discoveryVoiceSearchInstruction =>
-      'Tryck på mikrofonen och börja prata';
-
-  @override
-  String get discoveryVoiceSearchPreview =>
-      'Sökning startad! (Röstsökning är en förhandsversion)';
-
-  @override
-  String get discoveryVoiceSearchPrompt => 'Säg vad du vill söka efter...';
-
-  @override
-  String get discoveryVoiceSearchResult => 'Röstsökning: \"pasta recept\"';
-
-  @override
   String groupInvitationsCount(int count) {
     return 'Gruppinbjudningar ($count)';
   }
@@ -6391,9 +6089,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get commonView => 'Visa';
-
-  @override
-  String get discoveryClearSearch => 'Rensa sökning';
 
   @override
   String get groupCancelInvitation => 'Avbryt inbjudan';
@@ -11148,4 +10843,403 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get fcmChannelGeneralDescription => 'Generella notiser från Butlery';
+
+  @override
+  String get timeAgoNow => 'Nu';
+
+  @override
+  String timeAgoMinutesAbbr(int count) {
+    return '$count min sedan';
+  }
+
+  @override
+  String timeAgoHoursAbbr(int count) {
+    return '$count tim sedan';
+  }
+
+  @override
+  String timeAgoDays(int count) {
+    return '$count dagar sedan';
+  }
+
+  @override
+  String timeAgoWeeks(int count) {
+    return '$count veckor sedan';
+  }
+
+  @override
+  String get timeAgoJustNow => 'Nyss';
+
+  @override
+  String timeAgoMinutesFull(int count) {
+    return '$count minuter sedan';
+  }
+
+  @override
+  String timeAgoHoursFull(int count) {
+    return '$count timmar sedan';
+  }
+
+  @override
+  String timeCompactMinutes(int count) {
+    return '${count}m';
+  }
+
+  @override
+  String timeCompactHours(int count) {
+    return '${count}h';
+  }
+
+  @override
+  String timeCompactDays(int count) {
+    return '${count}d';
+  }
+
+  @override
+  String timeCompactWeeks(int count) {
+    return '${count}w';
+  }
+
+  @override
+  String get expiresExpired => 'Utgången';
+
+  @override
+  String expiresDaysRemaining(int count) {
+    return '$count dagar kvar';
+  }
+
+  @override
+  String expiresHoursRemaining(int count) {
+    return '$count timmar kvar';
+  }
+
+  @override
+  String expiresMinutesRemaining(int count) {
+    return '$count minuter kvar';
+  }
+
+  @override
+  String get expiresSoon => 'Går ut snart';
+
+  @override
+  String groupInvitationNotificationWithMessage(
+      String sender, String emoji, String group, String message) {
+    return '$sender bjöd in dig till gruppen $emoji $group: \"$message\"';
+  }
+
+  @override
+  String groupInvitationNotificationSimple(
+      String sender, String emoji, String group) {
+    return '$sender bjöd in dig till gruppen $emoji $group';
+  }
+
+  @override
+  String get invitationStatusPending => 'Väntande';
+
+  @override
+  String get invitationStatusAccepted => 'Accepterad';
+
+  @override
+  String get invitationStatusRejected => 'Avvisad';
+
+  @override
+  String get invitationStatusCancelled => 'Avbruten';
+
+  @override
+  String get invitationStatusExpired => 'Utgången';
+
+  @override
+  String get messageContentRecipe => 'Recept';
+
+  @override
+  String get messageContentMenu => 'Meny';
+
+  @override
+  String get messageContentShoppingList => 'Inköpslista';
+
+  @override
+  String get messageContentImage => 'Bild';
+
+  @override
+  String get messageContentVoice => 'Röstmeddelande';
+
+  @override
+  String get conversationGroupChat => 'Gruppchatt';
+
+  @override
+  String get editModeOwner => 'Du äger detta recept';
+
+  @override
+  String get editModeCollaborative => 'Du redigerar tillsammans med andra';
+
+  @override
+  String get editModeReadOnlyWithFork =>
+      'Skrivskyddat - du kan spara din egen kopia';
+
+  @override
+  String get editModeNoAccess => 'Ingen åtkomst';
+
+  @override
+  String get editModeEdit => 'Redigeringsläge';
+
+  @override
+  String get editModeView => 'Visningsläge';
+
+  @override
+  String get changeTypeAdded => 'Tillagd';
+
+  @override
+  String get changeTypeModified => 'Ändrad';
+
+  @override
+  String get changeTypeRemoved => 'Borttagen';
+
+  @override
+  String memberSinceDays(int count) {
+    return 'Medlem i $count dagar';
+  }
+
+  @override
+  String memberSinceMonths(int count) {
+    return 'Medlem i $count månader';
+  }
+
+  @override
+  String memberSinceYears(int count) {
+    return 'Medlem i $count år';
+  }
+
+  @override
+  String get commentDeleted => '[Kommentar borttagen]';
+
+  @override
+  String get labelSharedMenu => 'Delad meny';
+
+  @override
+  String sharedMenuTitlePattern(String name) {
+    return '${name}s veckomeny';
+  }
+
+  @override
+  String importedFromMenu(String name, String title) {
+    return 'Importerat från ${name}s meny \"$title\"';
+  }
+
+  @override
+  String get importedRecipeLabel => 'Importerat recept';
+
+  @override
+  String get activityCreatedRecipe => 'skapade ett recept';
+
+  @override
+  String get activitySharedRecipe => 'delade ett recept';
+
+  @override
+  String activityRatedRecipe(int rating) {
+    return 'betygsatte ett recept ($rating⭐)';
+  }
+
+  @override
+  String get activityCommentedRecipe => 'kommenterade ett recept';
+
+  @override
+  String activityReactedRecipe(String reaction) {
+    return 'reagerade på ett recept ($reaction)';
+  }
+
+  @override
+  String get activityCreatedMenu => 'skapade en meny';
+
+  @override
+  String get activitySharedMenu => 'delade en meny';
+
+  @override
+  String get activityCreatedShoppingList => 'skapade en inköpslista';
+
+  @override
+  String get activitySharedShoppingList => 'delade en inköpslista';
+
+  @override
+  String get activityJoinedGroup => 'gick med i en grupp';
+
+  @override
+  String activityUnlockedAchievement(String achievement) {
+    return 'låste upp en bedrift: $achievement';
+  }
+
+  @override
+  String get activityDidSomething => 'gjorde något';
+
+  @override
+  String get labelEmptyMenu => 'Tom meny';
+
+  @override
+  String get labelMultipleChanges => 'Flera ändringar';
+
+  @override
+  String get errorVideoNoSubtitles => 'Video saknar undertexter';
+
+  @override
+  String get errorNetworkFallback => 'Nätverksfel';
+
+  @override
+  String get recipeCollaborationEnable => 'Aktivera samarbete';
+
+  @override
+  String get recipeCollaborationDisable => 'Avaktivera samarbete';
+
+  @override
+  String get menuCommentDeletedSuccess => 'Kommentaren borttagen';
+
+  @override
+  String get recipeSharingStatus => 'Delningsstatus';
+
+  @override
+  String get recipeSharingSharedWith => 'Delat med';
+
+  @override
+  String get recipeSharingStopAll => 'Sluta dela med alla';
+
+  @override
+  String get recipeSharingStopAllConfirm =>
+      'Är du säker på att du vill sluta dela med alla?';
+
+  @override
+  String get recipeSharingStopAllSuccess => 'Delning avslutad med alla';
+
+  @override
+  String get recipeSharingRevoke => 'Ta bort delning';
+
+  @override
+  String recipeSharingRevokeConfirm(String name) {
+    return 'Sluta dela med $name?';
+  }
+
+  @override
+  String recipeSharingRevokeSuccess(String name) {
+    return 'Delning med $name avslutad';
+  }
+
+  @override
+  String get recipeSharingFriends => 'Vänner';
+
+  @override
+  String get recipeSharingGroups => 'Grupper';
+
+  @override
+  String get recipeSharingNoShares => 'Inte delat med någon';
+
+  @override
+  String get menuRatingRemoveMessage => 'Vill du ta bort ditt betyg?';
+
+  @override
+  String get menuRatingRemoved => 'Betyget borttaget';
+
+  @override
+  String get menuRatingRemoveError => 'Kunde inte ta bort betyg';
+
+  @override
+  String get shoppingTemplates => 'Inköpsmallar';
+
+  @override
+  String get shoppingTemplateBrowse => 'Visa mallar';
+
+  @override
+  String get shoppingTemplateEmpty => 'Inga sparade mallar';
+
+  @override
+  String get shoppingTemplateEmptyDescription =>
+      'Spara en inköpslista som mall för snabb återskapning';
+
+  @override
+  String get shoppingTemplateUse => 'Använd mall';
+
+  @override
+  String get shoppingTemplateDelete => 'Ta bort mall';
+
+  @override
+  String shoppingTemplateDeleteConfirm(String name) {
+    return 'Vill du ta bort mallen \"$name\"?';
+  }
+
+  @override
+  String get shoppingTemplateDeleted => 'Mall borttagen';
+
+  @override
+  String get shoppingTemplateCreated => 'Lista skapad från mall';
+
+  @override
+  String shoppingTemplateItemCount(int count) {
+    return '$count varor';
+  }
+
+  @override
+  String shoppingTemplateUsedCount(int count) {
+    return 'Använd $count gånger';
+  }
+
+  @override
+  String get shoppingCategoryCollapse => 'Fäll ihop';
+
+  @override
+  String get shoppingCategoryExpand => 'Expandera';
+
+  @override
+  String get labelButleryUser => 'Butlery-användare';
+
+  @override
+  String get shoppingListSummaryEmpty => 'Tom handlingslista';
+
+  @override
+  String shoppingListSummaryAllDone(int count) {
+    return 'Alla $count artiklar klara';
+  }
+
+  @override
+  String shoppingListSummaryToBuy(int count) {
+    return '$count artiklar att köpa';
+  }
+
+  @override
+  String shoppingListSummaryRemaining(int remaining, int total) {
+    return '$remaining av $total artiklar kvar';
+  }
+
+  @override
+  String notificationBatchComments(int count) {
+    return '$count nya kommentarer på dina recept';
+  }
+
+  @override
+  String notificationCommentSingle(String author, String recipe) {
+    return '$author kommenterade på \"$recipe\"';
+  }
+
+  @override
+  String notificationCommentMultipleSameAuthor(
+      String author, int count, String recipe) {
+    return '$author skrev $count kommentarer på \"$recipe\"';
+  }
+
+  @override
+  String notificationCommentMultipleAuthors(
+      int authorCount, int commentCount, String recipe) {
+    return '$authorCount personer skrev $commentCount kommentarer på \"$recipe\"';
+  }
+
+  @override
+  String notificationRatingSingle(String recipe, int count, String period) {
+    return 'Ditt recept \"$recipe\" fick $count nya betyg denna $period!';
+  }
+
+  @override
+  String notificationRatingMultiple(
+      int totalRatings, int recipeCount, String period) {
+    return 'Dina recept fick totalt $totalRatings nya betyg på $recipeCount recept denna $period!';
+  }
+
+  @override
+  String timeCompactMonths(int count) {
+    return '${count}mån';
+  }
 }

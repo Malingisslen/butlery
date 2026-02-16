@@ -2,6 +2,7 @@
 
 import 'dart:async';
 // Firebase imports removed - using repository pattern
+import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -357,22 +358,8 @@ class CommentUtilities {
   }
 
   /// Get comment age in human readable format
-  static String getCommentAge(DateTime createdAt) {
-    final now = DateTime.now();
-    final difference = now.difference(createdAt);
-
-    if (difference.inMinutes < 1) {
-      return 'nu';
-    } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours}h';
-    } else if (difference.inDays < 30) {
-      return '${difference.inDays}d';
-    } else {
-      return '${(difference.inDays / 30).floor()}mån';
-    }
-  }
+  static String getCommentAge(DateTime createdAt) =>
+      TimeAgoFormatter.compact(createdAt);
 
   /// Generate comment permalink
   static String generateCommentPermalink({

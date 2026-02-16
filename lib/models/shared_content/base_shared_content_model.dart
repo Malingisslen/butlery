@@ -1,4 +1,5 @@
 import 'package:butlery/core/types/app_timestamp.dart';
+import 'package:butlery/core/utils/time_ago_formatter.dart';
 
 /// Abstract base class for all shared content models providing common functionality.
 abstract class BaseSharedContentModel<TContent> {
@@ -41,22 +42,9 @@ abstract class BaseSharedContentModel<TContent> {
     return (engagementCount / viewCount) * 100.0;
   }
 
-  /// Swedish text for how long ago the content was shared.
+  /// Localized text for how long ago the content was shared.
   String get timeAgoText {
-    final now = DateTime.now();
-    final difference = now.difference(sharedAt);
-
-    if (difference.inMinutes < 1) {
-      return 'Nu';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes} min sedan';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours} tim sedan';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} dagar sedan';
-    } else {
-      return '${(difference.inDays / 7).floor()} veckor sedan';
-    }
+    return TimeAgoFormatter.standard(sharedAt);
   }
 
   /// Common Firestore fields for all content types.

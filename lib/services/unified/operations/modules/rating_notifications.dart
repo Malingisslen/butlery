@@ -1,5 +1,6 @@
 // lib/services/unified/operations/modules/rating_notifications.dart
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/notification_helper.dart';
@@ -223,11 +224,14 @@ class RatingNotifications {
     final recipesWithRatings =
         summaries.where((s) => (s['newRatings'] as int) > 0).length;
 
+    final l = AppLocale.current;
     if (recipesWithRatings == 1) {
       final recipe = summaries.first;
-      return 'Ditt recept "${recipe['recipeName']}" fick ${recipe['newRatings']} nya betyg denna $period!';
+      return l.notificationRatingSingle(
+          recipe['recipeName'] as String, recipe['newRatings'] as int, period);
     } else {
-      return 'Dina recept fick totalt $totalNewRatings nya betyg på $recipesWithRatings recept denna $period!';
+      return l.notificationRatingMultiple(
+          totalNewRatings, recipesWithRatings, period);
     }
   }
 
