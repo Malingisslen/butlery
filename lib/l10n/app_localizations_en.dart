@@ -2467,7 +2467,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareMenuTitle => 'Share menu';
 
   @override
-  String get shareShoppingListTitle => 'Share shopping list';
+  String get shareShoppingListTitle => '🛒 SHOPPING LIST';
 
   @override
   String get shareCreateAndShare => 'Create & Share';
@@ -3231,8 +3231,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupDeleteTheGroup => 'Delete the group';
 
   @override
-  String get groupDeleteWarning =>
-      'This cannot be undone. All members will be removed from the group.';
+  String get groupDeleteWarning => 'All members will leave the group.';
 
   @override
   String get groupDeleteWhenLeaving =>
@@ -7511,6 +7510,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryOther => 'Other';
 
   @override
+  String get categorySpices => 'Spices';
+
+  @override
+  String get categoryCanned => 'Canned Goods';
+
+  @override
+  String get categoryDryGoods => 'Dry Goods';
+
+  @override
   String get privacyEmailSubject => 'Privacy inquiry';
 
   @override
@@ -8162,7 +8170,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pollCancel => 'Cancel';
 
   @override
-  String get pollCreate => 'Create';
+  String get pollCreate => 'Create poll';
 
   @override
   String pollVoteCount(int count) {
@@ -11595,4 +11603,454 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unknownActivity => 'Unknown activity';
+
+  @override
+  String get shareMinutesAbbrev => 'min';
+
+  @override
+  String get sharePortionsAbbrev => 'serv';
+
+  @override
+  String get shareTimeLabel => 'Time:';
+
+  @override
+  String get shareTimeLabelBold => '**Time:**';
+
+  @override
+  String get sharePortionsLabel => 'Portions:';
+
+  @override
+  String get sharePortionsLabelBold => '**Portions:**';
+
+  @override
+  String get shareRatingLabel => 'Rating:';
+
+  @override
+  String get shareRatingLabelBold => '**Rating:**';
+
+  @override
+  String get shareTypeLabel => 'Type:';
+
+  @override
+  String get shareTypeLabelBold => '**Type:**';
+
+  @override
+  String get shareTagsLabel => 'Tags';
+
+  @override
+  String get shareInstructionsLabelCompact => 'Instructions:';
+
+  @override
+  String get shareShoppingListTitleSimple => 'Shopping list';
+
+  @override
+  String get shareWeekMenuTitle => 'Week menu';
+
+  @override
+  String get shareWeekMenuTitleEmoji => '🍽 WEEK MENU';
+
+  @override
+  String get shareSummaryLabel => '📊 Summary:';
+
+  @override
+  String shareSummaryRecipesInCategories(int recipeCount, int categoryCount) {
+    return '$recipeCount recipes in $categoryCount categories';
+  }
+
+  @override
+  String get unsavedChangesTitle => 'Unsaved changes';
+
+  @override
+  String get unsavedChangesMessage =>
+      'You have unsaved changes. Do you really want to cancel?';
+
+  @override
+  String get cancelWithoutSaving => 'Cancel without saving';
+
+  @override
+  String get deleteActionIrreversible => 'This action cannot be undone.';
+
+  @override
+  String get deleteConfirmMessage => 'Do you really want to delete';
+
+  @override
+  String get groupLeaveTitle => 'Leave group?';
+
+  @override
+  String groupLeaveMessage(String name) {
+    return 'Do you really want to leave the group \"$name\"?';
+  }
+
+  @override
+  String get groupLeaveAction => 'Leave group';
+
+  @override
+  String shareItemTitle(String type) {
+    return 'Share $type?';
+  }
+
+  @override
+  String shareItemMessage(String type, String recipients) {
+    return 'Do you want to share $type with $recipients?';
+  }
+
+  @override
+  String shareRecipientsMore(int count) {
+    return 'and $count more';
+  }
+
+  @override
+  String get recipeDeleteWarning => 'The recipe will be permanently deleted.';
+
+  @override
+  String get shoppingListDeleteWarning =>
+      'All items on the list will be removed.';
+
+  @override
+  String itemDeletedSuccess(String type) {
+    return '$type has been deleted';
+  }
+
+  @override
+  String itemDeleteError(String type) {
+    return 'Could not delete $type';
+  }
+
+  @override
+  String get commentDeleteError => 'Could not delete the comment';
+
+  @override
+  String get reactionUpdateError => 'Could not update reaction';
+
+  @override
+  String get activityRecipeCreated => '👨‍🍳 Recipe created';
+
+  @override
+  String get activityMenuCreated => '📋 Menu created';
+
+  @override
+  String get activityShoppingListCreated => '🛒 Shopping list created';
+
+  @override
+  String get activityRecipeShared => '📤 Recipe shared';
+
+  @override
+  String get activityMenuShared => '📤 Menu shared';
+
+  @override
+  String get activityShoppingListShared => '📤 Shopping list shared';
+
+  @override
+  String get activityCommentAdded => '💬 Comment';
+
+  @override
+  String get activityReactionAdded => '❤️ Reaction';
+
+  @override
+  String get activityRecipeRated => '⭐ Rating';
+
+  @override
+  String get activityGroupJoined => '👥 Joined group';
+
+  @override
+  String get activityInvitationSent => '📩 Invitation sent';
+
+  @override
+  String get activityInvitationAccepted => '✅ Invitation accepted';
+
+  @override
+  String get activityAchievementUnlocked => '🏆 Achievement';
+
+  @override
+  String get activityMilestoneReached => '🎯 Milestone';
+
+  @override
+  String get activityUnknown => '❓ Unknown activity';
+
+  @override
+  String get pollVoteSingular => 'vote';
+
+  @override
+  String get pollVotePlural => 'votes';
+
+  @override
+  String get pollClosed => 'Closed';
+
+  @override
+  String get pollCloseAction => 'Close poll';
+
+  @override
+  String get chatGroupChatDefault => 'Group chat';
+
+  @override
+  String chatGroupCreatedMessage(String name, String title) {
+    return '$name created the group \"$title\"';
+  }
+
+  @override
+  String chatParticipantAdded(String name) {
+    return '$name was added to the group';
+  }
+
+  @override
+  String chatParticipantLeft(String name) {
+    return '$name left the group';
+  }
+
+  @override
+  String get authRequiredError => 'You must be logged in';
+
+  @override
+  String get shoppingListEditPermissionDenied =>
+      'You do not have permission to edit this shared shopping list';
+
+  @override
+  String get tagShareError => 'Could not share the tag';
+
+  @override
+  String get userStatusOffline => 'Offline';
+
+  @override
+  String get userStatusAway => 'Away';
+
+  @override
+  String get userStatusBusy => 'Busy';
+
+  @override
+  String participantsCount(int count) {
+    return 'Participants ($count)';
+  }
+
+  @override
+  String participantsOnlineCount(int count) {
+    return '$count online';
+  }
+
+  @override
+  String get socialPermissionOwnerLabel => 'Owner';
+
+  @override
+  String get socialPermissionAdminLabel => 'Admin';
+
+  @override
+  String get socialPermissionEditorLabel => 'Edit';
+
+  @override
+  String get socialPermissionViewerLabel => 'View';
+
+  @override
+  String get restoreDraft => 'Restore';
+
+  @override
+  String get startFresh => 'Start fresh';
+
+  @override
+  String get couldNotRestoreDraft =>
+      'Could not restore draft. Starting with an empty form.';
+
+  @override
+  String get restoringDraft => 'Restoring draft...';
+
+  @override
+  String get unnamedRecipe => 'Unnamed recipe';
+
+  @override
+  String fieldsFilledCount(int count) {
+    return '$count fields filled';
+  }
+
+  @override
+  String get showTechnicalDetails => 'Show technical details';
+
+  @override
+  String get hideTechnicalDetails => 'Hide technical details';
+
+  @override
+  String get contactSupport => 'Contact support';
+
+  @override
+  String get tryAgainLater => 'Try again later';
+
+  @override
+  String get offlineMode => 'Offline mode enabled';
+
+  @override
+  String get syncingPendingChanges => 'Syncing pending changes...';
+
+  @override
+  String get localChangesSaved => 'Changes saved locally';
+
+  @override
+  String get willSyncWhenOnline => 'Will sync when you are online again';
+
+  @override
+  String get insufficientPermissions => 'Insufficient permissions';
+
+  @override
+  String get readOnlyAccess => 'Read-only access';
+
+  @override
+  String get ownerOnlyAction => 'Only the owner can perform this action';
+
+  @override
+  String get requestEditAccess => 'Request edit access';
+
+  @override
+  String get noItemsFound => 'No items found.';
+
+  @override
+  String get noResults => 'No results found.';
+
+  @override
+  String get noFriends => 'You have no friends yet.';
+
+  @override
+  String get noRecipes => 'You have no recipes yet.';
+
+  @override
+  String get noShoppingLists => 'You have no shopping lists yet.';
+
+  @override
+  String get addRecipe => 'Add recipe';
+
+  @override
+  String get editRecipe => 'Edit recipe';
+
+  @override
+  String get deleteRecipeAction => 'Delete recipe';
+
+  @override
+  String get searchPlaceholder => 'Search...';
+
+  @override
+  String get namePlaceholder => 'Enter name';
+
+  @override
+  String get descriptionPlaceholder => 'Enter description (optional)';
+
+  @override
+  String get emailPlaceholder => 'your@email.com';
+
+  @override
+  String get urlPlaceholder => 'https://example.com';
+
+  @override
+  String get phonePlaceholder => '+1 555 123 4567';
+
+  @override
+  String get makePersonalCopy => 'Create personal copy';
+
+  @override
+  String get checkConnection => 'Check internet connection';
+
+  @override
+  String get loginAgain => 'Log in again';
+
+  @override
+  String get contactOwner => 'Contact the owner';
+
+  @override
+  String get waitAndRetry => 'Wait and try again';
+
+  @override
+  String get checkPermissions => 'Check permissions';
+
+  @override
+  String get ingredientParseError => 'Could not parse ingredient';
+
+  @override
+  String get portionsUnit => 'portions';
+
+  @override
+  String sharedRecipeFallback(int count) {
+    return 'Shared recipe • $count members';
+  }
+
+  @override
+  String sharedMenuFallback(int count) {
+    return 'Shared menu • $count members';
+  }
+
+  @override
+  String get sharedFallback => 'Shared';
+
+  @override
+  String deleteItemType(String itemType) {
+    return 'Delete $itemType?';
+  }
+
+  @override
+  String get accountSecurityTitle => 'Account Security';
+
+  @override
+  String get accountSecurityChangePassword => 'Change Password';
+
+  @override
+  String get accountSecurityChangeEmail => 'Change Email';
+
+  @override
+  String get accountSecurityCurrentPassword => 'Current Password';
+
+  @override
+  String get accountSecurityNewPassword => 'New Password';
+
+  @override
+  String get accountSecurityConfirmPassword => 'Confirm Password';
+
+  @override
+  String get accountSecurityNewEmail => 'New Email';
+
+  @override
+  String get accountSecurityMfaSettings => 'Two-Factor Authentication';
+
+  @override
+  String get accountSecurityPasswordChanged => 'Password changed successfully';
+
+  @override
+  String get accountSecurityEmailVerificationSent =>
+      'Verification link sent to new email address';
+
+  @override
+  String get accountSecurityPasswordMismatch => 'Passwords do not match';
+
+  @override
+  String get profileAccountSecurity => 'Account Security';
+
+  @override
+  String get profileAccountSecuritySubtitle =>
+      'Password, email, and two-factor authentication';
+
+  @override
+  String bulkSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get bulkSelectAll => 'Select All';
+
+  @override
+  String get bulkDelete => 'Delete Selected';
+
+  @override
+  String get bulkShare => 'Share Selected';
+
+  @override
+  String get viewModeGrid => 'Grid View';
+
+  @override
+  String get viewModeList => 'List View';
+
+  @override
+  String get duplicateImportTitle => 'Recipe may already exist';
+
+  @override
+  String duplicateImportMessage(String recipeName) {
+    return 'A recipe with the same source already exists: $recipeName';
+  }
+
+  @override
+  String get duplicateImportViewExisting => 'View Existing';
+
+  @override
+  String get duplicateImportAnyway => 'Import Anyway';
 }

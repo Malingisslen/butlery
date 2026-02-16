@@ -85,41 +85,41 @@ class _AddUnifiedShoppingItemDialogState
         },
       ];
 
-  // Category values stored in Firestore → localized display labels
+  // Category values stored in Firestore (language-neutral constants) → localized display labels
   static const List<String> _categoryValues = [
-    'Frukt & Grönt',
-    'Mejeri',
-    'Kött & Fisk',
-    'Bröd',
-    'Skafferi',
-    'Fryst',
-    'Dryck',
-    'Snacks & Godis',
-    'Städ & Hygien',
-    'Övrigt',
+    ShoppingCategory.fruitVeg,
+    ShoppingCategory.dairy,
+    ShoppingCategory.meatFish,
+    ShoppingCategory.breadGrain,
+    ShoppingCategory.pantry,
+    ShoppingCategory.frozen,
+    ShoppingCategory.drinks,
+    ShoppingCategory.snacks,
+    ShoppingCategory.cleaning,
+    ShoppingCategory.other,
   ];
 
   String _categoryLabel(BuildContext context, String value) {
     switch (value) {
-      case 'Frukt & Grönt':
+      case ShoppingCategory.fruitVeg:
         return context.l10n.categoryFruitVeg;
-      case 'Mejeri':
+      case ShoppingCategory.dairy:
         return context.l10n.categoryDairy;
-      case 'Kött & Fisk':
+      case ShoppingCategory.meatFish:
         return context.l10n.categoryMeatFish;
-      case 'Bröd':
+      case ShoppingCategory.breadGrain:
         return context.l10n.categoryBread;
-      case 'Skafferi':
+      case ShoppingCategory.pantry:
         return context.l10n.categoryPantry;
-      case 'Fryst':
+      case ShoppingCategory.frozen:
         return context.l10n.categoryFrozen;
-      case 'Dryck':
+      case ShoppingCategory.drinks:
         return context.l10n.categoryBeverage;
-      case 'Snacks & Godis':
+      case ShoppingCategory.snacks:
         return context.l10n.categorySnacks;
-      case 'Städ & Hygien':
+      case ShoppingCategory.cleaning:
         return context.l10n.categoryHygiene;
-      case 'Övrigt':
+      case ShoppingCategory.other:
         return context.l10n.categoryOther;
       default:
         return value;
@@ -135,7 +135,7 @@ class _AddUnifiedShoppingItemDialogState
       text: widget.initialItem?.formattedAmount ?? '1',
     );
     _selectedUnit = widget.initialItem?.unit ?? 'st';
-    _selectedCategory = widget.initialItem?.category ?? 'Övrigt';
+    _selectedCategory = widget.initialItem?.category ?? ShoppingCategory.other;
   }
 
   @override

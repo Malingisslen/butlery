@@ -44,7 +44,7 @@ class CommonDialogActions {
       context: context,
       itemName: recipeName,
       itemType: 'recept',
-      warningMessage: 'Receptet kommer att tas bort permanent.',
+      warningMessage: context.l10n.recipeDeleteWarning,
       icon: AdaptiveIcons.restaurant,
     );
   }
@@ -58,7 +58,7 @@ class CommonDialogActions {
       context: context,
       itemName: groupName,
       itemType: 'grupp',
-      warningMessage: 'Alla medlemmar kommer att lämna gruppen.',
+      warningMessage: context.l10n.groupDeleteWarning,
       icon: AdaptiveIcons.group,
     );
   }
@@ -72,7 +72,7 @@ class CommonDialogActions {
       context: context,
       itemName: listName,
       itemType: 'inköpslista',
-      warningMessage: 'Alla varor på listan kommer att försvinna.',
+      warningMessage: context.l10n.shoppingListDeleteWarning,
       icon: AdaptiveIcons.cart,
     );
   }
@@ -109,9 +109,9 @@ class CommonDialogActions {
   }) async {
     return await showActionConfirmation(
       context: context,
-      title: 'Lämna grupp?',
-      message: 'Vill du verkligen lämna gruppen "$groupName"?',
-      confirmText: 'Lämna grupp',
+      title: context.l10n.groupLeaveTitle,
+      message: context.l10n.groupLeaveMessage(groupName),
+      confirmText: context.l10n.groupLeaveAction,
       icon: AdaptiveIcons.exitToApp,
       confirmColor: context.butleryColors.warning,
       isDangerous: true,
@@ -124,9 +124,9 @@ class CommonDialogActions {
   }) async {
     return await showActionConfirmation(
       context: context,
-      title: 'Osparade ändringar',
-      message: 'Du har osparade ändringar. Vill du verkligen avbryta?',
-      confirmText: 'Avbryt utan att spara',
+      title: context.l10n.unsavedChangesTitle,
+      message: context.l10n.unsavedChangesMessage,
+      confirmText: context.l10n.cancelWithoutSaving,
       icon: AdaptiveIcons.warning,
       confirmColor: context.butleryColors.warning,
       isDangerous: true,
@@ -141,12 +141,12 @@ class CommonDialogActions {
   }) async {
     final recipients = recipientNames.length <= 3
         ? recipientNames.join(', ')
-        : '${recipientNames.take(2).join(', ')} och ${recipientNames.length - 2} till';
+        : '${recipientNames.take(2).join(', ')} ${context.l10n.shareRecipientsMore(recipientNames.length - 2)}';
 
     return await showActionConfirmation(
       context: context,
-      title: 'Dela $itemType?',
-      message: 'Vill du dela $itemType med $recipients?',
+      title: context.l10n.shareItemTitle(itemType),
+      message: context.l10n.shareItemMessage(itemType, recipients),
       confirmText: context.l10n.commonShare,
       icon: AdaptiveIcons.share,
       confirmColor: Theme.of(context).colorScheme.primary,
@@ -242,7 +242,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
           text: TextSpan(
             style: AppTextStyles.bodyMedium,
             children: [
-              const TextSpan(text: 'Vill du verkligen ta bort '),
+              TextSpan(text: '${context.l10n.deleteConfirmMessage} '),
               TextSpan(
                 text: '"$itemName"',
                 style: AppTextStyles.bodyBold,
@@ -264,7 +264,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
         const SizedBox(
             height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
         Text(
-          'Denna åtgärd kan inte ångras.',
+          context.l10n.deleteActionIrreversible,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontStyle: FontStyle.italic,
               ),

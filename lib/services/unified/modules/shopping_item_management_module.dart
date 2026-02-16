@@ -77,8 +77,9 @@ class ShoppingItemManagementModule {
           orElse: () => throw StateError('Active list not found'));
 
       // Auto-categorize when category is empty or default
-      var resolvedCategory = category ?? 'Övrigt';
-      if (resolvedCategory.isEmpty || resolvedCategory == 'Övrigt') {
+      var resolvedCategory = category ?? ShoppingCategory.other;
+      if (resolvedCategory.isEmpty ||
+          resolvedCategory == ShoppingCategory.other) {
         resolvedCategory = await _autoCategorize(name);
       }
 
@@ -298,7 +299,7 @@ class ShoppingItemManagementModule {
     } catch (_) {
       // Silently fall back to default
     }
-    return 'Övrigt';
+    return ShoppingCategory.other;
   }
 
   Future<bool> clearCompletedItems() async => true;

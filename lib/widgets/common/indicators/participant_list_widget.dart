@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_shadows.dart';
@@ -50,7 +51,7 @@ class ParticipantListWidget extends StatelessWidget {
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
                 Text(
-                  'Deltagare (${activities.length})',
+                  context.l10n.participantsCount(activities.length),
                   style: AppTextStyles.headlineSmall,
                 ),
                 const Spacer(),
@@ -100,7 +101,7 @@ class ParticipantListWidget extends StatelessWidget {
           ),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
-            '$onlineCount online',
+            context.l10n.participantsOnlineCount(onlineCount),
             style: AppTextStyles.successText,
           ),
         ],
@@ -161,7 +162,7 @@ class ParticipantListWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                isCurrentUser ? 'Du' : activity.displayName,
+                isCurrentUser ? context.l10n.commonYou : activity.displayName,
                 style: isCurrentUser
                     ? AppTextStyles.bodyLargeBold.copyWith(
                         color: cs.primary,
@@ -169,7 +170,9 @@ class ParticipantListWidget extends StatelessWidget {
                     : AppTextStyles.bodyLarge,
               ),
               Text(
-                activity.isOnline ? 'Online' : 'Offline',
+                activity.isOnline
+                    ? context.l10n.userStatusOnline
+                    : context.l10n.userStatusOffline,
                 style: AppTextStyles.bodySmall,
               ),
             ],

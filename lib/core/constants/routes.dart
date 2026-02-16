@@ -75,6 +75,7 @@ class Routes {
   static const String settingsAllergens = '/settings/allergens';
   static const String settingsPersonalTags = '/settings/personal-tags';
   static const String settingsNotifications = '/settings/notifications';
+  static const String settingsAccountSecurity = '/settings/account-security';
 
   // Help routes
   static const String faq = '/faq';
@@ -115,6 +116,7 @@ class Routes {
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,
+    settingsAccountSecurity,
     faq,
   };
 
@@ -148,6 +150,7 @@ class Routes {
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,
+    settingsAccountSecurity,
     faq,
   };
 
@@ -236,6 +239,7 @@ class Routes {
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,
+    settingsAccountSecurity,
 
     // Help
     faq,

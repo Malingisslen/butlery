@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/messaging/poll.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -69,13 +70,13 @@ class PollMessageWidget extends StatelessWidget {
           Row(
             children: [
               Text(
-                '$totalVotes ${totalVotes == 1 ? 'röst' : 'röster'}',
+                '$totalVotes ${totalVotes == 1 ? context.l10n.pollVoteSingular : context.l10n.pollVotePlural}',
                 style: AppTextStyles.labelSmall.copyWith(color: subtleColor),
               ),
               if (!poll.isActive) ...[
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
-                  'Avslutad',
+                  context.l10n.pollClosed,
                   style: AppTextStyles.labelSmall.copyWith(
                     color: subtleColor,
                     fontStyle: FontStyle.italic,
@@ -93,7 +94,7 @@ class PollMessageWidget extends StatelessWidget {
             GestureDetector(
               onTap: onClose,
               child: Text(
-                'Stäng omröstning',
+                context.l10n.pollCloseAction,
                 style: AppTextStyles.labelSmall.copyWith(
                   color: isFromCurrentUser ? cs.onPrimary : cs.primary,
                   fontWeight: FontWeight.w600,

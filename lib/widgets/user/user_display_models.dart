@@ -2,6 +2,7 @@
 // Data models, enums, and core data structures for user display components
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -100,10 +101,10 @@ class UserStatusHelper {
 
   static String getStatusText(UserStatus status) {
     return switch (status) {
-      UserStatus.online => 'Online',
-      UserStatus.offline => 'Offline',
-      UserStatus.away => 'Away',
-      UserStatus.busy => 'Busy',
+      UserStatus.online => AppLocale.current.userStatusOnline,
+      UserStatus.offline => AppLocale.current.userStatusOffline,
+      UserStatus.away => AppLocale.current.userStatusAway,
+      UserStatus.busy => AppLocale.current.userStatusBusy,
     };
   }
 

@@ -252,7 +252,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                         onPressed: _handlePollCreate,
                         icon: const Icon(Icons.poll_outlined),
                         color: cs.onSurfaceVariant,
-                        tooltip: 'Skapa omröstning',
+                        tooltip: context.l10n.pollCreate,
                       ),
 
                     // Attachment button

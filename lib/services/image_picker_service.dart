@@ -26,6 +26,7 @@ import 'dart:io';
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/storage_service.dart';
@@ -279,6 +280,47 @@ class ImagePickerService extends BaseService {
       AppLogger.error('💥 Fel vid val av flera bilder: $e');
       AppLogger.error('📍 Stack trace: $stackTrace');
       return [];
+    }
+  }
+
+  /// Crop and optionally rotate an image. Returns cropped file or null if cancelled.
+  /// Uses square aspect ratio for recipe thumbnails with 90-degree rotation support.
+  Future<File?> cropImage(File imageFile) async {
+    try {
+      if (kIsWeb) {
+        // image_cropper has limited web support; skip cropping on web
+        AppLogger.debug('Crop not supported on web, returning original');
+        return imageFile;
+      }
+
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: imageFile.path,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        compressQuality: 90,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Beskär bild',
+            lockAspectRatio: false,
+            hideBottomControls: false,
+          ),
+          IOSUiSettings(
+            title: 'Beskär bild',
+            aspectRatioLockEnabled: false,
+            rotateButtonsHidden: false,
+          ),
+        ],
+      );
+
+      if (croppedFile == null) {
+        AppLogger.info('Image crop cancelled by user');
+        return null;
+      }
+
+      AppLogger.success('Image cropped: ${croppedFile.path}');
+      return File(croppedFile.path);
+    } catch (e) {
+      AppLogger.error('Image crop failed: $e');
+      return null;
     }
   }
 

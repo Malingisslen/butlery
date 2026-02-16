@@ -276,7 +276,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       await vm.deleteComment(widget.recipe.id, comment.id);
     } catch (e) {
       if (!mounted) return;
-      _showMessage('Kunde inte ta bort kommentaren', isError: true);
+      _showMessage(context.l10n.commentDeleteError, isError: true);
     }
   }
 
@@ -310,7 +310,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       }
     } catch (e) {
       if (!mounted) return;
-      _showMessage('Kunde inte uppdatera reaktion', isError: true);
+      _showMessage(context.l10n.reactionUpdateError, isError: true);
     }
   }
 

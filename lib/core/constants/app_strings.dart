@@ -274,7 +274,9 @@ class AppStrings {
       'Use context.l10n.draftRecoverySubtitle or AppLocale.current.draftRecoverySubtitle instead')
   static const String draftRecoverySubtitle =
       'Du har osparade receptutkast. Vill du fortsätta där du slutade?';
+  @Deprecated('Use AppLocale.current.restoreDraft instead')
   static const String restoreDraft = 'Återställ';
+  @Deprecated('Use AppLocale.current.startFresh instead')
   static const String startFresh = 'Börja om';
   @Deprecated(
       'Use context.l10n.draftRestored or AppLocale.current.draftRestored instead')
@@ -282,11 +284,15 @@ class AppStrings {
   @Deprecated(
       'Use context.l10n.draftRestoredDetails or AppLocale.current.draftRestoredDetails instead')
   static const String draftRestoredDetails = 'fält laddades';
+  @Deprecated('Use AppLocale.current.couldNotRestoreDraft instead')
   static const String couldNotRestoreDraft =
       'Kunde inte återställa utkast. Börjar med tomt formulär.';
+  @Deprecated('Use AppLocale.current.restoringDraft instead')
   static const String restoringDraft = 'Återställer utkast...';
+  @Deprecated('Use AppLocale.current.unnamedRecipe instead')
   static const String unnamedRecipe = 'Namnlöst recept';
-  static String fieldsFilledCount(int count) => '$count fält ifyllda';
+  static String fieldsFilledCount(int count) =>
+      AppLocale.current.fieldsFilledCount(count);
   static String draftRestoredWithCount(int count) =>
       AppLocale.current.draftRestoredWithCount(count);
 
@@ -342,49 +348,73 @@ class AppStrings {
           String action, String issue, String recovery) =>
       AppLocale.current.errorDuringActionRecovery(action, issue, recovery);
 
-  // Progressive error disclosure — no l10n equivalents for most of these yet
+  // Progressive error disclosure
+  @Deprecated('Use AppLocale.current.showTechnicalDetails instead')
   static const String showTechnicalDetails = 'Visa tekniska detaljer';
+  @Deprecated('Use AppLocale.current.hideTechnicalDetails instead')
   static const String hideTechnicalDetails = 'Dölj tekniska detaljer';
   @Deprecated(
       'Use context.l10n.technicalInformation or AppLocale.current.technicalInformation instead')
   static const String technicalInformation = 'Teknisk information';
+  @Deprecated('Use AppLocale.current.contactSupport instead')
   static const String contactSupport = 'Kontakta support';
+  @Deprecated('Use AppLocale.current.tryAgainLater instead')
   static const String tryAgainLater = 'Försök igen senare';
 
-  // Connectivity-specific messages — no l10n equivalents for most of these yet
+  // Connectivity-specific messages
+  @Deprecated('Use AppLocale.current.offlineMode instead')
   static const String offlineMode = 'Offline-läge aktiverat';
   @Deprecated(
       'Use context.l10n.connectivityRestored or AppLocale.current.connectivityRestored instead')
   static const String connectivityRestored = 'Anslutning återställd';
+  @Deprecated('Use AppLocale.current.syncingPendingChanges instead')
   static const String syncingPendingChanges =
       'Synkroniserar väntande ändringar...';
+  @Deprecated('Use AppLocale.current.localChangesSaved instead')
   static const String localChangesSaved = 'Ändringar sparade lokalt';
+  @Deprecated('Use AppLocale.current.willSyncWhenOnline instead')
   static const String willSyncWhenOnline =
       'Synkroniseras när du är online igen';
 
   // Permission-specific messages
+  @Deprecated('Use AppLocale.current.insufficientPermissions instead')
   static const String insufficientPermissions = 'Otillräckliga behörigheter';
+  @Deprecated('Use AppLocale.current.readOnlyAccess instead')
   static const String readOnlyAccess = 'Endast läsrättigheter';
+  @Deprecated('Use AppLocale.current.ownerOnlyAction instead')
   static const String ownerOnlyAction = 'Endast ägaren kan utföra denna åtgärd';
+  @Deprecated('Use AppLocale.current.requestEditAccess instead')
   static const String requestEditAccess = 'Be om redigeringsrättigheter';
+  @Deprecated('Use AppLocale.current.makePersonalCopy instead')
   static const String makePersonalCopy = 'Skapa personlig kopia';
 
   // Recovery action suggestions
+  @Deprecated('Use AppLocale.current.checkConnection instead')
   static const String checkConnection = 'Kontrollera internetanslutningen';
+  @Deprecated('Use context.l10n.commonRetry instead')
   static const String tryAgain = 'Försök igen';
+  @Deprecated('Use AppLocale.current.loginAgain instead')
   static const String loginAgain = 'Logga in på nytt';
+  @Deprecated('Use AppLocale.current.contactOwner instead')
   static const String contactOwner = 'Kontakta ägaren';
+  @Deprecated('Use AppLocale.current.waitAndRetry instead')
   static const String waitAndRetry = 'Vänta och försök igen';
+  @Deprecated('Use AppLocale.current.checkPermissions instead')
   static const String checkPermissions = 'Kontrollera behörigheter';
 
-  // Empty states — no l10n equivalents for most of these yet
+  // Empty states
+  @Deprecated('Use AppLocale.current.noItemsFound instead')
   static const String noItemsFound = 'Inga objekt hittades.';
   @Deprecated(
       'Use context.l10n.emptyList or AppLocale.current.emptyList instead')
   static const String emptyList = 'Listan är tom.';
+  @Deprecated('Use AppLocale.current.noResults instead')
   static const String noResults = 'Inga resultat hittades.';
+  @Deprecated('Use AppLocale.current.noFriends instead')
   static const String noFriends = 'Du har inga vänner än.';
+  @Deprecated('Use AppLocale.current.noRecipes instead')
   static const String noRecipes = 'Du har inga recept än.';
+  @Deprecated('Use AppLocale.current.noShoppingLists instead')
   static const String noShoppingLists = 'Du har inga inköpslistor än.';
 
   // Feature-specific strings
@@ -408,8 +438,11 @@ class AppStrings {
   @Deprecated(
       'Use context.l10n.recipePortions or AppLocale.current.recipePortions instead')
   static const String portions = 'Portioner';
+  @Deprecated('Use AppLocale.current.addRecipe instead')
   static const String addRecipe = 'Lägg till recept';
+  @Deprecated('Use AppLocale.current.editRecipe instead')
   static const String editRecipe = 'Redigera recept';
+  @Deprecated('Use AppLocale.current.deleteRecipeAction instead')
   static const String deleteRecipe = 'Ta bort recept';
 
   // Shopping related
@@ -484,11 +517,17 @@ class AppStrings {
   static const String weekMenu = 'Veckomeny';
 
   // Placeholder texts
+  @Deprecated('Use AppLocale.current.searchPlaceholder instead')
   static const String searchPlaceholder = 'Sök...';
+  @Deprecated('Use AppLocale.current.namePlaceholder instead')
   static const String namePlaceholder = 'Ange namn';
+  @Deprecated('Use AppLocale.current.descriptionPlaceholder instead')
   static const String descriptionPlaceholder = 'Ange beskrivning (valfritt)';
+  @Deprecated('Use AppLocale.current.emailPlaceholder instead')
   static const String emailPlaceholder = 'din@email.com';
+  @Deprecated('Use AppLocale.current.urlPlaceholder instead')
   static const String urlPlaceholder = 'https://exempel.se';
+  @Deprecated('Use AppLocale.current.phonePlaceholder instead')
   static const String phonePlaceholder = '+46 70 123 45 67';
 
   // Status messages
@@ -521,11 +560,17 @@ class AppStrings {
   static const String updating = 'Uppdaterar...';
 
   // Accessibility strings
+  @Deprecated('Use AppLocale.current.accessibilityMenuButton instead')
   static const String menuButton = 'Menyknapp';
+  @Deprecated('Use AppLocale.current.accessibilityBackButton instead')
   static const String backButton = 'Tillbaka';
+  @Deprecated('Use AppLocale.current.accessibilityCloseButton instead')
   static const String closeButton = 'Stäng';
+  @Deprecated('Use AppLocale.current.accessibilityMoreOptions instead')
   static const String moreOptions = 'Fler alternativ';
+  @Deprecated('Use AppLocale.current.accessibilityExpandButton instead')
   static const String expandButton = 'Expandera';
+  @Deprecated('Use AppLocale.current.accessibilityCollapseButton instead')
   static const String collapseButton = 'Kollapsa';
 
   // Time & date
@@ -600,9 +645,10 @@ class AppStrings {
   }
 
   /// Create a loading message for specific actions.
-  // TODO(l10n): Swedish verb conjugation ("${action}ar...") is inherently
-  // language-specific. Needs a parameterized l10n key like loadingAction(action)
-  // that each locale can format appropriately.
+  // NOTE(l10n): This is the ONE method that can't be cleanly l10n'd due to
+  // Swedish verb conjugation ("${action}ar..."). Each locale would need its own
+  // conjugation logic. Keep as-is until a proper loadingAction(action) l10n key
+  // with per-locale formatting is implemented.
   static String loadingAction(String action) {
     return '${action.substring(0, 1).toUpperCase()}${action.substring(1).toLowerCase()}ar...';
   }

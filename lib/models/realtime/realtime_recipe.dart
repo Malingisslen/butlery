@@ -476,7 +476,7 @@ class RealtimeRecipe extends RealtimeResource {
     final parts = <String>[];
 
     if (portions != null) {
-      parts.add('$portions portioner');
+      parts.add('$portions ${AppLocale.current.portionsUnit}');
     }
 
     if (timeMinutes != null) {

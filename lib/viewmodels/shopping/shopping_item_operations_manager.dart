@@ -75,7 +75,7 @@ class ShoppingItemOperationsManager {
         name: ingredient['name'] as String,
         amount: (ingredient['amount'] as num).toDouble(),
         unit: ingredient['unit'] as String? ?? '',
-        category: ingredient['category'] as String? ?? 'Övrigt',
+        category: ingredient['category'] as String? ?? ShoppingCategory.other,
       );
     }
     return true;

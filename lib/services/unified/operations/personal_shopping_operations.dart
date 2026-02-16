@@ -82,8 +82,7 @@ class PersonalShoppingOperations {
     double? estimatedPrice,
     int priority = 3,
   }) async {
-    final resolvedCategory =
-        category ?? AppLocale.current.shoppingCategoryOther;
+    final resolvedCategory = category ?? ShoppingCategory.other;
     if (listId != null) {
       final list = getListById(listId);
       if (list == null) {
@@ -289,9 +288,8 @@ class PersonalShoppingOperations {
     final categoryMap = <String, List<UnifiedShoppingItem>>{};
 
     for (final item in list.items) {
-      final category = item.category.isEmpty
-          ? AppLocale.current.shoppingCategoryOther
-          : item.category;
+      final category =
+          item.category.isEmpty ? ShoppingCategory.other : item.category;
       if (!categoryMap.containsKey(category)) {
         categoryMap[category] = [];
       }

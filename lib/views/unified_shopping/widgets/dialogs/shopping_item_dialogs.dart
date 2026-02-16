@@ -231,7 +231,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
         amount: double.tryParse(_amountController.text) ?? 1.0,
         unit: _unitController.text.trim(),
         category: _categoryController.text.trim().isEmpty
-            ? context.l10n.shoppingCategoryOther
+            ? ShoppingCategory.other
             : _categoryController.text.trim(),
       );
 
@@ -359,7 +359,7 @@ class _EditItemDialogState extends State<_EditItemDialog> {
         amount: double.tryParse(_amountController.text) ?? widget.item.amount,
         unit: _unitController.text.trim(),
         category: _categoryController.text.trim().isEmpty
-            ? context.l10n.shoppingCategoryOther
+            ? ShoppingCategory.other
             : _categoryController.text.trim(),
         note: _noteController.text.trim().isEmpty
             ? null
@@ -378,7 +378,7 @@ class _EditItemDialogState extends State<_EditItemDialog> {
 /// UI Redesign: Category auto-suggestion based on Swedish ingredient names
 class _CategorySuggester {
   static const Map<String, List<String>> _categoryKeywords = {
-    'Mejeri': [
+    ShoppingCategory.dairy: [
       'mjölk',
       'grädde',
       'ost',
@@ -397,7 +397,7 @@ class _CategorySuggester {
       'mascarpone',
       'feta',
     ],
-    'Frukt & Grönt': [
+    ShoppingCategory.fruitVeg: [
       'äpple',
       'banan',
       'apelsin',
@@ -436,7 +436,7 @@ class _CategorySuggester {
       'vitkål',
       'rödkål',
     ],
-    'Kött & Fisk': [
+    ShoppingCategory.meatFish: [
       'kyckling',
       'nötkött',
       'fläsk',
@@ -462,7 +462,7 @@ class _CategorySuggester {
       'krabba',
       'hummer',
     ],
-    'Bröd & Bakverk': [
+    ShoppingCategory.breadGrain: [
       'bröd',
       'limpa',
       'fralla',
@@ -475,7 +475,7 @@ class _CategorySuggester {
       'hamburger',
       'korvbröd',
     ],
-    'Skafferi': [
+    ShoppingCategory.pantry: [
       'ris',
       'pasta',
       'spaghetti',
@@ -505,7 +505,7 @@ class _CategorySuggester {
       'buljong',
       'fond',
     ],
-    'Drycker': [
+    ShoppingCategory.drinks: [
       'juice',
       'läsk',
       'vatten',
@@ -517,14 +517,14 @@ class _CategorySuggester {
       'cider',
       'smoothie',
     ],
-    'Fryst': [
+    ShoppingCategory.frozen: [
       'glass',
       'frysta',
       'fryst',
       'frysvaror',
       'fryspizza',
     ],
-    'Snacks': [
+    ShoppingCategory.snacks: [
       'chips',
       'nötter',
       'popcorn',

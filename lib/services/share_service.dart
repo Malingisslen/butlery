@@ -3,6 +3,7 @@
 /// final ss = ShareService(); await ss.shareRecipe(recipe);
 
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -104,10 +105,12 @@ class ShareService extends BaseService {
     // Metadata med emojis
     final metadata = <String>[];
     if (recipe.timeMinutes != null) {
-      metadata.add('$_timeEmoji ${recipe.timeMinutes} min');
+      metadata.add(
+          '$_timeEmoji ${recipe.timeMinutes} ${AppLocale.current.shareMinutesAbbrev}');
     }
     if (recipe.portions != null) {
-      metadata.add('$_servingsEmoji ${recipe.portions} port');
+      metadata.add(
+          '$_servingsEmoji ${recipe.portions} ${AppLocale.current.sharePortionsAbbrev}');
     }
     if (recipe.rating != null && recipe.rating! > 0) {
       metadata.add(_starEmoji * recipe.rating!.round());
@@ -126,7 +129,7 @@ class ShareService extends BaseService {
 
     // Ingredienser - visa alla för kompakt format också
     if (recipe.ingredients.isNotEmpty) {
-      buffer.writeln('Ingredienser:');
+      buffer.writeln(_ingredientsTitle);
       for (final ingredient in recipe.ingredients) {
         buffer.writeln('• $ingredient');
       }
@@ -135,7 +138,7 @@ class ShareService extends BaseService {
 
     // Snabbinstruktioner
     if (recipe.instructions.isNotEmpty) {
-      buffer.writeln('Instruktioner:');
+      buffer.writeln(AppLocale.current.shareInstructionsLabelCompact);
       for (int i = 0; i < recipe.instructions.length; i++) {
         buffer.writeln('${i + 1}. ${recipe.instructions[i]}');
       }
@@ -144,7 +147,7 @@ class ShareService extends BaseService {
     // Källa om den finns
     if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) {
       buffer.writeln();
-      buffer.writeln('Källa: ${recipe.sourceUrl}');
+      buffer.writeln('$_sourceLabel ${recipe.sourceUrl}');
     }
 
     return buffer.toString();
@@ -160,16 +163,20 @@ class ShareService extends BaseService {
 
     // Metadata
     if (recipe.timeMinutes != null) {
-      buffer.writeln('**Tid:** ${recipe.timeMinutes} $_minutesLabel');
+      buffer.writeln(
+          '${AppLocale.current.shareTimeLabelBold} ${recipe.timeMinutes} $_minutesLabel');
     }
     if (recipe.portions != null) {
-      buffer.writeln('**Portioner:** ${recipe.portions}');
+      buffer.writeln(
+          '${AppLocale.current.sharePortionsLabelBold} ${recipe.portions}');
     }
     if (recipe.rating != null && recipe.rating! > 0) {
-      buffer.writeln('**Betyg:** ${_starEmoji * recipe.rating!.round()}');
+      buffer.writeln(
+          '${AppLocale.current.shareRatingLabelBold} ${_starEmoji * recipe.rating!.round()}');
     }
     if (recipe.mealType.isNotEmpty) {
-      buffer.writeln('**Typ:** ${recipe.mealType}');
+      buffer.writeln(
+          '${AppLocale.current.shareTypeLabelBold} ${recipe.mealType}');
     }
     buffer.writeln();
 
@@ -199,7 +206,7 @@ class ShareService extends BaseService {
 
     // Tags
     if (recipe.personalTagIds != null && recipe.personalTagIds!.isNotEmpty) {
-      buffer.writeln('## Tags');
+      buffer.writeln('## ${AppLocale.current.shareTagsLabel}');
       buffer.writeln(recipe.personalTagIds!.map((tag) => '`$tag`').join(' '));
       buffer.writeln();
     }
@@ -215,17 +222,53 @@ class ShareService extends BaseService {
     return buffer.toString();
   }
 
+  /// Translate language-neutral category constant to localized display name for sharing.
+  static String _categoryDisplayName(String category) {
+    final l = AppLocale.current;
+    switch (category) {
+      case ShoppingCategory.fruitVeg:
+        return l.categoryFruitVeg;
+      case ShoppingCategory.dairy:
+        return l.categoryDairy;
+      case ShoppingCategory.meatFish:
+        return l.categoryMeatFish;
+      case ShoppingCategory.breadGrain:
+        return l.categoryBread;
+      case ShoppingCategory.pantry:
+        return l.categoryPantry;
+      case ShoppingCategory.frozen:
+        return l.categoryFrozen;
+      case ShoppingCategory.drinks:
+        return l.categoryBeverage;
+      case ShoppingCategory.snacks:
+        return l.categorySnacks;
+      case ShoppingCategory.cleaning:
+        return l.categoryHygiene;
+      case ShoppingCategory.spices:
+        return l.categorySpices;
+      case ShoppingCategory.canned:
+        return l.categoryCanned;
+      case ShoppingCategory.dryGoods:
+        return l.categoryDryGoods;
+      case ShoppingCategory.other:
+        return l.categoryOther;
+      default:
+        return category;
+    }
+  }
+
   String formatShoppingList(List<UnifiedShoppingItem> items) {
     final buffer = StringBuffer();
 
-    buffer.writeln('🛒 INKÖPSLISTA');
+    buffer.writeln(AppLocale.current.shareShoppingListTitle);
     buffer.writeln('===========');
     buffer.writeln();
 
     // Gruppera efter kategori om det finns kategorier
     final groupedItems = <String, List<UnifiedShoppingItem>>{};
     for (final item in items) {
-      final category = item.category.isEmpty ? 'Övrigt' : item.category;
+      final category =
+          item.category.isEmpty ? ShoppingCategory.other : item.category;
       groupedItems.putIfAbsent(category, () => []).add(item);
     }
 
@@ -238,7 +281,7 @@ class ShareService extends BaseService {
     } else {
       // Visa grupperat
       for (final entry in groupedItems.entries) {
-        buffer.writeln('【${entry.key.toUpperCase()}】');
+        buffer.writeln('【${_categoryDisplayName(entry.key).toUpperCase()}】');
         for (final item in entry.value) {
           final checkbox = item.bought ? '☑' : '☐';
           buffer.writeln('$checkbox ${item.toString()}');
@@ -255,14 +298,14 @@ class ShareService extends BaseService {
   ) {
     final buffer = StringBuffer();
 
-    buffer.writeln('Inköpslista');
+    buffer.writeln(AppLocale.current.shareShoppingListTitleSimple);
     buffer.writeln(
       '===========',
     ); // Använder = direkt istället för multiplicering
     buffer.writeln();
 
     groupedItems.forEach((category, items) {
-      buffer.writeln(category.toUpperCase());
+      buffer.writeln(_categoryDisplayName(category).toUpperCase());
       for (final item in items) {
         final checkbox = item.bought ? '☑' : '☐';
         buffer.writeln('  $checkbox ${item.toString()}');
@@ -276,28 +319,26 @@ class ShareService extends BaseService {
   String formatWeekMenu(Map<String, Recipe?> weekMenu) {
     final buffer = StringBuffer();
 
-    buffer.writeln('Veckomeny');
-    buffer.writeln(
-      '=========',
-    ); // Använder = direkt istället för multiplicering
+    buffer.writeln(AppLocale.current.shareWeekMenuTitle);
+    buffer.writeln('=========');
     buffer.writeln();
 
-    final weekdays = [
-      'Måndag',
-      'Tisdag',
-      'Onsdag',
-      'Torsdag',
-      'Fredag',
-      'Lördag',
-      'Söndag',
-    ];
-
-    for (final day in weekdays) {
-      final recipe = weekMenu[day];
+    // Iterate Monday(1) through Sunday(7)
+    // Jan 1 2024 is a Monday
+    for (int i = 1; i <= 7; i++) {
+      final date = DateTime(2024, 1, i);
+      final localizedDay =
+          DateFormat.EEEE(AppLocale.current.localeName).format(date);
+      final displayDay =
+          localizedDay[0].toUpperCase() + localizedDay.substring(1);
+      // Map keys are Swedish weekday names
+      final svDay = DateFormat.EEEE('sv').format(date);
+      final svDisplayDay = svDay[0].toUpperCase() + svDay.substring(1);
+      final recipe = weekMenu[svDisplayDay];
       if (recipe != null) {
-        buffer.writeln('$day: ${recipe.title}');
+        buffer.writeln('$displayDay: ${recipe.title}');
       } else {
-        buffer.writeln('$day: -');
+        buffer.writeln('$displayDay: -');
       }
     }
 
@@ -352,7 +393,7 @@ class ShareService extends BaseService {
         final text = formatShoppingList(items);
         await SharePlus.instance.share(ShareParams(
           text: text,
-          subject: 'Inköpslista',
+          subject: AppLocale.current.shareShoppingListTitleSimple,
         ));
       },
       operationName: 'Share shopping list',
@@ -367,7 +408,7 @@ class ShareService extends BaseService {
     final text = formatWeekMenuFromCategories(menu);
     await SharePlus.instance.share(ShareParams(
       text: text,
-      subject: 'Veckomeny',
+      subject: AppLocale.current.shareWeekMenuTitle,
     ));
   }
 
@@ -392,7 +433,7 @@ class ShareService extends BaseService {
   String formatWeekMenuFromCategories(Map<String, List<Recipe>> menu) {
     final buffer = StringBuffer();
 
-    buffer.writeln('🍽 VECKOMENY');
+    buffer.writeln(AppLocale.current.shareWeekMenuTitleEmoji);
     buffer.writeln('===========');
     buffer.writeln();
 
@@ -407,10 +448,12 @@ class ShareService extends BaseService {
           // Lägg till metadata
           final meta = <String>[];
           if (recipe.timeMinutes != null) {
-            meta.add('⏱ ${recipe.timeMinutes} min');
+            meta.add(
+                '⏱ ${recipe.timeMinutes} ${AppLocale.current.shareMinutesAbbrev}');
           }
           if (recipe.portions != null) {
-            meta.add('🍴 ${recipe.portions} port');
+            meta.add(
+                '🍴 ${recipe.portions} ${AppLocale.current.sharePortionsAbbrev}');
           }
           if (recipe.rating != null && recipe.rating! > 0) {
             final stars = List.filled(recipe.rating!.round(), '⭐').join();
@@ -430,8 +473,9 @@ class ShareService extends BaseService {
     final totalCategories =
         menu.keys.where((key) => menu[key]!.isNotEmpty).length;
 
-    buffer.writeln('📊 Sammanfattning:');
-    buffer.writeln('$totalRecipes recept i $totalCategories kategorier');
+    buffer.writeln(AppLocale.current.shareSummaryLabel);
+    buffer.writeln(AppLocale.current
+        .shareSummaryRecipesInCategories(totalRecipes, totalCategories));
 
     return buffer.toString();
   }

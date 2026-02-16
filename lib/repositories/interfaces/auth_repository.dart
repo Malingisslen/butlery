@@ -43,4 +43,10 @@ abstract class AuthRepository {
 
   /// Re-authenticate user with password (required before sensitive operations).
   Future<void> reauthenticateWithPassword(String password);
+
+  /// Update the current user's password (requires recent authentication).
+  Future<void> updatePassword(String newPassword);
+
+  /// Send verification email to new address before updating (requires recent authentication).
+  Future<void> verifyBeforeUpdateEmail(String newEmail);
 }

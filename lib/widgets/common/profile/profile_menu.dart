@@ -410,6 +410,14 @@ class _ProfileMenuState extends State<ProfileMenu> {
           ),
           ProfileActions.buildMenuItem(
             context,
+            title: context.l10n.profileAccountSecurity,
+            subtitle: context.l10n.profileAccountSecuritySubtitle,
+            icon: Icons.security,
+            onTap: () =>
+                Navigator.pushNamed(context, Routes.settingsAccountSecurity),
+          ),
+          ProfileActions.buildMenuItem(
+            context,
             title: context.l10n.profileMyTags,
             subtitle: context.l10n.profileMyTagsSubtitle,
             icon: Icons.local_offer_outlined,

@@ -761,6 +761,22 @@ class UnifiedRecipeService extends ChangeNotifier
     return _recipes.where((r) => r.id == id).firstOrNull;
   }
 
+  // Optimistic local-only list mutations for undo delete support
+  void optimisticRemove(String recipeId) {
+    _recipes.removeWhere((r) => r.id == recipeId);
+    notifyListeners();
+  }
+
+  void optimisticRestore(Recipe recipe) {
+    _recipes.add(recipe);
+    notifyListeners();
+  }
+
+  /// Find recipes by source URL for duplicate detection during import.
+  Future<List<Recipe>> findBySourceUrl(String url) async {
+    return await _getRecipeRepository().findBySourceUrl(url);
+  }
+
   void clearError() {
     _error = null;
     notifyListeners();

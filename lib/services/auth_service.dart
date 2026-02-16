@@ -454,6 +454,36 @@ class AuthService extends ChangeNotifier
     }
   }
 
+  /// Change user password. Requires prior reauthentication.
+  Future<bool> changePassword(String newPassword) async {
+    try {
+      clearError();
+      await _authRepository.updatePassword(newPassword);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _handleAuthError(e);
+      return false;
+    } catch (e) {
+      setError(AppLocale.current.errorUnexpected);
+      return false;
+    }
+  }
+
+  /// Send verification to new email address. Requires prior reauthentication.
+  Future<bool> changeEmail(String newEmail) async {
+    try {
+      clearError();
+      await _authRepository.verifyBeforeUpdateEmail(newEmail);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _handleAuthError(e);
+      return false;
+    } catch (e) {
+      setError(AppLocale.current.errorUnexpected);
+      return false;
+    }
+  }
+
   void _handleAuthError(FirebaseAuthException e) {
     final l = AppLocale.current;
     String errorMessage;

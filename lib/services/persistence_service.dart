@@ -69,6 +69,8 @@ class PersistenceService extends BaseService {
   /// Storage key for last update timestamp tracking.
   static const String _lastUpdatedKey = 'butlery_last_updated';
 
+  static const String _viewModeKey = 'butlery_view_mode';
+
   /// Provides access to the SharedPreferences instance for cross-platform local storage operations.
   /// This getter manages the SharedPreferences singleton instance providing the underlying
   /// storage mechanism for all persistence operations. It ensures consistent access to the
@@ -258,6 +260,25 @@ class PersistenceService extends BaseService {
     } catch (e) {
       AppLogger.error('Fel vid rensning av all data', e, 'Persistence');
       return false;
+    }
+  }
+
+  Future<bool> getIsGridView() async {
+    try {
+      final prefs = await _prefs;
+      return prefs.getBool(_viewModeKey) ?? false;
+    } catch (e) {
+      AppLogger.error('Failed to load view mode', e, 'Persistence');
+      return false;
+    }
+  }
+
+  Future<void> setIsGridView(bool value) async {
+    try {
+      final prefs = await _prefs;
+      await prefs.setBool(_viewModeKey, value);
+    } catch (e) {
+      AppLogger.error('Failed to save view mode', e, 'Persistence');
     }
   }
 

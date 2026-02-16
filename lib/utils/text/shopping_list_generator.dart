@@ -36,6 +36,7 @@
 /// // Returns: ["1,5 kg mjöl", "6 ägg", "3 dl grädde", ...]
 /// ```
 
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/utils/text/unit_converter.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/swedish_pluralization.dart';
@@ -213,9 +214,9 @@ class ShoppingListGenerator {
   /// );
   /// final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(recipe);
   /// // Returns: [
-  /// //   UnifiedShoppingItem(name: 'mjölk', amount: 2.0, unit: 'dl', category: 'Mejeri'),
-  /// //   UnifiedShoppingItem(name: 'ägg', amount: 1.0, unit: 'st', category: 'Mejeri'),
-  /// //   UnifiedShoppingItem(name: 'mjöl', amount: 100.0, unit: 'g', category: 'Torrvaror'),
+  /// //   UnifiedShoppingItem(name: 'mjölk', amount: 2.0, unit: 'dl', category: ShoppingCategory.dairy),
+  /// //   UnifiedShoppingItem(name: 'ägg', amount: 1.0, unit: 'st', category: ShoppingCategory.dairy),
+  /// //   UnifiedShoppingItem(name: 'mjöl', amount: 100.0, unit: 'g', category: ShoppingCategory.dryGoods),
   /// // ]
   /// ```
   static List<UnifiedShoppingItem> generateShoppingItemsFromRecipe(
@@ -266,9 +267,9 @@ class ShoppingListGenerator {
           name: rawIngredient.trim(),
           amount: 1.0,
           unit: 'st',
-          category: 'Övrigt',
+          category: ShoppingCategory.other,
           bought: false,
-          note: 'Kunde inte tolka ingrediens',
+          note: AppLocale.current.ingredientParseError,
           priority: 3,
         );
 
@@ -281,7 +282,7 @@ class ShoppingListGenerator {
 
   /// Categorize ingredient based on Swedish ingredient name patterns.
   /// Uses intelligent pattern matching to assign appropriate Swedish shopping categories
-  /// based on ingredient names. Provides fallback to 'Övrigt' for unknown ingredients.
+  /// based on ingredient names. Provides fallback to ShoppingCategory.other for unknown ingredients.
   /// [ingredientName] Raw ingredient name to categorize
   /// Returns Swedish category string suitable for shopping organization
   static String _categorizeIngredient(String ingredientName) {
@@ -295,10 +296,10 @@ class ShoppingListGenerator {
         name.contains('ost') ||
         name.contains('smör') ||
         name.contains('ägg')) {
-      return 'Mejeri';
+      return ShoppingCategory.dairy;
     }
 
-    // Kött & Fisk (Meat & Fish)
+    // Meat & Fish
     if (name.contains('kött') ||
         name.contains('fläsk') ||
         name.contains('nöt') ||
@@ -308,10 +309,10 @@ class ShoppingListGenerator {
         name.contains('korv') ||
         name.contains('bacon') ||
         name.contains('skinka')) {
-      return 'Kött & Fisk';
+      return ShoppingCategory.meatFish;
     }
 
-    // Frukt & Grönt (Fruits & Vegetables)
+    // Fruits & Vegetables
     if (name.contains('tomat') ||
         name.contains('lök') ||
         name.contains('vitlök') ||
@@ -324,10 +325,10 @@ class ShoppingListGenerator {
         name.contains('banan') ||
         name.contains('citron') ||
         name.contains('lime')) {
-      return 'Frukt & Grönt';
+      return ShoppingCategory.fruitVeg;
     }
 
-    // Torrvaror (Dry Goods)
+    // Dry Goods
     if (name.contains('mjöl') ||
         name.contains('socker') ||
         name.contains('salt') ||
@@ -336,10 +337,10 @@ class ShoppingListGenerator {
         name.contains('bröd') ||
         name.contains('havr') ||
         name.contains('müsli')) {
-      return 'Torrvaror';
+      return ShoppingCategory.dryGoods;
     }
 
-    // Kryddor (Spices)
+    // Spices
     if (name.contains('peppar') ||
         name.contains('krydda') ||
         name.contains('basilika') ||
@@ -348,19 +349,19 @@ class ShoppingListGenerator {
         name.contains('rosmarin') ||
         name.contains('paprika') ||
         name.contains('curry')) {
-      return 'Kryddor';
+      return ShoppingCategory.spices;
     }
 
-    // Konserver (Canned Goods)
+    // Canned Goods
     if (name.contains('konserv') ||
         name.contains('burk') ||
         name.contains('tomatpuré') ||
         name.contains('kokosmjölk') ||
         name.contains('bönor')) {
-      return 'Konserver';
+      return ShoppingCategory.canned;
     }
 
     // Default fallback
-    return 'Övrigt';
+    return ShoppingCategory.other;
   }
 }

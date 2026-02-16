@@ -1,5 +1,7 @@
 // lib/models/social/activity_type.dart
 
+import 'package:butlery/core/l10n/app_locale.dart';
+
 /// Enumeration of activity types for social feeds (creation, sharing, interactions, achievements).
 enum ActivityType {
   // Content creation activities
@@ -36,6 +38,42 @@ enum ActivityType {
 
   /// Swedish display name for UI
   final String displayName;
+
+  /// Localized display name resolved at runtime via l10n
+  String get localizedDisplayName {
+    switch (this) {
+      case ActivityType.recipeCreated:
+        return AppLocale.current.activityRecipeCreated;
+      case ActivityType.menuCreated:
+        return AppLocale.current.activityMenuCreated;
+      case ActivityType.shoppingListCreated:
+        return AppLocale.current.activityShoppingListCreated;
+      case ActivityType.recipeShared:
+        return AppLocale.current.activityRecipeShared;
+      case ActivityType.menuShared:
+        return AppLocale.current.activityMenuShared;
+      case ActivityType.shoppingListShared:
+        return AppLocale.current.activityShoppingListShared;
+      case ActivityType.commentAdded:
+        return AppLocale.current.activityCommentAdded;
+      case ActivityType.reactionAdded:
+        return AppLocale.current.activityReactionAdded;
+      case ActivityType.recipeRated:
+        return AppLocale.current.activityRecipeRated;
+      case ActivityType.groupJoined:
+        return AppLocale.current.activityGroupJoined;
+      case ActivityType.invitationSent:
+        return AppLocale.current.activityInvitationSent;
+      case ActivityType.invitationAccepted:
+        return AppLocale.current.activityInvitationAccepted;
+      case ActivityType.achievementUnlocked:
+        return AppLocale.current.activityAchievementUnlocked;
+      case ActivityType.milestoneReached:
+        return AppLocale.current.activityMilestoneReached;
+      case ActivityType.unknown:
+        return AppLocale.current.activityUnknown;
+    }
+  }
 
   /// Get ActivityType from database key
   static ActivityType fromKey(String key) {
