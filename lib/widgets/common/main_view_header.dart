@@ -9,7 +9,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Header widget for main views with large title and count badge.
 ///
@@ -66,7 +65,7 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         ColoredBox(
-          color: cs.primaryContainer,
+          color: cs.primary,
           child: SafeArea(
             bottom: false,
             child: SizedBox(
@@ -144,86 +143,6 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
       ],
-    );
-  }
-}
-
-/// Search box widget matching the UI redesign mockup.
-///
-/// White background with green border and rust bottom accent.
-class ButlerySearchBox extends StatelessWidget {
-  const ButlerySearchBox({
-    required this.controller,
-    this.onChanged,
-    this.hintText,
-    this.onFilterTap,
-    super.key,
-  });
-
-  final TextEditingController controller;
-  final ValueChanged<String>? onChanged;
-  final String? hintText;
-  final VoidCallback? onFilterTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingMd,
-      ),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        border: Border(
-          top: BorderSide(color: cs.primary, width: 2),
-          left: BorderSide(color: cs.primary, width: 2),
-          right: BorderSide(color: cs.primary, width: 2),
-          bottom:
-              BorderSide(color: cs.secondary.withValues(alpha: 0.7), width: 4),
-        ),
-      ),
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: AppDimensions.spacingMd),
-            child: Icon(
-              Icons.search,
-              color: cs.primary,
-              size: 18,
-            ),
-          ),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              onChanged: onChanged,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: cs.onSurface,
-              ),
-              decoration: InputDecoration(
-                hintText: hintText ?? context.l10n.searchRecipesHint,
-                hintStyle: AppTextStyles.bodyMedium.copyWith(
-                  color: cs.outline,
-                ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingMd,
-                  vertical: AppDimensions.spacingMd,
-                ),
-              ),
-            ),
-          ),
-          if (controller.text.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.clear, size: 18),
-              color: cs.onSurfaceVariant,
-              onPressed: () {
-                controller.clear();
-                onChanged?.call('');
-              },
-            ),
-        ],
-      ),
     );
   }
 }

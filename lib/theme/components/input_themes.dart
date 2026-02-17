@@ -140,11 +140,11 @@ class InputThemes {
         border: Border(
           left: BorderSide(
             color: AppColors.recipeCardLeftBorder,
-            width: 3,
+            width: 4,
           ),
           bottom: BorderSide(
             color: AppColors.recipeCardBottomBorder,
-            width: 2,
+            width: 3,
           ),
         ),
       );
@@ -179,36 +179,25 @@ class InputThemes {
                 .withValues(alpha: AppDimensions.opacityLight)),
       );
 
-  /// Search box decoration
-  static BoxDecoration get searchBoxDecoration => BoxDecoration(
+  /// Search box decoration — green+rust border always visible
+  static BoxDecoration get searchBoxDecoration => const BoxDecoration(
         color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        border: Border.all(
-          color: AppColors.divider,
-          width: 1,
+        border: Border(
+          top: BorderSide(color: AppColors.forestGreen, width: 1),
+          left: BorderSide(color: AppColors.forestGreen, width: 1),
+          right: BorderSide(color: AppColors.forestGreen, width: 1),
+          bottom: BorderSide(color: AppColors.rust, width: 2),
         ),
       );
 
-  /// Search box decoration (focused)
+  /// Search box decoration (focused) — heavier green+rust border
   static BoxDecoration get searchBoxDecorationFocused => const BoxDecoration(
         color: AppColors.cardWhite,
         border: Border(
-          left: BorderSide(
-            color: AppColors.forestGreen,
-            width: 2,
-          ),
-          bottom: BorderSide(
-            color: AppColors.rust,
-            width: 2,
-          ),
-          top: BorderSide(
-            color: AppColors.forestGreen,
-            width: 1,
-          ),
-          right: BorderSide(
-            color: AppColors.forestGreen,
-            width: 1,
-          ),
+          top: BorderSide(color: AppColors.forestGreen, width: 2),
+          left: BorderSide(color: AppColors.forestGreen, width: 2),
+          right: BorderSide(color: AppColors.forestGreen, width: 2),
+          bottom: BorderSide(color: AppColors.rust, width: 4),
         ),
       );
 }

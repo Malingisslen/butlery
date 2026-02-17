@@ -101,16 +101,16 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     chatBubbleIncoming: Color(0xFFF0EAD6), // creamDark
     chatTextOutgoing: Color(0xFFFFFFFF), // textOnPrimary
     chatTextIncoming: Color(0xFF2C3E50), // textDark
-    // Status: success
-    success: Color(0xFF0D9166),
+    // Status: success (alias to forestGreen)
+    success: Color(0xFF4A7C59),
     onSuccess: Color(0xFFFFFFFF),
     successContainer: Color(0xFFF0FDF4),
     onSuccessContainer: Color(0xFF166534),
-    // Status: warning
-    warning: Color(0xFF9D7920),
-    onWarning: Color(0xFF2C3E50),
+    // Status: warning (warm gold per mockup)
+    warning: Color(0xFFD4A03C),
+    onWarning: Color(0xFF1A1A1A),
     warningContainer: Color(0xFFFFF8E1),
-    onWarningContainer: Color(0xFF8B6914),
+    onWarningContainer: Color(0xFF7A5B10),
     // Status: info
     info: Color(0xFF2563CA),
     onInfo: Color(0xFFFFFFFF),

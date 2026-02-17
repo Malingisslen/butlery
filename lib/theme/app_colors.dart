@@ -55,16 +55,16 @@ class AppColors {
   static const Color cardWhite54 = Color(0x8AFFFFFF); // 54% opacity white
 
   /// Dark text - primary text color (on light backgrounds)
-  static const Color textDark = Color(0xFF2C3E50);
+  static const Color textDark = Color(0xFF1A1A1A);
 
   /// Medium text - secondary text, descriptions (WCAG AA 4.5:1 on cream)
-  static const Color textMedium = Color(0xFF636A72);
+  static const Color textMedium = Color(0xFF666666);
 
   /// Placeholder icon color - for avatar/icon placeholders
   static const Color placeholderIcon = Color(0xFF4B5563);
 
   /// Light text - tertiary text, placeholders (large text / decorative only — below AA normal)
-  static const Color textLight = Color(0xFF9CA3AF);
+  static const Color textLight = Color(0xFF999999);
   static const Color textTertiary = Color(0xFFD1D5DB);
   static const Color textSecondary = textMedium;
 
@@ -77,11 +77,11 @@ class AppColors {
   /// Accent - rust for decorative purposes only
   static const Color accent = rust;
 
-  /// Success green (WCAG AA 4.5:1 on successContainer)
-  static const Color success = Color(0xFF0D9166);
+  /// Success green - alias to forestGreen per design system
+  static const Color success = forestGreen;
 
-  /// Warning gold/amber (WCAG AA 4.5:1 on warningContainer)
-  static const Color warning = Color(0xFF9D7920);
+  /// Warning warm gold per mockup
+  static const Color warning = Color(0xFFD4A03C);
 
   /// Error red - DISTINCT from rust, only for errors
   static const Color error = Color(0xFFC44536);
@@ -94,9 +94,9 @@ class AppColors {
   static const Color successContainer = Color(0xFFF0FDF4);
   static const Color onSuccessContainer = Color(0xFF166534);
 
-  /// Warning container - updated to match new warning color
+  /// Warning container - warm gold tint
   static const Color warningContainer = Color(0xFFFFF8E1);
-  static const Color onWarningContainer = Color(0xFF8B6914);
+  static const Color onWarningContainer = Color(0xFF7A5B10);
 
   /// Info container
   static const Color infoContainer = Color(0xFFF0F9FF);
@@ -278,15 +278,15 @@ class AppColors {
   /// Text/icons on header
   static const Color headerForeground = cardWhite;
 
-  /// Navigation background
-  static const Color navBackground = forestGreen;
+  /// Navigation background - cream-dark per mockup
+  static const Color navBackground = creamDarker;
 
   /// Selected nav item indicator
   static const Color navSelectedIndicator = rust;
 
-  /// Selected nav item text/icon
-  static const Color navSelectedItem = cardWhite;
+  /// Selected nav item text/icon - dark green on cream bg
+  static const Color navSelectedItem = forestGreenDark;
 
-  /// Unselected nav item text/icon
-  static const Color navUnselectedItem = Color(0xB3FFFFFF); // 70% white
+  /// Unselected nav item text/icon - muted green on cream bg
+  static const Color navUnselectedItem = greenMuted;
 }

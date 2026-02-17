@@ -117,9 +117,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
           bottomNavigationBar: ButleryBottomNavigation(
             currentIndex: 0,
             items: ButleryAdaptiveNavigation.getNavigationItems(context),
-            backgroundColor: cs.surfaceContainerHigh,
-            selectedItemColor: cs.primary,
-            unselectedItemColor: cs.onSurfaceVariant,
             onTap: (index) {
               final route =
                   ButleryAdaptiveNavigation.getNavigationItems(context)[index]
