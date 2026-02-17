@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
@@ -404,8 +405,9 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
 /// Custom bottom navigation bar with Butlery styling.
 ///
 /// Features:
-/// - Forest green background
-/// - Rust indicator for selected item
+/// - Cream-dark background (#E8E2D6)
+/// - Rust underline indicator for selected item
+/// - Forest green dark/muted green icon colors
 /// - Josefin Sans lowercase labels
 class ButleryBottomNavigation extends StatelessWidget {
   const ButleryBottomNavigation({
@@ -435,7 +437,7 @@ class ButleryBottomNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: backgroundColor ?? Theme.of(context).colorScheme.primary,
+        color: backgroundColor ?? AppColors.creamDarker,
       ),
       child: SafeArea(
         top: false,
@@ -485,8 +487,8 @@ class _BottomNavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final color = isSelected
-        ? (selectedColor ?? cs.onPrimary)
-        : (unselectedColor ?? cs.onPrimary.withValues(alpha: 0.7));
+        ? (selectedColor ?? AppColors.forestGreenDark)
+        : (unselectedColor ?? AppColors.greenMuted);
 
     return Semantics(
       label: item.accessibleLabel,

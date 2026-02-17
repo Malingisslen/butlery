@@ -3,8 +3,8 @@
 /// **UI Redesign:** Simplified from 7 buttons to 4 buttons in a 2x2 grid:
 /// - Importera länk (rust) → /smartImport
 /// - Skriv manuellt (green) → /skrivSjalv
-/// - Från bild (rust) → /photoImport
-/// - Från arkiv (green) → /importFranArkiv
+/// - Från bild (green) → /photoImport
+/// - Från arkiv (rust) → /importFranArkiv
 
 // lib/views/lagg_till_recept_view.dart
 
@@ -104,14 +104,14 @@ class LaggTillReceptView extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: spacing),
-              // Row 2: From image (rust) + Scan recipe (green)
+              // Row 2: From image (green) + From archive (rust) — diagonal pattern
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _AddRecipeButton(
                     label: context.l10n.recipeFromImage,
                     icon: Icons.image,
-                    color: Theme.of(context).colorScheme.secondary,
+                    color: Theme.of(context).colorScheme.primary,
                     size: size,
                     onTap: () => _navigate(context, '/photoImport'),
                   ),
@@ -119,7 +119,7 @@ class LaggTillReceptView extends StatelessWidget {
                   _AddRecipeButton(
                     label: context.l10n.recipeFromArchive,
                     icon: Icons.archive,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.secondary,
                     size: size,
                     onTap: () => _navigate(context, '/importFranArkiv'),
                   ),

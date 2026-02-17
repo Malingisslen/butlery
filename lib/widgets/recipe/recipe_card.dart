@@ -271,7 +271,7 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final imageUrls = recipe.imageUrls;
     final hasImage = imageUrls.isNotEmpty;
-    final imageSize = size ?? 80.0;
+    final imageSize = size ?? 64.0;
 
     return Container(
       width: width ?? imageSize,
@@ -286,7 +286,7 @@ class RecipeCard extends StatelessWidget {
             ? SimpleImageWidget(
                 imageUrl: imageUrls.first,
                 fit: BoxFit.cover,
-                // PERFORMANCE FIX: Use thumbnail config optimized for 80x80 display
+                // PERFORMANCE FIX: Use thumbnail config for 64x64 display
                 config: ImageConfig.thumbnail(
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusS),
