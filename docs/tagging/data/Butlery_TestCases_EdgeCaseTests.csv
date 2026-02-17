@@ -1,6 +1,0 @@
-test_id,category,scenario,ingredienser,expected_laktos,expected_mjölk,notes
-EDGE-01,laktos-vs-mjölk,Laktosfri mjölk,laktosfri mjölk,FREE,CONTAINS,Laktosfri men mejeri
-EDGE-02,gluten-soja,Tamari (glutenfri sojasås),tamari,FREE (gluten),CONTAINS (soja),
-EDGE-03,vin-i-mat,Matlagningsvin,vitt vin,,CONTAINS (alkohol),
-EDGE-04,dold-allergen,Worcestershiresås,worcestershiresås,,CONTAINS (fisk),Ansjovis
-EDGE-05,nöt-separation,Kokosnöt,kokosmjölk,FREE (tree-nut),FREE (peanut),Ej en nöt

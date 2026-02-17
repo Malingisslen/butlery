@@ -1,7 +1,0 @@
-test_id,scenario,ingredienser,coverage,expected_allergen_status,expected_protein_tag,expected_cuisine_tag
-COV-01,100% kända ingredienser,"kyckling, ris, broccoli",1.0,FREE/CONTAINS,,
-COV-02,50% okända ingredienser,"kyckling, XYZ-krydda, ABC-sås",0.33,UNKNOWN,,
-COV-03,1 okänd av 10,9 kända + 1 okänd,0.9,UNKNOWN för alla allergener,,
-COV-04,Alla okända,"XYZ, ABC, DEF",0.0,UNKNOWN,,
-COV-05,Protein-identitet vid 80%,"kyckling, 4 kända, 1 okänd",0.83,,kyckling (sätts ändå),
-COV-06,Cuisine vid 60%,"pasta, tomat, 2 okända",0.5,,,"italiensk (sätts ej, <60%)"
