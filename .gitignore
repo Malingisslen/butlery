@@ -73,6 +73,7 @@ test/**/results/*.log
 # Claude Code cache and logs - DO NOT COMMIT (local analysis data)
 .claude/cache/
 .claude/cache/**
+.claude/hooks/sessions/
 nul
 
 # Tasks directory (except lessons.md)

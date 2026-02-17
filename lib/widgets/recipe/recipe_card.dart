@@ -105,7 +105,8 @@ class RecipeCard extends StatelessWidget {
               onLongPress:
                   onLongPress != null ? () => onLongPress!(recipe) : null,
               child: Container(
-                padding: padding ?? AppDimensions.paddingAll12,
+                padding: padding ??
+                    const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                 child: _buildCardContent(context),
               ),
             ),
@@ -135,45 +136,43 @@ class RecipeCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Header with image and action buttons
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Recipe image
-              if (showImage) ...[
-                _buildRecipeImage(context),
-                const SizedBox(width: AppDimensions.spacingMd),
-              ],
-              // Content area — compacts when no data
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Title and action buttons row
-                    Row(
-                      children: [
-                        Expanded(child: _buildTitle(context)),
-                        if (onFavoriteToggle != null)
-                          _buildFavoriteButton(context),
-                        if (showContextMenu) _buildContextMenuButton(context),
-                      ],
-                    ),
-                    if (hasDescription || hasMetadata)
-                      const SizedBox(height: AppDimensions.spacingSm),
-                    // Description
-                    if (hasDescription) ...[
-                      _buildDescription(context),
-                      if (hasMetadata)
-                        const SizedBox(height: AppDimensions.spacingSm),
-                    ],
-                    // Metadata row inside text column per mockup
-                    if (hasMetadata) _buildMetadataRow(context),
-                  ],
-                ),
-              ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Recipe image
+            if (showImage) ...[
+              _buildRecipeImage(context),
+              const SizedBox(width: AppDimensions.spacingMd),
             ],
-          ),
+            // Content area — expands to fit text naturally
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Title and action buttons row
+                  Row(
+                    children: [
+                      Expanded(child: _buildTitle(context)),
+                      if (onFavoriteToggle != null)
+                        _buildFavoriteButton(context),
+                      if (showContextMenu) _buildContextMenuButton(context),
+                    ],
+                  ),
+                  if (hasDescription || hasMetadata)
+                    const SizedBox(height: AppDimensions.spacingSm),
+                  // Description
+                  if (hasDescription) ...[
+                    _buildDescription(context),
+                    if (hasMetadata)
+                      const SizedBox(height: AppDimensions.spacingSm),
+                  ],
+                  // Metadata row inside text column per mockup
+                  if (hasMetadata) _buildMetadataRow(context),
+                ],
+              ),
+            ),
+          ],
         ),
         // Allergen badges
         if (showAllergenBadges && recipe.tagResult != null) ...[
@@ -268,7 +267,6 @@ class RecipeCard extends StatelessWidget {
 
   Widget _buildRecipeImage(BuildContext context,
       {double? size, double? width, double? height}) {
-    final cs = Theme.of(context).colorScheme;
     final imageUrls = recipe.imageUrls;
     final hasImage = imageUrls.isNotEmpty;
     final imageSize = size ?? 64.0;
@@ -278,7 +276,7 @@ class RecipeCard extends StatelessWidget {
       height: height ?? imageSize,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        color: cs.surface,
+        color: Theme.of(context).colorScheme.surface,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),

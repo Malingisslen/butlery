@@ -70,64 +70,79 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
             bottom: false,
             child: SizedBox(
               height: headerHeight,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppDimensions.spacingL,
-                  AppDimensions.spacingMd,
-                  AppDimensions.spacingL,
-                  AppDimensions.spacingL,
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title and count badge
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          // Title
-                          Text(
-                            title.toLowerCase(),
-                            style: AppTextStyles.mainViewTitle,
-                          ),
-                          // Count badge
-                          if (countBadge != null) ...[
-                            const SizedBox(height: AppDimensions.spacingXs),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppDimensions.spacingSm,
-                                vertical: AppDimensions.spacingXxs,
-                              ),
-                              decoration: BoxDecoration(
+              child: IconTheme(
+                data: IconThemeData(color: cs.surface),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppDimensions.spacingL,
+                    AppDimensions.spacingMd,
+                    AppDimensions.spacingL,
+                    AppDimensions.spacingL,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Title and count badge
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            // Title — cream on dark green
+                            Text(
+                              title.toLowerCase(),
+                              style: AppTextStyles.mainViewTitle.copyWith(
                                 color: cs.surface,
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                              child: Text(
-                                countBadge!,
-                                style: AppTextStyles.headerCountBadge,
                               ),
                             ),
-                          ],
-                        ],
-                      ),
-                    ),
-
-                    // Actions and trailing
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (actions != null) ...actions!,
-                            if (trailing != null) trailing!,
+                            // Count badge
+                            if (countBadge != null) ...[
+                              const SizedBox(height: AppDimensions.spacingXs),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppDimensions.spacingSm,
+                                  vertical: AppDimensions.spacingXxs,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: cs.surface,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                                child: Text(
+                                  countBadge!,
+                                  style:
+                                      AppTextStyles.headerCountBadge.copyWith(
+                                    color: cs.onPrimaryContainer,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+
+                      // Actions and trailing — cream icons on dark green
+                      IconButtonTheme(
+                        data: IconButtonThemeData(
+                          style: IconButton.styleFrom(
+                            foregroundColor: cs.surface,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (actions != null) ...actions!,
+                                if (trailing != null) trailing!,
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

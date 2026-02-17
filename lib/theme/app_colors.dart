@@ -266,8 +266,8 @@ class AppColors {
   /// Left border color for recipe cards
   static const Color recipeCardLeftBorder = forestGreen;
 
-  /// Bottom border color for recipe cards
-  static const Color recipeCardBottomBorder = rust;
+  /// Bottom border color for recipe cards (rust-light per mockup)
+  static const Color recipeCardBottomBorder = rustLight;
 
   /// Header background
   static const Color headerBackground = forestGreen;
