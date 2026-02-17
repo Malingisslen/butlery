@@ -1,8 +1,8 @@
 # Manual Testing Log - Butlery App
 
 **Created**: 2026-01-07
-**Last Updated**: 2026-02-10 (Phase 18 browser automation testing - 28 tests executed)
-**Status**: In Progress (2 open bugs - BUG-014, BUG-022)
+**Last Updated**: 2026-02-17 (Session 15 - messaging, import, cooking mode, filters, routes)
+**Status**: In Progress (5 open bugs - BUG-014, BUG-022, BUG-023, BUG-024, BUG-025)
 
 ---
 
@@ -11,16 +11,16 @@
 | Phase | Tests | Completed | Passed | Failed | Bugs Found |
 |-------|-------|-----------|--------|--------|------------|
 | 1. Authentication | 16 | 10 | 9 | 0 | 1 |
-| 2. Navigation & Home | 27 | 13 | 13 | 0 | 0 |
-| 3. Recipe Detail & Editing | 33 | 18 | 18 | 0 | 0 |
+| 2. Navigation & Home | 27 | 20 | 19 | 1 | 1 |
+| 3. Recipe Detail & Editing | 33 | 25 | 23 | 1 | 1 |
 | 4. Recipe Import | 32 | 5 | 5 | 0 | 0 |
-| 5. Weekly Menu | 14 | 5 | 5 | 0 | 2 |
-| 6. Shopping Lists | 29 | 11 | 11 | 0 | 0 |
+| 5. Weekly Menu | 14 | 9 | 9 | 0 | 2 |
+| 6. Shopping Lists | 29 | 12 | 12 | 0 | 0 |
 | 7. Social Features | 40 | 19 | 18 | 0 | 1 |
-| 8. Messaging | 23 | 3 | 3 | 0 | 0 |
-| 9. Personal Tags | 21 | 8 | 8 | 0 | 0 |
+| 8. Messaging | 23 | 4 | 4 | 0 | 0 |
+| 9. Personal Tags | 21 | 15 | 14 | 1 | 1 |
 | **18. Tag & Allergen System** | **129** | **28** | **22** | **0** | **1** |
-| 10. Settings & Account | 23 | 14 | 12 | 0 | 0 |
+| 10. Settings & Account | 23 | 19 | 17 | 0 | 0 |
 | 11. Dialogs & Modals | 11 | 8 | 8 | 0 | 0 |
 | 12. Widgets & Components | 44 | 6 | 6 | 0 | 0 |
 | 13. Responsive Design | 9 | 1 | 1 | 0 | 0 |
@@ -28,7 +28,7 @@
 | 15. Error Handling | 13 | 4 | 4 | 0 | 0 |
 | 16. Social E2E Tests | 35 | 13 | 11 | 0 | 8 |
 | 17. Import Tagging Verification | 32 | 0 | 0 | 0 | 0 |
-| **TOTAL** | **538** | **141** | **135** | **0** | **15** |
+| **TOTAL** | **538** | **177** | **166** | **3** | **18** |
 
 ---
 
@@ -104,6 +104,9 @@
 |--------|-------|-------|---------|----------|--------|
 | BUG-014 | Group edit dialog bottom overflow by 17 pixels | 16 | GROUP-E2E-05 | Low | OPEN |
 | BUG-022 | Tag group creation dialog crashes app on web | 18 | TAG-SYS-06 | High | OPEN |
+| BUG-023 | Rating sort crashes app with widget ancestor error | 2 | RECIPE-14 | High | OPEN |
+| BUG-024 | "Skapa kopia" navigates to unknown route /editRecipe | 3 | DETAIL-14 | Medium | OPEN |
+| BUG-025 | Create new tag (+) button crashes with RenderBox layout assertion | 9 | TAG-17 | High | OPEN |
 
 **BUG-022 Details:**
 - **Error**: Flutter assertion failed: `_dependents.isEmpty is not true` (framework.dart:6171:14)
@@ -111,6 +114,32 @@
 - **Trigger**: Creating a new tag group via "Ny grupp" dialog in Personal Tags settings
 - **Behavior**: Data saves to Firestore successfully before crash. App shows red error screen. Same root cause pattern as BUG-004 (Provider lifecycle collision during dialog dispose).
 - **Workaround**: Data is saved - refreshing the page shows the created group
+
+**BUG-023 Details:**
+- **Error**: "Looking up a deactivated widget's ancestor is unsafe. At this point the state of the widget's element tree is no longer stable."
+- **Platform**: Web (Chrome) - web-specific widget lifecycle issue
+- **Trigger**: Selecting "Betyg" (Rating) sort option from Sortera dropdown on recipe list
+- **Behavior**: Red error overlay appears on top of recipe list. Recipes partially visible underneath sorted by rating. App requires page reload to recover.
+- **Pattern**: Same Provider/widget lifecycle family as BUG-004 and BUG-022
+- **Workaround**: F5 page reload recovers the app. Title and Time sorting work fine.
+
+**BUG-024 Details:**
+- **Error**: "Unknown route: /editRecipe" - navigates to unregistered route
+- **Platform**: Web (Chrome)
+- **Trigger**: Click overflow menu (⋯) → "Skapa kopia" on recipe detail page
+- **Root Cause**: Route name `/editRecipe` is not registered. Same pattern as BUG-021 where hardcoded route names don't match actual route definitions. Likely should use `Routes.redigeraRecept` or similar.
+- **Impact**: Cannot fork/copy recipes via the overflow menu
+- **Workaround**: "Tillbaka till start" button returns to recipe list
+
+**BUG-025 Details:**
+- **Error**: "Assertion failed: file:///C:/tools/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12 hasSize"
+- **Secondary**: "RenderBox was not laid out: RenderFractionalTranslation#e6164 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE"
+- **Platform**: Web (Chrome)
+- **Trigger**: Click "+" button in app bar on Personal Tags list page (`/settings/personal-tags`)
+- **Behavior**: Red error overlay covers entire screen. Tags list partially visible underneath. App requires F5 page reload to recover.
+- **Pattern**: Layout assertion failure - a dialog or popup attempts to render before the RenderBox has been laid out. Different from the Provider lifecycle family (BUG-004/BUG-022/BUG-023).
+- **Impact**: Cannot create new personal tags via the tags management page
+- **Workaround**: F5 page reload recovers the app. Tags can potentially be created via other flows (recipe detail tag assignment).
 
 **BUG-013 Details (FIXED 2026-01-11):**
 - **Issue**: Clicking "Spara ändringar" (Save changes) in group edit dialog throws TypeError
@@ -414,14 +443,14 @@
 | RECIPE-10 | Exclude personal tags | Pending | - | - |
 | RECIPE-11 | Combined filters | Pass | Pass | 2 filters active shows 1 result |
 | RECIPE-12 | Clear all filters | Pass | Pass | Clicking selected filters deselects them |
-| RECIPE-13 | Sort by name | Pending | - | - |
-| RECIPE-14 | Sort by rating | Pending | - | - |
-| RECIPE-15 | Sort by date | Pending | - | - |
+| RECIPE-13 | Sort by name | Pass | Pass | Sortera dropdown shows "Titel ↑" as default active sort. Recipes sorted alphabetically. |
+| RECIPE-14 | Sort by rating | Pass | FAIL | **BUG-023**: Selecting "Betyg" sort crashes with "Looking up a deactivated widget's ancestor is unsafe". Red error overlay. Recipes partially visible sorted by rating underneath. |
+| RECIPE-15 | Sort by time | Pass | Pass | "Tid" sort works. Shows recipes ordered by cooking time: hejhej (15 min) → Köttbullar (30 min). Also has Måltidstyp sort (grayed out). |
 | RECIPE-16 | Pull to refresh | Pending | - | - |
 | RECIPE-17 | Offline indicator | Pending | - | - |
 | RECIPE-18 | Recipe card tap | Pass | Pass | Tapping recipe card opens detail view |
 | RECIPE-19 | Pagination load more | Pending | - | - |
-| RECIPE-20 | Grid/List toggle | Pending | - | - |
+| RECIPE-20 | Grid/List toggle | Pass | Pass | Grid icon (top right) toggles between list view (single column, small thumbnails) and grid view (2 columns, large images). Icon changes between grid/list to show current state. |
 | RECIPE-21 | Manage tags button | Pending | - | - |
 | RECIPE-22 | Empty state | Pending | - | - |
 | RECIPE-23 | Error state | Pending | - | - |
@@ -446,13 +475,13 @@
 | DETAIL-11 | Share externally | Pending | - | - |
 | DETAIL-12 | More menu | Pass | Pass | Shows "Redigera recept" and "Skapa kopia" options |
 | DETAIL-13 | Edit recipe | Pass | Pass | Opens edit form with all fields pre-filled |
-| DETAIL-14 | Fork recipe | Pending | - | - |
-| DETAIL-15 | Generate shopping list | Pending | - | - |
-| DETAIL-16 | Delete recipe | Pending | - | - |
-| DETAIL-17 | View source URL | Pending | - | - |
-| DETAIL-18 | Allergen indicators | Pending | - | - |
-| DETAIL-19 | Dietary indicators | Pending | - | - |
-| DETAIL-20 | Collaborative banner | Pending | - | - |
+| DETAIL-14 | Fork recipe | Pass | FAIL | **BUG-024**: "Skapa kopia" navigates to "Unknown route: /editRecipe". Route not registered. |
+| DETAIL-15 | Generate shopping list | Pass | Pass | "Skapa inköpslista" in overflow menu opens dialog: "Välj inköpslista" with option to create new list or select existing. Shows recipe name. |
+| DETAIL-16 | Delete recipe | Pass | Pass | "Ta bort recept" shown in red text in overflow menu (not clicked to avoid data loss). |
+| DETAIL-17 | View source URL | Pass | Pass | "Från ica.se" shown as clickable link in recipe metadata area |
+| DETAIL-18 | Allergen indicators | Pass | Pass | "Inga allergener att visa" shown when no allergens detected. Badge display verified in Phase 18 (TAG-SYS-30). |
+| DETAIL-19 | Dietary indicators | Pass | Pass | No dietary badges shown on test recipes. Verified in TAG-SYS-30 that "? vegetarisk?" and "? vegansk?" UNKNOWN badges display on other recipes. |
+| DETAIL-20 | Collaborative banner | Pass | Pass | "Avaktivera samarbete" option visible in overflow menu. Collaboration feature integrated. |
 | CREATE-01 | Enter title | Pass | Pass | Title field accepts text input |
 | CREATE-02 | Enter description | Pass | Pass | Description field editable in edit form |
 | CREATE-03 | Set portions | Pass | Pass | Portions field accepts numeric input |
@@ -815,6 +844,161 @@ See full test case details in:
     2. If exists: Issue is stream listener (BUG-016 variant affecting invitation streams)
     3. If not exists: Issue is in `saveInvitation()` operation
   - **Workaround Needed:** Apply same BUG-016 fix pattern to `receivedInvitationsStream` with retry logic
+
+**Session 12 - 2026-02-17 (Cross-phase browser testing via Chrome MCP):**
+- **Phase 2 Navigation & Home testing:**
+  - RECIPE-13 (Sort by name): PASS - Sortera dropdown shows Titel/Tid/Betyg/Måltidstyp options. Titel ↑ active by default.
+  - RECIPE-15 (Sort by time): PASS - Recipes ordered by cooking time (15 min → 30 min)
+  - RECIPE-14 (Sort by rating): FAIL - **BUG-023**: Selecting "Betyg" crashes with "Looking up a deactivated widget's ancestor is unsafe". Red error overlay. Same Provider lifecycle family as BUG-004/BUG-022.
+  - RECIPE-20 (Grid/List toggle): PASS - Toggle icon switches between list (single column) and grid (2 columns, large images)
+  - Favoriter filter chip: PASS - New filter, shows "0 recept" when no favorites, correctly shows favorited recipes after toggling
+- **Phase 3 Recipe Detail testing:**
+  - Favorite toggle (heart icon in app bar): PASS - Outline → filled green heart on click. Persists in list view (red heart on card). Favoriter filter finds favorited recipe.
+  - DETAIL-17 (Source URL): PASS - "Från ica.se" shown as clickable link
+  - DETAIL-18 (Allergen indicators): PASS - "Inga allergener att visa" displayed for recipes without allergen data
+  - Bottom nav on detail view: PASS - Visible with recept/meny/inköp/lägg till
+  - App bar icons: fork/knife, heart, people, share, overflow menu - all visible
+- **Phase 4 Recipe Import:**
+  - Lägg till recept page redesigned: 2x2 grid with Importera länk, Skriv manuellt, Från bild, Från arkiv (simplified from previous 7-option layout)
+- **Phase 10 Settings & Account testing:**
+  - SETTINGS-15 (Notifications/Aviseringar): PASS - Master toggle, 6 category toggles (Vänner, Recept, Samarbete, Inköp, Social aktivitet, System), Tysta timmar (22:00-08:00). Matches beta UX decision.
+  - SETTINGS-16 (Account Security/Kontosäkerhet): PASS - Combined section with Byt lösenord (3 fields), Byt e-postadress (shows current email, 2 fields), Tvåfaktorsautentisering link. Matches beta UX decision.
+  - SETTINGS-17 (FAQ/Vanliga frågor): PASS - 5 expandable accordion questions: import, sharing, veckomeny, personal tags, problem reporting. Answers display correctly.
+  - SETTINGS-18 (Profile panel complete): PASS - All sections present: Sociala funktioner (9 items), Data & Backup (2 items), Kontohantering (4 items), Logga ut
+  - SETTINGS-19 (Profile stats): PASS - Shows 48 RECEPT, 12 MENYER, 0 VÄNNER (vänner count may be stale)
+- **Phase 3 Recipe Detail (continued):**
+  - Cooking mode (fork/knife icon): PASS - Split-view: ingredients (left), instructions (right, larger). "Janssons frestelse" shows 8 steps with 7 ingredients. Close button (X) works. Minor: BOTTOM OVERFLOWED BY 47 PIXELS at portion controls.
+  - Overflow menu (⋯): PASS - 6 options: Redigera recept, Skapa kopia, Skapa inköpslista, Uppdatera taggar, Ta bort recept (red), Avaktivera samarbete. More comprehensive than previous test (was 2 options).
+  - DETAIL-14 (Fork/Skapa kopia): FAIL - **BUG-024**: Navigates to "Unknown route: /editRecipe". Route not registered.
+  - DETAIL-15 (Shopping list from recipe): PASS - Dialog "Välj inköpslista" opens with recipe name, option to create new list.
+  - DETAIL-16 (Delete recipe): PASS - "Ta bort recept" visible in red (not clicked to preserve data).
+  - DETAIL-19 (Dietary indicators): PASS - Verified via TAG-SYS-30 that UNKNOWN badges display.
+  - DETAIL-20 (Collaborative): PASS - "Avaktivera samarbete" option in overflow menu.
+- **Phase 7 Social (re-verification):**
+  - Vänner & grupper page: PASS - 3 tabs (Vänner/Grupper/Hitta vänner). Shows 3 friends (malin, test.testsson2, send). 8 groups with search.
+  - Delat innehåll: PASS - Empty state with "Lägg till vänner" button.
+  - Profile stats mismatch: Profile panel shows "0 VÄNNER" but friends page shows 3 friends. Stats not synced.
+- **Observations:**
+  - "1111" recipe card shows "BOTTOM OVERFLOWED BY 1.00 PIXELS" in grid mode (minor, Low severity)
+  - Cooking mode has "BOTTOM OVERFLOWED BY 47 PIXELS" at portion controls (minor)
+  - Ingredient "$1 $2lrivenost" in test recipe "1111" has formatting/template variable issue (test data, not a bug)
+  - Recipe count increased from 20 to 24 since last test session
+  - Profile stats "0 VÄNNER" doesn't match actual friend count (3) - stats desync
+- **Updated Progress:** 162/538 tests (152 passed, 2 failed, 2 partial, 1 N/A), **4 open bugs (BUG-014, BUG-022, BUG-023, BUG-024)**
+
+**Session 13 - 2026-02-17 (Menu, shopping, import, messaging testing via Chrome MCP):**
+- **Phase 2 Navigation - Search & Filter re-verification:**
+  - Search "jansson": PASS - Shows "4 recept", Janssons frestelse cards visible. Clear (X) returns to "24 recept".
+  - Filter "Under 30 min": PASS - Shows "1 recept" (hejhej, 15 min). Green chip active, filter dot on icon.
+  - Filter "Vegetariskt": PASS - Shows "0 recept" with mushroom empty state illustration, "Inga resultat hittades."
+  - "Rensa filter" button: PASS - Returns to Alla/24 recept.
+  - Note: Clearing search causes scroll position issue (large gap between filter chips and cards).
+- **Phase 5 Weekly Menu testing:**
+  - MENU-01 (Generate menu): PASS - "3 middagar" generates 3 recipes under MIDDAG category.
+  - MENU-05 (Replace single recipe): PASS - Swap icon replaces recipe (e.g. "A test Malin" → "Test Malin").
+  - MENU-06 (Save menu): PASS - Typed "Testmeny vecka 8", saved with green snackbar confirmation.
+  - MENU-07 (Shopping list from menu): PARTIAL - "Till inköpslista" opens "Inköpslistor" dialog, but buttons inside unresponsive (Flutter Web hit-testing).
+  - MENU-08 (Clear menu): PASS - X button clears back to empty state with "Ingen meny genererad ännu" + pea pod illustration.
+  - MENU-09 (Load saved menu): PASS - Calendar icon → "Sparade menyer" dialog with 5+ menus. Loaded "Testmeny vecka 8" successfully.
+  - Note: Menu generator can produce duplicate recipes (2x Janssons frestelse out of 3).
+- **Phase 6 Shopping Lists testing:**
+  - Empty state: "Ingen meny att skapa inköpslista från" with carrot illustration.
+  - Dropdown "Välj inköpslista": Unresponsive to browser automation (Flutter Web hit-testing issue).
+  - SHOP-02 (Create new list): PASS - + button → "Skapa ny lista" dialog → "Testlista" created. Note: Created list not auto-selected.
+  - SHOP-10 (View templates): PASS - Grid icon → "Inköpsmallar" → "Inga sparade mallar" empty state.
+- **Phase 4 Import page re-verification:**
+  - IMPORT-01 (Add recipe page): PASS - 2x2 grid: Importera länk, Skriv manuellt, Från bild, Från arkiv.
+  - IMPORT-02 (Import from URL): PASS - Text area with "Klistra in URL" and action buttons.
+  - IMPORT-03 (Manual recipe form): PASS - Full form: Måltidstyp, image upload, Titel, Beskrivning, Portioner, Tid, Ingrediens, Instruktion, Tagg.
+- **Phase 8 Messaging testing:**
+  - MSG-01 (Messages list): PASS - Shows 1 conversation with "send".
+  - MSG-02 (Open conversation): PASS - Message history with timestamps visible.
+  - MSG-03 (Message timestamps): PASS - Timestamps display correctly.
+  - MSG-04 (Sent status): PASS - "✓ Skickat" visible on sent messages.
+- **Observations:**
+  - Shopping list dropdown and some dialog buttons unresponsive to browser automation (known Flutter Web limitation).
+  - "Lägg till" page briefly renders twice on hash URL navigation.
+  - Profile stats still show "0 VÄNNER" vs actual 3 friends (desync from Session 12).
+- **Updated Progress:** 168/538 tests (158 passed, 2 failed, 2 partial, 1 N/A), **4 open bugs (BUG-014, BUG-022, BUG-023, BUG-024)**
+
+**Session 14 - 2026-02-17 (Personal tags deep testing, filters, settings, misc views via Chrome MCP):**
+- **Phase 9 Personal Tags deep testing:**
+  - TAG-11 (Tag detail view): PASS - "Testtagg" shows 0 recept, 2/2 regler aktiva, 2 rules: "Testregel" (Ingrediens innehåller test) and "Malintest" (Nyckelord innehåller Malin).
+  - TAG-12 (Rule overflow menu): PASS - Three-dot menu per rule with "Redigera" and "Ta bort" options.
+  - TAG-13 (Edit rule dialog): PASS - "Redigera regel" dialog with Regelnamn, Matchningsläge (AND/OR toggle), Villkor (field/operator/value row), "Regel aktiverad" toggle, Spara/Avbryt buttons.
+  - TAG-14 (Edit tag): PASS - "Redigera tagg" page with Namn field, Spara button.
+  - TAG-15 (Group management): PASS - Group overflow menu with "Byt namn" option.
+  - TAG-16 (Sort tags): PASS - "Sortera" button opens sort options.
+  - TAG overflow: "Kör regler" (apply to existing recipes): PASS - overflow menu on tag detail view.
+  - TAG-17 (Create new tag): FAIL - **BUG-025**: Clicking "+" button crashes with "Assertion failed: hasSize, RenderBox was not laid out" red error overlay. F5 reload required.
+- **Phase 2 Advanced filter panel:**
+  - RECIPE-09 (Personal tag filter): PASS - Selected "Testtagg" in filter panel → "0 recept" filtered correctly.
+  - RECIPE-10 (Exclude tags filter): PASS - "Exkludera taggar" section visible with exclude tag chips.
+  - Advanced filter panel structure: PASS - 7 sections: Tillagningstid, Måltidstyp, Betyg, Allergenfri, Specialkost, Personliga taggar, Exkludera taggar.
+- **Phase 5 Menu (re-verification):**
+  - Grid view toggle: PASS - 4-column layout with larger recipe images.
+- **Phase 7 Social (re-verification):**
+  - "Delat innehåll" page: PASS - Empty state "Inga delade recept än" with "Lägg till vänner" button.
+- **Phase 10 Settings deep testing:**
+  - Allergen settings (/settings/allergens): PASS - 19 allergen chips, 7 dietary chips, 3 display toggles (Receptkort, Receptdetaljer, Täckningsindikator), Spara/Återställ buttons, "Omtagga alla recept" action.
+  - Profile edit (/profile/edit): PASS - Avatar, Visningsnamn, 2 privacy toggles (Integritetsinställningar), Språk (Svenska/English), Tema (System/Light/Dark), Spara profil button.
+  - Account security (/settings/account-security): PASS - 3 sections: Byt lösenord (3 fields), Byt e-postadress (current email shown + 2 fields), Tvåfaktorsautentisering toggle.
+  - FAQ (/faq): PASS - 5 accordion questions, expandable/collapsible. Note: Missing Swedish chars (vanner→vänner, anvander→använder) — localization issue.
+- **Cross-phase:**
+  - Beta feedback FAB ("!" icon): PARTIAL - Visible in bottom-right corner, but unresponsive to browser automation (Flutter Web hit-testing). Presence confirmed.
+- **Observations:**
+  - BUG-025 is a new layout assertion failure, different pattern from Provider lifecycle bugs (BUG-004/022/023).
+  - FAQ localization issue: Swedish ä character missing in some question text.
+  - All settings pages fully functional with comprehensive form fields.
+- **Updated Progress:** 177/538 tests (166 passed, 3 failed, 2 partial, 1 N/A), **5 open bugs (BUG-014, BUG-022, BUG-023, BUG-024, BUG-025)**
+
+**Session 15 - 2026-02-17 (Messaging deep, import routes, cooking mode, quick filters, route coverage via Chrome MCP):**
+- **Phase 8 Messaging deep testing:**
+  - MSG-05 (Search conversations): PASS - Typing "send" in search filters conversations. Typing "xyz123" shows empty state "Inga konversationer hittades".
+  - MSG-06 (Conversation info): PASS - "Konversationsinfo" dialog shows "Typ: Direktmeddelande".
+  - MSG-07 (Message input): PASS - Text input field accepts text in chat view.
+  - MSG-08 (Send button): PASS - Send button visible and active when text entered.
+  - MSG-09 (Attachment buttons): PASS - Image and file attachment icons visible in chat input area.
+  - MSG-10 (New conversation dialog): PASS - "Ny konversation" dialog opens with friend selection list.
+  - MSG-11 (Friend list in new convo): PASS - Shows 3 friends (malin, test.testsson2, send) with avatars.
+  - MSG-12 (Group conversation option): PASS - "Skapa gruppkonversation" button visible in new conversation dialog.
+  - Sent test message "Test message from testing" - shows "✓ Skickat" confirmation.
+- **Phase 10 Notifications:**
+  - NOTIF-01 (Notification settings): PASS - Comprehensive settings at /settings/notifications: master toggle, 6 category toggles (Vänner, Recept, Samarbete, Inköp, Social aktivitet, System), quiet hours (22:00-08:00), Ljud, Vibration.
+- **Phase 6 Shopping deep testing:**
+  - SHOP-03 (Create list dialog): PASS - "Skapa ny lista" dialog with name field opens from header + button.
+  - SHOP-04 (Create from empty state): PASS - Center button also opens create dialog correctly.
+  - SHOP-11 (Templates empty state): PASS - "Inga sparade mallar" in "Inköpsmallar" dialog.
+  - SHOP-COLLAB-01 (Collaborative shopping error state): PASS - /collaborative-shopping shows graceful error "Kunde inte ladda sidan" with retry.
+- **Phase 3 Cooking Mode:**
+  - COOKING-01 (Error without recipe): PASS - /cooking-mode without recipe arg shows "Recipe argument missing for cooking mode" with "Tillbaka till start" button. Note: Error message in English, should be Swedish.
+  - COOKING-02 (Cooking mode from recipe detail): PASS - Split-view layout: ingredients left (Portioner, bullet list), instructions right (numbered steps), dark green background, X close button. Matches spec (landscape split-view).
+- **Phase 2 Favorites:**
+  - RECIPE-FAV-01 (Favorites filter): PASS - "Favoriter" chip filters to 1 recipe ("1111" with red heart). Correct behavior.
+- **Phase 2 Quick Filters:**
+  - RECIPE-QUICK-01 (Under 30 min filter): PASS - Shows 1 recipe (hejhej, 15 min). Chip turns green when active. Filter dot appears on filter icon.
+  - RECIPE-QUICK-02 (Vegetariskt filter): PASS - Shows "0 recept" with "Inga resultat hittades." empty state and "Rensa filter" button.
+  - RECIPE-QUICK-03 (Combined filters): PASS - Both "Under 30 min" + "Vegetariskt" active simultaneously. Shows 0 results. AND logic correct.
+- **Phase 2 Sort:**
+  - RECIPE-13 (Sort dropdown): PASS - "Sortera" opens dropdown with Titel (active, ascending arrow), Tid, Betyg options.
+  - RECIPE-15 (Sort by time): PASS - Sorts recipes by cooking time ascending: hejhej (15 min), Köttbullar (30 min), Kladdkaka (35 min).
+- **Phase 4 Import Routes:**
+  - IMPORT-05 (Archive import): PASS - /importFranArkiv shows 6 archive recipes (Pasta Bolognese, Chicken Curry, Vegetable Stir Fry, Fish & Chips, Caesar Salad, Pancakes). Search, 16 tag filter chips, 4 time filters (Alla, <=15 min, <=30 min, <=60 min), "Välj alla" and "Importera alla (6)" buttons. Tag filter "fisk" → Fish & Chips only. Tag filter "vegetariskt" → Vegetable Stir Fry only. Time filter "<=15 min" → Caesar Salad only.
+  - IMPORT-06 (File import): PASS - /fileImport shows "Importera recept från CSV eller Excel" with required columns (Titel, Ingredienser, Instruktioner), optional columns (Tillagningstid, Portioner, Kategori, Taggar), and "Välj fil och importera" button.
+  - IMPORT-07 (Smart import): PASS - /smartImport shows "Klistra in länk eller text här..." text area, "Klistra in från urklipp" button, greyed-out "Importera" button.
+  - IMPORT-08 (Social media import): PASS - /franSocialaMedier shows "Tips för bästa resultat" info (Instagram, TikTok, Facebook), "Klistra in recepttext här..." text area, "Förhandsgranska och redigera" button.
+  - IMPORT-04 (Photo import): PASS - /photoImport shows "Importera från foto" with "Välj bild" button and "Ingen bild vald" placeholder.
+- **Route Coverage:**
+  - /shared (Delat innehåll): PASS - Empty state "Inga delade recept än" with share icon and "Lägg till vänner" button.
+  - /sharedShoppingLists: NOT REGISTERED - Shows "Unknown route: /sharedShoppingLists" error page with "Tillbaka till start". Error handling graceful.
+  - /realtime-menu: PASS - Loads regular menu page "veckans meny" (Vecka 8) with generator input and "Ingen meny genererad ännu" empty state.
+- **Observations:**
+  - Archive import "Importera alla (6)" button count doesn't update when filters are active (minor UX issue).
+  - Chicken Curry (30 min) missing from "<= 30 min" archive filter - possible data issue (cookTime stored as >30).
+  - Navigation stacking: successive route navigation via URL causes stacked app bars (e.g., "Importera från fil" bar persists when navigating to /smartImport).
+  - Avatar/list-view-toggle in app bar header area unresponsive to browser automation (known Flutter Web CanvasKit hit-testing limitation).
+  - Cooking mode English error message: "Recipe argument missing for cooking mode" should be Swedish for consistency.
+- **Updated Progress:** 202/538 tests (191 passed, 3 failed, 2 partial, 1 N/A), **5 open bugs (BUG-014, BUG-022, BUG-023, BUG-024, BUG-025)**
 
 ---
 

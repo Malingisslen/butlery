@@ -119,7 +119,7 @@ class ButleryColors extends ThemeExtension<ButleryColors> {
     // Brand / decorative
     starGold: Color(0xFFFBBF24),
     recipeCardLeftBorder: Color(0xFF4A7C59), // forestGreen
-    recipeCardBottomBorder: Color(0xFF8B5A3C), // rust
+    recipeCardBottomBorder: Color(0xFFA77B5E), // rustLight per mockup
     navAccent: Color(0xFF8B5A3C), // rust
     // Categories
     categoryMeatFish: Color(0xFF8B5A3C), // rust

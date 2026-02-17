@@ -77,7 +77,7 @@ class PortionScalerUI {
         Text(
           context.l10n.scalerPortionsLabel,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).colorScheme.primaryContainer,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -128,7 +128,7 @@ class PortionScalerUI {
                   style: AppTextStyles.bodyBold.copyWith(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.primaryContainer,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   textAlign: TextAlign.center,
                 ),

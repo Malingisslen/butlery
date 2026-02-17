@@ -67,14 +67,24 @@
     ],
     "Notification": [
       {
-        "matcher": "*",
+        "matcher": "idle_prompt",
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -Command \"[System.Media.SystemSounds]::Exclamation.Play()\""
+            "command": "powershell -ExecutionPolicy Bypass -File C:/Butlery/butlery/.claude/hooks/notify.ps1 -Type done"
+          }
+        ]
+      },
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File C:/Butlery/butlery/.claude/hooks/notify.ps1 -Type input"
           }
         ]
       }
-    ]
+    ],
+    "Stop": []
   }
 }

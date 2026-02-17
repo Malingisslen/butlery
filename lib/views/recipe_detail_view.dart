@@ -403,7 +403,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             color: cs.surfaceContainerHighest,
                             border: Border(
                               bottom: BorderSide(
-                                color: cs.primary,
+                                color: cs.secondary,
                                 width: 3,
                               ),
                             ),
