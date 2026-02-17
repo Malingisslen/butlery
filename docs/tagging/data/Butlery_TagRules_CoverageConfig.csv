@@ -1,6 +1,0 @@
-tagg_typ,coverage_krav,vid_osäkerhet,notes
-allergen,100%,Sätt UNKNOWN,Säkerhetskritiskt - fel kan göra någon sjuk
-dietary,100%,Sätt UNKNOWN,Säkerhetskritiskt
-protein-identitet,80%,Sätt ändå om tydlig huvudingrediens,
-cuisine,60%,Sätt baserat på nyckelingredienser,
-praktiskt/mood,60%,Sätt baserat på tillgänglig info,
