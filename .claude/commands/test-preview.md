@@ -5,8 +5,6 @@ Continue manual testing of the Butlery app using the embedded browser preview.
 ## Setup
 
 1. Read the manual test log: `docs/testing/MANUAL_TEST_LOG.md`
-2. Start Flutter web using the launch.json configuration (the preview panel should auto-start `flutter run -d chrome --web-port 3000`)
-3. Wait for the app to fully load in the embedded browser
 
 ## Testing Priority
 
@@ -34,12 +32,11 @@ This phase has 0/32 tests completed and verifies the automatic tagging pipeline 
 
 ## Test Execution Rules
 
-- **Platform**: Flutter Web (Chrome) via preview browser
 - **User A**: malin.gisslen1@gmail.com / test123
 - **User B** (E2E social tests, Phase 16): test.testsson2@gmail.com / TestPass123! — log out User A first, then log in as User B to verify
 - **After each bug fix**: Run `flutter analyze` before marking as fixed
 - **Known Flutter Web limitations**: CanvasKit hit-testing issues with some buttons — document when automation fails but real clicks would work
-- **Auto-verify**: The preview panel will automatically screenshot and verify after your code changes
+- **Auto-verify**: Screenshot and verify after your code changes
 
 ## Updating the Test Log
 
