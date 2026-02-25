@@ -163,8 +163,12 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
   void _onSortChanged(SortCriteria? criteria) {
     if (criteria != null) {
-      final viewModel = context.read<RecipeListViewModel>();
-      viewModel.updateSort(criteria);
+      // Defer to next frame so PopupMenu fully tears down before rebuild
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final viewModel = context.read<RecipeListViewModel>();
+        viewModel.updateSort(criteria);
+      });
     }
   }
 
