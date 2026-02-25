@@ -5956,7 +5956,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authPassword => 'Password';
 
   @override
-  String get authTagline => 'Smart recipe management for your everyday';
+  String get authTagline => 'Your recipes. The rest sorts itself out.';
 
   @override
   String get collaborativeAdd => 'Add';
@@ -6979,13 +6979,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authEmail => 'Email';
 
   @override
-  String get authEmailHint => 'your.email@example.com';
+  String get authEmailHint => 'name@example.com';
 
   @override
   String get authNoAccountSignUp => 'Don\'t have an account? Create account';
 
   @override
   String get authHasAccountLogin => 'Already have an account? Log in';
+
+  @override
+  String get authTermsOfService => 'Terms';
 
   @override
   String get authResetEmailSent => 'Email sent! Check your inbox.';

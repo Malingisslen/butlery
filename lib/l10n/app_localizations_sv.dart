@@ -5966,7 +5966,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get authPassword => 'Lösenord';
 
   @override
-  String get authTagline => 'Smart recepthantering för din vardag';
+  String get authTagline => 'Dina recept. Resten löser sig.';
 
   @override
   String get collaborativeAdd => 'Lägg till';
@@ -6996,13 +6996,16 @@ class AppLocalizationsSv extends AppLocalizations {
   String get authEmail => 'E-post';
 
   @override
-  String get authEmailHint => 'din.email@exempel.se';
+  String get authEmailHint => 'namn@exempel.se';
 
   @override
   String get authNoAccountSignUp => 'Har du inget konto? Skapa konto';
 
   @override
   String get authHasAccountLogin => 'Har du redan ett konto? Logga in';
+
+  @override
+  String get authTermsOfService => 'Villkor';
 
   @override
   String get authResetEmailSent => 'Email skickad! Kontrollera din inkorg.';
