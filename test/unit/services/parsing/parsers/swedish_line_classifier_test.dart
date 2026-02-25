@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/services/parsing/parsers/swedish_line_classifier.dart';
+import 'package:butlery/services/parsing/parsers/viterbi_context_processor.dart';
 
 void main() {
   final classifier = SwedishLineClassifier.instance;
@@ -324,6 +325,160 @@ Ingredienser:
           reason: '"4 st ägg" should not set portions to 4',
         );
         expect(structure.ingredients.length, greaterThanOrEqualTo(1));
+      });
+    });
+
+    group('MT-2: Viterbi context-aware classification', () {
+      const viterbi = ViterbiContextProcessor();
+
+      test('ingredient sequence pulls ambiguous line into ingredient', () {
+        // A run of clear ingredient lines followed by a high-confidence
+        // ingredient line — verify Viterbi preserves the ingredient sequence
+        // and doesn't reclassify confident ingredients.
+        final lines = [
+          classifier.classifyLine('2 dl mjölk'),
+          classifier.classifyLine('3 ägg'),
+          classifier.classifyLine('500 g köttfärs'),
+          classifier.classifyLine('1 msk olivolja'),
+          classifier.classifyLine('2 tsk salt'),
+          classifier.classifyLine('1 krm peppar'),
+        ];
+
+        final contextual = viterbi.classifyWithContext(lines);
+
+        // All lines should remain as ingredients in the Viterbi output
+        for (var i = 0; i < contextual.length; i++) {
+          expect(contextual[i].type, LineType.ingredient,
+              reason: 'Line $i should be ingredient in ingredient run');
+        }
+      });
+
+      test('section header "Ingredienser:" boosts subsequent ambiguous lines',
+          () {
+        // After an ingredient header, even ambiguous short food words
+        // should be classified as ingredients due to emission boosting.
+        final lines = [
+          classifier.classifyLine('Ingredienser:'),
+          classifier.classifyLine('smör'),
+          classifier.classifyLine('lök'),
+          classifier.classifyLine('vitlök'),
+        ];
+
+        // Without context, these are all title (60%)
+        expect(lines[1].type, LineType.title);
+        expect(lines[2].type, LineType.title);
+        expect(lines[3].type, LineType.title);
+
+        final contextual = viterbi.classifyWithContext(lines);
+
+        // The header should still be a header
+        expect(contextual[0].type, LineType.sectionHeader);
+        // Subsequent lines should be ingredients due to header boost
+        expect(contextual[1].type, LineType.ingredient,
+            reason: '"smör" after ingredient header should be ingredient');
+        expect(contextual[2].type, LineType.ingredient,
+            reason: '"lök" after ingredient header should be ingredient');
+        expect(contextual[3].type, LineType.ingredient,
+            reason: '"vitlök" after ingredient header should be ingredient');
+      });
+
+      test('instruction header switches context from ingredients', () {
+        final lines = [
+          classifier.classifyLine('Ingredienser:'),
+          classifier.classifyLine('2 dl mjölk'),
+          classifier.classifyLine('3 ägg'),
+          classifier.classifyLine('Gör så här:'),
+          classifier.classifyLine('Koka pastan al dente och häll av vattnet.'),
+          classifier
+              .classifyLine('Blanda mjöl och socker noggrant i en stor bunke.'),
+        ];
+
+        final contextual = viterbi.classifyWithContext(lines);
+
+        expect(contextual[0].type, LineType.sectionHeader);
+        expect(contextual[1].type, LineType.ingredient);
+        expect(contextual[2].type, LineType.ingredient);
+        expect(contextual[3].type, LineType.sectionHeader);
+        expect(contextual[4].type, LineType.instruction);
+        expect(contextual[5].type, LineType.instruction);
+      });
+
+      test('high-confidence metadata survives ingredient context', () {
+        // Metadata like "4 portioner" has high emission (0.85) and a
+        // Metadata at the start (before any ingredient context) should
+        // survive because there's no strong ingredient run to absorb it.
+        final lines = [
+          classifier.classifyLine('Pasta med köttfärssås'),
+          classifier.classifyLine('4 portioner'),
+          classifier.classifyLine('30 min'),
+          classifier.classifyLine('Ingredienser:'),
+          classifier.classifyLine('2 dl mjölk'),
+        ];
+
+        expect(lines[1].type, LineType.metadata);
+        expect(lines[2].type, LineType.metadata);
+
+        final contextual = viterbi.classifyWithContext(lines);
+
+        expect(contextual[1].type, LineType.metadata,
+            reason: 'Metadata before ingredient section should survive');
+        expect(contextual[3].type, LineType.sectionHeader);
+        expect(contextual[4].type, LineType.ingredient);
+      });
+
+      test('empty lines do not break ingredient context after header', () {
+        // An empty line between ingredients after a section header
+        // should not reset context — the header boost carries through
+        // empty lines and the transition matrix allows ingredient ->
+        // empty -> ingredient.
+        final lines = [
+          classifier.classifyLine('Ingredienser:'),
+          classifier.classifyLine('2 dl mjölk'),
+          classifier.classifyLine('3 ägg'),
+          classifier.classifyLine('500 g köttfärs'),
+          classifier.classifyLine(''),
+          classifier.classifyLine('1 krm peppar'),
+        ];
+
+        expect(lines[4].type, LineType.empty);
+
+        final contextual = viterbi.classifyWithContext(lines);
+
+        // Empty line should not break the ingredient context
+        expect(contextual[5].type, LineType.ingredient,
+            reason:
+                'Ingredient after header + ingredients + empty should stay ingredient');
+      });
+
+      test('single line unchanged by Viterbi', () {
+        final lines = [classifier.classifyLine('2 dl mjölk')];
+        final contextual = viterbi.classifyWithContext(lines);
+
+        expect(contextual.length, 1);
+        expect(contextual[0].type, lines[0].type);
+        expect(contextual[0].confidence, lines[0].confidence);
+      });
+
+      test('classifyAndGroup integration applies Viterbi', () {
+        // Full integration: classifyAndGroup should use context to pull
+        // ambiguous food words after an ingredient header into ingredient.
+        const text = 'Ingredienser:\nsmör\nlök\nvitlök';
+
+        final sections = classifier.classifyAndGroup(text);
+
+        // All content should end up in one ingredients section
+        final ingredientSection = sections.firstWhere(
+          (s) => s.type == LineSectionType.ingredients,
+          orElse: () => throw StateError('No ingredient section found'),
+        );
+
+        // The food-word lines should be classified as ingredients
+        final foodLines = ingredientSection.lines
+            .where((l) => l.type == LineType.ingredient)
+            .toList();
+        expect(foodLines.length, greaterThanOrEqualTo(3),
+            reason:
+                '"smör", "lök", "vitlök" should all be ingredients in context');
       });
     });
   });
