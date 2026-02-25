@@ -189,6 +189,112 @@ void main() {
       });
     });
 
+    group('substitution detection', () {
+      test('detects "eller X" pattern', () {
+        final result =
+            IngredientPreprocessor.preprocess('grädde (eller kokosmjölk)');
+        expect(result.substitutes, ['kokosmjölk']);
+        expect(result.cleaned, 'grädde');
+        expect(result.hadParentheses, isTrue);
+      });
+
+      test('detects "kan bytas mot X" pattern', () {
+        final result =
+            IngredientPreprocessor.preprocess('smör (kan bytas mot olja)');
+        expect(result.substitutes, ['olja']);
+        expect(result.cleaned, 'smör');
+      });
+
+      test('detects "kan bytas ut mot X" pattern', () {
+        final result = IngredientPreprocessor.preprocess(
+            'smör (kan bytas ut mot kokosolja)');
+        expect(result.substitutes, ['kokosolja']);
+      });
+
+      test('detects "X funkar också" pattern', () {
+        final result = IngredientPreprocessor.preprocess(
+            'vetemjöl (dinkelmjöl funkar också)');
+        expect(result.substitutes, ['dinkelmjöl']);
+        expect(result.cleaned, 'vetemjöl');
+      });
+
+      test('detects "X fungerar också" pattern', () {
+        final result = IngredientPreprocessor.preprocess(
+            'vetemjöl (dinkelmjöl fungerar också)');
+        expect(result.substitutes, ['dinkelmjöl']);
+      });
+
+      test('detects "alternativt X" pattern', () {
+        final result =
+            IngredientPreprocessor.preprocess('smör (alternativt kokosolja)');
+        expect(result.substitutes, ['kokosolja']);
+        expect(result.cleaned, 'smör');
+      });
+
+      test('detects "X istället" pattern', () {
+        final result =
+            IngredientPreprocessor.preprocess('grädde (havremjölk istället)');
+        expect(result.substitutes, ['havremjölk']);
+        expect(result.cleaned, 'grädde');
+      });
+
+      test('detects "ersätt med X" pattern', () {
+        final result =
+            IngredientPreprocessor.preprocess('smör (ersätt med margarin)');
+        expect(result.substitutes, ['margarin']);
+      });
+
+      test('detects "kan ersättas med X" pattern', () {
+        final result = IngredientPreprocessor.preprocess(
+            'mjölk (kan ersättas med havredryck)');
+        expect(result.substitutes, ['havredryck']);
+      });
+
+      test('detects "t.ex. X" pattern', () {
+        final result =
+            IngredientPreprocessor.preprocess('olja (t.ex. rapsolja)');
+        expect(result.substitutes, ['rapsolja']);
+      });
+
+      test('detects "tex X" pattern', () {
+        final result = IngredientPreprocessor.preprocess('olja (tex olivolja)');
+        expect(result.substitutes, ['olivolja']);
+      });
+
+      test('detects "till exempel X" pattern', () {
+        final result =
+            IngredientPreprocessor.preprocess('olja (till exempel rapsolja)');
+        expect(result.substitutes, ['rapsolja']);
+      });
+
+      test('non-substitution parentheses become hint', () {
+        final result = IngredientPreprocessor.preprocess('lime (saften)');
+        expect(result.substitutes, isEmpty);
+        expect(result.preparationHint, 'saften');
+      });
+
+      test('handles both substitution and hint in separate parentheses', () {
+        final result = IngredientPreprocessor.preprocess(
+            'mjöl (fint) (eller majsstärkelse)');
+        expect(result.preparationHint, 'fint');
+        expect(result.substitutes, ['majsstärkelse']);
+      });
+
+      test('substitutes field defaults to empty when no parentheses', () {
+        final result = IngredientPreprocessor.preprocess('2 dl mjölk');
+        expect(result.substitutes, isEmpty);
+        expect(result.hadParentheses, isFalse);
+      });
+
+      test('includes substitutes in toString', () {
+        final result =
+            IngredientPreprocessor.preprocess('grädde (eller kokosmjölk)');
+        final str = result.toString();
+        expect(str, contains('substitutes'));
+        expect(str, contains('kokosmjölk'));
+      });
+    });
+
     group('combined preprocessing', () {
       test('should handle multiple preprocessing steps', () {
         final result = IngredientPreprocessor.preprocess(
