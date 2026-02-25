@@ -186,11 +186,16 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             icon: const Icon(Icons.add),
             tooltip: context.l10n.commonCreate,
             onSelected: (value) {
-              if (value == 'tag') {
-                _createTag(context);
-              } else if (value == 'group') {
-                _createGroup(context);
-              }
+              // Defer to next frame so PopupMenu fully dismisses before dialog opens
+              // Fixes BUG-025 (RenderBox assertion) and BUG-022 (Provider lifecycle)
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!context.mounted) return;
+                if (value == 'tag') {
+                  _createTag(context);
+                } else if (value == 'group') {
+                  _createGroup(context);
+                }
+              });
             },
             itemBuilder: (context) => [
               PopupMenuItem(
@@ -763,192 +768,277 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
 
   Future<void> _createTag(BuildContext context) async {
     final viewModel = context.read<PersonalTagViewModel>();
-    final nameController = TextEditingController();
+    String tagName = '';
 
-    final result = await showDialog<bool>(
+    await showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.personalTagCreateTag),
-        content: TextField(
-          controller: nameController,
-          decoration: InputDecoration(
-            labelText: context.l10n.personalTagNameLabel,
-            hintText: context.l10n.personalTagNameHint,
+      builder: (dialogContext) {
+        bool isLoading = false;
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: Text(context.l10n.personalTagCreateTag),
+            content: TextField(
+              onChanged: (v) => tagName = v,
+              enabled: !isLoading,
+              decoration: InputDecoration(
+                labelText: context.l10n.personalTagNameLabel,
+                hintText: context.l10n.personalTagNameHint,
+              ),
+              autofocus: true,
+              textCapitalization: TextCapitalization.sentences,
+            ),
+            actions: [
+              TextButton(
+                onPressed:
+                    isLoading ? null : () => Navigator.pop(dialogContext),
+                child: Text(context.l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        final name = tagName.trim();
+                        if (name.isEmpty) return;
+
+                        final validationError =
+                            viewModel.validateTagName(name);
+                        if (validationError != null) {
+                          if (context.mounted) {
+                            SnackBarUtils.showError(
+                                context, validationError);
+                          }
+                          return;
+                        }
+
+                        setState(() => isLoading = true);
+                        final success =
+                            await viewModel.createTag(name: name);
+
+                        if (!dialogContext.mounted) return;
+                        Navigator.pop(dialogContext);
+
+                        if (!context.mounted) return;
+                        if (success) {
+                          SnackBarUtils.showSuccess(
+                              context, context.l10n.personalTagCreated);
+                        } else {
+                          SnackBarUtils.showError(
+                            context,
+                            viewModel.error ??
+                                context.l10n.personalTagCouldNotCreate,
+                          );
+                        }
+                      },
+                child: isLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(context.l10n.commonCreate),
+              ),
+            ],
           ),
-          autofocus: true,
-          textCapitalization: TextCapitalization.sentences,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(context.l10n.commonCreate),
-          ),
-        ],
-      ),
+        );
+      },
     );
-
-    if (result == true && nameController.text.trim().isNotEmpty) {
-      final name = nameController.text.trim();
-
-      // Validate before attempting to create
-      final validationError = viewModel.validateTagName(name);
-      if (validationError != null) {
-        if (context.mounted) {
-          SnackBarUtils.showError(context, validationError);
-        }
-        return;
-      }
-
-      final success = await viewModel.createTag(name: name);
-      if (context.mounted) {
-        if (success) {
-          SnackBarUtils.showSuccess(context, context.l10n.personalTagCreated);
-        } else {
-          SnackBarUtils.showError(context,
-              viewModel.error ?? context.l10n.personalTagCouldNotCreate);
-        }
-      }
-    }
-
-    nameController.dispose();
   }
+
+  // BUG-022 FIX: All dialog methods execute ViewModel operations BEFORE
+  // popping the dialog. This prevents Provider notifyListeners() from firing
+  // during dialog disposal, which crashes on Flutter Web.
 
   Future<void> _createGroup(BuildContext context) async {
     final viewModel = context.read<PersonalTagViewModel>();
-    final nameController = TextEditingController();
+    String groupName = '';
 
-    final result = await showDialog<bool>(
+    await showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.personalTagCreateGroup),
-        content: TextField(
-          controller: nameController,
-          decoration: InputDecoration(
-            labelText: context.l10n.personalTagGroupNameLabel,
-            hintText: context.l10n.personalTagGroupNameHint,
+      builder: (dialogContext) {
+        bool isLoading = false;
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: Text(context.l10n.personalTagCreateGroup),
+            content: TextField(
+              onChanged: (v) => groupName = v,
+              enabled: !isLoading,
+              decoration: InputDecoration(
+                labelText: context.l10n.personalTagGroupNameLabel,
+                hintText: context.l10n.personalTagGroupNameHint,
+              ),
+              autofocus: true,
+              textCapitalization: TextCapitalization.sentences,
+            ),
+            actions: [
+              TextButton(
+                onPressed:
+                    isLoading ? null : () => Navigator.pop(dialogContext),
+                child: Text(context.l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        final name = groupName.trim();
+                        if (name.isEmpty) return;
+
+                        setState(() => isLoading = true);
+                        final success =
+                            await viewModel.createGroup(name: name);
+
+                        if (!dialogContext.mounted) return;
+                        Navigator.pop(dialogContext);
+
+                        if (!context.mounted) return;
+                        if (success) {
+                          SnackBarUtils.showSuccess(
+                              context, context.l10n.personalTagGroupCreated);
+                        } else {
+                          SnackBarUtils.showError(
+                            context,
+                            viewModel.error ??
+                                context.l10n.personalTagCouldNotCreateGroup,
+                          );
+                        }
+                      },
+                child: isLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(context.l10n.commonCreate),
+              ),
+            ],
           ),
-          autofocus: true,
-          textCapitalization: TextCapitalization.sentences,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(context.l10n.commonCreate),
-          ),
-        ],
-      ),
+        );
+      },
     );
-
-    if (result == true && nameController.text.trim().isNotEmpty) {
-      final success = await viewModel.createGroup(
-        name: nameController.text.trim(),
-      );
-      if (context.mounted) {
-        if (success) {
-          SnackBarUtils.showSuccess(
-              context, context.l10n.personalTagGroupCreated);
-        } else {
-          SnackBarUtils.showError(
-            context,
-            viewModel.error ?? context.l10n.personalTagCouldNotCreateGroup,
-          );
-        }
-      }
-    }
-
-    nameController.dispose();
   }
 
   Future<void> _editTag(BuildContext context, PersonalTag tag) async {
     final viewModel = context.read<PersonalTagViewModel>();
-    final nameController = TextEditingController(text: tag.name);
+    String tagName = tag.name;
 
-    final result = await showDialog<bool>(
+    await showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.personalTagEditTag),
-        content: TextField(
-          controller: nameController,
-          decoration: InputDecoration(
-            labelText: context.l10n.personalTagNameLabel,
+      builder: (dialogContext) {
+        bool isLoading = false;
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: Text(context.l10n.personalTagEditTag),
+            content: TextFormField(
+              initialValue: tag.name,
+              onChanged: (v) => tagName = v,
+              enabled: !isLoading,
+              decoration: InputDecoration(
+                labelText: context.l10n.personalTagNameLabel,
+              ),
+              autofocus: true,
+              textCapitalization: TextCapitalization.sentences,
+            ),
+            actions: [
+              TextButton(
+                onPressed:
+                    isLoading ? null : () => Navigator.pop(dialogContext),
+                child: Text(context.l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        final name = tagName.trim();
+                        if (name.isEmpty) return;
+
+                        setState(() => isLoading = true);
+                        try {
+                          final updated = tag.copyWith(name: name);
+                          await viewModel.updateTag(updated);
+
+                          if (!dialogContext.mounted) return;
+                          Navigator.pop(dialogContext);
+
+                          if (!context.mounted) return;
+                          SnackBarUtils.showSuccess(
+                              context, context.l10n.personalTagUpdated);
+                        } catch (e) {
+                          if (!dialogContext.mounted) return;
+                          Navigator.pop(dialogContext);
+
+                          if (!context.mounted) return;
+                          SnackBarUtils.showError(context, e.toString());
+                        }
+                      },
+                child: isLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(context.l10n.commonSave),
+              ),
+            ],
           ),
-          autofocus: true,
-          textCapitalization: TextCapitalization.sentences,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(context.l10n.commonSave),
-          ),
-        ],
-      ),
+        );
+      },
     );
-
-    if (result == true && nameController.text.trim().isNotEmpty) {
-      try {
-        final updated = tag.copyWith(name: nameController.text.trim());
-        await viewModel.updateTag(updated);
-        if (context.mounted) {
-          SnackBarUtils.showSuccess(context, context.l10n.personalTagUpdated);
-        }
-      } catch (e) {
-        if (context.mounted) {
-          SnackBarUtils.showError(context, e.toString());
-        }
-      }
-    }
-
-    nameController.dispose();
   }
 
   Future<void> _deleteTag(BuildContext context, PersonalTag tag) async {
     final viewModel = context.read<PersonalTagViewModel>();
 
-    final confirmed = await showDialog<bool>(
+    await showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.personalTagDeleteTagConfirm),
-        content: Text(context.l10n.personalTagDeleteTagMessage(tag.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(context.l10n.commonDelete),
-          ),
-        ],
-      ),
-    );
+      builder: (dialogContext) {
+        bool isLoading = false;
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: Text(context.l10n.personalTagDeleteTagConfirm),
+            content: Text(context.l10n.personalTagDeleteTagMessage(tag.name)),
+            actions: [
+              TextButton(
+                onPressed:
+                    isLoading ? null : () => Navigator.pop(dialogContext),
+                child: Text(context.l10n.commonCancel),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        setState(() => isLoading = true);
+                        try {
+                          await viewModel.deleteTag(tag.id);
 
-    if (confirmed == true) {
-      try {
-        await viewModel.deleteTag(tag.id);
-        if (context.mounted) {
-          SnackBarUtils.showSuccess(context, context.l10n.personalTagDeleted);
-        }
-      } catch (e) {
-        if (context.mounted) {
-          SnackBarUtils.showError(context, e.toString());
-        }
-      }
-    }
+                          if (!dialogContext.mounted) return;
+                          Navigator.pop(dialogContext);
+
+                          if (!context.mounted) return;
+                          SnackBarUtils.showSuccess(
+                              context, context.l10n.personalTagDeleted);
+                        } catch (e) {
+                          if (!dialogContext.mounted) return;
+                          Navigator.pop(dialogContext);
+
+                          if (!context.mounted) return;
+                          SnackBarUtils.showError(context, e.toString());
+                        }
+                      },
+                child: isLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(context.l10n.commonDelete),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _moveTagToGroup(BuildContext context, PersonalTag tag) async {
@@ -1017,60 +1107,82 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     PersonalTag tag,
   ) async {
     final viewModel = context.read<PersonalTagViewModel>();
-    final nameController = TextEditingController();
+    String groupName = '';
 
-    final confirmed = await showDialog<bool>(
+    await showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.personalTagCreateNewGroup),
-        content: TextField(
-          controller: nameController,
-          decoration: InputDecoration(
-            labelText: context.l10n.personalTagGroupNameLabel,
-            hintText: context.l10n.personalTagGroupNameHint,
+      builder: (dialogContext) {
+        bool isLoading = false;
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: Text(context.l10n.personalTagCreateNewGroup),
+            content: TextField(
+              onChanged: (v) => groupName = v,
+              enabled: !isLoading,
+              decoration: InputDecoration(
+                labelText: context.l10n.personalTagGroupNameLabel,
+                hintText: context.l10n.personalTagGroupNameHint,
+              ),
+              autofocus: true,
+              textCapitalization: TextCapitalization.sentences,
+            ),
+            actions: [
+              TextButton(
+                onPressed:
+                    isLoading ? null : () => Navigator.pop(dialogContext),
+                child: Text(context.l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        final name = groupName.trim();
+                        if (name.isEmpty) return;
+
+                        setState(() => isLoading = true);
+                        try {
+                          final success =
+                              await viewModel.createGroup(name: name);
+                          if (success) {
+                            final newGroup = viewModel.groups.lastOrNull;
+                            if (newGroup != null) {
+                              await viewModel.moveTagToGroup(
+                                  tag.id, newGroup.id);
+                            }
+                          }
+
+                          if (!dialogContext.mounted) return;
+                          Navigator.pop(dialogContext);
+
+                          if (!context.mounted) return;
+                          if (success) {
+                            SnackBarUtils.showSuccess(
+                              context,
+                              context
+                                  .l10n.personalTagGroupCreatedAndTagMoved,
+                            );
+                          }
+                        } catch (e) {
+                          if (!dialogContext.mounted) return;
+                          Navigator.pop(dialogContext);
+
+                          if (!context.mounted) return;
+                          SnackBarUtils.showError(context, e.toString());
+                        }
+                      },
+                child: isLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(context.l10n.commonCreate),
+              ),
+            ],
           ),
-          autofocus: true,
-          textCapitalization: TextCapitalization.sentences,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(context.l10n.commonCreate),
-          ),
-        ],
-      ),
+        );
+      },
     );
-
-    if (confirmed != true || nameController.text.trim().isEmpty) {
-      nameController.dispose();
-      return;
-    }
-
-    try {
-      final success = await viewModel.createGroup(
-        name: nameController.text.trim(),
-      );
-      if (success && context.mounted) {
-        final newGroup = viewModel.groups.lastOrNull;
-        if (newGroup != null) {
-          await viewModel.moveTagToGroup(tag.id, newGroup.id);
-          if (context.mounted) {
-            SnackBarUtils.showSuccess(
-                context, context.l10n.personalTagGroupCreatedAndTagMoved);
-          }
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        SnackBarUtils.showError(context, e.toString());
-      }
-    } finally {
-      nameController.dispose();
-    }
   }
 
   Future<void> _handleGroupAction(
@@ -1082,82 +1194,130 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
 
     switch (action) {
       case 'rename':
-        final nameController = TextEditingController(text: group.name);
-        final result = await showDialog<bool>(
+        String groupName = group.name;
+        await showDialog<void>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text(context.l10n.personalTagRenameGroup),
-            content: TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                  labelText: context.l10n.personalTagGroupNameLabel),
-              autofocus: true,
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(context.l10n.commonCancel),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text(context.l10n.commonSave),
-              ),
-            ],
-          ),
-        );
+          builder: (dialogContext) {
+            bool isLoading = false;
+            return StatefulBuilder(
+              builder: (context, setState) => AlertDialog(
+                title: Text(context.l10n.personalTagRenameGroup),
+                content: TextFormField(
+                  initialValue: group.name,
+                  onChanged: (v) => groupName = v,
+                  enabled: !isLoading,
+                  decoration: InputDecoration(
+                      labelText: context.l10n.personalTagGroupNameLabel),
+                  autofocus: true,
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: isLoading
+                        ? null
+                        : () => Navigator.pop(dialogContext),
+                    child: Text(context.l10n.commonCancel),
+                  ),
+                  FilledButton(
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            final name = groupName.trim();
+                            if (name.isEmpty) return;
 
-        if (result == true && nameController.text.trim().isNotEmpty) {
-          try {
-            final updated = group.copyWith(name: nameController.text.trim());
-            await viewModel.updateGroup(updated);
-            if (context.mounted) {
-              SnackBarUtils.showSuccess(
-                  context, context.l10n.personalTagGroupUpdated);
-            }
-          } catch (e) {
-            if (context.mounted) {
-              SnackBarUtils.showError(context, e.toString());
-            }
-          }
-        }
-        nameController.dispose();
+                            setState(() => isLoading = true);
+                            try {
+                              final updated =
+                                  group.copyWith(name: name);
+                              await viewModel.updateGroup(updated);
+
+                              if (!dialogContext.mounted) return;
+                              Navigator.pop(dialogContext);
+
+                              if (!context.mounted) return;
+                              SnackBarUtils.showSuccess(context,
+                                  context.l10n.personalTagGroupUpdated);
+                            } catch (e) {
+                              if (!dialogContext.mounted) return;
+                              Navigator.pop(dialogContext);
+
+                              if (!context.mounted) return;
+                              SnackBarUtils.showError(
+                                  context, e.toString());
+                            }
+                          },
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2),
+                          )
+                        : Text(context.l10n.commonSave),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
         break;
 
       case 'delete':
-        final confirmed = await showDialog<bool>(
+        await showDialog<void>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text(context.l10n.personalTagDeleteGroupConfirm),
-            content:
-                Text(context.l10n.personalTagDeleteGroupMessage(group.name)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(context.l10n.commonCancel),
-              ),
-              FilledButton(
-                style: FilledButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.error),
-                onPressed: () => Navigator.pop(context, true),
-                child: Text(context.l10n.commonDelete),
-              ),
-            ],
-          ),
-        );
+          builder: (dialogContext) {
+            bool isLoading = false;
+            return StatefulBuilder(
+              builder: (context, setState) => AlertDialog(
+                title: Text(context.l10n.personalTagDeleteGroupConfirm),
+                content: Text(
+                    context.l10n.personalTagDeleteGroupMessage(group.name)),
+                actions: [
+                  TextButton(
+                    onPressed: isLoading
+                        ? null
+                        : () => Navigator.pop(dialogContext),
+                    child: Text(context.l10n.commonCancel),
+                  ),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                        backgroundColor:
+                            Theme.of(context).colorScheme.error),
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            setState(() => isLoading = true);
+                            try {
+                              await viewModel.deleteGroup(group.id);
 
-        if (confirmed == true) {
-          try {
-            await viewModel.deleteGroup(group.id);
-            if (context.mounted) {
-              SnackBarUtils.showSuccess(
-                  context, context.l10n.personalTagGroupDeleted);
-            }
-          } catch (e) {
-            if (context.mounted) {
-              SnackBarUtils.showError(context, e.toString());
-            }
-          }
-        }
+                              if (!dialogContext.mounted) return;
+                              Navigator.pop(dialogContext);
+
+                              if (!context.mounted) return;
+                              SnackBarUtils.showSuccess(context,
+                                  context.l10n.personalTagGroupDeleted);
+                            } catch (e) {
+                              if (!dialogContext.mounted) return;
+                              Navigator.pop(dialogContext);
+
+                              if (!context.mounted) return;
+                              SnackBarUtils.showError(
+                                  context, e.toString());
+                            }
+                          },
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2),
+                          )
+                        : Text(context.l10n.commonDelete),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
         break;
     }
   }
