@@ -16,6 +16,9 @@ class IngredientRegistryService extends BaseService {
   /// Whether Firestore ingredients have been loaded.
   bool _isEnriched = false;
 
+  /// Compound names from Firestore (ingredients with isCompoundName=true).
+  Set<String>? _compoundNames;
+
   IngredientRegistryService({
     required IngredientRepository ingredientRepository,
   }) : _ingredientRepository = ingredientRepository;
@@ -26,6 +29,10 @@ class IngredientRegistryService extends BaseService {
   /// All known ingredient names (static + Firestore if loaded).
   Set<String> get allIngredients =>
       _enrichedIngredients ?? KnownIngredients.all;
+
+  /// All compound names (static + Firestore if loaded).
+  Set<String> get allCompoundNames =>
+      _compoundNames ?? KnownIngredients.compoundNames;
 
   /// Whether an ingredient name is known.
   bool isKnown(String ingredient) {
@@ -38,8 +45,9 @@ class IngredientRegistryService extends BaseService {
     if (_isEnriched) return;
 
     try {
-      // Start with static ingredients
+      // Start with static ingredients and compound names
       final combined = Set<String>.from(KnownIngredients.all);
+      final compoundNameSet = Set<String>.from(KnownIngredients.compoundNames);
 
       // Add all Firestore ingredient names (Swedish)
       final groups = [
@@ -64,6 +72,13 @@ class IngredientRegistryService extends BaseService {
             for (final alias in item.aliasesSv) {
               combined.add(alias.toLowerCase());
             }
+            // Collect compound names from Firestore
+            if (item.isCompoundName) {
+              compoundNameSet.add(item.swedish.toLowerCase());
+              for (final alias in item.aliasesSv) {
+                compoundNameSet.add(alias.toLowerCase());
+              }
+            }
           }
         } catch (_) {
           // Skip individual group failures
@@ -71,6 +86,7 @@ class IngredientRegistryService extends BaseService {
       }
 
       _enrichedIngredients = combined;
+      _compoundNames = compoundNameSet;
       _isEnriched = true;
 
       AppLogger.info(

@@ -23,6 +23,7 @@ void main() {
         expect(ingredient.aliasesEn, isEmpty);
         expect(ingredient.searchTerms, isEmpty);
         expect(ingredient.status, 'verified');
+        expect(ingredient.isCompoundName, isFalse);
       });
 
       test('creates with all optional parameters', () {
@@ -894,6 +895,7 @@ void main() {
         expect(ingredient.typicalStorage, isNull);
         expect(ingredient.typicalUnit, isNull);
         expect(ingredient.avgPriceSek, isNull);
+        expect(ingredient.isCompoundName, isFalse);
       });
 
       group('contentEquals with new fields', () {
@@ -1196,6 +1198,166 @@ void main() {
           expect(copy.carbonFootprintCategory, 'high');
           expect(copy.avgPriceSek, 99.99);
         });
+      });
+    });
+
+    group('isCompoundName field', () {
+      test('defaults to false', () {
+        final ingredient = IngredientData(
+          id: 'salt',
+          swedish: 'salt',
+          english: 'salt',
+          group: 'spice',
+          properties: const {},
+        );
+
+        expect(ingredient.isCompoundName, isFalse);
+      });
+
+      test('can be set to true', () {
+        final ingredient = IngredientData(
+          id: 'white-pepper',
+          swedish: 'vitpeppar',
+          english: 'white pepper',
+          group: 'spice',
+          properties: const {'is-spicy'},
+          isCompoundName: true,
+        );
+
+        expect(ingredient.isCompoundName, isTrue);
+      });
+
+      test('fromMap parses isCompoundName true', () {
+        final map = {
+          'id': 'white-pepper',
+          'swedish': 'vitpeppar',
+          'english': 'white pepper',
+          'group': 'spice',
+          'properties': <String>[],
+          'isCompoundName': true,
+        };
+
+        final ingredient = IngredientData.fromMap(map);
+        expect(ingredient.isCompoundName, isTrue);
+      });
+
+      test('fromMap handles missing isCompoundName gracefully', () {
+        final map = {
+          'id': 'salt',
+          'swedish': 'salt',
+          'english': 'salt',
+          'group': 'spice',
+          'properties': <String>[],
+        };
+
+        final ingredient = IngredientData.fromMap(map);
+        expect(ingredient.isCompoundName, isFalse);
+      });
+
+      test('fromMap handles null isCompoundName gracefully', () {
+        final map = {
+          'id': 'salt',
+          'swedish': 'salt',
+          'english': 'salt',
+          'group': 'spice',
+          'properties': <String>[],
+          'isCompoundName': null,
+        };
+
+        final ingredient = IngredientData.fromMap(map);
+        expect(ingredient.isCompoundName, isFalse);
+      });
+
+      test('toFirestore includes isCompoundName', () {
+        final ingredient = IngredientData(
+          id: 'white-pepper',
+          swedish: 'vitpeppar',
+          english: 'white pepper',
+          group: 'spice',
+          properties: const {},
+          isCompoundName: true,
+        );
+
+        final map = ingredient.toFirestore();
+        expect(map['isCompoundName'], isTrue);
+      });
+
+      test('toFirestore includes isCompoundName even when false', () {
+        final ingredient = IngredientData(
+          id: 'salt',
+          swedish: 'salt',
+          english: 'salt',
+          group: 'spice',
+          properties: const {},
+        );
+
+        final map = ingredient.toFirestore();
+        expect(map['isCompoundName'], isFalse);
+      });
+
+      test('contentEquals detects isCompoundName difference', () {
+        final a = IngredientData(
+          id: 'white-pepper',
+          swedish: 'vitpeppar',
+          english: 'white pepper',
+          group: 'spice',
+          properties: const {},
+          isCompoundName: true,
+        );
+        final b = IngredientData(
+          id: 'white-pepper',
+          swedish: 'vitpeppar',
+          english: 'white pepper',
+          group: 'spice',
+          properties: const {},
+          isCompoundName: false,
+        );
+
+        expect(a.contentEquals(b), isFalse);
+      });
+
+      test('copyWith can change isCompoundName', () {
+        final original = IngredientData(
+          id: 'test',
+          swedish: 'test',
+          english: 'test',
+          group: 'test',
+          properties: const {},
+          isCompoundName: false,
+        );
+
+        final copy = original.copyWith(isCompoundName: true);
+        expect(copy.isCompoundName, isTrue);
+      });
+
+      test('copyWith preserves isCompoundName when not specified', () {
+        final original = IngredientData(
+          id: 'test',
+          swedish: 'test',
+          english: 'test',
+          group: 'test',
+          properties: const {},
+          isCompoundName: true,
+        );
+
+        final copy = original.copyWith(swedish: 'changed');
+        expect(copy.isCompoundName, isTrue);
+      });
+
+      test('roundtrip preserves isCompoundName', () {
+        final original = IngredientData(
+          id: 'white-pepper',
+          swedish: 'vitpeppar',
+          english: 'white pepper',
+          group: 'spice',
+          properties: const {},
+          isCompoundName: true,
+        );
+
+        final map = original.toFirestore();
+        final restored = IngredientData.fromMap(map);
+
+        expect(restored.isCompoundName, isTrue);
       });
     });
   });

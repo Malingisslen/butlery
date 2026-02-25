@@ -158,6 +158,16 @@ class SwedishPluralization {
     'peppar': 'peppar',
     'ingefära': 'ingefära',
 
+    // Compound -socker/-pulver invariants (prevent -er stripping)
+    'vaniljsocker': 'vaniljsocker',
+    'strösocker': 'strösocker',
+    'florsocker': 'florsocker',
+    'farinsocker': 'farinsocker',
+    'muscovadosocker': 'muscovadosocker',
+    'pärlsocker': 'pärlsocker',
+    'bakpulver': 'bakpulver',
+    'kakao': 'kakao',
+
     // Additional irregular plurals and cooking-specific terms
     'lasagneplatt': 'lasagneplattor',
     'lasagneplattor': 'lasagneplattor', // Already plural form
@@ -209,6 +219,12 @@ class SwedishPluralization {
     // O(1) reverse lookup against irregular plurals database
     if (_reversePlurals.containsKey(lower)) {
       return _reversePlurals[lower]!;
+    }
+
+    // Check if word is already a known singular/invariant form
+    // Prevents stripping -er from "socker", "peppar", "bakpulver" etc.
+    if (irregularPlurals.containsKey(lower)) {
+      return lower;
     }
 
     // Remove common Swedish plural endings with length validation

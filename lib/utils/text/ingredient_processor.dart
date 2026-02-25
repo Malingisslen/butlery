@@ -72,6 +72,9 @@ class ProcessedIngredient {
   /// Original raw text before any processing (for audit trail)
   final String originalRawText;
 
+  /// Confidence score from normalization (0.0 to 1.0)
+  final double confidence;
+
   const ProcessedIngredient({
     required this.quantity,
     required this.unit,
@@ -82,6 +85,7 @@ class ProcessedIngredient {
     this.preprocessingFlags,
     this.normalizationDetails,
     required this.originalRawText,
+    this.confidence = 0.5,
   });
 
   /// Get display string for UI (uses original name)
@@ -108,7 +112,8 @@ class ProcessedIngredient {
         'quantity: $quantity, '
         'unit: "$unit", '
         'original: "$originalName", '
-        'normalized: "$normalizedName"'
+        'normalized: "$normalizedName", '
+        'confidence: $confidence'
         '${category != null ? ', category: $category' : ''}'
         '${isKnown ? ' [known]' : ''}'
         ')';
@@ -164,6 +169,7 @@ class IngredientProcessor {
       preprocessingFlags: preprocessed,
       normalizationDetails: normalized,
       originalRawText: rawText,
+      confidence: normalized.confidence,
     );
   }
 
@@ -200,6 +206,7 @@ class IngredientProcessor {
       isKnown: normalized.isKnown,
       normalizationDetails: normalized,
       originalRawText: cleanText,
+      confidence: normalized.confidence,
     );
   }
 
@@ -235,25 +242,37 @@ class IngredientProcessor {
   /// final processed = IngredientProcessor.processRawIngredients(rawList);
   /// ```
   static List<ProcessedIngredient> processRawIngredients(
-    List<String> rawIngredients,
-  ) {
-    return rawIngredients.map((raw) => processRawIngredient(raw)).toList();
+    List<String> rawIngredients, {
+    Set<String>? additionalKnown,
+  }) {
+    return rawIngredients
+        .map((raw) =>
+            processRawIngredient(raw, additionalKnown: additionalKnown))
+        .toList();
   }
 
   /// Batch parse and normalize (Pattern B)
   /// Efficient processing of clean ingredient lists.
   static List<ProcessedIngredient> parseAndNormalizeMany(
-    List<String> cleanIngredients,
-  ) {
-    return cleanIngredients.map((clean) => parseAndNormalize(clean)).toList();
+    List<String> cleanIngredients, {
+    Set<String>? additionalKnown,
+  }) {
+    return cleanIngredients
+        .map((clean) =>
+            parseAndNormalize(clean, additionalKnown: additionalKnown))
+        .toList();
   }
 
   /// Batch normalize ingredient names (Pattern C)
   /// Quick normalization of parsed ingredient names.
   static List<NormalizationResult> normalizeIngredientNames(
-    List<String> parsedNames,
-  ) {
-    return parsedNames.map((name) => normalizeIngredientName(name)).toList();
+    List<String> parsedNames, {
+    Set<String>? additionalKnown,
+  }) {
+    return parsedNames
+        .map((name) =>
+            normalizeIngredientName(name, additionalKnown: additionalKnown))
+        .toList();
   }
 
   /// Helper: Get just the cleaned text without full processing

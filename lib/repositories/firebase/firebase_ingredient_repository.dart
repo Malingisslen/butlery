@@ -27,6 +27,9 @@ class FirebaseIngredientRepository
   /// Index of normalized aliases → ingredient ID.
   final Map<String, String> _aliasIndex = {};
 
+  /// Set of compound ingredient names (from Firestore isCompoundName field).
+  final Set<String> _compoundNames = {};
+
   /// Whether the cache has been loaded.
   bool _cacheLoaded = false;
 
@@ -113,6 +116,7 @@ class FirebaseIngredientRepository
       _swedishNameIndex.clear();
       _englishNameIndex.clear();
       _aliasIndex.clear();
+      _compoundNames.clear();
 
       for (final doc in snapshot.docs) {
         final ingredient = IngredientData.fromFirestore(doc);
@@ -167,6 +171,14 @@ class FirebaseIngredientRepository
       final termNorm = _normalize(term);
       if (termNorm.isNotEmpty) {
         _aliasIndex[termNorm] = ingredient.id;
+      }
+    }
+
+    // Index compound names
+    if (ingredient.isCompoundName) {
+      _compoundNames.add(ingredient.swedish.toLowerCase());
+      for (final alias in ingredient.aliasesSv) {
+        _compoundNames.add(alias.toLowerCase());
       }
     }
   }
@@ -489,6 +501,7 @@ class FirebaseIngredientRepository
     _swedishNameIndex.clear();
     _englishNameIndex.clear();
     _aliasIndex.clear();
+    _compoundNames.clear();
     _cacheLoaded = false;
   }
 

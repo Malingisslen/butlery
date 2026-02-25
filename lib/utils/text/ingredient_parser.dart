@@ -21,10 +21,10 @@ class IngredientParser {
 
   /// Normalizes whitespace and separates attached units.
   static String _normalizeWhitespace(String text) {
-    return text
-        .trim()
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .replaceAll(RegExp(r'(\d)([a-zåäöA-ZÅÄÖ])'), r'$1 $2');
+    return text.trim().replaceAll(RegExp(r'\s+'), ' ').replaceAllMapped(
+          RegExp(r'(\d)([a-zåäöA-ZÅÄÖ])'),
+          (m) => '${m[1]} ${m[2]}',
+        );
   }
 
   /// Parses Swedish quantity strings (delegates to QuantityParser).

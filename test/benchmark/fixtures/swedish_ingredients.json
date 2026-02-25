@@ -1,0 +1,1202 @@
+[
+  {
+    "input": "2 dl mjölk",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "dl",
+      "normalizedName": "mjölk",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["standard"],
+    "description": "Basic volume measurement with dairy"
+  },
+  {
+    "input": "400 g vetemjöl",
+    "expected": {
+      "quantity": 400.0,
+      "unit": "g",
+      "normalizedName": "vetemjöl",
+      "isKnown": true,
+      "category": "grains"
+    },
+    "tags": ["standard"],
+    "description": "Weight measurement with flour"
+  },
+  {
+    "input": "1 msk olivolja",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "msk",
+      "normalizedName": "olivolja",
+      "isKnown": true,
+      "category": "oils"
+    },
+    "tags": ["standard"],
+    "description": "Tablespoon measurement with oil"
+  },
+  {
+    "input": "3 st ägg",
+    "expected": {
+      "quantity": 3.0,
+      "unit": "st",
+      "normalizedName": "ägg",
+      "isKnown": true,
+      "category": "eggs"
+    },
+    "tags": ["standard"],
+    "description": "Count unit with eggs"
+  },
+  {
+    "input": "1 tsk salt",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "tsk",
+      "normalizedName": "salt",
+      "isKnown": true,
+      "category": "spices"
+    },
+    "tags": ["standard"],
+    "description": "Teaspoon measurement with salt"
+  },
+  {
+    "input": "2 krm svartpeppar",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "krm",
+      "normalizedName": "svartpeppar",
+      "isKnown": true,
+      "category": "spices"
+    },
+    "tags": ["standard", "compound"],
+    "description": "Kryddmatt with compound spice name"
+  },
+  {
+    "input": "500 g pasta",
+    "expected": {
+      "quantity": 500.0,
+      "unit": "g",
+      "normalizedName": "pasta",
+      "isKnown": true,
+      "category": "grains"
+    },
+    "tags": ["standard"],
+    "description": "Weight measurement with grains"
+  },
+  {
+    "input": "1 burk krossade tomater",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "burk",
+      "normalizedName": "tomat",
+      "isKnown": true,
+      "category": "vegetables"
+    },
+    "tags": ["standard"],
+    "description": "Package unit with crushed tomatoes - preparation word removed, plural normalized"
+  },
+  {
+    "input": "3 dl vispgrädde",
+    "expected": {
+      "quantity": 3.0,
+      "unit": "dl",
+      "normalizedName": "vispgrädde",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["standard"],
+    "description": "Volume measurement with whipping cream"
+  },
+  {
+    "input": "2 msk smör",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "msk",
+      "normalizedName": "smör",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["standard"],
+    "description": "Tablespoon measurement with butter"
+  },
+  {
+    "input": "½ dl socker",
+    "expected": {
+      "quantity": 0.5,
+      "unit": "dl",
+      "normalizedName": "socker",
+      "isKnown": true,
+      "category": "sweeteners"
+    },
+    "tags": ["standard"],
+    "description": "Unicode fraction with sugar"
+  },
+  {
+    "input": "1 kg potatis",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "kg",
+      "normalizedName": "potatis",
+      "isKnown": true,
+      "category": "vegetables"
+    },
+    "tags": ["standard"],
+    "description": "Kilogram weight measurement"
+  },
+  {
+    "input": "2 dl ris",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "dl",
+      "normalizedName": "ris",
+      "isKnown": true,
+      "category": "grains"
+    },
+    "tags": ["standard"],
+    "description": "Volume measurement with rice"
+  },
+  {
+    "input": "1 dl rapsolja",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "dl",
+      "normalizedName": "rapsolja",
+      "isKnown": true,
+      "category": "oils"
+    },
+    "tags": ["standard"],
+    "description": "Volume measurement with rapeseed oil"
+  },
+  {
+    "input": "200 g bacon",
+    "expected": {
+      "quantity": 200.0,
+      "unit": "g",
+      "normalizedName": "bacon",
+      "isKnown": true,
+      "category": "meat"
+    },
+    "tags": ["standard"],
+    "description": "Weight measurement with meat"
+  },
+  {
+    "input": "300 g lax",
+    "expected": {
+      "quantity": 300.0,
+      "unit": "g",
+      "normalizedName": "lax",
+      "isKnown": true,
+      "category": "seafood"
+    },
+    "tags": ["standard"],
+    "description": "Weight measurement with salmon"
+  },
+  {
+    "input": "1 tsk kanel",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "tsk",
+      "normalizedName": "kanel",
+      "isKnown": true,
+      "category": "spices"
+    },
+    "tags": ["standard"],
+    "description": "Teaspoon measurement with cinnamon"
+  },
+  {
+    "input": "2 dl filmjölk",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "dl",
+      "normalizedName": "filmjölk",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["standard"],
+    "description": "Cultured milk - dairy product"
+  },
+  {
+    "input": "1 hg ost",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "hg",
+      "normalizedName": "ost",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["standard"],
+    "description": "Hectogram measurement with cheese"
+  },
+  {
+    "input": "1 pkt torrjäst",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "pkt",
+      "normalizedName": "torrjäst",
+      "isKnown": true,
+      "category": "baking"
+    },
+    "tags": ["standard"],
+    "description": "Package unit with dry yeast"
+  },
+  {
+    "input": "3 msk balsamico",
+    "expected": {
+      "quantity": 3.0,
+      "unit": "msk",
+      "normalizedName": "balsamico",
+      "isKnown": true,
+      "category": "condiments"
+    },
+    "tags": ["standard"],
+    "description": "Tablespoon with balsamic vinegar"
+  },
+  {
+    "input": "2 tsk bakpulver",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "tsk",
+      "normalizedName": "bakpulver",
+      "isKnown": true,
+      "category": "baking"
+    },
+    "tags": ["standard"],
+    "description": "Teaspoon with baking powder"
+  },
+  {
+    "input": "1 dl honung",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "dl",
+      "normalizedName": "honung",
+      "isKnown": true,
+      "category": "sweeteners"
+    },
+    "tags": ["standard"],
+    "description": "Volume with honey"
+  },
+  {
+    "input": "100 g mandel",
+    "expected": {
+      "quantity": 100.0,
+      "unit": "g",
+      "normalizedName": "mandel",
+      "isKnown": true,
+      "category": "nuts_seeds"
+    },
+    "tags": ["standard"],
+    "description": "Weight with almonds"
+  },
+  {
+    "input": "1 dl sojasås",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "dl",
+      "normalizedName": "sojasås",
+      "isKnown": true,
+      "category": "condiments"
+    },
+    "tags": ["standard"],
+    "description": "Volume with soy sauce"
+  },
+  {
+    "input": "½ tsk muskotnöt",
+    "expected": {
+      "quantity": 0.5,
+      "unit": "tsk",
+      "normalizedName": "muskotnöt",
+      "isKnown": true,
+      "category": "spices"
+    },
+    "tags": ["standard"],
+    "description": "Fraction teaspoon with nutmeg"
+  },
+  {
+    "input": "2 dl kokosmjölk",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "dl",
+      "normalizedName": "kokosmjölk",
+      "isKnown": true,
+      "category": "canned"
+    },
+    "tags": ["standard"],
+    "description": "Volume with coconut milk"
+  },
+  {
+    "input": "1½ dl grädde",
+    "expected": {
+      "quantity": 1.5,
+      "unit": "dl",
+      "normalizedName": "grädde",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["standard"],
+    "description": "Mixed unicode fraction with cream"
+  },
+  {
+    "input": "1 nypa saffran",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "nypa",
+      "normalizedName": "saffran",
+      "isKnown": true,
+      "category": "spices"
+    },
+    "tags": ["standard"],
+    "description": "Nypa (pinch) unit with saffron"
+  },
+  {
+    "input": "2 klyfta vitlök",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "klyfta",
+      "normalizedName": "vitlök",
+      "isKnown": true,
+      "category": "vegetables"
+    },
+    "tags": ["standard"],
+    "description": "Klyfta (clove) unit with garlic"
+  },
+  {
+    "input": "vitpeppar",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "vitpeppar",
+      "isKnown": true,
+      "category": "spices"
+    },
+    "tags": ["compound"],
+    "description": "Compound name - white pepper, should not be split"
+  },
+  {
+    "input": "svartpeppar",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "svartpeppar",
+      "isKnown": true,
+      "category": "spices"
+    },
+    "tags": ["compound"],
+    "description": "Compound name - black pepper, should not be split"
+  },
+  {
+    "input": "rödlök",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "rödlök",
+      "isKnown": true,
+      "category": null
+    },
+    "tags": ["compound"],
+    "description": "Compound name - red onion (in compoundNames but not in a category set)"
+  },
+  {
+    "input": "gullök",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "gullök",
+      "isKnown": true,
+      "category": null
+    },
+    "tags": ["compound"],
+    "description": "Compound name - yellow onion (in compoundNames but not in a category set)"
+  },
+  {
+    "input": "vitkål",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "vitkål",
+      "isKnown": true,
+      "category": "vegetables"
+    },
+    "tags": ["compound"],
+    "description": "Compound name - white cabbage"
+  },
+  {
+    "input": "grönkål",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "grönkål",
+      "isKnown": true,
+      "category": "vegetables"
+    },
+    "tags": ["compound"],
+    "description": "Compound name - kale"
+  },
+  {
+    "input": "kidneybönor",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "kidneybönor",
+      "isKnown": true,
+      "category": "canned"
+    },
+    "tags": ["compound"],
+    "description": "Compound name - kidney beans"
+  },
+  {
+    "input": "sötpotatis",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "sötpotatis",
+      "isKnown": true,
+      "category": "vegetables"
+    },
+    "tags": ["compound"],
+    "description": "Compound name - sweet potato"
+  },
+  {
+    "input": "kryddpeppar",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "kryddpeppar",
+      "isKnown": true,
+      "category": "spices"
+    },
+    "tags": ["compound"],
+    "description": "Compound name - allspice"
+  },
+  {
+    "input": "cayennepeppar",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "cayennepeppar",
+      "isKnown": true,
+      "category": "spices"
+    },
+    "tags": ["compound"],
+    "description": "Compound name - cayenne pepper"
+  },
+  {
+    "input": "kycklingbröst",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "kyckling",
+      "isKnown": true,
+      "category": "meat"
+    },
+    "tags": ["compound"],
+    "description": "Compound extraction - 'brost' suffix stripped, base 'kyckling' known"
+  },
+  {
+    "input": "tomatsås",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "tomatsås",
+      "isKnown": true,
+      "category": "condiments"
+    },
+    "tags": ["compound"],
+    "description": "Compound that IS a known ingredient - kept as-is"
+  },
+  {
+    "input": "tomatpuré",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "tomatpuré",
+      "isKnown": true,
+      "category": "condiments"
+    },
+    "tags": ["compound"],
+    "description": "Compound that IS a known ingredient - tomato puree"
+  },
+  {
+    "input": "köttfärs",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "köttfärs",
+      "isKnown": true,
+      "category": "meat"
+    },
+    "tags": ["compound"],
+    "description": "Compound that IS a known ingredient - minced meat"
+  },
+  {
+    "input": "lingonsylt",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "lingonsylt",
+      "isKnown": false,
+      "category": null
+    },
+    "tags": ["compound"],
+    "description": "Compound NOT in known list - lingonberry jam, isKnown false"
+  },
+  {
+    "input": "2dl mjölk",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "dl",
+      "normalizedName": "mjölk",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["social_media"],
+    "description": "Missing space between quantity and unit"
+  },
+  {
+    "input": "3msk socker",
+    "expected": {
+      "quantity": 3.0,
+      "unit": "msk",
+      "normalizedName": "socker",
+      "isKnown": true,
+      "category": "sweeteners"
+    },
+    "tags": ["social_media"],
+    "description": "Missing space between quantity and multi-char unit"
+  },
+  {
+    "input": "1  dl   grädde",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "dl",
+      "normalizedName": "grädde",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["social_media"],
+    "description": "Extra whitespace between tokens"
+  },
+  {
+    "input": "  2 dl mjölk  ",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "dl",
+      "normalizedName": "mjölk",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["social_media"],
+    "description": "Leading and trailing whitespace"
+  },
+  {
+    "input": "2 DL MJÖLK",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "dl",
+      "normalizedName": "mjölk",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["social_media"],
+    "description": "Uppercase input - should be lowercased"
+  },
+  {
+    "input": "2,5 dl grädde",
+    "expected": {
+      "quantity": 2.5,
+      "unit": "dl",
+      "normalizedName": "grädde",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["social_media"],
+    "description": "Swedish decimal comma"
+  },
+  {
+    "input": "1/2 dl olja",
+    "expected": {
+      "quantity": 0.5,
+      "unit": "dl",
+      "normalizedName": "olja",
+      "isKnown": true,
+      "category": "oils"
+    },
+    "tags": ["social_media"],
+    "description": "ASCII fraction input"
+  },
+  {
+    "input": "1 1/2 dl mjöl",
+    "expected": {
+      "quantity": 1.5,
+      "unit": "dl",
+      "normalizedName": "mjöl",
+      "isKnown": true,
+      "category": "grains"
+    },
+    "tags": ["social_media"],
+    "description": "Mixed ASCII fraction"
+  },
+  {
+    "input": "• 2 dl mjölk",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "dl",
+      "normalizedName": "mjölk",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["social_media"],
+    "description": "Bullet prefix should be stripped"
+  },
+  {
+    "input": "- 1 msk smör",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "msk",
+      "normalizedName": "smör",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["social_media"],
+    "description": "Dash bullet prefix"
+  },
+  {
+    "input": "ca 3-5 dl mjölk",
+    "expected": {
+      "quantity": 5.0,
+      "unit": "dl",
+      "normalizedName": "mjölk",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["ranges_optionals"],
+    "description": "Approximation and range - ca removed, max value used"
+  },
+  {
+    "input": "ev. 1 krm salt",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "krm",
+      "normalizedName": "salt",
+      "isKnown": true,
+      "category": "spices"
+    },
+    "tags": ["ranges_optionals"],
+    "description": "Optional marker with period"
+  },
+  {
+    "input": "ca 2 dl vatten",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "dl",
+      "normalizedName": "vatten",
+      "isKnown": true,
+      "category": "beverages"
+    },
+    "tags": ["ranges_optionals"],
+    "description": "Approximation ca removed"
+  },
+  {
+    "input": "cirka 3 msk olivolja",
+    "expected": {
+      "quantity": 3.0,
+      "unit": "msk",
+      "normalizedName": "olivolja",
+      "isKnown": true,
+      "category": "oils"
+    },
+    "tags": ["ranges_optionals"],
+    "description": "Approximation cirka removed"
+  },
+  {
+    "input": "drygt 1 dl socker",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "dl",
+      "normalizedName": "socker",
+      "isKnown": true,
+      "category": "sweeteners"
+    },
+    "tags": ["ranges_optionals"],
+    "description": "Approximation drygt removed"
+  },
+  {
+    "input": "knappt 2 dl mjöl",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "dl",
+      "normalizedName": "mjöl",
+      "isKnown": true,
+      "category": "grains"
+    },
+    "tags": ["ranges_optionals"],
+    "description": "Approximation knappt removed"
+  },
+  {
+    "input": "2-3 dl grädde",
+    "expected": {
+      "quantity": 3.0,
+      "unit": "dl",
+      "normalizedName": "grädde",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["ranges_optionals"],
+    "description": "Range normalized to max value"
+  },
+  {
+    "input": "eventuellt 1 msk honung",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "msk",
+      "normalizedName": "honung",
+      "isKnown": true,
+      "category": "sweeteners"
+    },
+    "tags": ["ranges_optionals"],
+    "description": "Long optional marker removed"
+  },
+  {
+    "input": "valfritt 2 tsk vaniljsocker",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "tsk",
+      "normalizedName": "vaniljsocker",
+      "isKnown": true,
+      "category": "spices"
+    },
+    "tags": ["ranges_optionals"],
+    "description": "Valfritt optional marker removed"
+  },
+  {
+    "input": "1 dl mjölk (kall)",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "dl",
+      "normalizedName": "mjölk",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["ranges_optionals"],
+    "description": "Parenthetical preparation hint removed"
+  },
+  {
+    "input": "smör eller margarin",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "margarin",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["alternatives"],
+    "description": "Alternative - takes last option after eller (margarin in dairy set first)"
+  },
+  {
+    "input": "1 dl grädde (eller kokosmjölk)",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "dl",
+      "normalizedName": "grädde",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["alternatives"],
+    "description": "Alternative in parentheses - parentheses removed, base ingredient kept"
+  },
+  {
+    "input": "farinsocker eller strösocker",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "strösocker",
+      "isKnown": true,
+      "category": "sweeteners"
+    },
+    "tags": ["alternatives"],
+    "description": "Sugar alternative - takes last option"
+  },
+  {
+    "input": "vetemjöl eller dinkelmjöl",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "dinkelmjöl",
+      "isKnown": true,
+      "category": "grains"
+    },
+    "tags": ["alternatives"],
+    "description": "Flour alternative - takes last option"
+  },
+  {
+    "input": "gul eller röd lök",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "lök",
+      "isKnown": true,
+      "category": "vegetables"
+    },
+    "tags": ["alternatives"],
+    "description": "Color alternatives before ingredient - colors removed, base kept"
+  },
+  {
+    "input": "rapsolja eller olivolja",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "olivolja",
+      "isKnown": true,
+      "category": "oils"
+    },
+    "tags": ["alternatives"],
+    "description": "Oil alternative - takes last option"
+  },
+  {
+    "input": "1 dl socker eller honung",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "dl",
+      "normalizedName": "honung",
+      "isKnown": true,
+      "category": "sweeteners"
+    },
+    "tags": ["alternatives"],
+    "description": "Alternative with quantity and unit"
+  },
+  {
+    "input": "vanlig eller turkisk yoghurt",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "turkisk yoghurt",
+      "isKnown": false,
+      "category": null
+    },
+    "tags": ["alternatives"],
+    "description": "Type alternative - takes last part after eller, turkisk not a prep word"
+  },
+  {
+    "input": "2 dl grädde eller créme fraiche",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "dl",
+      "normalizedName": "créme fraiche",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["alternatives"],
+    "description": "Cream alternative - accent variant IS in known dairy list"
+  },
+  {
+    "input": "smör eller kokosolja",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "kokosolja",
+      "isKnown": true,
+      "category": "oils"
+    },
+    "tags": ["alternatives"],
+    "description": "Butter or coconut oil alternative"
+  },
+  {
+    "input": "glutenfri pasta",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "glutenfri pasta",
+      "isKnown": false,
+      "category": null
+    },
+    "tags": ["diet"],
+    "description": "Diet descriptor preserved - glutenfri"
+  },
+  {
+    "input": "laktosfri mjölk",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "laktosfri mjölk",
+      "isKnown": false,
+      "category": null
+    },
+    "tags": ["diet"],
+    "description": "Diet descriptor preserved - laktosfri"
+  },
+  {
+    "input": "2 dl laktosfri grädde",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "dl",
+      "normalizedName": "laktosfri grädde",
+      "isKnown": false,
+      "category": null
+    },
+    "tags": ["diet"],
+    "description": "Diet descriptor with quantity and unit"
+  },
+  {
+    "input": "sockerfri sylt",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "sockerfri sylt",
+      "isKnown": false,
+      "category": null
+    },
+    "tags": ["diet"],
+    "description": "Diet descriptor preserved - sockerfri"
+  },
+  {
+    "input": "vegansk ost",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "vegansk ost",
+      "isKnown": false,
+      "category": null
+    },
+    "tags": ["diet"],
+    "description": "Diet descriptor preserved - vegansk"
+  },
+  {
+    "input": "ekologisk mjölk",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "ekologisk mjölk",
+      "isKnown": false,
+      "category": null
+    },
+    "tags": ["diet"],
+    "description": "Diet descriptor preserved - ekologisk"
+  },
+  {
+    "input": "mejerifri grädde",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "mejerifri grädde",
+      "isKnown": false,
+      "category": null
+    },
+    "tags": ["diet"],
+    "description": "Diet descriptor preserved - mejerifri"
+  },
+  {
+    "input": "vegetarisk korv",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "vegetarisk korv",
+      "isKnown": false,
+      "category": null
+    },
+    "tags": ["diet"],
+    "description": "Diet descriptor preserved - vegetarisk"
+  },
+  {
+    "input": "pasta glutenfri",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "glutenfri pasta",
+      "isKnown": false,
+      "category": null
+    },
+    "tags": ["diet"],
+    "description": "Diet descriptor after ingredient - reordered to descriptor-first"
+  },
+  {
+    "input": "mjölk laktosfri",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "laktosfri mjölk",
+      "isKnown": false,
+      "category": null
+    },
+    "tags": ["diet"],
+    "description": "Diet descriptor after ingredient - reordered to descriptor-first"
+  },
+  {
+    "input": "löken",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "lök",
+      "isKnown": true,
+      "category": "vegetables"
+    },
+    "tags": ["definite_form"],
+    "description": "Definite form -en stripped (irregular map)"
+  },
+  {
+    "input": "mjölken",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "mjölk",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["definite_form"],
+    "description": "Definite form -en stripped (irregular map)"
+  },
+  {
+    "input": "sockret",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "socker",
+      "isKnown": true,
+      "category": "sweeteners"
+    },
+    "tags": ["definite_form"],
+    "description": "Definite form -et stripped (irregular map)"
+  },
+  {
+    "input": "smöret",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "smör",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["definite_form"],
+    "description": "Definite form -et stripped (irregular map)"
+  },
+  {
+    "input": "ägget",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "ägg",
+      "isKnown": true,
+      "category": "eggs"
+    },
+    "tags": ["definite_form"],
+    "description": "Definite form -et stripped (irregular map)"
+  },
+  {
+    "input": "hackad gul lök",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "gullök",
+      "isKnown": true,
+      "category": null
+    },
+    "tags": ["preparation"],
+    "description": "Preparation word removed, color+noun forms compound gullök (no category for compound onions)"
+  },
+  {
+    "input": "finriven ost",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "ost",
+      "isKnown": true,
+      "category": "dairy"
+    },
+    "tags": ["preparation"],
+    "description": "Preparation word finriven removed"
+  },
+  {
+    "input": "strimlade morötter",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "morot",
+      "isKnown": true,
+      "category": "vegetables"
+    },
+    "tags": ["preparation"],
+    "description": "Preparation word removed, plural normalized to singular"
+  },
+  {
+    "input": "rimmat fläsk",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "fläsk",
+      "isKnown": true,
+      "category": "meat"
+    },
+    "tags": ["preparation"],
+    "description": "Preparation state rimmat removed"
+  },
+  {
+    "input": "pressad citron",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "citron",
+      "isKnown": true,
+      "category": "fruits"
+    },
+    "tags": ["preparation"],
+    "description": "Preparation state pressad removed"
+  },
+  {
+    "input": "",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "",
+      "isKnown": false,
+      "category": null
+    },
+    "tags": ["edge_case"],
+    "description": "Empty string - graceful handling"
+  },
+  {
+    "input": "   ",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "",
+      "isKnown": false,
+      "category": null
+    },
+    "tags": ["edge_case"],
+    "description": "Whitespace-only string - treated as empty"
+  },
+  {
+    "input": "lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
+      "isKnown": false,
+      "category": null
+    },
+    "tags": ["edge_case"],
+    "description": "Non-food text - passed through, not recognized"
+  },
+  {
+    "input": "2 st \u00e4gg",
+    "expected": {
+      "quantity": 2.0,
+      "unit": "st",
+      "normalizedName": "\u00e4gg",
+      "isKnown": true,
+      "category": "eggs"
+    },
+    "tags": ["edge_case"],
+    "description": "Unicode characters in ingredient name"
+  },
+  {
+    "input": "¾ dl strösocker",
+    "expected": {
+      "quantity": 0.75,
+      "unit": "dl",
+      "normalizedName": "strösocker",
+      "isKnown": true,
+      "category": "sweeteners"
+    },
+    "tags": ["edge_case"],
+    "description": "Three-quarter Unicode fraction"
+  }
+]

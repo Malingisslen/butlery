@@ -1,6 +1,12 @@
-/// Registry of known Swedish ingredients organized by category
-/// Used by ingredient normalizer to validate normalized ingredient names
-/// and provide category information for tagging.
+/// Bootstrap registry of known Swedish ingredients for offline-first parsing.
+///
+/// This static list serves as a first-launch fallback when Firestore data
+/// hasn't been loaded yet. At runtime, [IngredientRegistryService] enriches
+/// the normalizer with ~2,230 Firestore ingredients on top of these ~350.
+///
+/// For compound names, this static list is the offline fallback; Firestore
+/// ingredients with `isCompoundName: true` provide the complete set at runtime.
+///
 /// # Usage
 /// ```dart
 /// // Check if ingredient is known
@@ -434,6 +440,22 @@ class KnownIngredients {
 
     // Potato varieties
     'mandelpotatis',
+
+    // Cheese
+    'parmesanost',
+    'fetaost',
+    'cheddarost',
+    'mozzarellaost',
+
+    // Allium
+    'schalottenlök',
+    'ramslök',
+
+    // Spice blends and nut/coconut compounds
+    'citronpeppar',
+    'vitlökspeppar',
+    'jordnötssmör',
+    'kokosmjölk',
 
     // Other
     'vit choklad',
