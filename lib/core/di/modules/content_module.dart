@@ -92,6 +92,10 @@ import 'package:butlery/repositories/parsing_correction_repository.dart';
 // Ingredient substitution service
 import 'package:butlery/services/ingredient_substitution_service.dart';
 
+// Ingredient registry (enriches static KnownIngredients from Firestore)
+import 'package:butlery/services/parsing/ingredient_registry_service.dart';
+import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
+
 /// Content module providing recipe and menu management services.
 /// This module handles all content-related functionality and depends on
 /// the Core Module for foundational services. It provides:
@@ -289,6 +293,13 @@ class ContentModule implements DIModule {
             llmService: container<LlmService>(),
           );
         },
+      );
+
+      // Ingredient registry — enriches static KnownIngredients from Firestore
+      container.registerLazySingleton<IngredientRegistryService>(
+        () => IngredientRegistryService(
+          ingredientRepository: container<IngredientRepository>(),
+        ),
       );
 
       // Parser feedback loop - tracks user corrections for parser improvement

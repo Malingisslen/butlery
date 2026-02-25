@@ -177,6 +177,115 @@ void main() {
       });
     });
 
+    group('BUG-9: @graph JSON-LD pattern', () {
+      test('should extract Recipe from @graph wrapper', () {
+        const html = '''
+        <html>
+          <script type="application/ld+json">
+          {
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "WebSite",
+                "name": "Recipe Blog"
+              },
+              {
+                "@type": "Recipe",
+                "name": "Kanelbullar",
+                "recipeIngredient": ["50g jäst", "3 dl mjölk", "150g smör"],
+                "recipeInstructions": ["Lös jästen", "Blanda degen", "Grädda"]
+              },
+              {
+                "@type": "Organization",
+                "name": "Baking Corp"
+              }
+            ]
+          }
+          </script>
+        </html>
+        ''';
+
+        final result = extractRecipeFromHtml(html);
+
+        expect(result, isNotNull);
+        expect(result!['@type'], equals('Recipe'));
+        expect(result['name'], equals('Kanelbullar'));
+        expect(result['recipeIngredient'], hasLength(3));
+        expect(result['recipeIngredient'][0], equals('50g jäst'));
+        expect(result['recipeInstructions'], hasLength(3));
+      });
+
+      test('should return null for @graph without Recipe type', () {
+        const html = '''
+        <html>
+          <script type="application/ld+json">
+          {
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "WebSite",
+                "name": "Just a Blog"
+              },
+              {
+                "@type": "Organization",
+                "name": "Some Corp"
+              }
+            ]
+          }
+          </script>
+        </html>
+        ''';
+
+        final result = extractRecipeFromHtml(html);
+        expect(result, isNull);
+      });
+
+      test('should prefer direct Recipe over @graph when both exist', () {
+        const html = '''
+        <html>
+          <script type="application/ld+json">
+          {
+            "@type": "Recipe",
+            "name": "Direct Recipe"
+          }
+          </script>
+          <script type="application/ld+json">
+          {
+            "@graph": [
+              {
+                "@type": "Recipe",
+                "name": "Graph Recipe"
+              }
+            ]
+          }
+          </script>
+        </html>
+        ''';
+
+        final result = extractRecipeFromHtml(html);
+
+        expect(result, isNotNull);
+        // Direct Recipe is found first since scripts are iterated in order
+        expect(result!['name'], equals('Direct Recipe'));
+      });
+
+      test('should handle @graph with empty list', () {
+        const html = '''
+        <html>
+          <script type="application/ld+json">
+          {
+            "@context": "https://schema.org",
+            "@graph": []
+          }
+          </script>
+        </html>
+        ''';
+
+        final result = extractRecipeFromHtml(html);
+        expect(result, isNull);
+      });
+    });
+
     group('Microdata Extraction', () {
       test('should extract complete recipe from Microdata', () {
         const html = '''

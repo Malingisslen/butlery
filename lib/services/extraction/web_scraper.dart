@@ -51,6 +51,15 @@ class WebScraper {
     String url,
     pd.SourcePlatform platform,
   ) async {
+    // Reset disposed state to allow reuse after previous extraction
+    _isDisposed = false;
+    if (_headlessWebView != null) {
+      try {
+        _headlessWebView?.dispose();
+      } catch (_) {}
+      _headlessWebView = null;
+    }
+
     final completer = Completer<ExtractionResult>();
     bool hasExtracted = false;
 

@@ -138,6 +138,25 @@ class SwedishPluralization {
     'apelsin': 'apelsiner',
     'kiwi': 'kiwis',
     'avokado': 'avokados',
+    'korv': 'korvar',
+    'räka': 'räkor',
+    'mandel': 'mandlar',
+    'böna': 'bönor',
+    'ärta': 'ärtor',
+
+    // Invariant berries and herbs
+    'hallon': 'hallon',
+    'lingon': 'lingon',
+    'blåbär': 'blåbär',
+    'broccoli': 'broccoli',
+    'spenat': 'spenat',
+    'persilja': 'persilja',
+
+    // Self-mapping invariants to prevent over-stripping
+    'fläder': 'fläder',
+    'lager': 'lager',
+    'peppar': 'peppar',
+    'ingefära': 'ingefära',
 
     // Additional irregular plurals and cooking-specific terms
     'lasagneplatt': 'lasagneplattor',
@@ -172,14 +191,24 @@ class SwedishPluralization {
   /// normalizeToSingular("champinjoner"); // Returns "champinjon"
   /// normalizeToSingular("mjöl");        // Returns "mjöl" (unchanged)
   /// ```
+  /// Pre-computed reverse map: plural form → singular form for O(1) lookup.
+  static final Map<String, String> _reversePlurals = () {
+    final map = <String, String>{};
+    for (final entry in irregularPlurals.entries) {
+      // Only map if plural differs from singular (skip invariants)
+      if (entry.key != entry.value) {
+        map[entry.value.toLowerCase()] = entry.key;
+      }
+    }
+    return map;
+  }();
+
   static String normalizeToSingular(String name) {
     final lower = name.toLowerCase().trim();
 
-    // First check against irregular plurals database (reverse lookup)
-    for (final entry in irregularPlurals.entries) {
-      if (entry.value.toLowerCase() == lower) {
-        return entry.key;
-      }
+    // O(1) reverse lookup against irregular plurals database
+    if (_reversePlurals.containsKey(lower)) {
+      return _reversePlurals[lower]!;
     }
 
     // Remove common Swedish plural endings with length validation

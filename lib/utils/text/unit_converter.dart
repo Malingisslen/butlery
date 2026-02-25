@@ -66,15 +66,11 @@ class SmartUnitConverter {
 
       case 'fl oz':
       case 'floz':
-      case 'oz': // fluid ounce
+        // Fluid ounce → volume conversion
         if (quantity >= 3.4) {
-          // 3.4 fl oz ≈ 1 dl
           return ConvertedMeasurement(quantity / 3.4, 'dl');
         } else {
-          return ConvertedMeasurement(
-            quantity * 29.6,
-            'ml',
-          ); // 1 fl oz ≈ 29.6 ml
+          return ConvertedMeasurement(quantity * 29.6, 'ml');
         }
 
       case 'tbsp':
@@ -109,9 +105,30 @@ class SmartUnitConverter {
       case 'pounds':
         return ConvertedMeasurement(quantity * 454, 'g'); // 1 lb ≈ 454 g
 
+      case 'oz': // weight ounce (not fluid — "fl oz" handled above)
       case 'ounce':
       case 'ounces':
         return ConvertedMeasurement(quantity * 28.3, 'g'); // 1 oz ≈ 28.3 g
+
+      // Swedish full-word forms → delegate to abbreviation handling
+      case 'matsked':
+      case 'matskedar':
+        return convertToReadableUnit(quantity, 'msk');
+      case 'tesked':
+      case 'teskedar':
+        return convertToReadableUnit(quantity, 'tsk');
+      case 'kryddmått':
+        return convertToReadableUnit(quantity, 'krm');
+      case 'gram':
+        return convertToReadableUnit(quantity, 'g');
+      case 'kilo':
+        return ConvertedMeasurement(quantity, 'kg');
+      case 'liter':
+        return convertToReadableUnit(quantity, 'l');
+      case 'deciliter':
+        return convertToReadableUnit(quantity, 'dl');
+      case 'milliliter':
+        return convertToReadableUnit(quantity, 'ml');
 
       // SVENSKA ENHETER (befintliga konverteringar)
 

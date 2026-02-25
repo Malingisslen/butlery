@@ -212,10 +212,14 @@ class RecipeMerger {
       return true;
     }
 
-    // Fuzzy name match (one contains the other)
+    // Word-set matching to prevent false positives (e.g. "salt" vs "basalt")
     final aLower = a.name.toLowerCase();
     final bLower = b.name.toLowerCase();
-    if (aLower.contains(bLower) || bLower.contains(aLower)) {
+    final aWords = aLower.split(RegExp(r'\s+')).toSet();
+    final bWords = bLower.split(RegExp(r'\s+')).toSet();
+    final shorter = aWords.length <= bWords.length ? aWords : bWords;
+    final longer = aWords.length <= bWords.length ? bWords : aWords;
+    if (shorter.isNotEmpty && longer.containsAll(shorter)) {
       return true;
     }
 

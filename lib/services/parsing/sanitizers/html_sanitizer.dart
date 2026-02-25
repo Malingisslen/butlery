@@ -115,22 +115,40 @@ class HtmlSanitizer {
   /// Sanitize HTML content for safe parsing.
   ///
   /// Removes potentially dangerous elements while preserving recipe content.
+  /// Tags to strip completely (tag + content).
+  static const _dangerousBlockTags = [
+    'script',
+    'style',
+    'iframe',
+    'embed',
+    'object',
+    'form',
+    'svg',
+  ];
+
+  /// Tags to strip (self-closing or tag only, no block content).
+  static const _dangerousSelfTags = ['meta', 'base', 'link'];
+
   String sanitize(String html) {
+    // Size guard matching check()'s 5MB threshold
+    if (html.length > 5000000) {
+      return '';
+    }
+
     var result = html;
 
-    // Remove script tags and their content
-    result = result.replaceAll(
-      RegExp(r'<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>',
-          caseSensitive: false),
-      '',
-    );
+    // State-machine approach for dangerous block tags (avoids ReDoS)
+    for (final tag in _dangerousBlockTags) {
+      result = _removeTagWithContent(result, tag);
+    }
 
-    // Remove style tags and their content
-    result = result.replaceAll(
-      RegExp(r'<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>',
-          caseSensitive: false),
-      '',
-    );
+    // Remove dangerous self-closing/void tags
+    for (final tag in _dangerousSelfTags) {
+      result = result.replaceAll(
+        RegExp('<$tag\\b[^>]*/?>', caseSensitive: false),
+        '',
+      );
+    }
 
     // Remove event handlers (onclick, onerror, etc.)
     result = result.replaceAll(
@@ -156,6 +174,39 @@ class HtmlSanitizer {
     result = normalizeHomoglyphs(result);
 
     return result;
+  }
+
+  /// State-machine tag removal: finds opening tag, then scans for
+  /// matching close tag. Avoids backtracking-prone regex on nested content.
+  static String _removeTagWithContent(String html, String tagName) {
+    final openPattern = RegExp('<$tagName\\b', caseSensitive: false);
+    final result = StringBuffer();
+    var searchStart = 0;
+
+    while (searchStart < html.length) {
+      final openMatch = openPattern.firstMatch(html.substring(searchStart));
+      if (openMatch == null) {
+        result.write(html.substring(searchStart));
+        break;
+      }
+
+      // Write everything before the tag
+      result.write(html.substring(searchStart, searchStart + openMatch.start));
+
+      // Find the closing tag from the open position
+      final closeTag = '</$tagName>';
+      final closeIdx =
+          html.toLowerCase().indexOf(closeTag, searchStart + openMatch.start);
+
+      if (closeIdx >= 0) {
+        searchStart = closeIdx + closeTag.length;
+      } else {
+        // No close tag found — remove rest of content after open tag
+        break;
+      }
+    }
+
+    return result.toString();
   }
 
   /// Sanitize a URL for safe use.
@@ -261,24 +312,29 @@ class HtmlSanitizer {
   }
 
   /// Check if content is likely an error page.
+  /// Uses contextual patterns to avoid false positives with quantities
+  /// like "500 g mjöl" or "400 ml vatten".
   bool looksLikeErrorPage(String content) {
+    // If it looks like recipe content, it's not an error page
+    if (looksLikeRecipeContent(content)) return false;
+
     final lowerContent = content.toLowerCase();
 
-    final errorIndicators = [
-      '404',
-      'not found',
-      'page not found',
-      'error',
-      'sidan kunde inte hittas',
-      'access denied',
-      'forbidden',
-      '403',
-      '500',
-      'internal server error',
+    // Contextual error patterns (require error-related context)
+    final errorPatterns = [
+      RegExp(r'\b(error|http|status)\s*:?\s*404\b'),
+      RegExp(r'\bnot\s+found\b'),
+      RegExp(r'\bpage\s+not\s+found\b'),
+      RegExp(r'\b(error|http|status)\s*:?\s*500\b'),
+      RegExp(r'\binternal\s+server\s+error\b'),
+      RegExp(r'\bsidan\s+kunde\s+inte\s+hittas\b'),
+      RegExp(r'\baccess\s+denied\b'),
+      RegExp(r'\bforbidden\b'),
+      RegExp(r'\b(error|http|status)\s*:?\s*403\b'),
     ];
 
-    for (final indicator in errorIndicators) {
-      if (lowerContent.contains(indicator)) {
+    for (final pattern in errorPatterns) {
+      if (pattern.hasMatch(lowerContent)) {
         return true;
       }
     }

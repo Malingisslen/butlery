@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/recipe_personal_tag.dart';
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -488,6 +489,168 @@ void main() {
         final results = service.searchRecipes(testRecipes, '4');
 
         expect(results.any((r) => r.portions == 4), isTrue);
+      });
+    });
+
+    group('BUG-1: Search uses tag names instead of UUIDs', () {
+      late List<Recipe> recipesWithUuidTags;
+
+      setUp(() {
+        // Create recipes where personalTagIds contain UUIDs
+        // but core.personalTags have human-readable names.
+        // This mimics production data where personalTagIds are UUIDs
+        // and personalTags carry the display name.
+        recipesWithUuidTags = [
+          RecipeFactory.build(
+            id: 'uuid-recipe-1',
+            title: 'Grillad kyckling',
+            description: 'Kryddig grillad kyckling',
+            personalTagIds: [
+              'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+              'f9e8d7c6-b5a4-3210-fedc-ba0987654321',
+            ],
+          ).copyWith(
+            personalTags: [
+              RecipePersonalTag.manual(
+                tagId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+                name: 'grillat',
+              ),
+              RecipePersonalTag.manual(
+                tagId: 'f9e8d7c6-b5a4-3210-fedc-ba0987654321',
+                name: 'kyckling',
+              ),
+            ],
+          ),
+          RecipeFactory.build(
+            id: 'uuid-recipe-2',
+            title: 'Vegansk pasta',
+            description: 'Enkel vegansk pasta',
+            personalTagIds: [
+              'c3d4e5f6-a1b2-7890-1234-567890abcdef',
+            ],
+          ).copyWith(
+            personalTags: [
+              RecipePersonalTag.manual(
+                tagId: 'c3d4e5f6-a1b2-7890-1234-567890abcdef',
+                name: 'vegansk',
+              ),
+            ],
+          ),
+        ];
+      });
+
+      test('should find recipe when searching by tag NAME', () {
+        final results = service.searchRecipes(recipesWithUuidTags, 'grillat');
+
+        expect(results.length, 1);
+        expect(results.first.title, 'Grillad kyckling');
+      });
+
+      test('should NOT find recipe when searching by tag UUID', () {
+        final results = service.searchRecipes(
+          recipesWithUuidTags,
+          'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        );
+
+        expect(
+          results,
+          isEmpty,
+          reason: 'Search should match tag names, not raw UUID strings — '
+              'users never type UUIDs in the search box',
+        );
+      });
+
+      test('should find recipe by partial tag name', () {
+        final results = service.searchRecipes(recipesWithUuidTags, 'vegan');
+
+        expect(results.length, 1);
+        expect(results.first.title, 'Vegansk pasta');
+      });
+
+      test('should generate suggestions from tag names, not UUIDs', () {
+        final suggestions =
+            service.getSearchSuggestions(recipesWithUuidTags, 'gri');
+
+        // Should contain the tag name "grillat", not the UUID
+        expect(
+          suggestions.any((s) => s.toLowerCase().contains('grillat')),
+          isTrue,
+          reason: 'Suggestions should use tag names',
+        );
+        expect(
+          suggestions.any((s) => s.contains('a1b2c3d4')),
+          isFalse,
+          reason: 'Suggestions should not contain UUIDs',
+        );
+      });
+
+      test('should generate suggestions from tag names for vegansk', () {
+        final suggestions =
+            service.getSearchSuggestions(recipesWithUuidTags, 've');
+
+        expect(
+          suggestions.any((s) => s.toLowerCase().contains('vegansk')),
+          isTrue,
+          reason: 'Suggestions should include tag name "vegansk"',
+        );
+      });
+
+      test('should include tag names in popular search terms', () {
+        final popularTerms = service.getPopularSearchTerms(recipesWithUuidTags);
+
+        // Tag names should appear in popular terms
+        expect(
+          popularTerms.any((t) => t.toLowerCase() == 'grillat'),
+          isTrue,
+          reason: 'Popular terms should include tag name "grillat"',
+        );
+        expect(
+          popularTerms.any((t) => t.toLowerCase() == 'vegansk'),
+          isTrue,
+          reason: 'Popular terms should include tag name "vegansk"',
+        );
+      });
+
+      test('should NOT include tag UUIDs in popular search terms', () {
+        final popularTerms = service.getPopularSearchTerms(recipesWithUuidTags);
+
+        // No UUID-like strings should appear
+        expect(
+          popularTerms.any((t) => t.contains('a1b2c3d4')),
+          isFalse,
+          reason: 'Popular terms should not contain UUID fragments',
+        );
+        expect(
+          popularTerms.any((t) => t.contains('f9e8d7c6')),
+          isFalse,
+          reason: 'Popular terms should not contain UUID fragments',
+        );
+      });
+
+      test('should handle recipe with null personalTags gracefully', () {
+        final recipeWithNullTags = [
+          RecipeFactory.build(
+            id: 'null-tags-recipe',
+            title: 'Enkel soppa',
+            personalTagIds: ['some-uuid'],
+          ).copyWith(
+            personalTags: null,
+          ),
+        ];
+
+        // Should not throw when personalTags is null
+        final results = service.searchRecipes(recipeWithNullTags, 'some-uuid');
+        // With null personalTags, the tag search path is skipped entirely
+        // so neither UUID nor name matching should return results via tags
+        // (recipe might still match on other fields like title/description)
+        expect(() => results, returnsNormally);
+
+        final suggestions =
+            service.getSearchSuggestions(recipeWithNullTags, 'so');
+        expect(() => suggestions, returnsNormally);
+
+        final popular = service.getPopularSearchTerms(recipeWithNullTags);
+        expect(() => popular, returnsNormally);
       });
     });
   });
