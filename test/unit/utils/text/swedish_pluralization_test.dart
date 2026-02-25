@@ -95,6 +95,24 @@ void main() {
             SwedishPluralization.irregularPlurals['äpple'], equals('äpplen'));
       });
 
+      test('should contain compound -socker/-pulver invariants (Phase 1)', () {
+        expect(SwedishPluralization.irregularPlurals['vaniljsocker'],
+            equals('vaniljsocker'));
+        expect(SwedishPluralization.irregularPlurals['strösocker'],
+            equals('strösocker'));
+        expect(SwedishPluralization.irregularPlurals['florsocker'],
+            equals('florsocker'));
+        expect(SwedishPluralization.irregularPlurals['farinsocker'],
+            equals('farinsocker'));
+        expect(SwedishPluralization.irregularPlurals['muscovadosocker'],
+            equals('muscovadosocker'));
+        expect(SwedishPluralization.irregularPlurals['pärlsocker'],
+            equals('pärlsocker'));
+        expect(SwedishPluralization.irregularPlurals['bakpulver'],
+            equals('bakpulver'));
+        expect(SwedishPluralization.irregularPlurals['kakao'], equals('kakao'));
+      });
+
       test('should contain compound irregular forms', () {
         expect(SwedishPluralization.irregularPlurals['lasagneplatt'],
             equals('lasagneplattor'));
@@ -153,6 +171,38 @@ void main() {
             SwedishPluralization.normalizeToSingular('pasta'), equals('pasta'));
         expect(SwedishPluralization.normalizeToSingular('vatten'),
             equals('vatten'));
+      });
+
+      test('should preserve compound -socker invariants (Phase 1)', () {
+        expect(SwedishPluralization.normalizeToSingular('vaniljsocker'),
+            equals('vaniljsocker'));
+        expect(SwedishPluralization.normalizeToSingular('strösocker'),
+            equals('strösocker'));
+        expect(SwedishPluralization.normalizeToSingular('florsocker'),
+            equals('florsocker'));
+        expect(SwedishPluralization.normalizeToSingular('farinsocker'),
+            equals('farinsocker'));
+        expect(SwedishPluralization.normalizeToSingular('muscovadosocker'),
+            equals('muscovadosocker'));
+        expect(SwedishPluralization.normalizeToSingular('pärlsocker'),
+            equals('pärlsocker'));
+      });
+
+      test('should preserve compound -pulver invariants (Phase 1)', () {
+        expect(SwedishPluralization.normalizeToSingular('bakpulver'),
+            equals('bakpulver'));
+      });
+
+      test('should preserve kakao invariant (Phase 1)', () {
+        expect(
+            SwedishPluralization.normalizeToSingular('kakao'), equals('kakao'));
+      });
+
+      test('should preserve socker and peppar base invariants', () {
+        expect(SwedishPluralization.normalizeToSingular('socker'),
+            equals('socker'));
+        expect(SwedishPluralization.normalizeToSingular('peppar'),
+            equals('peppar'));
       });
 
       test('should handle edge cases', () {

@@ -88,6 +88,23 @@ class ProcessedIngredient {
     this.confidence = 0.5,
   });
 
+  // Convenience accessors that surface preprocessing metadata without
+  // duplicating stored data. Safe for both Pattern A (has preprocessingFlags)
+  // and Pattern B/C (preprocessingFlags is null, defaults to false/null).
+
+  bool get isOptional => preprocessingFlags?.hadOptionalMarker ?? false;
+
+  bool get isApproximate => preprocessingFlags?.hadApproximation ?? false;
+
+  String? get preparationHint => preprocessingFlags?.preparationHint;
+
+  /// Substitute ingredients from parenthetical content
+  List<String> get substitutes => preprocessingFlags?.substitutes ?? const [];
+
+  double? get rangeMin => preprocessingFlags?.rangeMin;
+
+  double? get rangeMax => preprocessingFlags?.rangeMax;
+
   /// Get display string for UI (uses original name)
   String toDisplayString() {
     if (unit.isNotEmpty) {
@@ -108,6 +125,15 @@ class ProcessedIngredient {
 
   @override
   String toString() {
+    final flags = <String>[];
+    if (isOptional) flags.add('optional');
+    if (isApproximate) flags.add('approximate');
+    if (rangeMin != null && rangeMax != null) {
+      flags.add('range: $rangeMin-$rangeMax');
+    }
+    if (preparationHint != null) flags.add('hint: "$preparationHint"');
+    if (substitutes.isNotEmpty) flags.add('substitutes: $substitutes');
+
     return 'ProcessedIngredient('
         'quantity: $quantity, '
         'unit: "$unit", '
@@ -116,6 +142,7 @@ class ProcessedIngredient {
         'confidence: $confidence'
         '${category != null ? ', category: $category' : ''}'
         '${isKnown ? ' [known]' : ''}'
+        '${flags.isNotEmpty ? ', ${flags.join(', ')}' : ''}'
         ')';
   }
 }
