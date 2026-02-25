@@ -260,6 +260,20 @@ class TextFormatting {
       return isNegative ? '-$integerPart ¾' : '$integerPart ¾';
     }
 
+    // Check for third fractions with floating-point tolerance
+    if ((fracPart - 1 / 3).abs() < 0.01) {
+      if (integerPart == 0) {
+        return isNegative ? '-⅓' : '⅓';
+      }
+      return isNegative ? '-$integerPart ⅓' : '$integerPart ⅓';
+    }
+    if ((fracPart - 2 / 3).abs() < 0.01) {
+      if (integerPart == 0) {
+        return isNegative ? '-⅔' : '⅔';
+      }
+      return isNegative ? '-$integerPart ⅔' : '$integerPart ⅔';
+    }
+
     // Fallback to Swedish decimal formatting for non-fraction values
     return formatFractional(value);
   }

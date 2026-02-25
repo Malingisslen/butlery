@@ -65,10 +65,11 @@ void main() {
         expect(result.quantity, closeTo(59.2, 0.1));
         expect(result.unit, equals('ml'));
 
-        // Larger amounts -> dl
+        // BUG-11: bare "oz" is now weight (not fluid ounce)
+        // 4 oz → ~113.2 g
         result = SmartUnitConverter.convertToReadableUnit(4.0, 'oz');
-        expect(result.quantity, closeTo(1.176, 0.01));
-        expect(result.unit, equals('dl'));
+        expect(result.quantity, closeTo(113.2, 0.1));
+        expect(result.unit, equals('g'));
 
         result = SmartUnitConverter.convertToReadableUnit(10.0, 'fl oz');
         expect(result.quantity, closeTo(2.94, 0.01));

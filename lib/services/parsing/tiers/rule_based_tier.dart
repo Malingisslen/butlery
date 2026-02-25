@@ -8,6 +8,7 @@ import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart'
     hide ParsedIngredient;
+import 'package:html_unescape/html_unescape.dart';
 
 /// Tier 3: Rule-based Swedish text parsing.
 ///
@@ -127,21 +128,11 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
     return text.trim();
   }
 
-  /// Decode common HTML entities.
+  static final _htmlUnescape = HtmlUnescape();
+
+  /// Decode HTML entities (full spec coverage via html_unescape package).
   String _decodeHtmlEntities(String text) {
-    return text
-        .replaceAll('&nbsp;', ' ')
-        .replaceAll('&amp;', '&')
-        .replaceAll('&lt;', '<')
-        .replaceAll('&gt;', '>')
-        .replaceAll('&quot;', '"')
-        .replaceAll('&#39;', "'")
-        .replaceAll('&auml;', 'ä')
-        .replaceAll('&ouml;', 'ö')
-        .replaceAll('&aring;', 'å')
-        .replaceAll('&Auml;', 'Ä')
-        .replaceAll('&Ouml;', 'Ö')
-        .replaceAll('&Aring;', 'Å');
+    return _htmlUnescape.convert(text);
   }
 
   ParsedRecipe? _convertToRecipe(

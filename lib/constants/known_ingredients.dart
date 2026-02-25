@@ -231,6 +231,11 @@ class KnownIngredients {
     'kalvfond',
     'hönsfond',
     'grönsaksfond',
+    'fiskfond',
+    'kycklingfond',
+    'kycklingbuljong',
+    'grönsaksbuljong',
+    'oxbuljong',
     'ättika',
     'vinäger',
     'balsamico',
@@ -257,7 +262,7 @@ class KnownIngredients {
     'nejlika',
     'ingefära',
     'muskotnöt',
-    'lagerbladbard',
+    'lagerblad',
     'timjan',
     'rosmarin',
     'oregano',
@@ -276,6 +281,7 @@ class KnownIngredients {
   };
 
   /// Oils and fats
+  /// Note: 'smör' is in dairy (single-category rule), 'margarin' listed here only
   static const oils = {
     'olja',
     'olivolja',
@@ -283,7 +289,6 @@ class KnownIngredients {
     'solrosolja',
     'sesamolja',
     'kokosolja',
-    'smör',
     'margarin',
     'bredbart',
   };
@@ -314,7 +319,7 @@ class KnownIngredients {
     'pinjekärna',
     'jordnöt',
     'solroskärnor',
-    'pumppärnor',
+    'pumpakärnor',
     'sesamfrön',
     'linfrön',
     'chiafrön',
@@ -354,9 +359,9 @@ class KnownIngredients {
   };
 
   /// Beverages (non-alcoholic)
+  /// Note: 'mjölk' is in dairy (single-category rule)
   static const beverages = {
     'vatten',
-    'mjölk',
     'juice',
     'läsk',
     'kaffe',
@@ -426,6 +431,9 @@ class KnownIngredients {
     // Berries
     'svarta vinbär',
     'röda vinbär',
+
+    // Potato varieties
+    'mandelpotatis',
 
     // Other
     'vit choklad',

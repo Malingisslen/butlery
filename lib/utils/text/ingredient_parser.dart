@@ -13,7 +13,7 @@ class IngredientParser {
 
   /// Regex for Swedish fraction and decimal format parsing.
   static final RegExp quantityRegex = RegExp(
-    r'^(\d+(?:[,\.]\d+)?|½|¼|¾|\d+\s*½|\d+\s*¼|\d+\s*¾)([A-Za-zÅÄÖåäö]+)?\s*(.+)$',
+    r'^(\d+(?:[,\.]\d+)?|[½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗]|\d+\s*[½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗])([A-Za-zÅÄÖåäö]+)?\s*(.+)$',
   );
 
   /// Comprehensive measurement unit set (delegates to UnitDefinitions).
@@ -181,7 +181,9 @@ class IngredientParser {
       // "2 dl mjölk och grädde" -> inherit both quantity and unit for "grädde"
       // "2 dl mjölk och 3 grädde" -> inherit just unit, keep quantity 3
       // "2 ägg och smör" -> inherit quantity for "smör"
-      final inheritQuantity = parsed.quantity == 1.0;
+      // Only inherit quantity if the part didn't start with an explicit number
+      final hasExplicitQuantity = RegExp(r'^\d|^[½¼¾⅓⅔⅛⅜⅝⅞]').hasMatch(part);
+      final inheritQuantity = !hasExplicitQuantity && parsed.quantity == 1.0;
       final inheritUnit = parsed.unit.isEmpty && first.unit.isNotEmpty;
 
       if (inheritQuantity || inheritUnit) {
@@ -207,9 +209,11 @@ class IngredientParser {
 
     final parsed = parseIngredient(rawIngredient);
 
+    // Guard: if parsing returned the raw input as-is, don't scale
+    // Compare lowercase since parseIngredient lowercases the name
     if (parsed.quantity == 1.0 &&
         parsed.unit.isEmpty &&
-        parsed.name == rawIngredient) {
+        parsed.name == rawIngredient.toLowerCase()) {
       return rawIngredient;
     }
 

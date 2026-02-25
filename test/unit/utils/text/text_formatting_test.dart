@@ -256,9 +256,16 @@ void main() {
         expect(TextFormatting.toSwedishHalfFraction(0.7499), equals('¾'));
       });
 
+      test('should display third fractions with unicode symbols', () {
+        expect(TextFormatting.toSwedishHalfFraction(1.0 / 3), equals('⅓'));
+        expect(
+            TextFormatting.toSwedishHalfFraction(1 + 1.0 / 3), equals('1 ⅓'));
+        expect(TextFormatting.toSwedishHalfFraction(2.0 / 3), equals('⅔'));
+        expect(
+            TextFormatting.toSwedishHalfFraction(2 + 2.0 / 3), equals('2 ⅔'));
+      });
+
       test('should fallback to decimal format for non-fractions', () {
-        expect(TextFormatting.toSwedishHalfFraction(1.33), equals('1,33'));
-        expect(TextFormatting.toSwedishHalfFraction(2.67), equals('2,67'));
         expect(TextFormatting.toSwedishHalfFraction(0.1), equals('0,1'));
         expect(TextFormatting.toSwedishHalfFraction(3.14), equals('3,14'));
       });

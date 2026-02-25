@@ -14,6 +14,13 @@ class PreprocessingResult {
   /// Original input for debugging
   final String original;
 
+  /// Extracted preparation hint from parenthetical content (e.g. "saften" from "(saften)")
+  final String? preparationHint;
+
+  /// Range boundaries when input contained a range (e.g. "3-5" → min: 3, max: 5)
+  final double? rangeMin;
+  final double? rangeMax;
+
   const PreprocessingResult({
     required this.cleaned,
     this.hadBullet = false,
@@ -23,6 +30,9 @@ class PreprocessingResult {
     this.hadParentheses = false,
     this.hadInstruction = false,
     required this.original,
+    this.preparationHint,
+    this.rangeMin,
+    this.rangeMax,
   });
 
   @override
@@ -57,6 +67,11 @@ class IngredientPreprocessor {
       return PreprocessingResult(cleaned: '', original: original);
     }
 
+    // Guard against unreasonably long input (real ingredient lines are 10-60 chars)
+    if (text.length > 500) {
+      text = text.substring(0, 500);
+    }
+
     var hadBullet = false;
     var hadApproximation = false;
     var hadRange = false;
@@ -75,6 +90,8 @@ class IngredientPreprocessor {
     final result2 = _normalizeRanges(text);
     text = result2.text;
     hadRange = result2.modified;
+    final rangeMin = result2.min;
+    final rangeMax = result2.max;
 
     final result3 = _removeOptionalMarkers(text);
     text = result3.text;
@@ -87,6 +104,7 @@ class IngredientPreprocessor {
     final result5 = _removeParentheses(text);
     text = result5.text;
     hadParentheses = result5.modified;
+    final preparationHint = result5.hint;
 
     text = _normalizeWhitespace(text);
 
@@ -99,6 +117,9 @@ class IngredientPreprocessor {
       hadParentheses: hadParentheses,
       hadInstruction: hadInstruction,
       original: original,
+      preparationHint: preparationHint,
+      rangeMin: rangeMin,
+      rangeMax: rangeMax,
     );
   }
 
@@ -119,23 +140,25 @@ class IngredientPreprocessor {
 
   /// Remove approximation words (ca, cirka, drygt, knappt, ungefär).
   static ({String text, bool modified}) _removeApproximations(String text) {
+    // Dotted forms FIRST to prevent orphaned periods (ca. before ca)
     final approximations = [
-      'ca',
       'ca.',
-      'cirka',
       'cirka.',
+      'ungefär.',
+      'ca',
+      'cirka',
       'drygt',
       'knappt',
       'ungefär',
-      'ungefär.',
     ];
 
     var modified = false;
     var result = text;
 
     for (final word in approximations) {
-      // Match word boundary to avoid partial matches
-      final pattern = RegExp('\\b$word\\b', caseSensitive: false);
+      // Use RegExp.escape for safe interpolation of dotted forms
+      final escaped = RegExp.escape(word);
+      final pattern = RegExp('\\b$escaped\\b', caseSensitive: false);
       if (result.contains(pattern)) {
         result = result.replaceAll(pattern, '').trim();
         modified = true;
@@ -145,40 +168,50 @@ class IngredientPreprocessor {
     return (text: result, modified: modified);
   }
 
-  /// Normalize ranges to maximum value ("3-5" → "5").
-  static ({String text, bool modified}) _normalizeRanges(String text) {
+  /// Normalize ranges to maximum value ("3-5" → "5"), preserving min/max.
+  static ({String text, bool modified, double? min, double? max})
+      _normalizeRanges(String text) {
     var modified = false;
     var result = text;
+    double? rangeMin;
+    double? rangeMax;
 
     final pattern1 = RegExp(
         r'(\d+(?:\s+\d+/\d+)?(?:[,\.]\d+)?)\s*-\s*(\d+(?:\s+\d+/\d+)?(?:[,\.]\d+)?)');
 
     if (pattern1.hasMatch(result)) {
       result = result.replaceAllMapped(pattern1, (match) {
-        final maxValue = match.group(2)!;
+        final minStr = match.group(1)!;
+        final maxStr = match.group(2)!;
+        rangeMin ??= double.tryParse(minStr.replaceAll(',', '.'));
+        rangeMax ??= double.tryParse(maxStr.replaceAll(',', '.'));
         modified = true;
-        return maxValue;
+        return maxStr;
       });
     }
 
     final pattern2 = RegExp(r'(\d+)-(\d+)');
 
-    if (pattern2.hasMatch(result)) {
+    if (!modified && pattern2.hasMatch(result)) {
       result = result.replaceAllMapped(pattern2, (match) {
-        final maxValue = match.group(2)!;
+        final minStr = match.group(1)!;
+        final maxStr = match.group(2)!;
+        rangeMin ??= double.tryParse(minStr);
+        rangeMax ??= double.tryParse(maxStr);
         modified = true;
-        return maxValue;
+        return maxStr;
       });
     }
 
-    return (text: result, modified: modified);
+    return (text: result, modified: modified, min: rangeMin, max: rangeMax);
   }
 
   /// Remove optional markers (ev, eventuellt, valfritt).
   static ({String text, bool modified}) _removeOptionalMarkers(String text) {
+    // Dotted forms first to prevent orphaned periods
     final optionals = [
-      'ev',
       'ev.',
+      'ev',
       'eventuellt',
       'valfritt',
       'valfri',
@@ -188,7 +221,8 @@ class IngredientPreprocessor {
     var result = text;
 
     for (final word in optionals) {
-      final pattern = RegExp('\\b$word\\b', caseSensitive: false);
+      final escaped = RegExp.escape(word);
+      final pattern = RegExp('\\b$escaped\\b', caseSensitive: false);
       if (result.contains(pattern)) {
         result = result.replaceAll(pattern, '').trim();
         modified = true;
@@ -200,7 +234,8 @@ class IngredientPreprocessor {
 
   /// Remove "till [noun]" instruction phrases ("smör till formen" → "smör").
   static ({String text, bool modified}) _removeInstructionPhrases(String text) {
-    final pattern = RegExp(r'\s+till\s+\w+.*', caseSensitive: false);
+    // Non-greedy: stop at comma/semicolon to preserve subsequent ingredients
+    final pattern = RegExp(r'\s+till\s+\w+[^,;]*', caseSensitive: false);
 
     if (text.contains(pattern)) {
       final result = text.replaceAll(pattern, '').trim();
@@ -211,15 +246,21 @@ class IngredientPreprocessor {
   }
 
   /// Remove all parenthetical content ("lime (saften)" → "lime").
-  static ({String text, bool modified}) _removeParentheses(String text) {
-    final pattern = RegExp(r'\s*\([^)]*\)\s*');
+  /// Extracts first parenthetical as a preparation hint.
+  static ({String text, bool modified, String? hint}) _removeParentheses(
+      String text) {
+    final pattern = RegExp(r'\s*\(([^)]*)\)\s*');
+    String? hint;
 
-    if (text.contains(pattern)) {
+    final firstMatch = pattern.firstMatch(text);
+    if (firstMatch != null) {
+      hint = firstMatch.group(1)?.trim();
+      if (hint != null && hint.isEmpty) hint = null;
       final result = text.replaceAll(pattern, ' ').trim();
-      return (text: result, modified: true);
+      return (text: result, modified: true, hint: hint);
     }
 
-    return (text: text, modified: false);
+    return (text: text, modified: false, hint: null);
   }
 
   static String _normalizeWhitespace(String text) {
