@@ -145,15 +145,14 @@ class IngredientProcessor {
   /// // - originalName: 'glutenfri mjölk'
   /// // - normalizedName: 'glutenfri mjölk' (diet descriptor preserved!)
   /// ```
-  static ProcessedIngredient processRawIngredient(String rawText) {
-    // Step 1: Preprocess - Clean up messy recipe text
+  static ProcessedIngredient processRawIngredient(
+    String rawText, {
+    Set<String>? additionalKnown,
+  }) {
     final preprocessed = IngredientPreprocessor.preprocess(rawText);
-
-    // Step 2: Parse - Extract quantity, unit, name
     final parsed = IngredientParser.parseIngredient(preprocessed.cleaned);
-
-    // Step 3: Normalize - Clean ingredient name for tagging
-    final normalized = IngredientNormalizer.normalize(parsed.name);
+    final normalized = IngredientNormalizer.normalize(parsed.name,
+        additionalKnown: additionalKnown);
 
     return ProcessedIngredient(
       quantity: parsed.quantity,
@@ -184,10 +183,13 @@ class IngredientProcessor {
   /// // - originalName: 'hackad lök' (for display)
   /// // - normalizedName: 'lök' (preparation removed for grouping)
   /// ```
-  static ProcessedIngredient parseAndNormalize(String cleanText) {
-    // Skip preprocessing (data already clean)
+  static ProcessedIngredient parseAndNormalize(
+    String cleanText, {
+    Set<String>? additionalKnown,
+  }) {
     final parsed = IngredientParser.parseIngredient(cleanText);
-    final normalized = IngredientNormalizer.normalize(parsed.name);
+    final normalized = IngredientNormalizer.normalize(parsed.name,
+        additionalKnown: additionalKnown);
 
     return ProcessedIngredient(
       quantity: parsed.quantity,
@@ -213,8 +215,12 @@ class IngredientProcessor {
   /// final normalized = IngredientProcessor.normalizeIngredientName(parsedName);
   /// // Returns: 'lök'
   /// ```
-  static NormalizationResult normalizeIngredientName(String parsedName) {
-    return IngredientNormalizer.normalize(parsedName);
+  static NormalizationResult normalizeIngredientName(
+    String parsedName, {
+    Set<String>? additionalKnown,
+  }) {
+    return IngredientNormalizer.normalize(parsedName,
+        additionalKnown: additionalKnown);
   }
 
   /// Batch process multiple raw ingredients (Pattern A)

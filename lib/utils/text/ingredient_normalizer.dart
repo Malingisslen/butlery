@@ -111,8 +111,20 @@ class IngredientNormalizer {
     return text.contains(RegExp(r'\bmed\b'));
   }
 
-  /// Normalize ingredient name to base form
-  static NormalizationResult normalize(String rawName) {
+  /// Check if ingredient is known against static registry + optional enriched set.
+  static bool _isKnown(String name, Set<String>? additionalKnown) {
+    return KnownIngredients.isKnown(name) ||
+        (additionalKnown != null && additionalKnown.contains(name));
+  }
+
+  /// Normalize ingredient name to base form.
+  ///
+  /// [additionalKnown] supplements [KnownIngredients] with Firestore-enriched
+  /// ingredient names from [IngredientRegistryService.allIngredients].
+  static NormalizationResult normalize(
+    String rawName, {
+    Set<String>? additionalKnown,
+  }) {
     final original = rawName;
     final removedWords = <String>[];
 
@@ -138,10 +150,9 @@ class IngredientNormalizer {
 
     // Step 2: Check if contains "med [flavor]" pattern (keep as-is!)
     if (_hasFlavorPattern(cleaned)) {
-      // Don't remove anything from products with flavor descriptions
       return NormalizationResult(
         normalized: cleaned,
-        isKnown: KnownIngredients.isKnown(cleaned),
+        isKnown: _isKnown(cleaned, additionalKnown),
         category: KnownIngredients.getCategory(cleaned),
         original: original,
       );
@@ -159,15 +170,13 @@ class IngredientNormalizer {
       final restOfName = otherWords.join(' ');
 
       if (restOfName.isNotEmpty) {
-        // Process rest of name normally
-        final processedRest = _processName(restOfName, removedWords);
-        // Always put diet descriptor first for consistency:
-        // "pasta glutenfri" → "glutenfri pasta"
+        final processedRest =
+            _processName(restOfName, removedWords, additionalKnown);
         final result = '$dietDescriptor $processedRest';
 
         return NormalizationResult(
           normalized: result,
-          isKnown: KnownIngredients.isKnown(result),
+          isKnown: _isKnown(result, additionalKnown),
           category: KnownIngredients.getCategory(result),
           removedWords: removedWords,
           original: original,
@@ -198,10 +207,10 @@ class IngredientNormalizer {
     }
 
     // Normal processing (no special cases)
-    cleaned = _processName(cleaned, removedWords);
+    cleaned = _processName(cleaned, removedWords, additionalKnown);
 
     // Step 5: Validate
-    final isKnown = KnownIngredients.isKnown(cleaned);
+    final isKnown = _isKnown(cleaned, additionalKnown);
     final category = KnownIngredients.getCategory(cleaned);
 
     return NormalizationResult(
@@ -253,8 +262,7 @@ class IngredientNormalizer {
   };
 
   /// Strip Swedish definite form suffix (-en, -et, -n) with safety guard.
-  static String _stripDefiniteForm(String name) {
-    // Check irregular forms first
+  static String _stripDefiniteForm(String name, Set<String>? additionalKnown) {
     if (_irregularDefiniteForms.containsKey(name)) {
       return _irregularDefiniteForms[name]!;
     }
@@ -262,22 +270,23 @@ class IngredientNormalizer {
     // Regular stripping: only if result is a known ingredient (prevents false positives)
     if (name.endsWith('en') && name.length > 3) {
       final stripped = name.substring(0, name.length - 2);
-      if (KnownIngredients.isKnown(stripped)) return stripped;
+      if (_isKnown(stripped, additionalKnown)) return stripped;
     }
     if (name.endsWith('et') && name.length > 3) {
       final stripped = name.substring(0, name.length - 2);
-      if (KnownIngredients.isKnown(stripped)) return stripped;
+      if (_isKnown(stripped, additionalKnown)) return stripped;
     }
     if (name.endsWith('n') && name.length > 2) {
       final stripped = name.substring(0, name.length - 1);
-      if (KnownIngredients.isKnown(stripped)) return stripped;
+      if (_isKnown(stripped, additionalKnown)) return stripped;
     }
 
     return name;
   }
 
   /// Process name through all normalization steps
-  static String _processName(String name, List<String> removedWords) {
+  static String _processName(
+      String name, List<String> removedWords, Set<String>? additionalKnown) {
     var result = name;
 
     // Handle "eller" alternatives
@@ -314,13 +323,13 @@ class IngredientNormalizer {
     }
 
     // Strip definite form BEFORE plural normalization
-    result = _stripDefiniteForm(result);
+    result = _stripDefiniteForm(result, additionalKnown);
 
     // Normalize plural to singular
     result = SwedishPluralization.normalizeToSingular(result);
 
     // Extract base ingredient from compounds
-    result = _extractBaseIngredient(result);
+    result = _extractBaseIngredient(result, additionalKnown);
 
     return result;
   }
@@ -393,9 +402,10 @@ class IngredientNormalizer {
   /// - "tomatsås" → "tomat" (if "tomat" is known)
   /// - "kycklingfilé" → "kyckling" (if "kyckling" is known)
   /// - "köttfärs" → "kött" (if "kött" is known)
-  static String _extractBaseIngredient(String name) {
+  static String _extractBaseIngredient(
+      String name, Set<String>? additionalKnown) {
     // Short-circuit: if the full compound word is already known, keep it
-    if (KnownIngredients.isKnown(name)) return name;
+    if (_isKnown(name, additionalKnown)) return name;
 
     final compoundSuffixes = [
       'sås',
@@ -422,7 +432,7 @@ class IngredientNormalizer {
       if (name.endsWith(suffix) && name.length > suffix.length + 2) {
         final base = name.substring(0, name.length - suffix.length);
 
-        if (KnownIngredients.isKnown(base)) {
+        if (_isKnown(base, additionalKnown)) {
           return base;
         }
       }
@@ -432,7 +442,12 @@ class IngredientNormalizer {
   }
 
   /// Batch normalize multiple ingredients
-  static List<NormalizationResult> normalizeMany(List<String> ingredients) {
-    return ingredients.map((i) => normalize(i)).toList();
+  static List<NormalizationResult> normalizeMany(
+    List<String> ingredients, {
+    Set<String>? additionalKnown,
+  }) {
+    return ingredients
+        .map((i) => normalize(i, additionalKnown: additionalKnown))
+        .toList();
   }
 }
