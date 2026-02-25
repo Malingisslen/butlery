@@ -1,5 +1,7 @@
 import 'package:butlery/constants/preparation_words.dart';
 import 'package:butlery/constants/known_ingredients.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/parsing/ingredient_registry_service.dart';
 import 'package:butlery/utils/text/swedish_pluralization.dart';
 
 /// Result of ingredient normalization
@@ -13,6 +15,18 @@ class NormalizationResult {
   /// Alternative ingredient names from "eller" (e.g. "vetemjöl" from "vetemjöl eller dinkelmjöl")
   final List<String> alternatives;
 
+  /// Confidence in the normalization result (0.0 to 1.0).
+  /// - 1.0: Exact compound name match
+  /// - 0.95: Firestore-known single ingredient match
+  /// - 0.9: Diet descriptor with known rest
+  /// - 0.85: Flavor pattern match ("med X")
+  /// - 0.8: Normal processing, known ingredient
+  /// - 0.5: Default (no strong signal)
+  /// - 0.4: Standalone diet descriptor only
+  /// - 0.3: Normal processing, unknown ingredient
+  /// - 0.0: Empty input
+  final double confidence;
+
   const NormalizationResult({
     required this.normalized,
     required this.isKnown,
@@ -20,6 +34,7 @@ class NormalizationResult {
     this.removedWords = const [],
     required this.original,
     this.alternatives = const [],
+    this.confidence = 0.5,
   });
 
   @override
@@ -27,7 +42,8 @@ class NormalizationResult {
     return 'NormalizationResult('
         'original: "$original", '
         'normalized: "$normalized", '
-        'isKnown: $isKnown'
+        'isKnown: $isKnown, '
+        'confidence: $confidence'
         '${category != null ? ', category: $category' : ''}'
         '${removedWords.isNotEmpty ? ', removed: ${removedWords.join(", ")}' : ''}'
         ')';
@@ -81,6 +97,12 @@ class IngredientNormalizer {
   /// Private constructor to prevent instantiation
   IngredientNormalizer._();
 
+  /// Default enriched ingredient set from Firestore via ServiceLocator.
+  /// Returns null when ServiceLocator is not initialized (tests, offline).
+  static Set<String>? get _defaultAdditionalKnown {
+    return ServiceLocator.tryGet<IngredientRegistryService>()?.allIngredients;
+  }
+
   /// Diet descriptors to PRESERVE (user decision)
   static const _dietDescriptors = {
     'glutenfri',
@@ -125,6 +147,9 @@ class IngredientNormalizer {
     String rawName, {
     Set<String>? additionalKnown,
   }) {
+    // Use Firestore-enriched set as default when caller doesn't provide one
+    additionalKnown ??= _defaultAdditionalKnown;
+
     final original = rawName;
     final removedWords = <String>[];
 
@@ -135,6 +160,7 @@ class IngredientNormalizer {
         normalized: '',
         isKnown: false,
         original: original,
+        confidence: 0.0,
       );
     }
 
@@ -145,6 +171,20 @@ class IngredientNormalizer {
         isKnown: true,
         category: KnownIngredients.getCategory(cleaned),
         original: original,
+        confidence: 1.0,
+      );
+    }
+
+    // Step 1b: Firestore-known single ingredients (e.g. "tahini", "harissa")
+    // Safe to short-circuit: multi-word inputs like "hackad lök" won't match
+    // because Firestore stores base ingredient names, not prep+ingredient combos
+    if (additionalKnown != null && additionalKnown.contains(cleaned)) {
+      return NormalizationResult(
+        normalized: cleaned,
+        isKnown: true,
+        category: KnownIngredients.getCategory(cleaned),
+        original: original,
+        confidence: 0.95,
       );
     }
 
@@ -155,6 +195,7 @@ class IngredientNormalizer {
         isKnown: _isKnown(cleaned, additionalKnown),
         category: KnownIngredients.getCategory(cleaned),
         original: original,
+        confidence: 0.85,
       );
     }
 
@@ -180,6 +221,7 @@ class IngredientNormalizer {
           category: KnownIngredients.getCategory(result),
           removedWords: removedWords,
           original: original,
+          confidence: 0.9,
         );
       } else {
         // MED-8: Just diet descriptor alone (e.g., "glutenfri" without ingredient)
@@ -191,6 +233,7 @@ class IngredientNormalizer {
           category:
               'diet_descriptor', // MED-8: Category to clarify this is a standalone descriptor
           original: original,
+          confidence: 0.4,
         );
       }
     }
@@ -220,6 +263,7 @@ class IngredientNormalizer {
       removedWords: removedWords,
       original: original,
       alternatives: alternatives,
+      confidence: isKnown ? 0.8 : 0.3,
     );
   }
 

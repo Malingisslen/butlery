@@ -102,6 +102,10 @@ class IngredientData {
   /// Average price in SEK.
   final double? avgPriceSek;
 
+  /// Whether this ingredient is a compound name that should NOT be split
+  /// during normalization (e.g., "vitpeppar", "rödlök").
+  final bool isCompoundName;
+
   const IngredientData({
     required this.id,
     required this.swedish,
@@ -123,6 +127,7 @@ class IngredientData {
     this.typicalStorage,
     this.typicalUnit,
     this.avgPriceSek,
+    this.isCompoundName = false,
   });
 
   /// Creates from Firestore document.
@@ -171,6 +176,7 @@ class IngredientData {
           SerializationUtils.safeNullableString(data, 'typicalStorage'),
       typicalUnit: SerializationUtils.safeNullableString(data, 'typicalUnit'),
       avgPriceSek: SerializationUtils.safeNullableDouble(data, 'avgPriceSek'),
+      isCompoundName: SerializationUtils.safeBool(data, 'isCompoundName'),
     );
   }
 
@@ -270,6 +276,7 @@ class IngredientData {
       if (typicalStorage != null) 'typicalStorage': typicalStorage,
       if (typicalUnit != null) 'typicalUnit': typicalUnit,
       if (avgPriceSek != null) 'avgPriceSek': avgPriceSek,
+      'isCompoundName': isCompoundName,
     };
   }
 
@@ -422,6 +429,7 @@ class IngredientData {
     if (typicalStorage != other.typicalStorage) return false;
     if (typicalUnit != other.typicalUnit) return false;
     if (avgPriceSek != other.avgPriceSek) return false;
+    if (isCompoundName != other.isCompoundName) return false;
 
     return true;
   }
@@ -466,6 +474,7 @@ class IngredientData {
     String? typicalStorage,
     String? typicalUnit,
     double? avgPriceSek,
+    bool? isCompoundName,
   }) {
     return IngredientData(
       id: id ?? this.id,
@@ -488,6 +497,7 @@ class IngredientData {
       typicalStorage: typicalStorage ?? this.typicalStorage,
       typicalUnit: typicalUnit ?? this.typicalUnit,
       avgPriceSek: avgPriceSek ?? this.avgPriceSek,
+      isCompoundName: isCompoundName ?? this.isCompoundName,
     );
   }
 }

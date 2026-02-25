@@ -105,6 +105,49 @@ class PreparationWords {
     'ljummen',
     'ljummet',
     'ljumna',
+
+    // Liquid preparation (draining/wringing)
+    'urvattnad',
+    'urvattnade',
+    'urvattnat',
+    'avrunnen',
+    'avrunnet',
+    'avrunna',
+
+    // Heat/freeze
+    'tinad',
+    'tinat',
+    'tinade',
+    'blancherad',
+    'blancherat',
+    'blancherade',
+
+    // Marinading/soaking
+    'marinerad',
+    'marinerat',
+    'marinerade',
+
+    // Halving/chopping up
+    'halverad',
+    'halverat',
+    'halverade',
+    'upphackad',
+    'upphackat',
+    'upphackade',
+
+    // Peeling/drying/crumbling/sprinkling
+    'skalad',
+    'skalat',
+    'skalade',
+    'strödd',
+    'strött',
+    'strödda',
+    'torkad',
+    'torkat',
+    'torkade',
+    'smulad',
+    'smulat',
+    'smulade',
   };
 
   /// Size descriptors
