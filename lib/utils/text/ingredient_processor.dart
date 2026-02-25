@@ -367,28 +367,39 @@ class IngredientProcessor {
   /// }
   /// ```
   static bool needsNormalization(Recipe recipe) {
+    return getNormalizationIfNeeded(recipe) != null;
+  }
+
+  /// Returns the fresh normalized list if the recipe needs re-normalization,
+  /// or null if the existing normalization is up-to-date.
+  /// Callers can use the returned list directly instead of calling
+  /// normalizeIngredientsForRecipe again (avoids double normalization).
+  static List<String>? getNormalizationIfNeeded(Recipe recipe) {
     final ingredients = recipe.core.ingredients;
     final normalized = recipe.core.ingredientsNormalized;
 
     // If normalized is null, definitely needs population
-    if (normalized == null) return true;
+    if (normalized == null) {
+      return normalizeIngredientsForRecipe(ingredients);
+    }
 
     // If both empty, no normalization needed
-    if (ingredients.isEmpty && normalized.isEmpty) return false;
+    if (ingredients.isEmpty && normalized.isEmpty) return null;
 
     // If length mismatch, needs update
-    if (ingredients.length != normalized.length) return true;
+    if (ingredients.length != normalized.length) {
+      return normalizeIngredientsForRecipe(ingredients);
+    }
 
-    // Content check: re-normalize and compare to detect edits like
-    // "2 dl mjölk" -> "3 dl grädde" where count stays the same
+    // Content check: re-normalize and compare to detect edits
     final freshNormalized = normalizeIngredientsForRecipe(ingredients);
-    if (freshNormalized == null) return false;
+    if (freshNormalized == null) return null;
     for (int i = 0; i < normalized.length; i++) {
       if (i >= freshNormalized.length || normalized[i] != freshNormalized[i]) {
-        return true;
+        return freshNormalized;
       }
     }
 
-    return false;
+    return null;
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 
@@ -161,19 +163,12 @@ class ParsingContext {
     }
   }
 
-  /// Hash content for cache key.
+  /// Hash content for cache key using SHA-256 (16 hex chars).
   static String _hashContent(String content) {
-    // Use first 5000 chars for consistent hashing
     final normalized = content.replaceAll(RegExp(r'\s+'), ' ').trim();
-    final truncated =
-        normalized.length > 5000 ? normalized.substring(0, 5000) : normalized;
-
-    // Simple hash for now - can use crypto package if needed
-    var hash = 0;
-    for (var i = 0; i < truncated.length; i++) {
-      hash = ((hash << 5) - hash + truncated.codeUnitAt(i)) & 0xFFFFFFFF;
-    }
-    return hash.toRadixString(16).padLeft(8, '0');
+    final bytes = utf8.encode(normalized);
+    final digest = sha256.convert(bytes);
+    return digest.toString().substring(0, 16);
   }
 
   @override

@@ -27,6 +27,10 @@ class UnitDefinitions {
     'knippe', 'bunch', 'blad', 'kvist', 'tube', 'tub',
     'kasse', 'låda', 'burkar', 'paket',
 
+    // Swedish full-word unit forms
+    'matsked', 'matskedar', 'tesked', 'teskedar', 'kryddmått',
+    'gram', 'kilo', 'liter', 'deciliter', 'milliliter',
+
     // American units
     'cup', 'cups', 'oz', 'fl oz', 'floz', 'tbsp', 'tsp',
     'lb', 'lbs', 'pound', 'pounds', 'ounce', 'ounces',

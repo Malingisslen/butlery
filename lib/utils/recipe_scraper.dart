@@ -103,6 +103,14 @@ Map<String, dynamic>? _extractJsonLd(String html) {
           decoded['@type'] == 'Recipe') {
         return Map<String, dynamic>.from(decoded);
       }
+      // Handle @graph pattern (common in WordPress/Yoast SEO)
+      else if (decoded is Map<String, dynamic> && decoded['@graph'] is List) {
+        for (final item in (decoded['@graph'] as List)) {
+          if (item is Map<String, dynamic> && item['@type'] == 'Recipe') {
+            return Map<String, dynamic>.from(item);
+          }
+        }
+      }
     } catch (_) {
       // Om json.decode() misslyckas, ignorera och fortsätt
       continue;

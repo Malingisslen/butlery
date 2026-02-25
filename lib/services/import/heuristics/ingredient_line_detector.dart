@@ -33,8 +33,8 @@ class IngredientLineDetector {
       }
     }
 
-    // Starts with number
-    if (RegExp(r'^\d').hasMatch(trimmed)) {
+    // Starts with number or Unicode fraction
+    if (RegExp(r'^[\d½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗]').hasMatch(trimmed)) {
       return true;
     }
 

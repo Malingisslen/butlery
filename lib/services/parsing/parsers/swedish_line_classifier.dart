@@ -1,3 +1,6 @@
+import 'package:butlery/constants/known_ingredients.dart';
+import 'package:butlery/constants/preparation_words.dart';
+
 /// Classification result for a single line of text.
 enum LineType {
   /// Ingredient line (e.g., "2 dl mjölk").
@@ -123,45 +126,12 @@ class SwedishLineClassifier {
     'cup', 'cups', 'tbsp', 'tsp', 'oz',
   };
 
-  /// Common Swedish food words for ingredient detection.
-  static const _swedishFoodWords = {
-    // Proteins
-    'kyckling', 'fläsk', 'nötkött', 'fisk', 'lax', 'torsk', 'räkor',
-    'ägg', 'ost', 'grädde', 'mjölk', 'smör', 'bacon', 'korv',
-    'köttfärs', 'skinka', 'kalkon', 'ankbröst', 'kycklingfilé',
-    // Vegetables
-    'lök', 'vitlök', 'morot', 'potatis', 'tomat', 'paprika', 'gurka',
-    'sallad', 'spenat', 'broccoli', 'blomkål', 'zucchini', 'aubergine',
-    'champinjoner', 'svamp', 'majs', 'ärtor', 'bönor', 'selleri',
-    // Fruits
-    'äpple', 'banan', 'citron', 'lime', 'apelsin', 'bär', 'jordgubbar',
-    // Grains & Carbs
-    'mjöl', 'ris', 'pasta', 'nudlar', 'bröd', 'havregryn', 'couscous',
-    // Dairy
-    'yoghurt', 'kvarg', 'crème fraiche', 'fetaost', 'mozzarella',
-    // Spices & Condiments
-    'salt', 'peppar', 'socker', 'honung', 'olja', 'olivolja', 'vinäger',
-    'soja', 'senap', 'ketchup', 'majonnäs', 'curry', 'paprikapulver',
-    'basilika', 'oregano', 'timjan', 'rosmarin', 'persilja', 'dill',
-    'ingefära', 'kanel', 'vanilj', 'kardemumma',
-    // Liquids
-    'vatten', 'buljong', 'vin', 'öl', 'juice', 'fond',
-  };
+  /// Food words for ingredient detection — unified from KnownIngredients (~329 entries).
+  // ignore: prefer_const_declarations
+  static final _swedishFoodWords = KnownIngredients.all;
 
-  /// Swedish cooking verbs for instruction detection (imperative form).
-  static const _swedishCookingVerbs = {
-    // Preparation
-    'skär', 'hacka', 'skala', 'riv', 'mosa', 'blanda', 'vispa', 'rör',
-    'mixa', 'knåda', 'forma', 'kavla', 'fyll', 'garnera',
-    // Cooking
-    'koka', 'stek', 'fräs', 'grilla', 'grädda', 'baka', 'ugnssteka',
-    'bryn', 'sjud', 'puttra', 'reducera', 'smält', 'värm',
-    // Timing/Process
-    'låt', 'vila', 'ställ', 'sätt', 'ta', 'häll', 'tillsätt', 'strö',
-    'servera', 'toppa', 'lägg', 'placera', 'vänd', 'rosta',
-    // Common starts
-    'börja', 'förvärm', 'förbered',
-  };
+  /// Swedish cooking verbs — delegates to shared PreparationWords constant.
+  static const _swedishCookingVerbs = PreparationWords.cookingVerbs;
 
   /// Pattern for quantity at line start (ingredient indicator).
   static final _quantityPattern = RegExp(
@@ -183,7 +153,7 @@ class SwedishLineClassifier {
 
   /// Pattern for portions metadata.
   static final _portionsPattern = RegExp(
-    r'(\d+)\s*(port(ion(er)?)?|pers(on(er)?)?|st)',
+    r'(\d+)\s*(port(ion(er)?)?|pers(on(er)?)?)(\s|$)',
     caseSensitive: false,
   );
 
@@ -232,7 +202,7 @@ class SwedishLineClassifier {
       );
     }
 
-    if (instructionScore > 0.5 && instructionScore > ingredientScore) {
+    if (instructionScore >= 0.5 && instructionScore > ingredientScore) {
       return ClassifiedLine(
         text: line,
         type: LineType.instruction,
@@ -363,11 +333,15 @@ class SwedishLineClassifier {
       }
     }
 
-    // Food words
+    // Food words — use word-set matching to prevent substring false positives
+    // (e.g. "ost" matching inside "rostad")
+    final wordSet = words.toSet();
     var foodWordCount = 0;
     for (final food in _swedishFoodWords) {
-      if (lower.contains(food)) {
-        foodWordCount++;
+      if (food.contains(' ')) {
+        if (lower.contains(food)) foodWordCount++;
+      } else {
+        if (wordSet.contains(food)) foodWordCount++;
       }
     }
     score += (foodWordCount * 0.15).clamp(0.0, 0.3);
@@ -433,10 +407,15 @@ class SwedishLineClassifier {
     if (_quantityPattern.hasMatch(text)) return false;
     if (_stepPattern.hasMatch(text)) return false;
 
-    // Check if it looks like a food name
+    // Check if it looks like a food name — whole-word matching
     final lower = text.toLowerCase();
+    final titleWords = lower.split(RegExp(r'\s+')).toSet();
     for (final food in _swedishFoodWords) {
-      if (lower.contains(food)) return true;
+      if (food.contains(' ')) {
+        if (lower.contains(food)) return true;
+      } else {
+        if (titleWords.contains(food)) return true;
+      }
     }
 
     // First letter capitalized

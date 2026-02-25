@@ -372,6 +372,66 @@ void main() {
       });
     });
 
+    group('BUG-10: compound och with explicit quantity', () {
+      test('should keep explicit quantity for second part after och', () {
+        // "2 ägg och 1 smör" - second part has explicit "1"
+        final results =
+            IngredientParser.parseCompoundIngredient('2 ägg och 1 smör');
+
+        expect(results, hasLength(2));
+        expect(results[0].quantity, equals(2.0));
+        expect(results[0].name, equals('ägg'));
+        expect(results[1].quantity, equals(1.0));
+        expect(results[1].name, equals('smör'));
+      });
+
+      test('should inherit quantity when second part has no explicit qty', () {
+        // "2 dl mjölk och grädde" - second part has no number
+        final results =
+            IngredientParser.parseCompoundIngredient('2 dl mjölk och grädde');
+
+        expect(results, hasLength(2));
+        expect(results[0].quantity, equals(2.0));
+        expect(results[0].unit, equals('dl'));
+        expect(results[0].name, equals('mjölk'));
+        expect(results[1].quantity, equals(2.0));
+        expect(results[1].unit, equals('dl'));
+        expect(results[1].name, equals('grädde'));
+      });
+
+      test('should inherit unit but keep explicit quantity', () {
+        // "2 dl mjölk och 3 grädde" - second part has explicit number
+        final results =
+            IngredientParser.parseCompoundIngredient('2 dl mjölk och 3 grädde');
+
+        expect(results, hasLength(2));
+        expect(results[0].quantity, equals(2.0));
+        expect(results[0].unit, equals('dl'));
+        expect(results[0].name, equals('mjölk'));
+        expect(results[1].quantity, equals(3.0));
+        // Unit inherited from first part when second has no unit
+        expect(results[1].unit, equals('dl'));
+        expect(results[1].name, equals('grädde'));
+      });
+
+      test('should not split ingredient without och', () {
+        final results = IngredientParser.parseCompoundIngredient('2 dl mjölk');
+
+        expect(results, hasLength(1));
+        expect(results[0].quantity, equals(2.0));
+        expect(results[0].unit, equals('dl'));
+        expect(results[0].name, equals('mjölk'));
+      });
+
+      test('should handle empty input', () {
+        final results = IngredientParser.parseCompoundIngredient('');
+
+        expect(results, hasLength(1));
+        expect(results[0].quantity, equals(1.0));
+        expect(results[0].name, equals(''));
+      });
+    });
+
     group('ParsedIngredient Model', () {
       test('should create parsed ingredient correctly', () {
         const parsed = ParsedIngredient(
