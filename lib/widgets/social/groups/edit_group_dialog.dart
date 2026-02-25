@@ -125,59 +125,61 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                 onClose: () => Navigator.of(context).pop(),
               ),
 
-              // Content
-              Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingL),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Emoji selection
-                    EmojiSelector(
-                      selectedEmoji: _selectedEmoji,
-                      onEmojiSelected: (emoji) {
-                        if (mounted) {
-                          setState(() {
-                            _selectedEmoji = emoji;
-                          });
-                        }
-                      },
-                    ),
-
-                    const SizedBox(height: AppDimensions.spacingL),
-
-                    // Group name
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        labelText: '${context.l10n.socialGroupName} *',
-                        prefixIcon: const Icon(Icons.group),
+              // Content — scrollable to prevent overflow when error is shown
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppDimensions.spacingL),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Emoji selection
+                      EmojiSelector(
+                        selectedEmoji: _selectedEmoji,
+                        onEmojiSelected: (emoji) {
+                          if (mounted) {
+                            setState(() {
+                              _selectedEmoji = emoji;
+                            });
+                          }
+                        },
                       ),
-                      validator: ValidationUtils.validateGroupName,
-                      maxLength: 50,
-                      textCapitalization: TextCapitalization.words,
-                    ),
 
-                    const SizedBox(height: AppDimensions.spacingM),
+                      const SizedBox(height: AppDimensions.spacingL),
 
-                    // Description (optional)
-                    TextFormField(
-                      controller: _descriptionController,
-                      decoration: InputDecoration(
-                        labelText: context.l10n.groupDescriptionLabel,
-                        hintText: context.l10n.groupDescriptionHint,
-                        prefixIcon: const Icon(Icons.description),
+                      // Group name
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          labelText: '${context.l10n.socialGroupName} *',
+                          prefixIcon: const Icon(Icons.group),
+                        ),
+                        validator: ValidationUtils.validateGroupName,
+                        maxLength: 50,
+                        textCapitalization: TextCapitalization.words,
                       ),
-                      maxLines: 3,
-                      maxLength: 200,
-                      textCapitalization: TextCapitalization.sentences,
-                    ),
 
-                    // Error display
-                    if (_error != null) ...[
                       const SizedBox(height: AppDimensions.spacingM),
-                      ErrorDisplayWidget(errorMessage: _error!),
+
+                      // Description (optional)
+                      TextFormField(
+                        controller: _descriptionController,
+                        decoration: InputDecoration(
+                          labelText: context.l10n.groupDescriptionLabel,
+                          hintText: context.l10n.groupDescriptionHint,
+                          prefixIcon: const Icon(Icons.description),
+                        ),
+                        maxLines: 3,
+                        maxLength: 200,
+                        textCapitalization: TextCapitalization.sentences,
+                      ),
+
+                      // Error display
+                      if (_error != null) ...[
+                        const SizedBox(height: AppDimensions.spacingM),
+                        ErrorDisplayWidget(errorMessage: _error!),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
 
