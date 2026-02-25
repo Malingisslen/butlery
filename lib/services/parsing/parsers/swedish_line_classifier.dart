@@ -1,5 +1,6 @@
 import 'package:butlery/constants/known_ingredients.dart';
 import 'package:butlery/constants/preparation_words.dart';
+import 'package:butlery/services/parsing/parsers/viterbi_context_processor.dart';
 
 /// Classification result for a single line of text.
 enum LineType {
@@ -92,6 +93,8 @@ class SwedishLineClassifier {
   static final SwedishLineClassifier instance = SwedishLineClassifier._();
 
   SwedishLineClassifier._();
+
+  final _viterbi = const ViterbiContextProcessor();
 
   /// Patterns for ingredient section headers.
   static final _ingredientHeaders = [
@@ -229,16 +232,23 @@ class SwedishLineClassifier {
   }
 
   /// Classify multiple lines and group into sections.
+  ///
+  /// Applies Viterbi post-processing so that sequential context (e.g. a run
+  /// of ingredients) can resolve ambiguous lines that the per-line classifier
+  /// cannot decide on its own.
   List<RecipeSection> classifyAndGroup(String text) {
     final lines = text.split(RegExp(r'\r?\n'));
     final classified = lines.map(classifyLine).toList();
-    return _groupIntoSections(classified);
+    final contextual = _viterbi.classifyWithContext(classified);
+    return _groupIntoSections(contextual);
   }
 
-  /// Extract classified lines by type.
+  /// Extract classified lines by type with Viterbi context.
   List<ClassifiedLine> extractByType(String text, LineType type) {
     final lines = text.split(RegExp(r'\r?\n'));
-    return lines.map(classifyLine).where((c) => c.type == type).toList();
+    final classified = lines.map(classifyLine).toList();
+    final contextual = _viterbi.classifyWithContext(classified);
+    return contextual.where((c) => c.type == type).toList();
   }
 
   /// Get confidence-weighted recipe structure from text.
