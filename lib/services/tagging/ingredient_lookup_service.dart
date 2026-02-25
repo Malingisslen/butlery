@@ -1,8 +1,10 @@
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
+import 'package:butlery/services/parsing/ingredient_registry_service.dart';
 import 'package:butlery/services/tagging/config/compound_suffixes.dart';
 import 'package:butlery/utils/text/ingredient_normalizer.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
@@ -355,25 +357,27 @@ class IngredientLookupService extends BaseService {
     // H2: Deduplicate before lookup, preserving order
     final seen = <String>{};
     final normalized = <String>[];
+    final enrichedKnown =
+        ServiceLocator.tryGet<IngredientRegistryService>()?.allIngredients;
 
     for (final raw in rawIngredients) {
       // M2: Parse raw ingredient to extract name (strips quantity and unit)
-      // "2 dl mjölk" → ParsedIngredient(quantity: 2, unit: "dl", name: "mjölk")
       // LOW-2: Wrap parsing in try-catch to prevent failures from bad input
       String nameToNormalize;
       try {
         final parsed = IngredientParser.parseIngredient(raw);
         nameToNormalize = parsed.name.isNotEmpty ? parsed.name : raw;
       } catch (e) {
-        // Fallback to raw string if parsing fails
         AppLogger.warning(
           'LOW-2: Failed to parse ingredient "$raw": $e, using raw string',
         );
         nameToNormalize = raw;
       }
 
-      // Now normalize the extracted name
-      final result = IngredientNormalizer.normalize(nameToNormalize);
+      final result = IngredientNormalizer.normalize(
+        nameToNormalize,
+        additionalKnown: enrichedKnown,
+      );
       final norm = result.normalized;
 
       if (norm.isNotEmpty && !seen.contains(norm)) {
