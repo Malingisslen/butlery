@@ -10,12 +10,16 @@ class NormalizationResult {
   final List<String> removedWords;
   final String original;
 
+  /// Alternative ingredient names from "eller" (e.g. "vetemjöl" from "vetemjöl eller dinkelmjöl")
+  final List<String> alternatives;
+
   const NormalizationResult({
     required this.normalized,
     required this.isKnown,
     this.category,
     this.removedWords = const [],
     required this.original,
+    this.alternatives = const [],
   });
 
   @override
@@ -182,7 +186,18 @@ class IngredientNormalizer {
       }
     }
 
-    // Step 4: Normal processing (no special cases)
+    // Step 4: Extract alternatives from "eller" before processing
+    final alternatives = <String>[];
+    if (cleaned.contains(' eller ')) {
+      final ellerParts = cleaned.split(' eller ');
+      // Store pre-"eller" parts as alternatives
+      for (int i = 0; i < ellerParts.length - 1; i++) {
+        final alt = ellerParts[i].trim();
+        if (alt.isNotEmpty) alternatives.add(alt);
+      }
+    }
+
+    // Normal processing (no special cases)
     cleaned = _processName(cleaned, removedWords);
 
     // Step 5: Validate
@@ -195,6 +210,7 @@ class IngredientNormalizer {
       category: category,
       removedWords: removedWords,
       original: original,
+      alternatives: alternatives,
     );
   }
 
@@ -215,6 +231,50 @@ class IngredientNormalizer {
     'svart',
     'svarta',
   };
+
+  /// Common definite form mappings (Swedish: "the X" suffix)
+  static const _irregularDefiniteForms = {
+    'löken': 'lök',
+    'mjölet': 'mjöl',
+    'grädden': 'grädde',
+    'sockret': 'socker',
+    'vattnet': 'vatten',
+    'smöret': 'smör',
+    'brödet': 'bröd',
+    'riset': 'ris',
+    'saltet': 'salt',
+    'ägget': 'ägg',
+    'köttet': 'kött',
+    'fisken': 'fisk',
+    'osten': 'ost',
+    'pastan': 'pasta',
+    'mjölken': 'mjölk',
+    'oljan': 'olja',
+  };
+
+  /// Strip Swedish definite form suffix (-en, -et, -n) with safety guard.
+  static String _stripDefiniteForm(String name) {
+    // Check irregular forms first
+    if (_irregularDefiniteForms.containsKey(name)) {
+      return _irregularDefiniteForms[name]!;
+    }
+
+    // Regular stripping: only if result is a known ingredient (prevents false positives)
+    if (name.endsWith('en') && name.length > 3) {
+      final stripped = name.substring(0, name.length - 2);
+      if (KnownIngredients.isKnown(stripped)) return stripped;
+    }
+    if (name.endsWith('et') && name.length > 3) {
+      final stripped = name.substring(0, name.length - 2);
+      if (KnownIngredients.isKnown(stripped)) return stripped;
+    }
+    if (name.endsWith('n') && name.length > 2) {
+      final stripped = name.substring(0, name.length - 1);
+      if (KnownIngredients.isKnown(stripped)) return stripped;
+    }
+
+    return name;
+  }
 
   /// Process name through all normalization steps
   static String _processName(String name, List<String> removedWords) {
@@ -253,6 +313,9 @@ class IngredientNormalizer {
       }
     }
 
+    // Strip definite form BEFORE plural normalization
+    result = _stripDefiniteForm(result);
+
     // Normalize plural to singular
     result = SwedishPluralization.normalizeToSingular(result);
 
@@ -262,12 +325,25 @@ class IngredientNormalizer {
     return result;
   }
 
-  /// L2: Get base form of color (e.g., "röda" → "röd")
+  /// Irregular Swedish neuter/plural color forms → base form
+  static const _irregularColorBases = {
+    'rött': 'röd',
+    'vitt': 'vit',
+    'grönt': 'grön',
+    'gult': 'gul',
+    'brunt': 'brun',
+    'ljust': 'ljus',
+    'mörkt': 'mörk',
+  };
+
+  /// Get base form of color (e.g., "röda" → "röd", "rött" → "röd")
   static String _getBaseColor(String color) {
-    if (color.endsWith('a') && color.length > 2) {
-      return color.substring(0, color.length - 1);
+    // Check irregular forms first (neuter -t forms)
+    if (_irregularColorBases.containsKey(color)) {
+      return _irregularColorBases[color]!;
     }
-    if (color.endsWith('t') && color.length > 2) {
+    // Regular plural -a suffix
+    if (color.endsWith('a') && color.length > 2) {
       return color.substring(0, color.length - 1);
     }
     return color;
@@ -291,19 +367,9 @@ class IngredientNormalizer {
     }
     removed.add('eller');
 
-    // Take last part after "eller"
-    final lastPart = parts.last.trim();
-    final words = lastPart.split(' ');
-
-    // If multiple words, remove all but last
-    if (words.length > 1) {
-      for (int i = 0; i < words.length - 1; i++) {
-        removed.add(words[i]);
-      }
-      return words.last;
-    }
-
-    return lastPart;
+    // Keep the FULL last part after "eller" (not just last word)
+    // "vanlig eller turkisk yoghurt" → "turkisk yoghurt"
+    return parts.last.trim();
   }
 
   /// Remove preparation words and descriptors
@@ -328,6 +394,9 @@ class IngredientNormalizer {
   /// - "kycklingfilé" → "kyckling" (if "kyckling" is known)
   /// - "köttfärs" → "kött" (if "kött" is known)
   static String _extractBaseIngredient(String name) {
+    // Short-circuit: if the full compound word is already known, keep it
+    if (KnownIngredients.isKnown(name)) return name;
+
     final compoundSuffixes = [
       'sås',
       'filé',

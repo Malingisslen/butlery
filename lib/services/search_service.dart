@@ -5,6 +5,7 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 
 /// Search service for recipe discovery with multi-criteria filtering and Swedish language support.
 class SearchService extends BaseService {
@@ -245,11 +246,11 @@ class SearchService extends BaseService {
         }
       }
 
-      // Tag suggestions
-      if (recipe.personalTagIds != null) {
-        for (final tag in recipe.personalTagIds!) {
-          if (tag.toLowerCase().contains(lowerPartial)) {
-            suggestions.add(tag);
+      // Tag suggestions (use tag names, not UUIDs)
+      if (recipe.core.personalTags != null) {
+        for (final tag in recipe.core.personalTags!) {
+          if (tag.name.toLowerCase().contains(lowerPartial)) {
+            suggestions.add(tag.name);
           }
         }
       }
@@ -267,10 +268,10 @@ class SearchService extends BaseService {
       termFrequency[recipe.mealType] =
           (termFrequency[recipe.mealType]).orZero() + 1;
 
-      // Count tags
-      if (recipe.personalTagIds != null) {
-        for (final tag in recipe.personalTagIds!) {
-          termFrequency[tag] = (termFrequency[tag]).orZero() + 1;
+      // Count tags (use tag names, not UUIDs)
+      if (recipe.core.personalTags != null) {
+        for (final tag in recipe.core.personalTags!) {
+          termFrequency[tag.name] = (termFrequency[tag.name]).orZero() + 1;
         }
       }
 
@@ -293,37 +294,60 @@ class SearchService extends BaseService {
     return sorted.take(20).map((e) => e.key).toList();
   }
 
+  /// Checks if target contains all query words (Swedish-normalized).
+  static bool _normalizedContains(
+      String target, String normalizedQuery, List<String> queryWords) {
+    final normalizedTarget =
+        SwedishCharacterNormalizer.normalize(target.toLowerCase());
+    if (queryWords.length == 1) {
+      return normalizedTarget.contains(normalizedQuery);
+    }
+    // Multi-word: all words must be present (AND logic)
+    return queryWords.every((word) => normalizedTarget.contains(word));
+  }
+
   /// Private helper function for matching search queries
   bool _matchesSearchQuery(Recipe recipe, String query) {
+    final normalizedQuery = SwedishCharacterNormalizer.normalize(query);
+    final queryWords = normalizedQuery.split(RegExp(r'\s+'));
+
     // Titel
-    if (recipe.title.toLowerCase().contains(query)) return true;
+    if (_normalizedContains(recipe.title, normalizedQuery, queryWords)) {
+      return true;
+    }
 
     // Beskrivning
-    if (recipe.description.toLowerCase().contains(query)) return true;
+    if (_normalizedContains(recipe.description, normalizedQuery, queryWords)) {
+      return true;
+    }
 
     // Ingredienser
     if (recipe.ingredients.any(
-      (ingredient) => ingredient.toLowerCase().contains(query),
+      (ingredient) =>
+          _normalizedContains(ingredient, normalizedQuery, queryWords),
     )) {
       return true;
     }
 
     // Instruktioner
     if (recipe.instructions.any(
-      (instruction) => instruction.toLowerCase().contains(query),
+      (instruction) =>
+          _normalizedContains(instruction, normalizedQuery, queryWords),
     )) {
       return true;
     }
 
-    // Taggar
-    if ((recipe.personalTagIds?.any(
-      (tag) => tag.toLowerCase().contains(query),
+    // Taggar (use personalTags names, not UUID-based personalTagIds)
+    if ((recipe.core.personalTags?.any(
+      (tag) => _normalizedContains(tag.name, normalizedQuery, queryWords),
     )).orFalse()) {
       return true;
     }
 
     // Meal type
-    if (recipe.mealType.toLowerCase().contains(query)) return true;
+    if (_normalizedContains(recipe.mealType, normalizedQuery, queryWords)) {
+      return true;
+    }
 
     // Numeric fields (servings, time, rating)
     final queryAsNumber = double.tryParse(query);

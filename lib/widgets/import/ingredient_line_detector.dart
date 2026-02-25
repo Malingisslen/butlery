@@ -55,7 +55,7 @@ class IngredientLineDetector {
 
   // Fraction patterns (½, ¼, ¾, 1/2, 1/4)
   static final _fractionPattern = RegExp(
-    r'^[\d½¼¾⅓⅔⅛⅜⅝⅞]+[/\d]*\s*',
+    r'^[\d½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗]+[/\d]*\s*',
     caseSensitive: false,
   );
 

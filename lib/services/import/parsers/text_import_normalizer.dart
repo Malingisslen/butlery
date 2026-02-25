@@ -140,8 +140,8 @@ class TextImportNormalizer {
     processed = processed.replaceAll(RegExp(r'[!]{2,}'), '!');
     processed = processed.replaceAll(RegExp(r'[.]{3,}'), '...');
 
-    // Remove hashtags but keep the content
-    processed = processed.replaceAll(RegExp(r'#\w+'), '');
+    // Remove hashtags (explicit Swedish chars since \w doesn't cover å,ä,ö)
+    processed = processed.replaceAll(RegExp(r'#[a-zåäöA-ZÅÄÖ\w]+'), '');
 
     // Clean up multiple spaces
     processed = processed.replaceAll(RegExp(r' {2,}'), ' ');

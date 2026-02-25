@@ -130,7 +130,7 @@ class PreparationWords {
     'mjöliga',
     'fast',
     'fasta',
-    'mandel', // Only when followed by "potatis"
+    // 'mandel' removed — it's a real ingredient (almond), not a preparation descriptor
 
     // General quality
     'bra',
@@ -184,6 +184,22 @@ class PreparationWords {
   static const alternativeConjunctions = {
     'eller',
     'alternativt',
+  };
+
+  /// Swedish cooking verbs (imperative form) — shared vocabulary for
+  /// instruction detection across classifiers and detectors.
+  static const cookingVerbs = {
+    // Preparation
+    'skär', 'hacka', 'skala', 'riv', 'mosa', 'blanda', 'vispa', 'rör',
+    'mixa', 'knåda', 'forma', 'kavla', 'fyll', 'garnera',
+    // Cooking
+    'koka', 'stek', 'fräs', 'grilla', 'grädda', 'baka', 'ugnssteka',
+    'bryn', 'sjud', 'puttra', 'reducera', 'smält', 'värm',
+    // Timing/Process
+    'låt', 'vila', 'ställ', 'sätt', 'ta', 'häll', 'tillsätt', 'strö',
+    'servera', 'toppa', 'lägg', 'placera', 'vänd', 'rosta',
+    // Common starts
+    'börja', 'förvärm', 'förbered',
   };
 
   /// Combined set of all removable words

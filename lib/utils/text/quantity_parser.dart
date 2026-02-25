@@ -51,42 +51,36 @@ class QuantityParser {
   /// - Decimal numbers: "2,5" → 2.5, "3.14" → 3.14
   /// - Whole numbers: "400" → 400.0
   ///
+  /// Unicode fraction map covering all common fraction characters.
+  static const _unicodeFractions = {
+    '½': 0.5,
+    '¼': 0.25,
+    '¾': 0.75,
+    '⅓': 1 / 3,
+    '⅔': 2 / 3,
+    '⅛': 0.125,
+    '⅜': 0.375,
+    '⅝': 0.625,
+    '⅞': 0.875,
+    '⅕': 0.2,
+    '⅖': 0.4,
+    '⅗': 0.6,
+  };
+
   /// Returns 1.0 for invalid input.
   static double parse(String qtyString) {
     final trimmed = qtyString.trim();
 
-    // Handle Unicode fractions
-    if (trimmed == '½') return 0.5;
-    if (trimmed == '¼') return 0.25;
-    if (trimmed == '¾') return 0.75;
-
-    // Handle "2 ½" format
-    if (trimmed.contains('½')) {
-      final parts = trimmed.split('½');
-      if (parts.length == 2) {
-        final whole =
-            double.tryParse(parts[0].trim().replaceAll(',', '.')) ?? 0;
-        return whole + 0.5;
-      }
-    }
-
-    // Handle "2 ¼" format
-    if (trimmed.contains('¼')) {
-      final parts = trimmed.split('¼');
-      if (parts.length == 2) {
-        final whole =
-            double.tryParse(parts[0].trim().replaceAll(',', '.')) ?? 0;
-        return whole + 0.25;
-      }
-    }
-
-    // Handle "2 ¾" format
-    if (trimmed.contains('¾')) {
-      final parts = trimmed.split('¾');
-      if (parts.length == 2) {
-        final whole =
-            double.tryParse(parts[0].trim().replaceAll(',', '.')) ?? 0;
-        return whole + 0.75;
+    // Handle standalone Unicode fractions and "N fraction" mixed formats
+    for (final entry in _unicodeFractions.entries) {
+      if (trimmed == entry.key) return entry.value;
+      if (trimmed.contains(entry.key)) {
+        final parts = trimmed.split(entry.key);
+        if (parts.length == 2) {
+          final whole =
+              double.tryParse(parts[0].trim().replaceAll(',', '.')) ?? 0;
+          return whole + entry.value;
+        }
       }
     }
 
@@ -94,12 +88,20 @@ class QuantityParser {
     final normalized = trimmed.replaceAll(',', '.');
     final parsed = double.tryParse(normalized);
 
-    // CRIT-6: Log warning when falling back to 1.0 to help identify parsing issues
     if (parsed == null) {
-      AppLogger.warning(
-        'CRIT-6: Could not parse quantity "$qtyString", defaulting to 1.0',
-        'QuantityParser',
-      );
+      // Only warn when input contains digits (likely a real parsing issue);
+      // non-digit input is expected when text flows through the parser
+      if (RegExp(r'\d').hasMatch(qtyString)) {
+        AppLogger.warning(
+          'Could not parse quantity "$qtyString", defaulting to 1.0',
+          'QuantityParser',
+        );
+      } else {
+        AppLogger.debug(
+          'Non-numeric input "$qtyString", defaulting to 1.0',
+          'QuantityParser',
+        );
+      }
       return 1.0;
     }
 
