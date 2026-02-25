@@ -582,7 +582,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         break;
       case 'fork':
         // Create a copy of the recipe
-        Navigator.pushNamed(context, '/editRecipe',
+        Navigator.pushNamed(context, Routes.redigeraRecept,
             arguments: recipe.copyWith(
               title: '${recipe.title} (Copy)',
             ));

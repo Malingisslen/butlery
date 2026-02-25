@@ -1,8 +1,8 @@
 # Manual Testing Log - Butlery App
 
 **Created**: 2026-01-07
-**Last Updated**: 2026-02-20 (Session 16 - pagination, responsive, error handling, detail verification)
-**Status**: In Progress (5 open bugs - BUG-014, BUG-022, BUG-023, BUG-024, BUG-025)
+**Last Updated**: 2026-02-25 (Session 18 - BUG-022 FIXED, all 5 bugs resolved)
+**Status**: In Progress (0 open bugs)
 
 ---
 
@@ -55,6 +55,11 @@
 | BUG-019 | Share dialog buttons unresponsive on Flutter Web | 16 | High | FIXED |
 | BUG-020 | Firebase permission error for collaborative_recipes sync | - | High | FIXED |
 | BUG-021 | Unknown route /recipe-detail in Discovery | - | High | FIXED |
+| BUG-014 | Group edit dialog bottom overflow by 17 pixels | 16 | Low | FIXED |
+| BUG-023 | Rating sort crashes app with widget ancestor error | 2 | High | FIXED |
+| BUG-024 | "Skapa kopia" navigates to unknown route /editRecipe | 3 | Medium | FIXED |
+| BUG-025 | Create new tag (+) button crashes with RenderBox assertion | 9 | High | FIXED |
+| BUG-022 | Tag group creation dialog crashes app on web | 18 | High | FIXED |
 
 **BUG-003 Details:**
 - **Root Cause 1**: Firestore security rules rejected `errorReason` field in tagResult
@@ -102,44 +107,44 @@
 ### Open Bugs
 | Bug ID | Title | Phase | Test ID | Severity | Status |
 |--------|-------|-------|---------|----------|--------|
-| BUG-014 | Group edit dialog bottom overflow by 17 pixels | 16 | GROUP-E2E-05 | Low | OPEN |
-| BUG-022 | Tag group creation dialog crashes app on web | 18 | TAG-SYS-06 | High | OPEN |
-| BUG-023 | Rating sort crashes app with widget ancestor error | 2 | RECIPE-14 | High | OPEN |
-| BUG-024 | "Skapa kopia" navigates to unknown route /editRecipe | 3 | DETAIL-14 | Medium | OPEN |
-| BUG-025 | Create new tag (+) button crashes with RenderBox layout assertion | 9 | TAG-17 | High | OPEN |
+| (none) | All bugs resolved | - | - | - | - |
 
-**BUG-022 Details:**
+**BUG-022 Details (FIXED 2026-02-25):**
 - **Error**: Flutter assertion failed: `_dependents.isEmpty is not true` (framework.dart:6171:14)
 - **Platform**: Web (Chrome) - web-specific Provider lifecycle issue
 - **Trigger**: Creating a new tag group via "Ny grupp" dialog in Personal Tags settings
-- **Behavior**: Data saves to Firestore successfully before crash. App shows red error screen. Same root cause pattern as BUG-004 (Provider lifecycle collision during dialog dispose).
-- **Workaround**: Data is saved - refreshing the page shows the created group
+- **Root Cause**: Dialog pops BEFORE ViewModel operation completes. The ~300ms dialog exit animation overlaps with Firestore stream-triggered `notifyListeners()`, causing Consumer rebuild during widget disposal. Previous fix attempts (addPostFrameCallback, nested deferral, Future.delayed) all failed because they deferred the call by ~16ms but the dialog animation takes ~300ms.
+- **Fix (Session 18)**: Restructured ALL 7 dialog methods in `personal_tags_view.dart` to execute ViewModel operations INSIDE the dialog BEFORE popping. Dialog stays open (with loading indicator) while Firestore write + stream update completes. Pop only after all state changes are done → clean disposal with no pending notifications. Also replaced TextEditingController with `onChanged` + local String to avoid controller lifecycle issues.
+- **Files**: `lib/views/personal_tags_view.dart` — methods `_createGroup`, `_createTag`, `_editTag`, `_deleteTag`, `_createGroupAndMoveTag`, `_handleGroupAction` (rename + delete cases)
+- **Pattern**: Each dialog uses `StatefulBuilder` with `isLoading` state, disabled inputs during operation, and `CircularProgressIndicator` on action button
+- **Verified**: 2026-02-25 - Create group ("BUG022 Test") and create tag ("BUG022 Tag Test") both work without crash. Dialog closes cleanly, success snackbar shown, data persists in list.
 
-**BUG-023 Details:**
+**BUG-023 Details (FIXED 2026-02-24):**
 - **Error**: "Looking up a deactivated widget's ancestor is unsafe. At this point the state of the widget's element tree is no longer stable."
 - **Platform**: Web (Chrome) - web-specific widget lifecycle issue
 - **Trigger**: Selecting "Betyg" (Rating) sort option from Sortera dropdown on recipe list
-- **Behavior**: Red error overlay appears on top of recipe list. Recipes partially visible underneath sorted by rating. App requires page reload to recover.
-- **Pattern**: Same Provider/widget lifecycle family as BUG-004 and BUG-022
-- **Workaround**: F5 page reload recovers the app. Title and Time sorting work fine.
+- **Root Cause**: PopupMenu teardown triggers widget rebuild via `viewModel.updateSort()` while popup is still disposing
+- **Fix**: Deferred sort update in `_onSortChanged` via `WidgetsBinding.instance.addPostFrameCallback` so PopupMenu fully tears down before triggering rebuild
+- **File**: `lib/views/mina_recept_view.dart:164-169`
+- **Verified**: 2026-02-24 - Rating sort works without crash in preview browser
 
-**BUG-024 Details:**
+**BUG-024 Details (FIXED 2026-02-24):**
 - **Error**: "Unknown route: /editRecipe" - navigates to unregistered route
 - **Platform**: Web (Chrome)
 - **Trigger**: Click overflow menu (⋯) → "Skapa kopia" on recipe detail page
-- **Root Cause**: Route name `/editRecipe` is not registered. Same pattern as BUG-021 where hardcoded route names don't match actual route definitions. Likely should use `Routes.redigeraRecept` or similar.
-- **Impact**: Cannot fork/copy recipes via the overflow menu
-- **Workaround**: "Tillbaka till start" button returns to recipe list
+- **Root Cause**: Hardcoded route `/editRecipe` not registered. Same pattern as BUG-021.
+- **Fix**: Changed `'/editRecipe'` → `Routes.redigeraRecept` in recipe_detail_view.dart:585
+- **File**: `lib/views/recipe_detail_view.dart`
+- **Verified**: 2026-02-24 - "Skapa kopia" navigates to /redigeraRecept correctly in preview browser
 
-**BUG-025 Details:**
-- **Error**: "Assertion failed: file:///C:/tools/flutter/packages/flutter/lib/src/rendering/box.dart:2251:12 hasSize"
-- **Secondary**: "RenderBox was not laid out: RenderFractionalTranslation#e6164 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE"
+**BUG-025 Details (FIXED 2026-02-24):**
+- **Error**: "Assertion failed: hasSize" / "RenderBox was not laid out: RenderFractionalTranslation"
 - **Platform**: Web (Chrome)
 - **Trigger**: Click "+" button in app bar on Personal Tags list page (`/settings/personal-tags`)
-- **Behavior**: Red error overlay covers entire screen. Tags list partially visible underneath. App requires F5 page reload to recover.
-- **Pattern**: Layout assertion failure - a dialog or popup attempts to render before the RenderBox has been laid out. Different from the Provider lifecycle family (BUG-004/BUG-022/BUG-023).
-- **Impact**: Cannot create new personal tags via the tags management page
-- **Workaround**: F5 page reload recovers the app. Tags can potentially be created via other flows (recipe detail tag assignment).
+- **Root Cause**: PopupMenuButton triggers dialog before completing its own layout/dismissal
+- **Fix**: Deferred PopupMenuButton `onSelected` callback via `WidgetsBinding.instance.addPostFrameCallback` so popup fully dismisses before dialog opens
+- **File**: `lib/views/personal_tags_view.dart:185-213`
+- **Verified**: 2026-02-24 - "+" button opens popup menu, selecting "Ny tagg" or "Ny grupp" opens dialog without crash
 
 **BUG-013 Details (FIXED 2026-01-11):**
 - **Issue**: Clicking "Spara ändringar" (Save changes) in group edit dialog throws TypeError
@@ -168,12 +173,13 @@
   5. Also removed duplicate `syncCategoryToFirebaseInternal()` call
 - **Verified**: 2026-01-11 - Group edit now saves successfully with success message "Gruppen uppdaterades!"
 
-**BUG-014 Details:**
+**BUG-014 Details (FIXED 2026-02-24):**
 - **Issue**: Group edit dialog "Redigera grupp" shows "BOTTOM OVERFLOWED BY 17 PIXELS" warning
 - **Platform**: Web (Chrome)
-- **Location**: Group edit dialog - visible when error message appears
-- **Severity**: Low (visual issue, doesn't block functionality)
-- **Note**: Likely caused by error message expanding dialog content beyond available space
+- **Root Cause**: Error message expanding dialog content beyond available space with no scroll
+- **Fix**: Wrapped dialog content in `Flexible` + `SingleChildScrollView` so content scrolls when it exceeds available space
+- **File**: `lib/widgets/social/groups/edit_group_dialog.dart`
+- **Verified**: 2026-02-24 - `flutter analyze` passes, code reviewed (scroll pattern matches other dialogs)
 
 **BUG-016 Details (FIXED 2026-01-13):**
 - **Issue**: All group operations (invite, edit, rename) fail with Firestore internal error
@@ -1029,6 +1035,22 @@ See full test case details in:
   - Ingredient template bug: "$1 $2lrivenost" shown as ingredient text (template placeholders not resolved).
   - Error pages show English text "Recipe argument missing for detail view" - should be Swedish.
 - **Updated Progress:** 215/538 tests (table: 191 completed, 178 passed, 3 failed), **5 open bugs (BUG-014, BUG-022, BUG-023, BUG-024, BUG-025)**
+
+**Session 17 - 2026-02-24 (Bug fix session: 4 bugs fixed, 1 remains open):**
+- **BUG-024 FIXED**: Changed hardcoded `/editRecipe` → `Routes.redigeraRecept` in recipe_detail_view.dart. Verified: "Skapa kopia" navigates correctly.
+- **BUG-014 FIXED**: Wrapped edit_group_dialog.dart content in `Flexible` + `SingleChildScrollView`. Verified via `flutter analyze`.
+- **BUG-023 FIXED**: Deferred `_onSortChanged` in mina_recept_view.dart via `addPostFrameCallback`. Verified: Rating sort works without crash.
+- **BUG-025 FIXED**: Deferred PopupMenuButton `onSelected` in personal_tags_view.dart via `addPostFrameCallback`. Verified: "+" button opens popup menu and dialogs without crash.
+- **BUG-022 STILL OPEN**: 3 fix attempts all failed (addPostFrameCallback, nested deferral, Future.delayed). Root cause is deep Provider lifecycle issue during `notifyListeners()` after dialog dispose. Data saves successfully; workaround is page refresh.
+- **Fix Pattern**: All 3 widget lifecycle bugs (BUG-023, BUG-024, BUG-025) shared the same root cause — PopupMenuButton teardown colliding with triggered rebuilds/dialogs — and were solved with the same `addPostFrameCallback` deferral pattern. BUG-022 is a deeper Provider dependency chain issue that this pattern doesn't resolve.
+- **Status**: 191/538 tests completed, **1 open bug (BUG-022)**
+
+**Session 18 - 2026-02-25 (BUG-022 deep investigation and fix):**
+- **BUG-022 FIXED**: Root cause identified via deep investigation with 3 parallel analysis agents. The crash sequence was: dialog pops → ViewModel operation runs → Firestore stream fires `notifyListeners()` during dialog's ~300ms exit animation → `_dependents.isEmpty` assertion fails in Provider/InheritedElement.
+- **Fix strategy**: Execute ViewModel operations INSIDE the dialog BEFORE popping. Dialog shows loading state while operation runs, then pops cleanly after all state changes complete. No notifications fire during disposal.
+- **Scope**: Refactored ALL 7 dialog methods in `personal_tags_view.dart` to use `StatefulBuilder` with `isLoading` state, `onChanged` instead of TextEditingController, and ViewModel call before `Navigator.pop`.
+- **Verified in browser**: Create group ("BUG022 Test") → success snackbar "Grupp skapad", no crash. Create tag ("BUG022 Tag Test") → success snackbar "Tagg skapad", no crash.
+- **Status**: 191/538 tests completed, **0 open bugs**
 
 ---
 
