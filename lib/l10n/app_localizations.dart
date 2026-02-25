@@ -10440,7 +10440,7 @@ abstract class AppLocalizations {
   /// No description provided for @authTagline.
   ///
   /// In sv, this message translates to:
-  /// **'Smart recepthantering för din vardag'**
+  /// **'Dina recept. Resten löser sig.'**
   String get authTagline;
 
   /// No description provided for @collaborativeAdd.
@@ -12132,7 +12132,7 @@ abstract class AppLocalizations {
   /// No description provided for @authEmailHint.
   ///
   /// In sv, this message translates to:
-  /// **'din.email@exempel.se'**
+  /// **'namn@exempel.se'**
   String get authEmailHint;
 
   /// No description provided for @authNoAccountSignUp.
@@ -12146,6 +12146,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Har du redan ett konto? Logga in'**
   String get authHasAccountLogin;
+
+  /// No description provided for @authTermsOfService.
+  ///
+  /// In sv, this message translates to:
+  /// **'Villkor'**
+  String get authTermsOfService;
 
   /// No description provided for @authResetEmailSent.
   ///
