@@ -17,6 +17,10 @@ class PreprocessingResult {
   /// Extracted preparation hint from parenthetical content (e.g. "saften" from "(saften)")
   final String? preparationHint;
 
+  /// Substitute ingredients extracted from parenthetical content
+  /// (e.g. "kokosmjölk" from "(eller kokosmjölk)")
+  final List<String> substitutes;
+
   /// Range boundaries when input contained a range (e.g. "3-5" → min: 3, max: 5)
   final double? rangeMin;
   final double? rangeMax;
@@ -31,6 +35,7 @@ class PreprocessingResult {
     this.hadInstruction = false,
     required this.original,
     this.preparationHint,
+    this.substitutes = const [],
     this.rangeMin,
     this.rangeMax,
   });
@@ -44,6 +49,7 @@ class PreprocessingResult {
     if (hadOptionalMarker) flags.add('optional');
     if (hadParentheses) flags.add('parentheses');
     if (hadInstruction) flags.add('instruction');
+    if (substitutes.isNotEmpty) flags.add('substitutes: $substitutes');
 
     return 'PreprocessingResult('
         'original: "$original", '
@@ -105,6 +111,7 @@ class IngredientPreprocessor {
     text = result5.text;
     hadParentheses = result5.modified;
     final preparationHint = result5.hint;
+    final substitutes = result5.substitutes;
 
     text = _normalizeWhitespace(text);
 
@@ -118,6 +125,7 @@ class IngredientPreprocessor {
       hadInstruction: hadInstruction,
       original: original,
       preparationHint: preparationHint,
+      substitutes: substitutes,
       rangeMin: rangeMin,
       rangeMax: rangeMax,
     );
@@ -245,22 +253,52 @@ class IngredientPreprocessor {
     return (text: text, modified: false);
   }
 
+  // Swedish phrases that indicate a substitute ingredient inside parentheses
+  static final _substitutionPatterns = [
+    RegExp(r'^eller\s+(.+)$', caseSensitive: false),
+    RegExp(r'^kan\s+bytas\s+(?:ut\s+)?mot\s+(.+)$', caseSensitive: false),
+    RegExp(r'^alternativt\s+(.+)$', caseSensitive: false),
+    RegExp(r'^(.+?)\s+(?:funkar|fungerar)\s+också$', caseSensitive: false),
+    RegExp(r'^(.+?)\s+istället$', caseSensitive: false),
+    RegExp(r'^ersätt\s+med\s+(.+)$', caseSensitive: false),
+    RegExp(r'^kan\s+ersättas\s+med\s+(.+)$', caseSensitive: false),
+    RegExp(r'^(?:t\.?\s*ex\.?|till\s+exempel)\s+(.+)$', caseSensitive: false),
+  ];
+
   /// Remove all parenthetical content ("lime (saften)" → "lime").
-  /// Extracts first parenthetical as a preparation hint.
-  static ({String text, bool modified, String? hint}) _removeParentheses(
-      String text) {
+  /// Extracts first non-substitution parenthetical as preparation hint,
+  /// and detects Swedish substitution phrases as substitute ingredients.
+  static ({String text, bool modified, String? hint, List<String> substitutes})
+      _removeParentheses(String text) {
     final pattern = RegExp(r'\s*\(([^)]*)\)\s*');
     String? hint;
+    final substitutes = <String>[];
 
-    final firstMatch = pattern.firstMatch(text);
-    if (firstMatch != null) {
-      hint = firstMatch.group(1)?.trim();
-      if (hint != null && hint.isEmpty) hint = null;
-      final result = text.replaceAll(pattern, ' ').trim();
-      return (text: result, modified: true, hint: hint);
+    if (!pattern.hasMatch(text)) {
+      return (text: text, modified: false, hint: null, substitutes: const []);
     }
 
-    return (text: text, modified: false, hint: null);
+    for (final match in pattern.allMatches(text)) {
+      final content = match.group(1)?.trim();
+      if (content == null || content.isEmpty) continue;
+
+      bool isSubstitution = false;
+      for (final subPattern in _substitutionPatterns) {
+        final subMatch = subPattern.firstMatch(content);
+        if (subMatch != null) {
+          substitutes.add(subMatch.group(1)!.trim());
+          isSubstitution = true;
+          break;
+        }
+      }
+
+      if (!isSubstitution) {
+        hint ??= content;
+      }
+    }
+
+    final result = text.replaceAll(pattern, ' ').trim();
+    return (text: result, modified: true, hint: hint, substitutes: substitutes);
   }
 
   static String _normalizeWhitespace(String text) {
