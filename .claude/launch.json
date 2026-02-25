@@ -3,8 +3,9 @@
   "configurations": [
     {
       "name": "butlery-web",
-      "runtimeExecutable": "C:\\tools\\flutter\\bin\\flutter.bat",
-      "runtimeArgs": ["run", "-d", "web-server", "--web-port", "3000", "--web-hostname", "localhost"],
+
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "C:\\tools\\flutter\\bin\\flutter.bat", "run", "-d", "web-server", "--web-port", "3000", "--web-hostname", "localhost"],
       "port": 3000,
       "autoPort": true,
       "autoVerify": true
