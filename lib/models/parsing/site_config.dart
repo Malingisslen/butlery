@@ -29,6 +29,15 @@ class SiteConfig {
   /// CSS selector for description.
   final String? descriptionSelector;
 
+  /// Fallback CSS selector for title (tried when primary returns empty).
+  final String? titleSelectorFallback;
+
+  /// Fallback CSS selector for ingredients.
+  final String? ingredientsSelectorFallback;
+
+  /// Fallback CSS selector for instructions.
+  final String? instructionsSelectorFallback;
+
   /// Whether this site is actively supported.
   final bool isSupported;
 
@@ -56,6 +65,9 @@ class SiteConfig {
     this.timeSelector,
     this.imageSelector,
     this.descriptionSelector,
+    this.titleSelectorFallback,
+    this.ingredientsSelectorFallback,
+    this.instructionsSelectorFallback,
     this.isSupported = true,
     this.qualityScore = 0.5,
     this.successCount = 0,
@@ -67,11 +79,24 @@ class SiteConfig {
   /// Whether this config has usable selectors.
   bool get hasSelectors =>
       titleSelector != null ||
+      titleSelectorFallback != null ||
       ingredientsSelector != null ||
-      instructionsSelector != null;
+      ingredientsSelectorFallback != null ||
+      instructionsSelector != null ||
+      instructionsSelectorFallback != null;
+
+  /// Data-driven quality replaces the manual admin estimate once we have
+  /// enough samples. If a site regresses, reset success/failure counts
+  /// in Firestore to re-enable the manual score.
+  double get computedQualityScore {
+    final total = successCount + failureCount;
+    if (total < 5) return qualityScore;
+    return successRate;
+  }
 
   /// Whether this config is likely to produce good results.
-  bool get isReliable => isSupported && qualityScore >= 0.7 && hasSelectors;
+  bool get isReliable =>
+      isSupported && computedQualityScore >= 0.7 && hasSelectors;
 
   /// Historical success rate.
   double get successRate {
@@ -90,6 +115,9 @@ class SiteConfig {
     String? timeSelector,
     String? imageSelector,
     String? descriptionSelector,
+    String? titleSelectorFallback,
+    String? ingredientsSelectorFallback,
+    String? instructionsSelectorFallback,
     bool? isSupported,
     double? qualityScore,
     int? successCount,
@@ -106,6 +134,12 @@ class SiteConfig {
         timeSelector: timeSelector ?? this.timeSelector,
         imageSelector: imageSelector ?? this.imageSelector,
         descriptionSelector: descriptionSelector ?? this.descriptionSelector,
+        titleSelectorFallback:
+            titleSelectorFallback ?? this.titleSelectorFallback,
+        ingredientsSelectorFallback:
+            ingredientsSelectorFallback ?? this.ingredientsSelectorFallback,
+        instructionsSelectorFallback:
+            instructionsSelectorFallback ?? this.instructionsSelectorFallback,
         isSupported: isSupported ?? this.isSupported,
         qualityScore: qualityScore ?? this.qualityScore,
         successCount: successCount ?? this.successCount,
@@ -127,6 +161,12 @@ class SiteConfig {
         if (imageSelector != null) 'imageSelector': imageSelector,
         if (descriptionSelector != null)
           'descriptionSelector': descriptionSelector,
+        if (titleSelectorFallback != null)
+          'titleSelectorFallback': titleSelectorFallback,
+        if (ingredientsSelectorFallback != null)
+          'ingredientsSelectorFallback': ingredientsSelectorFallback,
+        if (instructionsSelectorFallback != null)
+          'instructionsSelectorFallback': instructionsSelectorFallback,
         'isSupported': isSupported,
         'qualityScore': qualityScore,
         'successCount': successCount,
@@ -145,6 +185,11 @@ class SiteConfig {
         timeSelector: data['timeSelector'] as String?,
         imageSelector: data['imageSelector'] as String?,
         descriptionSelector: data['descriptionSelector'] as String?,
+        titleSelectorFallback: data['titleSelectorFallback'] as String?,
+        ingredientsSelectorFallback:
+            data['ingredientsSelectorFallback'] as String?,
+        instructionsSelectorFallback:
+            data['instructionsSelectorFallback'] as String?,
         isSupported: data['isSupported'] as bool? ?? true,
         qualityScore: (data['qualityScore'] as num?)?.toDouble() ?? 0.5,
         successCount: data['successCount'] as int? ?? 0,
