@@ -532,12 +532,12 @@
     "expected": {
       "quantity": 1.0,
       "unit": "",
-      "normalizedName": "lingonsylt",
-      "isKnown": false,
-      "category": null
+      "normalizedName": "lingon",
+      "isKnown": true,
+      "category": "fruits"
     },
     "tags": ["compound"],
-    "description": "Compound NOT in known list - lingonberry jam, isKnown false"
+    "description": "Compound split via CompoundSplitter - lingon is known fruit base"
   },
   {
     "input": "2dl mjölk",
@@ -1198,5 +1198,41 @@
     },
     "tags": ["edge_case"],
     "description": "Three-quarter Unicode fraction"
+  },
+  {
+    "input": "kycklingfilé",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "kyckling",
+      "isKnown": true,
+      "category": "meat"
+    },
+    "tags": ["compound", "novel_split"],
+    "description": "Compound split via CompoundSplitter - filé suffix, kyckling base"
+  },
+  {
+    "input": "fläskfilé",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "fläskfilé",
+      "isKnown": true,
+      "category": "meat"
+    },
+    "tags": ["compound", "novel_split"],
+    "description": "fläskfilé IS a known ingredient - returned as-is (no split needed)"
+  },
+  {
+    "input": "laxsås",
+    "expected": {
+      "quantity": 1.0,
+      "unit": "",
+      "normalizedName": "lax",
+      "isKnown": true,
+      "category": "seafood"
+    },
+    "tags": ["compound", "novel_split"],
+    "description": "Compound split via CompoundSplitter - lax base, sås suffix"
   }
 ]
