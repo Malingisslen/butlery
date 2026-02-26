@@ -2,6 +2,7 @@ import 'package:butlery/constants/preparation_words.dart';
 import 'package:butlery/constants/known_ingredients.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/parsing/ingredient_registry_service.dart';
+import 'package:butlery/utils/text/compound_splitter.dart';
 import 'package:butlery/utils/text/swedish_pluralization.dart';
 
 /// Result of ingredient normalization
@@ -441,16 +442,21 @@ class IngredientNormalizer {
     return kept.join(' ').trim();
   }
 
-  /// Extract base ingredient from compound words
-  /// Examples:
-  /// - "tomatsås" → "tomat" (if "tomat" is known)
-  /// - "kycklingfilé" → "kyckling" (if "kyckling" is known)
-  /// - "köttfärs" → "kött" (if "kött" is known)
+  /// Extract base ingredient from compound words.
+  ///
+  /// Uses [CompoundSplitter] for vocabulary-based splitting with genitive-s
+  /// handling, falling back to static suffix stripping for coverage.
   static String _extractBaseIngredient(
       String name, Set<String>? additionalKnown) {
     // Short-circuit: if the full compound word is already known, keep it
     if (_isKnown(name, additionalKnown)) return name;
 
+    // Try intelligent compound splitting first (handles genitive-s, scoring)
+    final split = CompoundSplitter.extractBase(name, additionalKnown);
+    if (split != name && _isKnown(split, additionalKnown)) return split;
+
+    // Fallback: static suffix list for cases the splitter can't handle
+    // (e.g. base not in known ingredients but suffix is recognizable)
     final compoundSuffixes = [
       'sås',
       'filé',
