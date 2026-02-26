@@ -8,6 +8,7 @@ import 'package:butlery/services/llm/llm_service.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/retry_helper.dart';
 
 /// Tier 4: LLM-based extraction with P0-2 schema validation.
 ///
@@ -62,11 +63,14 @@ class LlmTier extends ParsingTier with QualityScoring {
         );
       }
 
-      // Call LLM service
-      final response = await llmService!.structureRecipe(
-        text: text,
-        mode: StructureMode.extract,
-        sourceUrl: context.sourceUrl,
+      // Call LLM service with retry logic
+      final response = await RetryHelper.retryNetworkOperation(
+        () => llmService!.structureRecipe(
+          text: text,
+          mode: StructureMode.extract,
+          sourceUrl: context.sourceUrl,
+        ),
+        maxRetries: 2,
       );
 
       if (!response.success || response.recipe == null) {
@@ -95,6 +99,41 @@ class LlmTier extends ParsingTier with QualityScoring {
           duration: stopwatch.elapsed,
           costSek: response.estimatedCost,
           failureReason: TierFailureReason.invalidResponse,
+        );
+      }
+
+      // LLM can hallucinate unreasonable values — catch before conversion
+      final validationErrors = _validateResponse(extractedRecipe);
+
+      if (validationErrors.isNotEmpty) {
+        AppLogger.debug(
+          '$tierName: Validation issues: ${validationErrors.join(", ")}',
+        );
+
+        // Try partial result if title or ingredients are valid
+        final recipe = _convertToPartialRecipe(
+          extractedRecipe,
+          context,
+          validationErrors,
+        );
+
+        if (recipe != null) {
+          return TierResult.success(
+            tierName: tierName,
+            recipe: recipe,
+            duration: stopwatch.elapsed,
+            costSek: response.estimatedCost,
+          );
+        }
+
+        return TierResult(
+          tierName: tierName,
+          recipe: null,
+          success: false,
+          quality: 0.0,
+          duration: stopwatch.elapsed,
+          costSek: response.estimatedCost,
+          failureReason: TierFailureReason.schemaValidationFailed,
         );
       }
 
@@ -223,23 +262,109 @@ class LlmTier extends ParsingTier with QualityScoring {
     return false;
   }
 
-  ParsedRecipe? _convertToRecipe(
+  /// Validate extracted recipe fields for reasonable ranges and formats.
+  /// Returns a list of validation error descriptions (empty = valid).
+  List<String> _validateResponse(ExtractedRecipe extracted) {
+    final errors = <String>[];
+
+    // Title: 2-200 chars, no URLs
+    if (extracted.title.length < 2 || extracted.title.length > 200) {
+      errors.add('title_length');
+    }
+    if (RegExp(r'https?://').hasMatch(extracted.title)) {
+      errors.add('title_contains_url');
+    }
+
+    // Ingredients: ≥1, each name 1-100 chars, amount 0-10000
+    if (extracted.ingredients.isEmpty) {
+      errors.add('no_ingredients');
+    }
+    for (final ing in extracted.ingredients) {
+      if (ing.name.isEmpty || ing.name.length > 100) {
+        errors.add('ingredient_name_length');
+        break;
+      }
+      if (ing.amount != null && (ing.amount! < 0 || ing.amount! > 10000)) {
+        errors.add('ingredient_amount_range');
+        break;
+      }
+    }
+
+    // Instructions: ≥1, each 5-2000 chars
+    if (extracted.instructions.isEmpty) {
+      errors.add('no_instructions');
+    }
+    for (final inst in extracted.instructions) {
+      if (inst.length < 5 || inst.length > 2000) {
+        errors.add('instruction_length');
+        break;
+      }
+    }
+
+    // Portions: 1-100 if present
+    if (extracted.portions != null &&
+        (extracted.portions! < 1 || extracted.portions! > 100)) {
+      errors.add('portions_range');
+    }
+
+    // Time: 1-2880 min if present
+    final time = extracted.totalTimeMinutes;
+    if (time != null && (time < 1 || time > 2880)) {
+      errors.add('time_range');
+    }
+
+    return errors;
+  }
+
+  /// Build a partial recipe from valid fields when validation partially fails.
+  ParsedRecipe? _convertToPartialRecipe(
     ExtractedRecipe extracted,
     ParsingContext context,
+    List<String> validationErrors,
   ) {
-    // Convert ingredients
-    final ingredients = _convertIngredients(extracted.ingredients);
+    final hasValidTitle = !validationErrors.contains('title_length') &&
+        !validationErrors.contains('title_contains_url');
+    final hasValidIngredients = !validationErrors.contains('no_ingredients') &&
+        !validationErrors.contains('ingredient_name_length') &&
+        !validationErrors.contains('ingredient_amount_range');
 
-    // Convert instructions
-    final instructions = _convertInstructions(extracted.instructions);
+    // Need at least title or ingredients for a useful partial result
+    if (!hasValidTitle && !hasValidIngredients) return null;
 
-    // Calculate total time
-    final totalTime = extracted.totalTimeMinutes != null
-        ? Duration(minutes: extracted.totalTimeMinutes!)
-        : null;
+    final hasValidInstructions =
+        !validationErrors.contains('no_instructions') &&
+            !validationErrors.contains('instruction_length');
+    final hasValidPortions = !validationErrors.contains('portions_range');
+    final hasValidTime = !validationErrors.contains('time_range');
 
-    // Create metadata
-    final metadata = ParseMetadata(
+    final metadata = _buildMetadata(context);
+
+    return ParsedRecipe(
+      title: hasValidTitle
+          ? FieldResult.mediumConfidence(extracted.title, 'LLM extraction')
+          : FieldResult.failed('Invalid title from LLM'),
+      portions: hasValidPortions && extracted.portions != null
+          ? FieldResult.mediumConfidence(extracted.portions!, 'LLM extraction')
+          : FieldResult.lowConfidence(4, 'Defaulting to 4'),
+      ingredients: hasValidIngredients
+          ? _convertIngredients(extracted.ingredients)
+          : FieldResult.failed('Invalid ingredients from LLM'),
+      instructions: hasValidInstructions
+          ? _convertInstructions(extracted.instructions)
+          : FieldResult.failed('Invalid instructions from LLM'),
+      totalTime: hasValidTime && extracted.totalTimeMinutes != null
+          ? FieldResult.mediumConfidence(
+              Duration(minutes: extracted.totalTimeMinutes!),
+              'LLM extraction',
+            )
+          : FieldResult.failed('No valid time from LLM'),
+      metadata: metadata,
+      description: extracted.description,
+    );
+  }
+
+  ParseMetadata _buildMetadata(ParsingContext context) {
+    return ParseMetadata(
       source: context.source,
       domain: context.domain,
       sourceUrl: context.sourceUrl,
@@ -248,16 +373,30 @@ class LlmTier extends ParsingTier with QualityScoring {
       totalParseTime: context.elapsed,
       tierResults: const [],
     );
+  }
+
+  ParsedRecipe? _convertToRecipe(
+    ExtractedRecipe extracted,
+    ParsingContext context,
+  ) {
+    final ingredients = _convertIngredients(extracted.ingredients);
+    final instructions = _convertInstructions(extracted.instructions);
+
+    final totalTime = extracted.totalTimeMinutes != null
+        ? Duration(minutes: extracted.totalTimeMinutes!)
+        : null;
+
+    final metadata = _buildMetadata(context);
 
     return ParsedRecipe(
-      title: FieldResult.success(extracted.title),
+      title: FieldResult.mediumConfidence(extracted.title, 'LLM extraction'),
       portions: extracted.portions != null
-          ? FieldResult.success(extracted.portions!)
+          ? FieldResult.mediumConfidence(extracted.portions!, 'LLM extraction')
           : FieldResult.lowConfidence(4, 'Defaulting to 4'),
       ingredients: ingredients,
       instructions: instructions,
       totalTime: totalTime != null
-          ? FieldResult.success(totalTime)
+          ? FieldResult.mediumConfidence(totalTime, 'LLM extraction')
           : FieldResult.failed('No time from LLM'),
       metadata: metadata,
       description: extracted.description,
@@ -280,13 +419,11 @@ class LlmTier extends ParsingTier with QualityScoring {
         quantity: ing.amount?.toString(),
         unit: ing.unit,
         preparation: ing.preparation,
-        confidence: ing.amount != null || ing.unit != null
-            ? ParseConfidence.high
-            : ParseConfidence.medium,
+        confidence: ParseConfidence.medium,
       ));
     }
 
-    return FieldResult.success(parsed);
+    return FieldResult.mediumConfidence(parsed, 'LLM extraction');
   }
 
   FieldResult<List<String>> _convertInstructions(List<String> instructions) {
@@ -294,6 +431,6 @@ class LlmTier extends ParsingTier with QualityScoring {
       return FieldResult.failed('No instructions from LLM');
     }
 
-    return FieldResult.success(instructions);
+    return FieldResult.mediumConfidence(instructions, 'LLM extraction');
   }
 }

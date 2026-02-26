@@ -132,17 +132,29 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
     SiteConfig config,
     ParsingContext context,
   ) {
-    // Extract title
-    final title = _extractBySelector(document, config.titleSelector);
+    // Sites frequently A/B test markup — fallback selectors catch redesigns
+    var title = _extractBySelector(document, config.titleSelector);
+    if ((title == null || title.isEmpty) &&
+        config.titleSelectorFallback != null) {
+      title = _extractBySelector(document, config.titleSelectorFallback);
+    }
 
-    // Extract ingredients
-    final ingredientElements =
+    var ingredientElements =
         _extractAllBySelector(document, config.ingredientsSelector);
+    if (ingredientElements.isEmpty &&
+        config.ingredientsSelectorFallback != null) {
+      ingredientElements =
+          _extractAllBySelector(document, config.ingredientsSelectorFallback);
+    }
     final ingredients = _parseIngredients(ingredientElements);
 
-    // Extract instructions
-    final instructionElements =
+    var instructionElements =
         _extractAllBySelector(document, config.instructionsSelector);
+    if (instructionElements.isEmpty &&
+        config.instructionsSelectorFallback != null) {
+      instructionElements =
+          _extractAllBySelector(document, config.instructionsSelectorFallback);
+    }
     final instructions = _parseInstructions(instructionElements);
 
     // Extract portions

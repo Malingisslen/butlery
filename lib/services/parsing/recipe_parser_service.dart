@@ -27,6 +27,12 @@ const String parserVersion = '2.0.0';
 /// Quality threshold for accepting a tier result without continuing.
 const double defaultQualityThreshold = 0.7;
 
+/// Extra threshold for reliable domains to avoid unnecessary LLM calls.
+const double _reliableDomainBoost = 0.15;
+
+/// Cap so even boosted thresholds don't reject genuinely good parses.
+const double _maxEffectiveThreshold = 0.95;
+
 /// Result of parsing operation.
 class ParseResult {
   /// The parsed recipe, if successful.
@@ -206,10 +212,22 @@ class RecipeParserService extends BaseService {
       }
     }
 
+    // Reliable domains get a higher bar so cheap tiers work harder before
+    // falling back to LLM (e.g. 0.7 base → 0.85 effective)
+    var effectiveThreshold = qualityThreshold;
+    if (_siteConfigRepository != null && context.domain != null) {
+      final config =
+          await _siteConfigRepository.getConfigIfExists(context.domain!);
+      if (config != null && config.isReliable) {
+        effectiveThreshold = (qualityThreshold + _reliableDomainBoost)
+            .clamp(0.0, _maxEffectiveThreshold);
+      }
+    }
+
     // Run parsing tiers
     final result = await _runTiers(
       context,
-      qualityThreshold: qualityThreshold,
+      qualityThreshold: effectiveThreshold,
       useLlm: useLlm,
     );
 
@@ -262,7 +280,6 @@ class RecipeParserService extends BaseService {
   }) async {
     final stopwatch = Stopwatch()..start();
 
-    // Create parsing context
     final context = ParsingContext.fromText(
       text: text,
       source: source,
@@ -270,32 +287,13 @@ class RecipeParserService extends BaseService {
       parserVersion: parserVersion,
     );
 
-    // Run parsing tiers (skip schema and site config for text)
-    final tiersToUse = _tiers.where((t) {
-      if (t is SchemaOrgTier || t is SiteConfigTier) return false;
-      if (t is LlmTier && !useLlm) return false;
-      return true;
-    }).toList();
+    final result = await _runTiers(
+      context,
+      qualityThreshold: qualityThreshold,
+      useLlm: useLlm,
+    );
 
-    final results = <TierResult>[];
-
-    for (final tier in tiersToUse) {
-      if (!context.shouldContinueParsing(qualityThreshold: qualityThreshold)) {
-        break;
-      }
-
-      final result = await tier.parseWithTimeout(context);
-      results.add(result);
-
-      if (result.success && result.quality >= qualityThreshold) {
-        break;
-      }
-    }
-
-    // Merge results
-    final merged = _merger.merge(results);
-
-    if (merged == null) {
+    if (result == null) {
       _logParseEvent(
         url: null,
         source: source.name,
@@ -316,7 +314,16 @@ class RecipeParserService extends BaseService {
       fromCache: false,
       parseTimeMs: stopwatch.elapsedMilliseconds,
     );
-    return ParseResult.success(merged, totalTime: stopwatch.elapsed);
+    return ParseResult.success(result, totalTime: stopwatch.elapsed);
+  }
+
+  /// Whether a tier should be skipped for the given context.
+  bool _shouldSkipTier(ParsingTier tier, ParsingContext context, bool useLlm) {
+    if (tier is LlmTier && !useLlm) return true;
+    if (context.source != ImportSource.url) {
+      if (tier is SchemaOrgTier || tier is SiteConfigTier) return true;
+    }
+    return tier.shouldSkip(context);
   }
 
   /// Run parsing tiers in order until quality threshold is met.
@@ -328,10 +335,8 @@ class RecipeParserService extends BaseService {
     final results = <TierResult>[];
 
     for (final tier in _tiers) {
-      // Skip LLM if disabled
-      if (tier is LlmTier && !useLlm) continue;
+      if (_shouldSkipTier(tier, context, useLlm)) continue;
 
-      // Check if we should continue
       if (!context.shouldContinueParsing(qualityThreshold: qualityThreshold)) {
         AppLogger.debug(
           '$serviceName: Stopping at ${tier.tierName} - quality threshold met',
@@ -339,7 +344,6 @@ class RecipeParserService extends BaseService {
         break;
       }
 
-      // Run tier
       final result = await tier.parseWithTimeout(context);
       results.add(result);
 
@@ -348,13 +352,11 @@ class RecipeParserService extends BaseService {
         '${result.success ? "success (${(result.quality * 100).toInt()}%)" : "failed"}',
       );
 
-      // If high quality, stop
       if (result.success && result.quality >= qualityThreshold) {
         break;
       }
     }
 
-    // Merge all results
     return _merger.merge(results);
   }
 
