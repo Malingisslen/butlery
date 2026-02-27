@@ -23,26 +23,12 @@ fi
 # Read checkpoint (core session state - always include)
 CHECKPOINT_CONTENT=$(cat "$CHECKPOINT_FILE")
 
-# Topic files: only include if they have real content (not just headers/templates).
-# Truncate to keep total payload reasonable. MEMORY.md is already injected
-# separately by Claude Code, so don't duplicate it here.
-EXTRAS=""
-
-for topic_file in "patterns.md" "interview-decisions.md"; do
-  filepath="$MEMORY_DIR/$topic_file"
-  [ -f "$filepath" ] || continue
-  # Count non-empty, non-comment lines
-  real_lines=$(grep -cvE '^\s*$|^\s*#|^\s*>|^\s*<!--' "$filepath" 2>/dev/null || true)
-  if [ -n "$real_lines" ] && [ "$real_lines" -gt 0 ]; then
-    EXTRAS="${EXTRAS}
----
-$(head -50 "$filepath")"
-  fi
-done
+# Topic files (patterns.md, interview-decisions.md) are no longer injected here.
+# Auto-memory loads MEMORY.md at session start and reads topic files on demand.
 
 CONTEXT="SESSION RECOVERED AFTER COMPACTION - Read this carefully before continuing.
 
-${CHECKPOINT_CONTENT}${EXTRAS}"
+${CHECKPOINT_CONTENT}"
 
 # Output as JSON with additionalContext
 python3 -c "
