@@ -174,23 +174,15 @@ See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 - After ANY user correction → add entry to `/tasks/lessons.md`
 - Format: `### [Category] Title` + Date, Trigger, Rule, Example
 - Categories: Architecture, Code Quality, Testing, Workflow, Firebase, UI/UX
-- If a lesson is a recurring pattern → also add to `memory/patterns.md` (persists across sessions)
 - If lesson should become CLAUDE.md rule → propose update
 
-**Memory Management (automatic):**
-- Auto memory dir: `/root/.claude/projects/-home-user-butlery/memory/`
-- `MEMORY.md` = curated index (under 150 lines), auto-injected every session
-- Topic files:
-  - `interview-decisions.md` - user preferences from `/interview` (auto-persisted)
-  - `patterns.md` - what works/fails across sessions
-  - `current-state.md` - session checkpoint (auto-overwritten by PreCompact hook)
-- **When to update**: After completing significant work, after key decisions
-- **How to update**: Merge with existing entries, never just append. Prune outdated entries.
-- **Prescriptive, not descriptive**: "User wants X" not "We discussed X"
+**Memory Management:**
+- Auto-memory is enabled — Claude manages MEMORY.md and topic files automatically
+- `current-state.md` is managed by the PreCompact hook — do not overwrite it with auto-memory
 - **Hooks** (fully automatic, no manual trigger):
   - PreCompact → captures git state + tasks → `current-state.md`
   - SessionStart (compact) → injects checkpoint as context after compaction
-  - `/interview` → persists answers to `interview-decisions.md` + `MEMORY.md`
+  - `/interview` → persists answers to `interview-decisions.md`
 
 **Autonomous Problem Solving:**
 - Bug report → just fix it (spawn debugger agent)
