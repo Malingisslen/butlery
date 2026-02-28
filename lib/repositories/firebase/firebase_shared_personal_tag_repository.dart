@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/shared_personal_tag.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Repository for shared personal tags stored in top-level collection.
 ///
@@ -18,7 +19,7 @@ class FirebaseSharedPersonalTagRepository
   });
 
   @override
-  String get collectionName => 'shared_personal_tags';
+  String get collectionName => FirestoreCollections.sharedPersonalTags;
 
   @override
   SharedPersonalTag fromFirestore(

@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/cache/permission_cache_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Listens to Firestore document changes and invalidates relevant cache entries.
 ///
@@ -58,7 +59,7 @@ class PermissionCacheInvalidator {
     // Listen to shared recipes
     _subscriptions.add(
       _firestore
-          .collection('sharedRecipes')
+          .collection(FirestoreCollections.sharedRecipesDenorm)
           .where('participantIds', arrayContains: userId)
           .snapshots()
           .listen(
@@ -71,7 +72,7 @@ class PermissionCacheInvalidator {
     // Listen to shared menus
     _subscriptions.add(
       _firestore
-          .collection('sharedMenus')
+          .collection(FirestoreCollections.sharedMenusDenorm)
           .where('participantIds', arrayContains: userId)
           .snapshots()
           .listen(
@@ -84,7 +85,7 @@ class PermissionCacheInvalidator {
     // Listen to shared shopping lists
     _subscriptions.add(
       _firestore
-          .collection('sharedShoppingLists')
+          .collection(FirestoreCollections.sharedShoppingListsDenorm)
           .where('participantIds', arrayContains: userId)
           .snapshots()
           .listen(

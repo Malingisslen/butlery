@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles validation and audit logging for legacy recipes with missing ownership data.
 /// Extracted from FirebaseRecipeRepository to isolate legacy-specific logic that may be
@@ -179,9 +180,9 @@ class RecipeLegacyValidator {
 
       // Log to Firebase audit collection for tracking
       await firestore
-          .collection('audit_logs')
+          .collection(FirestoreCollections.auditLogs)
           .doc('legacy_recipe_deletions')
-          .collection('deletions')
+          .collection(FirestoreCollections.deletions)
           .add(auditData);
 
       AppLogger.info(

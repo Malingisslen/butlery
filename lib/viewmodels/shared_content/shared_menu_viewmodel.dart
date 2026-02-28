@@ -29,7 +29,6 @@
 
 // lib/viewmodels/shared_content/shared_menu_viewmodel.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
@@ -104,7 +103,7 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
   @override
   Future<List<SharedMenu>> loadContentWithPagination({
     int limit = 25,
-    DocumentSnapshot? startAfter,
+    Object? startAfter,
   }) async {
     final userId = currentUserId;
     if (userId == null) {
@@ -135,7 +134,7 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
   }
 
   @override
-  DocumentSnapshot? getLastDocumentFromContent(List<SharedMenu> content) {
+  Object? getLastDocumentFromContent(List<SharedMenu> content) {
     return null; // Will be enhanced when repository returns document snapshots
   }
 

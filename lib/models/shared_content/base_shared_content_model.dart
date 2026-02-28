@@ -1,5 +1,6 @@
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/time_ago_formatter.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Abstract base class for all shared content models providing common functionality.
 abstract class BaseSharedContentModel<TContent> {
@@ -78,8 +79,8 @@ abstract class BaseSharedContentModel<TContent> {
     Map<String, dynamic> data,
   ) {
     return {
-      'sharedByUserId': data['sharedByUserId'] as String? ?? '',
-      'sharedByDisplayName': data['sharedByDisplayName'] as String? ?? '',
+      'sharedByUserId': (data['sharedByUserId'] as String?).orEmpty(),
+      'sharedByDisplayName': (data['sharedByDisplayName'] as String?).orEmpty(),
       'sharedAt': parseTimestamp(data['sharedAt']) ?? DateTime.now(),
       'shareMessage': data['shareMessage'] as String?,
       'viewCount': data['viewCount'] as int? ?? 0,
@@ -93,8 +94,8 @@ abstract class BaseSharedContentModel<TContent> {
   ) {
     return {
       'id': json['id'] as String,
-      'sharedByUserId': json['sharedByUserId'] as String? ?? '',
-      'sharedByDisplayName': json['sharedByDisplayName'] as String? ?? '',
+      'sharedByUserId': (json['sharedByUserId'] as String?).orEmpty(),
+      'sharedByDisplayName': (json['sharedByDisplayName'] as String?).orEmpty(),
       'sharedAt': DateTime.parse(json['sharedAt'] as String),
       'shareMessage': json['shareMessage'] as String?,
       'viewCount': json['viewCount'] as int? ?? 0,

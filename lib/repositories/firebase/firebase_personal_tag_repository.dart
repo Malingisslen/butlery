@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase repository for user-defined personal tags.
 ///
@@ -16,7 +17,7 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
   });
 
   @override
-  String get collectionName => 'personalTagIds';
+  String get collectionName => FirestoreCollections.userPersonalTagIds;
 
   @override
   PersonalTag fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {

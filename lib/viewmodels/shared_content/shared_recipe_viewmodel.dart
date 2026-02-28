@@ -29,7 +29,6 @@
 
 // lib/viewmodels/shared_content/shared_recipe_viewmodel.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/viewmodels/shared_content/base_shared_content_viewmodel.dart';
@@ -108,7 +107,7 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   @override
   Future<List<SharedRecipe>> loadContentWithPagination({
     int limit = 25,
-    DocumentSnapshot? startAfter,
+    Object? startAfter,
   }) async {
     final userId = currentUserId;
     if (userId == null) {
@@ -138,7 +137,7 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   }
 
   @override
-  DocumentSnapshot? getLastDocumentFromContent(List<SharedRecipe> content) {
+  Object? getLastDocumentFromContent(List<SharedRecipe> content) {
     // Note: This requires the repository to expose the document snapshot
     // For now, return null - will need to enhance repository to return documents with snapshots
     // This is a known limitation that will be addressed when we refactor to include document metadata

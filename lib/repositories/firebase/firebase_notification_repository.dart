@@ -1,4 +1,4 @@
-// lib/services/notifications/notification_repository.dart
+// lib/repositories/firebase/firebase_notification_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,35 +9,8 @@ import 'package:butlery/models/notification_batch.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
-/// Comprehensive notification data repository providing persistent storage for preferences, history, and batching management.
-/// This repository implements sophisticated notification data management including user preference storage,
-/// notification history tracking, and intelligent batching queue management. It provides cross-device preference
-/// synchronization through Firestore integration while maintaining offline capability through SharedPreferences
-/// for reliable notification system operation regardless of connectivity status.
-/// **Repository Responsibilities:**
-/// - **Preference Management**: Comprehensive user notification preference storage and retrieval with cross-device sync
-/// - **History Tracking**: Notification delivery history tracking preventing duplicates and enabling analytics
-/// - **Batch Queue Management**: Intelligent notification batching with spam prevention and delivery optimization
-/// - **Offline Capability**: Local preference storage ensuring notification system functionality during offline periods
-/// - **Cross-Device Sync**: Firestore integration providing consistent preferences across user's multiple devices
-/// **Data Storage Architecture:**
-/// - Uses Firestore for cloud-based preference and history storage with real-time synchronization
-/// - Implements SharedPreferences for offline preference caching and immediate access
-/// - Provides intelligent caching layer reducing Firestore calls and improving performance
-/// - Manages collection organization with dedicated document structures for scalable data access
-/// **Usage Examples:**
-/// ```dart
-/// final repository = NotificationRepository(firestore, userId);
-/// // Manage user preferences
-/// final preferences = await repository.getNotificationPreferences();
-/// await repository.updateNotificationPreferences(preferences.copyWith(
-///   enableRecipeSharing: true,
-///   quietHoursEnabled: true,
-/// ));
-/// // Track notification history
-/// await repository.addNotificationToHistory(notificationData);
-/// final isRecent = await repository.isDuplicateNotification(notificationKey);
-/// ```
+/// Notification data repository for preferences, history, and batching.
+/// Uses Firestore for cloud storage with SharedPreferences offline fallback.
 class NotificationRepository {
   final FirebaseFirestore _firestore;
   final String _userId;
@@ -364,8 +337,6 @@ class NotificationRepository {
   void clearCache() {
     _cachedPreferences = null;
   }
-
-  // ✅ FIXED: Added advanced token management methods for FCM token manager
 
   /// Batch update device information for FCM token management
   Future<void> batchUpdateDevices(

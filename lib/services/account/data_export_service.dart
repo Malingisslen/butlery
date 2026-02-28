@@ -12,6 +12,7 @@ import 'package:butlery/services/account/export/social_export_manager.dart';
 import 'package:butlery/services/account/export/activity_export_manager.dart';
 import 'package:butlery/services/account/export/compliance_export_manager.dart';
 import 'package:butlery/services/account/export/preferences_export_manager.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// GDPR Compliance - Right to Data Portability (Article 20) and Right of Access (Article 15)
 /// Exports all user data including:
@@ -125,11 +126,11 @@ class DataExportService extends BaseService {
           () async {
             // Get private profile
             final userDoc =
-                await _firestore.collection('users').doc(userId).get();
+                await _firestore.collection(FirestoreCollections.users).doc(userId).get();
 
             // Get public profile
             final publicProfileDoc = await _firestore
-                .collection('public_profiles')
+                .collection(FirestoreCollections.publicProfiles)
                 .doc(userId)
                 .get();
 

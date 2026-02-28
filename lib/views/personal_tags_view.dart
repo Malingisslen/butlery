@@ -16,8 +16,6 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/shared_personal_tag.dart';
-import 'package:butlery/repositories/interfaces/recipe_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_shared_personal_tag_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
@@ -88,8 +86,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     if (userId == null) return;
 
     try {
-      final repo = ServiceLocator.get<FirebaseSharedPersonalTagRepository>();
-      final tags = await repo.getPendingForUser(userId);
+      final personalTagService = ServiceLocator.get<PersonalTagService>();
+      final tags = await personalTagService.getPendingSharedTags(userId);
       if (mounted) {
         setState(() => _pendingSharedTags = tags);
       }
@@ -551,13 +549,12 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
         retagFunction: (onProgress) async {
           final taggingService = ServiceLocator.get<TaggingService>();
           final authService = ServiceLocator.get<AuthService>();
-          final recipeRepo = ServiceLocator.get<RecipeRepository>();
           final recipeService = ServiceLocator.get<UnifiedRecipeService>();
 
           return await taggingService.retagUserRecipes(
             userId: authService.currentUser!.uid,
             getRecipes: () =>
-                recipeRepo.fetchAllUserRecipes(authService.currentUser!.uid),
+                recipeService.personal.fetchAllUserRecipes(authService.currentUser!.uid),
             saveRecipe: (recipe) => recipeService.personal.updateRecipe(recipe),
             onProgress: onProgress,
           );

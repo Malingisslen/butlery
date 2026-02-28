@@ -9,6 +9,7 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/viewmodels/menu/menu_state_manager.dart'
     show SavedMenuInfo;
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firestore-based menu storage module
 ///
@@ -58,7 +59,7 @@ class MenuStorage {
     );
 
     // Save to Firestore
-    final docRef = await _firestoreRepository.collection('menus').add(
+    final docRef = await _firestoreRepository.collection(FirestoreCollections.menus).add(
           sharedMenu.toFirestore(),
         );
 
@@ -99,7 +100,7 @@ class MenuStorage {
 
       // Load from Firestore
       final doc =
-          await _firestoreRepository.collection('menus').doc(menuId).get();
+          await _firestoreRepository.collection(FirestoreCollections.menus).doc(menuId).get();
 
       if (!doc.exists || doc.data() == null) {
         AppLogger.debug('Menu not found: $menuId');
@@ -151,7 +152,7 @@ class MenuStorage {
 
       // Query user's menus from Firestore
       final snapshot = await _firestoreRepository
-          .collection('menus')
+          .collection(FirestoreCollections.menus)
           .where('sharedByUserId', isEqualTo: userId)
           .get();
 
@@ -203,7 +204,7 @@ class MenuStorage {
 
       // Verify ownership before deletion
       final doc =
-          await _firestoreRepository.collection('menus').doc(menuId).get();
+          await _firestoreRepository.collection(FirestoreCollections.menus).doc(menuId).get();
 
       if (!doc.exists) {
         AppLogger.warning('Menu not found for deletion: $menuId');
@@ -218,7 +219,7 @@ class MenuStorage {
       }
 
       // Delete from Firestore
-      await _firestoreRepository.collection('menus').doc(menuId).delete();
+      await _firestoreRepository.collection(FirestoreCollections.menus).doc(menuId).delete();
 
       AppLogger.success('✅ Menu deleted from Firestore: $menuId');
       return true;
@@ -238,13 +239,13 @@ class MenuStorage {
 
       // Verify ownership
       final doc =
-          await _firestoreRepository.collection('menus').doc(menuId).get();
+          await _firestoreRepository.collection(FirestoreCollections.menus).doc(menuId).get();
       if (!doc.exists || doc.data()?['sharedByUserId'] != userId) {
         return false;
       }
 
       // Update the document with modified flag
-      await _firestoreRepository.collection('menus').doc(menuId).update({
+      await _firestoreRepository.collection(FirestoreCollections.menus).doc(menuId).update({
         'isModified': true,
         'modifiedAt': DateTime.now().toIso8601String(),
       });

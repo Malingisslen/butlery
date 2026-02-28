@@ -28,6 +28,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase implementation for sophisticated connectivity monitoring with quality assessment.
 /// This repository provides comprehensive connectivity monitoring by combining network connectivity
@@ -112,7 +113,7 @@ class FirebaseConnectivityRepository implements ConnectivityRepository {
   Future<bool> checkFirebaseConnection() async {
     try {
       // Try to read a simple document to test Firebase connection
-      final testRef = _firestore.collection('.info').doc('connected');
+      final testRef = _firestore.collection(FirestoreCollections.firebaseInfo).doc('connected');
       await testRef.get(const GetOptions(source: Source.server));
       return true;
     } catch (e) {
@@ -125,7 +126,7 @@ class FirebaseConnectivityRepository implements ConnectivityRepository {
   Stream<bool> monitorFirebaseConnection() {
     // Firebase provides a special .info/connected path for connection monitoring
     return _firestore
-        .collection('.info')
+        .collection(FirestoreCollections.firebaseInfo)
         .doc('connected')
         .snapshots()
         .map<bool>((snapshot) => snapshot.data()?['connected'] ?? false)

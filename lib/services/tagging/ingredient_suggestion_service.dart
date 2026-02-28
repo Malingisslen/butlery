@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart' hide PermissionService;
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Service for submitting unknown ingredient suggestions to admins.
 ///
@@ -23,7 +24,7 @@ class IngredientSuggestionService extends BaseService {
 
   /// Collection reference for ingredient suggestions.
   CollectionReference<Map<String, dynamic>> get _suggestionsCollection =>
-      _firestore.collection('ingredientSuggestions');
+      _firestore.collection(FirestoreCollections.ingredientSuggestions);
 
   /// Submits a suggestion for an unknown ingredient.
   ///

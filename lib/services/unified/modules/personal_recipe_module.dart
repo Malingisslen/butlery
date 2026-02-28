@@ -553,6 +553,11 @@ class PersonalRecipeModule {
     return _recipeRepository.watchRecipes(currentUserId);
   }
 
+  /// Fetch all user recipes using cursor-based pagination (no cap).
+  Future<List<Recipe>> fetchAllUserRecipes(String userId) async {
+    return await _recipeRepository.fetchAllUserRecipes(userId);
+  }
+
   Future<List<Recipe>?> getPersonalRecipesList() async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) return null;

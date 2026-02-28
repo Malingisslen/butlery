@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -21,7 +23,8 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// - CRUD operations on PersonalTag and PersonalTagGroup
 /// - CRUD operations on embedded PersonalTagRule
 /// - Real-time updates via streams
-class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
+class PersonalTagViewModel extends ChangeNotifier
+    with ErrorHandlingMixin, StateNotifierMixin, AsyncOperationMixin {
   final PersonalTagService _service;
 
   // State
@@ -29,10 +32,9 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
   List<PersonalTagGroup> _groups = [];
   Map<String, int> _tagUsageCounts = {};
   Map<String, int> _ruleMatchCounts = {};
-  bool _isLoading = false;
+  // Primary isLoading and error provided by StateNotifierMixin
   bool _isLoadingStats = false;
   bool _isLoadingRuleStats = false;
-  String? _error;
   String? _selectedTagId;
   bool _isDisposed = false;
 
@@ -45,9 +47,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // Getters
   List<PersonalTag> get tags => List.unmodifiable(_tags);
   List<PersonalTagGroup> get groups => List.unmodifiable(_groups);
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  bool get hasError => _error != null;
+  // isLoading, error, hasError provided by StateNotifierMixin
   String? get selectedTagId => _selectedTagId;
 
   PersonalTag? get selectedTag =>
@@ -118,18 +118,15 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// Loads all tags and groups and starts watching for updates.
   /// Automatically retries with exponential backoff on failure.
   Future<void> initialize() async {
-    _setLoading(true);
-    _clearError();
+    setLoading(true);
+    clearError();
 
     try {
-      // Load initial data
       _tags = await _service.getAllTags();
       _groups = await _service.getAllGroups();
 
-      // Start watching for real-time updates
       _watchTagsWithGroups();
 
-      // Reset retry counter only after everything succeeds
       _retryAttempts = 0;
 
       AppLogger.info(
@@ -139,7 +136,6 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     } catch (e, stack) {
       AppLogger.error('Failed to initialize PersonalTagViewModel', stack);
 
-      // Retry with exponential backoff
       if (_retryAttempts < _maxRetryAttempts) {
         _retryAttempts++;
         final delay = _initialRetryDelay * (1 << (_retryAttempts - 1));
@@ -151,9 +147,9 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
         return initialize();
       }
 
-      _setError(AppLocale.current.errorCouldNotLoadTags);
+      setError(AppLocale.current.errorCouldNotLoadTags);
     } finally {
-      _setLoading(false);
+      setLoading(false);
     }
   }
 
@@ -167,7 +163,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
       },
       onError: (e) {
         AppLogger.error('Tags/groups stream error: $e');
-        _setError(AppLocale.current.errorTagUpdateFailed);
+        setError(AppLocale.current.errorTagUpdateFailed);
       },
     );
   }
@@ -183,7 +179,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     required String name,
     String? groupId,
   }) async {
-    _clearError();
+    clearError();
 
     final result = await safeExecute(
       () async {
@@ -206,14 +202,14 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError(AppLocale.current.errorCouldNotCreateTag);
+      setError(AppLocale.current.errorCouldNotCreateTag);
     }
     return result ?? false;
   }
 
   /// Updates an existing personal tag.
   Future<bool> updateTag(PersonalTag tag) async {
-    _clearError();
+    clearError();
 
     final result = await safeExecute(
       () async {
@@ -226,18 +222,18 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError(AppLocale.current.errorCouldNotUpdateTag);
+      setError(AppLocale.current.errorCouldNotUpdateTag);
     }
     return result ?? false;
   }
 
   /// Deletes a personal tag (including all embedded rules).
   Future<bool> deleteTag(String tagId) async {
-    _clearError();
+    clearError();
 
     final tag = getTagById(tagId);
     if (tag == null) {
-      _setError(AppLocale.current.errorTagNotFound);
+      setError(AppLocale.current.errorTagNotFound);
       return false;
     }
 
@@ -252,7 +248,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError(AppLocale.current.errorCouldNotDeleteTag);
+      setError(AppLocale.current.errorCouldNotDeleteTag);
     }
     return result ?? false;
   }
@@ -287,7 +283,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
   Future<bool> createGroup({
     required String name,
   }) async {
-    _clearError();
+    clearError();
 
     final result = await safeExecute(
       () async {
@@ -309,14 +305,14 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError(AppLocale.current.errorCouldNotCreateGroup);
+      setError(AppLocale.current.errorCouldNotCreateGroup);
     }
     return result ?? false;
   }
 
   /// Updates an existing group.
   Future<bool> updateGroup(PersonalTagGroup group) async {
-    _clearError();
+    clearError();
 
     final result = await safeExecute(
       () async {
@@ -329,18 +325,18 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError(AppLocale.current.errorCouldNotUpdateGroup);
+      setError(AppLocale.current.errorCouldNotUpdateGroup);
     }
     return result ?? false;
   }
 
   /// Deletes a group (tags become ungrouped).
   Future<bool> deleteGroup(String groupId) async {
-    _clearError();
+    clearError();
 
     final group = getGroupById(groupId);
     if (group == null) {
-      _setError(AppLocale.current.errorGroupNotFound);
+      setError(AppLocale.current.errorGroupNotFound);
       return false;
     }
 
@@ -355,7 +351,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError(AppLocale.current.errorCouldNotDeleteGroup);
+      setError(AppLocale.current.errorCouldNotDeleteGroup);
     }
     return result ?? false;
   }
@@ -375,7 +371,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   /// Creates a new automation rule for a tag.
   Future<bool> createRule(String tagId, PersonalTagRule rule) async {
-    _clearError();
+    clearError();
 
     final result = await safeExecute(
       () async {
@@ -388,14 +384,14 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError(AppLocale.current.errorCouldNotCreateRule);
+      setError(AppLocale.current.errorCouldNotCreateRule);
     }
     return result ?? false;
   }
 
   /// Updates an existing rule within a tag.
   Future<bool> updateRule(String tagId, PersonalTagRule rule) async {
-    _clearError();
+    clearError();
 
     final result = await safeExecute(
       () async {
@@ -408,14 +404,14 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError(AppLocale.current.errorCouldNotUpdateRule);
+      setError(AppLocale.current.errorCouldNotUpdateRule);
     }
     return result ?? false;
   }
 
   /// Deletes a rule from a tag.
   Future<bool> deleteRule(String tagId, String ruleId) async {
-    _clearError();
+    clearError();
 
     final result = await safeExecute(
       () async {
@@ -428,7 +424,7 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     );
 
     if (result != true) {
-      _setError(AppLocale.current.errorCouldNotDeleteRule);
+      setError(AppLocale.current.errorCouldNotDeleteRule);
     }
     return result ?? false;
   }
@@ -678,30 +674,13 @@ class PersonalTagViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return PersonalTag.validateName(name);
   }
 
-  void _setLoading(bool value) {
-    _isLoading = value;
-    _safeNotifyListeners();
-  }
-
-  void _setError(String message) {
-    _error = message;
-    _safeNotifyListeners();
-  }
-
-  void _clearError() {
-    if (_error != null) {
-      _error = null;
-      _safeNotifyListeners();
-    }
-  }
-
-  /// Clears any error state.
-  void clearError() => _clearError();
+  // clearError() provided by StateNotifierMixin
 
   @override
   void dispose() {
     _isDisposed = true;
     _tagsWithGroupsSubscription?.cancel();
+    cancelAllOperations();
     super.dispose();
   }
 

@@ -56,6 +56,7 @@ import 'package:butlery/repositories/firebase/shared_content/shared_recipe_dismi
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase repository for shared recipe operations with consistent API patterns
 class FirebaseSharedRecipeRepository
@@ -87,7 +88,7 @@ class FirebaseSharedRecipeRepository
         );
 
   @override
-  String get collectionName => 'shared_recipes';
+  String get collectionName => FirestoreCollections.sharedRecipes;
   @override
   BaseViewRepository get viewRepository => _viewRepository;
 
@@ -124,7 +125,7 @@ class FirebaseSharedRecipeRepository
   bool get tracksCounts => true;
   @override
   CollectionReference<Map<String, dynamic>> getCollectionRef() {
-    return firestore.collection('shared_recipes');
+    return firestore.collection(FirestoreCollections.sharedRecipes);
   }
 
   @override

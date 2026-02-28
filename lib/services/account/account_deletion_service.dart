@@ -14,6 +14,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart'
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// GDPR-compliant account deletion orchestrator delegating to focused deletion modules.
 /// Uses repository pattern for database access to improve testability and maintain
@@ -175,7 +176,7 @@ class AccountDeletionService extends BaseService {
     return await safeExecute(
           () async {
             final auditDoc =
-                await _firestore.collection('deletion_audit_logs').add({
+                await _firestore.collection(FirestoreCollections.deletionAuditLogs).add({
               'userId': userId,
               'email': email,
               'reason': reason,

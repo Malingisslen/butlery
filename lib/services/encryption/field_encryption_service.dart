@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pointycastle/export.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Service for field-level encryption of sensitive Firestore data.
@@ -11,14 +12,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// Provides AES-256-CBC encryption for protecting user-generated content
 /// before it's written to Firestore. This adds an extra layer of protection
 /// beyond Firebase's encryption-at-rest.
-///
-/// Usage:
-/// ```dart
-/// final service = FieldEncryptionService();
-/// final encrypted = await service.encrypt('sensitive data');
-/// final decrypted = await service.decrypt(encrypted);
-/// ```
-class FieldEncryptionService {
+class FieldEncryptionService with ErrorHandlingMixin {
   static const _keyStorageKey = 'field_encryption_key_v1';
   static const _encryptionPrefix = 'ENC:';
   static const _keyLength = 32; // 256 bits
@@ -93,20 +87,23 @@ class FieldEncryptionService {
     if (plaintext == null || plaintext.isEmpty) return plaintext ?? '';
     if (isEncrypted(plaintext)) return plaintext;
 
-    try {
-      final key = await _getKey();
-      final iv = _generateSecureRandom(_ivLength);
+    final result = await safeExecute(
+      () async {
+        final key = await _getKey();
+        final iv = _generateSecureRandom(_ivLength);
 
-      final cipher = _createCipher(true, key, iv);
-      final inputBytes = Uint8List.fromList(utf8.encode(plaintext));
-      final encrypted = cipher.process(inputBytes);
+        final cipher = _createCipher(true, key, iv);
+        final inputBytes = Uint8List.fromList(utf8.encode(plaintext));
+        final encrypted = cipher.process(inputBytes);
 
-      return '$_encryptionPrefix${base64Encode(iv)}:${base64Encode(encrypted)}';
-    } catch (e) {
-      AppLogger.error('Encryption failed: $e');
-      // Return original on failure to prevent data loss
-      return plaintext;
-    }
+        return '$_encryptionPrefix${base64Encode(iv)}:${base64Encode(encrypted)}';
+      },
+      operationName: 'Encrypt field',
+      defaultValue: plaintext,
+    );
+
+    // Return original on failure to prevent data loss
+    return result ?? plaintext;
   }
 
   /// Decrypts an encrypted string.
@@ -117,30 +114,31 @@ class FieldEncryptionService {
     if (ciphertext == null || ciphertext.isEmpty) return ciphertext ?? '';
     if (!isEncrypted(ciphertext)) return ciphertext;
 
-    try {
-      final key = await _getKey();
+    final result = await safeExecute(
+      () async {
+        final key = await _getKey();
 
-      // Remove prefix and split
-      final data = ciphertext.substring(_encryptionPrefix.length);
-      final parts = data.split(':');
+        final data = ciphertext.substring(_encryptionPrefix.length);
+        final parts = data.split(':');
 
-      if (parts.length != 2) {
-        AppLogger.warning('Invalid encrypted format');
-        return ciphertext;
-      }
+        if (parts.length != 2) {
+          AppLogger.warning('Invalid encrypted format');
+          return ciphertext;
+        }
 
-      final iv = Uint8List.fromList(base64Decode(parts[0]));
-      final encrypted = Uint8List.fromList(base64Decode(parts[1]));
+        final iv = Uint8List.fromList(base64Decode(parts[0]));
+        final encrypted = Uint8List.fromList(base64Decode(parts[1]));
 
-      final cipher = _createCipher(false, key, iv);
-      final decrypted = cipher.process(encrypted);
+        final cipher = _createCipher(false, key, iv);
+        final decrypted = cipher.process(encrypted);
 
-      return utf8.decode(decrypted);
-    } catch (e) {
-      AppLogger.error('Decryption failed: $e');
-      // Return original on failure
-      return ciphertext;
-    }
+        return utf8.decode(decrypted);
+      },
+      operationName: 'Decrypt field',
+      defaultValue: ciphertext,
+    );
+
+    return result ?? ciphertext;
   }
 
   /// Checks if a string is in encrypted format.
@@ -197,9 +195,14 @@ class FieldEncryptionService {
   /// WARNING: This will make previously encrypted data unreadable.
   /// Only use after migrating all existing encrypted data.
   Future<void> rotateKey() async {
-    _key = _generateSecureRandom(_keyLength);
-    final keyString = base64Encode(_key!);
-    await _storage.write(key: _keyStorageKey, value: keyString);
-    AppLogger.warning('Encryption key rotated - previous data may be lost');
+    await safeExecute(
+      () async {
+        _key = _generateSecureRandom(_keyLength);
+        final keyString = base64Encode(_key!);
+        await _storage.write(key: _keyStorageKey, value: keyString);
+        AppLogger.warning('Encryption key rotated - previous data may be lost');
+      },
+      operationName: 'Rotate encryption key',
+    );
   }
 }

@@ -15,6 +15,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/firebase_tag_config.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Exception thrown when tag config validation fails.
 class TagConfigValidationException implements Exception {
@@ -211,7 +212,7 @@ class TagConfigService extends BaseService {
 
   /// Loads config from Firebase.
   Future<FirebaseTagConfig> _loadFromFirebase() async {
-    final collection = _firestore.collection('tagConfigs');
+    final collection = _firestore.collection(FirestoreCollections.tagConfigs);
 
     // Fetch all documents in parallel
     final results = await Future.wait([
@@ -267,7 +268,7 @@ class TagConfigService extends BaseService {
 
   /// Fetches just the version numbers for quick comparison.
   Future<int> _fetchRemoteVersion() async {
-    final collection = _firestore.collection('tagConfigs');
+    final collection = _firestore.collection(FirestoreCollections.tagConfigs);
 
     final results = await Future.wait([
       collection.doc('allergens').get(const GetOptions(source: Source.server)),

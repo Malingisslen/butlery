@@ -9,6 +9,8 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -50,7 +52,11 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// await viewModel.leaveGroup();
 /// ```
 class GroupDetailViewModel extends ChangeNotifier
-    with StreamManagementMixin, ErrorHandlingMixin {
+    with
+        StreamManagementMixin,
+        ErrorHandlingMixin,
+        StateNotifierMixin,
+        AsyncOperationMixin {
   final String _conversationId;
   final MessagingService _messagingService;
   final UnifiedFriendsService _friendsService;
@@ -58,8 +64,7 @@ class GroupDetailViewModel extends ChangeNotifier
   // State
   bool _isDisposed = false;
   Conversation? _conversation;
-  bool _isLoading = true;
-  String? _error;
+  // isLoading and error provided by StateNotifierMixin
   bool _isAddingMembers = false;
   bool _isRemovingMember = false;
   bool _isLeavingGroup = false;
@@ -73,13 +78,14 @@ class GroupDetailViewModel extends ChangeNotifier
   })  : _conversationId = conversationId,
         _messagingService = messagingService,
         _friendsService = friendsService {
+    // Start in loading state until conversation data arrives
+    setLoading(true);
     _initializeConversationStream();
   }
 
   // Getters
   Conversation? get conversation => _conversation;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
+  // isLoading and error provided by StateNotifierMixin
   bool get isAddingMembers => _isAddingMembers;
   bool get isRemovingMember => _isRemovingMember;
   bool get isLeavingGroup => _isLeavingGroup;
@@ -155,11 +161,10 @@ class GroupDetailViewModel extends ChangeNotifier
           await _messagingService.getConversation(_conversationId);
       if (!_isDisposed && conversation != null) {
         _conversation = conversation;
-        _isLoading = false;
-        _safeNotifyListeners();
+        setSuccess();
       }
     } catch (e) {
-      AppLogger.error('❌ Failed to load conversation', e);
+      AppLogger.error('Failed to load conversation', e);
       if (!_isDisposed) {
         _setError(AppLocale.current.errorCouldNotLoadGroupInfo);
       }
@@ -171,12 +176,10 @@ class GroupDetailViewModel extends ChangeNotifier
     if (_isDisposed) return;
 
     _conversation = conversation;
-    _isLoading = false;
-    _error = null;
-    _safeNotifyListeners();
+    setSuccess();
 
     if (conversation != null) {
-      AppLogger.debug('✅ Conversation updated: ${conversation.title}');
+      AppLogger.debug('Conversation updated: ${conversation.title}');
     }
   }
 
@@ -188,18 +191,10 @@ class GroupDetailViewModel extends ChangeNotifier
     _setError(AppLocale.current.errorCouldNotLoadGroupInfo);
   }
 
-  /// Set error state
-  void _setError(String error) {
-    _error = error;
-    _isLoading = false;
-    _safeNotifyListeners();
+  void _setError(String errorMessage) {
+    setError(errorMessage);
   }
 
-  /// Add members to group
-  /// [memberIds] List of user IDs to add
-  /// [memberDisplayNames] Map of display names for new members
-  /// [memberAvatarUrls] Optional map of avatar URLs
-  /// Returns true if successful
   Future<bool> addMembers(
     List<String> memberIds,
     Map<String, String> memberDisplayNames,
@@ -208,11 +203,11 @@ class GroupDetailViewModel extends ChangeNotifier
     if (_isDisposed || _conversation == null) return false;
 
     _isAddingMembers = true;
-    _error = null;
+    clearError();
     _safeNotifyListeners();
 
     try {
-      AppLogger.info('🔄 Adding ${memberIds.length} members to group');
+      AppLogger.info('Adding ${memberIds.length} members to group');
 
       await _messagingService.addParticipantsToGroup(
         conversationId: _conversationId,
@@ -223,18 +218,18 @@ class GroupDetailViewModel extends ChangeNotifier
 
       if (_isDisposed) return false;
 
-      AppLogger.success('✅ Successfully added ${memberIds.length} members');
+      AppLogger.success('Successfully added ${memberIds.length} members');
 
       _isAddingMembers = false;
       _safeNotifyListeners();
 
       return true;
     } catch (e) {
-      AppLogger.error('❌ Failed to add members', e);
+      AppLogger.error('Failed to add members', e);
 
       if (_isDisposed) return false;
 
-      _error = AppLocale.current.errorCouldNotAddMembers;
+      setError(AppLocale.current.errorCouldNotAddMembers);
       _isAddingMembers = false;
       _safeNotifyListeners();
 
@@ -242,32 +237,25 @@ class GroupDetailViewModel extends ChangeNotifier
     }
   }
 
-  /// Remove member from group (admin only)
-  /// [memberId] User ID of member to remove
-  /// Returns true if successful
   Future<bool> removeMember(String memberId) async {
     if (_isDisposed || _conversation == null) return false;
 
-    // Verify admin permission
     if (!isAdmin) {
-      _error = AppLocale.current.errorOnlyAdminCanRemoveMembers;
-      _safeNotifyListeners();
+      setError(AppLocale.current.errorOnlyAdminCanRemoveMembers);
       return false;
     }
 
-    // Prevent removing self this way (use leaveGroup instead)
     if (memberId == currentUserId) {
-      _error = AppLocale.current.errorUseLeaveGroupToLeave;
-      _safeNotifyListeners();
+      setError(AppLocale.current.errorUseLeaveGroupToLeave);
       return false;
     }
 
     _isRemovingMember = true;
-    _error = null;
+    clearError();
     _safeNotifyListeners();
 
     try {
-      AppLogger.info('🔄 Removing member $memberId from group');
+      AppLogger.info('Removing member $memberId from group');
 
       await _messagingService.removeParticipantFromGroup(
         conversationId: _conversationId,
@@ -276,18 +264,18 @@ class GroupDetailViewModel extends ChangeNotifier
 
       if (_isDisposed) return false;
 
-      AppLogger.success('✅ Successfully removed member');
+      AppLogger.success('Successfully removed member');
 
       _isRemovingMember = false;
       _safeNotifyListeners();
 
       return true;
     } catch (e) {
-      AppLogger.error('❌ Failed to remove member', e);
+      AppLogger.error('Failed to remove member', e);
 
       if (_isDisposed) return false;
 
-      _error = AppLocale.current.errorCouldNotDelete('medlem');
+      setError(AppLocale.current.errorCouldNotDelete('medlem'));
       _isRemovingMember = false;
       _safeNotifyListeners();
 
@@ -295,21 +283,18 @@ class GroupDetailViewModel extends ChangeNotifier
     }
   }
 
-  /// Leave group (current user leaves conversation)
-  /// Returns true if successful
   Future<bool> leaveGroup() async {
     if (_isDisposed || _conversation == null || currentUserId == null) {
       return false;
     }
 
     _isLeavingGroup = true;
-    _error = null;
+    clearError();
     _safeNotifyListeners();
 
     try {
-      AppLogger.info('🔄 Current user leaving group');
+      AppLogger.info('Current user leaving group');
 
-      // Use removeParticipant with current user's ID
       await _messagingService.removeParticipantFromGroup(
         conversationId: _conversationId,
         participantId: currentUserId!,
@@ -317,18 +302,18 @@ class GroupDetailViewModel extends ChangeNotifier
 
       if (_isDisposed) return false;
 
-      AppLogger.success('✅ Successfully left group');
+      AppLogger.success('Successfully left group');
 
       _isLeavingGroup = false;
       _safeNotifyListeners();
 
       return true;
     } catch (e) {
-      AppLogger.error('❌ Failed to leave group', e);
+      AppLogger.error('Failed to leave group', e);
 
       if (_isDisposed) return false;
 
-      _error = AppLocale.current.errorCouldNotLeaveGroup;
+      setError(AppLocale.current.errorCouldNotLeaveGroup);
       _isLeavingGroup = false;
       _safeNotifyListeners();
 
@@ -336,31 +321,25 @@ class GroupDetailViewModel extends ChangeNotifier
     }
   }
 
-  /// Update group title (admin only)
-  /// [newTitle] New title for the group
-  /// Returns true if successful
   Future<bool> updateGroupTitle(String newTitle) async {
     if (_isDisposed || _conversation == null) return false;
 
-    // Verify admin permission
     if (!isAdmin) {
-      _error = AppLocale.current.errorOnlyAdminCanChangeGroupName;
-      _safeNotifyListeners();
+      setError(AppLocale.current.errorOnlyAdminCanChangeGroupName);
       return false;
     }
 
     if (newTitle.trim().isEmpty) {
-      _error = AppLocale.current.errorGroupNameCannotBeEmpty;
-      _safeNotifyListeners();
+      setError(AppLocale.current.errorGroupNameCannotBeEmpty);
       return false;
     }
 
     _isUpdatingTitle = true;
-    _error = null;
+    clearError();
     _safeNotifyListeners();
 
     try {
-      AppLogger.info('🔄 Updating group title to: $newTitle');
+      AppLogger.info('Updating group title to: $newTitle');
 
       await _messagingService.updateGroupTitle(
         conversationId: _conversationId,
@@ -369,18 +348,18 @@ class GroupDetailViewModel extends ChangeNotifier
 
       if (_isDisposed) return false;
 
-      AppLogger.success('✅ Successfully updated group title');
+      AppLogger.success('Successfully updated group title');
 
       _isUpdatingTitle = false;
       _safeNotifyListeners();
 
       return true;
     } catch (e) {
-      AppLogger.error('❌ Failed to update group title', e);
+      AppLogger.error('Failed to update group title', e);
 
       if (_isDisposed) return false;
 
-      _error = AppLocale.current.errorCouldNotUpdate('gruppnamn');
+      setError(AppLocale.current.errorCouldNotUpdate('gruppnamn'));
       _isUpdatingTitle = false;
       _safeNotifyListeners();
 
@@ -388,18 +367,16 @@ class GroupDetailViewModel extends ChangeNotifier
     }
   }
 
-  /// Get available friends to add (not already in group)
   Future<List<UserProfile>> getAvailableFriendsToAdd() async {
     try {
       final allFriends = _friendsService.friends;
 
-      // Filter out users already in the group
       final currentMemberIds = memberIds.toSet();
       return allFriends
           .where((friend) => !currentMemberIds.contains(friend.uid))
           .toList();
     } catch (e) {
-      AppLogger.error('❌ Failed to get available friends', e);
+      AppLogger.error('Failed to get available friends', e);
       return [];
     }
   }
@@ -425,6 +402,7 @@ class GroupDetailViewModel extends ChangeNotifier
   void dispose() {
     _isDisposed = true;
     _conversationSubscription?.cancel();
+    cancelAllOperations();
     disposeStreamResources();
     super.dispose();
   }

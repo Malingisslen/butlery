@@ -77,7 +77,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     ImageUploadService? uploadService,
     StorageService? storageService,
     ImagePickerService? imagePickerService,
-  })  : _uploadService = uploadService ?? ImageUploadService(),
+  })  : _uploadService = uploadService ?? ServiceLocator.get<ImageUploadService>(),
         _storageService =
             storageService ?? ServiceLocator.get<StorageService>(),
         _imagePickerService =

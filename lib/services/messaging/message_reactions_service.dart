@@ -6,6 +6,8 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
+import 'package:butlery/core/constants/firestore_collections.dart';
+
 
 /// Service for toggling emoji reactions on messages using atomic Firestore operations.
 class MessageReactionsService extends BaseService {
@@ -39,7 +41,7 @@ class MessageReactionsService extends BaseService {
 
     try {
       final messageRef =
-          _firestoreRepository.firestore.collection('messages').doc(messageId);
+          _firestoreRepository.firestore.collection(FirestoreCollections.messages).doc(messageId);
       final field = 'reactions.$emoji';
 
       final doc = await messageRef.get();

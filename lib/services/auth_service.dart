@@ -10,6 +10,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/models/auth/mfa_types.dart';
 
 /// Firebase authentication service managing login, registration, and session state.
 class AuthService extends ChangeNotifier
@@ -23,6 +24,9 @@ class AuthService extends ChangeNotifier
   User? _currentUser;
 
   User? get currentUser => _currentUser;
+  String? get currentUserDisplayName => _currentUser?.displayName;
+  String? get currentUserEmail => _currentUser?.email;
+  String? get currentUserPhotoUrl => _currentUser?.photoURL;
   String? get errorMessage => error;
   bool get isAuthenticated => _currentUser != null;
   String? get currentUserId => _authRepository.currentUserId;
@@ -248,13 +252,20 @@ class AuthService extends ChangeNotifier
     }
   }
 
-  /// Get list of enrolled MFA factors.
-  Future<List<MultiFactorInfo>> getEnrolledFactors() async {
+  /// Get list of enrolled MFA factors as domain types.
+  Future<List<MfaFactorInfo>> getEnrolledFactors() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return [];
 
     try {
-      return await user.multiFactor.getEnrolledFactors();
+      final factors = await user.multiFactor.getEnrolledFactors();
+      return factors
+          .map((f) => MfaFactorInfo(
+                factor: f,
+                displayName: f.displayName,
+                enrollmentTimestamp: f.enrollmentTimestamp,
+              ))
+          .toList();
     } catch (e) {
       AppLogger.warning('Failed to get MFA factors: $e');
       return [];
@@ -266,12 +277,12 @@ class AuthService extends ChangeNotifier
   Future<void> startMfaEnrollment(
     String phoneNumber, {
     required void Function(String verificationId) onCodeSent,
-    required void Function(FirebaseAuthException error) onError,
+    required void Function(MfaError error) onError,
     void Function()? onAutoVerified,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      onError(FirebaseAuthException(
+      onError(const MfaError(
           code: 'user-not-found', message: 'No user signed in'));
       return;
     }
@@ -293,13 +304,13 @@ class AuthService extends ChangeNotifier
           } catch (e) {
             AppLogger.error('MFA auto-enrollment failed: $e');
             if (e is FirebaseAuthException) {
-              onError(e);
+              onError(MfaError(code: e.code, message: e.message));
             }
           }
         },
         verificationFailed: (FirebaseAuthException error) {
           AppLogger.error('MFA verification failed: ${error.code}');
-          onError(error);
+          onError(MfaError(code: error.code, message: error.message));
         },
         codeSent: (String verificationId, int? resendToken) {
           AppLogger.info('MFA SMS code sent');
@@ -313,9 +324,9 @@ class AuthService extends ChangeNotifier
     } catch (e) {
       AppLogger.error('Failed to start MFA enrollment: $e');
       if (e is FirebaseAuthException) {
-        onError(e);
+        onError(MfaError(code: e.code, message: e.message));
       } else {
-        onError(FirebaseAuthException(code: 'unknown', message: e.toString()));
+        onError(MfaError(code: 'unknown', message: e.toString()));
       }
     }
   }
@@ -356,13 +367,14 @@ class AuthService extends ChangeNotifier
   }
 
   /// Unenroll a specific MFA factor.
-  Future<bool> unenrollMfa(MultiFactorInfo factor) async {
+  Future<bool> unenrollMfa(MfaFactorInfo factor) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return false;
 
     try {
-      await user.multiFactor.unenroll(multiFactorInfo: factor);
-      AppLogger.info('MFA factor unenrolled: ${factor.uid}');
+      final firebaseFactor = factor.unwrap<MultiFactorInfo>();
+      await user.multiFactor.unenroll(multiFactorInfo: firebaseFactor);
+      AppLogger.info('MFA factor unenrolled: ${firebaseFactor.uid}');
       await _analyticsService.logEvent(name: 'mfa_unenrolled');
       return true;
     } on FirebaseAuthException catch (e) {
@@ -376,19 +388,29 @@ class AuthService extends ChangeNotifier
     }
   }
 
+  /// Create an [MfaResolverInfo] from a [FirebaseAuthMultiFactorException].
+  /// Call this where the exception is caught, then pass the result to views.
+  MfaResolverInfo createMfaResolver(MultiFactorResolver resolver) {
+    final phoneHint =
+        resolver.hints.whereType<PhoneMultiFactorInfo>().firstOrNull;
+    return MfaResolverInfo(
+      resolver: resolver,
+      phoneHint: phoneHint?.phoneNumber,
+    );
+  }
+
   /// Resolve MFA challenge during sign-in.
-  /// Called when [signInWithEmail] throws [FirebaseAuthMultiFactorException].
   Future<void> startMfaSignIn(
-    MultiFactorResolver resolver, {
+    MfaResolverInfo resolverInfo, {
     required void Function(String verificationId) onCodeSent,
-    required void Function(FirebaseAuthException error) onError,
+    required void Function(MfaError error) onError,
   }) async {
-    // Get the first phone hint (users typically have one phone factor)
+    final resolver = resolverInfo.unwrap<MultiFactorResolver>();
     final phoneHint =
         resolver.hints.whereType<PhoneMultiFactorInfo>().firstOrNull;
 
     if (phoneHint == null) {
-      onError(FirebaseAuthException(
+      onError(const MfaError(
           code: 'no-phone-factor', message: 'No phone MFA found'));
       return;
     }
@@ -406,30 +428,35 @@ class AuthService extends ChangeNotifier
             _currentUser = FirebaseAuth.instance.currentUser;
             AppLogger.info('MFA sign-in auto-completed');
           } catch (e) {
-            if (e is FirebaseAuthException) onError(e);
+            if (e is FirebaseAuthException) {
+              onError(MfaError(code: e.code, message: e.message));
+            }
           }
         },
-        verificationFailed: onError,
+        verificationFailed: (FirebaseAuthException error) {
+          onError(MfaError(code: error.code, message: error.message));
+        },
         codeSent: (verificationId, _) => onCodeSent(verificationId),
         codeAutoRetrievalTimeout: (_) {},
         timeout: const Duration(seconds: 60),
       );
     } catch (e) {
       if (e is FirebaseAuthException) {
-        onError(e);
+        onError(MfaError(code: e.code, message: e.message));
       } else {
-        onError(FirebaseAuthException(code: 'unknown', message: e.toString()));
+        onError(MfaError(code: 'unknown', message: e.toString()));
       }
     }
   }
 
   /// Complete MFA sign-in with SMS code.
   Future<bool> completeMfaSignIn(
-    MultiFactorResolver resolver,
+    MfaResolverInfo resolverInfo,
     String verificationId,
     String smsCode,
   ) async {
     try {
+      final resolver = resolverInfo.unwrap<MultiFactorResolver>();
       final credential = PhoneAuthProvider.credential(
         verificationId: verificationId,
         smsCode: smsCode,

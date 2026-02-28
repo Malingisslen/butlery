@@ -8,6 +8,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase Firestore implementation for user profile management and social discovery.
 /// This repository implements the [UserRepository] interface using Firebase Firestore,
@@ -66,7 +67,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
           authRepository: authRepository ?? FirebaseAuthRepository(),
         );
   @override
-  String get collectionName => 'public_profiles';
+  String get collectionName => FirestoreCollections.publicProfiles;
 
   @override
   UserProfile fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
@@ -447,7 +448,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   /// Ensure base user document exists in 'users' collection for friends system
   @override
   Future<void> ensureBaseUserDocument(String userId) async {
-    final usersCollection = firestore.collection('users');
+    final usersCollection = firestore.collection(FirestoreCollections.users);
     await usersCollection.doc(userId).set({
       'uid': userId,
       'createdAt': FieldValue.serverTimestamp(),

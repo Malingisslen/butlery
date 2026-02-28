@@ -53,15 +53,20 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/user_service.dart';
 
-/// Advanced Firebase Cloud Messaging service providing comprehensive push notification functionality with deep linking.
-/// This service implements sophisticated FCM integration for reliable push notification delivery with comprehensive
-/// token management, message handling, permission management, and deep linking capabilities. It provides seamless
-/// integration with the notification system for enhanced user engagement through cooking-focused notifications.
-class FCMService {
+/// Firebase Cloud Messaging service for push notifications with deep linking.
+///
+/// Uses static pattern for app-wide FCM functionality. ErrorHandlingMixin is
+/// available via [_errorHandler] for consistent error classification and logging.
+class FCMService with ErrorHandlingMixin {
+  // Static instance for accessing ErrorHandlingMixin methods from static context
+  static final FCMService _errorHandler = FCMService._();
+  FCMService._();
+
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   static String? _currentToken;
   static bool _isInitialized = false;
@@ -91,38 +96,33 @@ class FCMService {
     Function(RemoteMessage)? onMessageOpenedApp,
   }) async {
     if (_isInitialized) {
-      AppLogger.warning('🔔 FCMService already initialized, skipping...');
+      AppLogger.warning('FCMService already initialized, skipping...');
       return;
     }
 
-    try {
-      AppLogger.info('🔔 Initializing FCM service...');
+    final result = await _errorHandler.safeExecute(
+      () async {
+        AppLogger.info('Initializing FCM service...');
 
-      // Store callbacks
-      _onMessageReceived = onMessageReceived;
-      _onMessageOpenedApp = onMessageOpenedApp;
+        _onMessageReceived = onMessageReceived;
+        _onMessageOpenedApp = onMessageOpenedApp;
 
-      // Initialize Android notification channels (required for Android 8+)
-      await _initializeNotificationChannels();
+        await _initializeNotificationChannels();
+        await _requestPermissions();
+        await _setupMessageHandlers();
+        await _refreshToken();
 
-      // Request notification permissions
-      await _requestPermissions();
+        _tokenRefreshSubscription =
+            _messaging.onTokenRefresh.listen(_onTokenRefresh);
 
-      // Set up message handlers
-      await _setupMessageHandlers();
+        _isInitialized = true;
+        AppLogger.success('FCM service initialized successfully');
+      },
+      operationName: 'FCMService: Initialize',
+    );
 
-      // Get and store initial FCM token
-      await _refreshToken();
-
-      // Listen for token refresh (store subscription for disposal)
-      _tokenRefreshSubscription =
-          _messaging.onTokenRefresh.listen(_onTokenRefresh);
-
-      _isInitialized = true;
-      AppLogger.success('✅ FCM service initialized successfully');
-    } catch (e) {
-      AppLogger.error('❌ Failed to initialize FCM service', e);
-      rethrow;
+    if (result == null) {
+      throw Exception('Failed to initialize FCM service');
     }
   }
 
@@ -309,42 +309,39 @@ class FCMService {
     }
   }
 
-  /// Update user profile with new FCM token
   static Future<void> _updateUserToken(String token) async {
-    try {
-      // Note: This will need to be implemented when UserService is extended
-      // For now, just log the token
-      AppLogger.info(
-          '🔔 Updating user profile with FCM token: ${token.substring(0, token.length.clamp(0, 20))}...');
+    await _errorHandler.safeExecute(
+      () async {
+        AppLogger.info(
+            'Updating user profile with FCM token: ${token.substring(0, token.length.clamp(0, 20))}...');
 
-      // Update user profile with FCM token - implemented in our notification system
-      final userService = ServiceLocator.get<UserService>();
-      await userService.updateFCMToken(token);
-    } catch (e) {
-      AppLogger.error('❌ Failed to update user FCM token', e);
-    }
+        final userService = ServiceLocator.get<UserService>();
+        await userService.updateFCMToken(token);
+      },
+      operationName: 'FCMService: Update user token',
+    );
   }
 
-  /// Subscribe to topic for broadcast notifications
   static Future<void> subscribeToTopic(String topic) async {
-    try {
-      AppLogger.info('🔔 Subscribing to topic: $topic');
-      await _messaging.subscribeToTopic(topic);
-      AppLogger.success('✅ Subscribed to topic: $topic');
-    } catch (e) {
-      AppLogger.error('❌ Failed to subscribe to topic: $topic', e);
-    }
+    await _errorHandler.safeExecute(
+      () async {
+        AppLogger.info('Subscribing to topic: $topic');
+        await _messaging.subscribeToTopic(topic);
+        AppLogger.success('Subscribed to topic: $topic');
+      },
+      operationName: 'FCMService: Subscribe to topic $topic',
+    );
   }
 
-  /// Unsubscribe from topic
   static Future<void> unsubscribeFromTopic(String topic) async {
-    try {
-      AppLogger.info('🔔 Unsubscribing from topic: $topic');
-      await _messaging.unsubscribeFromTopic(topic);
-      AppLogger.success('✅ Unsubscribed from topic: $topic');
-    } catch (e) {
-      AppLogger.error('❌ Failed to unsubscribe from topic: $topic', e);
-    }
+    await _errorHandler.safeExecute(
+      () async {
+        AppLogger.info('Unsubscribing from topic: $topic');
+        await _messaging.unsubscribeFromTopic(topic);
+        AppLogger.success('Unsubscribed from topic: $topic');
+      },
+      operationName: 'FCMService: Unsubscribe from topic $topic',
+    );
   }
 
   /// Get notification settings status

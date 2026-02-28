@@ -178,7 +178,6 @@ class _ProfileMenuState extends State<ProfileMenu> {
   /// Green dark background, centered avatar, stats row
   Widget _buildProfileHeader(BuildContext context) {
     final profileViewModel = ServiceLocator.get<ProfileViewModel>();
-    final user = profileViewModel.currentUser;
     final cs = Theme.of(context).colorScheme;
 
     return Stack(
@@ -219,7 +218,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
               ],
               // Stats row
               const SizedBox(height: AppDimensions.spacingL),
-              if (user != null) _buildStatsRow(context, user),
+              if (profileViewModel.isAuthenticated) _buildStatsRow(context),
             ],
           ),
         ),
@@ -245,7 +244,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
   }
 
   /// Stats row showing recipe count, menu count, and friends count
-  Widget _buildStatsRow(BuildContext context, dynamic user) {
+  Widget _buildStatsRow(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

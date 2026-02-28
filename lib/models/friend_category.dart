@@ -50,6 +50,7 @@
 
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:uuid/uuid.dart';
 
 /// Comprehensive friend category data model for organizing friends into groups with metadata and display customization.
@@ -235,18 +236,18 @@ class FriendCategory {
   factory FriendCategory.fromMap(String id, Map<String, dynamic> data) {
     return FriendCategory(
       id: id,
-      ownerId: data['ownerId'] as String,
-      name: data['name'] as String,
-      description: data['description'] as String?,
-      emoji: data['emoji'] as String?,
-      friendUserIds: List<String>.from(data['friendUserIds'] ?? []),
+      ownerId: SerializationUtils.safeString(data, 'ownerId'),
+      name: SerializationUtils.safeString(data, 'name'),
+      description: SerializationUtils.safeNullableString(data, 'description'),
+      emoji: SerializationUtils.safeNullableString(data, 'emoji'),
+      friendUserIds: SerializationUtils.safeStringList(data, 'friendUserIds'),
       createdAt: _parseTimestamp(data['createdAt']) ?? DateTime.now(),
       updatedAt: _parseTimestamp(data['updatedAt']) ?? DateTime.now(),
-      sortOrder: data['sortOrder'] as int? ?? 0,
-      isDefault: data['isDefault'] as bool? ?? false,
+      sortOrder: SerializationUtils.safeInt(data, 'sortOrder'),
+      isDefault: SerializationUtils.safeBool(data, 'isDefault'),
       usesSubcollectionMembers:
-          data['usesSubcollectionMembers'] as bool? ?? false,
-      memberCount: data['memberCount'] as int?,
+          SerializationUtils.safeBool(data, 'usesSubcollectionMembers'),
+      memberCount: SerializationUtils.safeNullableInt(data, 'memberCount'),
     );
   }
 
@@ -270,19 +271,19 @@ class FriendCategory {
 
   factory FriendCategory.fromJson(Map<String, dynamic> json) {
     return FriendCategory(
-      id: json['id'] as String,
-      ownerId: json['ownerId'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String?,
-      emoji: json['emoji'] as String?,
-      friendUserIds: List<String>.from(json['friendUserIds'] ?? []),
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-      sortOrder: json['sortOrder'] as int? ?? 0,
-      isDefault: json['isDefault'] as bool? ?? false,
+      id: SerializationUtils.safeString(json, 'id'),
+      ownerId: SerializationUtils.safeString(json, 'ownerId'),
+      name: SerializationUtils.safeString(json, 'name'),
+      description: SerializationUtils.safeNullableString(json, 'description'),
+      emoji: SerializationUtils.safeNullableString(json, 'emoji'),
+      friendUserIds: SerializationUtils.safeStringList(json, 'friendUserIds'),
+      createdAt: SerializationUtils.safeDateTime(json, 'createdAt') ?? DateTime.now(),
+      updatedAt: SerializationUtils.safeDateTime(json, 'updatedAt') ?? DateTime.now(),
+      sortOrder: SerializationUtils.safeInt(json, 'sortOrder'),
+      isDefault: SerializationUtils.safeBool(json, 'isDefault'),
       usesSubcollectionMembers:
-          json['usesSubcollectionMembers'] as bool? ?? false,
-      memberCount: json['memberCount'] as int?,
+          SerializationUtils.safeBool(json, 'usesSubcollectionMembers'),
+      memberCount: SerializationUtils.safeNullableInt(json, 'memberCount'),
     );
   }
 
