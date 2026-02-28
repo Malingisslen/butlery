@@ -296,6 +296,10 @@ class ImportManager {
   /// Processing 5 recipes at a time balances speed and resource usage.
   static const _batchConcurrencyLimit = 5;
 
+  /// Circuit breaker: abort batch if >=8 of last 10 results fail.
+  static const _circuitBreakerWindow = 10;
+  static const _circuitBreakerThreshold = 8;
+
   Future<BatchImportResult> batchImport(
     List<String> inputs, {
     ImportStrategy? preferredStrategy,
@@ -304,9 +308,13 @@ class ImportManager {
     final results = <ImportManagerResult>[];
     final recipes = <Recipe>[];
     final errors = <String>[];
+    final recentFailures = <bool>[]; // true = failure
+    var aborted = false;
 
     // HIGH-3: Process in parallel batches instead of sequentially
     for (var i = 0; i < inputs.length; i += _batchConcurrencyLimit) {
+      if (aborted) break;
+
       final batchEnd = (i + _batchConcurrencyLimit).clamp(0, inputs.length);
       final batch = inputs.sublist(i, batchEnd);
 
@@ -322,10 +330,30 @@ class ImportManager {
       for (final result in batchResults) {
         results.add(result);
 
-        if (result.isSuccess && result.recipe != null) {
+        final failed = !result.isSuccess || result.recipe == null;
+        if (!failed) {
           recipes.add(result.recipe!);
         } else {
           errors.add(result.errorMessage ?? 'Unknown error');
+        }
+
+        // Rolling failure window for circuit breaker
+        recentFailures.add(failed);
+        if (recentFailures.length > _circuitBreakerWindow) {
+          recentFailures.removeAt(0);
+        }
+
+        if (recentFailures.length >= _circuitBreakerWindow) {
+          final failCount = recentFailures.where((f) => f).length;
+          if (failCount >= _circuitBreakerThreshold) {
+            AppLogger.warning(
+              'Batch import circuit breaker: $failCount/$_circuitBreakerWindow '
+              'recent failures, aborting remaining ${inputs.length - results.length} items',
+            );
+            errors.add('Avbruten: för många misslyckade importer');
+            aborted = true;
+            break;
+          }
         }
       }
 

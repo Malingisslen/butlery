@@ -260,6 +260,59 @@ async function logRateLimitViolation(
 }
 
 // =============================================================================
+// Global Aggregate Limits
+// =============================================================================
+
+/** Global limits: 1000 calls/hour, 10000 calls/day */
+const GLOBAL_HOURLY_LIMIT = 1000;
+const GLOBAL_DAILY_LIMIT = 10000;
+
+/**
+ * Check global aggregate LLM call limits.
+ * Uses Firestore atomic increments on system/llmLimits document.
+ *
+ * @returns true if within limits, false if exceeded
+ */
+export async function checkGlobalLimit(): Promise<boolean> {
+  const limitsRef = admin.firestore().doc("system/llmLimits");
+
+  try {
+    const result = await admin.firestore().runTransaction(async (tx) => {
+      const doc = await tx.get(limitsRef);
+      const now = new Date();
+      const currentHour = `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}-${now.getUTCHours()}`;
+      const currentDay = `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}`;
+
+      const data = doc.exists ? doc.data()! : {};
+
+      // Reset counters if period changed
+      const hourlyCount = data.hourKey === currentHour ? (data.hourlyCount ?? 0) : 0;
+      const dailyCount = data.dayKey === currentDay ? (data.dailyCount ?? 0) : 0;
+
+      if (hourlyCount >= GLOBAL_HOURLY_LIMIT || dailyCount >= GLOBAL_DAILY_LIMIT) {
+        return false;
+      }
+
+      tx.set(limitsRef, {
+        hourKey: currentHour,
+        hourlyCount: hourlyCount + 1,
+        dayKey: currentDay,
+        dailyCount: dailyCount + 1,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return true;
+    });
+
+    return result;
+  } catch (error) {
+    // Fail open on error — don't block users due to counter issues
+    functions.logger.warn("Global limit check failed, allowing request:", error);
+    return true;
+  }
+}
+
+// =============================================================================
 // Middleware Wrapper
 // =============================================================================
 
@@ -297,7 +350,19 @@ export function withRateLimit<TRequest, TResponse>(
 
     const userId = request.auth.uid;
 
-    // Check rate limit
+    // Check global aggregate limit before per-user limit
+    const globalAllowed = await checkGlobalLimit();
+    if (!globalAllowed) {
+      functions.logger.warn(
+        `Global LLM limit exceeded for ${operationType} by user ${userId}`
+      );
+      throw new HttpsError(
+        "resource-exhausted",
+        "Systemets kapacitetsgräns har nåtts. Försök igen senare."
+      );
+    }
+
+    // Check per-user rate limit
     const rateLimitResult = await checkRateLimit(userId, operationType, tokensRequired);
 
     if (!rateLimitResult.allowed) {

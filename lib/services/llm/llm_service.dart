@@ -10,6 +10,7 @@ library;
 import 'dart:typed_data';
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -193,8 +194,17 @@ class LlmService extends BaseService {
     }
   }
 
-  /// Check if LLM service is available (not rate limited).
+  /// Check if LLM service is available (not rate limited, not killed).
   Future<bool> isAvailable() async {
+    // Optional client-side kill switch via Remote Config
+    try {
+      final remoteConfig = FirebaseRemoteConfig.instance;
+      if (remoteConfig.getBool('ai_enabled') == false) {
+        return false;
+      }
+    } catch (_) {
+      // Remote Config not available — allow (server-side will enforce)
+    }
     return _rateLimiter.isLlmAvailable();
   }
 
