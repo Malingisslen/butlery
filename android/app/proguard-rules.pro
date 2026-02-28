@@ -24,7 +24,7 @@
 -keep interface androidx.** { *; }
 
 # Keep app-specific models if needed
--keep class com.example.butlery.models.** { *; }
+-keep class se.butlery.app.models.** { *; }
 
 # Suppress warnings
 -dontwarn com.google.firebase.**
