@@ -2,7 +2,6 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/viewmodels/menu/menu_social_manager.dart';
 import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -60,7 +59,7 @@ void main() {
       'id': id,
       'title': title,
       'description': 'Great weekly menu',
-      'sharedAt': Timestamp.now(),
+      'sharedAt': DateTime.now().toIso8601String(),
       'sharedByDisplayName': sharedByDisplayName,
       'totalRecipes': totalRecipes,
       'isImported': isImported,

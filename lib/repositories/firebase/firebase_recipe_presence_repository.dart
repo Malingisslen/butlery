@@ -19,6 +19,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Repository for recipe presence tracking operations
 class FirebaseRecipePresenceRepository {
@@ -49,9 +50,9 @@ class FirebaseRecipePresenceRepository {
   }) async {
     try {
       await _firestore
-          .collection('recipePresence')
+          .collection(FirestoreCollections.recipePresence)
           .doc(recipeId)
-          .collection('activeUsers')
+          .collection(FirestoreCollections.activeUsers)
           .doc(userId)
           .set({
         'userId': userId,
@@ -82,9 +83,9 @@ class FirebaseRecipePresenceRepository {
   }) async {
     try {
       await _firestore
-          .collection('recipePresence')
+          .collection(FirestoreCollections.recipePresence)
           .doc(recipeId)
-          .collection('activeUsers')
+          .collection(FirestoreCollections.activeUsers)
           .doc(userId)
           .update({
         'isActive': false,
@@ -111,9 +112,9 @@ class FirebaseRecipePresenceRepository {
   }) async {
     try {
       await _firestore
-          .collection('recipePresence')
+          .collection(FirestoreCollections.recipePresence)
           .doc(recipeId)
-          .collection('activeUsers')
+          .collection(FirestoreCollections.activeUsers)
           .doc(userId)
           .update({
         'lastSeen': FieldValue.serverTimestamp(),
@@ -135,9 +136,9 @@ class FirebaseRecipePresenceRepository {
   Future<List<Map<String, dynamic>>> getActiveUsers(String recipeId) async {
     try {
       final snapshot = await _firestore
-          .collection('recipePresence')
+          .collection(FirestoreCollections.recipePresence)
           .doc(recipeId)
-          .collection('activeUsers')
+          .collection(FirestoreCollections.activeUsers)
           .where('isActive', isEqualTo: true)
           .get();
 
@@ -155,9 +156,9 @@ class FirebaseRecipePresenceRepository {
   /// **Returns:** Stream of active user lists
   Stream<List<Map<String, dynamic>>> watchActiveUsers(String recipeId) {
     return _firestore
-        .collection('recipePresence')
+        .collection(FirestoreCollections.recipePresence)
         .doc(recipeId)
-        .collection('activeUsers')
+        .collection(FirestoreCollections.activeUsers)
         .where('isActive', isEqualTo: true)
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
@@ -173,9 +174,9 @@ class FirebaseRecipePresenceRepository {
     try {
       final batch = _firestore.batch();
       final snapshot = await _firestore
-          .collection('recipePresence')
+          .collection(FirestoreCollections.recipePresence)
           .doc(recipeId)
-          .collection('activeUsers')
+          .collection(FirestoreCollections.activeUsers)
           .get();
 
       for (final doc in snapshot.docs) {

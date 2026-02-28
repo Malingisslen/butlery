@@ -1,6 +1,6 @@
 // lib/viewmodels/menu/menu_social_manager.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -105,7 +105,7 @@ class MenuSocialManager {
           menuInfos.add(SavedMenuInfo(
             key: menuData['id'] as String,
             name: menuData['title'] as String,
-            savedDate: (menuData['sharedAt'] as Timestamp).toDate(),
+            savedDate: SerializationUtils.safeRequiredDateTime(menuData, 'sharedAt'),
             recipeCount: menuData['totalRecipes'] as int,
             comment: menuData['description'] as String? ?? '',
             originalAuthor: menuData['sharedByDisplayName'] as String?,

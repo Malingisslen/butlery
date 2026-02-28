@@ -1,6 +1,7 @@
 // lib/models/messaging/conversation_participant.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Participant data for conversation subcollection.
 /// Stored at `conversations/{conversationId}/participants/{userId}`.
@@ -86,18 +87,16 @@ class ConversationParticipant {
   ) {
     final data = doc.data()!;
     return ConversationParticipant(
-      conversationId: data['conversationId'] as String,
+      conversationId: SerializationUtils.safeString(data, 'conversationId'),
       participantId: doc.id,
-      displayName: data['displayName'] as String? ?? 'Unknown',
-      avatarUrl: data['avatarUrl'] as String?,
-      joinedAt: (data['joinedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      lastReadAt:
-          (data['lastReadAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      role: ParticipantRole.values.firstWhere(
-        (r) => r.name == data['role'],
-        orElse: () => ParticipantRole.member,
+      displayName: SerializationUtils.safeString(data, 'displayName', defaultValue: 'Unknown'),
+      avatarUrl: SerializationUtils.safeNullableString(data, 'avatarUrl'),
+      joinedAt: SerializationUtils.safeDateTime(data, 'joinedAt') ?? DateTime.now(),
+      lastReadAt: SerializationUtils.safeDateTime(data, 'lastReadAt') ?? DateTime.now(),
+      role: SerializationUtils.safeEnum(
+        data, 'role', ParticipantRole.values, ParticipantRole.member, (r) => r.name,
       ),
-      isMuted: data['isMuted'] as bool? ?? false,
+      isMuted: SerializationUtils.safeBool(data, 'isMuted'),
     );
   }
 

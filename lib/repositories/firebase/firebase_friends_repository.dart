@@ -16,6 +16,7 @@ import 'package:butlery/repositories/firebase/friends/friend_request_repository.
 import 'package:butlery/repositories/firebase/friends/friend_relationship_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
 import 'package:butlery/repositories/firebase/friends/group_invitation_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase Firestore implementation for comprehensive social friendship management.
 /// This repository implements the [FriendsRepository] interface using a sophisticated
@@ -103,7 +104,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     );
   }
   @override
-  String get collectionName => 'public_profiles';
+  String get collectionName => FirestoreCollections.publicProfiles;
 
   @override
   UserProfile fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
@@ -173,7 +174,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
       await firestore.runTransaction((transaction) async {
         // Read the friend request
         final requestRef =
-            firestore.collection('friend_requests').doc(requestId);
+            firestore.collection(FirestoreCollections.friendRequests).doc(requestId);
         final requestDoc = await transaction.get(requestRef);
 
         if (!requestDoc.exists) {
@@ -196,14 +197,14 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
         // Check if friendship already exists
         final user1FriendRef = firestore
-            .collection('users')
+            .collection(FirestoreCollections.users)
             .doc(request.fromUserId)
-            .collection('friends')
+            .collection(FirestoreCollections.userFriends)
             .doc(request.toUserId);
         final user2FriendRef = firestore
-            .collection('users')
+            .collection(FirestoreCollections.users)
             .doc(request.toUserId)
-            .collection('friends')
+            .collection(FirestoreCollections.userFriends)
             .doc(request.fromUserId);
 
         final user1FriendDoc = await transaction.get(user1FriendRef);
@@ -239,9 +240,9 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
         // Update friend counts only if we created new friendship documents
         if (friendsAdded > 0) {
           final user1Profile =
-              firestore.collection('public_profiles').doc(request.fromUserId);
+              firestore.collection(FirestoreCollections.publicProfiles).doc(request.fromUserId);
           final user2Profile =
-              firestore.collection('public_profiles').doc(request.toUserId);
+              firestore.collection(FirestoreCollections.publicProfiles).doc(request.toUserId);
           // Only increment if we added BOTH docs (new friendship)
           // If only one was added, don't increment (partial recovery)
           if (friendsAdded == 2) {

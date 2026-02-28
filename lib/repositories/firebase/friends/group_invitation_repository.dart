@@ -27,6 +27,7 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase implementation for group invitation management with comprehensive lifecycle and cleanup controls.
 /// This repository provides complete group invitation functionality using Firebase Firestore with
@@ -77,9 +78,9 @@ class GroupInvitationRepository
         );
 
   CollectionReference<Map<String, dynamic>> get _invitationsRef =>
-      firestore.collection('group_invitations');
+      firestore.collection(FirestoreCollections.groupInvitations);
   @override
-  String get collectionName => 'group_invitations';
+  String get collectionName => FirestoreCollections.groupInvitations;
 
   @override
   GroupInvitation fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>

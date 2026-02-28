@@ -36,6 +36,7 @@ import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase implementation for real-time collaborative recipe editing with comprehensive presence management.
 /// This repository provides complete real-time collaboration functionality using Firebase Firestore
@@ -101,7 +102,7 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
     );
 
     await _firestore
-        .collection('realtime_recipes')
+        .collection(FirestoreCollections.realtimeRecipes)
         .doc(recipe.id)
         .set(recipe.toFirestore());
 
@@ -120,28 +121,28 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
     );
 
     await _firestore
-        .collection('realtime_recipes')
+        .collection(FirestoreCollections.realtimeRecipes)
         .doc(recipe.id)
         .update(recipe.toFirestore());
   }
 
   Stream<DocumentSnapshot<Map<String, dynamic>>> watchRealtimeRecipe(
       String id) {
-    return _firestore.collection('realtime_recipes').doc(id).snapshots();
+    return _firestore.collection(FirestoreCollections.realtimeRecipes).doc(id).snapshots();
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> watchActivePresence(String id) {
     return _firestore
-        .collection('realtime_recipes')
+        .collection(FirestoreCollections.realtimeRecipes)
         .doc(id)
-        .collection('presence')
+        .collection(FirestoreCollections.presence)
         .where('isActive', isEqualTo: true)
         .snapshots();
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> getUserDocument(
       String userId) {
-    return _firestore.collection('users').doc(userId).get();
+    return _firestore.collection(FirestoreCollections.users).doc(userId).get();
   }
 
   Future<void> setPresence(
@@ -159,9 +160,9 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
     );
 
     await _firestore
-        .collection('realtime_recipes')
+        .collection(FirestoreCollections.realtimeRecipes)
         .doc(recipeId)
-        .collection('presence')
+        .collection(FirestoreCollections.presence)
         .doc(userId)
         .set(data);
   }
@@ -181,22 +182,22 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
     );
 
     await _firestore
-        .collection('realtime_recipes')
+        .collection(FirestoreCollections.realtimeRecipes)
         .doc(recipeId)
-        .collection('presence')
+        .collection(FirestoreCollections.presence)
         .doc(userId)
         .set(data, SetOptions(merge: true));
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> fetchRealtimeRecipe(
       String id) {
-    return _firestore.collection('realtime_recipes').doc(id).get();
+    return _firestore.collection(FirestoreCollections.realtimeRecipes).doc(id).get();
   }
 
   // Missing methods for collaborative manager
   Stream<RealtimeRecipe?> getRealtimeRecipeStream(String id) {
     return _firestore
-        .collection('realtime_recipes')
+        .collection(FirestoreCollections.realtimeRecipes)
         .doc(id)
         .snapshots()
         .map((snapshot) {
@@ -209,9 +210,9 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
 
   Stream<List<LiveEditor>> getParticipantsStream(String id) {
     return _firestore
-        .collection('realtime_recipes')
+        .collection(FirestoreCollections.realtimeRecipes)
         .doc(id)
-        .collection('presence')
+        .collection(FirestoreCollections.presence)
         .where('isActive', isEqualTo: true)
         .snapshots()
         .map((snapshot) {
@@ -233,9 +234,9 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
     );
 
     await _firestore
-        .collection('realtime_recipes')
+        .collection(FirestoreCollections.realtimeRecipes)
         .doc(recipeId)
-        .collection('presence')
+        .collection(FirestoreCollections.presence)
         .doc(userId)
         .set({
       'userId': userId,
@@ -257,9 +258,9 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
     );
 
     await _firestore
-        .collection('realtime_recipes')
+        .collection(FirestoreCollections.realtimeRecipes)
         .doc(recipeId)
-        .collection('presence')
+        .collection(FirestoreCollections.presence)
         .doc(userId)
         .set({
       'lastSeen': DateTime.now().millisecondsSinceEpoch,
@@ -278,9 +279,9 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
     );
 
     await _firestore
-        .collection('realtime_recipes')
+        .collection(FirestoreCollections.realtimeRecipes)
         .doc(recipeId)
-        .collection('presence')
+        .collection(FirestoreCollections.presence)
         .doc(userId)
         .set({'isActive': false}, SetOptions(merge: true));
   }
@@ -297,9 +298,9 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
     );
 
     await _firestore
-        .collection('realtime_recipes')
+        .collection(FirestoreCollections.realtimeRecipes)
         .doc(recipeId)
-        .collection('presence')
+        .collection(FirestoreCollections.presence)
         .doc(userId)
         .delete();
   }
@@ -307,9 +308,9 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
   /// Get all active editors for a recipe (needed by RealtimeEditorTracker)
   Future<List<Map<String, dynamic>>> getActiveEditors(String recipeId) async {
     final snapshot = await _firestore
-        .collection('realtime_recipes')
+        .collection(FirestoreCollections.realtimeRecipes)
         .doc(recipeId)
-        .collection('presence')
+        .collection(FirestoreCollections.presence)
         .where('isActive', isEqualTo: true)
         .get();
 
@@ -344,9 +345,9 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
   /// Check if specific user is actively editing (needed by RealtimeEditorTracker)
   Future<bool> isUserActivelyEditing(String recipeId, String userId) async {
     final doc = await _firestore
-        .collection('realtime_recipes')
+        .collection(FirestoreCollections.realtimeRecipes)
         .doc(recipeId)
-        .collection('presence')
+        .collection(FirestoreCollections.presence)
         .doc(userId)
         .get();
 
@@ -380,9 +381,9 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
 
     // Get all presence documents
     final snapshot = await _firestore
-        .collection('realtime_recipes')
+        .collection(FirestoreCollections.realtimeRecipes)
         .doc(recipeId)
-        .collection('presence')
+        .collection(FirestoreCollections.presence)
         .get();
 
     // Batch operation for cleanup

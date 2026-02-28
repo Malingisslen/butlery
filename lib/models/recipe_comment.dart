@@ -4,6 +4,7 @@ import 'package:butlery/core/utils/time_ago_formatter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Recipe comment with threaded discussions and social engagement.
 ///
@@ -226,7 +227,7 @@ class RecipeComment {
       authorId: json['authorId'] as String,
       authorDisplayName: json['authorDisplayName'] as String? ?? '?',
       authorAvatarUrl: json['authorAvatarUrl'] as String?,
-      text: json['text'] as String? ?? '',
+      text: (json['text'] as String?).orEmpty(),
       createdAt: DateTime.parse(json['createdAt'] as String),
       editedAt: json['editedAt'] != null
           ? DateTime.parse(json['editedAt'] as String)

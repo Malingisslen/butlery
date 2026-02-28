@@ -919,6 +919,12 @@ class PersonalTagService extends BaseService {
     );
   }
 
+  /// Gets pending shared tags for a user.
+  Future<List<SharedPersonalTag>> getPendingSharedTags(String userId) async {
+    final repo = ServiceLocator.get<FirebaseSharedPersonalTagRepository>();
+    return await repo.getPendingForUser(userId);
+  }
+
   /// Imports a shared tag by creating a local copy for the current user.
   Future<PersonalTag?> importSharedTag(String shareId) async {
     return await executeServiceOperation(

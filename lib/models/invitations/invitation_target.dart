@@ -45,6 +45,7 @@
 
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 
@@ -584,7 +585,7 @@ class InvitationTarget {
 
       // For groups: search in description from metadata
       if (target.isGroup) {
-        final description = target.metadata?['description'] as String? ?? '';
+        final description = (target.metadata?['description'] as String?).orEmpty();
         if (description.toLowerCase().contains(query)) {
           return true;
         }

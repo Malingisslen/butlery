@@ -21,6 +21,7 @@ import 'package:butlery/services/realtime/realtime_menu_service.dart';
 
 // Operations modules
 import 'package:butlery/services/unified/operations/collaborative_menu_operations.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Result of importing a shared menu.
 /// Indicates whether the import joined a collaborative session or created a local copy.
@@ -164,7 +165,7 @@ class UnifiedMenuService extends ChangeNotifier
 
       // Load user's own menus from Firestore
       final querySnapshot = await _firestore
-          .collection('menus')
+          .collection(FirestoreCollections.menus)
           .where('sharedByUserId', isEqualTo: userId)
           .get();
 
@@ -181,7 +182,7 @@ class UnifiedMenuService extends ChangeNotifier
       // Bug fix: Without this, collaborative menus the user joined don't appear in saved menus
       try {
         final realtimeMenusSnapshot = await _firestore
-            .collection('realtime_menus')
+            .collection(FirestoreCollections.realtimeMenus)
             .where('participantIds', arrayContains: userId)
             .get();
 
@@ -309,7 +310,7 @@ class UnifiedMenuService extends ChangeNotifier
       );
 
       final menuData = menu.toFirestore();
-      final docRef = await _firestore.collection('menus').add(menuData);
+      final docRef = await _firestore.collection(FirestoreCollections.menus).add(menuData);
       final createdMenu = SharedMenu.fromFirestore(menuData, docRef.id);
       _menus.add(createdMenu);
       notifyListeners();
@@ -324,7 +325,7 @@ class UnifiedMenuService extends ChangeNotifier
     final result = await safeExecute(() async {
       try {
         final menuData = menu.toFirestore();
-        await _firestore.collection('menus').doc(menu.id).update(menuData);
+        await _firestore.collection(FirestoreCollections.menus).doc(menu.id).update(menuData);
 
         final index = _menus.indexWhere((m) => m.id == menu.id);
         if (index != -1) {
@@ -346,7 +347,7 @@ class UnifiedMenuService extends ChangeNotifier
   Future<bool> deleteMenu(String menuId) async {
     final result = await safeExecute(() async {
       try {
-        await _firestore.collection('menus').doc(menuId).delete();
+        await _firestore.collection(FirestoreCollections.menus).doc(menuId).delete();
         _menus.removeWhere((m) => m.id == menuId);
         notifyListeners();
 

@@ -9,7 +9,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
-import 'package:butlery/services/notifications/notification_repository.dart'
+import 'package:butlery/repositories/firebase/firebase_notification_repository.dart'
     as legacy;
 
 import '../../../test_support/base_unit_test.dart';

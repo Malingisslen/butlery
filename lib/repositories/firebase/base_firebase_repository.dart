@@ -10,6 +10,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 abstract class BaseFirebaseRepository<T>
     with PermissionValidationMixin
@@ -63,7 +64,7 @@ abstract class BaseFirebaseRepository<T>
 
   CollectionReference<Map<String, dynamic>> getUserCollection(String? userId) {
     final uid = userId ?? requireCurrentUserId();
-    return _firestore.collection('users').doc(uid).collection(collectionName);
+    return _firestore.collection(FirestoreCollections.users).doc(uid).collection(collectionName);
   }
 
   CollectionReference<Map<String, dynamic>> getCollectionRef() => collection;

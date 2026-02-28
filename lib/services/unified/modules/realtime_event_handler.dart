@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Focused module for real-time event handling
 /// This module handles ONLY real-time event processing:
@@ -261,7 +262,7 @@ class RealtimeEventHandler {
     required void Function(String, dynamic) onRealtimeError,
   }) {
     return firestore
-        .collection('realtime_recipes')
+        .collection(FirestoreCollections.realtimeRecipes)
         .doc(recipeId)
         .snapshots()
         .listen(

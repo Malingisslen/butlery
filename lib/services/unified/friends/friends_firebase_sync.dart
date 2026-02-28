@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase synchronization operations for friends data.
 /// Handles direct Firebase operations for friend requests, friend relationships,
@@ -20,7 +21,7 @@ class FriendsFirebaseSyncOperations {
   /// Sync friend request to Firebase
   Future<void> syncFriendRequestToFirebase(FriendRequest request) async {
     try {
-      await firestore.collection('friend_requests').add({
+      await firestore.collection(FirestoreCollections.friendRequests).add({
         'fromUserId': request.fromUserId,
         'toUserId': request.toUserId,
         'message': request.message,
@@ -38,7 +39,7 @@ class FriendsFirebaseSyncOperations {
   Future<void> updateFriendRequestStatus(FriendRequest request) async {
     try {
       final querySnapshot = await firestore
-          .collection('friend_requests')
+          .collection(FirestoreCollections.friendRequests)
           .where('fromUserId', isEqualTo: request.fromUserId)
           .where('toUserId', isEqualTo: request.toUserId)
           .limit(1)
@@ -69,9 +70,9 @@ class FriendsFirebaseSyncOperations {
 
       // Add to friends subcollection
       await firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('friends')
+          .collection(FirestoreCollections.userFriends)
           .doc(friend.uid)
           .set({
         'friendSince': DateTime.now(),
@@ -80,9 +81,9 @@ class FriendsFirebaseSyncOperations {
 
       // Also add reverse relationship
       await firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(friend.uid)
-          .collection('friends')
+          .collection(FirestoreCollections.userFriends)
           .doc(userId)
           .set({
         'friendSince': DateTime.now(),
@@ -103,17 +104,17 @@ class FriendsFirebaseSyncOperations {
 
       // Remove from friends subcollection
       await firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('friends')
+          .collection(FirestoreCollections.userFriends)
           .doc(friendId)
           .delete();
 
       // Also remove reverse relationship
       await firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(friendId)
-          .collection('friends')
+          .collection(FirestoreCollections.userFriends)
           .doc(userId)
           .delete();
 

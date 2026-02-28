@@ -5,7 +5,11 @@ import 'package:butlery/viewmodels/chat_viewmodel.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/presence_service.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
@@ -128,11 +132,14 @@ class MessageBuilder {
   }
 }
 
+class MockPresenceService extends Mock implements PresenceService {}
+
 void main() {
   group('ChatViewModel', () {
     late ChatViewModel viewModel;
     late MockMessagingService mockMessagingService;
     late MockAuthRepository mockAuthRepository;
+    late MockPresenceService mockPresenceService;
     // ignore: close_sinks
     late StreamController<List<Message>> messagesStreamController;
     const testConversationId = 'conv_test_123';
@@ -142,6 +149,11 @@ void main() {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(ConversationBuilder.build());
       registerFallbackValue(MessageBuilder.build());
+
+      // Bridge production ServiceLocator to test GetIt instance
+      // so ChatViewModel.currentUserId can resolve PermissionService
+      final testDIContainer = DIContainer();
+      production.ServiceLocator.initialize(testDIContainer);
     });
 
     setUp(() async {
@@ -150,6 +162,7 @@ void main() {
       // Create mocks
       mockMessagingService = MockMessagingService();
       mockAuthRepository = MockAuthRepository();
+      mockPresenceService = MockPresenceService();
       messagesStreamController = StreamController<List<Message>>.broadcast();
 
       // Configure auth repository
@@ -199,9 +212,21 @@ void main() {
       when(() => mockMessagingService.clearTypingIndicator(any()))
           .thenAnswer((_) async {});
 
+      // Configure presence service for typing indicators
+      when(() => mockPresenceService.startTyping(any()))
+          .thenAnswer((_) async {});
+      when(() => mockPresenceService.stopTyping(any()))
+          .thenAnswer((_) async {});
+
       // Register mocks in test service locator
       TestServiceLocator.registerMock<MessagingService>(mockMessagingService);
       TestServiceLocator.registerMock<AuthRepository>(mockAuthRepository);
+
+      // Configure PermissionService with test user ID so
+      // ChatViewModel.currentUserId resolves correctly via production ServiceLocator
+      final permissionService =
+          TestServiceLocator.get<PermissionService>() as MockPermissionService;
+      permissionService.setPermissionState(currentUserId: testUserId);
 
       // Create viewModel with initial conversation to avoid async loading in setup
       final initialConversation = ConversationBuilder.build(
@@ -217,6 +242,7 @@ void main() {
         messagingService: mockMessagingService,
         conversationId: testConversationId,
         initialConversation: initialConversation,
+        presenceService: mockPresenceService,
       );
     });
 
@@ -591,9 +617,8 @@ void main() {
         // Arrange & Act
         viewModel.setTyping();
 
-        // Assert
-        verify(() =>
-                mockMessagingService.setTypingIndicator(testConversationId))
+        // Assert - typing now uses PresenceService, not MessagingService
+        verify(() => mockPresenceService.startTyping(testConversationId))
             .called(1);
       });
 
@@ -601,9 +626,8 @@ void main() {
         // Arrange & Act
         viewModel.clearTyping();
 
-        // Assert
-        verify(() =>
-                mockMessagingService.clearTypingIndicator(testConversationId))
+        // Assert - typing now uses PresenceService, not MessagingService
+        verify(() => mockPresenceService.stopTyping(testConversationId))
             .called(1);
       });
 
@@ -887,10 +911,14 @@ void main() {
 
         // Act
         testViewModel.dispose();
+        // StateNotifierMixin.dispose() calls clearState() which may fire one
+        // notification to reset loading/error state. After that, manual calls
+        // like clearError should NOT notify because _isDisposed is true.
+        final countAfterDispose = notificationCount;
         testViewModel.clearError(); // Try to trigger notification after dispose
 
-        // Assert
-        expect(notificationCount, equals(0));
+        // Assert - no additional notifications after dispose
+        expect(notificationCount, equals(countAfterDispose));
       });
     });
   });

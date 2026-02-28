@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
@@ -356,7 +357,7 @@ class RuleCondition {
   }
 
   /// Returns the value as a string (for text-based conditions).
-  String get stringValue => value?.toString() ?? '';
+  String get stringValue => (value?.toString()).orEmpty();
 
   /// Returns the value as a number (for numeric conditions).
   num get numericValue {
@@ -452,7 +453,7 @@ class RuleCondition {
   }
 
   bool _evaluateSourceUrl(Recipe recipe) {
-    final url = recipe.sourceUrl ?? '';
+    final url = recipe.sourceUrl.orEmpty();
     if (url.isEmpty) return operator == ConditionOperator.notContains;
 
     final urlLower = caseSensitive ? url : url.toLowerCase();

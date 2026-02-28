@@ -153,6 +153,12 @@ class RecipeCacheModule {
       return;
     }
 
+    final firestore = _firestore;
+    if (firestore == null) {
+      AppLogger.warning('Cannot start Firebase sync: No Firestore instance');
+      return;
+    }
+
     try {
       AppLogger.info('🔄 Starting Firebase sync...');
 
@@ -168,7 +174,7 @@ class RecipeCacheModule {
         },
         onRecipeRemoved: _removeCachedRecipe,
         onSyncError: _handleSyncError,
-        firestore: _firestore,
+        firestore: firestore,
       );
 
       _syncSubscriptions.addAll(subscriptions);

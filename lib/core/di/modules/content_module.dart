@@ -42,6 +42,7 @@ import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/share_service.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/backup_service.dart';
 import 'package:butlery/services/social_media_extractor.dart';
@@ -124,6 +125,7 @@ class ContentModule implements DIModule {
         StorageRepository,
         StorageService,
         ImagePickerService,
+        ImageUploadService,
         OfflineService,
         CollaborativeRecipeRepository,
         BackupService,
@@ -354,6 +356,13 @@ class ContentModule implements DIModule {
 
       // Image picker service for photo handling
       container.registerSingleton<ImagePickerService>(ImagePickerService());
+
+      // Image upload service for upload coordination with retry and progress
+      container.registerLazySingleton<ImageUploadService>(
+        () => ImageUploadService(
+          storageService: container<StorageService>(),
+        ),
+      );
 
       // Offline service for content synchronization (lazy for faster startup)
       container.registerLazySingleton<OfflineService>(

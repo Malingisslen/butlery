@@ -5,7 +5,6 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -39,28 +38,19 @@ class ProfileViewModel extends ChangeNotifier
         _userService = userService,
         _accountDeletionService = accountDeletionService;
 
-  /// Current authenticated user from Firebase Auth
-  User? get currentUser => _authService.currentUser;
-
-  /// Current user ID
   String? get currentUserId => _authService.currentUserId;
 
-  /// Current user profile with full user data
   UserProfile? get currentUserProfile => _userService.currentUserProfile;
 
-  /// User display name
   String? get displayName =>
-      currentUserProfile?.displayName ?? currentUser?.displayName;
+      currentUserProfile?.displayName ?? _authService.currentUserDisplayName;
 
-  /// User email
-  String? get email => currentUser?.email;
+  String? get email => _authService.currentUserEmail;
 
-  /// User photo URL
   String? get photoUrl =>
-      currentUserProfile?.avatarUrl ?? currentUser?.photoURL;
+      currentUserProfile?.avatarUrl ?? _authService.currentUserPhotoUrl;
 
-  /// Whether user is authenticated
-  bool get isAuthenticated => currentUser != null;
+  bool get isAuthenticated => _authService.currentUserId != null;
 
   /// Sign out the current user
   Future<void> logout() async {

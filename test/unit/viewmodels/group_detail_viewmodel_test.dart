@@ -4,12 +4,16 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/group_detail_viewmodel.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/mocks/production_mocks.dart';
 
 // Mock services
 class MockMessagingService extends Mock implements MessagingService {}
@@ -72,6 +76,11 @@ void main() {
       registerFallbackValue(<String>[]);
       registerFallbackValue(<String, String>{});
       registerFallbackValue(<String, String?>{});
+
+      // Bridge production ServiceLocator to test GetIt instance
+      // so GroupDetailViewModel.currentUserId can resolve PermissionService
+      final testDIContainer = DIContainer();
+      production.ServiceLocator.initialize(testDIContainer);
     });
 
     setUp(() async {
@@ -91,6 +100,12 @@ void main() {
       TestServiceLocator.registerMock<UnifiedFriendsService>(
           mockFriendsService);
       TestServiceLocator.registerMock<AuthRepository>(mockAuthRepository);
+
+      // Configure PermissionService with test user ID so
+      // GroupDetailViewModel.currentUserId resolves correctly via production ServiceLocator
+      final permissionService =
+          TestServiceLocator.get<PermissionService>() as MockPermissionService;
+      permissionService.setPermissionState(currentUserId: testUserId);
 
       // Default mock behaviors
       when(() => mockAuthRepository.currentUserId).thenReturn(testUserId);
@@ -213,8 +228,8 @@ void main() {
         // Arrange
         viewModel = createViewModel();
 
-        // Act & Assert
-        expect(viewModel.groupTitle, 'Gruppkonversation');
+        // Act & Assert - production uses AppLocale.current.labelChat
+        expect(viewModel.groupTitle, 'Chatt');
       });
 
       test('should provide member IDs', () async {
@@ -258,7 +273,7 @@ void main() {
         // Act & Assert
         expect(viewModel.getMemberDisplayName(testMember1Id), 'Anna');
         expect(viewModel.getMemberDisplayName(testMember2Id), 'Erik');
-        expect(viewModel.getMemberDisplayName('unknown-id'), 'Okänd');
+        expect(viewModel.getMemberDisplayName('unknown-id'), '?');
       });
 
       test('should provide member avatar URL', () async {
@@ -322,7 +337,10 @@ void main() {
       });
 
       test('should return false for isAdmin when not authenticated', () async {
-        // Arrange
+        // Arrange - clear userId on PermissionService (which the ViewModel actually uses)
+        final permService =
+            TestServiceLocator.get<PermissionService>() as MockPermissionService;
+        permService.setPermissionState(currentUserId: null);
         when(() => mockAuthRepository.currentUserId).thenReturn(null);
         viewModel = createViewModel();
         await Future.delayed(const Duration(milliseconds: 100));
@@ -633,7 +651,10 @@ void main() {
       });
 
       test('should not leave group when not authenticated', () async {
-        // Arrange
+        // Arrange - clear userId on PermissionService (which the ViewModel actually uses)
+        final permService =
+            TestServiceLocator.get<PermissionService>() as MockPermissionService;
+        permService.setPermissionState(currentUserId: null);
         when(() => mockAuthRepository.currentUserId).thenReturn(null);
         viewModel = createViewModel();
         await Future.delayed(const Duration(milliseconds: 100));

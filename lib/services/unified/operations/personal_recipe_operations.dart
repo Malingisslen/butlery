@@ -148,6 +148,10 @@ class PersonalRecipeOperations {
     );
   }
 
+  Future<List<Recipe>> fetchAllUserRecipes(String userId) async {
+    return await _parent.fetchAllUserRecipes(userId);
+  }
+
   Future<bool> updateRecipe(Recipe recipe) async {
     return await _parent.updateRecipe(recipe);
   }

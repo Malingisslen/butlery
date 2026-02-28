@@ -4,7 +4,6 @@
 /// Delegates to specialized operation classes following the facade pattern.
 
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
@@ -552,48 +551,12 @@ class MessagingService extends BaseService with StreamManagementMixin {
         throw AuthenticationException('User must be authenticated');
       }
 
-      final firestore = FirebaseFirestore.instance;
-      final messageRef = firestore.collection('messages').doc(messageId);
-
-      await firestore.runTransaction((transaction) async {
-        final doc = await transaction.get(messageRef);
-        if (!doc.exists) return;
-
-        final data = doc.data()!;
-        final metadata = Map<String, dynamic>.from(data['metadata'] ?? {});
-        final pollMap = Map<String, dynamic>.from(metadata['poll'] ?? {});
-        final options = (pollMap['options'] as List<dynamic>?)
-                ?.map((o) => Map<String, dynamic>.from(o as Map))
-                .toList() ??
-            [];
-
-        // Remove user from all options if single choice
-        if (!allowMultiple) {
-          for (final option in options) {
-            final voters = List<String>.from(option['voterIds'] ?? []);
-            voters.remove(currentUserId);
-            option['voterIds'] = voters;
-          }
-        }
-
-        // Toggle vote on target option
-        for (final option in options) {
-          if (option['id'] == optionId) {
-            final voters = List<String>.from(option['voterIds'] ?? []);
-            if (voters.contains(currentUserId)) {
-              voters.remove(currentUserId);
-            } else {
-              voters.add(currentUserId);
-            }
-            option['voterIds'] = voters;
-            break;
-          }
-        }
-
-        pollMap['options'] = options;
-        metadata['poll'] = pollMap;
-        transaction.update(messageRef, {'metadata': metadata});
-      });
+      await _messagingRepository.votePoll(
+        messageId: messageId,
+        optionId: optionId,
+        voterId: currentUserId,
+        allowMultiple: allowMultiple,
+      );
 
       AppLogger.debug('Poll vote recorded for message $messageId');
     } catch (e) {
@@ -610,24 +573,10 @@ class MessagingService extends BaseService with StreamManagementMixin {
         throw AuthenticationException('User must be authenticated');
       }
 
-      final firestore = FirebaseFirestore.instance;
-      final messageRef = firestore.collection('messages').doc(messageId);
-      final doc = await messageRef.get();
-      if (!doc.exists) return;
-
-      final data = doc.data()!;
-      final metadata = Map<String, dynamic>.from(data['metadata'] ?? {});
-      final pollMap = Map<String, dynamic>.from(metadata['poll'] ?? {});
-
-      // Verify creator
-      if (pollMap['creatorId'] != currentUserId) {
-        AppLogger.warning('Non-creator attempted to close poll $messageId');
-        return;
-      }
-
-      pollMap['isClosed'] = true;
-      metadata['poll'] = pollMap;
-      await messageRef.update({'metadata': metadata});
+      await _messagingRepository.closePoll(
+        messageId: messageId,
+        closerId: currentUserId,
+      );
 
       AppLogger.debug('Poll closed: $messageId');
     } catch (e) {

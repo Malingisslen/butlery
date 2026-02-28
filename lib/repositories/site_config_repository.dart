@@ -3,6 +3,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 
 import 'package:butlery/models/parsing/site_config.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Repository for loading and caching site-specific parsing configurations.
 ///
@@ -23,7 +24,7 @@ class SiteConfigRepository {
 
   /// Collection reference for site configs.
   CollectionReference<Map<String, dynamic>> get _collection =>
-      _firestore.collection('site_configs');
+      _firestore.collection(FirestoreCollections.siteConfigs);
 
   /// Seed site configs if the collection is empty.
   ///

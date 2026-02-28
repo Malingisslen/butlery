@@ -5,7 +5,6 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
@@ -49,6 +48,7 @@ import 'package:butlery/models/recipe_unified.dart';
 
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 class SocialModule implements DIModule {
   @override
@@ -117,11 +117,9 @@ class SocialModule implements DIModule {
         FirebaseRatingsRepository(authRepository: container<AuthRepository>()),
       );
 
-      // Social recipe repository
       container.registerSingleton<SocialRecipeRepository>(
         FirebaseSocialRecipeRepository(
           authRepository: container<AuthRepository>(),
-          auth: FirebaseAuth.instance,
         ),
       );
 
@@ -223,7 +221,7 @@ class SocialModule implements DIModule {
                 // Save to menus collection
                 final menuData = sharedMenu.toFirestore();
                 final docRef = await firestoreRepo.firestore
-                    .collection('menus')
+                    .collection(FirestoreCollections.menus)
                     .add(menuData);
 
                 AppLogger.success('✅ Saved imported menu: ${docRef.id}');

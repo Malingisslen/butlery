@@ -9,12 +9,18 @@ import 'package:butlery/services/presence_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 class ChatViewModel extends ChangeNotifier
-    with StreamManagementMixin, ErrorHandlingMixin {
+    with
+        StreamManagementMixin,
+        ErrorHandlingMixin,
+        StateNotifierMixin,
+        AsyncOperationMixin {
   final MessagingService _messagingService;
   final PresenceService? _presenceService;
 
@@ -24,8 +30,6 @@ class ChatViewModel extends ChangeNotifier
   bool _isDisposed = false;
   Conversation? _conversation;
   List<Message> _messages = [];
-  bool _isLoading = true;
-  String? _error;
   bool _isSending = false;
   String? _sendError;
   List<String> _typingUserIds = [];
@@ -49,14 +53,15 @@ class ChatViewModel extends ChangeNotifier
   })  : _messagingService = messagingService,
         _presenceService = presenceService,
         _conversation = initialConversation {
+    // Start in loading state until messages arrive from stream
+    setLoading(true);
     _initializeChat();
   }
 
   // Getters
   Conversation? get conversation => _conversation;
   List<Message> get messages => _messages;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
+  // isLoading and error provided by StateNotifierMixin
   bool get isSending => _isSending;
   String? get sendError => _sendError;
   List<String> get currentTypingUsers => typingUserNames;
@@ -158,8 +163,7 @@ class ChatViewModel extends ChangeNotifier
     }
 
     _messages = messages;
-    _isLoading = false;
-    _error = null;
+    setSuccess();
     _safeNotifyListeners();
 
     // Auto-mark as read when messages arrive
@@ -175,10 +179,8 @@ class ChatViewModel extends ChangeNotifier
     _setError(AppLocale.current.errorCouldNotLoadMessages);
   }
 
-  void _setError(String error) {
-    _error = error;
-    _isLoading = false;
-    _safeNotifyListeners();
+  void _setError(String errorMessage) {
+    setError(errorMessage);
   }
 
   // Message operations
@@ -439,10 +441,11 @@ class ChatViewModel extends ChangeNotifier
     await Future.delayed(const Duration(milliseconds: 500));
   }
 
+  @override
   void clearError() {
     if (_isDisposed) return;
 
-    _error = null;
+    super.clearError();
     _sendError = null;
     _safeNotifyListeners();
   }
@@ -467,6 +470,7 @@ class ChatViewModel extends ChangeNotifier
     _typingSubscription?.cancel();
     _typingDebounceTimer?.cancel();
     clearTyping();
+    cancelAllOperations();
     disposeStreamResources();
     super.dispose();
   }

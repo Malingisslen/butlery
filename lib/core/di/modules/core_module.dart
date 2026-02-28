@@ -22,6 +22,8 @@ import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_analytics_repository.dart';
 import 'package:butlery/repositories/noop/noop_analytics_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
+import 'package:butlery/repositories/interfaces/feedback_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_feedback_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
@@ -95,6 +97,7 @@ class CoreModule implements DIModule {
       // Feature flags
       FeatureFlagService,
       // Beta feedback
+      FeedbackRepository,
       InteractionLogger,
       FeedbackService,
     ];
@@ -219,6 +222,12 @@ class CoreModule implements DIModule {
       );
 
       // Beta feedback services
+      container.registerLazySingleton<FeedbackRepository>(
+        () => FirebaseFeedbackRepository(
+          authRepository: container<AuthRepository>(),
+          auditRepository: container<FirebaseAuditRepository>(),
+        ),
+      );
       container.registerLazySingleton<InteractionLogger>(
         () => InteractionLogger(),
       );

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles deletion of social data (friends, messages, shared content, comments/ratings).
 class SocialDeletionOperations {
@@ -13,9 +14,9 @@ class SocialDeletionOperations {
       final batch = _firestore.batch();
 
       final userFriends = await _firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('friends')
+          .collection(FirestoreCollections.userFriends)
           .get();
 
       for (final doc in userFriends.docs) {
@@ -23,9 +24,9 @@ class SocialDeletionOperations {
       }
 
       final categories = await _firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('friendCategories')
+          .collection(FirestoreCollections.userFriendCategories)
           .get();
 
       for (final doc in categories.docs) {
@@ -33,7 +34,7 @@ class SocialDeletionOperations {
       }
 
       final sentRequests = await _firestore
-          .collection('friend_requests')
+          .collection(FirestoreCollections.friendRequests)
           .where('fromUserId', isEqualTo: userId)
           .get();
 
@@ -42,7 +43,7 @@ class SocialDeletionOperations {
       }
 
       final receivedRequests = await _firestore
-          .collection('friend_requests')
+          .collection(FirestoreCollections.friendRequests)
           .where('toUserId', isEqualTo: userId)
           .get();
 
@@ -51,7 +52,7 @@ class SocialDeletionOperations {
       }
 
       final sentInvitations = await _firestore
-          .collection('group_invitations')
+          .collection(FirestoreCollections.groupInvitations)
           .where('fromUserId', isEqualTo: userId)
           .get();
 
@@ -60,7 +61,7 @@ class SocialDeletionOperations {
       }
 
       final receivedInvitations = await _firestore
-          .collection('group_invitations')
+          .collection(FirestoreCollections.groupInvitations)
           .where('toUserId', isEqualTo: userId)
           .get();
 
@@ -80,7 +81,7 @@ class SocialDeletionOperations {
   Future<bool> deleteMessages(String userId) async {
     try {
       final conversationsSnapshot = await _firestore
-          .collection('conversations')
+          .collection(FirestoreCollections.conversations)
           .where('participants', arrayContains: userId)
           .get();
 
@@ -88,7 +89,7 @@ class SocialDeletionOperations {
 
       for (final doc in conversationsSnapshot.docs) {
         final messagesSnapshot =
-            await doc.reference.collection('messages').get();
+            await doc.reference.collection(FirestoreCollections.messages).get();
 
         for (final msgDoc in messagesSnapshot.docs) {
           batch.delete(msgDoc.reference);
@@ -115,7 +116,7 @@ class SocialDeletionOperations {
   Future<bool> removeFromSharedContent(String userId) async {
     try {
       final sharedRecipesSnapshot = await _firestore
-          .collection('shared_recipes')
+          .collection(FirestoreCollections.sharedRecipes)
           .where('sharedWith', arrayContains: userId)
           .get();
 
@@ -133,7 +134,7 @@ class SocialDeletionOperations {
       }
 
       final ownedSharedSnapshot = await _firestore
-          .collection('shared_recipes')
+          .collection(FirestoreCollections.sharedRecipes)
           .where('ownerId', isEqualTo: userId)
           .get();
 
@@ -155,7 +156,7 @@ class SocialDeletionOperations {
       final batch = _firestore.batch();
 
       final commentsSnapshot = await _firestore
-          .collection('recipe_comments')
+          .collection(FirestoreCollections.recipeComments)
           .where('userId', isEqualTo: userId)
           .get();
 
@@ -164,7 +165,7 @@ class SocialDeletionOperations {
       }
 
       final ratingsSnapshot = await _firestore
-          .collection('recipe_ratings')
+          .collection(FirestoreCollections.recipeRatings)
           .where('userId', isEqualTo: userId)
           .get();
 
@@ -173,7 +174,7 @@ class SocialDeletionOperations {
       }
 
       final menuCommentsSnapshot = await _firestore
-          .collection('menu_comments')
+          .collection(FirestoreCollections.menuComments)
           .where('userId', isEqualTo: userId)
           .get();
 
@@ -182,7 +183,7 @@ class SocialDeletionOperations {
       }
 
       final menuRatingsSnapshot = await _firestore
-          .collection('menu_ratings')
+          .collection(FirestoreCollections.menuRatings)
           .where('userId', isEqualTo: userId)
           .get();
 

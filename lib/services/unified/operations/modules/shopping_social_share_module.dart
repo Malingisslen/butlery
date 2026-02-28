@@ -4,6 +4,7 @@ import 'dart:math' show min;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Module handling social shopping list sharing with friends and groups.
 /// Provides complete social sharing functionality with Firebase integration.
@@ -39,9 +40,9 @@ class ShoppingSocialShareModule {
 
       // Get shopping list data from user's personal lists
       final listDoc = await _firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(currentUser.uid)
-          .collection('unified_shopping_lists')
+          .collection(FirestoreCollections.unifiedShoppingLists)
           .doc(listId)
           .get();
       if (!listDoc.exists) {
@@ -67,7 +68,7 @@ class ShoppingSocialShareModule {
       };
 
       // Create shared list document in Firestore
-      final sharedListRef = _firestore.collection('sharedShoppingLists').doc();
+      final sharedListRef = _firestore.collection(FirestoreCollections.sharedShoppingListsDenorm).doc();
       await sharedListRef.set(sharedListData);
 
       // Create individual share records for each friend
@@ -75,9 +76,9 @@ class ShoppingSocialShareModule {
 
       for (final friendId in friendIds) {
         final shareRecordRef = _firestore
-            .collection('userSharedShoppingLists')
+            .collection(FirestoreCollections.userSharedShoppingLists)
             .doc(friendId)
-            .collection('receivedLists')
+            .collection(FirestoreCollections.receivedLists)
             .doc(sharedListRef.id);
 
         batch.set(shareRecordRef, {
@@ -137,7 +138,7 @@ class ShoppingSocialShareModule {
       for (int i = 0; i < groupIds.length; i += 30) {
         final batchIds = groupIds.sublist(i, min(i + 30, groupIds.length));
         final groupDocs = await _firestore
-            .collection('friendCategories')
+            .collection(FirestoreCollections.userFriendCategories)
             .where(FieldPath.documentId, whereIn: batchIds)
             .get();
 
@@ -206,9 +207,9 @@ class ShoppingSocialShareModule {
       if (currentUserId == null) return [];
 
       final querySnapshot = await _firestore
-          .collection('userSharedShoppingLists')
+          .collection(FirestoreCollections.userSharedShoppingLists)
           .doc(currentUserId)
-          .collection('receivedLists')
+          .collection(FirestoreCollections.receivedLists)
           .orderBy('sharedAt', descending: true)
           .get();
 
@@ -236,7 +237,7 @@ class ShoppingSocialShareModule {
         final batchIds =
             sharedListIds.sublist(i, min(i + 10, sharedListIds.length));
         final listDocs = await _firestore
-            .collection('sharedShoppingLists')
+            .collection(FirestoreCollections.sharedShoppingListsDenorm)
             .where(FieldPath.documentId, whereIn: batchIds)
             .get();
 
@@ -284,7 +285,7 @@ class ShoppingSocialShareModule {
       if (currentUserId == null) return [];
 
       final querySnapshot = await _firestore
-          .collection('sharedShoppingLists')
+          .collection(FirestoreCollections.sharedShoppingListsDenorm)
           .where('sharedByUserId', isEqualTo: currentUserId)
           .where('isActive', isEqualTo: true)
           .orderBy('sharedAt', descending: true)
@@ -316,7 +317,7 @@ class ShoppingSocialShareModule {
 
       // Get shared list data
       final listDoc = await _firestore
-          .collection('sharedShoppingLists')
+          .collection(FirestoreCollections.sharedShoppingListsDenorm)
           .doc(sharedListId)
           .get();
 
@@ -337,9 +338,9 @@ class ShoppingSocialShareModule {
 
       // Mark as imported in user's received lists
       await _firestore
-          .collection('userSharedShoppingLists')
+          .collection(FirestoreCollections.userSharedShoppingLists)
           .doc(currentUserId)
-          .collection('receivedLists')
+          .collection(FirestoreCollections.receivedLists)
           .doc(sharedListId)
           .update({
         'isImported': true,
@@ -363,9 +364,9 @@ class ShoppingSocialShareModule {
       if (currentUserId == null) return false;
 
       await _firestore
-          .collection('userSharedShoppingLists')
+          .collection(FirestoreCollections.userSharedShoppingLists)
           .doc(currentUserId)
-          .collection('receivedLists')
+          .collection(FirestoreCollections.receivedLists)
           .doc(sharedListId)
           .update({
         'isViewed': true,
@@ -390,7 +391,7 @@ class ShoppingSocialShareModule {
       if (currentUserId == null) return {};
 
       final querySnapshot = await _firestore
-          .collection('sharedShoppingLists')
+          .collection(FirestoreCollections.sharedShoppingListsDenorm)
           .where('sharedByUserId', isEqualTo: currentUserId)
           .where('isActive', isEqualTo: true)
           .get();

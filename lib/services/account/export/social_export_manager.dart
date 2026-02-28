@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/services/account/export/export_pagination_helper.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles export of social data: friends, messages, shared content.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -30,7 +31,7 @@ class SocialExportManager {
       final friendsSnapshot =
           await ExportPaginationHelper.paginatedCollectionExport(
         collection:
-            _firestore.collection('users').doc(userId).collection('friends'),
+            _firestore.collection(FirestoreCollections.users).doc(userId).collection(FirestoreCollections.userFriends),
         maxDocuments: friendLimit,
       );
 
@@ -44,7 +45,7 @@ class SocialExportManager {
       // Get friend requests sent (paginated)
       final sentRequests = await ExportPaginationHelper.paginatedQuery(
         query: _firestore
-            .collection('friend_requests')
+            .collection(FirestoreCollections.friendRequests)
             .where('fromUserId', isEqualTo: userId),
         maxDocuments: requestLimit,
       );
@@ -59,7 +60,7 @@ class SocialExportManager {
       // Get friend requests received (paginated)
       final receivedRequests = await ExportPaginationHelper.paginatedQuery(
         query: _firestore
-            .collection('friend_requests')
+            .collection(FirestoreCollections.friendRequests)
             .where('toUserId', isEqualTo: userId),
         maxDocuments: requestLimit,
       );
@@ -73,9 +74,9 @@ class SocialExportManager {
 
       // Get friend categories/groups (limited)
       final categories = await _firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('friendCategories')
+          .collection(FirestoreCollections.userFriendCategories)
           .limit(100)
           .get();
 
@@ -116,7 +117,7 @@ class SocialExportManager {
       // Get conversations where user is participant (paginated)
       final conversations = await ExportPaginationHelper.paginatedQuery(
         query: _firestore
-            .collection('conversations')
+            .collection(FirestoreCollections.conversations)
             .where('participantIds', arrayContains: userId),
         maxDocuments: conversationLimit,
       );
@@ -131,7 +132,7 @@ class SocialExportManager {
 
         // Get messages in this conversation (limited per conversation)
         final messages = await conversationDoc.reference
-            .collection('messages')
+            .collection(FirestoreCollections.messages)
             .orderBy('timestamp', descending: false)
             .limit(messageLimit)
             .get();
@@ -180,7 +181,7 @@ class SocialExportManager {
       // Get recipes shared with user (paginated)
       final sharedRecipes = await ExportPaginationHelper.paginatedQuery(
         query: _firestore
-            .collection('shared_recipes')
+            .collection(FirestoreCollections.sharedRecipes)
             .where('sharedWithUserIds', arrayContains: userId),
         maxDocuments: recipeLimit,
       );
@@ -195,7 +196,7 @@ class SocialExportManager {
       // Get menus shared with user (paginated)
       final sharedMenus = await ExportPaginationHelper.paginatedQuery(
         query: _firestore
-            .collection('menus')
+            .collection(FirestoreCollections.menus)
             .where('sharedToUserIds', arrayContains: userId),
         maxDocuments: menuLimit,
       );

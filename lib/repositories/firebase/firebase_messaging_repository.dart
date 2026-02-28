@@ -20,6 +20,7 @@ import 'package:butlery/repositories/firebase/modules/conversation_mutation_modu
 import 'package:butlery/repositories/firebase/modules/conversation_participant_module.dart';
 import 'package:butlery/repositories/firebase/modules/message_query_module.dart';
 import 'package:butlery/repositories/firebase/modules/message_mutation_module.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase messaging repository using modular architecture.
 /// Delegates to specialized modules for clean separation of concerns.
@@ -87,7 +88,7 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     );
   }
   @override
-  String get collectionName => 'conversations';
+  String get collectionName => FirestoreCollections.conversations;
 
   @override
   Conversation fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
@@ -136,7 +137,7 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   }
 
   CollectionReference<Map<String, dynamic>> get _messagesRef =>
-      firestore.collection('messages');
+      firestore.collection(FirestoreCollections.messages);
   @override
   Stream<List<Conversation>> getUserConversations(String userId) =>
       _conversationQueryModule.getUserConversations(userId);
@@ -252,6 +253,30 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   Future<void> deleteConversation(String conversationId) async =>
       _conversationMutationModule.deleteConversation(
           conversationId, _messagesRef);
+
+  @override
+  Future<void> votePoll({
+    required String messageId,
+    required String optionId,
+    required String voterId,
+    required bool allowMultiple,
+  }) async =>
+      _messageMutationModule.votePoll(
+        messageId: messageId,
+        optionId: optionId,
+        voterId: voterId,
+        allowMultiple: allowMultiple,
+      );
+
+  @override
+  Future<void> closePoll({
+    required String messageId,
+    required String closerId,
+  }) async =>
+      _messageMutationModule.closePoll(
+        messageId: messageId,
+        closerId: closerId,
+      );
 
   @override
   Future<void> updateConversationUserSettings({

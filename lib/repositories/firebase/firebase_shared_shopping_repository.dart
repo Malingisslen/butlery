@@ -57,6 +57,7 @@ import 'package:butlery/repositories/firebase/shared_content/shared_shopping_dis
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase repository for shared shopping list operations with consistent API patterns
 class FirebaseSharedShoppingRepository
@@ -88,7 +89,7 @@ class FirebaseSharedShoppingRepository
         );
 
   @override
-  String get collectionName => 'shared_shopping_lists';
+  String get collectionName => FirestoreCollections.sharedShoppingLists;
   @override
   BaseViewRepository get viewRepository => _viewRepository;
 
@@ -125,7 +126,7 @@ class FirebaseSharedShoppingRepository
   bool get tracksCounts => false; // Shopping lists don't track view/join counts
   @override
   CollectionReference<Map<String, dynamic>> getCollectionRef() {
-    return firestore.collection('shared_shopping_lists');
+    return firestore.collection(FirestoreCollections.sharedShoppingLists);
   }
 
   @override
@@ -352,9 +353,9 @@ class FirebaseSharedShoppingRepository
       await validateListAccess(listId);
 
       final itemRef = firestore
-          .collection('shared_shopping_lists')
+          .collection(FirestoreCollections.sharedShoppingLists)
           .doc(listId)
-          .collection('items')
+          .collection(FirestoreCollections.items)
           .doc(item.id);
 
       await itemRef.set(item.toFirestore());
@@ -384,11 +385,11 @@ class FirebaseSharedShoppingRepository
       await validateListAccess(listId);
 
       final batch = firestore.batch();
-      final listRef = firestore.collection('shared_shopping_lists').doc(listId);
+      final listRef = firestore.collection(FirestoreCollections.sharedShoppingLists).doc(listId);
 
       // Add all items to subcollection
       for (final item in items) {
-        final itemRef = listRef.collection('items').doc(item.id);
+        final itemRef = listRef.collection(FirestoreCollections.items).doc(item.id);
         batch.set(itemRef, item.toFirestore());
       }
 
@@ -417,9 +418,9 @@ class FirebaseSharedShoppingRepository
       await validateListAccess(listId);
 
       final snapshot = await firestore
-          .collection('shared_shopping_lists')
+          .collection(FirestoreCollections.sharedShoppingLists)
           .doc(listId)
-          .collection('items')
+          .collection(FirestoreCollections.items)
           .orderBy('addedAt', descending: false)
           .get();
 
@@ -448,9 +449,9 @@ class FirebaseSharedShoppingRepository
       await validateListAccess(listId);
 
       final doc = await firestore
-          .collection('shared_shopping_lists')
+          .collection(FirestoreCollections.sharedShoppingLists)
           .doc(listId)
-          .collection('items')
+          .collection(FirestoreCollections.items)
           .doc(itemId)
           .get();
 
@@ -475,9 +476,9 @@ class FirebaseSharedShoppingRepository
       await validateListAccess(listId);
 
       await firestore
-          .collection('shared_shopping_lists')
+          .collection(FirestoreCollections.sharedShoppingLists)
           .doc(listId)
-          .collection('items')
+          .collection(FirestoreCollections.items)
           .doc(item.id)
           .update(item.toFirestore());
 
@@ -499,9 +500,9 @@ class FirebaseSharedShoppingRepository
       await validateListAccess(listId);
 
       await firestore
-          .collection('shared_shopping_lists')
+          .collection(FirestoreCollections.sharedShoppingLists)
           .doc(listId)
-          .collection('items')
+          .collection(FirestoreCollections.items)
           .doc(itemId)
           .delete();
 
@@ -535,9 +536,9 @@ class FirebaseSharedShoppingRepository
       };
 
       await firestore
-          .collection('shared_shopping_lists')
+          .collection(FirestoreCollections.sharedShoppingLists)
           .doc(listId)
-          .collection('items')
+          .collection(FirestoreCollections.items)
           .doc(itemId)
           .update(updateData);
 
@@ -564,9 +565,9 @@ class FirebaseSharedShoppingRepository
 
       // Query all completed items
       final snapshot = await firestore
-          .collection('shared_shopping_lists')
+          .collection(FirestoreCollections.sharedShoppingLists)
           .doc(listId)
-          .collection('items')
+          .collection(FirestoreCollections.items)
           .where('bought', isEqualTo: true)
           .get();
 
@@ -607,9 +608,9 @@ class FirebaseSharedShoppingRepository
 
       // Query all bought items
       final snapshot = await firestore
-          .collection('shared_shopping_lists')
+          .collection(FirestoreCollections.sharedShoppingLists)
           .doc(listId)
-          .collection('items')
+          .collection(FirestoreCollections.items)
           .where('bought', isEqualTo: true)
           .get();
 
@@ -647,9 +648,9 @@ class FirebaseSharedShoppingRepository
     try {
       // Note: Access validation happens on first stream event
       return firestore
-          .collection('shared_shopping_lists')
+          .collection(FirestoreCollections.sharedShoppingLists)
           .doc(listId)
-          .collection('items')
+          .collection(FirestoreCollections.items)
           .orderBy('addedAt', descending: false)
           .snapshots()
           .map((snapshot) => snapshot.docs
@@ -680,11 +681,11 @@ class FirebaseSharedShoppingRepository
     bool recalculate = false,
   }) async {
     try {
-      final listRef = firestore.collection('shared_shopping_lists').doc(listId);
+      final listRef = firestore.collection(FirestoreCollections.sharedShoppingLists).doc(listId);
 
       if (recalculate) {
         // Recalculate from subcollection (for bulk operations)
-        final snapshot = await listRef.collection('items').get();
+        final snapshot = await listRef.collection(FirestoreCollections.items).get();
         await listRef.update({'itemCount': snapshot.size});
         AppLogger.debug(
             '🛒 Recalculated itemCount for list $listId: ${snapshot.size}');
@@ -717,7 +718,7 @@ class FirebaseSharedShoppingRepository
 
       // Check if user is owner
       final listDoc =
-          await firestore.collection('shared_shopping_lists').doc(listId).get();
+          await firestore.collection(FirestoreCollections.sharedShoppingLists).doc(listId).get();
 
       if (!listDoc.exists) {
         throw RepositoryException('Shopping list not found: $listId');
@@ -732,9 +733,9 @@ class FirebaseSharedShoppingRepository
 
       // Check if user is a member
       final memberDoc = await firestore
-          .collection('shared_shopping_lists')
+          .collection(FirestoreCollections.sharedShoppingLists)
           .doc(listId)
-          .collection('members')
+          .collection(FirestoreCollections.members)
           .doc(userId)
           .get();
 

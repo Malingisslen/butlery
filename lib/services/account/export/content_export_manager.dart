@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/services/account/export/export_pagination_helper.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles export of user content: recipes, menus, shopping lists.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -23,7 +24,7 @@ class ContentExportManager {
       final personalRecipes =
           await ExportPaginationHelper.paginatedCollectionExport(
         collection:
-            _firestore.collection('users').doc(userId).collection('recipes'),
+            _firestore.collection(FirestoreCollections.users).doc(userId).collection(FirestoreCollections.recipes),
         maxDocuments: recipeLimit,
       );
 
@@ -38,7 +39,7 @@ class ContentExportManager {
       // Unified recipes where user is owner (paginated)
       final unifiedRecipes = await ExportPaginationHelper.paginatedQuery(
         query:
-            _firestore.collection('recipes').where('userId', isEqualTo: userId),
+            _firestore.collection(FirestoreCollections.recipes).where('userId', isEqualTo: userId),
         maxDocuments: recipeLimit,
       );
 
@@ -71,7 +72,7 @@ class ContentExportManager {
       final menusSnapshot =
           await ExportPaginationHelper.paginatedCollectionExport(
         collection:
-            _firestore.collection('users').doc(userId).collection('menus'),
+            _firestore.collection(FirestoreCollections.users).doc(userId).collection(FirestoreCollections.menus),
         maxDocuments: menuLimit,
       );
 
@@ -85,7 +86,7 @@ class ContentExportManager {
       // Get menus from menus collection where user is owner (paginated)
       final sharedMenus = await ExportPaginationHelper.paginatedQuery(
         query: _firestore
-            .collection('menus')
+            .collection(FirestoreCollections.menus)
             .where('sharedByUserId', isEqualTo: userId),
         maxDocuments: menuLimit,
       );
@@ -120,9 +121,9 @@ class ContentExportManager {
       final shoppingLists =
           await ExportPaginationHelper.paginatedCollectionExport(
         collection: _firestore
-            .collection('users')
+            .collection(FirestoreCollections.users)
             .doc(userId)
-            .collection('shopping_lists'),
+            .collection(FirestoreCollections.userShoppingLists),
         maxDocuments: listLimit,
       );
 
@@ -138,7 +139,7 @@ class ContentExportManager {
         // Items are limited to prevent timeout on very large lists
         try {
           final items =
-              await listDoc.reference.collection('items').limit(500).get();
+              await listDoc.reference.collection(FirestoreCollections.items).limit(500).get();
           for (final itemDoc in items.docs) {
             itemsList.add({
               'item_id': itemDoc.id,
@@ -175,9 +176,9 @@ class ContentExportManager {
       final tagsSnapshot =
           await ExportPaginationHelper.paginatedCollectionExport(
         collection: _firestore
-            .collection('users')
+            .collection(FirestoreCollections.users)
             .doc(userId)
-            .collection('personalTagIds'),
+            .collection(FirestoreCollections.userPersonalTagIds),
         maxDocuments: tagLimit,
       );
 
@@ -210,9 +211,9 @@ class ContentExportManager {
       final groupsSnapshot =
           await ExportPaginationHelper.paginatedCollectionExport(
         collection: _firestore
-            .collection('users')
+            .collection(FirestoreCollections.users)
             .doc(userId)
-            .collection('personalTagGroups'),
+            .collection(FirestoreCollections.userPersonalTagGroups),
         maxDocuments: groupLimit,
       );
 
