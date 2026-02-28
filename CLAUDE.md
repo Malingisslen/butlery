@@ -17,7 +17,6 @@
 **Service Access**: `ServiceLocator.get<T>()` — constructor injection in DI modules, ServiceLocator in widgets/ViewModels
 - ❌ Never use `FirebaseFirestore.instance` directly - inject FirestoreRepository
 - Unified services use `.personal`, `.social`, `.realtime` modules (see `butlery-architecture` skill)
-- See ADRs in `/docs/adr/` for complete architectural decisions.
 
 ## Critical Conventions
 
