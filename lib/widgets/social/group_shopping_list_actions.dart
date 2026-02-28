@@ -11,7 +11,6 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
-import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/utils/shopping_list_formatter.dart';
 

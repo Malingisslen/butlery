@@ -25,6 +25,29 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
     return entity.toFirestore();
   }
 
+  @override
+  String getId(ContentReport entity) => entity.id;
+
+  @override
+  Future<bool> validateCreatePermission(
+          String userId, ContentReport entity) async =>
+      userId == entity.reporterId;
+
+  @override
+  Future<bool> validateReadPermission(
+          String userId, String resourceId, ContentReport? entity) async =>
+      entity == null || userId == entity.reporterId;
+
+  @override
+  Future<bool> validateUpdatePermission(
+          String userId, String resourceId, ContentReport entity) async =>
+      false; // Reports cannot be updated
+
+  @override
+  Future<bool> validateDeletePermission(
+          String userId, String resourceId) async =>
+      true; // Own reports can be deleted via account deletion
+
   /// Submit a new report. Returns the document ID.
   Future<String?> submitReport(ContentReport report) async {
     try {
