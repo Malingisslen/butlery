@@ -11,6 +11,8 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/views/legal/privacy_policy_view.dart';
 import 'package:butlery/views/mina_recept_view.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -389,6 +391,8 @@ class _AuthViewState extends State<AuthView> {
   }
 
   Widget _buildFooter() {
+    final cs = Theme.of(context).colorScheme;
+
     return SafeArea(
       top: false,
       child: Padding(
@@ -396,20 +400,37 @@ class _AuthViewState extends State<AuthView> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              context.l10n.authTermsOfService,
-              style: AppTextStyles.labelMedium
-                  .copyWith(color: AppColors.textMedium),
+            GestureDetector(
+              onTap: () => Navigator.pushNamed(context, Routes.termsOfService),
+              child: Text(
+                context.l10n.authTermsOfService,
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: cs.primary,
+                  decoration: TextDecoration.underline,
+                  decorationColor: cs.primary,
+                ),
+              ),
             ),
             Text(
               ' \u00B7 ',
               style: AppTextStyles.labelMedium
                   .copyWith(color: AppColors.textMedium),
             ),
-            Text(
-              context.l10n.profilePrivacyPolicy,
-              style: AppTextStyles.labelMedium
-                  .copyWith(color: AppColors.textMedium),
+            GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const PrivacyPolicyView(),
+                ),
+              ),
+              child: Text(
+                context.l10n.profilePrivacyPolicy,
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: cs.primary,
+                  decoration: TextDecoration.underline,
+                  decorationColor: cs.primary,
+                ),
+              ),
             ),
           ],
         ),
