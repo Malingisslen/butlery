@@ -1,4 +1,4 @@
-# Phase 6: Performance & Scalability (~4 days)
+# Phase 6: Performance & Scalability (~3 days)
 
 Unbounded listeners, startup optimization, cache config, audit log retention, subcollection TTL.
 
@@ -111,23 +111,6 @@ Unbounded listeners, startup optimization, cache config, audit log retention, su
 ## P6-13 — No cache-first read patterns [HIGH]
 
 **Source**: R04:dim7-2
-**Fix**: All Firestore reads default to server-first even if cached data is available. Read from cache first, then refresh.
+**Files**: Firestore repository files
+**Fix**: All Firestore reads default to server-first even if cached data is available. Use `GetOptions(source: Source.cache)` with server fallback for non-critical reads.
 **Effort**: 1-2d
-
----
-
-## P6-14 — Notification functions missing rate limiting [MED]
-
-**Source**: R02:F-08
-**Files**: `functions/src/notifications/send-notification.ts:62`
-**Fix**: `sendNotification` / `sendNotificationBatch` lack rate limiting.
-**Effort**: 4h
-
----
-
-## P6-15 — OCR Cloud Function SSRF risk [MED]
-
-**Source**: R02:F-16
-**Files**: `functions/src/llm/ocr-recipe-image.ts:68-76`
-**Fix**: Add URL validation to prevent arbitrary `imageUrl` fetching internal network.
-**Effort**: 2h

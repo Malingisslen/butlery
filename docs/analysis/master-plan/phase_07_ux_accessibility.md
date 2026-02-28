@@ -1,14 +1,14 @@
-# Phase 7: UX, Accessibility & Polish (~5 days)
+# Phase 7: UX, Accessibility & Polish (~4 days)
 
 Color contrast, semantics, Colors.* cleanup, i18n completion, platform compliance.
 
 ---
 
-## P7-01 — Add Semantics to interactive elements [CRIT]
+## P7-01 — Add Semantics to interactive elements [HIGH]
 
 **Source**: R06:2.1
 **Files**: `lib/widgets/` (many files)
-**Fix**: Many `InkWell`/`GestureDetector` widgets lack screen reader labels. Only ~56 `Semantics` in code vs hundreds of interactive elements. Prioritize navigation and primary actions.
+**Fix**: Many `InkWell`/`GestureDetector` widgets lack screen reader labels. Only ~56 `Semantics` in code vs hundreds of interactive elements. Prioritize navigation and primary actions (first pass — partial coverage).
 **Effort**: 3-5d
 
 ---
@@ -25,7 +25,7 @@ Color contrast, semantics, Colors.* cleanup, i18n completion, platform complianc
 ## P7-03 — Add heading semantics [HIGH]
 
 **Source**: R06:2.3
-**Fix**: No `Semantics(header: true)` or heading-level annotations anywhere. Screen reader navigation by headings impossible.
+**Fix**: No `Semantics(header: true)` or heading-level annotations anywhere. Screen reader navigation by headings impossible. Target primary view headers and section titles.
 **Effort**: 2d
 
 ---
@@ -101,24 +101,16 @@ Color contrast, semantics, Colors.* cleanup, i18n completion, platform complianc
 
 ---
 
-## P7-12 — Remove 4 section dividers [LOW]
+## P7-12 — Code housekeeping (dividers, dead code, unhandled futures) [LOW]
 
-**Source**: R01:M5.4
-**Files**: `parsing_correction.dart:31,45,62`, `ingredient_data.dart:78`
-**Fix**: Remove `// === Section ===` style dividers.
-**Effort**: 15 min
-
----
-
-## P7-13 — Remove ~35 lines of commented-out code [LOW]
-
-**Source**: R01:L5.1
-**Files**: `deep_link_service.dart:322-335` (14 lines), 6 other files
-**Effort**: 30 min
+**Source**: R01:M5.4, R01:L5.1, R01:L4.1
+**Files**: `parsing_correction.dart:31,45,62`, `ingredient_data.dart:78`, `deep_link_service.dart:322-335`, `feature_flag_service.dart:177`, `recipe_parser_service.dart:431`, 6 other files
+**Fix**: (1) Remove 4 `// === Section ===` dividers. (2) Delete ~35 lines of commented-out code. (3) Add `.catchError()` or convert to `async`/`await` for 2 `.then()` calls.
+**Effort**: 1h
 
 ---
 
-## P7-14 — TextFormField widgets without validators [MED]
+## P7-13 — TextFormField widgets without validators [MED]
 
 **Source**: R01:M4.1
 **Files**: `assisted_import_dialog.dart:239-298` (4 fields), `edit_group_dialog.dart:164`
@@ -127,7 +119,7 @@ Color contrast, semantics, Colors.* cleanup, i18n completion, platform complianc
 
 ---
 
-## P7-15 — `double.parse()`/`int.parse()` without try-catch [MED]
+## P7-14 — `double.parse()`/`int.parse()` without try-catch [MED]
 
 **Source**: R01:M4.2
 **Files**: `shopping_item_dialog.dart:324`, `json_serializable_mixin.dart:283,299`, `personal_tag_color_picker.dart:44`
@@ -136,7 +128,7 @@ Color contrast, semantics, Colors.* cleanup, i18n completion, platform complianc
 
 ---
 
-## P7-16 — macOS Release entitlements minimal [MED]
+## P7-15 — macOS Release entitlements minimal [MED]
 
 **Source**: R06:5.3
 **Files**: `macos/Runner/Release.entitlements`
@@ -145,7 +137,7 @@ Color contrast, semantics, Colors.* cleanup, i18n completion, platform complianc
 
 ---
 
-## P7-17 — Focus traversal configuration [MED]
+## P7-16 — Focus traversal configuration [MED]
 
 **Source**: R06:2.5
 **Fix**: No `FocusTraversalGroup`, `FocusOrder`, or custom `FocusTraversalPolicy`. Keyboard/switch users may encounter illogical tab order.
@@ -153,25 +145,16 @@ Color contrast, semantics, Colors.* cleanup, i18n completion, platform complianc
 
 ---
 
-## P7-18 — Version still at 1.0.0+1 [LOW]
+## P7-17 — Pre-release metadata hygiene [LOW]
 
-**Source**: R01:M7.3
-**Files**: `pubspec.yaml:4`
-**Fix**: Establish semantic versioning scheme before release.
+**Source**: R01:M7.3, R06:6.6
+**Files**: `pubspec.yaml:4`, `AndroidManifest.xml`, `Info.plist`
+**Fix**: (1) Version still at 1.0.0+1 — establish semantic versioning scheme before release. (2) "butlery" → "Butlery" in app name manifests.
 **Effort**: 30 min
 
 ---
 
-## P7-19 — Capitalize app name in manifests [LOW]
-
-**Source**: R06:6.6
-**Files**: AndroidManifest.xml, Info.plist
-**Fix**: "butlery" → "Butlery" for store display.
-**Effort**: 5 min
-
----
-
-## P7-20 — iOS permission descriptions may be Swedish-only [LOW]
+## P7-18 — iOS permission descriptions may be Swedish-only [LOW]
 
 **Source**: R06:4.5
 **Files**: `ios/Runner/Info.plist`
@@ -180,33 +163,7 @@ Color contrast, semantics, Colors.* cleanup, i18n completion, platform complianc
 
 ---
 
-## P7-21 — Notification error response leaks internal details [LOW]
-
-**Source**: R02:F-09
-**Files**: `functions/src/notifications/send-notification.ts:265-268`
-**Fix**: Sanitize error response.
-**Effort**: 30 min
-
----
-
-## P7-22 — `.then()` without `.catchError()` [LOW]
-
-**Source**: R01:L4.1
-**Files**: `feature_flag_service.dart:177`, `recipe_parser_service.dart:431`
-**Effort**: 15 min
-
----
-
-## P7-23 — Python site-packages in lib/ [LOW]
-
-**Source**: R02:C-16
-**Files**: `lib/site-packages/`
-**Fix**: Move out of lib/ directory.
-**Effort**: 5 min
-
----
-
-## P7-24 — Dark mode comment inconsistency [LOW]
+## P7-19 — Dark mode comment inconsistency [LOW]
 
 **Source**: R06:1.3
 **Files**: `lib/theme/app_colors.dart`

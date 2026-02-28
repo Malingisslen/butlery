@@ -9,7 +9,7 @@ EOL packages, version upgrades, deprecated code removal, documentation updates.
 **Source**: R05:dim2, R01:H8.1
 **Files**: `pubspec.yaml:41`
 **Fix**: Package is officially EOL (0.7.0+eol is a no-op stub). Migrate to sqlite3 v3.x (same author). Requires data migration, encryption key handling, cross-platform testing.
-**Effort**: 8-16h
+**Effort**: 2-4d
 
 ---
 
@@ -93,8 +93,9 @@ EOL packages, version upgrades, deprecated code removal, documentation updates.
 ## P9-11 — Consolidate go_router vs Navigator [MED]
 
 **Source**: R05:dim4, R06:3.1
+**Files**: `pubspec.yaml`, `lib/core/navigation/app_router.dart`, 137 files with `Navigator` calls
 **Fix**: go_router has 1 import; Navigator has 478 calls in 137 files. Either fully adopt go_router or remove it.
-**Effort**: 2-4h (remove) or 5+ days (full adoption)
+**Effort**: 2-4h (remove) or 2-4 weeks (full adoption)
 
 ---
 
@@ -122,24 +123,16 @@ EOL packages, version upgrades, deprecated code removal, documentation updates.
 
 ---
 
-## P9-15 — Update ACCEPTED_LARGE_FILES.md [HIGH]
+## P9-15 — Update stale architecture documentation [HIGH]
 
-**Source**: R01:H5.2
-**Fix**: Lists 33 files; actual is 118. 85 files undocumented, including 3 >1,000 lines.
-**Effort**: 2h
-
----
-
-## P9-16 — Update stale ADRs [HIGH]
-
-**Source**: R01:H5.1, R01:H5.3, R01:H5.4
-**Files**: ADR-001 (file counts), ADR-004 (7→9 modules), ADR-005 (metrics), ADR-003 (broken refs)
-**Fix**: Update with current metrics. 3 broken doc references in ADR-003.
-**Effort**: 2h
+**Source**: R01:H5.1, R01:H5.2, R01:H5.3, R01:H5.4
+**Files**: `docs/architecture/ACCEPTED_LARGE_FILES.md`, ADR-001, ADR-003, ADR-004, ADR-005
+**Fix**: (1) ACCEPTED_LARGE_FILES lists 33 files; actual is 118 (85 undocumented, 3 >1,000 lines). (2) Update ADR-001 file counts, ADR-004 (7→9 modules), ADR-005 metrics. Fix 3 broken doc references in ADR-003.
+**Effort**: 4h
 
 ---
 
-## P9-17 — Resolve old TODO/FIXME comments [MED]
+## P9-16 — Resolve old TODO/FIXME comments [MED]
 
 **Source**: R01:M5.2
 **Files**: `social_module.dart:195,254,260` (3 FIXMEs, Nov 2025), `universal_share_dialog_viewmodel.dart:368`, `app_router.dart:238`, `menu_storage.dart:281`, `startup_optimization_manager.dart:17,390,405,415,421`
@@ -148,7 +141,7 @@ EOL packages, version upgrades, deprecated code removal, documentation updates.
 
 ---
 
-## P9-18 — Remove friends_service_stubs.dart [LOW]
+## P9-17 — Remove friends_service_stubs.dart [LOW]
 
 **Source**: R01:L3.3
 **Files**: `lib/services/unified/friends/friends_service_stubs.dart:21-33`
@@ -157,33 +150,35 @@ EOL packages, version upgrades, deprecated code removal, documentation updates.
 
 ---
 
-## P9-19 — recipe_image_manager.dart facade claim is misleading [MED]
+## P9-18 — recipe_image_manager.dart facade claim is misleading [MED]
 
 **Source**: R01:M2.3
-**Fix**: Accepted at 1,317 lines as "uses facade pattern" but actually a single class with 30+ methods. Extract sub-managers.
+**Files**: `lib/viewmodels/recipe/managers/recipe_image_manager.dart`
+**Fix**: Accepted at 1,317 lines as "uses facade pattern" but actually a single class with 30+ methods. Extract `ImageUploadManager`, `ImageCacheManager`, `ImageCompressionManager`.
 **Effort**: 8h
 
 ---
 
-## P9-20 — Update upload-artifact v3→v4 in CI [LOW]
+## P9-19 — CI artifact updates [LOW]
 
-**Source**: R03:F1-4
-**Files**: `test.yml:52,136`
-**Fix**: Uses deprecated `actions/upload-artifact@v3`.
-**Effort**: 15 min
-
----
-
-## P9-21 — Artifact retention inconsistent across workflows [LOW]
-
-**Source**: R03:F1-3
-**Fix**: Architecture: 30 days, E2E: 7 days, test.yml: default 90 days. Standardize.
-**Effort**: 15 min
+**Source**: R03:F1-3, R03:F1-4
+**Files**: `test.yml:52,136`, `e2e_tests.yml`, `architecture-validation.yml`
+**Fix**: (1) Update `actions/upload-artifact@v3` → v4. (2) Standardize artifact retention (currently 30/7/90 days across workflows).
+**Effort**: 30 min
 
 ---
 
-## P9-22 — Extract common Duration constants [LOW]
+## P9-20 — Extract common Duration constants [LOW]
 
 **Source**: R01:M6.2
 **Fix**: 238 hard-coded Duration values across 118 files. Extract common ones (e.g., 300ms debounce) to constants.
 **Effort**: 4h
+
+---
+
+## P9-21 — Move Python site-packages out of lib/ [LOW]
+
+**Source**: R02:C-16
+**Files**: `lib/site-packages/`
+**Fix**: Python packages do not belong in Flutter's lib/ directory. Move to project root or scripts/.
+**Effort**: 5 min
