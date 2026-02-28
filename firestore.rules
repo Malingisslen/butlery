@@ -1455,6 +1455,24 @@ service cloud.firestore {
     }
 
     // ========================================
+    // CONTENT REPORTS - User-submitted reports
+    // ========================================
+
+    match /reports/{reportId} {
+      // Users can only read their own reports
+      allow read: if isAuthenticated()
+        && resource.data.reporterId == request.auth.uid;
+
+      // Authenticated users can create reports (must be reporting as themselves)
+      allow create: if isAuthenticated()
+        && request.resource.data.reporterId == request.auth.uid
+        && hasRequiredFields(['reporterId', 'contentType', 'contentId', 'reason', 'createdAt']);
+
+      // Users cannot update or delete reports
+      allow update, delete: if false;
+    }
+
+    // ========================================
     // DEFAULT DENY - Catch all other paths
     // ========================================
 
