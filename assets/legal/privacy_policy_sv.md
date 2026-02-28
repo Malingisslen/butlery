@@ -122,6 +122,18 @@ Vi delar dina personuppgifter med följande tredje parter:
 - **Överföring:** USA (EU-USA Data Privacy Framework)
 - **Policy:** [https://policies.google.com/privacy](https://policies.google.com/privacy)
 
+**Mistral AI (Mistral AI SAS, Frankrike)**
+- **Syfte:** AI-baserad receptextrahering och strukturering (OCR och textanalys)
+- **Rättslig grund:** Samtycke (AI-bearbetning kräver uttryckligt samtycke)
+- **Överföring:** Inom EU/EES (Frankrike)
+- **Policy:** [https://mistral.ai/privacy](https://mistral.ai/privacy)
+
+**Algolia (Algolia Inc., USA/EU)**
+- **Syfte:** Sökindexering och receptsökning
+- **Rättslig grund:** Berättigat intresse (nödvändigt för tjänstens sökfunktion)
+- **Överföring:** EU-datacenter (Frankrike), med USA-backup under EU-USA Data Privacy Framework
+- **Policy:** [https://www.algolia.com/policies/privacy/](https://www.algolia.com/policies/privacy/)
+
 ### 6.2 Rättsliga krav
 
 Vi kan dela information om:

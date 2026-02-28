@@ -122,6 +122,18 @@ We share your personal data with the following third parties:
 - **Transfer:** USA (EU-US Data Privacy Framework)
 - **Policy:** [https://policies.google.com/privacy](https://policies.google.com/privacy)
 
+**Mistral AI (Mistral AI SAS, France)**
+- **Purpose:** AI-based recipe extraction and structuring (OCR and text analysis)
+- **Legal basis:** Consent (AI processing requires explicit consent)
+- **Transfer:** Within EU/EEA (France)
+- **Policy:** [https://mistral.ai/privacy](https://mistral.ai/privacy)
+
+**Algolia (Algolia Inc., USA/EU)**
+- **Purpose:** Search indexing and recipe search
+- **Legal basis:** Legitimate interest (necessary for the service's search functionality)
+- **Transfer:** EU data center (France), with USA backup under EU-US Data Privacy Framework
+- **Policy:** [https://www.algolia.com/policies/privacy/](https://www.algolia.com/policies/privacy/)
+
 ### 6.2 Legal requirements
 
 We may share information if:
