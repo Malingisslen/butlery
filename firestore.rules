@@ -1285,7 +1285,7 @@ service cloud.firestore {
       // Users can write only their own consent records
       allow write: if isAuthenticated()
         && request.auth.uid == userId
-        && hasRequiredFields(['consentVersion', 'purposes', 'timestamp']);
+        && hasRequiredFields(['consentVersion', 'purposes', 'grantedAt']);
     }
 
     // ========================================
