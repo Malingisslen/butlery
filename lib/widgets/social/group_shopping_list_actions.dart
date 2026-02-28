@@ -12,6 +12,7 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/utils/shopping_list_formatter.dart';
 
 /// Action handlers for group shared shopping list cards.
@@ -236,24 +237,35 @@ class GroupShoppingListActions {
 
     if (reason != null && context.mounted) {
       try {
-        AppLogger.warning('Content Report - Shopping List: ${shoppingList.id}');
-        AppLogger.info('Report reason: $reason');
-        AppLogger.info(
-            'Reported by user, list owner: ${shoppingList.ownerDisplayName}');
+        final reportService = ServiceLocator.get<ReportService>();
+        final success = await reportService.submitReport(
+          contentType: 'shopping_list',
+          contentId: shoppingList.id,
+          reason: reason,
+          contentOwnerId: shoppingList.ownerId,
+        );
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.socialReportSent),
-            backgroundColor: context.butleryColors.success,
-          ),
-        );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(success
+                  ? context.l10n.socialReportSent
+                  : context.l10n.socialCouldNotSendReport('')),
+              backgroundColor:
+                  success ? context.butleryColors.success : Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.socialCouldNotSendReport(e.toString())),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:
+                  Text(context.l10n.socialCouldNotSendReport(e.toString())),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
       }
     }
   }
