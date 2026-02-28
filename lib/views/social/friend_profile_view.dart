@@ -12,6 +12,8 @@ import 'package:butlery/widgets/common/navigation_components.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/messaging_service.dart';
@@ -36,6 +38,33 @@ class FriendProfileView extends StatelessWidget {
         title: Text(friend.displayName),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'report') {
+                ReportContentDialog.show(
+                  context: context,
+                  contentType: 'profile',
+                  contentId: friend.uid,
+                  contentOwnerId: friend.uid,
+                );
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'report',
+                child: Row(
+                  children: [
+                    Icon(Icons.flag_outlined,
+                        color: Theme.of(context).colorScheme.error),
+                    const SizedBox(width: AppDimensions.spacingSm),
+                    Text(context.l10n.reportContent),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       body: SafeArea(
         // ✅ RESPONSIVE: Center and constrain content on large screens

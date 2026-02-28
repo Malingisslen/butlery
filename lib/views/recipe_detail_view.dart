@@ -23,6 +23,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/core/constants/routes.dart';
 
 /// Recipe Detail View - Complete recipe display with metadata, actions, and social features
@@ -370,6 +371,18 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 ],
                               ),
                             ),
+                          PopupMenuItem(
+                            value: 'report',
+                            child: Row(
+                              children: [
+                                Icon(Icons.flag_outlined,
+                                    size: AppDimensions.iconSizeM,
+                                    color: menuCs.error),
+                                const SizedBox(width: AppDimensions.spacingM),
+                                Text(context.l10n.reportContent),
+                              ],
+                            ),
+                          ),
                         ];
                       },
                       onSelected: (value) =>
@@ -604,6 +617,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) {
           _actions.handleSourceUrlClick(context, recipe.sourceUrl!);
         }
+        break;
+      case 'report':
+        ReportContentDialog.show(
+          context: context,
+          contentType: 'recipe',
+          contentId: recipe.id,
+          contentOwnerId: recipe.createdBy,
+        );
         break;
     }
   }
