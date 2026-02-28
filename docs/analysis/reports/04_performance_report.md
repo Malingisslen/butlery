@@ -1,84 +1,97 @@
-# BUTLERY PERFORMANCE & SCALABILITY ANALYSIS -- PHASE 1
+# Performance & Scalability Analysis — Phase 1 Report
 
 ```
-Analysis Date:    2026-02-10
-Analyst:          Claude (Opus 4.6)
+BUTLERY PERFORMANCE & SCALABILITY ANALYSIS — PHASE 1
+=====================================================
+Analysis Date: 2026-02-26
+Analyst: Claude (Opus 4.6)
 Firebase Project: butlery-app-1
-Platforms:        Android, iOS, Web, macOS, Windows
-flutter analyze:  No issues found!
-```
+Platforms: Android, iOS, Web, macOS, Windows
 
-## OVERALL SCORE: 71/100
+OVERALL SCORE: 78/100
+  1. App Startup & Frame Rate:         14/18
+  2. Memory & Resource Management:     13/15
+  3. Firebase Query & Schema Design:   14/18
+  4. Real-time Listeners & Streams:    10/12
+  5. Scalability Projections:          11/15
+  6. Bundle Size & Network Efficiency: 10/12
+  7. Offline Performance & Sync:        6/10
 
-```
-  1. App Startup & Frame Rate:         12/18
-  2. Memory & Resource Management:     11/15
-  3. Firebase Query & Schema Design:   13/18
-  4. Real-time Listeners & Streams:     9/12
-  5. Scalability Projections:          10/15
-  6. Bundle Size & Network Efficiency:  9/12
-  7. Offline Performance & Sync:        7/10
+STATUS: Good
 
-STATUS: Good (with targeted optimization opportunities)
-
-CRITICAL ISSUES: 2 found
-HIGH PRIORITY:   6 found
-MEDIUM PRIORITY: 9 found
-LOW PRIORITY:    5 found
+CRITICAL ISSUES: 1 found
+HIGH PRIORITY:   5 found
+MEDIUM PRIORITY: 8 found
+LOW PRIORITY:    6 found
 ```
 
 ---
 
-## Performance Benchmarks Table
+## Performance Benchmarks
 
 | Metric | Current (est.) | Target | Gap | Status |
 |---|---|---|---|---|
-| Cold start time | ~3.0-4.0s | < 2.0s | +1.0-2.0s | NEEDS WORK |
-| Warm start time | ~1.0-1.5s | < 1.0s | +0.0-0.5s | ACCEPTABLE |
-| Average FPS | ~55-60fps | 60fps | -0-5fps | GOOD |
-| Jank percentage | ~2-3% | < 1% | +1-2% | ACCEPTABLE |
-| Memory usage (typical) | ~120-180MB | < 150MB | ~+30MB | ACCEPTABLE |
-| Memory usage (peak) | ~200-280MB | < 250MB | ~+30MB | NEEDS WORK |
-| Bundle size (Android) | ~40-55MB | < 50MB | ~+5MB | BORDERLINE |
-| Firestore queries/screen | 3-8 | < 5 | +0-3 | ACCEPTABLE |
-| Data transfer/hour | ~3-8MB | < 5MB | +0-3MB | ACCEPTABLE |
-| Offline features | ~80% | 100% | -20% | NEEDS WORK |
+| Cold start time | 2.5–3.5s | < 2.0s | +0.5–1.5s | ⚠️ Needs work |
+| Warm start time | 0.8–1.2s | < 1.0s | ~0s | ✅ Acceptable |
+| Average FPS | 58–60fps | 60fps | -0–2fps | ✅ Good |
+| Jank percentage | ~2% | < 1% | +1% | ⚠️ Minor |
+| Memory usage (typical) | ~120MB | < 150MB | -30MB | ✅ Good |
+| Memory usage (peak) | ~180MB | < 250MB | -70MB | ✅ Good |
+| Bundle size (Android) | ~35–45MB | < 50MB | -5–15MB | ✅ Good |
+| Firestore queries/screen | 3–6 | < 5 | +0–1 | ✅ Acceptable |
+| Data transfer/hour | ~3–5MB | < 5MB | ~0 | ✅ Good |
+| Offline features | 40% | 100% | -60% | ⚠️ Recipes only |
 
 ---
 
 ## Firestore Collection Structure Map
 
-### User-Scoped Collections
+### User-Scoped Collections (`users/{userId}/...`)
 
-| Collection Path | Key Fields | Avg Doc Size | Queries | Index Status | Issues |
+| Collection | Est. Doc Size | Growth | Key Queries | Indexes | Issues |
 |---|---|---|---|---|---|
-| `users/{userId}/recipes` | core.*, ingredients[], instructions[], tagResult.*, personalTagIds[] | ~5-15KB | watchRecipes (limit 50), readAll (limit 100), searchRecipes (limit 200), fetchAllUserRecipes (cursor-based) | 10 composite indexes on userId+various | GOOD: All queries have limits |
-| `users/{userId}/menus` | days{}, recipes[], name | ~2-5KB | CRUD operations | Single-field | OK |
-| `users/{userId}/shopping_lists` | items[], name, collaborators[] | ~1-5KB | Query + watch (limit 20) | 1 composite index | OK |
-| `users/{userId}/personal_tags` | name, rules[], createdAt | ~0.5-2KB | watchAll, getByIds | Single-field | OK |
-| `users/{userId}/notifications` | type, isRead, userId | ~0.5-1KB | Watch (limit 50) | 1 composite index | OK |
+| `recipes` | 5–15KB | Unbounded per-user | userId+createdAt, userId+lastCooked, userId+tag filters (8 indexes) | ✅ 11 indexes | **CRITICAL: `subscribeToUserRecipes` unbounded** |
+| `menus` | 2–5KB | Bounded (1–20) | ownerId queries | N/A (simple) | None |
+| `unified_shopping_lists` | 2–5KB | Bounded (1–10) | ownerId+type | N/A | None |
+| `personalTagIds` | ~200B | Bounded (10–50) | sortOrder, groupId | N/A | None |
+| `personalTagGroups` | ~500B | Bounded (5–20) | sortOrder | N/A | None |
+| `friends` | ~100B | Bounded (10–500) | addedAt | N/A | None |
+| `friendCategories` | ~500B | Bounded (5–20) | friendUserIds (array) | ✅ Field override | None |
+| `ingredients` (user) | ~200B | Bounded (50–500) | N/A | N/A | None |
 
 ### Global Collections
 
-| Collection Path | Key Fields | Avg Doc Size | Queries | Index Status | Issues |
+| Collection | Est. Doc Size | Growth | Key Queries | Indexes | Issues |
 |---|---|---|---|---|---|
-| `shared_recipes` | sharedWith[], sharedWithUserIds[], sharedAt | ~5-15KB | array-contains + orderBy | 2 composite indexes | **MEDIUM**: sharedWith array may grow |
-| `shared_menus` / `sharedMenus` | sharedWith[], sharedWithUserIds[] | ~3-8KB | array-contains + orderBy | 2 composite indexes | **LOW**: Duplicate collection naming |
-| `shared_shopping_lists` / `sharedShoppingLists` | collaborators[], sharedWithUserIds[] | ~2-5KB | array-contains + orderBy | 2 composite indexes | **LOW**: Duplicate collection naming |
-| `friend_requests` | fromUserId, toUserId, status, sentAt | ~0.5-1KB | Compound queries (limit 50) | 2 composite indexes | GOOD |
-| `groups` + `groups/{id}/members` | name, memberIds[], members subcollection | ~1-3KB | Subcollection queries | Collection group index on members.userId | GOOD |
-| `recipe_comments` | recipeId, parentId, createdAt | ~0.5-2KB | Compound queries (limit 50) | 2 composite indexes | GOOD |
-| `recipe_ratings` | recipeId, rating, createdAt | ~0.3-0.5KB | By recipeId (Cloud Function aggregation) | Single-field | GOOD |
-| `conversations` | participantIds[], isGroup, updatedAt | ~1-2KB | array-contains + compound (limit 50) | 1 composite index | GOOD |
-| `messages` | conversationId, sentAt | ~0.5-2KB | Compound queries (limit 20) | 1 composite index | GOOD |
-| `audit_logs` | userId, resourceType, timestamp | ~0.5-1KB | 4 compound queries | 4 composite indexes | GOOD |
-| `ingredients` | name, category, properties.* | ~1-3KB | **Unbounded collection snapshot listener** | Single-field | **CRITICAL**: No limit on listener |
+| `public_profiles` | 1–2KB | 1 per user | isSearchable+displayNameLower | ✅ 1 index | Fallback search limit:100 |
+| `friend_requests` | ~500B | Transient | to/fromUserId+status+sentAt | ✅ 2 indexes | No limits on streams |
+| `shared_recipes` | 10–20KB | Unbounded | sharedWithUserIds+sharedAt | ✅ 2 indexes | Subcollection growth |
+| `shared_menus` | 5–10KB | Unbounded | sharedWithUserIds+sharedAt | ✅ 2 indexes | Subcollection growth |
+| `unified_shared_shopping_lists` | 2–5KB | Unbounded | collaborators+updatedAt | ✅ 1 index | No limit on stream |
+| `conversations` | 1–2KB | Unbounded | participantIds+isGroup+updatedAt | ✅ 1 index | None |
+| `messages` | 0.5–2KB | Unbounded | conversationId+sentAt | ✅ 1 index | ✅ Paginated (limit:50) |
+| `recipe_comments` | 0.3–1KB | Unbounded | recipeId+createdAt, +parentId | ✅ 2 indexes | ✅ Limit:50 |
+| `recipe_ratings` | 0.2–0.5KB | Unbounded | recipeId, userId | N/A | Stats calc limit:500 |
+| `audit_logs` | 0.3–0.5KB | **Unbounded forever** | userId+ts, resourceType+ts, granted+ts, +resourceId | ✅ 4 indexes | No retention policy |
+| `user_notifications` | 0.3–0.5KB | Unbounded | userId+isRead | ✅ 1 index | ✅ Limit:50 |
+| `shoppingListTemplates` | 2–5KB | Unbounded | isPublic+createdAt, ownerId+createdAt | ✅ 2 indexes | ✅ Limit:20 |
+| `group_invitations` | ~500B | Transient | recipientId+status+sentAt | ✅ 1 index | No limits on streams |
+| `butlery_archive` | 5–15KB | Admin-managed | createdAt | N/A | ✅ Limit:100 |
+| `recipe_summaries` | 1–3KB | Unbounded | userId+createdAt | ✅ 1 index | None |
 
-### Index Summary
-- **34 composite indexes** defined in `firestore.indexes.json`
-- **2 field overrides** (friendCategories.friendUserIds, members.userId collection group)
-- All major query patterns appear to have matching indexes
-- No obvious missing indexes detected (queries with compound where + orderBy are covered)
+### Subcollections (shared content)
+
+| Path | Est. Doc Size | Growth | Notes |
+|---|---|---|---|
+| `shared_recipes/{id}/members` | ~100B | Per-recipe (bounded) | Access control |
+| `shared_recipes/{id}/views` | ~100B | **Unbounded** per recipe | No TTL |
+| `shared_recipes/{id}/engagements` | ~150B | **Unbounded** per recipe | No TTL |
+| `shared_recipes/{id}/dismissals` | ~100B | **Unbounded** per recipe | No TTL |
+| `shared_menus/{id}/members` | ~100B | Per-menu (bounded) | Access control |
+| `shared_menus/{id}/views` | ~100B | **Unbounded** per menu | No TTL |
+| `recipe_comments/{id}/likes` | ~50B | Unbounded per comment | No cleanup |
+
+**Index Utilization Summary:** 31 composite indexes + 3 field overrides = 34 total. All appear actively used. No obviously unused indexes detected.
 
 ---
 
@@ -86,501 +99,566 @@ LOW PRIORITY:    5 found
 
 | Scale | Active Users | Est. Reads/Day | Est. Writes/Day | Est. Monthly Cost | Per User/Month |
 |---|---|---|---|---|---|
-| Current | ~50 | ~15,000 | ~2,000 | ~$5-10 | ~$0.10-0.20 |
-| 10x | ~500 | ~150,000 | ~20,000 | ~$40-80 | ~$0.08-0.16 |
-| 100x | ~5,000 | ~1,500,000 | ~200,000 | ~$350-700 | ~$0.07-0.14 |
-| 1000x | ~50,000 | ~15,000,000 | ~2,000,000 | ~$3,000-6,000 | ~$0.06-0.12 |
+| Current | 10 | 2,400 | 20 | $0.05 | $0.005 |
+| 1K | 1,000 | 240K | 2K | $4.43 | $0.004 |
+| 10K | 10,000 | 2.4M | 20K | $44 | $0.004 |
+| 100K | 100,000 | 24M | 200K | $443 | $0.004 |
 
-**Cost Notes:**
-- Per-user cost trends sub-linearly due to shared content caching
-- Ingredient collection listener is the single biggest cost driver at scale (every user triggers full collection read on changes)
-- Cloud Functions LLM calls (structureRecipe, ocrRecipeImage) are the wildcard -- Mistral AI API costs scale linearly with import volume
-- Rating aggregation Cloud Functions are efficient (trigger-based, not polling)
+**With `subscribeToUserRecipes` unbounded penalty (worst case):**
+
+| Scale | Extra Reads/Day | Extra Monthly Cost | Total Monthly |
+|---|---|---|---|
+| 10K users (avg 200 recipes, 10% edit/day) | 200K | +$3.60 | ~$48 |
+| 100K users (avg 200 recipes, 10% edit/day) | 2M | +$36 | ~$479 |
+| 100K users (avg 500 recipes) | 5M | +$90 | ~$533 |
+
+**Storage at scale:**
+- 10K users × 200 recipes × 10KB = 20GB → $3.60/month
+- 100K users × 200 recipes × 10KB = 200GB → $36/month
+
+**Cost scaling is linear (good).** Per-user cost stays ~$0.004–0.005/month. Firebase remains viable well past 100K users.
 
 ---
 
-## Scalability Limits Table
+## Scalability Limits
 
 | Bottleneck | Hits at | Impact | Mitigation Effort |
 |---|---|---|---|
-| Ingredient collection unbounded listener | ~100 users | Every ingredient change triggers full collection download for ALL connected users | 3-5 days |
-| CACHE_SIZE_UNLIMITED Firestore cache | ~1000 recipes/user | Device storage exhaustion on low-end devices | 1-2 days |
-| sharedWith[] array growth | ~500 shares/recipe | Approaching Firestore 1MB doc limit; array-contains queries degrade | 5-8 days |
-| Client-side recipe search (200 doc reads) | ~500 recipes/user | Slow search, high read costs | 3-5 days (Algolia integration exists) |
-| 527 notifyListeners() calls across 108 files | Now | Excessive widget rebuilds, potential jank | 5-10 days |
-| 9 DI modules initialized sequentially | Now | Startup latency ~3-4s | 3-5 days |
-| 50+ concurrent Firestore listeners per user | ~1000 users | Firebase connection limit (100K/project) | 5-8 days |
-| updateRecipeRatingStats reads ALL ratings | ~1000 ratings/recipe | Cloud Function timeout at high rating counts | 2-3 days |
+| `subscribeToUserRecipes` unbounded | ~200 recipes/user | Each edit reads ALL recipes. Cost 10–100x at scale | 1 line (add `.limit(50)`) |
+| Audit logs no retention | ~50K users (storage) | Unbounded storage growth | 2 hours (Cloud Function cron) |
+| Subcollection growth (views/engagements) | Popular viral recipe | 10K+ docs per recipe subcollection | 4 hours (TTL policy) |
+| Recipe stats calc (500 limit) | Viral recipe with 500+ ratings | Expensive aggregation query | 8 hours (denormalize to parent) |
+| Client-side recipe search (200 limit) | 200+ recipes/user | Full scan, slow search | 2–3 days (Algolia integration) |
+| Last-write-wins on shared data | Concurrent offline edits | Silent data loss on shopping lists | 2–4 days (conflict resolution) |
+| Array membership fields | 20K array limit | Conversations, shopping lists | Already mitigated (Issue #014 subcollections) |
 
 ---
 
-## Detailed Findings by Dimension
-
----
-
-## 1. APP STARTUP & FRAME RATE -- Score: 12/18
+## Dimension 1: App Startup & Frame Rate — Score: 14/18
 
 ### Summary
-Startup involves sequential initialization of 9 DI modules, 5 bootstrap stages, Firebase SDK initialization, SharedPreferences, OfflineService database, and UnifiedRecipeService cache loading. Estimated cold start is 3-4 seconds on mid-range devices. Frame rate is generally good thanks to ListView.builder adoption (64 uses) and deferred imports for social/messaging/extraction routes.
+Cold start estimated 2.5–3.5s, exceeding the 2.0s target by 0.5–1.5s. The serial module initialization chain (9 modules, all sequential) dominates. Frame rate is generally good at 58–60fps with minor jank from non-.builder ListViews.
+
+### Issues Found
+
+#### HIGH
+
+1. **Serial module initialization blocks startup 800–1500ms** — `lib/core/di/di_container.dart`
+   - Impact: Each of 9 DI modules initializes sequentially. Firebase reads in TaggingModule, ContentModule, SocialModule all block the chain.
+   - Current: Modules sorted by priority, then `configure()` and `initialize()` called serially.
+   - Best Practice: Parallelize independent modules (e.g., Tagging + Social can init concurrently).
+   - Scale Threshold: Always (affects every cold start).
+   - Effort: 2–3 days.
+
+2. **Blocking ContentModule init path ~400–800ms** — `lib/core/di/modules/content_module.dart:395-407`
+   - Impact: OfflineService (Hive/Drift DB open ~200–400ms) → UnifiedRecipeService (Firestore settings + recipe sync ~100–200ms) → Menu + Parser (parallel ~50–100ms). All blocking before first frame.
+   - Best Practice: Defer database and recipe sync to after first frame. Show cached/skeleton UI immediately.
+   - Scale Threshold: Always.
+   - Effort: 2 days.
+
+3. **36 eager singletons at startup** — across all DI modules
+   - Impact: All 36 created during configure() phase. Many (MenuService, FriendsService, ParserService) not needed until user navigates to specific screens.
+   - Current: `registerSingleton()` vs `registerLazySingleton()` — 36 eager vs 54 lazy.
+   - Best Practice: Convert non-critical services to lazy: UnifiedMenuService, UnifiedFriendsService, RecipeParserService, PresenceService. Saves ~200–400ms.
+   - Effort: 1 day.
+
+#### MEDIUM
+
+4. **20 ListView/GridView without .builder** — various view files
+   - Impact: Eagerly builds all children. Problematic for `friends_list_view.dart`, `conversations_list_view.dart`, `personal_tags_view.dart` where lists can grow.
+   - Best Practice: Use ListView.builder for any list > 10 items.
+   - Scale Threshold: 50+ items in list.
+   - Effort: 2 hours per file.
+
+5. **Firebase.initializeApp() blocking ~200–500ms** — `lib/main.dart:106-108`
+   - Impact: Network-dependent native initialization. Cannot be parallelized (required before any Firebase service).
+   - Current: Correctly placed first in chain. Already parallelizes Crashlytics + AppCheck after.
+   - Best Practice: Accepted cost. Show splash screen during this phase.
+   - Effort: N/A (inherent).
+
+#### LOW
+
+6. **dotenv.load() file I/O ~50–200ms** — `lib/main.dart:103`
+   - Impact: Disk read for `.env` file. Could be embedded at compile time instead.
+   - Best Practice: Use `--dart-define` for build-time config to avoid runtime file I/O.
+   - Effort: 4 hours.
+
+### Quick Wins
+- Convert 6 non-critical singletons from eager to lazy (saves ~200–400ms)
+- Convert `friends_list_view.dart` and `conversations_list_view.dart` to ListView.builder (2 hours)
+
+---
+
+## Dimension 2: Memory & Resource Management — Score: 13/15
+
+### Summary
+Memory management is solid. StreamManagementMixin has excellent adoption (20+ classes). Image cache configured at 50MB. Minor risks from dual cache layers and 3 static StreamControllers.
+
+### Issues Found
+
+#### MEDIUM
+
+1. **Dual image cache layers totaling ~150MB potential** — `lib/main.dart:97-99` + `flutter_cache_manager`
+   - Impact: Flutter PaintingBinding cache (50MB, 100 images) + `cached_network_image` package (default 1GB disk cache, unconfigured memory limit) + IntelligentCacheManager predictive caching.
+   - Current: Only Flutter image cache has explicit limits. `flutter_cache_manager` uses default 200 image / 1GB disk settings.
+   - Best Practice: Configure `flutter_cache_manager` max cache size to 200MB. Add memory monitoring.
+   - Scale Threshold: 100+ recipes with images.
+   - Effort: 2 hours.
+
+2. **HTTP client not reused in import pipelines** — `lib/services/import/fetchers/http_content_fetcher.dart:24`
+   - Impact: Creates new `http.Client()` per request when no injected client. Misses connection pooling.
+   - Current: `HttpContentFetcher` creates client per call. `YouTubeTranscriptService` and `TiktokPipeline` also create per-instance clients.
+   - Best Practice: Inject shared client or use connection pool.
+   - Scale Threshold: Frequent recipe imports.
+   - Effort: 1 hour.
+
+3. **3 static StreamControllers — app-lifetime persistence** — `lib/core/events/group_events.dart:16`, `lib/viewmodels/recipe_form/image_management/image_upload_notification_manager.dart:18`, `lib/services/unified/operations/modules/comment_utilities.dart:290`
+   - Impact: GroupEventBus and ImageUploadNotificationManager use lazy-init broadcast controllers. Minor memory footprint but never disposed.
+   - Current: Using `??=` initialization pattern — acceptable for singletons.
+   - Best Practice: Acceptable pattern for app-wide event buses. Monitor if subscribers accumulate.
+   - Scale Threshold: Not a scale issue.
+   - Effort: N/A.
+
+#### LOW
+
+4. **Static StreamSubscription in PersonalTagSelector** — `lib/widgets/tagging/personal_tag_selector.dart:485`
+   - Impact: Shared subscription with subscriber counting pattern (`_subscriberCount`). Well-managed with explicit cancel when count reaches 0.
+   - Current: Uses reference counting — actually a good pattern to avoid N listeners for N widget instances.
+   - Best Practice: Existing pattern is intentional and correct.
+   - Effort: N/A.
+
+5. **11 ViewModels without explicit dispose()** — various abstract/simple ViewModels
+   - Impact: Most are abstract base classes or simple ViewModels without subscriptions. Actual risk is low.
+   - Current: `BaseViewModel` has `_isDisposed` pattern. Subclasses may rely on parent disposal.
+   - Best Practice: Verify each has no controllers/subscriptions requiring cleanup.
+   - Effort: 2 hours (audit only).
+
+### Quick Wins
+- Configure `flutter_cache_manager` max disk cache to 200MB (2 hours)
+- Inject shared HTTP client into import pipelines (1 hour)
+
+---
+
+## Dimension 3: Firebase Query & Schema Design — Score: 14/18
+
+### Summary
+Schema is well-designed with proper user-scoped subcollections. 34 composite indexes cover most query patterns. One CRITICAL unbounded listener and several growth concerns in subcollections.
 
 ### Issues Found
 
 #### CRITICAL
 
-1. **Sequential DI module initialization blocks first frame** -- `lib/main.dart:162-195`, `lib/core/bootstrap/application_bootstrap.dart:362-371`
-   - Impact: 9 modules initialized sequentially before `runApp()` is called. Each module's `configure()` + `initialize()` runs in series. ContentModule alone initializes OfflineService, UnifiedRecipeService, UnifiedMenuService, and RecipeParserService sequentially.
-   - Current: `_initializeModularSystem()` is `await`ed before `runApp(const ButleryApp())` at `lib/main.dart:132,151`.
-   - Best Practice: Show splash screen immediately, initialize critical services (auth, persistence) first, defer non-critical modules (Social, Messaging, Collaboration, Performance, UI) to post-first-frame.
-   - Scale Threshold: Affects all users from day 1
-   - Effort: 3-5 days
+1. **`subscribeToUserRecipes` — unbounded real-time listener** — `lib/repositories/firebase/firebase_recipe_repository.dart:591-606`
+   - Impact: Reads ALL user recipes on every change via `.orderBy('core.updatedAt').snapshots()` with NO `.limit()`. Power users with 200+ recipes pay N reads per single edit. At 500 recipes, each edit costs 500 reads.
+   - Current: `watchRecipes` correctly uses `.limit(50)` (line 356), but `subscribeToUserRecipes` does not.
+   - Best Practice: Add `.limit(50)` to match `watchRecipes`. Use cursor-based pagination for full history.
+   - Scale Threshold: 50+ recipes per user (common).
+   - Effort: 1 line change + test update.
 
 #### HIGH
 
-2. **CoreStage has unnecessary 100ms delay** -- `lib/core/bootstrap/stages/core_stage.dart:61`
-   - Impact: `await Future.delayed(const Duration(milliseconds: 100))` adds 100ms to every startup
-   - Current: Comment says "Basic validation that we can proceed" but does nothing useful
-   - Best Practice: Remove the delay; validation should be synchronous checks
-   - Effort: 0.5 hours
+2. **Subcollection unbounded growth (views, engagements, dismissals)** — `shared_recipes/{id}/views`, `shared_recipes/{id}/engagements`, etc.
+   - Impact: Popular shared recipes accumulate view/engagement/dismissal docs without TTL. A viral recipe could have 10K+ subcollection docs.
+   - Current: No cleanup or TTL policy.
+   - Best Practice: Firestore TTL policy or Cloud Function cleanup (delete docs > 90 days).
+   - Scale Threshold: 1K+ shares of a single recipe.
+   - Effort: 4 hours.
 
-3. **UIStage has unnecessary 150ms of delays** -- `lib/core/bootstrap/stages/ui_stage.dart:42-48`
-   - Impact: Two `Future.delayed` calls (100ms + 50ms) with comments like "would happen here"
-   - Current: Placeholder delays that serve no purpose
-   - Best Practice: Remove delays or replace with actual initialization logic
-   - Effort: 0.5 hours
-
-4. **ContentModule initializes 4 services sequentially in initialize()** -- `lib/core/di/modules/content_module.dart:374-392`
-   - Impact: OfflineService.initialize(), UnifiedRecipeService.initialize(), UnifiedMenuService.initialize(), RecipeParserService.init() all run sequentially
-   - Current: Some of these could run in parallel (e.g., RecipeParserService and UnifiedMenuService are independent)
-   - Best Practice: Use `Future.wait()` for independent initializations
-   - Effort: 1 day
+3. **Audit log unbounded growth** — `audit_logs` collection
+   - Impact: Every permission check, CRUD operation, and security event generates a log. No retention policy means unbounded storage growth.
+   - Current: `deleteOldAuditLogs` method exists but is not scheduled.
+   - Best Practice: Schedule Cloud Function to delete logs > 2 years (GDPR compliance retained).
+   - Scale Threshold: 10K+ users (storage becomes $10+/month).
+   - Effort: 2 hours (wire existing method to cron).
 
 #### MEDIUM
 
-5. **ListView without .builder in 15+ views** -- Multiple files
-   - Impact: All items rendered eagerly even when off-screen. Examples:
-     - `lib/widgets/menu/menu_content_widgets.dart:148` -- `ListView(`
-     - `lib/views/tag_detail_view.dart:226,306,939` -- Three `ListView(` instances
-     - `lib/views/edit_recipe_view.dart:134` -- `ListView(`
-     - `lib/views/personal_tags_view.dart:206` -- `ListView(`
-     - `lib/views/skriv_sjalv_recept_view.dart:331` -- `ListView(`
-     - `lib/widgets/common/navigation/adaptive_navigation.dart:330` -- `ListView(`
-   - Current: Some are acceptable (fixed small lists), but tag detail view and recipe edit could have many items
-   - Best Practice: Use `ListView.builder` for any list that could exceed ~20 items
-   - Effort: 2-3 days
+4. **Client-side recipe search with 200-doc limit** — `lib/repositories/firebase/firebase_recipe_repository.dart:376`
+   - Impact: Loads 200 most recent recipes then filters client-side. Not scalable for users with 500+ recipes.
+   - Current: Acknowledged in code comments ("Algolia in future").
+   - Best Practice: Integrate Algolia for full-text search.
+   - Scale Threshold: 200+ recipes per user.
+   - Effort: 2–3 days.
 
-6. **527 notifyListeners() calls across 108 files may cause excessive rebuilds**
-   - Impact: Broad notifications trigger full subtree rebuilds. Particularly concerning in ViewModels like `recipe_form_state.dart` (22 calls), `friends_state_manager.dart` (29 calls), `recipe_image_manager.dart` (15 calls)
-   - Current: Every state change triggers full listener notification
-   - Best Practice: Consider more granular state notification (ValueNotifier per field) or selector-based patterns
-   - Effort: 5-10 days (architectural change)
+5. **Rating statistics query loads 500 docs** — `firebase_ratings_repository.dart`
+   - Impact: Calculates average rating by loading up to 500 rating docs. Expensive for popular recipes.
+   - Current: Limit:500 is reasonable but scales poorly.
+   - Best Practice: Denormalize `averageRating`, `ratingCount` to recipe document via Cloud Function trigger (already exists: `updateRecipeRatingStats`).
+   - Scale Threshold: 500+ ratings on a single recipe.
+   - Effort: 8 hours.
+
+#### LOW
+
+6. **Friend request streams without limits** — `lib/repositories/firebase/friend_request_repository.dart` (stream methods)
+   - Impact: Streams all pending friend requests without `.limit()`. Unlikely to be large but unbounded.
+   - Best Practice: Add `.limit(50)`.
+   - Effort: 30 minutes.
 
 ### Quick Wins
-- Remove CoreStage 100ms delay (`core_stage.dart:61`) -- saves 100ms startup, 0.5 hours effort
-- Remove UIStage 150ms delays (`ui_stage.dart:42-48`) -- saves 150ms startup, 0.5 hours effort
-- Total quick win: ~250ms faster startup for 1 hour of work
+- Add `.limit(50)` to `subscribeToUserRecipes` (1 line)
+- Schedule `deleteOldAuditLogs` via Cloud Function cron (2 hours)
+- Add `.limit(50)` to friend request and group invitation streams (30 minutes)
 
 ---
 
-## 2. MEMORY & RESOURCE MANAGEMENT -- Score: 11/15
+## Dimension 4: Real-time Listeners & Streams — Score: 10/12
 
 ### Summary
-Strong StreamManagementMixin adoption (28 classes) with proper disposal patterns. IntelligentCacheManager has a 50MB memory cap with intelligent eviction. Memory pressure handling is implemented. However, several ViewModels using StreamManagementMixin don't call `disposeStreamResources()`, and CACHE_SIZE_UNLIMITED for Firestore is risky.
-
-### Issues Found
-
-#### HIGH
-
-1. **MenuStateManager has StreamManagementMixin but no dispose method** -- `lib/viewmodels/menu/menu_state_manager.dart:14`
-   - Impact: Memory leak -- stream subscriptions and timers managed by the mixin are never cleaned up
-   - Current: `class MenuStateManager extends ChangeNotifier with StreamManagementMixin` but no `dispose()` override found
-   - Best Practice: Override dispose() and call `disposeStreamResources()`
-   - Effort: 0.5 hours
-
-2. **Firestore CACHE_SIZE_UNLIMITED may exhaust device storage** -- `lib/services/unified/unified_recipe_service.dart:437`
-   - Impact: `cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED` means the Firestore SDK will cache unlimited data locally. For users with hundreds of recipes, shared content, and social data, this could consume gigabytes of device storage.
-   - Current: Both `unified_recipe_service.dart:437` and `firebase_service_mixin.dart:671` default to CACHE_SIZE_UNLIMITED
-   - Best Practice: Set explicit cache size (e.g., 100MB) with LRU eviction. Firebase default is 40MB for good reason.
-   - Scale Threshold: Becomes problematic at ~500+ recipes per user
-   - Effort: 1-2 days
-
-3. **ChatViewModel.dispose() does not call disposeStreamResources()** -- `lib/viewmodels/chat_viewmodel.dart:461`
-   - Impact: ChatViewModel uses StreamManagementMixin but its dispose() method does not call `disposeStreamResources()`, potentially leaking chat stream subscriptions
-   - Current: Has `dispose()` at line 461 but grep shows no `disposeStreamResources` call in that file
-   - Best Practice: Add `await disposeStreamResources()` to dispose()
-   - Effort: 0.5 hours
-
-#### MEDIUM
-
-4. **IntelligentCacheManager.dispose() not called on app termination** -- `lib/services/performance/intelligent_cache_manager.dart:560-566`
-   - Impact: Two periodic timers (_prefetchTimer every 5min, _behaviorSaveTimer every 10min) may not be properly cleaned up. `onAppPaused()` is called from main.dart but full `dispose()` is never called.
-   - Current: `_ButleryAppState.dispose()` does not dispose IntelligentCacheManager
-   - Best Practice: Call `cacheManager.dispose()` in app-level dispose
-   - Effort: 0.5 hours
-
-5. **86 Timer usages across 33 files need audit** -- Various files
-   - Impact: Timers not managed through StreamManagementMixin could leak
-   - Current: `lib/services/performance/performance_monitoring_service.dart` has 9 timer usages, `lib/services/notifications/modules/notification_offline_manager.dart` has 7, `lib/services/notifications/modules/notification_batch_manager.dart` has 6
-   - Best Practice: Ensure all timers are registered with StreamManagementMixin or properly cancelled
-   - Effort: 2-3 days for audit + fixes
-
-6. **Image cache cleared on memory pressure but no size limit configured** -- `lib/main.dart:441-443`
-   - Impact: Flutter's default image cache has no explicit size limit configured. `PaintingBinding.instance.imageCache.clear()` is called on memory pressure, which is good, but proactive size limiting would prevent the pressure in the first place.
-   - Current: 19 CachedNetworkImage/Image.network usages across 17 files
-   - Best Practice: Set `PaintingBinding.instance.imageCache.maximumSize = 100` and `maximumSizeBytes = 50 * 1024 * 1024`
-   - Effort: 0.5 hours
-
-### Quick Wins
-- Add `disposeStreamResources()` to MenuStateManager -- prevents memory leak, 0.5 hours
-- Set explicit imageCache size limits in main.dart -- prevents memory bloat, 0.5 hours
-- Add `disposeStreamResources()` to ChatViewModel -- prevents stream leak, 0.5 hours
-
----
-
-## 3. FIREBASE QUERY & SCHEMA DESIGN -- Score: 13/18
-
-### Summary
-Query patterns are generally well-designed with limits on most queries. 34 composite indexes cover all major compound query patterns. Cursor-based pagination exists for `fetchAllUserRecipes`. The main concerns are the unbounded ingredient collection listener and client-side search that fetches 200 documents.
-
-### Issues Found
-
-#### CRITICAL
-
-1. **Ingredient collection listener has no limit** -- `lib/repositories/firebase/firebase_ingredient_repository.dart:85`
-   - Impact: `_subscription = _collection.snapshots().listen(...)` listens to the ENTIRE ingredients collection without any `.limit()` or `.where()` clause. Every ingredient change triggers a full collection download for every connected client. With 500+ ingredients and 100+ concurrent users, this creates enormous read costs and bandwidth usage.
-   - Current: `_collection.snapshots()` at line 85 (initialize), `_collection.snapshots().map(...)` at line 533 (watchAll)
-   - Best Practice: Use a server-side trigger to invalidate a version counter. Clients check version, only re-fetch if changed. Or use timestamp-based incremental sync.
-   - Scale Threshold: Becomes expensive at ~50+ concurrent users
-   - Effort: 3-5 days
-
-#### HIGH
-
-2. **Client-side recipe search reads up to 200 documents** -- `lib/repositories/firebase/firebase_recipe_repository.dart:376`
-   - Impact: `searchRecipes()` fetches 200 documents and filters client-side with `toLowerCase().contains()`. Each search costs 200 reads regardless of result count.
-   - Current: Algolia integration exists (`lib/repositories/algolia/algolia_search_repository.dart`) but client-side fallback is the default
-   - Best Practice: Enable Algolia search as primary, use Firestore only as fallback
-   - Effort: 2-3 days (integration already exists)
-
-3. **Duplicate collection naming (shared_menus vs sharedMenus, etc.)** -- `firestore.indexes.json:125-178`
-   - Impact: Both `shared_menus` and `sharedMenus` have indexes. Same for `shared_shopping_lists` and `sharedShoppingLists`. This suggests a migration was incomplete or both formats are used, doubling index storage costs and potentially causing data fragmentation.
-   - Current: 4 indexes across duplicate collection names
-   - Best Practice: Consolidate to single naming convention, migrate data, remove stale indexes
-   - Effort: 2-3 days
-
-#### MEDIUM
-
-4. **N+1 pattern in personal tag fetching** -- `lib/repositories/firebase/firebase_personal_tag_repository.dart:122`
-   - Impact: `tagIds.map((id) => ref.doc(id).get())` fetches each tag individually in a loop wrapped in `Future.wait()`. While parallelized, each is a separate Firestore read.
-   - Current: Good that it uses `Future.wait()` for parallelism, but `whereIn` would be more efficient for up to 30 IDs
-   - Best Practice: Use `.where(FieldPath.documentId, whereIn: tagIds)` for batches of 10
-   - Effort: 1-2 days
-
-5. **Rating aggregation Cloud Function queries ALL ratings without limit** -- `functions/src/index.ts:82-85`
-   - Impact: `db.collection("recipe_ratings").where("recipeId", "==", recipeId).get()` fetches all ratings for a recipe. For popular shared recipes with thousands of ratings, this could exceed Cloud Function timeout (default 60s).
-   - Current: No limit on query, processes all ratings in memory
-   - Best Practice: Maintain running counters with increment/decrement instead of full recalculation. Or limit to most recent 500 ratings with warning.
-   - Scale Threshold: Becomes problematic at ~1000+ ratings per recipe
-   - Effort: 2-3 days
-
-6. **base_shared_content_repository uses limit * 2 for client-side filtering** -- `lib/repositories/firebase/base_shared_content_repository.dart:622`
-   - Impact: Fetches 2x the requested limit from Firestore, then filters client-side. This is a known pattern to handle dismissed content but doubles read costs.
-   - Best Practice: Server-side filtering where possible, or accept slightly less accurate pagination
-   - Effort: 2-3 days
-
-### Quick Wins
-- Use `whereIn` for personal tag batch fetching -- reduces reads, 1 day
-- Audit and remove duplicate collection indexes -- reduces index storage, 1 day
-
----
-
-## 4. REAL-TIME LISTENERS & STREAMS -- Score: 9/12
-
-### Summary
-~55 `.snapshots()` calls across the codebase create real-time listeners. StreamManagementMixin is adopted by 28 classes (services + viewmodels + repositories), providing proper lifecycle management. Most listeners have appropriate limits. The main concern is the ingredient collection listener and the total concurrent listener count per user session.
-
-### Issues Found
-
-#### HIGH
-
-1. **Estimated 15-25 concurrent listeners per active user session** -- Various files
-   - Impact: Typical user session activates listeners for: recipes (1), menus (1), shopping lists (1-3), notifications (1), friend requests (2), presence (1-2), conversations (1), ingredients (1), personal tags (1-2), connectivity (1), plus any social content views (2-5). Total: ~15-25 per user.
-   - Current: At 50,000 users = ~750K-1.25M concurrent listeners against Firebase limit of 100K per project (but this is concurrent connections, not listeners)
-   - Best Practice: Lazy-activate listeners only when views are visible. Deactivate on navigation away.
-   - Scale Threshold: ~5,000 concurrent users may approach Firebase connection limits
-   - Effort: 5-8 days
-
-2. **Permission cache invalidator opens 3 listeners simultaneously** -- `lib/services/cache/permission_cache_invalidator.dart:63-89`
-   - Impact: Opens real-time listeners on shared_recipes, shared_menus, and shared_shopping_lists simultaneously for cache invalidation. These persist for the entire session.
-   - Current: 3 always-on listeners per authenticated user
-   - Best Practice: Use a single aggregated listener or polling-based invalidation
-   - Effort: 2-3 days
-
-#### MEDIUM
-
-3. **13 ViewModels with StreamManagementMixin correctly call disposeStreamResources(), but 2 do not**
-   - Impact: MenuStateManager and ChatViewModel may leak subscriptions (detailed in Dimension 2)
-   - Current: 13 of 15 ViewModels using the mixin properly dispose
-   - Best Practice: 100% compliance
-   - Effort: 1 hour
-
-4. **21 service files use .listen() directly** -- Various service files
-   - Impact: Services like `firebase_sync_manager.dart` (14 StreamSubscription references), `realtime_session_manager.dart` (15 references) have complex stream management. Some use StreamManagementMixin, but manual `.listen()` calls in files not using the mixin need auditing.
-   - Best Practice: Adopt StreamManagementMixin in all services with active listeners
-   - Effort: 3-5 days
+StreamManagementMixin has excellent adoption (20+ classes). Most listeners are properly scoped and disposed. Estimated 8–15 concurrent listeners per active session. Four `.snapshots()` calls in collaborative recipe code lack StreamManagementMixin.
 
 ### Real-time Listener Inventory
 
-| Listener Category | Count | Scope | Limit | Lifecycle |
+#### Always Active (while authenticated)
+
+| File:Line | Collection | Type | Limit | Lifecycle |
 |---|---|---|---|---|
-| Recipe collection | 2 | User-scoped | 50/100 | Auth session |
-| Menu operations | 1-2 | Document | N/A | View lifetime |
-| Shopping lists | 2-3 | User-scoped | 20 | Auth session |
-| Notifications | 1 | User-scoped | 50 | Auth session |
-| Friend requests | 2 | User-filtered | 50 | Auth session |
-| Ingredients | 1 | **Global unbounded** | **NONE** | App lifetime |
-| Conversations | 1 | User-filtered | 50 | Auth session |
-| Comments | 1 | Document-scoped | 50 | View lifetime |
-| Presence | 1-2 | Document | N/A | View lifetime |
-| Connectivity | 1 | Global | 1 | App lifetime |
-| Social sharing | 2-3 | User-filtered | 50 | View lifetime |
-| Permission cache | 3 | User-filtered | N/A | Auth session |
-| Personal tags | 1-2 | User-scoped | N/A | Auth session |
+| `firebase_recipe_repository.dart:591` | `users/{uid}/recipes` | Collection | ❌ **NONE** | StreamManagementMixin ✅ |
+| `firebase_recipe_repository.dart:351` | `users/{uid}/recipes` | Collection | ✅ 50 | StreamManagementMixin ✅ |
+| `firebase_notifications_repository.dart` | `user_notifications` | Collection | ✅ 50 | Managed ✅ |
+| `presence_service.dart:168` | `presence/{userId}` | Document | N/A | Timer-based ✅ |
 
-**Total per user: ~15-25 concurrent listeners**
+#### Screen-Specific (active only when view is open)
 
----
+| File:Line | Collection | Type | Limit | Lifecycle |
+|---|---|---|---|---|
+| `firebase_comments_repository.dart` | `recipe_comments` | Collection | ✅ 50 | View-scoped ✅ |
+| `firebase_ratings_repository.dart` | `recipe_ratings` | Collection | ✅ 500 | View-scoped ✅ |
+| `firebase_messaging_repository.dart` | `messages` | Collection | ✅ 50 | View-scoped ✅ |
+| `firebase_messaging_repository.dart` | `conversations` | Collection | ✅ 20 | View-scoped ✅ |
+| `firebase_personal_tag_repository.dart:78` | `personalTagIds` | Collection | ❌ None | User-scoped (small) ✅ |
+| `firebase_personal_tag_repository.dart:173` | `personalTagGroups` | Collection | ❌ None | User-scoped (small) ✅ |
+| `friend_request_repository.dart:333` | `friend_requests` | Collection | ❌ None | Pending filter ⚠️ |
+| `friend_request_repository.dart:346` | `friend_requests` | Collection | ❌ None | Pending filter ⚠️ |
+| `friend_relationship_repository.dart:266` | `friends` | Collection | ❌ None | View-scoped ⚠️ |
+| `friend_category_repository.dart:338` | `friendCategories` | Collection | ❌ None | View-scoped (small) ✅ |
+| `group_invitation_repository.dart:136` | `group_invitations` | Collection | ❌ None | Pending filter ⚠️ |
+| `firebase_shared_shopping_repository.dart` | Shared shopping lists | Collection | ✅ Filter | View-scoped ✅ |
+| `group_shared_content_service.dart` | Shopping/menus/recipes | Collection | ✅ Filter | Group view ✅ |
 
-## 5. SCALABILITY PROJECTIONS -- Score: 10/15
+#### Collaborative (active during editing)
 
-### Summary
-Architecture is fundamentally sound with user-scoped collections, denormalized data (via Cloud Functions), and cursor-based pagination. Firebase is viable to 10,000+ users. Key bottlenecks are the global ingredient listener, client-side search, and connection limits at scale.
+| File:Line | Collection | Type | Limit | Lifecycle |
+|---|---|---|---|---|
+| Realtime recipe editing | `realtime_recipes/{id}` | Document | N/A | ⚠️ Caller responsibility |
+| Realtime presence | `realtime_recipes/{id}/presence` | Collection | ✅ isActive | ⚠️ Caller responsibility |
 
-### Issues Found
-
-#### HIGH
-
-1. **Global ingredient listener scales linearly with user count** -- `firebase_ingredient_repository.dart:85`
-   - Impact: N users * full collection reads on every ingredient change = O(N * M) reads where M = ingredient count. At 1000 users with 500 ingredients, a single ingredient update triggers 500,000 reads.
-   - Scale Threshold: Breaks at ~100 concurrent users
-   - Mitigation: Version-counter invalidation pattern or server-push of only changed ingredients
-   - Effort: 3-5 days
-
-2. **Cloud Functions without maxInstances configuration** -- `functions/src/llm/structure-recipe.ts:61-62`, `functions/src/llm/ocr-recipe-image.ts:61-62`
-   - Impact: LLM functions have memory (512MiB/1GiB) and timeout (60s/120s) configured but no `maxInstances` limit. A spike in import requests could trigger hundreds of concurrent Cloud Function instances, each calling Mistral AI API, leading to API rate limiting and cost spikes.
-   - Current: `memory: "512MiB"/"1GiB"`, `timeoutSeconds: 60/120`, no maxInstances
-   - Best Practice: Set `maxInstances: 10-20` for LLM functions, implement client-side queuing
-   - Effort: 1 day
-
-3. **sharedWith/sharedWithUserIds arrays in shared content documents** -- Various shared_* collections
-   - Impact: Array fields used for `array-contains` queries. These grow as content is shared with more users. At ~500 entries, documents approach performance degradation. At ~20,000 entries, they hit the Firestore array element limit.
-   - Current: No server-side limit on array growth
-   - Best Practice: Switch to subcollection-based membership model (already partially implemented in groups). Limit array size to 100.
-   - Scale Threshold: Breaks at ~500 shares per document
-   - Effort: 5-8 days
-
-#### MEDIUM
-
-4. **No horizontal read distribution strategy**
-   - Impact: All reads go to same Firestore database. No read replicas or CDN for static content.
-   - Current: Single Firestore instance for everything
-   - Best Practice: Consider Firebase Hosting CDN for static assets, Firestore Data Connect for read scaling at 10K+ users
-   - Scale Threshold: 10K+ daily active users
-   - Effort: Decision point, not implementation
-
-5. **Firebase connection limit of 100K concurrent per project**
-   - Impact: With 15-25 listeners per user, ~4,000-6,700 concurrent users saturate the connection pool
-   - Current: Not an issue at current scale
-   - Best Practice: Implement listener pooling, lazy activation, and connection monitoring
-   - Scale Threshold: ~4,000 concurrent users
-   - Effort: 5-8 days
-
----
-
-## 6. BUNDLE SIZE & NETWORK EFFICIENCY -- Score: 9/12
-
-### Summary
-Good use of deferred imports (17 deferred modules for social, messaging, and extraction routes). Asset footprint is moderate (~2MB total). Image compression before upload is implemented with multi-pass quality reduction. However, PNG illustrations could be converted to WebP and some heavy dependencies (flutter_inappwebview, drift+sqlcipher) inflate the bundle.
+**Concurrent Listener Estimate:** 8–12 typical, up to 18 during social+messaging use.
 
 ### Issues Found
 
 #### HIGH
 
-1. **Illustration assets are unoptimized PNGs** -- `assets/illustrations/`
-   - Impact: 12 PNG files totaling ~1.3MB. PNGs like `broccoli.png` (244KB), `champinjon.PNG` (156KB), `rodlok.PNG` (157KB) could be 50-70% smaller as WebP.
-   - Current: All illustrations are PNG format
-   - Best Practice: Convert to WebP for ~60% size reduction. Consider vector (SVG) for simple illustrations.
-   - Effort: 0.5 days
-
-2. **6 custom font files totaling ~736KB** -- `assets/fonts/`
-   - Impact: JosefinSans (3 weights, 231KB) + SpaceGrotesk (4 weights, 504KB). Seven font files is generous for a recipe app.
-   - Current: Both font families loaded at startup
-   - Best Practice: Consider reducing to 2-3 font weights. Use variable fonts if available to reduce file count.
-   - Effort: 0.5 days
+1. **Collaborative recipe streams lack StreamManagementMixin** — realtime recipe editing flows
+   - Impact: 4 `.snapshots()` calls (2 document, 2 collection) without centralized lifecycle management. Disposal relies on caller.
+   - Current: Streams are returned from methods — caller must cancel. No mixin to enforce cleanup.
+   - Best Practice: Add StreamManagementMixin to collaborative repository or document caller contract.
+   - Effort: 2 hours.
 
 #### MEDIUM
 
-3. **Heavy native dependencies inflate APK** -- `pubspec.yaml`
-   - Impact: `flutter_inappwebview` (web scraping), `drift` + `sqlcipher_flutter_libs` (encrypted local DB), and the Firebase suite collectively add 15-25MB to native library size.
-   - Current: `sqlcipher_flutter_libs` may be unused (flagged in Dependencies report 05)
-   - Best Practice: Remove unused dependencies, consider lighter alternatives for web scraping
-   - Effort: 2-5 days (requires testing)
+2. **Friend/invitation streams without limits**
+   - Impact: Streams pending friend requests and group invitations without `.limit()`. Bounded by "pending" status filter but could accumulate.
+   - Best Practice: Add `.limit(50)`.
+   - Effort: 30 minutes.
 
-4. **No cache-first pattern for Firestore reads (Source.cache only used in 1 location)** -- `lib/services/tagging/tag_config_service.dart:273-277`
-   - Impact: Only tag config forces `Source.server`. No explicit `Source.cache` usage for read operations. Firestore SDK handles caching automatically but explicit cache-first patterns could reduce network usage.
-   - Current: Relies on Firestore SDK automatic caching behavior
-   - Best Practice: Use `GetOptions(source: Source.cache)` for frequently accessed, rarely changing data (ingredients, tag configs), with periodic background refresh.
-   - Effort: 2-3 days
+3. **Ingredient collection full-stream** — `firebase_ingredient_repository.dart:464`
+   - Impact: Streams entire global `ingredients` collection. Currently small (<500 items) but unbounded.
+   - Current: Not called in production (confirmed `loadCache()` used instead). Dead code risk.
+   - Best Practice: Remove if unused, or add `.limit(500)`.
+   - Effort: 30 minutes.
 
-5. **Firebase Performance traces only in 3 files (16 total usages)** -- `lib/repositories/firebase/firebase_recipe_repository.dart`, `lib/repositories/firebase/firebase_storage_repository.dart`, `lib/services/performance/firebase_performance_service.dart`
-   - Impact: Limited visibility into actual performance characteristics. Critical user journeys (startup, list loading, search, navigation) are mostly uninstrumented.
-   - Current: `traceSearch` and `traceOperation` cover recipe reads and storage, but not menu, shopping, social operations
-   - Best Practice: Add performance traces to all critical user journeys
-   - Effort: 2-3 days
+### Quick Wins
+- Add StreamManagementMixin to collaborative recipe repository (2 hours)
+- Add `.limit(50)` to friend/invitation streams (30 minutes)
 
-### Asset Size Summary
+---
 
-| Category | Size | Notes |
+## Dimension 5: Scalability Projections — Score: 11/15
+
+### Summary
+Architecture scales well to 10K users with linear cost growth. Good sharding via subcollection pattern (Issue #014). No conflict resolution for shared data is the main gap. Firebase remains viable past 100K users.
+
+### Scalability at Growth Milestones
+
+| Milestone | Users | What Breaks | Required Action |
+|---|---|---|---|
+| **10x** (100 users) | 100 | Nothing | Monitor metrics |
+| **100x** (1K users) | 1,000 | `subscribeToUserRecipes` cost visible | Add `.limit(50)` |
+| **1,000x** (10K users) | 10,000 | Audit log storage, subcollection growth | Retention policy, TTL |
+| **10,000x** (100K users) | 100,000 | Client-side search insufficient, shared data conflicts | Algolia, conflict resolution |
+| **100,000x** (1M users) | 1,000,000 | Firebase listener limits (~100K concurrent), storage costs | Consider hybrid backend |
+
+### Issues Found
+
+#### HIGH
+
+1. **No conflict resolution for shared data** — shopping lists, collaborative recipes
+   - Impact: Simultaneous offline edits use Firestore's last-write-wins. Two users editing the same shopping list offline → one user's changes silently lost.
+   - Current: No merge strategy, no conflict detection, no user notification of conflicts.
+   - Best Practice: Implement field-level merge for shopping lists (array union for items). Add conflict detection for recipes.
+   - Scale Threshold: 10+ concurrent collaborators.
+   - Effort: 2–4 days.
+
+2. **Hot-spot potential on popular shared recipes** — `shared_recipes` collection
+   - Impact: Viral recipes could have 100+ concurrent real-time listeners on the same document. Firestore handles this but costs accumulate.
+   - Current: No rate limiting or listener count tracking.
+   - Best Practice: Monitor per-document listener count. Consider CDN-like caching layer for popular recipes.
+   - Scale Threshold: 1K+ simultaneous viewers.
+   - Effort: 4–8 hours (monitoring), 2–3 days (caching layer).
+
+#### MEDIUM
+
+3. **Firebase cost at 100K users ~$500–600/month**
+   - Impact: Linear cost scaling means $500–600/month at 100K users including storage. Manageable but worth optimizing.
+   - Current: Per-user cost is $0.004–0.005/month (excellent).
+   - Best Practice: Acceptable. Optimize reads via caching if needed.
+   - Scale Threshold: Budget-dependent.
+   - Effort: N/A.
+
+4. **No data migration strategy** — for schema changes at scale
+   - Impact: Schema changes (field renames, structure changes) require migrating all documents. At 100K users × 200 recipes = 20M documents.
+   - Current: No migration framework.
+   - Best Practice: Build batch migration tooling before schema changes.
+   - Scale Threshold: Any schema change at 10K+ users.
+   - Effort: 2–3 days (framework).
+
+### Quick Wins
+- Add `.limit(50)` to all unbounded listeners (prevents cost escalation)
+- Wire existing `deleteOldAuditLogs` to scheduled Cloud Function
+
+---
+
+## Dimension 6: Bundle Size & Network Efficiency — Score: 10/12
+
+### Summary
+Bundle size estimated 35–45MB (within 50MB target). Good use of 16 deferred imports for code splitting. `flutter_inappwebview` is the heaviest dependency (~10–15MB native). Assets are modest (2.7MB).
+
+### Bundle Size Breakdown (Estimated)
+
+| Category | Size | Details |
 |---|---|---|
-| Illustrations | ~1.3MB | 12 PNG files, unoptimized |
-| Fonts | ~736KB | 7 TTF files, 2 families |
-| Legal docs | ~20KB | Privacy policy (sv, en) |
-| **Total assets** | **~2.1MB** | Below target but optimizable |
-| Flutter InAppWebView assets | ~50KB | T-Rex runner game, CSS |
-| CupertinoIcons font | ~290KB | Standard Flutter asset |
+| Flutter framework + Dart | ~10–12MB | Core runtime |
+| Firebase SDKs (10 packages) | ~5–8MB | Auth, Firestore, Storage, FCM, Crashlytics, Performance, Analytics, AppCheck, Functions, remote_config |
+| `flutter_inappwebview` | ~10–15MB | WebView for URL recipe import |
+| `drift` + `sqlcipher_flutter_libs` | ~3–4MB | Encrypted SQLite for offline |
+| `image_cropper` | ~3–5MB | Native image editing |
+| Other dependencies | ~3–5MB | Algolia, HTTP, crypto, etc. |
+| Fonts (JosefinSans + SpaceGrotesk) | ~1.5MB | 8 font files, 4 weights each |
+| Illustrations (arta series + PNGs) | ~1MB | Onboarding + empty states |
+| Data files + legal | ~200KB | ingredient_substitutions.json, privacy policies |
+| **Total Estimated** | **35–45MB** | |
+
+### Deferred Import Coverage
+
+16 deferred imports across 3 modules:
+
+| Module | Count | Screens Deferred |
+|---|---|---|
+| Social | 9 | Profile edit, friends list, friend requests, shared with me, collab shopping, menu preview, create shared shopping, friend profile, shared shopping lists |
+| Messaging | 2 | Conversations list, chat view |
+| Extraction/Import | 5 | URL import, smart import, photo import, file import, archive import |
+
+**Assessment:** Good code splitting for non-critical screens. Core recipe and menu screens load immediately.
+
+### Issues Found
+
+#### MEDIUM
+
+1. **`flutter_inappwebview` is very heavy (~10–15MB)** — `pubspec.yaml:79`
+   - Impact: Adds significant native code to all platforms. Only used for URL recipe import.
+   - Current: Required for extracting recipe data from websites with JS rendering.
+   - Best Practice: Evaluate if `url_launcher` + server-side extraction (Cloud Function) could replace it.
+   - Scale Threshold: Not a scale issue but affects initial download size.
+   - Effort: 2–3 days (alternative architecture).
+
+2. **No Firebase Storage orphan cleanup** — deleted recipes leave images
+   - Impact: Recipe images in Firebase Storage persist after recipe deletion. Storage cost accumulates.
+   - Current: No cleanup mechanism detected.
+   - Best Practice: Cloud Function trigger on recipe deletion to clean up associated images.
+   - Scale Threshold: 10K+ deleted recipes.
+   - Effort: 4 hours.
+
+#### LOW
+
+3. **Font files could be subset** — `assets/fonts/`
+   - Impact: 8 font files (1.5MB) include full character sets. Swedish only needs Latin + Swedish characters.
+   - Best Practice: Subset fonts to required characters (saves ~30–40%).
+   - Effort: 2 hours.
+
+4. **Illustration PNGs could be WebP** — `assets/illustrations/`
+   - Impact: PNG illustrations (~1MB) could be ~40% smaller as WebP.
+   - Best Practice: Convert to WebP.
+   - Effort: 1 hour.
+
+### Quick Wins
+- Convert illustrations to WebP (saves ~400KB, 1 hour)
+- Add Cloud Function trigger for Firebase Storage cleanup on recipe delete (4 hours)
 
 ---
 
-## 7. OFFLINE PERFORMANCE & SYNC -- Score: 7/10
+## Dimension 7: Offline Performance & Sync — Score: 6/10
 
 ### Summary
-Firestore offline persistence is explicitly enabled with `CACHE_SIZE_UNLIMITED`. The app has a dedicated OfflineService with Drift-based local database for structured caching. Basic offline viewing of cached recipes and menus works. However, there is no user-visible offline indicator, no explicit pending writes tracking, and conflict resolution for collaborative editing is complex.
+Recipes have excellent offline support via Drift (encrypted SQLite) with sync queue and auto-reconnect. However, menus, shopping lists, social features, and messaging have NO offline support. Firestore persistence is enabled (100MB cache) but no explicit cache-first read patterns exist.
+
+### Firestore Persistence Configuration
+
+**Location:** `lib/services/unified/unified_recipe_service.dart:436-439`
+```dart
+_firestore.settings = const Settings(
+  persistenceEnabled: true,
+  cacheSizeBytes: 100 * 1024 * 1024, // 100 MB
+);
+```
+**Status:** ✅ Configured correctly. 100MB cache, LRU eviction.
+
+### Offline Architecture
+
+**Drift-Based Offline (Recipes Only):**
+- `OfflineService` — facade for Drift database (encrypted SQLite via sqlcipher)
+- `OfflineSyncManager` — retry with exponential backoff, async lock prevents concurrent syncs
+- `OfflineUserStorage` — user-scoped recipe storage with reactive streams
+- `ConnectivityMonitoringService` — 30s polling + Firebase connection monitoring
+
+**Firestore-Based Offline (Transparent):**
+- Firestore SDK caches recently accessed documents (100MB configured)
+- Pending writes queued automatically by Firestore SDK
+- No explicit `Source.cache` usage for read-your-writes pattern
+
+### Offline Capability Matrix
+
+| Feature | View Offline | Create Offline | Edit Offline | Sync Strategy |
+|---|---|---|---|---|
+| **Recipes** | ✅ Drift cache | ✅ Queued sync | ✅ Queued sync | Auto-sync on reconnect |
+| **User Ingredients** | ✅ Drift cache | ⚠️ Unknown | ⚠️ Unknown | Unknown |
+| **Menus** | ⚠️ Firestore cache only | ❌ No | ❌ No | Server-only |
+| **Shopping Lists** | ⚠️ Firestore cache only | ❌ No | ❌ No | Real-time only |
+| **Personal Tags** | ⚠️ Firestore cache only | ❌ No | ❌ No | Server-only |
+| **Social Features** | ❌ No | ❌ No | ❌ No | Requires connection |
+| **Messaging** | ❌ No | ❌ No | ❌ No | Requires connection |
+| **Comments/Ratings** | ❌ No | ❌ No | ❌ No | Requires connection |
 
 ### Issues Found
 
 #### HIGH
 
-1. **No offline indicator shown to users** -- Missing feature
-   - Impact: Users have no visual feedback when they are offline. Operations may silently queue to Firestore's pending writes queue without user awareness.
-   - Current: `ConnectivityMonitoringService` exists (`lib/services/connectivity_monitoring_service.dart`) but no UI widget displays offline status
-   - Best Practice: Show a persistent banner or snackbar when offline, indicate pending changes count
-   - Effort: 1-2 days
+1. **No conflict resolution for shared data** — shopping lists, collaborative recipes
+   - Impact: Two users editing the same shopping list offline → Firestore last-write-wins → one user's changes silently lost.
+   - Current: No merge strategy, no detection, no notification.
+   - Best Practice: Field-level merge for shopping lists (use `FieldValue.arrayUnion/arrayRemove`). Conflict detection UI for recipes.
+   - Scale Threshold: Any multi-user collaboration offline.
+   - Effort: 2–4 days.
 
-2. **No pending writes indicator** -- Missing feature
-   - Impact: Users cannot tell if their changes have been synced to the server. In collaborative scenarios (shared shopping lists, collaborative recipes), this creates data loss anxiety.
-   - Current: Firestore SDK handles pending writes automatically, but UI gives no feedback
-   - Best Practice: Display "Syncing..." or "X changes pending" indicator
-   - Effort: 1-2 days
+2. **No cache-first read patterns** — all Firestore reads default to server-first
+   - Impact: Every screen open requires network round-trip even if cached data is available. Increases perceived latency.
+   - Current: No `GetOptions(source: Source.cache)` usage anywhere. Relies on Firestore SDK's transparent caching.
+   - Best Practice: Read from cache first, then refresh from server. Show stale data with refresh indicator.
+   - Scale Threshold: Always (UX improvement).
+   - Effort: 1–2 days.
+
+3. **No pending writes indicator** — user doesn't know if data is synced
+   - Impact: User may close app before offline writes sync. No visual indicator of pending changes.
+   - Current: Firestore's `hasPendingWrites` not used in any snapshot handling.
+   - Best Practice: Show sync indicator when `hasPendingWrites` is true.
+   - Scale Threshold: Any offline usage.
+   - Effort: 4 hours.
 
 #### MEDIUM
 
-3. **CACHE_SIZE_UNLIMITED risk on low-end devices** -- `lib/services/unified/unified_recipe_service.dart:437`
-   - Impact: Firestore cache grows without bound. On devices with limited storage (16-32GB Android phones), this could fill the device.
-   - Current: `Settings(persistenceEnabled: true, cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED)`
-   - Best Practice: Set to 100-200MB explicit limit
-   - Effort: 0.5 hours
+4. **Menus and shopping lists have no explicit offline support**
+   - Impact: Core daily-use features (meal planning, grocery shopping) fail offline.
+   - Current: Only work via transparent Firestore cache (view recently accessed data).
+   - Best Practice: Extend Drift offline storage to menus and shopping lists.
+   - Scale Threshold: Users in low-connectivity areas.
+   - Effort: 3–5 days.
 
-4. **Collaborative shopping list offline conflict resolution** -- Conceptual
-   - Impact: Two collaborators editing the same shopping list offline will both generate pending writes. Firestore uses last-write-wins by default, which could lose items.
-   - Current: No explicit conflict resolution strategy documented
-   - Best Practice: Use Firestore transactions for item additions, or implement operational transform for collaborative lists
-   - Effort: 3-5 days
+5. **ConnectivityMonitoringService uses 30s polling** — `lib/services/connectivity_monitoring_service.dart`
+   - Impact: Up to 30s delay detecting network state change.
+   - Current: `Timer.periodic(30 seconds)` checks connectivity.
+   - Best Practice: Use `connectivity_plus` stream for instant detection.
+   - Scale Threshold: Not a scale issue but UX concern.
+   - Effort: 2 hours.
 
-### Offline Functionality Matrix
-
-| Feature | Works Offline? | Notes |
-|---|---|---|
-| View cached recipes | Yes | Cached via UnifiedRecipeService + Drift |
-| View menus | Yes | Cached via Firestore persistence |
-| View shopping lists | Yes | Cached via Firestore persistence |
-| Create/edit recipes | Partially | Writes queue, but no feedback shown |
-| Add to shopping list | Partially | Writes queue, but no pending indicator |
-| Import recipes (URL/photo) | No | Requires network for Cloud Functions |
-| Social features (share, comment) | No | Requires network |
-| Search recipes | Partially | Client-side search works on cached data |
-| View friend activity | No | Requires network |
-| Collaborative editing | Partially | Last-write-wins, no conflict UI |
+### Quick Wins
+- Add `hasPendingWrites` indicator to recipe/shopping list views (4 hours)
+- Use `connectivity_plus` stream instead of polling (2 hours)
 
 ---
 
 ## Remediation Roadmap
 
-### Immediate (CRITICAL items + quick wins) -- 2-3 days effort
+### Phase 1: Immediate (CRITICAL + Quick Wins) — 2 days effort
 
-| # | Item | Effort | Impact |
+| # | Action | File | Impact | Effort |
+|---|---|---|---|---|
+| 1 | Add `.limit(50)` to `subscribeToUserRecipes` | `firebase_recipe_repository.dart:596` | Prevents 10–100x cost escalation | 30 min |
+| 2 | Add `.limit(50)` to friend/invitation streams | Various repositories | Prevents unbounded memory | 30 min |
+| 3 | Add StreamManagementMixin to collaborative recipe flows | Collaborative recipe code | Prevents memory leaks | 2 hours |
+| 4 | Convert 6 eager singletons to lazy | DI modules | Saves ~200–400ms startup | 4 hours |
+| 5 | Configure `flutter_cache_manager` max size | Cache configuration | Prevents unbounded disk cache | 1 hour |
+| 6 | Convert high-traffic ListViews to .builder | `friends_list_view.dart`, `conversations_list_view.dart` | Eliminates jank on long lists | 2 hours |
+
+### Phase 2: Short-term (10x Readiness) — 1 week effort
+
+| # | Action | Impact | Effort |
 |---|---|---|---|
-| 1 | Remove CoreStage 100ms delay (`core_stage.dart:61`) | 0.5h | -100ms startup |
-| 2 | Remove UIStage 150ms delays (`ui_stage.dart:42-48`) | 0.5h | -150ms startup |
-| 3 | Add `disposeStreamResources()` to MenuStateManager | 0.5h | Fix memory leak |
-| 4 | Add `disposeStreamResources()` to ChatViewModel | 0.5h | Fix stream leak |
-| 5 | Set explicit Firestore cache size (100-200MB) | 0.5h | Prevent storage exhaustion |
-| 6 | Set Flutter imageCache size limits | 0.5h | Prevent memory bloat |
-| 7 | Set `maxInstances: 15` on LLM Cloud Functions | 0.5h | Prevent cost spikes |
+| 7 | Parallelize independent DI module initialization | Saves ~300–500ms startup | 2–3 days |
+| 8 | Wire `deleteOldAuditLogs` to Cloud Function cron | Prevents unbounded storage | 2 hours |
+| 9 | Add TTL policy for subcollection docs (views/engagements) | Prevents popular content storage bloat | 4 hours |
+| 10 | Add `hasPendingWrites` sync indicator to UI | Users know when data is synced | 4 hours |
+| 11 | Inject shared HTTP client into import pipelines | Connection pooling, fewer leaks | 1 hour |
+| 12 | Add Cloud Function trigger for Storage cleanup on recipe delete | Prevents orphaned images | 4 hours |
 
-### Short-term (HIGH items, 10x readiness) -- 10-15 days effort
+### Phase 3: Medium-term (100x Readiness) — 2–3 weeks effort
 
-| # | Item | Effort | Impact |
+| # | Action | Impact | Effort |
 |---|---|---|---|
-| 8 | Fix ingredient collection unbounded listener | 3-5 days | Eliminate biggest cost driver |
-| 9 | Enable Algolia search as primary (integration exists) | 2-3 days | Reduce 200-doc reads per search |
-| 10 | Add offline indicator UI | 1-2 days | User experience for offline scenarios |
-| 11 | Add pending writes indicator | 1-2 days | User confidence in data sync |
-| 12 | Convert PNG illustrations to WebP | 0.5 days | ~750KB bundle reduction |
-| 13 | Parallelize ContentModule initialization | 1 day | -500ms+ startup time |
-| 14 | Defer Social/Messaging/Performance/UI module initialization to post-first-frame | 3-5 days | Sub-2s cold start |
+| 13 | Implement cache-first read patterns for menus/lists | Faster perceived load, better offline | 2 days |
+| 14 | Implement conflict resolution for shopping lists | Prevents silent data loss | 2–4 days |
+| 15 | Denormalize rating/comment counts to recipe doc | Eliminates expensive aggregation queries | 1 day |
+| 16 | Extend Drift offline support to menus and shopping lists | Core features work offline | 3–5 days |
+| 17 | Build batch data migration framework | Required before any schema change at scale | 2–3 days |
 
-### Medium-term (MEDIUM items, 100x readiness) -- 15-20 days effort
+### Phase 4: Long-term (1000x Readiness) — Decision Points
 
-| # | Item | Effort | Impact |
+| # | Decision | When to Decide | Options |
 |---|---|---|---|
-| 15 | Consolidate duplicate collection naming | 2-3 days | Clean schema, reduce index cost |
-| 16 | Optimize N+1 tag fetching to whereIn batches | 1-2 days | Reduce Firestore reads |
-| 17 | Audit 86 Timer usages for proper lifecycle | 2-3 days | Prevent timer leaks |
-| 18 | Replace ListView with ListView.builder where needed | 2-3 days | Reduce frame drops |
-| 19 | Add Firebase Performance traces to critical journeys | 2-3 days | Enable data-driven optimization |
-| 20 | Implement cache-first patterns for stable data | 2-3 days | Reduce network usage |
-| 21 | Optimize rating aggregation Cloud Function | 2-3 days | Prevent timeout at scale |
-
-### Long-term (Architecture decisions, 1000x readiness) -- Decision points
-
-| # | Decision | Trigger |
-|---|---|---|
-| 22 | Migrate sharedWith arrays to subcollection model | >100 shares per document |
-| 23 | Implement listener pooling and lazy activation | >4,000 concurrent users |
-| 24 | Consider Firestore Data Connect or read replicas | >10,000 daily active users |
-| 25 | Address notifyListeners() granularity (consider Riverpod or selector patterns) | Measurable jank in profiling |
-| 26 | Evaluate Firebase vs hybrid backend | Monthly cost exceeds $2,000 |
+| 18 | Algolia integration for recipe search | >200 recipes/user common | Algolia vs Typesense vs Firestore full-text |
+| 19 | Replace `flutter_inappwebview` with server-side extraction | If bundle size > 50MB | Cloud Function extraction vs lighter WebView |
+| 20 | CDN caching for popular shared recipes | >1K concurrent recipe viewers | Firebase Hosting CDN vs custom cache layer |
+| 21 | Evaluate hybrid backend | >100K users & costs > $1K/month | Firebase + Supabase/custom API vs full Firebase |
+| 22 | Implement offline-first architecture | Product decision | Full CRDT vs Firestore offline vs custom sync |
 
 ---
 
-## Butlery-Specific Performance Verification
+## Reusable Patterns (Positive Findings)
 
-| Check | Status | Details |
+| Pattern | Adoption | Assessment |
 |---|---|---|
-| FirebaseServiceMixin adoption | GOOD | Used by UnifiedRecipeService and others. `executeFirebaseOperation()`, `executeFirebaseOperationWithRetry()`, `executeFirebaseOperationWithDNSResilience()` all present. 820 lines. |
-| StreamManagementMixin adoption | GOOD | 28 classes: 8 services, 6 repositories, 14 viewmodels. Proper disposal in 26/28. |
-| IntelligentCacheManager | GOOD | 50MB cap, intelligent eviction, behavior analysis, memory pressure handling, pause/resume lifecycle. |
-| Firebase Performance Traces | PARTIAL | Only 16 trace usages across 3 files. Missing coverage for menu, shopping, social, navigation flows. |
-| Image compression before upload | GOOD | `FirebaseStorageRepository` uses `FlutterImageCompress`. Multi-pass compression. Skips <500KB images. Thumbnail generation present. |
-| Stream pagination limits | GOOD | Recipe stream limited to 50, shopping lists to 20, notifications to 50, conversations to 50, comments to 50. **Exception**: Ingredient collection has NO limit. |
-| Cloud Functions config | PARTIAL | structureRecipe: 512MiB/60s, ocrRecipeImage: 1GiB/120s. Missing `maxInstances`. Rating aggregation has no query limit. |
-| Multi-platform | GOOD | Platform-aware: Web gets NoOpAnalytics, Crashlytics disabled on web, App Check configured per platform. Deferred imports for route modules. |
+| `StreamManagementMixin` | 20+ classes | ✅ Excellent — centralized stream lifecycle |
+| `BaseViewModel._isDisposed` | All ViewModels | ✅ Excellent — prevents double-disposal crashes |
+| `BaseFirebaseRepository` | All repositories | ✅ Excellent — standardized CRUD + audit |
+| `FirebaseServiceMixin` | All Firebase services | ✅ Excellent — retry, DNS resilience, error handling |
+| `SerializationUtils` | 100% model adoption | ✅ Excellent — null-safe Firestore parsing |
+| Deferred imports | 16 screens | ✅ Good — effective code splitting |
+| Subcollection sharing (Issue #014) | Recipes, menus | ✅ Good — scalable membership model |
+| `FirebasePerformanceService.traceOperation` | CRUD operations | ✅ Good — production monitoring |
 
 ---
 
 ## Phase 1 Completion Checklist
 
-- [x] All 7 dimensions scored and documented
-- [x] Startup sequence traced with blocking operations identified
-- [x] Widget build performance audited (ListView, notifyListeners patterns)
-- [x] Memory leak risks documented with file:line references
-- [x] All Firestore collections mapped with fields, queries, and issues
-- [x] Composite indexes cross-referenced (34 indexes vs actual query needs)
-- [x] Real-time listeners inventoried with lifecycle and cost analysis
-- [x] Cost projections calculated at 4 scale levels
-- [x] Scalability bottlenecks identified with scale thresholds
-- [x] Offline functionality mapped per feature
-- [x] Bundle size breakdown complete
-- [x] All issues classified by severity with effort estimates
+- [x] All 7 dimensions scored
+- [x] Startup sequence traced with blocking ops (serial module init chain mapped)
+- [x] Widget build performance audited (20 non-.builder ListViews, 36 eager singletons)
+- [x] Memory leak risks documented with file:line (dual cache, 3 static controllers, HTTP clients)
+- [x] All Firestore collections mapped (28 collections/subcollections)
+- [x] 34 indexes cross-referenced (all appear actively used)
+- [x] Real-time listeners inventoried (30+ listeners with lifecycle assessment)
+- [x] Cost projections at 4 scales ($0.05 → $443/month linear scaling)
+- [x] Scalability bottlenecks identified (7 bottlenecks with scale thresholds)
+- [x] Offline functionality mapped (recipes ✅, menus/shopping/social ❌)
+- [x] Bundle size breakdown complete (35–45MB estimated)
+- [x] All issues classified by severity (1 CRITICAL, 5 HIGH, 8 MEDIUM, 6 LOW)
 - [x] Zero code changes made
-- [x] Phase 2 roadmap structure prepared
-
-**Phase 1 Output:** Complete. Ready for Phase 2 smart optimization planning.
+- [x] Phase 2 roadmap prepared (4 phases: Immediate → Long-term)
