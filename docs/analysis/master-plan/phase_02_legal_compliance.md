@@ -1,4 +1,4 @@
-# Phase 2: Legal & Compliance (~5 days)
+# Phase 2: Legal & Compliance (~8 days)
 
 GDPR consent wiring, privacy manifest, ToS, community guidelines, UGC moderation, data processor disclosures.
 
@@ -8,7 +8,7 @@ GDPR consent wiring, privacy manifest, ToS, community guidelines, UGC moderation
 
 **Source**: R06:6.3 (implicit), R09:TS-009, R09:TS-012, R10:H5.2
 **Files**: New ToS document (sv + en), new `ToSView`, auth_view.dart
-**Fix**: Draft ToS (Swedish + English), create ToS view, wire navigation from auth screen, add acceptance checkbox to registration with timestamp in user profile.
+**Fix**: Draft ToS (Swedish + English), create ToS view, wire navigation from auth screen, add acceptance checkbox to registration with timestamp in user profile. Note: legal review timeline not included in estimate.
 **Effort**: 2-3d (content + implementation)
 
 ---
@@ -143,3 +143,12 @@ GDPR consent wiring, privacy manifest, ToS, community guidelines, UGC moderation
 **Files**: `lib/services/account/social_deletion_operations.dart:11-78`
 **Fix**: Add batch chunking to respect Firestore's 500-operation batch limit.
 **Effort**: 2h
+
+---
+
+## P2-17 — Add content screening (profanity filter) [MED]
+
+**Source**: R09:TS-008
+**Files**: `lib/services/moderation/` (new), `functions/src/moderation/` (new)
+**Fix**: Basic Swedish profanity word list filter for comments/messages. Baseline Trust & Safety requirement for UGC-enabled app.
+**Effort**: 2-3d

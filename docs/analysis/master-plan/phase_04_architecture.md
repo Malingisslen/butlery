@@ -22,12 +22,12 @@ Repository boundary violations, SerializationUtils adoption, Firebase collection
 
 ---
 
-## P4-03 — View imports concrete Firebase repository [CRIT]
+## P4-03 — Views import concrete/interface repositories directly [CRIT]
 
-**Source**: R01:C1.1
-**Files**: `lib/views/personal_tags_view.dart:20`
-**Fix**: Route through PersonalTagService; remove direct repository access.
-**Effort**: 1h
+**Source**: R01:C1.1, R01:M1.1
+**Files**: `lib/views/personal_tags_view.dart:19-20`, `lib/views/allergen_preferences_view.dart:6`
+**Fix**: Route through appropriate services; remove direct repository access from views. Both concrete Firebase imports and repository interface imports violate MVVM layering.
+**Effort**: 2h
 
 ---
 
@@ -76,12 +76,12 @@ Repository boundary violations, SerializationUtils adoption, Firebase collection
 
 ---
 
-## P4-09 — FirebaseSyncManager falls back to FirebaseFirestore.instance [HIGH]
+## P4-09 — Remove direct Firebase static references in DI [HIGH]
 
-**Source**: R01:H1.4
-**Files**: `lib/services/unified/modules/firebase_sync_manager.dart:212`
-**Fix**: Remove fallback, require injection.
-**Effort**: 30 min
+**Source**: R01:H1.4, R01:M1.4
+**Files**: `lib/services/unified/modules/firebase_sync_manager.dart:212`, `lib/core/di/modules/social_module.dart:124`
+**Fix**: Remove `FirebaseFirestore.instance` fallback in sync manager; inject `FirebaseAuth` through existing auth repository in social module. Both are 30-min fixes in same cleanup pass.
+**Effort**: 1h
 
 ---
 
@@ -94,16 +94,7 @@ Repository boundary violations, SerializationUtils adoption, Firebase collection
 
 ---
 
-## P4-11 — Views import repository interfaces [MED]
-
-**Source**: R01:M1.1
-**Files**: `personal_tags_view.dart:19`, `allergen_preferences_view.dart:6`
-**Fix**: Route through appropriate services.
-**Effort**: 2h
-
----
-
-## P4-12 — 5 ViewModels import repository implementations [MED]
+## P4-11 — 5 ViewModels import repository implementations [MED]
 
 **Source**: R01:M1.2
 **Files**: `group_content_viewmodel.dart:5`, `personal_tag_viewmodel.dart:13`, `menu_storage.dart:8`, `recipe_collaborative_manager.dart:15`, `recipe_persistence_manager.dart:15`
@@ -112,7 +103,7 @@ Repository boundary violations, SerializationUtils adoption, Firebase collection
 
 ---
 
-## P4-13 — Direct service instantiation in ViewModels [MED]
+## P4-12 — Direct service instantiation in ViewModels [MED]
 
 **Source**: R01:M1.3
 **Files**: `user_profile_viewmodel.dart:44`, `recipe_image_manager.dart:80`, `xfile_upload_handler.dart:31`
@@ -121,7 +112,7 @@ Repository boundary violations, SerializationUtils adoption, Firebase collection
 
 ---
 
-## P4-14 — Inconsistent null-coalescing patterns [MED]
+## P4-13 — Inconsistent null-coalescing patterns [MED]
 
 **Source**: R01:H3.2
 **Files**: 14 model files
@@ -130,7 +121,7 @@ Repository boundary violations, SerializationUtils adoption, Firebase collection
 
 ---
 
-## P4-15 — 3 ViewModels manually manage _isLoading [MED]
+## P4-14 — 3 ViewModels manually manage _isLoading [MED]
 
 **Source**: R01:M3.3
 **Files**: `chat_viewmodel.dart:27`, `group_detail_viewmodel.dart:61`, `personal_tag_viewmodel.dart:32`
@@ -139,18 +130,9 @@ Repository boundary violations, SerializationUtils adoption, Firebase collection
 
 ---
 
-## P4-16 — 8 plain service classes without BaseService/ErrorHandlingMixin [MED]
+## P4-15 — 8 plain service classes without BaseService/ErrorHandlingMixin [MED]
 
 **Source**: R01:M3.1
 **Files**: `YouTubeTranscriptService`, `FCMService`, `FieldEncryptionService` (3 substantive ones)
 **Fix**: Add ErrorHandlingMixin to the 3 substantive services.
 **Effort**: 2h
-
----
-
-## P4-17 — FirebaseAuth.instance in DI module [LOW]
-
-**Source**: R01:M1.4
-**Files**: `lib/core/di/modules/social_module.dart:124`
-**Fix**: Inject through existing auth repository.
-**Effort**: 30 min

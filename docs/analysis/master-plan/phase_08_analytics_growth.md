@@ -59,7 +59,7 @@ Event wiring, onboarding instrumentation, retention tracking, notification routi
 
 ## P8-07 — Wire remaining recipe events [HIGH]
 
-**Source**: R08:PA-01/02 (extended)
+**Source**: R08:PA-01, R08:PA-02 (extended)
 **Fix**: Wire `recipe_edited`, `recipe_shared`, `recipe_image_uploaded`.
 **Effort**: 1h
 

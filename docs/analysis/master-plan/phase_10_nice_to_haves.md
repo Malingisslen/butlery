@@ -1,4 +1,4 @@
-# Phase 10: Nice-to-Haves (~5+ days)
+# Phase 10: Nice-to-Haves (~4 days)
 
 Cooking timer, in-app review, referral mechanism, web hover states, foldable support, etc.
 
@@ -76,31 +76,7 @@ Cooking timer, in-app review, referral mechanism, web hover states, foldable sup
 
 ---
 
-## P10-10 — Apple Sign-In [HIGH]
-
-**Source**: R10:H5.3
-**Fix**: Required by Apple if app offers third-party social login. Add `sign_in_with_apple` package.
-**Effort**: 1d
-
----
-
-## P10-11 — Demo account for App Store review [MED]
-
-**Source**: R10:M5.2
-**Fix**: Apple requires a demo account with pre-populated data.
-**Effort**: 4h
-
----
-
-## P10-12 — App store metadata preparation [MED]
-
-**Source**: R06:6.4, R10:M5.3
-**Fix**: Screenshots, descriptions, feature graphics, keywords, content rating, data safety/privacy labels.
-**Effort**: 2-3d
-
----
-
-## P10-13 — A/B testing framework [MED]
+## P10-10 — A/B testing framework [MED]
 
 **Source**: R08:PA-22
 **Fix**: Create ExperimentService wrapping FeatureFlagService with analytics logging and hypothesis tracking.
@@ -108,16 +84,8 @@ Cooking timer, in-app review, referral mechanism, web hover states, foldable sup
 
 ---
 
-## P10-14 — Add content screening (profanity filter) [MED]
-
-**Source**: R09:TS-008
-**Fix**: Basic Swedish profanity word list filter for comments/messages.
-**Effort**: 2-3d
-
----
-
-## P10-15 — Nutritional information (Livsmedelsverket API) [MED]
+## P10-11 — Nutritional information (Livsmedelsverket API) [MED]
 
 **Source**: R10:M3.2
-**Fix**: Planned for post-beta.
+**Fix**: Integrate Livsmedelsverket API for Swedish nutritional data. Planned for post-beta.
 **Effort**: 3-5d

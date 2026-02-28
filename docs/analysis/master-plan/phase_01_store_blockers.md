@@ -1,4 +1,4 @@
-# Phase 1: Store Submission Blockers (~2 days)
+# Phase 1: Store Submission Blockers (~6 days)
 
 Items you literally cannot submit to App Store / Play Store without.
 
@@ -78,3 +78,28 @@ Verify third-party pod privacy manifests are bundled (R09:TS-022).
 **Files**: `windows/runner/Runner.rc:92-96`
 **Fix**: Replace `CompanyName "com.example"` and `LegalCopyright "Copyright (C) 2025 com.example"` with actual values.
 **Effort**: 5 min
+
+---
+
+## P1-09 — Apple Sign-In [HIGH]
+
+**Source**: R10:H5.3
+**Files**: `pubspec.yaml`, `lib/views/auth_view.dart`
+**Fix**: Required by Apple if app offers third-party social login (Review Guideline 4.8). Add `sign_in_with_apple` package, wire into auth flow.
+**Effort**: 1d
+
+---
+
+## P1-10 — Demo account for App Store review [MED]
+
+**Source**: R10:M5.2
+**Fix**: Apple requires a demo account with pre-populated data for review. Create seed script and test credentials.
+**Effort**: 4h
+
+---
+
+## P1-11 — App store metadata preparation [MED]
+
+**Source**: R06:6.4, R10:M5.3
+**Fix**: Screenshots, descriptions, feature graphics, keywords, content rating, data safety/privacy labels. Required before submission.
+**Effort**: 2-3d
