@@ -5,70 +5,67 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 class SocialDeletionOperations {
   final FirebaseFirestore _firestore;
   static const String _logTag = 'SocialDeletionOps';
+  static const int _batchLimit = 450; // Safety margin under Firestore's 500-op limit
 
   SocialDeletionOperations(this._firestore);
 
+  /// Commits batch when op count reaches limit, returns a fresh batch and resets counter.
+  Future<({WriteBatch batch, int count})> _commitIfNeeded(
+      WriteBatch batch, int count) async {
+    if (count >= _batchLimit) {
+      await batch.commit();
+      return (batch: _firestore.batch(), count: 0);
+    }
+    return (batch: batch, count: count);
+  }
+
   Future<bool> removeFriendConnections(String userId) async {
     try {
-      final batch = _firestore.batch();
+      var batch = _firestore.batch();
+      var opCount = 0;
 
-      final userFriends = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('friends')
-          .get();
+      final queries = [
+        _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('friends')
+            .get(),
+        _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('friendCategories')
+            .get(),
+        _firestore
+            .collection('friend_requests')
+            .where('fromUserId', isEqualTo: userId)
+            .get(),
+        _firestore
+            .collection('friend_requests')
+            .where('toUserId', isEqualTo: userId)
+            .get(),
+        _firestore
+            .collection('group_invitations')
+            .where('fromUserId', isEqualTo: userId)
+            .get(),
+        _firestore
+            .collection('group_invitations')
+            .where('toUserId', isEqualTo: userId)
+            .get(),
+      ];
 
-      for (final doc in userFriends.docs) {
-        batch.delete(doc.reference);
+      final results = await Future.wait(queries);
+
+      for (final snapshot in results) {
+        for (final doc in snapshot.docs) {
+          batch.delete(doc.reference);
+          opCount++;
+          final state = await _commitIfNeeded(batch, opCount);
+          batch = state.batch;
+          opCount = state.count;
+        }
       }
 
-      final categories = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('friendCategories')
-          .get();
-
-      for (final doc in categories.docs) {
-        batch.delete(doc.reference);
-      }
-
-      final sentRequests = await _firestore
-          .collection('friend_requests')
-          .where('fromUserId', isEqualTo: userId)
-          .get();
-
-      for (final doc in sentRequests.docs) {
-        batch.delete(doc.reference);
-      }
-
-      final receivedRequests = await _firestore
-          .collection('friend_requests')
-          .where('toUserId', isEqualTo: userId)
-          .get();
-
-      for (final doc in receivedRequests.docs) {
-        batch.delete(doc.reference);
-      }
-
-      final sentInvitations = await _firestore
-          .collection('group_invitations')
-          .where('fromUserId', isEqualTo: userId)
-          .get();
-
-      for (final doc in sentInvitations.docs) {
-        batch.delete(doc.reference);
-      }
-
-      final receivedInvitations = await _firestore
-          .collection('group_invitations')
-          .where('toUserId', isEqualTo: userId)
-          .get();
-
-      for (final doc in receivedInvitations.docs) {
-        batch.delete(doc.reference);
-      }
-
-      await batch.commit();
+      if (opCount > 0) await batch.commit();
       return true;
     } catch (e) {
       app_logger.AppLogger.error(
@@ -84,7 +81,8 @@ class SocialDeletionOperations {
           .where('participants', arrayContains: userId)
           .get();
 
-      final batch = _firestore.batch();
+      var batch = _firestore.batch();
+      var opCount = 0;
 
       for (final doc in conversationsSnapshot.docs) {
         final messagesSnapshot =
@@ -92,6 +90,10 @@ class SocialDeletionOperations {
 
         for (final msgDoc in messagesSnapshot.docs) {
           batch.delete(msgDoc.reference);
+          opCount++;
+          final state = await _commitIfNeeded(batch, opCount);
+          batch = state.batch;
+          opCount = state.count;
         }
 
         final participants =
@@ -102,9 +104,13 @@ class SocialDeletionOperations {
           participants.remove(userId);
           batch.update(doc.reference, {'participants': participants});
         }
+        opCount++;
+        final state = await _commitIfNeeded(batch, opCount);
+        batch = state.batch;
+        opCount = state.count;
       }
 
-      await batch.commit();
+      if (opCount > 0) await batch.commit();
       return true;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to delete messages', e);
@@ -114,12 +120,13 @@ class SocialDeletionOperations {
 
   Future<bool> removeFromSharedContent(String userId) async {
     try {
+      var batch = _firestore.batch();
+      var opCount = 0;
+
       final sharedRecipesSnapshot = await _firestore
           .collection('shared_recipes')
           .where('sharedWith', arrayContains: userId)
           .get();
-
-      final batch = _firestore.batch();
 
       for (final doc in sharedRecipesSnapshot.docs) {
         final sharedWith = List<String>.from(doc.data()['sharedWith'] ?? []);
@@ -130,6 +137,10 @@ class SocialDeletionOperations {
         } else {
           batch.update(doc.reference, {'sharedWith': sharedWith});
         }
+        opCount++;
+        final state = await _commitIfNeeded(batch, opCount);
+        batch = state.batch;
+        opCount = state.count;
       }
 
       final ownedSharedSnapshot = await _firestore
@@ -139,9 +150,13 @@ class SocialDeletionOperations {
 
       for (final doc in ownedSharedSnapshot.docs) {
         batch.delete(doc.reference);
+        opCount++;
+        final state = await _commitIfNeeded(batch, opCount);
+        batch = state.batch;
+        opCount = state.count;
       }
 
-      await batch.commit();
+      if (opCount > 0) await batch.commit();
       return true;
     } catch (e) {
       app_logger.AppLogger.error(
@@ -152,49 +167,163 @@ class SocialDeletionOperations {
 
   Future<bool> deleteCommentsAndRatings(String userId) async {
     try {
-      final batch = _firestore.batch();
+      var batch = _firestore.batch();
+      var opCount = 0;
 
-      final commentsSnapshot = await _firestore
-          .collection('recipe_comments')
-          .where('userId', isEqualTo: userId)
-          .get();
+      final queries = [
+        _firestore
+            .collection('recipe_comments')
+            .where('userId', isEqualTo: userId)
+            .get(),
+        _firestore
+            .collection('recipe_ratings')
+            .where('userId', isEqualTo: userId)
+            .get(),
+        _firestore
+            .collection('menu_comments')
+            .where('userId', isEqualTo: userId)
+            .get(),
+        _firestore
+            .collection('menu_ratings')
+            .where('userId', isEqualTo: userId)
+            .get(),
+      ];
 
-      for (final doc in commentsSnapshot.docs) {
-        batch.delete(doc.reference);
+      final results = await Future.wait(queries);
+
+      for (final snapshot in results) {
+        for (final doc in snapshot.docs) {
+          batch.delete(doc.reference);
+          opCount++;
+          final state = await _commitIfNeeded(batch, opCount);
+          batch = state.batch;
+          opCount = state.count;
+        }
       }
 
-      final ratingsSnapshot = await _firestore
-          .collection('recipe_ratings')
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      for (final doc in ratingsSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-
-      final menuCommentsSnapshot = await _firestore
-          .collection('menu_comments')
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      for (final doc in menuCommentsSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-
-      final menuRatingsSnapshot = await _firestore
-          .collection('menu_ratings')
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      for (final doc in menuRatingsSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-
-      await batch.commit();
+      if (opCount > 0) await batch.commit();
       return true;
     } catch (e) {
       app_logger.AppLogger.error(
           '[$_logTag] Failed to delete comments and ratings', e);
+      return false;
+    }
+  }
+
+  /// Delete shared menus owned by or shared with user.
+  Future<bool> deleteSharedMenus(String userId) async {
+    try {
+      var batch = _firestore.batch();
+      var opCount = 0;
+
+      // Menus shared with user
+      final sharedWithSnapshot = await _firestore
+          .collection('shared_menus')
+          .where('sharedWith', arrayContains: userId)
+          .get();
+
+      for (final doc in sharedWithSnapshot.docs) {
+        batch.update(doc.reference, {
+          'sharedWith': FieldValue.arrayRemove([userId]),
+        });
+        opCount++;
+        final state = await _commitIfNeeded(batch, opCount);
+        batch = state.batch;
+        opCount = state.count;
+      }
+
+      // Menus owned by user
+      final ownedSnapshot = await _firestore
+          .collection('shared_menus')
+          .where('ownerId', isEqualTo: userId)
+          .get();
+
+      for (final doc in ownedSnapshot.docs) {
+        batch.delete(doc.reference);
+        opCount++;
+        final state = await _commitIfNeeded(batch, opCount);
+        batch = state.batch;
+        opCount = state.count;
+      }
+
+      if (opCount > 0) await batch.commit();
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete shared menus', e);
+      return false;
+    }
+  }
+
+  /// Delete shared shopping lists owned by or shared with user.
+  Future<bool> deleteSharedShoppingLists(String userId) async {
+    try {
+      var batch = _firestore.batch();
+      var opCount = 0;
+
+      // Lists shared with user
+      final sharedWithSnapshot = await _firestore
+          .collection('shared_shopping_lists')
+          .where('sharedWith', arrayContains: userId)
+          .get();
+
+      for (final doc in sharedWithSnapshot.docs) {
+        batch.update(doc.reference, {
+          'sharedWith': FieldValue.arrayRemove([userId]),
+        });
+        opCount++;
+        final state = await _commitIfNeeded(batch, opCount);
+        batch = state.batch;
+        opCount = state.count;
+      }
+
+      // Lists owned by user
+      final ownedSnapshot = await _firestore
+          .collection('shared_shopping_lists')
+          .where('ownerId', isEqualTo: userId)
+          .get();
+
+      for (final doc in ownedSnapshot.docs) {
+        batch.delete(doc.reference);
+        opCount++;
+        final state = await _commitIfNeeded(batch, opCount);
+        batch = state.batch;
+        opCount = state.count;
+      }
+
+      if (opCount > 0) await batch.commit();
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete shared shopping lists', e);
+      return false;
+    }
+  }
+
+  /// Delete content reports submitted by user (GDPR — user's own data).
+  Future<bool> deleteUserReports(String userId) async {
+    try {
+      var batch = _firestore.batch();
+      var opCount = 0;
+
+      final reportsSnapshot = await _firestore
+          .collection('reports')
+          .where('reporterId', isEqualTo: userId)
+          .get();
+
+      for (final doc in reportsSnapshot.docs) {
+        batch.delete(doc.reference);
+        opCount++;
+        final state = await _commitIfNeeded(batch, opCount);
+        batch = state.batch;
+        opCount = state.count;
+      }
+
+      if (opCount > 0) await batch.commit();
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete user reports', e);
       return false;
     }
   }
