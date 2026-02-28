@@ -1,24 +1,33 @@
 ---
-description: Run Flutter analyze and create todo list for all issues, warnings, and infos
-argument-hint: (no arguments required)
+description: Run Flutter analyze, report issues, and optionally fix them
+argument-hint: [--fix | --errors-only | --dry-run]
 ---
 
-I am a complete novice at programming and you are a senior developer and architecht with 30+ years experience set to review my work. You are going to run Flutter analyze and create a structured todo list for all issues found. You will use ultrathink to find the root causes behind the issues, explain them shortly to me and then fix them.
+Run Flutter analyze and create a structured report of all issues found.
 
-First, run Flutter analyze
+Options provided: $ARGUMENTS
 
-Then, create a todo list file `/tasks/todo_analyze.md` that includes:
+## Workflow
 
-1. **📊 ANALYSIS SUMMARY**: Total count of issues by type (errors, warnings, infos)
-2. **🚨 ERRORS**: List all errors that prevent compilation
-3. **⚠️ WARNINGS**: List all warnings that should be addressed  
-4. **ℹ️ INFOS**: List all info suggestions for code improvement
-5. **📁 FILE BREAKDOWN**: Group issues by file for easier navigation
+1. **Run Analysis**: `flutter analyze`
 
-Format each issue as a checkable todo item with:
-- [ ] **File:Line** - Issue description (rule_name)
+2. **Report Issues** organized by priority:
+   - CRITICAL: Errors preventing compilation
+   - HIGH: Warnings affecting functionality
+   - MEDIUM: Code quality warnings
+   - LOW: Info/style suggestions
+   Group issues by file for easier navigation.
 
-After creating the todo list, ask the user:
-"Would you like me to create a detailed plan to fix all these issues and replace this todo list with a comprehensive remediation strategy?"
+3. **If `--fix` is provided** (or user confirms):
+   For each issue in priority order:
+   - Identify root cause (not just symptom)
+   - Apply fix following project patterns
+   - Verify fix didn't introduce new issues
+   After all fixes, re-run `flutter analyze` and confirm zero issues.
 
-Focus on being systematic and actionable - organize issues by priority and file location for efficient resolution.
+4. **If no `--fix`**: Ask "Would you like me to fix these? Run `/analyze --fix`."
+
+## Options
+- `--fix`: Automatically fix all issues in priority order
+- `--errors-only`: Only report/fix errors, skip warnings/infos
+- `--dry-run`: Report what would be fixed without making changes

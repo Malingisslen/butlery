@@ -30,9 +30,7 @@
 - Color: `withValues(alpha: 0.8)` not `withOpacity(0.8)` (deprecated)
 - Type safety: Use proper models, not Map-based data access
 
-**Responsive Design**:
-- Primary pattern: Center + ConstrainedBox with responsive max width
-- Content widths: Narrow (500-600px), Medium (700-800px), Wide (900-1200px)
+**Responsive Design**: Center + ConstrainedBox with responsive max width. See `responsive-layout-validator` skill for breakpoints and patterns.
 
 **Commenting**:
 - WHY not WHAT - code shows what, comments explain intent
@@ -70,39 +68,7 @@
 
 ## Infrastructure
 
-**Mixins & Utilities** (REQUIRED in new code):
-| Tool | Purpose | Usage |
-|------|---------|-------|
-| ErrorHandlingMixin | Async error handling, retries | `with ErrorHandlingMixin` or extend BaseService |
-| AsyncOperationMixin | Loading/error states | `with StateNotifierMixin, AsyncOperationMixin` |
-| BaseService | Pre-flight checks, caching | `extends BaseService` |
-| BaseFirebaseRepository | CRUD + audit logging | `extends BaseFirebaseRepository<T>` |
-| **SerializationUtils** | Firestore parsing (~77% adopted) | `SerializationUtils.safeString(data, 'field')` — see `serialization-generator` skill |
-| ValidationUtils | Form validation | `ValidationUtils.validateRequired(value)` |
-| Default Extensions | Null-safe defaults | `value.orEmpty()`, `value.hasItems` |
-
-## Feature Status
-
-| Feature | Status |
-|---------|--------|
-| Social (friends, sharing, comments, ratings, groups) | ✅ Complete |
-| GDPR Compliance (Articles 7, 15, 17, 30) | ✅ Phase 1 Complete |
-| Responsive Design (10 Tier 1 views) | ✅ Phase 3 Complete |
-| Security (PermissionValidationMixin, audit logging) | ✅ Complete |
-| FCM Notifications (Cloud Functions) | ✅ Complete |
-| SerializationUtils Adoption | ⚠️ ~77% (4 models still use raw casting — see P4-02) |
-| ErrorHandlingMixin Adoption | ⚠️ 9 services lack it (see P4-15) |
-
-## Testing
-
-- **Strategy**: Bottom-up (repositories → services → viewmodels → integration)
-- **Templates**: `/test/templates/` for test file templates
-
-## CI/CD
-
-- **Analysis**: `/docs/analysis/cicd-analysis/` (8-dimension assessment)
-- **Flutter version**: Update `FLUTTER_VERSION` env var in all `.github/workflows/*.yml` files
-- **Workflows**: `analyze.yml`, `test.yml`, `build-validation.yml`, `architecture-validation.yml`, `e2e_tests.yml`
+New code must use project mixins and base classes. See `mixin-advisor` skill for the decision table.
 
 ## Critical Rules
 
@@ -126,6 +92,7 @@
 - Write plan to `/tasks/todo.md`, get approval, then implement
 - Task state persists on disk - PreCompact hook reads both Claude Code tasks and `/tasks/todo.md`
 - If going sideways → STOP and re-plan immediately
+- Before presenting plans, review against `.claude/plan-review-checklist.md`
 
 **Fit Check (when 2+ approaches exist):**
 - Requirements as rows, approaches as columns
@@ -160,7 +127,7 @@
 - Failing CI → go fix without being told how
 - Point at logs/errors → resolve them
 - Don't ask for hand-holding on standard debugging
-- Max 3 fix attempts per bug. If all fail: write a diagnostic summary of what was tried and why it failed, then ask for direction. Do NOT keep cycling.
+- If stuck after multiple attempts: write a diagnostic summary of what was tried and why it failed, then ask for direction. Don't keep cycling.
 
 **Parallel Agent Tasks:**
 - Process files in small chunks (50-100 items), never entire large files at once
@@ -176,22 +143,13 @@ När stop hook blockerar med en `reason`:
 - Om reason nämner "tests" → kör tester och fixa fel
 - Försök sedan stoppa igen
 
-## Agent Usage Rules (MANDATORY)
+## Agent Usage Rules
 
-### Tier 1: Always Use (Hook Enforced)
+### Tier 1: Strongly Recommended
 
-**debugger** - MUST use when encountering ANY:
-- Bug reports (BUG-xxx pattern)
-- Errors or exceptions
-- Test failures
-- Unexpected behavior
-- "Not working" situations
-- Runtime issues
+**debugger** - Use when encountering: bug reports, errors/exceptions, test failures, unexpected behavior, runtime issues.
 
-**firebase-backend-security** - MUST use when modifying:
-- Any file in lib/repositories/
-- Any file containing Firebase, Firestore, or authentication logic
-- User data operations
+**firebase-backend-security** - Use when modifying: files in lib/repositories/, Firebase/Firestore/auth logic, user data operations.
 
 ### Tier 2: Quality Gates (Commit Enforced)
 
