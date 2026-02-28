@@ -1,6 +1,13 @@
+---
+description: >
+  Validates Center + ConstrainedBox responsive pattern with Breakpoints constants.
+  Use when creating dialogs, forms, detail views, settings pages, or when
+  hardcoded width values are present.
+---
+
 # Responsive Layout Validator
 
-> Säkerställ Center + ConstrainedBox mönstret för dialogs/forms.
+> Validate Center + ConstrainedBox pattern for dialogs/forms.
 
 ## Primärt Mönster
 
@@ -143,9 +150,3 @@ Scaffold(
 - [ ] `Padding` med AppDimensions-konstant
 - [ ] Ingen hårdkodad width
 
-## När triggas denna skill?
-
-- Skapar ny dialog eller form
-- Bygger detail views
-- Implementerar settings-sidor
-- Ser hårdkodade width-värden

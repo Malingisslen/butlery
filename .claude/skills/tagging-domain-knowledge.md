@@ -1,6 +1,14 @@
+---
+description: >
+  Recipe tagging domain knowledge: TriState allergen/dietary logic, 5-phase
+  pipeline, coverage rules. Use when modifying files in lib/services/tagging/,
+  using TriState/TagResult/TagGenerator, implementing allergen/dietary filters,
+  or writing queries on dietary/allergen status.
+---
+
 # Tagging Domain Knowledge
 
-> Använd denna skill vid arbete med recept-tagging, allergen-logik, eller dietary-status.
+> Recipe tagging: TriState logic, allergen/dietary status, and 5-phase pipeline.
 
 ## Grundregler
 
@@ -106,9 +114,3 @@ barnvänlig, halalanpassad, kosheranpassad, nötkötsfri
 - `lib/services/tagging/tag_resolution_service.dart` - Resolves auto+override+personal tags
 - `lib/services/tagging/personal_tag_service.dart` - Personal tags + automation rules
 
-## När triggas denna skill?
-
-- Modifierar filer i `lib/services/tagging/`
-- Använder `TriState`, `TagResult`, `TagGenerator`
-- Implementerar allergen/dietary-filter i UI
-- Skriver queries som filtrerar på dietary/allergen-status

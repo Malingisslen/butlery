@@ -1,6 +1,14 @@
+---
+description: >
+  Firebase ingredient data patterns, lookup pipeline, and tagging integration.
+  Use when modifying ingredient lookup logic, adding tagging properties,
+  working with user-defined ingredients, debugging ingredient search, or
+  implementing ingredient UI.
+---
+
 # Firebase Ingredient Patterns
 
-> Använd denna skill vid arbete med ingredienser, lookup, och tagging-integration.
+> Ingredient data patterns for lookup and tagging integration.
 
 ## Grundprincip
 
@@ -164,10 +172,3 @@ Dietary-triggers:
 - `lib/models/tagging/ingredient_lookup_result.dart` - Result + aggregation
 - `lib/utils/text/ingredient_normalizer.dart` - Name normalization
 
-## När triggas denna skill?
-
-- Modifierar ingrediens-lookup logik
-- Lägger till nya properties för tagging
-- Arbetar med user-defined ingredients
-- Debuggar varför ingredienser inte hittas
-- Implementerar ingrediens-sök i UI

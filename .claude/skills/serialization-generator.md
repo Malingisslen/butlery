@@ -1,6 +1,13 @@
+---
+description: >
+  Generates fromFirestore/toFirestore methods using SerializationUtils.
+  Use when creating or modifying Firestore model serialization, adding
+  fields to models, or fixing direct data['field'] access.
+---
+
 # Serialization Generator
 
-> Använd denna skill när du skapar fromFirestore/toFirestore för modeller.
+> Generate fromFirestore/toFirestore using SerializationUtils.
 
 ## fromFirestore Pattern
 

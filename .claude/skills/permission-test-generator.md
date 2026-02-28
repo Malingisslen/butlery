@@ -1,6 +1,13 @@
+---
+description: >
+  Generates standard permission validation tests for Firebase repositories.
+  Use when creating tests for any repository, adding CRUD operations, or
+  verifying permission checks (create/read/update/delete for own vs other user).
+---
+
 # Permission Test Generator
 
-> Använd denna skill när du skapar tester för repositories.
+> Generate standard permission tests for repositories.
 
 ## Standard Permission Tests
 

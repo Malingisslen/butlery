@@ -1,6 +1,13 @@
+---
+description: >
+  Generates Firebase repository boilerplate with BaseFirebaseRepository,
+  permission validators, and DI registration. Use when creating new
+  repositories (user-scoped, global, or subcollection variants).
+---
+
 # Repository Generator
 
-> Använd denna skill när du skapar nya Firebase repositories.
+> Generate new Firebase repositories with correct patterns.
 
 ## Generera Repository
 

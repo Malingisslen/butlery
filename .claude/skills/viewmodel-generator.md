@@ -1,6 +1,13 @@
+---
+description: >
+  Generates ViewModel boilerplate with ChangeNotifier and ErrorHandlingMixin.
+  Use when creating new ViewModels, including complex ones (>300 lines) that
+  need manager delegation pattern.
+---
+
 # ViewModel Generator
 
-> Använd denna skill när du skapar nya ViewModels.
+> Generate new ViewModels with correct patterns.
 
 ## Enkel ViewModel
 
