@@ -8823,5 +8823,22 @@
   "profileFaqSubtitle": "Help and answers to common questions",
   "sharedWithYou": "Shared with you",
   "importTag": "Import",
-  "tagImportedSuccess": "Tag imported successfully"
+  "tagImportedSuccess": "Tag imported successfully",
+  "legalTermsOfService": "Terms of Service",
+  "legalCommunityGuidelines": "Community Guidelines",
+  "legalOpenSourceLicenses": "Open Source Licenses",
+  "authAgeConfirmation": "I confirm that I am at least 13 years old",
+  "authAgeConfirmationRequired": "You must confirm your age to create an account",
+  "reportContent": "Report",
+  "reportReasonInappropriate": "Inappropriate content",
+  "reportReasonSpam": "Spam",
+  "reportReasonHarassment": "Harassment",
+  "reportReasonCopyright": "Copyright infringement",
+  "reportReasonOther": "Other",
+  "reportDescriptionHint": "Describe the issue (optional)",
+  "reportSubmitted": "Report submitted",
+  "reportSubmitFailed": "Could not submit report",
+  "reportDialogTitle": "Report content",
+  "reportSubmit": "Submit report",
+  "contentFilterWarning": "The text contains inappropriate language. Please edit before submitting."
 }
