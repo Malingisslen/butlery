@@ -45,6 +45,9 @@ export { onSuggestionCreated, onSuggestionStatusChanged } from "./ingredients/on
 // Analytics Functions - Ingredient tracking
 export { trackUnmatchedIngredients, getUnmatchedIngredientStats } from "./analytics/track-unmatched-ingredients";
 
+// Correction Analytics - Alias learning and domain stats
+export { analyzeCorrections, getCorrectionStats } from "./analytics/analyze-corrections";
+
 // Feedback Functions - Beta user feedback
 export { onFeedbackCreated } from "./feedback/on-feedback-created";
 
