@@ -64,4 +64,87 @@ class ProfileDeletionOperations {
       return false;
     }
   }
+
+  /// Delete FCM tokens stored for push notifications.
+  Future<bool> deleteFcmTokens(String userId) async {
+    try {
+      final tokens = await _firestore
+          .collection('user_fcm_tokens')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      final batch = _firestore.batch();
+      for (final doc in tokens.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete FCM tokens', e);
+      return false;
+    }
+  }
+
+  /// Delete notification preferences subcollection.
+  Future<bool> deleteNotificationPreferences(String userId) async {
+    try {
+      final prefs = await _firestore
+          .collection('user_notification_preferences')
+          .doc(userId)
+          .get();
+
+      if (prefs.exists) {
+        await prefs.reference.delete();
+      }
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete notification preferences', e);
+      return false;
+    }
+  }
+
+  /// Delete user notifications.
+  Future<bool> deleteNotifications(String userId) async {
+    try {
+      final notifications = await _firestore
+          .collection('user_notifications')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      final batch = _firestore.batch();
+      for (final doc in notifications.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete notifications', e);
+      return false;
+    }
+  }
+
+  /// Delete consent subcollection under user document.
+  Future<bool> deleteConsentRecords(String userId) async {
+    try {
+      final consents = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('consent')
+          .get();
+
+      final batch = _firestore.batch();
+      for (final doc in consents.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete consent records', e);
+      return false;
+    }
+  }
 }
