@@ -1,6 +1,13 @@
+---
+description: >
+  Recommends correct mixin combinations for services, repositories, and
+  viewmodels. Use when creating new services/repositories/viewmodels or
+  when a service is missing ErrorHandlingMixin or StreamManagementMixin.
+---
+
 # Mixin Advisor
 
-> Föreslå rätt mixin-kombination baserat på service/repository-typ.
+> Recommend the right mixin combination based on service/repository/viewmodel type.
 
 ## Mixin-kombinationer
 

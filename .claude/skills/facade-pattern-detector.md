@@ -1,6 +1,13 @@
+---
+description: >
+  Recommends facade pattern for files approaching 500 lines. Use when a file
+  exceeds 400 lines, adding functionality to large files, seeing section dividers,
+  or refactoring complex views/viewmodels/services.
+---
+
 # Facade Pattern Detector
 
-> Föreslå facade-mönster för filer som närmar sig 500-rader.
+> Recommend facade pattern for files approaching 500 lines.
 
 ## Regel
 
@@ -133,9 +140,3 @@ class UnifiedRecipeService {
 wc -l lib/path/to/file.dart
 ```
 
-## När triggas denna skill?
-
-- Fil närmar sig 400 rader
-- Lägger till ny funktionalitet i stor fil
-- Ser section dividers / regions
-- Refaktorerar komplex kod

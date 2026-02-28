@@ -1,6 +1,13 @@
+---
+description: >
+  SAFETY-CRITICAL: Validates that TriState is never used as boolean. Use when
+  code references isGlutenFree/isDairyFree, filters recipes on allergen/dietary
+  status, displays allergen badges in UI, or writes queries against tagResult.
+---
+
 # Tri-State Validator
 
-> SÄKERHETSKRITISK: Validera att TriState aldrig används som boolean.
+> SAFETY-CRITICAL: Validate that TriState is never used as boolean.
 
 ## Grundregel
 
@@ -95,9 +102,3 @@ bool isSafeForAllergen(TagResult result, String allergen) {
 }
 ```
 
-## När triggas denna skill?
-
-- Använder `isGlutenFree`, `isDairyFree` etc.
-- Filtrerar recept på allergen/dietary
-- Visar allergen-status i UI
-- Skriver queries mot tagResult

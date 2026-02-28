@@ -1,6 +1,13 @@
+---
+description: >
+  Validates that ingredient coverage is checked before making allergen/dietary
+  safety decisions. Use when filtering recipes by allergen/dietary status,
+  displaying allergen badges in UI, or debugging why recipes are excluded from filters.
+---
+
 # Coverage Tracker
 
-> Varna när ingrediens-coverage < 100% påverkar säkerhetsbeslut.
+> Warn when ingredient coverage < 100% affects safety decisions.
 
 ## Grundregel
 
@@ -104,9 +111,3 @@ Query allergenSafeQuery(String allergen) {
 | Alla okända | 0.0 | Allt UNKNOWN |
 | 9 av 10 kända | 0.9 | Allt UNKNOWN (ej 100%) |
 
-## När triggas denna skill?
-
-- Filtrerar recept på dietary/allergen
-- Visar allergen-badges i UI
-- Implementerar säker-för-allergiker features
-- Debuggar varför recept inte visas i filter

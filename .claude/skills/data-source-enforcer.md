@@ -1,6 +1,14 @@
+---
+description: >
+  CRITICAL: Prevents mixing UserService and PermissionService data sources.
+  Use when accessing user data, settings, avatars, authentication state, or
+  debugging 'settings not persisting' issues. UserService for profile data,
+  PermissionService for auth checks only.
+---
+
 # Data Source Enforcer
 
-> KRITISK: Förhindra blandning av UserService och PermissionService.
+> CRITICAL: Prevent mixing UserService and PermissionService.
 
 ## Grundregel
 
@@ -102,9 +110,3 @@ PermissionService.*preferences // FEL
 UserService.*isAuthenticated   // Onödigt tungt
 ```
 
-## När triggas denna skill?
-
-- Använder `UserService` eller `PermissionService`
-- Arbetar med user settings
-- Implementerar auth-checks
-- Debuggar "settings sparas inte"-problem
