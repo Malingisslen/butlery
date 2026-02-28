@@ -1,110 +1,119 @@
+---
+description: >
+  CRITICAL: Prevents mixing UserService and PermissionService data sources.
+  Use when accessing user data, settings, avatars, authentication state, or
+  debugging 'settings not persisting' issues. UserService for profile data,
+  PermissionService for auth checks only.
+---
+
 # Data Source Enforcer
 
-> KRITISK: Förhindra blandning av UserService och PermissionService.
+> CRITICAL: Prevent mixing UserService and PermissionService.
 
-## Grundregel
+## Core Rule
 
-**Två tjänster, två olika syften:**
+**Two services, two different purposes:**
 
-| Tjänst | Användning | Data |
-|--------|------------|------|
-| `UserService.currentUserProfile` | Komplett användardata | Settings, avatar, social, preferences |
-| `PermissionService.currentUser` | Auth/permission checks | Endast uid, email, basic auth |
+| Service | Access Pattern | Data |
+|---------|---------------|------|
+| `userService.currentUserProfile` | Complete user data | Settings, avatar, social, preferences |
+| `permissionService.currentUserId` | Auth/permission checks | uid, email, basic auth only |
 
-## Kritiska Fel
-
-### ❌ Settings från PermissionService
+Both accessed via `ServiceLocator.get<T>()`:
 
 ```dart
-// FEL - PermissionService har INTE settings
-final darkMode = PermissionService.currentUser.settings.darkMode;
+final userService = ServiceLocator.get<UserService>();
+final permissionService = ServiceLocator.get<PermissionService>();
 ```
 
-### ✅ Settings från UserService
+## Critical Errors
+
+### ❌ Settings from PermissionService
 
 ```dart
-// RÄTT - UserService har komplett profil
-final darkMode = UserService.currentUserProfile.settings.darkMode;
+// WRONG - PermissionService does NOT have settings
+final permService = ServiceLocator.get<PermissionService>();
+final settings = permService.currentUser.settings.darkMode;
 ```
 
----
-
-### ❌ Permission-check med UserService
+### ✅ Settings from UserService
 
 ```dart
-// ONÖDIGT - UserService är för tung för enkel auth-check
-if (UserService.currentUserProfile != null) {
-  // Laddar hela profilen bara för att kolla auth
-}
-```
-
-### ✅ Permission-check med PermissionService
-
-```dart
-// RÄTT - Lätt auth-check
-if (PermissionService.isAuthenticated) {
-  // Snabb check utan att ladda profil
-}
+// CORRECT - UserService has the complete profile
+final userService = ServiceLocator.get<UserService>();
+final darkMode = userService.currentUserProfile?.settings.darkMode;
 ```
 
 ---
 
-### ❌ Blanda i samma fil
+### ❌ Auth check via UserService
+
+```dart
+// WASTEFUL - loads entire profile just to check auth
+final userService = ServiceLocator.get<UserService>();
+if (userService.currentUserProfile != null) { ... }
+```
+
+### ✅ Auth check via PermissionService
+
+```dart
+// CORRECT - lightweight auth check
+final permService = ServiceLocator.get<PermissionService>();
+final userId = permService.currentUserId;
+if (userId != null) { ... }
+```
+
+---
+
+### ❌ Mixing in the same class
 
 ```dart
 class MyService {
-  // FEL - Blandar datakällor
+  // WRONG - mixes data sources inconsistently
   Future<void> doSomething() async {
-    final userId = PermissionService.currentUserId;
-    final settings = UserService.currentUserProfile.settings; // Inkonsekvent
+    final userId = ServiceLocator.get<PermissionService>().currentUserId;
+    final settings = ServiceLocator.get<UserService>().currentUserProfile?.settings;
   }
 }
 ```
 
-### ✅ Konsekvent användning
+### ✅ Consistent usage
 
 ```dart
 class MyService {
-  // RÄTT - Använd EN källa konsekvent
+  // CORRECT - use ONE source consistently per concern
   Future<void> doSomething() async {
-    final profile = UserService.currentUserProfile;
-    final userId = profile.id;
-    final settings = profile.settings;
+    final userService = ServiceLocator.get<UserService>();
+    final profile = userService.currentUserProfile;
+    final userId = profile?.id;
+    final settings = profile?.settings;
   }
 }
 ```
 
-## Beslutstabell
+## Decision Table
 
-| Behov | Använd |
-|-------|--------|
-| Visa användarnamn/avatar | `UserService` |
-| Spara/läsa settings | `UserService` |
-| Kontrollera om inloggad | `PermissionService` |
-| Hämta userId för queries | `PermissionService` |
-| Validera behörighet | `PermissionService` |
-| Social features (vänner, grupper) | `UserService` |
+| Need | Use |
+|------|-----|
+| Display username/avatar | `UserService.currentUserProfile` |
+| Save/read settings | `UserService.currentUserProfile` |
+| Check if authenticated | `PermissionService.currentUserId` |
+| Get userId for queries | `PermissionService.currentUserId` |
+| Validate permissions | `PermissionService` |
+| Social features (friends, groups) | `UserService` |
 
-## Konsekvens: Settings Sparas Inte
+## Consequence: Settings Not Persisting
 
-Om du blandar dessa:
-1. Läser settings från `UserService`
-2. Sparar settings via `PermissionService.currentUser`
-3. Settings sparas ALDRIG (fel objekt)
+If you mix these:
+1. Read settings from `UserService`
+2. Save settings via `PermissionService.currentUser`
+3. Settings are NEVER saved (wrong object)
 
-## Varningssignaler
+## Warning Signals
 
 ```dart
-// Sök efter dessa mönster:
-PermissionService.*settings    // FEL
-PermissionService.*avatar      // FEL
-PermissionService.*preferences // FEL
-UserService.*isAuthenticated   // Onödigt tungt
+// Search for these patterns:
+permissionService.*settings    // WRONG
+permissionService.*avatar      // WRONG
+permissionService.*preferences // WRONG
 ```
-
-## När triggas denna skill?
-
-- Använder `UserService` eller `PermissionService`
-- Arbetar med user settings
-- Implementerar auth-checks
-- Debuggar "settings sparas inte"-problem

@@ -1,6 +1,13 @@
+---
+description: >
+  Core MVVM + Repository architecture patterns for Butlery. Use when creating
+  or modifying services, repositories, viewmodels, DI registration, or
+  ServiceLocator usage. Also use for Firebase access patterns and mixin combinations.
+---
+
 # Butlery Architecture
 
-> Använd denna skill för alla kodändringar i Butlery. Grundläggande arkitekturmönster.
+> Core architecture patterns for all code changes in Butlery.
 
 ## MVVM + Repository Pattern
 
@@ -42,14 +49,17 @@ final stream = service.realtime.watchRecipe(...); // Live-sync
 ### 1. Data Source Rule (KRITISK)
 
 ```dart
+final userService = ServiceLocator.get<UserService>();
+final permService = ServiceLocator.get<PermissionService>();
+
 // ✅ UserService för komplett användardata
-final profile = UserService.currentUserProfile;  // Settings, avatar, social
+final profile = userService.currentUserProfile;  // Settings, avatar, social
 
 // ✅ PermissionService ENDAST för auth/permission
-final canEdit = await PermissionService.canEditRecipe(id);
+final userId = permService.currentUserId;
 
 // ❌ BLANDAR ALDRIG dessa
-if (PermissionService.currentUser.settings...) // FEL - settings är i UserService
+final settings = permService.currentUser.settings; // FEL - settings är i UserService
 ```
 
 ### 2. Firebase Access
@@ -170,10 +180,3 @@ factory Recipe.fromFirestore(DocumentSnapshot doc) {
 - `lib/services/unified/unified_recipe_service.dart` - Unified service exempel
 - `CLAUDE.md` - Projektregler
 
-## När triggas denna skill?
-
-- Skapar ny service, repository, eller viewmodel
-- Modifierar DI-registrering
-- Använder ServiceLocator
-- Lägger till Firebase-access
-- Bygger ut MVVM-strukturen

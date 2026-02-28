@@ -14,31 +14,17 @@
 - ✅ Exemplary: `recipe_form_viewmodel.dart` - delegates to 6 focused managers
 - ⚠️ **33 files intentionally >500 lines** - see `/docs/architecture/ACCEPTED_LARGE_FILES.md` for list with reasons. Don't refactor these without reviewing the rationale first.
 
-**Service Access**: `ServiceLocator.get<T>()` for all services
-```dart
-final service = ServiceLocator.get<UnifiedRecipeService>();
-```
-
-**DI Modules**: Core, Content, Social, Messaging, Collaboration, Performance, UI
-- Constructor injection in DI modules, ServiceLocator in widgets/ViewModels
+**Service Access**: `ServiceLocator.get<T>()` — constructor injection in DI modules, ServiceLocator in widgets/ViewModels
 - ❌ Never use `FirebaseFirestore.instance` directly - inject FirestoreRepository
-
-## Service Layers
-
-Unified services use layered architecture: `.personal`, `.social`, `.realtime`, `.share`
-```dart
-await recipeService.personal.createRecipe(...);  // User's content
-await recipeService.social.shareWithFriends(...);  // Sharing
-final stream = recipeService.realtime.watchRecipe(...);  // Live sync
-```
-See ADRs in `/docs/adr/` for complete architectural decisions.
+- Unified services use `.personal`, `.social`, `.realtime` modules (see `butlery-architecture` skill)
+- See ADRs in `/docs/adr/` for complete architectural decisions.
 
 ## Critical Conventions
 
-**Data Sources** (CRITICAL):
-- `UserService.currentUserProfile` → complete user data (settings, avatar, social)
-- `PermissionService.currentUser` → basic auth/permission checks only
-- ❌ Never mix these - causes settings not persisting
+**Data Sources** (CRITICAL — see `data-source-enforcer` skill):
+- `userService.currentUserProfile` → complete user data (settings, avatar, social)
+- `permissionService.currentUserId` → auth/permission checks only
+- ❌ Never mix these — causes settings not persisting
 
 **Syntax**:
 - Color: `withValues(alpha: 0.8)` not `withOpacity(0.8)` (deprecated)
@@ -91,24 +77,9 @@ See ADRs in `/docs/adr/` for complete architectural decisions.
 | AsyncOperationMixin | Loading/error states | `with StateNotifierMixin, AsyncOperationMixin` |
 | BaseService | Pre-flight checks, caching | `extends BaseService` |
 | BaseFirebaseRepository | CRUD + audit logging | `extends BaseFirebaseRepository<T>` |
-| **SerializationUtils** | Firestore parsing (100% adopted) | `SerializationUtils.safeString(data, 'field')` |
+| **SerializationUtils** | Firestore parsing (100% adopted) | `SerializationUtils.safeString(data, 'field')` — see `serialization-generator` skill |
 | ValidationUtils | Form validation | `ValidationUtils.validateRequired(value)` |
 | Default Extensions | Null-safe defaults | `value.orEmpty()`, `value.hasItems` |
-
-```dart
-// Model serialization - ALWAYS use SerializationUtils for fromFirestore
-factory Recipe.fromFirestore(DocumentSnapshot doc) {
-  final data = doc.data() as Map<String, dynamic>;
-  return Recipe(
-    title: SerializationUtils.safeString(data, 'title'),
-    portions: SerializationUtils.safeInt(data, 'portions', defaultValue: 4),
-    createdAt: SerializationUtils.safeRequiredDateTime(data, 'createdAt'),
-    imageUrl: SerializationUtils.safeNullableString(data, 'imageUrl'),
-  );
-}
-```
-
-See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 
 ## Feature Status
 
@@ -174,23 +145,15 @@ See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 - After ANY user correction → add entry to `/tasks/lessons.md`
 - Format: `### [Category] Title` + Date, Trigger, Rule, Example
 - Categories: Architecture, Code Quality, Testing, Workflow, Firebase, UI/UX
-- If a lesson is a recurring pattern → also add to `memory/patterns.md` (persists across sessions)
 - If lesson should become CLAUDE.md rule → propose update
 
-**Memory Management (automatic):**
-- Auto memory dir: `/root/.claude/projects/-home-user-butlery/memory/`
-- `MEMORY.md` = curated index (under 150 lines), auto-injected every session
-- Topic files:
-  - `interview-decisions.md` - user preferences from `/interview` (auto-persisted)
-  - `patterns.md` - what works/fails across sessions
-  - `current-state.md` - session checkpoint (auto-overwritten by PreCompact hook)
-- **When to update**: After completing significant work, after key decisions
-- **How to update**: Merge with existing entries, never just append. Prune outdated entries.
-- **Prescriptive, not descriptive**: "User wants X" not "We discussed X"
+**Memory Management:**
+- Auto-memory is enabled — Claude manages MEMORY.md and topic files automatically
+- `current-state.md` is managed by the PreCompact hook — do not overwrite it with auto-memory
 - **Hooks** (fully automatic, no manual trigger):
   - PreCompact → captures git state + tasks → `current-state.md`
   - SessionStart (compact) → injects checkpoint as context after compaction
-  - `/interview` → persists answers to `interview-decisions.md` + `MEMORY.md`
+  - `/interview` → persists answers to `interview-decisions.md`
 
 **Autonomous Problem Solving:**
 - Bug report → just fix it (spawn debugger agent)

@@ -15,19 +15,13 @@ Be very in-depth and continue interviewing me continually until it's complete, t
 
 ## Memory Persistence (REQUIRED after interview)
 
-After writing the spec, persist key decisions to the auto memory system:
+After writing the spec, persist key decisions:
 
-1. **MEMORY.md** (`/root/.claude/projects/-home-user-butlery/memory/MEMORY.md`):
-   - Add/update entries under "User Preferences" and "Key Decisions"
-   - Merge with existing entries - don't duplicate
-   - Keep MEMORY.md under 150 lines total
-
-2. **interview-decisions.md** (`/root/.claude/projects/-home-user-butlery/memory/interview-decisions.md`):
+1. **interview-decisions.md** (`/root/.claude/projects/-home-user-butlery/memory/interview-decisions.md`):
    - Add consolidated answers: user preferences, requirements, constraints, rejected approaches
    - Format: prescriptive ("User wants X", "Never do Y") not descriptive ("We discussed X")
    - Merge with existing entries - update if a preference changed, don't just append
 
-3. **patterns.md** (`/root/.claude/projects/-home-user-butlery/memory/patterns.md`):
-   - If the interview revealed what works/doesn't work, add to patterns
+2. Use "remember" to save key preferences and decisions to auto-memory
 
 This ensures the user never has to re-answer the same questions in future sessions.
