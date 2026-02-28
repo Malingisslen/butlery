@@ -4,11 +4,11 @@ EOL packages, version upgrades, deprecated code removal, documentation updates.
 
 ---
 
-## P9-01 — Migrate sqlcipher_flutter_libs (EOL) [HIGH]
+## P9-01 — Migrate sqlcipher_flutter_libs [HIGH]
 
 **Source**: R05:dim2, R01:H8.1
 **Files**: `pubspec.yaml:41`
-**Fix**: Package is officially EOL (0.7.0+eol is a no-op stub). Migrate to sqlite3 v3.x (same author). Requires data migration, encryption key handling, cross-platform testing.
+**Fix**: Currently at ^0.6.4 (plan incorrectly stated 0.7.0+eol). Verify EOL status on pub.dev — may still be maintained. If EOL confirmed, migrate to sqlite3 v3.x (same author). Requires data migration, encryption key handling, cross-platform testing.
 **Effort**: 2-4d
 
 ---
@@ -40,11 +40,11 @@ EOL packages, version upgrades, deprecated code removal, documentation updates.
 
 ---
 
-## P9-05 — Remove ~2,000 lines of deprecated backward-compatibility code [MED]
+## P9-05 — Remove deprecated backward-compatibility code [MED]
 
 **Source**: R01:M8.1
-**Files**: `recipe_backward_compatibility_mixin.dart` (269 lines), `social_recipe_service.dart:428,485`, `activity_feed_item.dart`, 14 more (26 `@Deprecated` annotations total)
-**Fix**: Schedule removal sprint. Pre-production means no backward compatibility needed.
+**Files**: `recipe_backward_compatibility_mixin.dart` (269 lines), `social_recipe_service.dart:428,485`, `activity_feed_item.dart`, others (16 `@Deprecated` annotations across 10 files)
+**Fix**: Schedule removal sprint. Pre-production means no backward compatibility needed. Original "~2,000 lines" framing was overstated — actual deprecated LOC is lower.
 **Effort**: 1d
 
 ---
@@ -52,7 +52,7 @@ EOL packages, version upgrades, deprecated code removal, documentation updates.
 ## P9-06 — Upgrade device_info_plus (1 major behind) [MED]
 
 **Source**: R05:dim2
-**Fix**: 11.5.0 → 12.3.0. Removed `serialNumber`; Android Gradle Plugin 8.12.1+ required.
+**Fix**: ^11.1.0 (current) → latest 12.x. Removed `serialNumber`; Android Gradle Plugin 8.12.1+ required. (Plan incorrectly stated current version as 11.5.0.)
 **Effort**: 1-2h
 
 ---
@@ -68,7 +68,7 @@ EOL packages, version upgrades, deprecated code removal, documentation updates.
 ## P9-08 — Upgrade drift + drift_dev [MED]
 
 **Source**: R05:dim7
-**Fix**: 2.29.0 → 2.31.0. Auto-throws on DB downgrade attempts.
+**Fix**: ^2.12.0 (current) → latest 2.x. (Plan incorrectly stated current version as 2.29.0.) Auto-throws on DB downgrade attempts.
 **Effort**: 1-2h
 
 ---
@@ -76,7 +76,7 @@ EOL packages, version upgrades, deprecated code removal, documentation updates.
 ## P9-09 — Tier 1 drop-in upgrades [LOW]
 
 **Source**: R05:dim7
-**Fix**: algoliasearch 1.44→1.46.1, flutter_local_notifications 20.0→20.1, get_it 9.2.0→9.2.1, uuid 4.5.2→4.5.3.
+**Fix**: Upgrade to latest patch versions. Current versions: algoliasearch ^1.36.1, get_it ^9.0.5, uuid ^4.5.1, flutter_local_notifications (check latest). (Plan had wrong current version numbers.)
 **Effort**: 30 min total
 
 ---
@@ -150,12 +150,12 @@ EOL packages, version upgrades, deprecated code removal, documentation updates.
 
 ---
 
-## P9-18 — recipe_image_manager.dart facade claim is misleading [MED]
+## P9-18 — recipe_image_manager.dart review [MED]
 
 **Source**: R01:M2.3
-**Files**: `lib/viewmodels/recipe/managers/recipe_image_manager.dart`
-**Fix**: Accepted at 1,317 lines as "uses facade pattern" but actually a single class with 30+ methods. Extract `ImageUploadManager`, `ImageCacheManager`, `ImageCompressionManager`.
-**Effort**: 8h
+**Files**: `lib/viewmodels/recipe/managers/recipe_image_manager.dart` (1,296 lines)
+**Fix**: File DOES use facade pattern — imports 4 sub-managers. Original claim of "single class with 30+ methods" was wrong. Review whether further decomposition is still warranted given existing delegation. (Plan incorrectly stated 1,317 lines — actual is 1,296.)
+**Effort**: 2h (review + possible minor extraction)
 
 ---
 

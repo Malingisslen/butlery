@@ -1,6 +1,6 @@
-# Phase 6: Performance & Scalability (~3 days)
+# Phase 6: Performance & Scalability (~2 days)
 
-Unbounded listeners, startup optimization, cache config, audit log retention, subcollection TTL.
+Unbounded listeners, startup optimization, subcollection TTL.
 
 ---
 
@@ -13,21 +13,15 @@ Unbounded listeners, startup optimization, cache config, audit log retention, su
 
 ---
 
-## P6-02 — Add `.limit()` to friend/invitation/friends streams [MED]
+## ~~P6-02~~ — ~~Add `.limit()` to friend/invitation streams~~ [FIXED]
 
-**Source**: R04:dim4-2, R04:dim3-6
-**Files**: `friend_request_repository.dart:333,346`, `friend_relationship_repository.dart:266`, `group_invitation_repository.dart:136`
-**Fix**: Add `.limit(50)` to all unbounded social streams.
-**Effort**: 30 min
+**Status**: Verified fixed — all streams have `.limit(50)` or `.limit(200)`.
 
 ---
 
-## P6-03 — Schedule audit log retention (Cloud Function cron) [HIGH]
+## ~~P6-03~~ — ~~Schedule audit log retention~~ [FIXED]
 
-**Source**: R04:dim3-3
-**Files**: New Cloud Function, `audit_logs` collection
-**Fix**: Wire existing `deleteOldAuditLogs` method to scheduled Cloud Function. Unbounded growth → 10K+ users = storage cost issue.
-**Effort**: 2h
+**Status**: Verified fixed — `cleanup-audit-logs.ts` exists with weekly cron and 90-day retention.
 
 ---
 
@@ -58,11 +52,9 @@ Unbounded listeners, startup optimization, cache config, audit log retention, su
 
 ---
 
-## P6-07 — Configure `flutter_cache_manager` max size [MED]
+## ~~P6-07~~ — ~~Configure `flutter_cache_manager`~~ [IRRELEVANT]
 
-**Source**: R04:dim2-1
-**Fix**: Flutter image cache (50MB) + `flutter_cache_manager` (default 1GB disk cache, unconfigured). Configure max 200MB.
-**Effort**: 2h
+**Status**: Package has 0 imports in lib/. Custom cache implementations used instead. Remove from plan.
 
 ---
 
@@ -83,11 +75,9 @@ Unbounded listeners, startup optimization, cache config, audit log retention, su
 
 ---
 
-## P6-10 — Add StreamManagementMixin to collaborative recipe flows [HIGH]
+## ~~P6-10~~ — ~~Add StreamManagementMixin to collaborative recipe flows~~ [FIXED]
 
-**Source**: R04:dim4-1
-**Fix**: 4 `.snapshots()` calls in collaborative recipe code lack StreamManagementMixin. Disposal relies on caller.
-**Effort**: 2h
+**Status**: Verified fixed — `recipe_collaborative_manager.dart:17` has `with StreamManagementMixin`.
 
 ---
 

@@ -13,11 +13,11 @@ Model pinning, JSON schema, prompt engineering, PII scrubbing, cost controls, va
 
 ---
 
-## P5-02 — Add JSON Schema to Mistral API calls [CRIT]
+## P5-02 — Add JSON Schema validation to Mistral API calls [CRIT]
 
 **Source**: R07:C1.1
 **Files**: `functions/src/llm/structure-recipe.ts:123`
-**Fix**: `responseFormat: { type: "json_object" }` forces JSON but provides no schema. Add explicit JSON Schema for recipe structure.
+**Fix**: JSON mode IS enabled (`type: "json_object"`), but no explicit schema is provided for validation. Add JSON Schema for recipe structure to catch malformed responses. (Not "no JSON format" — JSON mode works, schema validation is missing.)
 **Effort**: 2h
 
 ---

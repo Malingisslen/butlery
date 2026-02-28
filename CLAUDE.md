@@ -77,7 +77,7 @@
 | AsyncOperationMixin | Loading/error states | `with StateNotifierMixin, AsyncOperationMixin` |
 | BaseService | Pre-flight checks, caching | `extends BaseService` |
 | BaseFirebaseRepository | CRUD + audit logging | `extends BaseFirebaseRepository<T>` |
-| **SerializationUtils** | Firestore parsing (100% adopted) | `SerializationUtils.safeString(data, 'field')` — see `serialization-generator` skill |
+| **SerializationUtils** | Firestore parsing (~77% adopted) | `SerializationUtils.safeString(data, 'field')` — see `serialization-generator` skill |
 | ValidationUtils | Form validation | `ValidationUtils.validateRequired(value)` |
 | Default Extensions | Null-safe defaults | `value.orEmpty()`, `value.hasItems` |
 
@@ -90,8 +90,8 @@
 | Responsive Design (10 Tier 1 views) | ✅ Phase 3 Complete |
 | Security (PermissionValidationMixin, audit logging) | ✅ Complete |
 | FCM Notifications (Cloud Functions) | ✅ Complete |
-| SerializationUtils Adoption | ✅ 100% (17 models) |
-| ErrorHandlingMixin Adoption | ✅ 100% (all services) |
+| SerializationUtils Adoption | ⚠️ ~77% (4 models still use raw casting — see P4-02) |
+| ErrorHandlingMixin Adoption | ⚠️ 9 services lack it (see P4-15) |
 
 ## Testing
 

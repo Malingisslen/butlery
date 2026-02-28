@@ -119,12 +119,12 @@ GDPR consent wiring, privacy manifest, ToS, community guidelines, UGC moderation
 
 ---
 
-## P2-14 — Account deletion missing 4 collections [HIGH]
+## P2-14 — Account deletion missing 7 collections [HIGH]
 
 **Source**: R02:D-06
 **Files**: `lib/services/account/account_deletion_service.dart:89-106`
-**Fix**: Add deletion of `notification_preferences`, `fcm_tokens`, `user_devices`, `consent` collections to complete GDPR Article 17.
-**Effort**: 4h
+**Fix**: Add deletion of `user_fcm_tokens`, `user_notification_preferences`, `user_notifications`, `consent` subcollection, top-level `messages`, `shared_menus`, `shared_shopping_lists` to complete GDPR Article 17. (More missing collections than originally identified.)
+**Effort**: 6h
 
 ---
 

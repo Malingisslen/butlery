@@ -1,4 +1,4 @@
-# Phase 4: Architecture Fixes (~5 days)
+# Phase 4: Architecture Fixes (~4 days)
 
 Repository boundary violations, SerializationUtils adoption, Firebase collection constants, file decomposition.
 
@@ -13,12 +13,12 @@ Repository boundary violations, SerializationUtils adoption, Firebase collection
 
 ---
 
-## P4-02 — Migrate 8 models to SerializationUtils [HIGH]
+## P4-02 — Migrate 4 remaining models to SerializationUtils [HIGH]
 
 **Source**: R01:H3.1
-**Files**: `audit_log.dart:67-73`, `friend_category.dart:238-249`, `conversation_participant.dart:89-100`, `conversation_membership.dart:92-100`, `shared_content.dart:69-82`, `notification_batch.dart:28-43`, `realtime_menu_factory.dart:80-107`
-**Fix**: Replace raw `as String` / `as int` casting with `SerializationUtils.safe*` methods. Runtime TypeError risk on null Firestore data.
-**Effort**: 4h
+**Files**: `audit_log.dart:67-73`, `friend_category.dart:238-249`, `conversation_participant.dart:89-100`, `conversation_membership.dart:92-100`
+**Fix**: Replace raw `as String` / `as int` casting with `SerializationUtils.safe*` methods. Runtime TypeError risk on null Firestore data. ~~notification_batch.dart~~ already uses SerializationUtils. ~~realtime_menu_factory.dart~~ has no raw casting. ~~shared_content.dart~~ uses `.orEmpty()` (acceptable).
+**Effort**: 2h
 
 ---
 
@@ -94,12 +94,9 @@ Repository boundary violations, SerializationUtils adoption, Firebase collection
 
 ---
 
-## P4-11 — 5 ViewModels import repository implementations [MED]
+## ~~P4-11~~ — ~~5 ViewModels import repository implementations~~ [FIXED]
 
-**Source**: R01:M1.2
-**Files**: `group_content_viewmodel.dart:5`, `personal_tag_viewmodel.dart:13`, `menu_storage.dart:8`, `recipe_collaborative_manager.dart:15`, `recipe_persistence_manager.dart:15`
-**Fix**: Route through services.
-**Effort**: 4h
+**Status**: Verified fixed — all 5 ViewModels now import interfaces or specialized repositories correctly. No action needed.
 
 ---
 
@@ -130,9 +127,9 @@ Repository boundary violations, SerializationUtils adoption, Firebase collection
 
 ---
 
-## P4-15 — 8 plain service classes without BaseService/ErrorHandlingMixin [MED]
+## P4-15 — 9 plain service classes without BaseService/ErrorHandlingMixin [MED]
 
 **Source**: R01:M3.1
-**Files**: `YouTubeTranscriptService`, `FCMService`, `FieldEncryptionService` (3 substantive ones)
-**Fix**: Add ErrorHandlingMixin to the 3 substantive services.
+**Files**: `YouTubeTranscriptService`, `FCMService`, `FieldEncryptionService` + 6 others
+**Fix**: Add ErrorHandlingMixin to the 3 substantive services (others are thin wrappers).
 **Effort**: 2h
