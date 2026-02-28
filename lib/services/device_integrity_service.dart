@@ -1,65 +1,97 @@
-import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
+import 'package:freerasp/freerasp.dart';
 import 'package:butlery/core/utils/logger.dart';
 
-/// Service for detecting compromised devices (rooted Android / jailbroken iOS).
+/// Service for detecting compromised devices using freeRASP.
 ///
-/// Provides device integrity checks to warn users about security risks
-/// when running on modified devices. Uses a non-blocking approach that
-/// warns users but allows continued app usage.
+/// Provides comprehensive device integrity checks including root/jailbreak,
+/// developer mode, emulator, and reverse engineering detection.
+/// Uses a non-blocking approach: warns users but allows continued usage.
 class DeviceIntegrityService {
-  bool? _isCompromised;
-  bool? _isDeveloperMode;
+  bool _isCompromised = false;
+  bool _isDeveloperMode = false;
   bool _isInitialized = false;
 
   /// Whether the service has completed initialization.
   bool get isInitialized => _isInitialized;
 
-  /// Initialize the service and perform initial checks.
+  /// Initialize the service and start monitoring.
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    await isDeviceCompromised();
-    await isDeveloperModeEnabled();
-    _isInitialized = true;
+    try {
+      final config = TalsecConfig(
+        androidConfig: AndroidConfig(
+          packageName: 'com.butlery.app',
+          signingCertHashes: ['AKoRuyLMM91E7lX/Zqp3u4jMmd0A7hH/Iqo/IWQHKIE='],
+        ),
+        iosConfig: IOSConfig(
+          bundleIds: ['com.butlery.app'],
+          teamId: 'BUTLERY_TEAM',
+        ),
+        watcherMail: 'security@butlery.app',
+      );
+
+      final callback = ThreatCallback(
+        onAppIntegrity: () {
+          AppLogger.warning('Device integrity: app tampering detected');
+          _isCompromised = true;
+        },
+        onObfuscationIssues: () {
+          AppLogger.debug('Device integrity: obfuscation issues');
+        },
+        onDebug: () {
+          AppLogger.debug('Device integrity: debugger attached');
+          _isDeveloperMode = true;
+        },
+        onDeviceBinding: () {
+          AppLogger.warning('Device integrity: device binding mismatch');
+        },
+        onDeviceID: () {
+          AppLogger.debug('Device integrity: device ID anomaly');
+        },
+        onHooks: () {
+          AppLogger.warning('Device integrity: hooks detected (Frida/Xposed)');
+          _isCompromised = true;
+        },
+        onPasscode: () {
+          AppLogger.debug('Device integrity: no device passcode');
+        },
+        onPrivilegedAccess: () {
+          AppLogger.warning('Device integrity: root/jailbreak detected');
+          _isCompromised = true;
+        },
+        onSecureHardwareNotAvailable: () {
+          AppLogger.debug('Device integrity: no secure hardware');
+        },
+        onSimulator: () {
+          AppLogger.info('Device integrity: running on emulator/simulator');
+        },
+        onUnofficialStore: () {
+          AppLogger.warning('Device integrity: unofficial app store');
+        },
+      );
+
+      Talsec.instance.attachListener(callback);
+      await Talsec.instance.start(config);
+
+      _isInitialized = true;
+      AppLogger.info('Device integrity service initialized with freeRASP');
+    } catch (e) {
+      AppLogger.warning('Failed to initialize device integrity: $e');
+      _isInitialized = true; // Mark initialized to avoid retries
+    }
   }
 
   /// Check if device is rooted (Android) or jailbroken (iOS).
-  ///
-  /// Returns cached result if already checked.
-  /// Returns false on error to avoid blocking legitimate users.
   Future<bool> isDeviceCompromised() async {
-    if (_isCompromised != null) return _isCompromised!;
-
-    try {
-      _isCompromised = await FlutterJailbreakDetection.jailbroken;
-      AppLogger.info(
-        'Device integrity check: compromised=${_isCompromised! ? "YES" : "no"}',
-      );
-      return _isCompromised!;
-    } catch (e) {
-      AppLogger.warning('Failed to check device integrity: $e');
-      _isCompromised = false;
-      return false;
-    }
+    if (!_isInitialized) await initialize();
+    return _isCompromised;
   }
 
-  /// Check if developer mode is enabled on the device.
-  ///
-  /// Developer mode can indicate additional security risks.
+  /// Check if developer mode / debugger is attached.
   Future<bool> isDeveloperModeEnabled() async {
-    if (_isDeveloperMode != null) return _isDeveloperMode!;
-
-    try {
-      _isDeveloperMode = await FlutterJailbreakDetection.developerMode;
-      if (_isDeveloperMode!) {
-        AppLogger.info('Device has developer mode enabled');
-      }
-      return _isDeveloperMode!;
-    } catch (e) {
-      AppLogger.debug('Failed to check developer mode: $e');
-      _isDeveloperMode = false;
-      return false;
-    }
+    if (!_isInitialized) await initialize();
+    return _isDeveloperMode;
   }
 
   /// Get comprehensive device integrity status.
@@ -72,8 +104,8 @@ class DeviceIntegrityService {
 
   /// Reset cached values (useful for re-checking).
   void resetCache() {
-    _isCompromised = null;
-    _isDeveloperMode = null;
+    _isCompromised = false;
+    _isDeveloperMode = false;
     _isInitialized = false;
   }
 }

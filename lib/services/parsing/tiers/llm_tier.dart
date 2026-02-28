@@ -17,6 +17,13 @@ import 'package:butlery/core/utils/retry_helper.dart';
 ///
 /// **P0-2 Security Fix**: All LLM responses are validated for
 /// suspicious patterns to prevent prompt injection attacks.
+/// Known Swedish measurement units for validation.
+const _knownSwedishUnits = <String>{
+  'dl', 'cl', 'ml', 'l', 'msk', 'tsk', 'krm',
+  'g', 'kg', 'st', 'nypa', 'knippe', 'klyfta',
+  'skiva', 'port', 'bit', 'burk', 'paket', 'pkt', 'förp',
+};
+
 class LlmTier extends ParsingTier with QualityScoring {
   /// LLM service for making extraction calls.
   final LlmService? llmService;
@@ -153,6 +160,24 @@ class LlmTier extends ParsingTier with QualityScoring {
         duration: stopwatch.elapsed,
         costSek: response.estimatedCost,
       );
+    } on LlmException catch (e) {
+      if (e.isRateLimited) {
+        AppLogger.warning('$tierName: Rate limited - ${e.message}');
+        return TierResult(
+          tierName: tierName,
+          recipe: null,
+          success: false,
+          quality: 0.0,
+          duration: stopwatch.elapsed,
+          failureReason: TierFailureReason.rateLimited,
+        );
+      }
+      AppLogger.warning('$tierName: LLM exception: $e');
+      return TierResult.parseError(
+        tierName: tierName,
+        duration: stopwatch.elapsed,
+        message: e.toString(),
+      );
     } catch (e) {
       AppLogger.warning('$tierName: Exception during extraction: $e');
       return TierResult.parseError(
@@ -275,6 +300,11 @@ class LlmTier extends ParsingTier with QualityScoring {
       errors.add('title_contains_url');
     }
 
+    // Description: max 500 chars
+    if (extracted.description != null && extracted.description!.length > 500) {
+      errors.add('description_length');
+    }
+
     // Ingredients: ≥1, each name 1-100 chars, amount 0-10000
     if (extracted.ingredients.isEmpty) {
       errors.add('no_ingredients');
@@ -287,6 +317,13 @@ class LlmTier extends ParsingTier with QualityScoring {
       if (ing.amount != null && (ing.amount! < 0 || ing.amount! > 10000)) {
         errors.add('ingredient_amount_range');
         break;
+      }
+      // Flag unknown units (non-blocking — lower confidence logged)
+      if (ing.unit != null &&
+          ing.unit!.isNotEmpty &&
+          !_knownSwedishUnits.contains(ing.unit!.toLowerCase())) {
+        AppLogger.debug(
+            '$tierName: Unknown unit "${ing.unit}" for "${ing.name}"');
       }
     }
 
@@ -311,6 +348,12 @@ class LlmTier extends ParsingTier with QualityScoring {
     final time = extracted.totalTimeMinutes;
     if (time != null && (time < 1 || time > 2880)) {
       errors.add('time_range');
+    }
+
+    // Difficulty: must be easy/medium/hard or null
+    if (extracted.difficulty != null &&
+        !{'easy', 'medium', 'hard'}.contains(extracted.difficulty)) {
+      errors.add('invalid_difficulty');
     }
 
     return errors;
@@ -410,9 +453,10 @@ class LlmTier extends ParsingTier with QualityScoring {
       return FieldResult.failed('No ingredients from LLM');
     }
 
+    final deduped = _deduplicateIngredients(extracted);
     final parsed = <ParsedIngredient>[];
 
-    for (final ing in extracted) {
+    for (final ing in deduped) {
       parsed.add(ParsedIngredient(
         name: ing.name,
         originalLine: ing.formatted,
@@ -424,6 +468,37 @@ class LlmTier extends ParsingTier with QualityScoring {
     }
 
     return FieldResult.mediumConfidence(parsed, 'LLM extraction');
+  }
+
+  /// Deduplicate ingredients by normalized name.
+  /// Same name + same unit → sum amounts.
+  /// Same name + different units → keep first occurrence.
+  List<ExtractedIngredient> _deduplicateIngredients(
+    List<ExtractedIngredient> ingredients,
+  ) {
+    final seen = <String, ExtractedIngredient>{};
+
+    for (final ing in ingredients) {
+      final key = ing.name.toLowerCase().trim();
+      final existing = seen[key];
+
+      if (existing == null) {
+        seen[key] = ing;
+      } else if (existing.unit?.toLowerCase() == ing.unit?.toLowerCase() &&
+          existing.amount != null &&
+          ing.amount != null) {
+        // Same unit — sum amounts
+        seen[key] = ExtractedIngredient(
+          amount: existing.amount! + ing.amount!,
+          unit: existing.unit,
+          name: existing.name,
+          preparation: existing.preparation ?? ing.preparation,
+        );
+      }
+      // Different units — keep first occurrence (skip duplicate)
+    }
+
+    return seen.values.toList();
   }
 
   FieldResult<List<String>> _convertInstructions(List<String> instructions) {

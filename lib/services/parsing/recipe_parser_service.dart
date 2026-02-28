@@ -44,6 +44,9 @@ class ParseResult {
   /// Error message if failed.
   final String? error;
 
+  /// User-facing Swedish error message (from most actionable tier failure).
+  final String? userMessage;
+
   /// Whether the result came from cache.
   final bool fromCache;
 
@@ -54,6 +57,7 @@ class ParseResult {
     this.recipe,
     required this.success,
     this.error,
+    this.userMessage,
     this.fromCache = false,
     required this.totalTime,
   });
@@ -70,10 +74,15 @@ class ParseResult {
         totalTime: totalTime,
       );
 
-  factory ParseResult.failure(String error, {required Duration totalTime}) =>
+  factory ParseResult.failure(
+    String error, {
+    required Duration totalTime,
+    String? userMessage,
+  }) =>
       ParseResult(
         success: false,
         error: error,
+        userMessage: userMessage,
         totalTime: totalTime,
       );
 }
@@ -242,6 +251,7 @@ class RecipeParserService extends BaseService {
       return ParseResult.failure(
         'Could not extract recipe from content',
         totalTime: stopwatch.elapsed,
+        userMessage: _pickUserMessage(),
       );
     }
 
@@ -304,6 +314,7 @@ class RecipeParserService extends BaseService {
       return ParseResult.failure(
         'Could not extract recipe from text',
         totalTime: stopwatch.elapsed,
+        userMessage: _pickUserMessage(),
       );
     }
 
@@ -326,6 +337,9 @@ class RecipeParserService extends BaseService {
     return tier.shouldSkip(context);
   }
 
+  /// Most recent tier failures, used for user-facing error messages.
+  List<TierResult> _lastTierFailures = [];
+
   /// Run parsing tiers in order until quality threshold is met.
   Future<ParsedRecipe?> _runTiers(
     ParsingContext context, {
@@ -333,6 +347,7 @@ class RecipeParserService extends BaseService {
     required bool useLlm,
   }) async {
     final results = <TierResult>[];
+    _lastTierFailures = [];
 
     for (final tier in _tiers) {
       if (_shouldSkipTier(tier, context, useLlm)) continue;
@@ -347,6 +362,10 @@ class RecipeParserService extends BaseService {
       final result = await tier.parseWithTimeout(context);
       results.add(result);
 
+      if (!result.success && result.failureReason != null) {
+        _lastTierFailures.add(result);
+      }
+
       AppLogger.debug(
         '$serviceName: ${tier.tierName} - '
         '${result.success ? "success (${(result.quality * 100).toInt()}%)" : "failed"}',
@@ -358,6 +377,34 @@ class RecipeParserService extends BaseService {
     }
 
     return _merger.merge(results);
+  }
+
+  /// Pick the most actionable user message from accumulated tier failures.
+  /// Priority: rateLimited > securityBlocked > invalidResponse > schemaValidationFailed > others.
+  String? _pickUserMessage() {
+    if (_lastTierFailures.isEmpty) return null;
+
+    const priority = [
+      TierFailureReason.rateLimited,
+      TierFailureReason.securityBlocked,
+      TierFailureReason.invalidResponse,
+      TierFailureReason.schemaValidationFailed,
+      TierFailureReason.networkError,
+      TierFailureReason.timeout,
+      TierFailureReason.parseError,
+      TierFailureReason.noData,
+    ];
+
+    for (final reason in priority) {
+      final match = _lastTierFailures
+          .where((r) => r.failureReason == reason)
+          .firstOrNull;
+      if (match != null) {
+        return reason.userMessage;
+      }
+    }
+
+    return _lastTierFailures.last.failureReason?.userMessage;
   }
 
   /// Check local cache for parsed recipe.
