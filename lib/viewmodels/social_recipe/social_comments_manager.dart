@@ -5,11 +5,14 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/social/social_comment.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/moderation/content_filter_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 class SocialCommentsManager extends ChangeNotifier {
   final UnifiedRecipeService _recipeService;
+  ContentFilterService? _contentFilter;
 
   bool _isLoadingComments = false;
   String? _commentsError;
@@ -23,13 +26,23 @@ class SocialCommentsManager extends ChangeNotifier {
   StreamSubscription<List<RecipeComment>>? _commentStreamSubscription;
   String? _watchedRecipeId;
 
-  SocialCommentsManager(this._recipeService);
+  SocialCommentsManager(this._recipeService) {
+    try {
+      _contentFilter = ServiceLocator.get<ContentFilterService>();
+    } catch (_) {
+      // Filter not available — proceed without it
+    }
+  }
 
   bool get hasComments => _comments.isNotEmpty;
   bool get isLoadingComments => _isLoadingComments;
   String? get commentsError => _commentsError;
   bool get isPostingComment => _isPostingComment;
   bool get isReplying => _isReplying;
+
+  /// Returns true if the current comment text contains profanity.
+  bool get hasProfanityWarning =>
+      _contentFilter?.containsProfanity(_newCommentText) ?? false;
   String get newCommentText => _newCommentText;
   List<SocialComment> get comments => _comments;
   List<SocialComment> get topLevelComments =>
