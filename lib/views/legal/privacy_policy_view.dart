@@ -7,6 +7,7 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 /// GDPR Article 13/14 - Privacy Policy View
 /// Displays the complete privacy policy in Swedish, covering all GDPR
@@ -41,8 +42,17 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         _errorMessage = null;
       });
 
-      final content =
-          await rootBundle.loadString('assets/legal/privacy_policy_sv.md');
+      final lang = AppLocale.currentLocale.languageCode;
+      final assetPath = 'assets/legal/privacy_policy_$lang.md';
+
+      String content;
+      try {
+        content = await rootBundle.loadString(assetPath);
+      } catch (_) {
+        // Fallback to Swedish
+        content =
+            await rootBundle.loadString('assets/legal/privacy_policy_sv.md');
+      }
 
       if (mounted) {
         setState(() {
