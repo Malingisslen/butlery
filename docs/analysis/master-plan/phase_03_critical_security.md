@@ -34,7 +34,7 @@
 ## P3-04 — .env files bundled as Flutter assets [CRIT]
 
 **Source**: R02:S-01, R02:S-02
-**Files**: `pubspec.yaml:60-90`
+**Files**: `pubspec.yaml:137-141`
 **Fix**: Switch to `--dart-define` for Firebase keys, remove .env from assets. ~~OCR client-side API key~~ — obsolete, OCR service already moved to Cloud Functions.
 **Effort**: 1-2d
 
@@ -43,7 +43,7 @@
 ## P3-05 — SSL pinning non-functional [HIGH]
 
 **Source**: R02:N-05, R02:N-08
-**Files**: `lib/services/network/ssl_pinning_service.dart:95-101`
+**Files**: `lib/core/network/ssl_pinning_service.dart:95-101`
 **Fix**: `createPinnedClient()` returns unpinned `http.Client()`. Wire `secureGet()`/`securePost()` into all HTTP callers. Also: 4 services create raw `http.Client()` bypassing pinning.
 **Effort**: 8h
 
@@ -99,7 +99,7 @@
 ## P3-11 — Insecure `Random()` in correlation IDs [MED]
 
 **Source**: R02:D-04
-**Files**: `lib/core/correlation_id.dart:21`
+**Files**: `lib/core/utils/correlation_id.dart:21`
 **Fix**: Replace `dart:math Random()` with `Random.secure()` for correlation IDs (low risk, debug only). Note: `firebase_deeplink_repository` uses `DateTime.now().millisecondsSinceEpoch`, not `Random()` — different weakness (predictable but not insecure random).
 **Effort**: 30 min
 

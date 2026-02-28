@@ -47,8 +47,8 @@ Unbounded listeners, startup optimization, subcollection TTL.
 
 **Source**: R04:dim1-3
 **Files**: Various DI modules
-**Fix**: 36 eager singletons at startup; convert non-critical ones (MenuService, FriendsService, ParserService, PresenceService) to lazy. Saves ~200-400ms.
-**Effort**: 1d
+**Fix**: 53 eager singletons at startup; convert non-critical ones (MenuService, FriendsService, ParserService, PresenceService) to lazy. Saves ~200-400ms.
+**Effort**: 1-2d
 
 ---
 
@@ -85,7 +85,7 @@ Unbounded listeners, startup optimization, subcollection TTL.
 
 **Source**: R04:dim1-4
 **Files**: `friends_list_view.dart`, `conversations_list_view.dart`, `personal_tags_view.dart`, 17 more
-**Fix**: 20 ListView/GridView without .builder — eagerly builds all children.
+**Fix**: 14 ListView/GridView without .builder — eagerly builds all children.
 **Effort**: 2h per file (prioritize 3 high-traffic ones)
 
 ---

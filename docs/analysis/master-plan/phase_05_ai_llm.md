@@ -98,7 +98,7 @@ Model pinning, JSON schema, prompt engineering, PII scrubbing, cost controls, va
 
 **Source**: R07:C2.1
 **Files**: `lib/services/parsing/tiers/llm_tier.dart:76-86`
-**Fix**: User gets "could not extract" instead of "daily limit reached". Add distinct error type for rate limits in `TierResult`.
+**Fix**: User gets "could not extract" instead of "daily limit reached". Rate limit detection EXISTS via `LlmException.fromFirebase()` with code `resource-exhausted` in `llm_service.dart`, but `llm_tier.dart` doesn't surface it distinctly to users. Add distinct error type for rate limits in `TierResult`.
 **Effort**: 2h
 
 ---

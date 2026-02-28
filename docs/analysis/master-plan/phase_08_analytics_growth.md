@@ -39,12 +39,9 @@ Event wiring, onboarding instrumentation, retention tracking, notification routi
 
 ---
 
-## P8-05 — Wire `logScreenView` [HIGH]
+## ~~P8-05~~ — ~~Wire `logScreenView`~~ [FIXED]
 
-**Source**: R08:PA-05
-**Files**: `analytics_service.dart:147-163`
-**Fix**: Add screen view tracking via NavigatorObserver.
-**Effort**: 2h
+**Status**: Verified fixed — `FirebaseAnalyticsObserver` is already wired in `main.dart:560-561` and registered as navigator observer at line 597. Screen view tracking is functional.
 
 ---
 

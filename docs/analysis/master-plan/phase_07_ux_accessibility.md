@@ -8,7 +8,7 @@ Color contrast, semantics, Colors.* cleanup, i18n completion, platform complianc
 
 **Source**: R06:2.1
 **Files**: `lib/widgets/` (many files)
-**Fix**: Many `InkWell`/`GestureDetector` widgets lack screen reader labels. Only ~56 `Semantics` in code vs hundreds of interactive elements. Prioritize navigation and primary actions (first pass — partial coverage).
+**Fix**: Many `InkWell`/`GestureDetector` widgets lack screen reader labels. ~97 `Semantics` in code vs ~118 interactive elements. Gap is less severe than originally estimated but still valid. Prioritize navigation and primary actions (first pass — partial coverage).
 **Effort**: 3-5d
 
 ---
@@ -39,12 +39,12 @@ Color contrast, semantics, Colors.* cleanup, i18n completion, platform complianc
 
 ---
 
-## P7-05 — Replace ~42 problematic `Colors.*` references [HIGH]
+## P7-05 — Replace ~5 problematic `Colors.*` references [HIGH]
 
 **Source**: R06:1.1
-**Files**: ~42 non-transparent, non-standard `Colors.*` usages across views and widgets
-**Fix**: Replace with theme tokens. Original count of 361 was overstated — most are `Colors.transparent` (benign) or `Colors.white`/`Colors.black` (standard). Only ~42 need theme token replacement for dark mode support.
-**Effort**: 4h
+**Files**: ~5 non-transparent, non-standard `Colors.*` usages across views and widgets
+**Fix**: Replace with theme tokens. Original count of 361 was overstated — most are `Colors.transparent` (benign) or `Colors.white`/`Colors.black` (standard). Only ~5 actual raw `Colors.X` references need theme token replacement for dark mode support.
+**Effort**: 30 min
 
 ---
 
@@ -60,7 +60,7 @@ Color contrast, semantics, Colors.* cleanup, i18n completion, platform complianc
 ## P7-07 — RTL readiness cleanup [MED]
 
 **Source**: R06:4.2
-**Fix**: Only 11 `EdgeInsets.only(left/right)` need replacing with `EdgeInsetsDirectional` (original count of 104 was overstated — most `EdgeInsets.only` uses are top/bottom only, which are RTL-safe). Fix 9 `Alignment.centerLeft/Right` and 2 `TextAlign.left/right`.
+**Fix**: 9 `EdgeInsets.only(left/right)` need replacing with `EdgeInsetsDirectional` (original count of 104 was overstated — most `EdgeInsets.only` uses are top/bottom only, which are RTL-safe). Fix 6 `Alignment.centerLeft/Right` and 1 `TextAlign.left/right`. Total: 16 items.
 **Effort**: 2h
 
 ---
@@ -68,18 +68,18 @@ Color contrast, semantics, Colors.* cleanup, i18n completion, platform complianc
 ## P7-08 — Reconcile ARB key count mismatch [MED]
 
 **Source**: R06:4.3
-**Files**: `lib/l10n/app_sv.arb` (6,266 keys), `app_en.arb` (6,633 keys)
-**Fix**: Identify and resolve 367 key difference (original numbers were outdated).
+**Files**: `lib/l10n/app_sv.arb` (5,387 keys), `app_en.arb` (5,937 keys)
+**Fix**: Identify and resolve 550 key difference.
 **Effort**: 1d
 
 ---
 
-## P7-09 — ~15 error messages leak raw exception text [HIGH]
+## P7-09 — ~64+ error messages leak raw exception text [HIGH]
 
 **Source**: R01:H4.3
-**Files**: `lib/l10n/app_sv.arb:408,434,466,1448` plus ~10 more
-**Fix**: Map `{error}` parameters to user-friendly categories instead of raw exception text.
-**Effort**: 3h
+**Files**: 64 in `app_sv.arb`, 69 in `app_en.arb` containing `{error}` parameters
+**Fix**: Map `{error}` parameters to user-friendly categories instead of raw exception text. Much larger scope than originally estimated.
+**Effort**: 1-2d
 
 ---
 
@@ -92,12 +92,12 @@ Color contrast, semantics, Colors.* cleanup, i18n completion, platform complianc
 
 ---
 
-## P7-11 — Translate ~40 Swedish code comments to English [MED]
+## P7-11 — Translate ~13 Swedish code comments to English [MED]
 
 **Source**: R01:M5.3
-**Files**: `recipe_list_viewmodel.dart:496-534`, `form_fields_manager.dart:152,328,333`, `user_service.dart:324,329`, `collaborative_status_viewmodel.dart:90,317,391`, ~25 more
-**Fix**: Translate to English per CLAUDE.md rule.
-**Effort**: 2h
+**Files**: `recipe_list_viewmodel.dart:496-534`, `form_fields_manager.dart:152,328,333`, `user_service.dart:324,329`, `collaborative_status_viewmodel.dart:90,317,391`, and a few more
+**Fix**: Translate to English per CLAUDE.md rule. Only ~13 Swedish comments found in source files (original count of ~40 was overstated).
+**Effort**: 30 min
 
 ---
 
