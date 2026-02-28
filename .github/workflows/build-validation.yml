@@ -80,11 +80,11 @@ jobs:
         key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: gradle-${{ runner.os }}-
 
-    - name: Build Android APK
+    - name: Build Android App Bundle
       if: matrix.platform == 'android'
       run: |
-        echo "🏗️ Building Android APK with obfuscation..."
-        flutter build apk --release --obfuscate --split-debug-info=build/debug-info
+        echo "🏗️ Building Android App Bundle with obfuscation..."
+        flutter build appbundle --release --obfuscate --split-debug-info=build/debug-info
 
     - name: Build for web
       if: matrix.platform == 'web'
