@@ -49,6 +49,7 @@ import 'package:butlery/models/recipe_unified.dart';
 
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
 import 'package:butlery/services/moderation/report_service.dart';
+import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
 
@@ -82,6 +83,7 @@ class SocialModule implements DIModule {
         SocialShoppingCoordinator,
         FirebaseReportRepository,
         ReportService,
+        ContentFilterService,
       ];
 
   @override
@@ -283,6 +285,10 @@ class SocialModule implements DIModule {
           reportRepository: container<FirebaseReportRepository>(),
           authRepository: container<AuthRepository>(),
         ),
+      );
+
+      container.registerLazySingleton<ContentFilterService>(
+        () => ContentFilterService(),
       );
 
       // Deep link repository and service

@@ -12,11 +12,13 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/services/moderation/content_filter_service.dart';
 
 class ChatViewModel extends ChangeNotifier
     with StreamManagementMixin, ErrorHandlingMixin {
   final MessagingService _messagingService;
   final PresenceService? _presenceService;
+  ContentFilterService? _contentFilter;
 
   final String conversationId;
 
@@ -49,6 +51,11 @@ class ChatViewModel extends ChangeNotifier
   })  : _messagingService = messagingService,
         _presenceService = presenceService,
         _conversation = initialConversation {
+    try {
+      _contentFilter = ServiceLocator.get<ContentFilterService>();
+    } catch (_) {
+      // Filter not available — proceed without it
+    }
     _initializeChat();
   }
 
@@ -66,6 +73,10 @@ class ChatViewModel extends ChangeNotifier
       ServiceLocator.get<PermissionService>().currentUserId;
   Message? get replyToMessage => _replyToMessage;
   bool get hasReplyTarget => _replyToMessage != null;
+
+  /// Check if text contains profanity. Used by UI to show warning before send.
+  bool containsProfanity(String text) =>
+      _contentFilter?.containsProfanity(text) ?? false;
 
   String get conversationTitle {
     if (_conversation == null) return AppLocale.current.commonLoading;
