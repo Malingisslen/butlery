@@ -5,10 +5,12 @@
  * and returns a structured recipe object.
  */
 
+import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import {
   getMistralClient,
   mistralApiKey,
+  PROMPT_VERSION,
   RECIPE_EXTRACTION_SYSTEM_PROMPT,
   RECIPE_ENHANCEMENT_SYSTEM_PROMPT,
   SPOKEN_CONTENT_SYSTEM_PROMPT,
@@ -19,6 +21,7 @@ import {
   ExtractedRecipe,
 } from "./mistral-client";
 import { withRateLimit } from "../middleware/rate_limiter";
+import { scrubPii, scrubUrlParams } from "./pii-scrubber";
 
 // =============================================================================
 // Request/Response Types
@@ -41,6 +44,8 @@ interface StructureRecipeResponse {
   error?: string;
   /** Estimated cost in USD */
   estimatedCost: number;
+  /** Prompt version used for this extraction */
+  promptVersion?: string;
 }
 
 // =============================================================================
@@ -87,7 +92,21 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
     }
 
     try {
+      // Check AI kill switch
+      const configDoc = await admin.firestore().doc("system/config").get();
+      if (configDoc.exists && configDoc.data()?.aiEnabled === false) {
+        return {
+          success: false,
+          error: "AI-funktioner är tillfälligt avstängda.",
+          estimatedCost: 0,
+        };
+      }
+
       const client = getMistralClient(mistralApiKey.value());
+
+      // Scrub PII before sending to LLM
+      const cleanText = scrubPii(text);
+      const cleanSourceUrl = sourceUrl ? scrubUrlParams(sourceUrl) : undefined;
 
       // Select system prompt based on mode
       let systemPrompt: string;
@@ -96,19 +115,19 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
       switch (mode) {
         case "enhance":
           systemPrompt = RECIPE_ENHANCEMENT_SYSTEM_PROMPT;
-          userPrompt = buildEnhancementPrompt(text, partialData, sourceUrl);
+          userPrompt = buildEnhancementPrompt(cleanText, partialData, cleanSourceUrl);
           break;
         case "spoken":
           systemPrompt = SPOKEN_CONTENT_SYSTEM_PROMPT;
-          userPrompt = buildSpokenPrompt(text, sourceUrl);
+          userPrompt = buildSpokenPrompt(cleanText, cleanSourceUrl);
           break;
         default:
           systemPrompt = RECIPE_EXTRACTION_SYSTEM_PROMPT;
-          userPrompt = buildExtractionPrompt(text, sourceUrl);
+          userPrompt = buildExtractionPrompt(cleanText, cleanSourceUrl);
       }
 
       console.log(
-        `[structureRecipe] Processing ${text.length} chars in ${mode} mode for user ${request.auth!.uid}`
+        `[structureRecipe] Processing ${text.length} chars in ${mode} mode for user ${request.auth!.uid} (prompt v${PROMPT_VERSION})`
       );
 
       // Call Mistral API
@@ -133,6 +152,9 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
         };
       }
 
+      // Calculate actual cost from API usage
+      const actualCost = calculateTextCost(response.usage);
+
       // Parse response
       const recipe = parseRecipeResponse(content);
       if (!recipe) {
@@ -140,23 +162,24 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
         return {
           success: false,
           error: "Kunde inte tolka AI-svaret som ett recept.",
-          estimatedCost: 0.01,
+          estimatedCost: actualCost,
         };
       }
 
       // Add source if provided
-      if (sourceUrl && !recipe.source) {
-        recipe.source = sourceUrl;
+      if (cleanSourceUrl && !recipe.source) {
+        recipe.source = cleanSourceUrl;
       }
 
       console.log(
-        `[structureRecipe] Successfully extracted: "${recipe.title}" with ${recipe.ingredients.length} ingredients`
+        `[structureRecipe] Successfully extracted: "${recipe.title}" with ${recipe.ingredients.length} ingredients (cost: $${actualCost.toFixed(6)})`
       );
 
       return {
         success: true,
         recipe,
-        estimatedCost: estimateCost(text.length, mode),
+        estimatedCost: actualCost,
+        promptVersion: PROMPT_VERSION,
       };
     } catch (error) {
       console.error("[structureRecipe] Error:", error);
@@ -222,19 +245,16 @@ function buildSpokenPrompt(transcript: string, sourceUrl?: string): string {
 }
 
 /**
- * Estimate cost based on input length and mode.
- * Mistral Small: ~$0.2/1M input tokens, ~$0.6/1M output tokens
+ * Calculate actual cost from Mistral API usage data.
+ * Mistral Small: $0.1/1M input tokens, $0.3/1M output tokens
  */
-function estimateCost(textLength: number, mode: string): number {
-  // Rough estimation: 4 chars per token
-  const inputTokens = textLength / 4;
-  const outputTokens = 500; // Typical recipe response
+function calculateTextCost(usage: { promptTokens?: number; completionTokens?: number } | undefined): number {
+  if (!usage) {
+    return 0.01; // Fallback estimate
+  }
 
-  const inputCost = (inputTokens / 1000000) * 0.2;
-  const outputCost = (outputTokens / 1000000) * 0.6;
+  const inputCost = ((usage.promptTokens ?? 0) / 1_000_000) * 0.1;
+  const outputCost = ((usage.completionTokens ?? 0) / 1_000_000) * 0.3;
 
-  // Enhancement mode typically has more context
-  const multiplier = mode === "enhance" ? 1.5 : 1.0;
-
-  return Math.round((inputCost + outputCost) * multiplier * 1000) / 1000;
+  return Math.max(inputCost + outputCost, 0.001); // Minimum cost floor
 }

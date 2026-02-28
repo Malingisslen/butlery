@@ -5,10 +5,12 @@
  * a structured recipe using vision capabilities.
  */
 
+import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import {
   getMistralClient,
   mistralApiKey,
+  PROMPT_VERSION,
   IMAGE_OCR_SYSTEM_PROMPT,
   VISION_MODEL,
   MAX_TOKENS,
@@ -17,6 +19,7 @@ import {
   ExtractedRecipe,
 } from "./mistral-client";
 import { withRateLimit } from "../middleware/rate_limiter";
+import { scrubPii } from "./pii-scrubber";
 
 // =============================================================================
 // Request/Response Types
@@ -41,6 +44,8 @@ interface OcrRecipeImageResponse {
   error?: string;
   /** Estimated cost in USD */
   estimatedCost: number;
+  /** Prompt version used for this extraction */
+  promptVersion?: string;
 }
 
 // =============================================================================
@@ -84,21 +89,31 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
     }
 
     try {
+      // Check AI kill switch
+      const configDoc = await admin.firestore().doc("system/config").get();
+      if (configDoc.exists && configDoc.data()?.aiEnabled === false) {
+        return {
+          success: false,
+          error: "AI-funktioner är tillfälligt avstängda.",
+          estimatedCost: 0,
+        };
+      }
+
       const client = getMistralClient(mistralApiKey.value());
 
       console.log(
-        `[ocrRecipeImage] Processing image for user ${request.auth!.uid}`,
+        `[ocrRecipeImage] Processing image for user ${request.auth!.uid} (prompt v${PROMPT_VERSION})`,
         imageUrl ? `URL: ${imageUrl}` : `Base64: ${imageBase64?.length} chars`
       );
 
       // Build image content for Mistral vision
       const imageContent = buildImageContent(imageBase64, imageUrl, mimeType);
 
-      // Build user prompt
+      // Build user prompt — scrub context text for PII
       let userPrompt =
         "Läs texten i denna bild och extrahera receptet. Svara med JSON.";
       if (context) {
-        userPrompt += `\n\nKontext: ${context}`;
+        userPrompt += `\n\nKontext: ${scrubPii(context)}`;
       }
 
       // Call Mistral Vision API
@@ -119,12 +134,20 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
       });
 
       const content = response.choices?.[0]?.message?.content;
+
+      // Calculate actual cost from API usage
+      // Pixtral: $0.15/1M input tokens, $0.15/1M output tokens
+      const usage = response.usage as { promptTokens?: number; completionTokens?: number } | undefined;
+      const inputCost = ((usage?.promptTokens ?? 0) / 1_000_000) * 0.15;
+      const outputCost = ((usage?.completionTokens ?? 0) / 1_000_000) * 0.15;
+      const actualCost = Math.max(inputCost + outputCost, 0.01);
+
       if (!content || typeof content !== "string") {
         console.error("[ocrRecipeImage] Empty response from Mistral");
         return {
           success: false,
           error: "Inget svar från AI-tjänsten.",
-          estimatedCost: 0.05,
+          estimatedCost: actualCost,
         };
       }
 
@@ -132,17 +155,17 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
       const recipe = parseRecipeResponse(content);
       if (recipe) {
         console.log(
-          `[ocrRecipeImage] Successfully extracted: "${recipe.title}" with ${recipe.ingredients.length} ingredients`
+          `[ocrRecipeImage] Successfully extracted: "${recipe.title}" with ${recipe.ingredients.length} ingredients (cost: $${actualCost.toFixed(6)})`
         );
         return {
           success: true,
           recipe,
-          estimatedCost: 0.05,
+          estimatedCost: actualCost,
+          promptVersion: PROMPT_VERSION,
         };
       }
 
       // If parsing failed, the model might have returned raw text
-      // This can happen with very unclear images
       console.warn(
         "[ocrRecipeImage] Could not parse as recipe, returning raw text"
       );
@@ -150,7 +173,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
         success: false,
         rawText: content,
         error: "Kunde inte strukturera texten som ett recept.",
-        estimatedCost: 0.05,
+        estimatedCost: actualCost,
       };
     } catch (error) {
       console.error("[ocrRecipeImage] Error:", error);

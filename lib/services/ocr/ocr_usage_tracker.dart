@@ -1,7 +1,6 @@
 // lib/services/ocr/ocr_usage_tracker.dart
 
-/// Tracks OCR API usage for cost monitoring and rate limiting.
-/// Provides usage statistics, warnings, and cost estimates.
+/// Tracks AI vision (Pixtral) and LLM API usage for cost monitoring and rate limiting.
 class OCRUsageTracker {
   final DateTime Function()? _timeProvider;
 
@@ -11,15 +10,18 @@ class OCRUsageTracker {
   DateTime? _lastRequestDate;
   DateTime? _monthStartDate;
   final Map<String, int> _providerUsage = {
-    'ocr_space': 0,
-    'google_vision': 0,
-    'tesseract': 0,
+    'pixtral_vision': 0,
+    'mistral_text': 0,
     'cache_hits': 0,
   };
 
-  // Usage limits
-  static const int freeMonthlyLimit = 25000; // OCR.space free tier
+  // Usage limits — based on Cloud Function pricing
+  static const int freeMonthlyLimit = 500; // Pixtral Cloud Function calls
   static const double _warningThreshold = 0.8; // 80% of limit
+
+  // Cost per call in USD
+  static const double _pixtralCostPerCall = 0.05;
+  static const double _mistralTextCostPerCall = 0.01;
 
   OCRUsageTracker({DateTime Function()? timeProvider})
       : _timeProvider = timeProvider {
@@ -28,7 +30,7 @@ class OCRUsageTracker {
 
   DateTime get _now => _timeProvider?.call() ?? DateTime.now();
 
-  /// Record OCR usage for tracking and cost monitoring.
+  /// Record usage for tracking and cost monitoring.
   void recordUsage(String provider) {
     final now = _now;
 
@@ -53,20 +55,6 @@ class OCRUsageTracker {
     _dailyRequestCount++;
     _monthlyRequestCount++;
     _providerUsage[provider] = (_providerUsage[provider] ?? 0) + 1;
-
-    // Log usage and check warnings
-    _logUsageStats();
-    _checkUsageWarnings();
-  }
-
-  /// Log current usage statistics (disabled - use getUsageStats() for monitoring).
-  void _logUsageStats() {
-    // Usage stats available via getUsageStats() method
-  }
-
-  /// Check and warn about approaching usage limits (disabled - use getUsageWarnings()).
-  void _checkUsageWarnings() {
-    // Warnings available via getUsageWarnings() method
   }
 
   /// Get usage statistics (for monitoring dashboard).
@@ -90,19 +78,10 @@ class OCRUsageTracker {
 
   /// Estimate monthly cost based on current usage.
   double _estimateMonthlyCost() {
-    if (_monthlyRequestCount <= freeMonthlyLimit) {
-      return 0.0; // Free tier
-    }
-
-    // OCR.space paid tier: $19/month for 100k requests
-    if (_monthlyRequestCount <= 100000) {
-      return 19.0;
-    }
-
-    // Google Vision overflow: $1.50 per 1000 after 100k
-    final overflow = _monthlyRequestCount - 100000;
-    final googleVisionCost = (overflow / 1000) * 1.50;
-    return 19.0 + googleVisionCost;
+    final pixtralCalls = _providerUsage['pixtral_vision'] ?? 0;
+    final textCalls = _providerUsage['mistral_text'] ?? 0;
+    return (pixtralCalls * _pixtralCostPerCall) +
+        (textCalls * _mistralTextCostPerCall);
   }
 
   /// Get usage warnings.
@@ -110,15 +89,11 @@ class OCRUsageTracker {
     final warnings = <String>[];
 
     if (_monthlyRequestCount >= freeMonthlyLimit) {
-      warnings.add('Exceeded free tier - upgrade to paid tier or add fallback');
+      warnings.add('Exceeded monthly limit - consider reducing usage');
     } else if (_monthlyRequestCount >= (freeMonthlyLimit * _warningThreshold)) {
       final percentUsed =
           ((_monthlyRequestCount / freeMonthlyLimit) * 100).toInt();
       warnings.add('Approaching monthly limit ($percentUsed%)');
-    }
-
-    if (_providerUsage['ocr_space'] == 0 && _monthlyRequestCount > 0) {
-      warnings.add('OCR.space not being used - check API key configuration');
     }
 
     final cacheHitRate = calculateCacheHitRate();
