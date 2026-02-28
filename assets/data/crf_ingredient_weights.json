@@ -1,0 +1,131 @@
+{
+  "features": {
+    "B-QTY": {
+      "word.isDigit": 3.0,
+      "word.isFraction": 3.0,
+      "BOS": 1.5,
+      "next.word.isUnit": 1.5,
+      "word.isUnit": -2.0,
+      "word.isFood": -2.0,
+      "word.isPrep": -2.0,
+      "word.lower=ca": -1.0
+    },
+    "I-QTY": {
+      "word.isDigit": 2.0,
+      "word.isFraction": 2.5,
+      "prev.word.isDigit": 1.5,
+      "prev.word.isFraction": 1.5,
+      "word.isUnit": -2.0,
+      "word.isFood": -2.0,
+      "word.lower=-": 1.0
+    },
+    "B-UNIT": {
+      "word.isUnit": 3.5,
+      "prev.word.isDigit": 1.5,
+      "prev.word.isFraction": 1.5,
+      "next.word.isFood": 1.0,
+      "word.isDigit": -2.0,
+      "word.isFood": -1.5,
+      "word.isPrep": -2.0,
+      "BOS": -1.0
+    },
+    "B-NAME": {
+      "word.isFood": 3.0,
+      "prev.word.isUnit": 2.0,
+      "word.isDigit": -2.5,
+      "word.isFraction": -2.0,
+      "word.isUnit": -1.5,
+      "word.isPrep": -1.0,
+      "word.isSize": -1.0,
+      "next.word.isFood": 0.5
+    },
+    "I-NAME": {
+      "word.isFood": 2.5,
+      "prev.word.isFood": 2.0,
+      "word.isDigit": -2.0,
+      "word.isUnit": -1.5,
+      "word.isPrep": -0.5,
+      "word.isSize": -1.0
+    },
+    "B-PREP": {
+      "word.isPrep": 3.5,
+      "word.suffix3=ven": 1.0,
+      "word.suffix2=ad": 1.0,
+      "word.suffix2=at": 1.0,
+      "word.suffix2=na": 0.8,
+      "word.isDigit": -2.0,
+      "word.isUnit": -2.0,
+      "word.isFood": -0.5
+    },
+    "I-PREP": {
+      "word.isPrep": 2.0,
+      "prev.word.isPrep": 1.5,
+      "word.isDigit": -2.0,
+      "word.isUnit": -2.0,
+      "word.isFood": -1.0
+    },
+    "B-SIZE": {
+      "word.isSize": 3.5,
+      "next.word.isFood": 1.0,
+      "prev.word.isDigit": 0.5,
+      "word.isDigit": -2.0,
+      "word.isUnit": -2.0,
+      "word.isFood": -1.0,
+      "word.isPrep": -1.0
+    },
+    "O": {
+      "word.lower=ca": 2.5,
+      "word.lower=eller": 2.0,
+      "word.lower=och": 1.5,
+      "word.lower=ev": 2.0,
+      "word.lower=ev.": 2.0,
+      "word.lower=(": 2.0,
+      "word.lower=)": 2.0,
+      "word.lower=,": 1.5,
+      "word.lower=till": 1.5,
+      "word.hasComma": 0.5,
+      "word.isDigit": -1.0,
+      "word.isUnit": -1.5,
+      "word.isFood": -1.5,
+      "word.isPrep": -1.0
+    }
+  },
+  "transitions": {
+    "B-QTY": {
+      "B-QTY": -2.0, "I-QTY": 2.0, "B-UNIT": 3.0, "B-NAME": 0.5,
+      "I-NAME": -2.0, "B-PREP": -1.0, "I-PREP": -3.0, "B-SIZE": 0.5, "O": 0.0
+    },
+    "I-QTY": {
+      "B-QTY": -2.0, "I-QTY": 1.0, "B-UNIT": 3.0, "B-NAME": 0.5,
+      "I-NAME": -2.0, "B-PREP": -1.0, "I-PREP": -3.0, "B-SIZE": 0.5, "O": 0.0
+    },
+    "B-UNIT": {
+      "B-QTY": -2.0, "I-QTY": -3.0, "B-UNIT": -1.5, "B-NAME": 3.0,
+      "I-NAME": -2.0, "B-PREP": 1.0, "I-PREP": -3.0, "B-SIZE": 0.5, "O": 0.0
+    },
+    "B-NAME": {
+      "B-QTY": -2.0, "I-QTY": -3.0, "B-UNIT": -1.5, "B-NAME": -0.5,
+      "I-NAME": 2.5, "B-PREP": 1.5, "I-PREP": -3.0, "B-SIZE": -0.5, "O": 0.5
+    },
+    "I-NAME": {
+      "B-QTY": -2.0, "I-QTY": -3.0, "B-UNIT": -1.5, "B-NAME": -0.5,
+      "I-NAME": 2.5, "B-PREP": 1.5, "I-PREP": -3.0, "B-SIZE": -0.5, "O": 0.5
+    },
+    "B-PREP": {
+      "B-QTY": -1.0, "I-QTY": -3.0, "B-UNIT": -1.0, "B-NAME": 2.0,
+      "I-NAME": -2.0, "B-PREP": -0.5, "I-PREP": 2.0, "B-SIZE": -0.5, "O": 0.5
+    },
+    "I-PREP": {
+      "B-QTY": -1.0, "I-QTY": -3.0, "B-UNIT": -1.0, "B-NAME": 2.0,
+      "I-NAME": -2.0, "B-PREP": -0.5, "I-PREP": 2.0, "B-SIZE": -0.5, "O": 0.5
+    },
+    "B-SIZE": {
+      "B-QTY": -1.0, "I-QTY": -3.0, "B-UNIT": -0.5, "B-NAME": 2.5,
+      "I-NAME": -2.0, "B-PREP": 0.5, "I-PREP": -3.0, "B-SIZE": -1.5, "O": 0.0
+    },
+    "O": {
+      "B-QTY": 1.5, "I-QTY": -2.0, "B-UNIT": 0.5, "B-NAME": 1.5,
+      "I-NAME": -1.0, "B-PREP": 0.5, "I-PREP": -2.0, "B-SIZE": 0.5, "O": 1.0
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/services/parsing/parsers/swedish_line_classifier.dart';
 import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 
 /// Shared context for parsing operations.
@@ -132,6 +133,21 @@ class ParsingContext {
 
   /// Time elapsed since parsing started.
   Duration get elapsed => DateTime.now().difference(startTime);
+
+  // Single-entry cache for parseStructure results
+  ParsedRecipeStructure? _cachedStructure;
+  String? _structureCacheKey;
+
+  /// Returns cached structure if text matches, otherwise parses fresh.
+  ParsedRecipeStructure parseStructureCached(String text) {
+    if (_cachedStructure != null && _structureCacheKey == text) {
+      return _cachedStructure!;
+    }
+    final result = SwedishLineClassifier.instance.parseStructure(text);
+    _cachedStructure = result;
+    _structureCacheKey = text;
+    return result;
+  }
 
   /// Add a tier result to the context.
   void addTierResult(TierResultEntry result) {

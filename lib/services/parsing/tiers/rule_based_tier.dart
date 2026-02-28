@@ -1,7 +1,6 @@
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
-import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/services/parsing/parsers/swedish_line_classifier.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
@@ -50,9 +49,8 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
       );
     }
 
-    // Classify and parse
-    final classifier = SwedishLineClassifier.instance;
-    final structure = classifier.parseStructure(text);
+    // Classify and parse (cached across tiers)
+    final structure = context.parseStructureCached(text);
 
     if (!structure.isValid) {
       return TierResult.noData(
@@ -139,47 +137,21 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
     ParsedRecipeStructure structure,
     ParsingContext context,
   ) {
-    // Parse ingredients
     final ingredients = _parseIngredients(structure.ingredients);
-
     if (ingredients.value == null || ingredients.value!.isEmpty) {
       return null;
     }
 
-    // Parse instructions
-    final instructions = _parseInstructions(structure.instructions);
-
+    final instructions = parseInstructionLines(structure.instructions);
     if (instructions.value == null || instructions.value!.isEmpty) {
       return null;
     }
 
-    // Create metadata
-    final metadata = ParseMetadata(
-      source: context.source,
-      domain: context.domain,
-      sourceUrl: context.sourceUrl,
-      parserVersion: context.parserVersion,
-      timestamp: DateTime.now(),
-      totalParseTime: context.elapsed,
-      tierResults: const [],
-    );
-
-    return ParsedRecipe(
-      title: structure.title != null && structure.title!.isNotEmpty
-          ? FieldResult.mediumConfidence(
-              structure.title!, 'Extracted from text')
-          : FieldResult.failed('No title found'),
-      portions: structure.portions != null
-          ? FieldResult.mediumConfidence(
-              structure.portions!, 'Extracted from text')
-          : FieldResult.lowConfidence(4, 'Defaulting to 4 portions'),
+    return buildRecipeFromStructure(
+      structure: structure,
+      context: context,
       ingredients: ingredients,
       instructions: instructions,
-      totalTime: structure.totalTime != null
-          ? FieldResult.mediumConfidence(
-              structure.totalTime!, 'Extracted from text')
-          : FieldResult.failed('No time found'),
-      metadata: metadata,
     );
   }
 
@@ -235,29 +207,5 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
         'Most ingredients unstructured',
       );
     }
-  }
-
-  FieldResult<List<String>> _parseInstructions(List<String> lines) {
-    if (lines.isEmpty) {
-      return FieldResult.failed('No instructions found');
-    }
-
-    // Clean and filter
-    final cleaned = lines
-        .map((l) => l.trim())
-        .where((l) => l.isNotEmpty)
-        // Remove step numbers
-        .map((l) => l.replaceFirst(RegExp(r'^\d+[\.\)]\s*'), ''))
-        .toList();
-
-    if (cleaned.isEmpty) {
-      return FieldResult.failed('Could not parse instructions');
-    }
-
-    // Instructions from line classification are lower confidence
-    return FieldResult.lowConfidence(
-      cleaned,
-      'Extracted via Swedish line classification',
-    );
   }
 }
