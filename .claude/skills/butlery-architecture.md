@@ -49,14 +49,17 @@ final stream = service.realtime.watchRecipe(...); // Live-sync
 ### 1. Data Source Rule (KRITISK)
 
 ```dart
+final userService = ServiceLocator.get<UserService>();
+final permService = ServiceLocator.get<PermissionService>();
+
 // ✅ UserService för komplett användardata
-final profile = UserService.currentUserProfile;  // Settings, avatar, social
+final profile = userService.currentUserProfile;  // Settings, avatar, social
 
 // ✅ PermissionService ENDAST för auth/permission
-final canEdit = await PermissionService.canEditRecipe(id);
+final userId = permService.currentUserId;
 
 // ❌ BLANDAR ALDRIG dessa
-if (PermissionService.currentUser.settings...) // FEL - settings är i UserService
+final settings = permService.currentUser.settings; // FEL - settings är i UserService
 ```
 
 ### 2. Firebase Access
