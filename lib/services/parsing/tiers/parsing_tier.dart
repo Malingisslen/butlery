@@ -1,6 +1,11 @@
 import 'dart:async';
 
+import 'package:butlery/models/parsing/field_result.dart';
+import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/models/parsing/parsed_ingredient.dart';
+import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
+import 'package:butlery/services/parsing/parsers/swedish_line_classifier.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -222,5 +227,65 @@ mixin QualityScoring {
     }
 
     return score.clamp(0.0, 1.0);
+  }
+
+  /// Shared instruction parsing — trim, filter empty, strip step numbers.
+  FieldResult<List<String>> parseInstructionLines(List<String> lines) {
+    if (lines.isEmpty) {
+      return FieldResult.failed('No instructions found');
+    }
+
+    final cleaned = lines
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .map((l) => l.replaceFirst(RegExp(r'^\d+[\.\)]\s*'), ''))
+        .toList();
+
+    if (cleaned.isEmpty) {
+      return FieldResult.failed('Could not parse instructions');
+    }
+
+    return FieldResult.lowConfidence(
+      cleaned,
+      'Extracted via Swedish line classification',
+    );
+  }
+
+  /// Builds ParsedRecipe from a ParsedRecipeStructure.
+  ///
+  /// Callers must validate ingredients/instructions before calling.
+  ParsedRecipe buildRecipeFromStructure({
+    required ParsedRecipeStructure structure,
+    required ParsingContext context,
+    required FieldResult<List<ParsedIngredient>> ingredients,
+    required FieldResult<List<String>> instructions,
+  }) {
+    final metadata = ParseMetadata(
+      source: context.source,
+      domain: context.domain,
+      sourceUrl: context.sourceUrl,
+      parserVersion: context.parserVersion,
+      timestamp: DateTime.now(),
+      totalParseTime: context.elapsed,
+      tierResults: const [],
+    );
+
+    return ParsedRecipe(
+      title: structure.title != null && structure.title!.isNotEmpty
+          ? FieldResult.mediumConfidence(
+              structure.title!, 'Extracted from text')
+          : FieldResult.failed('No title found'),
+      portions: structure.portions != null
+          ? FieldResult.mediumConfidence(
+              structure.portions!, 'Extracted from text')
+          : FieldResult.lowConfidence(4, 'Defaulting to 4 portions'),
+      ingredients: ingredients,
+      instructions: instructions,
+      totalTime: structure.totalTime != null
+          ? FieldResult.mediumConfidence(
+              structure.totalTime!, 'Extracted from text')
+          : FieldResult.failed('No time found'),
+      metadata: metadata,
+    );
   }
 }

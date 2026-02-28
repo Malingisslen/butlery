@@ -1,0 +1,173 @@
+import 'package:flutter/services.dart';
+
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/parsing/field_result.dart';
+import 'package:butlery/models/parsing/parsed_ingredient.dart';
+import 'package:butlery/models/parsing/tier_result.dart';
+import 'package:butlery/services/parsing/crf/crf_ingredient_parser.dart';
+import 'package:butlery/services/parsing/crf/crf_viterbi_decoder.dart';
+import 'package:butlery/services/parsing/tiers/parsing_context.dart';
+import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
+
+/// Tier 4: CRF-based ingredient parsing.
+///
+/// Uses a lightweight on-device CRF model to parse ingredient lines into
+/// structured components. Replaces the regex-based IngredientParser for
+/// ingredient parsing while keeping SwedishLineClassifier for line
+/// classification and instruction extraction.
+///
+/// Falls back gracefully when weights are unavailable — shouldSkip returns
+/// true and the next tier (LLM) handles it.
+class CrfTier extends ParsingTier with QualityScoring {
+  static const String _weightsPath = 'assets/data/crf_ingredient_weights.json';
+  static const String _serviceName = 'CrfTier';
+
+  CrfIngredientParser? _parser;
+  bool _weightsLoadFailed = false;
+
+  /// Optional injected parser for testing.
+  final CrfIngredientParser? _injectedParser;
+
+  CrfTier({CrfIngredientParser? parser}) : _injectedParser = parser;
+
+  @override
+  String get tierName => 'CRF';
+
+  @override
+  int get priority => 4;
+
+  @override
+  Duration get defaultTimeout => const Duration(seconds: 10);
+
+  @override
+  double get minQualityScore => 0.35;
+
+  @override
+  bool shouldSkip(ParsingContext context) {
+    if (context.sanitizedContent.isEmpty) return true;
+    // Skip if weights previously failed to load
+    if (_weightsLoadFailed && _injectedParser == null) return true;
+    return false;
+  }
+
+  @override
+  Future<TierResult> parse(ParsingContext context) async {
+    final stopwatch = Stopwatch()..start();
+
+    // Ensure parser is loaded
+    final parser = await _getParser();
+    if (parser == null) {
+      return TierResult.noData(
+        tierName: tierName,
+        duration: stopwatch.elapsed,
+      );
+    }
+
+    // Use SwedishLineClassifier for line classification (same as RuleBasedTier)
+    final text = _extractText(context);
+    if (text.isEmpty) {
+      return TierResult.noData(
+        tierName: tierName,
+        duration: stopwatch.elapsed,
+      );
+    }
+
+    final structure = context.parseStructureCached(text);
+
+    if (!structure.isValid) {
+      return TierResult.noData(
+        tierName: tierName,
+        duration: stopwatch.elapsed,
+      );
+    }
+
+    // CRF parses ingredients; instructions come from classifier
+    final ingredients = _parseIngredients(parser, structure.ingredients);
+    if (ingredients.value == null || ingredients.value!.isEmpty) {
+      return TierResult.noData(
+        tierName: tierName,
+        duration: stopwatch.elapsed,
+      );
+    }
+
+    final instructions = parseInstructionLines(structure.instructions);
+    if (instructions.value == null || instructions.value!.isEmpty) {
+      return TierResult.noData(
+        tierName: tierName,
+        duration: stopwatch.elapsed,
+      );
+    }
+
+    final recipe = buildRecipeFromStructure(
+      structure: structure,
+      context: context,
+      ingredients: ingredients,
+      instructions: instructions,
+    );
+
+    return TierResult.success(
+      tierName: tierName,
+      recipe: recipe,
+      duration: stopwatch.elapsed,
+    );
+  }
+
+  Future<CrfIngredientParser?> _getParser() async {
+    if (_injectedParser != null) return _injectedParser;
+    if (_parser != null) return _parser;
+
+    try {
+      final jsonString = await rootBundle.loadString(_weightsPath);
+      final weights = CrfWeights.fromJson(jsonString);
+      final decoder = CrfViterbiDecoder(weights: weights);
+      _parser = CrfIngredientParser(decoder);
+      return _parser;
+    } catch (e) {
+      AppLogger.warning('Failed to load CRF weights: $e', _serviceName);
+      _weightsLoadFailed = true;
+      return null;
+    }
+  }
+
+  String _extractText(ParsingContext context) {
+    final content = context.sanitizedContent;
+    if (content.contains('<')) {
+      return content
+          .replaceAll(RegExp(r'<[^>]+>'), '\n')
+          .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+          .trim();
+    }
+    return content;
+  }
+
+  /// Parses ingredient lines using the CRF model.
+  FieldResult<List<ParsedIngredient>> _parseIngredients(
+    CrfIngredientParser parser,
+    List<String> lines,
+  ) {
+    if (lines.isEmpty) {
+      return FieldResult.failed('No ingredients found');
+    }
+
+    final parsed = parser.parseLines(lines);
+
+    if (parsed.isEmpty) {
+      return FieldResult.failed('Could not parse ingredients');
+    }
+
+    final structuredCount = parsed.where((p) => p.isStructured).length;
+    final ratio = structuredCount / parsed.length;
+
+    if (ratio >= 0.5) {
+      return FieldResult.mediumConfidence(
+        parsed,
+        'Parsed via CRF model',
+      );
+    } else {
+      return FieldResult.lowConfidence(
+        parsed,
+        'CRF: most ingredients unstructured',
+      );
+    }
+  }
+}
