@@ -3,728 +3,543 @@
 ```
 BUTLERY SECURITY AND COMPLIANCE ANALYSIS - PHASE 1
 ====================================================
-Analysis Date: 2026-02-10
+Analysis Date: 2026-02-26
 Analyst: Claude (Opus 4.6)
 Framework: OWASP Mobile Application Security Top 10 (2024)
+Previous Audit: 2026-02-10 (Score: 76/100)
+Delta: 13 commits since prior audit, all feature work (no security fixes)
 
-OVERALL SECURITY SCORE: 76/100
+OVERALL SECURITY SCORE: 67/100
 
-+-- OWASP Mobile Top 10:                15/20 points
-+-- Authentication & Session:           13/18 points
-+-- Data Protection & Encryption:       15/18 points
-+-- Network Security:                   10/12 points
-+-- Firebase Security Rules:            10/12 points
-+-- API Security & Secret Management:    7/10 points
++-- OWASP Mobile Top 10:                13/20 points
++-- Authentication & Session:           14/18 points
++-- Data Protection & Encryption:       13/18 points
++-- Network Security:                    8/12 points
++-- Firebase Security Rules:             9/12 points
++-- API Security & Secret Management:    4/10 points
 +-- Code Protection & Platform:          6/10 points
 
-SECURITY POSTURE: Good
+SECURITY POSTURE: Needs Improvement
 
 VULNERABILITY SUMMARY:
-- CRITICAL (CVSS 9.0-10.0): 0 vulnerabilities
-- HIGH (CVSS 7.0-8.9): 3 vulnerabilities
-- MEDIUM (CVSS 4.0-6.9): 7 vulnerabilities
-- LOW (CVSS 0.1-3.9): 5 vulnerabilities
+- CRITICAL (CVSS 9.0-10.0): 1 vulnerability
+- HIGH (CVSS 7.0-8.9): 2 vulnerabilities
+- MEDIUM (CVSS 4.0-6.9): 27 vulnerabilities
+- LOW (CVSS 0.1-3.9): 16 vulnerabilities
 
 TOP 5 SECURITY RISKS:
-1. sendNotification callable function lacks sender-recipient authorization check (H-01)
-2. SSL pinning fails open on error, reducing MITM protection (H-02)
-3. SharedPreferences stores biometric preference flag (non-sensitive but pattern concern) (M-01)
-4. No session inactivity timeout enforced in client UI layer (M-02)
-5. Release build signed with debug keys (build.gradle.kts:38) (H-03)
+1. .env files bundled as Flutter assets -- all API keys extractable from APK (S-01, CVSS 9.1)
+2. OCR/Vision API keys exposed client-side via direct HTTP calls (S-02, CVSS 7.5)
+3. FieldEncryptionService registered but never called -- zero fields encrypted (D-02, CVSS 7.5)
+4. Deep link handler processes links without auth check or input validation (C-12/C-13, CVSS 6.8)
+5. friendCategories rules allow any authenticated user to add themselves (F-02, CVSS 6.5)
 ```
 
 ---
 
-## Dimension 1: OWASP Mobile Top 10 Compliance (15/20)
+## Previous Audit Findings Status
 
-### OWASP M1-M10 Scorecard
-
-| OWASP Category | Status | Findings | Severity | Remediation Effort |
-|----------------|--------|----------|----------|-------------------|
-| M1: Improper Platform Usage | Pass | 0 issues | - | - |
-| M2: Insecure Data Storage | Partial | 2 issues | M | 4 hours |
-| M3: Insecure Communication | Pass | 1 issue | L | 2 hours |
-| M4: Insecure Authentication | Partial | 2 issues | M | 6 hours |
-| M5: Insufficient Cryptography | Pass | 0 issues | - | - |
-| M6: Insecure Authorization | Partial | 2 issues | H/M | 8 hours |
-| M7: Client Code Quality | Pass | 1 issue | L | 2 hours |
-| M8: Code Tampering | Partial | 1 issue | M | 2 hours |
-| M9: Reverse Engineering | Pass | 0 issues | - | - |
-| M10: Extraneous Functionality | Pass | 1 issue | L | 1 hour |
-
-### M1: Improper Platform Usage - PASS
-
-**Android (AndroidManifest.xml)**:
-- `INTERNET`: Required - justified.
-- `CAMERA`: Justified for recipe photo import.
-- `READ_EXTERNAL_STORAGE` / `WRITE_EXTERNAL_STORAGE`: Required for image access on older APIs.
-- `READ_MEDIA_IMAGES`: Correct modern API 33+ scoped media permission.
-- `android:allowBackup="false"`: Correctly prevents backup leakage.
-- `android:networkSecurityConfig` references `network_security_config.xml` which enforces `cleartextTrafficPermitted="false"` by default (excellent).
-- Deep link intent filters use `android:autoVerify="true"` for HTTPS scheme, reducing hijacking risk.
-
-**iOS (Info.plist)**:
-- Camera (`NSCameraUsageDescription`), Photo Library (`NSPhotoLibraryUsageDescription`), and Face ID (`NSFaceIDUsageDescription`) permissions all have Swedish-language usage descriptions.
-- Universal Links configured with `applinks:butlery.app`.
-- No unnecessary permissions (Location, Contacts, Microphone absent).
-
-**Biometric Authentication (`local_auth`)**:
-- `BiometricService` (`lib/services/auth/biometric_service.dart`) correctly checks `canCheckBiometrics` AND `isDeviceSupported()`.
-- Graceful fallback on failure: sets `_isAvailable = false`, does not block app usage.
-
-**Secure Storage (`flutter_secure_storage`)**:
-- All instances use `AndroidOptions(encryptedSharedPreferences: true)` and `IOSOptions(accessibility: KeychainAccessibility.first_unlock)`.
-- Used in 3 locations: `FieldEncryptionService`, `AppDatabase`, `FCMTokenManager`.
-
-**Finding**: No issues. Platform APIs used correctly.
-
-### M2: Insecure Data Storage - PARTIAL
-
-**SharedPreferences Usage Audit** (lib/ only):
-| Data Stored | File:Line | Sensitivity | Appropriate? |
+| Prior Finding | Prior Severity | Status | Notes |
 |---|---|---|---|
-| `session_count` (int) | `lib/main.dart:461` | Low | Yes |
-| `biometric_auth_enabled` (bool) | `lib/services/auth/biometric_service.dart:59` | Low | Yes |
-| `app_lock_timeout_minutes` (int) | `lib/services/app_lock_service.dart:39` | Low | Yes |
-| Locale preference | `lib/core/providers/locale_provider.dart:35` | Low | Yes |
-| Notification preferences | `lib/services/notifications/notification_repository.dart:134` | Low | Yes |
-| Recipe collection data | `lib/services/persistence_service.dart:63` | Medium | Concern |
+| H-01: sendNotification lacks sender-recipient auth | HIGH | **RESOLVED** | Conversation membership check added (A-15) |
+| H-02: SSL pinning fails open on error | HIGH | **STILL OPEN** | `createPinnedClient()` returns unpinned client (N-05) |
+| H-03: Release build signed with debug keys | HIGH | **STILL OPEN** | `build.gradle.kts:38` still uses debug signing (C-04) |
+| M-01: SharedPreferences stores biometric flag | MEDIUM | **RESOLVED** | Biometric feature removed from project scope |
+| M-02: No session inactivity timeout | MEDIUM | **RESOLVED** | `SessionTimeoutService` implemented (A-06) |
 
-**flutter_secure_storage** (correctly used for):
-- Field encryption key (`field_encryption_key_v1`)
-- Database encryption key (`drift_db_encryption_key`)
-- FCM token (`fcm_token`, `fcm_token_timestamp`)
+---
 
-**SQLCipher (Drift database)**:
-- `app_database.dart:142`: Database encrypted with `PRAGMA key` using a key stored in `FlutterSecureStorage`.
-- Key generation: `Random.secure()` with 32 bytes (256-bit) - cryptographically secure.
+## Dimension 1: OWASP Mobile Top 10 Compliance (13/20)
 
-**Finding M2-1** (MEDIUM, CVSS 4.3):
-- `PersistenceService` stores recipe collection data in SharedPreferences. While recipe data is not highly sensitive (it's user content, not credentials), it is unencrypted on disk. If recipes contain private notes, this could be a data leakage risk if the device is compromised.
-- File: `lib/services/persistence_service.dart:63`
-- Remediation: Consider migrating to the encrypted Drift database. Effort: 3 hours.
+| OWASP Category | Status | Findings | Max CVSS | Remediation Effort |
+|---|---|---|---|---|
+| M1: Improper Platform Usage | Pass | 1 info (orphaned Face ID perm) | 3.0 | 1 hour |
+| M2: Insecure Data Storage | Partial | 4 issues | 7.5 | 16 hours |
+| M3: Insecure Communication | Partial | 3 issues | 5.9 | 12 hours |
+| M4: Insecure Authentication | Partial | 3 issues | 6.1 | 8 hours |
+| M5: Insufficient Cryptography | Partial | 4 issues | 5.9 | 10 hours |
+| M6: Insecure Authorization | Partial | 5 issues | 6.5 | 16 hours |
+| M7: Client Code Quality | Partial | 2 issues | 5.5 | 4 hours |
+| M8: Code Tampering | Partial | 3 issues | 6.5 | 8 hours |
+| M9: Reverse Engineering | Fail | 1 critical | 9.1 | 20 hours |
+| M10: Extraneous Functionality | Pass | 2 low | 3.5 | 2 hours |
 
-**Finding M2-2** (LOW, CVSS 2.4):
-- `BiometricService` stores the biometric enabled flag in SharedPreferences. This is a non-sensitive preference, but modifying it could bypass app lock. The actual biometric challenge still goes through `local_auth` platform APIs, so exploitation impact is minimal.
-- File: `lib/services/auth/biometric_service.dart:59`
-- Remediation: Move to secure storage. Effort: 1 hour.
+### M1: Improper Platform Usage -- PASS
 
-### M3: Insecure Communication - PASS
+Android and iOS platform APIs used correctly. `android:allowBackup="false"`, network security config enforces HTTPS, permissions are appropriate (INTERNET, CAMERA, READ_MEDIA_IMAGES). One orphaned `NSFaceIDUsageDescription` in Info.plist (biometric feature removed from scope -- C-09).
 
-**HTTPS Enforcement**:
-- `network_security_config.xml`: `cleartextTrafficPermitted="false"` for all domains except localhost/10.0.2.2 (development emulator only).
-- All Firebase calls use HTTPS by default (no overrides found).
-- No `http://` URLs in production Dart code. All `http://` references are in:
-  - Schema.org markup (`http://schema.org/Recipe`) - not network calls
-  - Test fixtures with test-only URLs
-  - Form validator error messages mentioning `http://`
+### M2: Insecure Data Storage -- PARTIAL
 
-**No `badCertificateCallback`**: Zero instances found in the codebase. No certificate validation bypass.
+- **D-02**: `FieldEncryptionService` is built (AES-256-CBC, proper key management) but never wired into any repository -- zero user data benefits from client-side encryption.
+- **D-03**: All 3 `FlutterSecureStorage` instances missing `encryptedSharedPreferences: true` on Android.
+- **D-09**: Recipes stored as JSON in SharedPreferences (medium sensitivity, app-sandboxed).
+- **D-10**: Drift/SQLCipher properly encrypted (PASS).
 
-**Finding M3-1** (LOW, CVSS 1.8):
-- `network_security_config.xml:11-14` allows cleartext to `localhost` and `10.0.2.2`. This is standard for development but should ideally be in a debug-only configuration. Low risk since it only affects local loopback and emulator addresses.
-- Remediation: Use Android build flavors to restrict cleartext to debug builds only. Effort: 2 hours.
+### M3: Insecure Communication -- PARTIAL
 
-### M4: Insecure Authentication - PARTIAL
+- **N-05**: `SslPinningService.createPinnedClient()` returns a vanilla `http.Client()` -- no actual pinning. The `secureGet()`/`securePost()` methods that enforce pinning have zero callers.
+- **N-06**: External APIs (OCR.space, Algolia, Tesseract) not covered by certificate pinning.
+- **N-08**: 4 services create raw `http.Client()` bypassing the pinning layer entirely.
+- Android network security config and iOS ATS both enforce HTTPS (PASS). No `badCertificateCallback` bypasses found (PASS).
 
-**Firebase Auth Configuration**:
-- Email/password authentication implemented in `FirebaseAuthRepository`.
-- `RateLimiter` integrated in the auth repository (`lib/repositories/firebase/firebase_auth_repository.dart:38`).
-- Re-authentication required before sensitive operations (`reauthenticateWithPassword` in `AuthService`).
-- Password reset via Firebase secure email links.
-- MFA support implemented (`AuthService` lines 281-312): phone-based verification with `multiFactor.getSession()`.
+### M4: Insecure Authentication -- PARTIAL
 
-**Session Management**:
-- `logoutDueToInactivity()` exists in `AuthService` (`lib/services/auth_service.dart:153`).
-- `AppLockService` implements app-level lock with configurable timeout (default 5 minutes).
-- Firebase Auth handles token refresh automatically.
+- **A-11**: FCM tokens not cleaned up on logout -- push notifications continue to the device.
+- **A-03**: No email verification after registration.
+- **A-02**: Password change accepts 6-char minimum despite `strongPassword()` validator existing.
+- Session timeout implemented at 45 minutes with lifecycle awareness (PASS, previously M-02). MFA fully implemented via SMS (PASS).
 
-**Finding M4-1** (MEDIUM, CVSS 5.3):
-- No client-side session inactivity timeout is enforced in the UI layer. While `logoutDueToInactivity()` exists as a method, the codebase does not contain an inactivity timer that calls it. The `AppLockService` only triggers biometric re-authentication, not session termination.
-- File: `lib/services/auth_service.dart:152-168`
-- Remediation: Implement an inactivity timer (e.g., 30 minutes) that calls `logoutDueToInactivity()`. Effort: 4 hours.
+### M5: Insufficient Cryptography -- PARTIAL
 
-**Finding M4-2** (LOW, CVSS 3.1):
-- No MFA enforcement for sensitive operations (account deletion, email change). MFA is available but opt-in. Account deletion requires re-authentication but not MFA.
-- File: `lib/services/auth_service.dart:211-229`
-- Remediation: Enforce MFA for account deletion if MFA is enrolled. Effort: 2 hours.
+- **D-01**: AES-256-CBC (unauthenticated) instead of AES-256-GCM. CBC is vulnerable to padding oracle attacks.
+- **D-05**: Key rotation destroys old data with no migration path.
+- **D-04**: `dart:math Random()` (non-cryptographic PRNG) used in 5 locations including correlation IDs.
+- **D-17**: Encryption key generation uses `FortunaRandom` seeded with `Random.secure()` (PASS).
 
-### M5: Insufficient Cryptography - PASS
+### M6: Insecure Authorization -- PARTIAL
 
-**FieldEncryptionService** (`lib/services/encryption/field_encryption_service.dart`):
-- Algorithm: AES-256-CBC with PKCS7 padding (strong).
-- IV: Random 128-bit IV per encryption (correct - no IV reuse).
-- Key generation: `FortunaRandom` seeded with `Random.secure()` - cryptographically strong.
-- Key storage: `FlutterSecureStorage` with platform keychain/keystore.
-- Key rotation: `rotateKey()` method available with appropriate warning about data loss.
-- No hardcoded encryption keys or IVs.
+- **F-02**: `friendCategories` update rule lets any authenticated user add themselves to any group.
+- **F-01**: `friendCategories` get rule allows any authenticated user to read any category by ID.
+- **F-03**: Global `ingredients` collection has no security rule (reads fail silently).
+- **F-12**: `menu_activity` create allows any authenticated user without membership check.
+- PermissionValidationMixin adoption at 77% (corrected from previously claimed 20%).
 
-**Database Encryption**:
-- SQLCipher via `sqlcipher_flutter_libs` with 256-bit key from `Random.secure()`.
-- Key stored in `FlutterSecureStorage`.
+### M7: Client Code Quality -- PARTIAL
 
-**No insecure random**: No `dart:math` `Random()` (without `.secure()`) used for cryptographic purposes.
+- **C-06**: `_ErrorApp` exposes full stack traces and exception messages to end users in release builds.
+- **C-07**: `DeepLinkHandler.debugInfo` getter exposes pending deep link URLs without `kDebugMode` guard.
 
-### M6: Insecure Authorization - PARTIAL
+### M8: Code Tampering -- PARTIAL
 
-**PermissionValidationMixin Adoption**:
-`BaseFirebaseRepository` uses `PermissionValidationMixin` (line 15). Since all Firebase repositories extend `BaseFirebaseRepository`, the mixin is available to ALL repositories. The earlier claim of "20% adoption" is inaccurate: the mixin is mixed in at the base class level, meaning 100% of Firebase repositories have access to it.
+- **C-04**: Release build uses debug signing config (`signingConfigs.getByName("debug")`).
+- **C-01**: No AAB build with obfuscation in CI (only APK has `--obfuscate`).
+- **C-03**: Overly broad ProGuard `-keep` rules retain all of AndroidX, reducing R8 effectiveness.
+- `isMinifyEnabled = true` and `isShrinkResources = true` in release builds (PASS).
 
-However, adoption of the validation *methods* varies:
-| Repository | Uses validateOwnership | Uses validateWritePermission | Has custom permission checks |
-|---|---|---|---|
-| `BaseFirebaseRepository` | Yes (via `validateCreatePermission`) | Yes | Yes - abstract methods |
-| `CollaborativeRecipeRepository` | Yes | Yes | Yes |
-| `FirebaseSocialRecipeRepository` | Yes | Yes | Yes |
-| `BaseStorageRepository` | Yes | N/A | Yes |
-| `BaseMetadataRepository` | Yes | N/A | Yes |
-| Others (via base class) | Inherited | Inherited | Via abstract methods |
+### M9: Reverse Engineering -- FAIL
 
-Each `BaseFirebaseRepository` subclass MUST implement `validateCreatePermission`, `validateReadPermission`, `validateUpdatePermission`, and `validateDeletePermission` (abstract methods). This is enforced at compile time.
+- **S-01**: `.env` files (containing Firebase keys, OCR.space key, Google Vision key, Algolia key, reCAPTCHA key) are bundled as Flutter assets in every release build. Extractable via `apktool` or even `unzip` on any APK.
+- **S-02**: OCR/Vision API keys sent directly from the client in HTTP requests.
 
-**Finding M6-1** (HIGH, CVSS 7.1):
-- `sendNotification` Cloud Function (`functions/src/notifications/send-notification.ts:62-70`): Any authenticated user can send a notification to ANY other user by specifying `targetUserId`. The only check is `context.auth != null`. There is no verification that the sender has a relationship (friend, group member) with the recipient. The Firestore security rules for `user_notifications` DO validate friendship (`exists(...friends...)`), but the Cloud Function bypasses rules by using Admin SDK.
-- Attack vector: Authenticated user can spam any user with push notifications.
-- Remediation: Add friend/group relationship validation in the Cloud Function before sending. Effort: 3 hours.
+### M10: Extraneous Functionality -- PASS
 
-**Finding M6-2** (MEDIUM, CVSS 5.5):
-- `friendCategories` rules (`firestore.rules:186`): `allow get: if isAuthenticated()` permits ANY authenticated user to read any friend category document if they know the ID. While the comment says this is needed for invitation acceptance, it's overly broad.
-- Remediation: Restrict to users who have a pending invitation for that group. Effort: 2 hours.
-
-### M7: Client Code Quality - PASS
-
-- `flutter analyze`: Zero issues (confirmed by pre-analysis).
-- Error handling: `BaseService.safeExecute()` and `ErrorHandlingMixin` used consistently.
-- No stack traces exposed to users - errors translated to Swedish user-friendly messages.
-- FIXME comments found in `social_module.dart:192,251,257` - these are API implementation placeholders, not security workarounds.
-
-**Finding M7-1** (LOW, CVSS 2.0):
-- 3 FIXME annotations in `lib/core/di/modules/social_module.dart` at lines 192, 251, 257. These are feature implementation placeholders (menu/shopping service methods), not security issues. Documented here for completeness.
-
-### M8: Code Tampering - PARTIAL
-
-**Dart Obfuscation**:
-- CI/CD: `build-validation.yml:83` uses `--obfuscate --split-debug-info=build/debug-info` for Android APK builds.
-- Web builds: `flutter build web --release` (Dart-to-JS compilation provides implicit minification).
-
-**Android ProGuard/R8**:
-- `build.gradle.kts:39-40`: `isMinifyEnabled = true`, `isShrinkResources = true` in release.
-- ProGuard rules (`proguard-rules.pro`) are broad but standard for Firebase apps.
-
-**Jailbreak/Root Detection**:
-- `DeviceIntegrityService` (`lib/services/device_integrity_service.dart`): Correctly implemented.
-- Non-blocking approach: warns users but allows continued usage (appropriate for a recipe app).
-- Also checks developer mode.
-
-**Finding M8-1** (MEDIUM, CVSS 4.0):
-- `kDebugMode` is used extensively (40+ occurrences in `lib/`) for conditional logging. All instances checked are properly gated. However, `performance_monitoring_service.dart:156,440` uses `!kReleaseMode` which is true for both debug AND profile modes, meaning performance monitoring code runs in profile builds. This is acceptable but noted.
-
-### M9: Reverse Engineering - PASS
-
-- Dart obfuscation with `--obfuscate` in CI (line 83 of `build-validation.yml`).
-- `--split-debug-info=build/debug-info` separates debug symbols.
-- API keys loaded from `.env` files via `flutter_dotenv`, not hardcoded in Dart source.
-- Firebase API keys in `firebase_options.dart` reference `FirebaseConfig` which reads from dotenv, not hardcoded strings.
-- No secrets visible after decompilation (verified via code analysis).
-
-### M10: Extraneous Functionality - PASS
-
-**Finding M10-1** (LOW, CVSS 1.5):
-- `lib/services/deep_link_service.dart:326`: Commented-out Bitly API integration with placeholder `'Bearer YOUR_BITLY_ACCESS_TOKEN'`. This is a code comment, not executable code, but could mislead developers. Low risk.
-- Remediation: Remove the commented-out example or move to documentation. Effort: 5 minutes.
+- **C-16**: Python `site-packages` directory in `lib/` (development tooling for DIRIGERA lamp hook).
+- **C-17**: TODO comments in build config for application ID and signing.
+- No debug endpoints, dev credentials, or test backdoors found in release code paths.
 
 ### Butlery-Specific OWASP Checks
 
-**FCM Token Security**: FCM tokens stored in `FlutterSecureStorage` with encrypted SharedPreferences on Android. Token refresh handled via `_setupTokenRefreshListener()`. Token cleanup on logout implemented in `FCMTokenManager._cleanup()`.
-
-**Real-time Collaboration Security**: Firestore rules enforce participant validation for `realtime_recipes`, `realtime_menus`, and `realtime_resources`. Presence documents restricted to authenticated participants writing their own presence.
-
-**Copy-on-Write Pattern**: Shared recipes use subcollection-based sharing (Issue #014). The `shared_recipes` collection stores copies, not references to user's original recipes.
+1. **FCM Token Security**: Tokens stored in `FlutterSecureStorage` (PASS). User-scoped in Firestore with proper rules (PASS). **Not cleaned on logout** (A-11, FAIL).
+2. **Real-time Collaboration Security**: Presence system correctly enforces self-write-only (`request.auth.uid == userId`). Recipe presence readable by all authenticated users (F-10, accepted for collaborative awareness).
+3. **Copy-on-Write Pattern**: Shared content uses subcollection-based membership model, not document references. Content isolation is properly maintained.
 
 ---
 
-## Dimension 2: Authentication and Session Security (13/18)
-
-### Authentication Flow Security
-
-| Feature | Status | Details |
-|---|---|---|
-| Email/password auth | Implemented | Via Firebase Auth |
-| Google Sign-In | Available | `google_sign_in_mocks` in dev deps |
-| Apple Sign-In | Not found | Not in pubspec.yaml |
-| Biometric auth | Implemented | Face ID, Touch ID, Fingerprint |
-| MFA | Implemented | Phone-based via `multiFactor` |
-| Password reset | Implemented | Firebase secure email links |
-| Rate limiting | Implemented | `RateLimiter` in auth repository |
-
-### Token Management
-
-| Token Type | Storage Location | Encrypted | Lifecycle |
-|---|---|---|---|
-| Firebase Auth token | Managed by Firebase SDK | Yes (platform keychain) | Auto-refresh |
-| FCM token | FlutterSecureStorage | Yes | Refresh on re-auth, cleanup on logout |
-| Field encryption key | FlutterSecureStorage | Yes (keychain/keystore) | Persistent with rotation method |
-| DB encryption key | FlutterSecureStorage | Yes | Persistent |
-
-### Session Management
-
-- **Inactivity timeout**: Method exists (`logoutDueToInactivity`) but no timer triggers it (Finding M4-1).
-- **App lock**: `AppLockService` with configurable timeout (1-60 minutes, default 5).
-- **Concurrent sessions**: No explicit limit. Firebase Auth supports multiple device sessions by default.
-- **Session fixation**: Firebase Auth generates new tokens on each authentication, preventing fixation.
-- **Auth state listener**: `authStateChanges()` stream properly implemented in `FirebaseAuthRepository`.
-
-### FCM Token Security
-
-- Storage: `FlutterSecureStorage` with `encryptedSharedPreferences` (Android) and `KeychainAccessibility.first_unlock` (iOS).
-- Token refresh: Listener via `_messaging.onTokenRefresh`.
-- Token scoping: User-scoped in `user_fcm_tokens/{userId}` Firestore collection.
-- Cleanup on logout: `_cleanup()` method clears `_currentToken` and secure storage keys.
-- Old device cleanup: `_cleanupOldDevices()` method removes stale device entries.
-
-### Findings Summary
-
-- M4-1: No inactivity timer (MEDIUM, 4 hours)
-- M4-2: No MFA enforcement for deletion (LOW, 2 hours)
-
----
-
-## Dimension 3: Data Protection and Encryption (15/18)
-
-### Sensitive Data Classification
-
-| Classification | Data Types | Required Protection | Actual Protection | Status |
-|---|---|---|---|---|
-| Critical | Auth tokens, encryption keys | Keychain/Keystore | FlutterSecureStorage | PASS |
-| High | PII (email, name), API keys | Encrypted storage | .env files + dotenv | PASS |
-| Medium | Recipes, shopping lists, menus | Firestore + rules | Firestore + SQLCipher local | PASS |
-| Low | App preferences, UI state, locale | SharedPreferences | SharedPreferences | PASS |
-
-### Storage Security Matrix
-
-| Storage Type | Encrypted | Used For | Risk Assessment |
-|---|---|---|---|
-| SharedPreferences | No | Session count, locale, biometric flag, lock timeout, notification prefs | LOW - only non-sensitive config |
-| FlutterSecureStorage | Yes (keychain) | Encryption keys, FCM tokens | LOW risk |
-| Drift/SQLCipher | Yes (AES-256) | Offline recipes, sync queue, JSON cache, parse cache, upload queue | LOW risk |
-| Firestore | Yes (Google-managed) | All user content | Depends on rules (see Dim 5) |
-| File system | No | Image cache | LOW - non-sensitive content |
-
-### Encryption Implementation
-
-- **AES-256-CBC**: Used in `FieldEncryptionService` for client-side field encryption before Firestore storage.
-- **SQLCipher**: Used for local Drift database encryption.
-- **Key management**: Keys generated with `Random.secure()` / `FortunaRandom`, stored in `FlutterSecureStorage`.
-- **Key rotation**: `rotateKey()` method exists in `FieldEncryptionService` but requires manual data migration.
-- **No hardcoded keys**: All encryption keys are runtime-generated and securely stored.
-
-### Backup Security
-
-- **Android**: `android:allowBackup="false"` and `android:fullBackupContent="false"` in AndroidManifest.xml - correctly prevents backup of sensitive data.
-- **iOS**: No `NSAllowsArbitraryLoads` found. Standard iOS backup behavior applies; encryption keys in Keychain are excluded from iCloud backups by default with `KeychainAccessibility.first_unlock`.
-
-### GDPR Compliance
-
-| Article | Requirement | Implementation | Test Coverage | Score |
-|---|---|---|---|---|
-| Art. 7 | Consent Management | `ConsentService` + `FirebaseConsentRepository` | 38 tests | 9/10 |
-| Art. 15 | Right of Access | `DataExportService` with 5 export managers | 14 tests | 9/10 |
-| Art. 17 | Right to Erasure | `AccountDeletionService` with 4 deletion modules | 15 tests | 9/10 |
-| Art. 20 | Data Portability | `DataExportService` (JSON format) | 14 tests | 9/10 |
-| Art. 30 | Processing Records | `FirebaseAuditRepository` + immutable logs | Present | 8/10 |
-
-**Article 7 Details**:
-- `ConsentService` (`lib/services/account/consent_service.dart`): Granular consent with `ConsentPurposes` model.
-- Version tracking via `_currentConsentVersion = '1.0.0'`.
-- Consent stored in Firestore at `users/{userId}/consent/{consentDoc}` with timestamp.
-- Consent withdrawal supported.
-- Firestore rules enforce user can only write own consent records with required fields.
-
-**Article 15/20 Details**:
-- `DataExportService` uses facade pattern with 5 specialized managers: Content, Social, Activity, Compliance, Preferences.
-- Export includes: profile, recipes, menus, shopping lists, friends, messages, comments, ratings, audit logs, consent records, notification data.
-- Output format: comprehensive JSON with metadata including GDPR article references.
-
-**Article 17 Details**:
-- `AccountDeletionService` delegates to 4 focused modules: Content, Social, Profile, Storage.
-- Cascading deletion across all collections.
-- Requires re-authentication before deletion (`requires-recent-login` check).
-- Audit log created for the deletion event itself.
-
-**Article 30 Details**:
-- `FirebaseAuditRepository`: Persistent audit logging to `audit_logs` Firestore collection.
-- Audit logs are immutable (`allow update, delete: if false` in Firestore rules).
-- Content: userId, operation, resourceType, resourceId, granted status, timestamp, metadata.
-- Users can read their own audit logs (Art. 15), cannot modify them.
-- Cloud Function `cleanupOldAuditLogs` for retention management.
-
-**Finding GDPR-1** (LOW, CVSS 2.5):
-- Audit log retention policy is implemented via Cloud Function but the retention period is not documented in user-facing privacy policy. Users should be informed of how long audit logs are kept.
-- Remediation: Document retention period in privacy policy. Effort: 1 hour.
-
----
-
-## Dimension 4: Network Security (10/12)
-
-### HTTPS Enforcement
-
-- **Android**: `network_security_config.xml` enforces HTTPS with `cleartextTrafficPermitted="false"`.
-- **iOS**: iOS App Transport Security (ATS) enforces HTTPS by default.
-- **Firebase**: All Firebase SDK calls use HTTPS natively.
-- **No `badCertificateCallback`**: Zero instances found. No certificate validation bypass.
-
-### SSL Certificate Pinning
-
-`SslPinningService` (`lib/core/network/ssl_pinning_service.dart`):
-
-**Implementation**:
-- Root CA pinning (SHA-256) for Google Trust Services certificates.
-- 6 Google/Firebase endpoints pinned: `firestore.googleapis.com`, `firebase.googleapis.com`, `vision.googleapis.com`, `storage.googleapis.com`, `identitytoolkit.googleapis.com`, `securetoken.googleapis.com`.
-- Uses `http_certificate_pinning` package for validation.
-- `secureGet()` and `securePost()` methods validate certificate before making requests.
-
-**Finding H-02** (HIGH, CVSS 7.5):
-- `SslPinningService.validateCertificate()` at line 74-78: On exception, `return true` (fails open). This means if there's an error during certificate validation (network timeout, parsing error), the connection is allowed through without validation.
-- Additionally, at line 52-56: If no pins are configured for a host, the connection is allowed. This is by design but means non-Google APIs have no pinning.
-- `createPinnedClient()` at line 100: Returns a standard `http.Client()` without any pinning enforcement. Actual pinning only occurs when using `secureGet()`/`securePost()` or explicitly calling `validateCertificate()`.
-- Attack vector: MITM attacker could trigger certificate validation errors to bypass pinning.
-- Remediation: Fail closed on certificate validation errors (block connection). Effort: 2 hours.
-
-**Finding N-1** (MEDIUM, CVSS 5.0):
-- OCR service (`lib/services/ocr_extraction_service.dart:200-205`): Falls back to standard `http.Client()` if `SslPinningService` is not available via ServiceLocator. This means OCR API calls to external services (ocr.space, Google Vision) may not have certificate pinning if the DI container is misconfigured.
-- Remediation: Make SslPinningService a required dependency. Effort: 1 hour.
-
-### HTTP Client Configuration
-
-- `SslPinningService` provides `secureGet` and `securePost` with automatic certificate validation.
-- `http_certificate_pinning` package timeout set to 30 seconds.
-- OCR service sends API key in request body field (`apikey`), not in URL parameters.
-
----
-
-## Dimension 5: Firebase Security Rules (10/12)
-
-### Firestore Security Rules Audit
-
-**Summary**: 1466 lines, 74+ match rules. Comprehensive coverage with defense-in-depth.
-
-### Collection-by-Collection Coverage
-
-| Collection | Auth Required | Ownership Check | Role-Based | Field Validation | Status |
-|---|---|---|---|---|---|
-| `users/{uid}` | Yes | Yes (`isOwner`) | N/A | N/A | PASS |
-| `users/{uid}/recipes` | Yes | Yes | N/A | tagResult validated | PASS |
-| `users/{uid}/recipe_summaries` | Yes | Yes | N/A | N/A | PASS |
-| `users/{uid}/unified_shopping_lists` | Yes | Yes | N/A | N/A | PASS |
-| `users/{uid}/ingredients` | Yes | Yes | Yes | ID match, status, size limits | PASS |
-| `users/{uid}/personalTagIds` | Yes | Yes | N/A | N/A | PASS |
-| `users/{uid}/personalTagGroups` | Yes | Yes | N/A | N/A | PASS |
-| `users/{uid}/friends/{friendId}` | Yes | Yes + bidirectional | N/A | N/A | PASS |
-| `users/{uid}/friendCategories` | Yes | Yes + members | Partial | N/A | **PARTIAL** |
-| `users/{uid}/consent` | Yes | Yes | N/A | Required fields | PASS |
-| `public_profiles/{uid}` | Yes (read all) | Yes (write) | N/A | Required fields, friendsCount validation | PASS |
-| `friend_requests` | Yes | Sender/recipient | Status validation | Required fields | PASS |
-| `group_invitations` | Yes | Sender/recipient | Status validation | Required fields | PASS |
-| `shared_recipes` | Yes | Owner/members | Subcollection-based | Required fields | PASS |
-| `shared_recipes/members` | Yes | Owner add, self-remove | N/A | Required fields | PASS |
-| `shared_recipes/views` | Yes | Self-create only | N/A | Required fields | PASS |
-| `shared_recipes/engagements` | Yes | Self-create only | N/A | Required fields | PASS |
-| `shared_recipes/dismissals` | Yes | Self-create/delete | N/A | Required fields | PASS |
-| `shared_recipes/collaborators` | Yes | Owner or self + flag | N/A | Required fields | PASS |
-| `menus/{menuId}` | Yes | `sharedByUserId` | N/A | Required fields | PASS |
-| `shared_menus` | Yes | Owner/members | Subcollection-based | Required fields | PASS |
-| `shared_shopping_lists` | Yes | Owner/collaborators | Array-based | Required fields | PASS |
-| `shared_shopping_lists/items` | Yes | Member check | N/A | ID match, addedByUserId | PASS |
-| `realtime_recipes` | Yes | Owner/participants | Array-based | Required fields | PASS |
-| `realtime_menus` | Yes | Owner/participants | Array-based | Required fields | PASS |
-| `realtime_resources` | Yes | Owner/participants | Array-based | Required fields | PASS |
-| `recipePresence` | Yes (read all) | Self-write | N/A | N/A | PASS |
-| `recipe_comments` | Yes | Author/members | Recipe access check | Text length 1-1000 | PASS |
-| `butlery_archive` | Yes (read) | Write: false | Admin only | N/A | PASS |
-| `conversations` | Yes | Participant | N/A | Required fields | PASS |
-| `messages` | Yes | Sender + participant | N/A | Required fields | PASS |
-| `connectivity_test` | Yes (read) | Write: false | N/A | N/A | PASS |
-| `unified_shared_shopping_lists` | Yes | Owner/collaborators | N/A | Required fields | PASS |
-| `shoppingListTemplates` | Yes | Creator/public | N/A | Required fields | PASS |
-| `shoppingLists` | Yes | Owner | N/A | N/A | PASS |
-| `sharedShoppingLists` | Yes | Sharer/recipients | N/A | Required fields | PASS |
-| `userSharedShoppingLists` | Yes | Self or sharer | N/A | N/A | PASS |
-| `sharedMenus` | Yes | Sharer/recipients | N/A | N/A | PARTIAL |
-| `userSharedMenus` | Yes | Self or sharer | N/A | N/A | PASS |
-| `presence/{uid}` | Yes (read all) | Self-write | N/A | N/A | PASS |
-| `shared_content` | Yes | Sender/recipient | N/A | Required fields, no self-send | PASS |
-| `recipe_ratings` | Yes | Self-create/update | N/A | Rating 1-5, required fields | PASS |
-| `user_notifications` | Yes | Self-read, friend-send | Friendship check | Required fields | PASS |
-| `user_fcm_tokens` | Yes | Self only | N/A | N/A | PASS |
-| `user_notification_preferences` | Yes | Self only | N/A | N/A | PASS |
-| `audit_logs` | Yes | Self-read, self-create | Immutable (no update/delete) | Required fields | PASS |
-| `menu_ratings` | Yes (read all) | Self-create/update | N/A | Rating 1-5, required fields | PASS |
-| `menu_comments` | Yes (read all) | Self-create/update | N/A | Text length 1-1000 | PASS |
-| `menu_templates` | Yes | Owner/public | N/A | Required fields | PASS |
-| `menu_activity` | Yes (read all) | Self-create | Immutable | Required fields | PASS |
-| `globalRecipeCache` | Yes | Create any, limited update | N/A | Update only accessCount/lastAccessedAt | PASS |
-| `site_configs` | Yes (read) | Write: false | Admin only | N/A | PASS |
-| `parsing_corrections` | Yes | Self only | Immutable (no update) | Required fields | PASS |
-| `parse_events` | No access | Write: false | N/A | N/A | PASS |
-| `{path=**}/members` (group) | Yes | Self-read | N/A | N/A | PASS |
-| `{document=**}` (default) | Deny all | N/A | N/A | N/A | PASS |
-
-### Key Security Strengths in Firestore Rules
-
-1. **Default deny**: Catch-all rule at bottom denies all unmatched paths.
-2. **Allergen safety validation** (CRIT-2, CRIT-8): `isValidTagResult()` and `_isValidUserIngredient()` prevent client-side tampering with allergen data.
-3. **TriState validation** (H15): `_isValidTriStateMap()` limits status map size to prevent storage abuse.
-4. **Immutable audit logs**: `allow update, delete: if false` ensures GDPR Article 30 compliance.
-5. **Anti-spam notifications**: Friend existence check prevents notification spam attacks.
-6. **Self-send prevention**: `shared_content` validates `fromUserId != toUserId`.
-7. **Collection group query rules**: Properly scoped for `members` collection group queries.
+## Dimension 2: Authentication and Session Security (14/18)
 
 ### Findings
 
-**Finding FR-1** (MEDIUM, CVSS 4.8):
-- `friendCategories` at `firestore.rules:186`: `allow get: if isAuthenticated()` is overly permissive. Any authenticated user can read any friend category document if they know the document ID. This could expose group membership lists.
-- Remediation: Add invitation existence check or require the user to be in the group's member list. Effort: 2 hours.
+| ID | Severity | CVSS | Description | File |
+|---|---|---|---|---|
+| A-02 | MEDIUM | 4.3 | Weak password policy on password change (6-char min, no complexity) | `auth_viewmodel.dart:299`, `account_security_viewmodel.dart:32` |
+| A-03 | MEDIUM | 5.3 | No email verification after registration | `auth_service.dart:55-66` |
+| A-07 | LOW | 2.4 | No concurrent session management | N/A (missing feature) |
+| A-09 | LOW | 2.0 | No MFA recovery codes or TOTP support | `auth_service.dart` MFA section |
+| A-11 | HIGH | 6.1 | FCM tokens not cleaned on normal logout | `auth_service.dart:142-151` |
+| A-14 | MEDIUM | 4.3 | Server-side rate limiter fails open for auth operations | `rate_limiter.ts:224-236` |
+| A-16 | MEDIUM | 5.0 | Missing Firestore rules for `user_devices` and `deletion_audit_logs` | `firestore.rules` (missing) |
+| A-17 | LOW | 2.0 | Email partially logged in debug output, full email on re-auth | `auth_service.dart:101`, `firebase_auth_repository.dart:224` |
+| A-18 | LOW | 2.0 | Account deletion misses FCM token collections | `account_deletion_service.dart:89-106` |
 
-**Finding FR-2** (MEDIUM, CVSS 4.5):
-- `sharedMenus` at `firestore.rules:1101`: Missing `hasRequiredFields` validation on create. The `sharedShoppingLists` equivalent has required fields, but `sharedMenus` does not.
-- Remediation: Add `hasRequiredFields(['sharedByUserId', 'sharedWithUserIds', 'menuData', 'sharedAt'])`. Effort: 30 minutes.
+### Positive Findings
 
-**Finding FR-3** (LOW, CVSS 2.0):
-- `menu_ratings`, `menu_comments`, `menu_activity` at lines 1297, 1321, 1370: Read access is `isAuthenticated()` without verifying the user has access to the parent menu. Any authenticated user can read all menu ratings/comments/activity. Since menus may be private, this could leak information about private menus.
-- Remediation: Add parent menu access check. Effort: 3 hours.
-
-### Storage Security Rules Audit
-
-`storage.rules` (61 lines):
-- Authentication required for all operations.
-- User-scoped paths (`/users/{userId}/`) enforce ownership.
-- Image type validation: `request.resource.contentType.matches('image/.*')`.
-- Size limit: 10 MB per file.
-- Shared recipes: Public read, write requires authentication with `uploadedBy` metadata.
-- Default deny for all other paths.
-- **No path traversal risk**: Firebase Storage paths don't support `..` traversal.
-
-**Storage rules assessment**: PASS. Properly configured with type validation, size limits, and ownership enforcement.
-
-### Cloud Functions Security
-
-**Authentication**: All callable functions require `context.auth` / `request.auth` authentication check.
-
-**Rate limiting**: `withRateLimit()` middleware (`functions/src/middleware/rate_limiter.ts`) enforces token bucket rate limiting per user per operation. Implemented for LLM operations (10 tokens/min), notifications (60/min), and parse events (30/min).
-
-**Input validation**:
-- `sendNotification`: Title length 100, body length 500, targetUserId length 128.
-- `logParseEvent`: URL sanitization (removes sensitive query params), source whitelist validation.
-- `structureRecipe`: Uses Mistral API key from Firebase secrets, not hardcoded.
-
-**Admin SDK usage**: Correctly used for server-side operations. `admin.initializeApp()` at startup.
-
-**Finding H-01** (HIGH, CVSS 7.1): Already documented in M6-1.
+- Session timeout fully implemented (45 min, 5 min warning, lifecycle-aware) -- **previous M-02 resolved**
+- Notification sender-recipient auth check added -- **previous H-01 resolved**
+- MFA implemented with SMS enrollment, sign-in challenge, unenrollment
+- All auth tokens in `FlutterSecureStorage`, none in SharedPreferences
+- Firebase Auth SDK handles token refresh automatically
+- Rate limiting on auth operations (client + server, token bucket algorithm)
 
 ---
 
-## Dimension 6: API Security and Secret Management (7/10)
+## Dimension 3: Data Protection and Encryption (13/18)
 
-### Hardcoded Secrets Audit
+### Findings
 
-| Pattern | Found In | Risk | Assessment |
-|---|---|---|---|
-| Firebase API keys | `firebase_options.dart` via `FirebaseConfig` | LOW | Loaded from .env, not hardcoded |
-| OCR API key | `ocr_extraction_service.dart` via `dotenv.env['OCR_API_KEY']` | LOW | Loaded from .env |
-| Algolia API key | `search_module.dart` via `dotenv.env['ALGOLIA_API_KEY']` | LOW | Loaded from .env |
-| Google Vision key | `ocr_extraction_service.dart` via `dotenv.env['GOOGLE_VISION_API_KEY']` | LOW | Loaded from .env |
-| Mistral API key | `structure-recipe.ts` via `secrets: [mistralApiKey]` | LOW | Firebase Secrets Manager |
-| Bitly token | `deep_link_service.dart:326` | NONE | Commented-out placeholder |
-| Test tokens | `test/` directory only | NONE | Test fixtures only |
+| ID | Severity | CVSS | Description | File |
+|---|---|---|---|---|
+| D-01 | MEDIUM | 5.3 | AES-256-CBC instead of AES-256-GCM (no authenticated encryption) | `field_encryption_service.dart:72-83` |
+| D-02 | HIGH | 7.5 | FieldEncryptionService registered in DI but never called -- zero fields encrypted | `core_module.dart:212-214` |
+| D-03 | HIGH | 6.8 | All 3 `FlutterSecureStorage` instances missing `encryptedSharedPreferences: true` | `app_database.dart:120`, `field_encryption_service.dart:33`, `fcm_token_manager.dart:74` |
+| D-04 | MEDIUM | 4.3 | `dart:math Random()` (non-crypto PRNG) used in 5 locations | `correlation_id.dart:21`, 4 others |
+| D-05 | MEDIUM | 5.9 | Key rotation destroys old data with no migration path | `field_encryption_service.dart:196-204` |
+| D-06 | HIGH | 6.5 | Account deletion missing 4 collections: notification_preferences, fcm_tokens, user_devices, consent | `account_deletion_service.dart:89-106` |
+| D-07 | HIGH | 6.1 | `deletion_audit_logs` collection has no Firestore rule -- writes fail silently | `firestore.rules` (missing) |
+| D-08 | MEDIUM | 4.7 | Consent model writes `grantedAt` but rule requires `timestamp` field | `user_consent.dart:44-53`, `firestore.rules:1288` |
+| D-09 | LOW | 3.1 | Recipes stored as JSON in SharedPreferences (plaintext) | `persistence_service.dart:105-133` |
+| D-12 | LOW | 2.4 | Cached network images not encrypted at rest | 9 widgets using `CachedNetworkImage` |
+| D-15 | LOW | 2.1 | UserId logged extensively in AppLogger | Multiple files |
+| D-19 | MEDIUM | 4.0 | Social deletion batch may exceed 500-doc Firestore limit | `social_deletion_operations.dart:11-78` |
 
-**Result**: Zero hardcoded secrets in production source code. All API keys loaded from environment variables via `flutter_dotenv` or Firebase Secrets.
+### GDPR Compliance Report
 
-### Environment Configuration
+| Article | Requirement | Implementation | Test Coverage | Score |
+|---|---|---|---|---|
+| Art. 7 | Consent Management | ConsentService: 6 granular purposes, version tracking, withdrawal, consent history, opt-in only | 38 tests | 8/10 |
+| Art. 15 | Right of Access | DataExportService: 17 data categories, paginated, JSON format, self-service | 14 tests | 9/10 |
+| Art. 17 | Right to Erasure | AccountDeletionService: 16 collections deleted, audit trail. Missing: notification_preferences, fcm_tokens, user_devices, consent | 15 tests | 7/10 |
+| Art. 20 | Data Portability | DataExportService: JSON (machine-readable), comprehensive coverage, FCM tokens properly excluded | 14 tests | 9/10 |
+| Art. 30 | Processing Records | FirebaseAuditRepository: immutable audit trail, user write-only, permission checks logged. Missing: deletion_audit_logs rule, no automated retention policy | Tests exist | 7/10 |
 
-- `.env` files in `.gitignore` (lines 48-51): `.env`, `.env.*`, `*.env`, `*.env.*` - comprehensive.
-- `google-services.json` and `GoogleService-Info.plist` in `.gitignore` (lines 54-57) - correct.
-- `FirebaseConfig` class loads all Firebase config from `dotenv.env` with clear error handling in debug mode.
-- Environment separation: `ENV` variable supports development/staging/production.
+### Storage Security Matrix
 
-### CI/CD Secret Handling
+| Storage | Encrypted | Actual Data | Required Protection | Status |
+|---|---|---|---|---|
+| SharedPreferences | No | Recipes (JSON), menus, view preferences, theme, locale | Medium (app-sandboxed) | ACCEPTABLE |
+| FlutterSecureStorage | Yes (platform) | DB key, field encryption key, FCM tokens | Critical | PARTIAL (D-03) |
+| Drift/SQLCipher | Yes (AES-256) | Offline recipes, sync queue, parse cache | Medium | PASS |
+| Firestore | Yes (Google-managed) | All user content, PII, social data | Depends on rules | PASS |
+| File system cache | No | Recipe images, avatars | Low | ACCEPTABLE |
 
-- `test.yml:43`: `secrets.CODECOV_TOKEN` properly used via GitHub Secrets.
-- No secrets echoed or logged in workflow files.
-- No hardcoded tokens in any workflow YAML files.
-- Build workflow does not require secrets (uses Flutter analyze + build only).
+---
 
-**Finding API-1** (MEDIUM, CVSS 5.8):
-- `FirebaseConfig._throwMissingKey()` at `lib/core/config/firebase_config.dart:134-136`: In release mode, missing environment variables return empty string instead of throwing. This means the app could start with empty Firebase config, potentially sending requests to default/wrong endpoints.
-- Remediation: Fail fast on missing critical config even in release mode. Effort: 1 hour.
+## Dimension 4: Network Security (8/12)
 
-**Finding API-2** (MEDIUM, CVSS 4.0):
-- No documented key rotation procedure for third-party API keys (OCR Space, Algolia, Google Vision). While keys are in `.env` files and can be changed, there's no automated rotation or alerting mechanism.
-- Remediation: Document key rotation procedures. Effort: 2 hours.
+### Findings
+
+| ID | Severity | CVSS | Description | File |
+|---|---|---|---|---|
+| N-02 | MEDIUM | 3.7 | iOS ATS not explicitly configured (relies on default) | `Info.plist` |
+| N-04 | LOW | 2.0 | URL import accepts HTTP input without auto-upgrade | `url_import_strategy.dart:64-65` |
+| N-05 | HIGH | 5.9 | `createPinnedClient()` returns unpinned `http.Client()`; `secureGet`/`securePost` unused | `ssl_pinning_service.dart:95-101` |
+| N-06 | MEDIUM | 4.8 | Non-Google external APIs not pinned (OCR.space, Algolia, Tesseract) | `ssl_pinning_service.dart:29-36` |
+| N-08 | MEDIUM | 4.2 | 4 services create raw `http.Client()` bypassing SSL pinning layer | `http_content_fetcher.dart:24`, 3 others |
+| N-13 | LOW | 1.8 | Hardcoded `butlery.app` URL (acceptable for own domain) | `deep_link_service.dart:67` |
+| N-14 | LOW | 1.0 | Hardcoded Google Vision API endpoint | `ocr_extraction_service.dart:405` |
+
+### Positive Findings
+
+- Android `cleartextTrafficPermitted="false"` (PASS)
+- No `badCertificateCallback` bypasses anywhere (PASS)
+- No insecure WebSocket usage -- Firebase SDK handles all real-time (PASS)
+- All external API calls use HTTPS endpoints (PASS)
+- Appropriate request timeouts on all HTTP calls (PASS)
+- No sensitive data logged from HTTP operations (PASS)
+
+---
+
+## Dimension 5: Firebase Security Rules (9/12)
+
+### Collection Coverage Summary
+
+74 match rules audited across 73 collections/subcollections. Full coverage table in appendix.
+
+**Highlights:**
+- Default deny on unmatched paths (PASS)
+- Strong ownership model across virtually all collections (PASS)
+- Allergen-critical data validated with `isValidTagResult()` and `_isValidUserIngredient()` (PASS)
+- Immutable audit trail (update/delete denied on `audit_logs`) (PASS)
+- Shared content subcollection pattern consistently applied (PASS)
+
+### Findings
+
+| ID | Severity | CVSS | Description | File |
+|---|---|---|---|---|
+| F-01 | HIGH | 5.3 | `friendCategories` get allows any authenticated user to read any category | `firestore.rules:186` |
+| F-02 | HIGH | 6.5 | `friendCategories` update allows any user to add themselves to any group | `firestore.rules:192-195` |
+| F-03 | HIGH | 5.3 | Top-level `ingredients` collection missing from rules (reads fail) | `firestore.rules` (missing) |
+| F-04 | MEDIUM | 4.3 | `sharedRecipes` (camelCase) missing -- rules have `shared_recipes` (snake_case) | `firebase_search_repository.dart:34` |
+| F-05 | MEDIUM | 4.3 | `users/{userId}/rateLimits` subcollection undocumented in rules | `rate_limiter.ts:128-133` |
+| F-07 | MEDIUM | 5.3 | Rate limiter middleware fails open on Firestore errors | `rate_limiter.ts:224-236` |
+| F-08 | MEDIUM | 5.3 | sendNotification/sendNotificationBatch lack rate limiting | `send-notification.ts:62` |
+| F-11 | MEDIUM | 4.3 | `shoppingLists` delete rule uses fallback that allows orphaned doc deletion | `firestore.rules:1042-1043` |
+| F-12 | MEDIUM | 4.3 | `menu_activity` create allows any auth user without membership check | `firestore.rules:1373-1374` |
+| F-13 | MEDIUM | 4.3 | `globalRecipeCache` create has no field validation or size limits | `firestore.rules:1388-1389` |
+| F-14 | MEDIUM | 3.7 | `isServerTimestamp()` helper defined but never used in any rule | `firestore.rules:45-47` |
+| F-16 | MEDIUM | 4.3 | OCR Cloud Function accepts arbitrary `imageUrl` (potential SSRF) | `ocr-recipe-image.ts:68-76` |
+| F-06 | LOW | 3.1 | `system_events` collection not explicitly documented in rules | `rate_limiter.ts:248` |
+| F-09 | LOW | 3.1 | Notification error response leaks internal details | `send-notification.ts:265-268` |
+| F-10 | LOW | 2.7 | `recipePresence` parent doc readable by all authenticated users | `firestore.rules:848-849` |
+| F-15 | LOW | 2.0 | Shared recipe images publicly readable without auth | `storage.rules:35` |
+
+### PermissionValidationMixin Adoption (Corrected)
+
+| Metric | Value |
+|---|---|
+| Repositories extending BaseFirebaseRepository | 20 |
+| Total Firestore-based repositories | 26 |
+| Adoption rate | **76.9%** |
+| Previous report claim | 20% (incorrect) |
+
+The 6 non-adopting repositories are either read-only (`IngredientRepository`, `SearchRepository`), audit-only (`AuditRepository`), presence-only (`RecipePresenceRepository`), or use their own auth checks (`UserIngredientRepository`, `SocialRecipeRepository`).
+
+---
+
+## Dimension 6: API Security and Secret Management (4/10)
+
+### Findings
+
+| ID | Severity | CVSS | Description | File |
+|---|---|---|---|---|
+| S-01 | **CRITICAL** | **9.1** | .env files bundled as Flutter assets -- all API keys extractable from APK | `pubspec.yaml:138-141` |
+| S-02 | HIGH | 7.5 | OCR/Vision API keys exposed via direct client HTTP calls | `ocr_extraction_service.dart:342,405-408` |
+| S-04 | LOW | 1.0 | Commented-out `Bearer YOUR_BITLY_ACCESS_TOKEN` placeholder | `deep_link_service.dart:322-335` |
+| S-07 | MEDIUM | 3.0 | 4 env vars consumed but missing from .env.example | `.env.example` |
+| S-08 | MEDIUM | 3.5 | CI/CD builds lack .env creation/injection step | `build-validation.yml` |
+| S-12 | MEDIUM | 4.0 | Rate limiter fails open (duplicate of F-07) | `rate_limiter.ts:224-236` |
+| S-14 | LOW | 2.0 | Historical credential exposure (6 months, resolved but residual risk) | Git history |
+| S-15 | LOW | 1.5 | No secret scanning in pre-commit hooks (lefthook has format+analyze only) | `lefthook.yml` |
+
+### Positive Findings
+
+- No hardcoded API key strings in Dart source (PASS)
+- Cloud Functions use Firebase `defineSecret()` correctly (PASS)
+- `.gitignore` comprehensive for .env and Firebase config files (PASS)
+- No secret echo/exposure in CI workflows (PASS)
+- Firebase config files not tracked in git (PASS)
 
 ---
 
 ## Dimension 7: Code Protection and Platform Security (6/10)
 
-### Dart Code Obfuscation
-
-- **Android APK**: `--obfuscate --split-debug-info=build/debug-info` in CI (`build-validation.yml:83`). PASS.
-- **Web**: `flutter build web --release` provides minification. PASS.
-- **iOS**: No iOS build in CI workflow. iOS obfuscation status unknown.
-
-### Android ProGuard/R8
-
-- `build.gradle.kts:39-40`: `isMinifyEnabled = true`, `isShrinkResources = true`. PASS.
-- `proguard-rules.pro`: Contains broad keep rules for Firebase (`-keep class com.google.firebase.** { *; }`) and AndroidX (`-keep class androidx.** { *; }`). These are standard but overly broad.
-- `-dontwarn` suppressions for Firebase and GMS are acceptable.
-
-### Jailbreak/Root Detection
-
-- `DeviceIntegrityService`: Implemented with `flutter_jailbreak_detection`.
-- Checks: jailbreak/root status AND developer mode.
-- Behavior: Warn, not block. Appropriate for app risk profile (recipe app, not banking).
-- Registered in DI via `core_module.dart`.
-
-### Debug Mode Handling
-
-- `kDebugMode` used consistently for conditional logging (40+ occurrences).
-- Analytics collection disabled in debug mode (`firebase_analytics_repository.dart:28`).
-- Crashlytics collection disabled in debug mode (`main.dart:100`).
-- No debug features accessible in release builds.
-
-### App Permissions Audit
-
-**Android**:
-| Permission | Justified | Notes |
-|---|---|---|
-| INTERNET | Yes | Core functionality |
-| CAMERA | Yes | Recipe photo capture |
-| READ_EXTERNAL_STORAGE | Yes | Legacy image access |
-| WRITE_EXTERNAL_STORAGE | Yes | Legacy image save |
-| READ_MEDIA_IMAGES | Yes | Modern scoped access (API 33+) |
-
-No unnecessary permissions (Location, Contacts, Microphone, Phone absent).
-
-**iOS**: Camera, Photo Library, Face ID. All justified with usage descriptions.
-
-### Deep Link Security
-
-- **Domain validation**: `parseDeepLink()` validates host is `butlery.app` or `www.butlery.app`.
-- **Android**: `android:autoVerify="true"` enables App Links verification.
-- **iOS**: `applinks:butlery.app` in `com.apple.developer.associated-domains`.
-- **Custom scheme**: `butlery://` scheme registered. Custom schemes are less secure than universal links but acceptable for non-sensitive navigation.
-- **Parameter validation**: Deep link parameters parsed with null safety and `Uri.decodeComponent`.
-- **Timestamp included**: Deep links include timestamp for potential expiration checks.
-
 ### Findings
 
-**Finding H-03** (HIGH, CVSS 7.0):
-- `build.gradle.kts:38`: Release build uses `signingConfig = signingConfigs.getByName("debug")`. The release APK is signed with debug keys, which means:
-  1. Play Store will reject it.
-  2. App Links verification may fail.
-  3. No meaningful code signing protection.
-- Comment says "TODO: Add your own signing config for the release build."
-- Remediation: Configure production signing keys. Effort: 2 hours.
+| ID | Severity | CVSS | Description | File |
+|---|---|---|---|---|
+| C-01 | HIGH | 5.3 | No AAB build with obfuscation in CI (only APK) | `build-validation.yml:87` |
+| C-02 | MEDIUM | 4.0 | No iOS build with obfuscation in CI | `.flutter_ci.yml.disabled` |
+| C-03 | MEDIUM | 3.7 | Overly broad ProGuard `-keep` rules (all of AndroidX retained) | `proguard-rules.pro:6-24` |
+| C-04 | HIGH | 6.5 | Release build uses debug signing config | `build.gradle.kts:38` |
+| C-05 | LOW | 2.0 | iOS `COPY_PHASE_STRIP = NO` in Release | `project.pbxproj:513` |
+| C-06 | HIGH | 5.5 | `_ErrorApp` exposes full stack traces in release builds | `main.dart:166-173` |
+| C-07 | MEDIUM | 3.5 | `debugInfo` getter exposes deep link URLs without kDebugMode guard | `deep_link_handler.dart:218-222` |
+| C-08 | LOW | 2.5 | Jailbreak detection fails open silently | `device_integrity_service.dart:39-43` |
+| C-09 | MEDIUM | 3.0 | Orphaned Face ID permission (biometric feature removed) | `Info.plist:57-59` |
+| C-12 | HIGH | 6.1 | Deep link parameters not validated (no format/length/sanitization) | `deep_link_handler.dart:94-119` |
+| C-13 | HIGH | 6.8 | Deep link processed without authentication check | `deep_link_handler.dart:148-161` |
+| C-14 | MEDIUM | 4.3 | Predictable short code generation (timestamp-based, not random) | `firebase_deeplink_repository.dart:249-261` |
+| C-15 | MEDIUM | 4.0 | Custom `butlery://` scheme accepts any host | `AndroidManifest.xml:74-79` |
+| C-16 | MEDIUM | 3.5 | Python site-packages in lib/ directory | `lib/site-packages/` |
+| C-17 | LOW | 2.0 | TODO comments for application ID and signing in build config | `build.gradle.kts:23,36-37` |
+| C-18 | LOW | 1.5 | Disabled workflow has build without obfuscation | `.flutter_ci.yml.disabled:243` |
 
-**Finding CP-1** (MEDIUM, CVSS 4.5):
-- No iOS build configuration in CI/CD. Obfuscation and build settings for iOS are not verified via automated pipeline.
-- Remediation: Add iOS build step with `--obfuscate` to CI. Effort: 3 hours.
+### Positive Findings
+
+- Firebase App Check enabled for production (Play Integrity, DeviceCheck, reCAPTCHA v3)
+- `AppLogger.debug()` uses `assert()` -- compiled out in release builds
+- `kDebugMode` guards used consistently across 35+ locations
+- R8 minification enabled (`isMinifyEnabled = true`, `isShrinkResources = true`)
+- `android:allowBackup="false"` correctly set
+- Network security config enforces HTTPS
 
 ---
 
 ## Security Risk Matrix
 
-| | Low Impact | Medium Impact | High Impact | Critical Impact |
-|---|---|---|---|---|
-| **High Likelihood** | | M4-1 (no inactivity timer) | H-03 (debug signing) | |
-| **Medium Likelihood** | M3-1 (cleartext localhost) | FR-1 (friendCategories get), N-1 (OCR no pinning), API-1 (empty config fallback) | H-01 (notification auth), H-02 (SSL fail-open) | |
-| **Low Likelihood** | M10-1 (commented code), M7-1 (FIXMEs), M2-2 (biometric pref), GDPR-1 (retention docs), FR-3 (menu ratings read) | FR-2 (sharedMenus fields), M4-2 (no MFA for deletion), API-2 (key rotation), CP-1 (no iOS CI build), M8-1 (profile mode perf) | M2-1 (recipe SharedPrefs) | |
+```
+                    IMPACT
+              Low    Medium    High    Critical
+         +--------+---------+--------+---------+
+  High   |        |  A-03   | S-01   |         |
+         |        |  A-14   | S-02   |         |
+L        |        |  F-08   |        |         |
+I   Med  | C-09   |  D-01   | D-02   |         |
+K        | C-16   |  D-04   | D-03   |         |
+E        | N-02   |  D-08   | D-06   |         |
+L        |        |  F-14   | C-12   |         |
+I        |        |  C-14   | C-13   |         |
+H   Low  | A-07   |  D-05   | F-01   |         |
+O        | A-09   |  N-05   | F-02   |         |
+O        | C-05   |  N-06   | F-03   |         |
+D        | C-08   |  C-04   | D-07   |         |
+         | S-04   |  C-06   | A-11   |         |
+         +--------+---------+--------+---------+
+```
+
+**Risk Concentration**: The highest-risk quadrant (High Likelihood x High Impact) contains the .env bundling issue (S-01) and client-side API key exposure (S-02). The Medium Likelihood x High Impact quadrant is densely populated with authorization, encryption, and deep link findings.
 
 ---
 
 ## Remediation Roadmap
 
-### Phase 1: High Priority (Week 1)
+### Phase 1: Critical Vulnerabilities (Week 1) -- P0
 
-Priority P0/P1 - addresses CVSS 7.0+ findings.
+Must fix before any production deployment. Addresses CVSS 9.0+ findings.
 
-1. **H-01**: Add sender-recipient authorization in `sendNotification` Cloud Function - 3 hours
-2. **H-02**: Change SSL pinning to fail-closed on validation errors - 2 hours
-3. **H-03**: Configure production signing keys for Android release builds - 2 hours
+| Fix | Finding | Effort | Risk Reduction |
+|---|---|---|---|
+| Move OCR/Vision API calls to Cloud Functions (follow Mistral pattern) | S-01, S-02 | 16 hours | Eliminates CRITICAL secret exposure |
+| Switch to `--dart-define` for Firebase keys, remove .env from assets | S-01 | 8 hours | Eliminates .env bundling |
+| Add `encryptedSharedPreferences: true` to all FlutterSecureStorage | D-03 | 1 hour | Strengthens Android key storage |
+| Guard `_ErrorApp` with `kDebugMode` -- generic message in release | C-06 | 1 hour | Prevents stack trace leakage |
 
-Total effort: 7 hours. Expected risk reduction: 35%.
+**Total effort: 26 hours. Expected risk reduction: 35%.**
 
-### Phase 2: Medium Priority (Weeks 2-3)
+### Phase 2: High Priority (Weeks 2-3) -- P1
 
-Priority P1 - addresses CVSS 4.0-6.9 findings.
+Fix within sprint. Addresses CVSS 5.0-8.9 findings with high likelihood.
 
-1. **M4-1**: Implement client-side inactivity timeout (30 min) - 4 hours
-2. **FR-1**: Restrict `friendCategories` get access - 2 hours
-3. **FR-2**: Add required fields validation to `sharedMenus` create rule - 30 minutes
-4. **N-1**: Make SslPinningService required in OCR service - 1 hour
-5. **API-1**: Fail fast on missing Firebase config in release mode - 1 hour
-6. **CP-1**: Add iOS build with obfuscation to CI/CD - 3 hours
-7. **API-2**: Document key rotation procedures - 2 hours
-8. **M2-1**: Migrate recipe persistence to encrypted Drift DB - 3 hours
+| Fix | Finding | Effort | Risk Reduction |
+|---|---|---|---|
+| Fix `friendCategories` rules (restrict get + update) | F-01, F-02 | 4 hours | Closes authorization bypass |
+| Add deep link input validation + auth gating | C-12, C-13 | 8 hours | Prevents auth bypass + injection |
+| Clean FCM tokens on logout (before signOut) | A-11, A-18 | 4 hours | Stops post-logout notifications |
+| Wire `SslPinningService.secureGet/Post` into all HTTP callers | N-05, N-08 | 8 hours | Activates existing SSL pinning |
+| Add missing Firestore rules (ingredients, deletion_audit_logs, rateLimits) | F-03, D-07, A-16 | 4 hours | Closes rule gaps |
+| Fix consent model field name mismatch (grantedAt vs timestamp) | D-08 | 1 hour | Ensures consent writes succeed |
+| Add 4 missing collections to account deletion | D-06 | 4 hours | Completes GDPR Art. 17 |
+| Configure release signing with production keystore | C-04 | 4 hours | Required for store deployment |
+| Add AAB build with obfuscation to CI | C-01 | 2 hours | Protects Play Store builds |
+| Use `Random.secure()` for deep link short codes | C-14 | 1 hour | Prevents code enumeration |
 
-Total effort: 16.5 hours. Expected risk reduction: 40%.
+**Total effort: 40 hours. Expected risk reduction: 30%.**
 
-### Phase 3: Low Priority (Month 2)
+### Phase 3: Medium Priority (Month 2) -- P2
 
-Priority P2 - addresses CVSS 0.1-3.9 findings.
+Scheduled hardening. Addresses CVSS 3.0-6.9 findings.
 
-1. **M4-2**: Enforce MFA for account deletion when enrolled - 2 hours
-2. **M2-2**: Move biometric preference to secure storage - 1 hour
-3. **FR-3**: Add parent menu access checks for ratings/comments/activity - 3 hours
-4. **GDPR-1**: Document audit log retention in privacy policy - 1 hour
-5. **M3-1**: Move cleartext config to debug-only build flavor - 2 hours
-6. **M10-1**: Remove commented-out Bitly example - 5 minutes
+| Fix | Finding | Effort | Risk Reduction |
+|---|---|---|---|
+| Wire FieldEncryptionService into message/comment repositories | D-02 | 12 hours | Encrypts sensitive user content |
+| Upgrade AES-CBC to AES-GCM (authenticated encryption) | D-01 | 8 hours | Prevents ciphertext tampering |
+| Add rate limiting to notification Cloud Functions | F-08 | 4 hours | Prevents notification spam |
+| Implement key versioning for encryption key rotation | D-05 | 8 hours | Enables safe key rotation |
+| Add email verification after registration | A-03 | 6 hours | Proves email ownership |
+| Apply `strongPassword()` to password change flow | A-02 | 2 hours | Consistent password policy |
+| Add server timestamp enforcement on audit_logs, friend_requests | F-14 | 4 hours | Prevents timestamp manipulation |
+| Fix menu_activity, globalRecipeCache, shoppingLists rule gaps | F-12, F-13, F-11 | 4 hours | Tightens rule validation |
+| Add URL validation to OCR Cloud Function (prevent SSRF) | F-16 | 2 hours | Blocks internal network access |
+| Pin external APIs (OCR.space, Algolia) | N-06 | 4 hours | Extends MITM protection |
+| Remove orphaned Face ID permission | C-09 | 0.5 hours | Clean platform config |
+| Move Python site-packages out of lib/ | C-16 | 0.5 hours | Clean project structure |
+| Add secret scanning to pre-commit hooks | S-15 | 2 hours | Prevents accidental commits |
+| Narrow ProGuard keep rules | C-03 | 4 hours | Improves R8 effectiveness |
+| Fix social deletion batch overflow risk | D-19 | 4 hours | Prevents deletion failures |
 
-Total effort: 9 hours. Expected risk reduction: 15%.
+**Total effort: 65 hours. Expected risk reduction: 20%.**
 
 ---
 
 ## Penetration Testing Readiness Checklist
 
 - [x] OWASP Mobile Top 10 self-assessment complete
-- [ ] All critical vulnerabilities remediated (0 critical, 3 high remain)
-- [x] Security rules reviewed and updated (comprehensive coverage confirmed)
+- [ ] All critical vulnerabilities remediated (S-01 blocking)
+- [ ] Security rules reviewed and updated (F-01, F-02, F-03 blocking)
+- [ ] Release signing configured (C-04 blocking)
 - [ ] Test accounts and environment prepared
 - [ ] Vulnerability disclosure policy documented
 - [ ] Incident response plan in place
-- [x] Security testing tools identified (MobSF, OWASP ZAP, Frida)
-- [x] Scope defined (Firebase, Cloud Functions, mobile clients)
+- [ ] Security testing tools identified (MobSF, OWASP ZAP, Burp Suite, Frida)
+- [ ] Scope defined (in-scope vs out-of-scope endpoints)
 
 ---
 
-## Appendix A: Files Audited
+## Appendix A: All Findings by Severity
 
-| Category | Files | Key Findings |
+### CRITICAL (CVSS 9.0-10.0)
+
+| ID | CVSS | Description |
 |---|---|---|
-| Firebase config | `lib/core/config/firebase_config.dart` | No hardcoded secrets |
-| Firestore rules | `firestore.rules` (1466 lines) | 74+ rules, comprehensive |
-| Storage rules | `storage.rules` (61 lines) | Proper validation |
-| Encryption | `lib/services/encryption/field_encryption_service.dart` | AES-256-CBC, secure key mgmt |
-| Database | `lib/core/storage/drift/app_database.dart` | SQLCipher encryption |
-| SSL Pinning | `lib/core/network/ssl_pinning_service.dart` | Fail-open concern |
-| Auth | `lib/repositories/firebase/firebase_auth_repository.dart` | Rate limited |
-| Auth service | `lib/services/auth_service.dart` | MFA support |
-| Biometrics | `lib/services/auth/biometric_service.dart` | Proper implementation |
-| App lock | `lib/services/app_lock_service.dart` | Configurable timeout |
-| FCM tokens | `lib/services/notifications/modules/fcm_token_manager.dart` | Secure storage |
-| Device integrity | `lib/services/device_integrity_service.dart` | Root/jailbreak detection |
-| Deep links | `lib/services/deep_link_service.dart` | Domain validation |
-| Android config | `android/app/src/main/AndroidManifest.xml` | backup=false |
-| Network config | `android/app/src/main/res/xml/network_security_config.xml` | HTTPS enforced |
-| Build config | `android/app/build.gradle.kts` | Minify + shrink enabled |
-| ProGuard | `android/app/proguard-rules.pro` | Standard Firebase rules |
-| iOS config | `ios/Runner/Info.plist` | Proper permission descriptions |
-| CI/CD | `.github/workflows/build-validation.yml` | Obfuscation in CI |
-| Cloud Functions | `functions/src/notifications/send-notification.ts` | Auth check, but no relationship check |
-| Rate limiter | `functions/src/middleware/rate_limiter.ts` | Token bucket, comprehensive |
-| GDPR consent | `lib/services/account/consent_service.dart` | Article 7 compliant |
-| GDPR export | `lib/services/account/data_export_service.dart` | Articles 15/20 compliant |
-| GDPR deletion | `lib/services/account/account_deletion_service.dart` | Article 17 compliant |
-| Audit logs | `lib/repositories/firebase/firebase_audit_repository.dart` | Article 30 compliant |
-| Permission mixin | `lib/repositories/mixins/permission_validation_mixin.dart` | Available to all repos |
-| Base repository | `lib/repositories/firebase/base_firebase_repository.dart` | Mixin applied at base |
-| OCR service | `lib/services/ocr_extraction_service.dart` | SSL pinning fallback |
+| S-01 | 9.1 | .env files bundled as Flutter assets -- all API keys (Firebase, OCR, Vision, Algolia, reCAPTCHA) extractable from release builds |
+
+### HIGH (CVSS 7.0-8.9)
+
+| ID | CVSS | Description |
+|---|---|---|
+| S-02 | 7.5 | OCR/Vision API keys sent in client-side HTTP requests |
+| D-02 | 7.5 | FieldEncryptionService registered but never called |
+
+### MEDIUM (CVSS 4.0-6.9)
+
+| ID | CVSS | Description |
+|---|---|---|
+| D-03 | 6.8 | FlutterSecureStorage missing encryptedSharedPreferences on Android |
+| C-13 | 6.8 | Deep link processed without authentication check |
+| D-06 | 6.5 | Account deletion missing 4 collections (GDPR Art. 17) |
+| C-04 | 6.5 | Release build uses debug signing config |
+| F-02 | 6.5 | friendCategories update allows any user to add themselves |
+| D-07 | 6.1 | deletion_audit_logs has no Firestore rule |
+| A-11 | 6.1 | FCM tokens not cleaned on logout |
+| C-12 | 6.1 | Deep link parameters not validated |
+| D-05 | 5.9 | Key rotation destroys old data |
+| N-05 | 5.9 | SSL pinning createPinnedClient returns unpinned client |
+| C-06 | 5.5 | ErrorApp exposes stack traces in release |
+| D-01 | 5.3 | AES-CBC instead of AES-GCM |
+| F-01 | 5.3 | friendCategories get allows any auth user |
+| F-03 | 5.3 | Global ingredients collection missing rules |
+| F-07 | 5.3 | Rate limiter fails open |
+| F-08 | 5.3 | Notification functions missing rate limiting |
+| A-03 | 5.3 | No email verification after registration |
+| C-01 | 5.3 | No AAB build with obfuscation |
+| A-16 | 5.0 | Missing Firestore rules for user_devices, deletion_audit_logs |
+| N-06 | 4.8 | External non-Google APIs not pinned |
+| D-08 | 4.7 | Consent model/rule field name mismatch |
+| D-04 | 4.3 | Insecure Random() in 5 locations |
+| F-04 | 4.3 | sharedRecipes (camelCase) vs shared_recipes (snake_case) mismatch |
+| F-05 | 4.3 | rateLimits subcollection undocumented |
+| F-11 | 4.3 | shoppingLists delete rule fallback allows orphan deletion |
+| F-12 | 4.3 | menu_activity create lacks membership check |
+| F-13 | 4.3 | globalRecipeCache create has no validation |
+| F-16 | 4.3 | OCR function accepts arbitrary imageUrl (SSRF risk) |
+| A-14 | 4.3 | Server rate limiter fails open on auth operations |
+| A-02 | 4.3 | Weak password policy on change path |
+| N-08 | 4.2 | Raw http.Client instantiations bypass pinning |
+| C-14 | 4.3 | Predictable short code generation |
+| C-15 | 4.0 | Custom URL scheme without host validation |
+| C-02 | 4.0 | No iOS build with obfuscation |
+| D-19 | 4.0 | Social deletion batch overflow risk |
+| S-08 | 3.5 | CI/CD builds lack .env injection |
+| C-07 | 3.5 | debugInfo getter leaks deep link URLs |
+| C-16 | 3.5 | Python site-packages in lib/ |
+| N-02 | 3.7 | iOS ATS not explicitly configured |
+| F-14 | 3.7 | isServerTimestamp() helper defined but never used |
+| C-03 | 3.7 | Overly broad ProGuard keep rules |
+
+### LOW (CVSS 0.1-3.9)
+
+| ID | CVSS | Description |
+|---|---|---|
+| D-09 | 3.1 | Recipes in SharedPreferences (plaintext, app-sandboxed) |
+| F-06 | 3.1 | system_events collection not in rules |
+| F-09 | 3.1 | Notification error leaks internal details |
+| S-07 | 3.0 | 4 env vars missing from .env.example |
+| C-09 | 3.0 | Orphaned Face ID permission |
+| F-10 | 2.7 | recipePresence readable by all auth users |
+| C-08 | 2.5 | Jailbreak detection fails open |
+| A-07 | 2.4 | No concurrent session management |
+| D-12 | 2.4 | Cached images not encrypted |
+| D-15 | 2.1 | UserId logged extensively |
+| N-04 | 2.0 | URL import accepts HTTP |
+| A-09 | 2.0 | No MFA recovery codes |
+| A-17 | 2.0 | Email partially logged |
+| A-18 | 2.0 | Account deletion misses FCM tokens |
+| C-05 | 2.0 | iOS COPY_PHASE_STRIP disabled |
+| C-17 | 2.0 | TODO in release build config |
+| S-14 | 2.0 | Historical credential exposure |
+| F-15 | 2.0 | Shared images publicly readable |
+| N-13 | 1.8 | Hardcoded butlery.app URL |
+| S-15 | 1.5 | No secret scanning in pre-commit |
+| C-18 | 1.5 | Disabled workflow without obfuscation |
+| S-04 | 1.0 | Commented-out placeholder token |
+| N-14 | 1.0 | Hardcoded Vision API endpoint |
+
+---
+
+## Appendix B: Score Comparison
+
+| Dimension | 2026-02-10 | 2026-02-26 | Delta | Notes |
+|---|---|---|---|---|
+| OWASP Mobile Top 10 | 15/20 | 13/20 | -2 | More thorough M9 analysis revealed S-01 |
+| Authentication & Session | 13/18 | 14/18 | +1 | M-02 and H-01 resolved |
+| Data Protection & Encryption | 15/18 | 13/18 | -2 | D-02 (encryption unused) and D-06 (deletion gaps) newly identified |
+| Network Security | 10/12 | 8/12 | -2 | N-05 (pinning non-functional) analyzed deeper |
+| Firebase Security Rules | 10/12 | 9/12 | -1 | F-01/F-02 friendCategories issues newly found |
+| API Security & Secret Mgmt | 7/10 | 4/10 | -3 | S-01 CRITICAL .env bundling found |
+| Code Protection & Platform | 6/10 | 6/10 | 0 | Deep link issues offset by confirmed positive findings |
+| **Total** | **76/100** | **67/100** | **-9** | More thorough analysis, not regression |
+
+The score decrease reflects deeper analysis, not security regression. The codebase has not changed in security-relevant ways since the prior audit. Key new findings (S-01, D-02, N-05) were present at the time of the prior audit but were not identified.
+
+---
+
+*Phase 1 complete. Zero code changes made. This report serves as input for Phase 2 remediation planning.*
