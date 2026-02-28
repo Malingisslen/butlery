@@ -1,4 +1,4 @@
-# Phase 3: Critical Security (~9 days)
+# Phase 3: Critical Security (~7 days)
 
 .env/API key exposure, rate limiters fail-open, Firebase rules gaps, deep link validation, error app stack traces.
 
@@ -34,9 +34,9 @@
 ## P3-04 — .env files bundled as Flutter assets [CRIT]
 
 **Source**: R02:S-01, R02:S-02
-**Files**: `pubspec.yaml:138-141`, `lib/services/extraction/ocr_extraction_service.dart:342,405-408`
-**Fix**: (1) Switch to `--dart-define` for Firebase keys, remove .env from assets. (2) Move OCR/Vision API calls to Cloud Functions (follow Mistral pattern).
-**Effort**: 2-3d
+**Files**: `pubspec.yaml:60-90`
+**Fix**: Switch to `--dart-define` for Firebase keys, remove .env from assets. ~~OCR client-side API key~~ — obsolete, OCR service already moved to Cloud Functions.
+**Effort**: 1-2d
 
 ---
 
@@ -49,21 +49,14 @@
 
 ---
 
-## P3-06 — Firestore rules gaps [HIGH]
+## P3-06 — Firestore rules gaps (remaining) [HIGH]
 
-**Source**: R02:F-01, R02:F-02, R02:F-03, R02:D-07, R02:A-16, R02:F-04, R02:F-05, R02:F-11, R02:F-12, R02:F-13
+**Source**: R02:D-07, R02:F-05
 **Files**: `firestore.rules`
-**Fix**:
-- `friendCategories` get/update allows any auth user (F-01, F-02) → restrict to owner
-- Global `ingredients` collection missing (F-03) → add rules
-- `deletion_audit_logs` no rule (D-07) → add write rule
-- `user_devices` / `deletion_audit_logs` missing (A-16) → add rules
-- `sharedRecipes` camelCase vs `shared_recipes` snake_case mismatch (F-04)
-- `rateLimits` subcollection undocumented (F-05)
-- `shoppingLists` delete rule fallback (F-11)
-- `menu_activity` create lacks membership check (F-12)
-- `globalRecipeCache` create no validation (F-13)
-**Effort**: 8h total
+**Fix**: 6 of 9 original gaps already fixed (friendCategories, ingredients, sharedRecipes naming, shoppingLists delete, menu_activity create, globalRecipeCache validation). **Remaining**:
+- `deletion_audit_logs` no rules (D-07)
+- `rateLimits` subcollection rules missing (F-05)
+**Effort**: 3h
 
 ---
 
@@ -103,12 +96,12 @@
 
 ---
 
-## P3-11 — Insecure `Random()` in 5 locations [MED]
+## P3-11 — Insecure `Random()` in correlation IDs [MED]
 
 **Source**: R02:D-04
-**Files**: `lib/core/correlation_id.dart:21`, `lib/repositories/firebase/firebase_deeplink_repository.dart:249-261`, 3 others
-**Fix**: Replace `dart:math Random()` with `Random.secure()` in security-relevant contexts (correlation IDs, short codes).
-**Effort**: 1h
+**Files**: `lib/core/correlation_id.dart:21`
+**Fix**: Replace `dart:math Random()` with `Random.secure()` for correlation IDs (low risk, debug only). Note: `firebase_deeplink_repository` uses `DateTime.now().millisecondsSinceEpoch`, not `Random()` — different weakness (predictable but not insecure random).
+**Effort**: 30 min
 
 ---
 

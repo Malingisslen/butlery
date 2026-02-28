@@ -1,4 +1,4 @@
-# Phase 7: UX, Accessibility & Polish (~4 days)
+# Phase 7: UX, Accessibility & Polish (~3 days)
 
 Color contrast, semantics, Colors.* cleanup, i18n completion, platform compliance.
 
@@ -39,37 +39,37 @@ Color contrast, semantics, Colors.* cleanup, i18n completion, platform complianc
 
 ---
 
-## P7-05 — Replace remaining 361 `Colors.*` references [HIGH]
+## P7-05 — Replace ~42 problematic `Colors.*` references [HIGH]
 
 **Source**: R06:1.1
-**Files**: 158 in 36 view files, 203 in 75 widget files (down from 1,879)
-**Fix**: Replace with theme tokens. ~27 are `Colors.transparent` (benign). Dark mode broken for these elements.
-**Effort**: 2-3d
+**Files**: ~42 non-transparent, non-standard `Colors.*` usages across views and widgets
+**Fix**: Replace with theme tokens. Original count of 361 was overstated — most are `Colors.transparent` (benign) or `Colors.white`/`Colors.black` (standard). Only ~42 need theme token replacement for dark mode support.
+**Effort**: 4h
 
 ---
 
-## P7-06 — Externalize final ~21 hardcoded strings [MED]
+## P7-06 — Externalize final 2-3 hardcoded strings [MED]
 
 **Source**: R06:4.1
-**Files**: `animated_pressable.dart`, `debounced_button.dart`, `responsive_grid.dart`, `comment_debug_panel.dart`, `group_dialogs.dart`, ~5 more
-**Fix**: Move to ARB files.
-**Effort**: 4h
+**Files**: `group_dialogs.dart` ("OK"), 1-2 others
+**Fix**: Move to ARB files. Original count of ~21 was overstated — only 2-3 user-visible hardcoded strings found.
+**Effort**: 30 min
 
 ---
 
 ## P7-07 — RTL readiness cleanup [MED]
 
 **Source**: R06:4.2
-**Fix**: 104 `EdgeInsets.only` (58 files) vs 35 `EdgeInsetsDirectional` (22 files). Replace `EdgeInsets.only(left/right)` with `EdgeInsetsDirectional`. Fix 9 `Alignment.centerLeft/Right` and 2 `TextAlign.left/right`.
-**Effort**: 2d
+**Fix**: Only 11 `EdgeInsets.only(left/right)` need replacing with `EdgeInsetsDirectional` (original count of 104 was overstated — most `EdgeInsets.only` uses are top/bottom only, which are RTL-safe). Fix 9 `Alignment.centerLeft/Right` and 2 `TextAlign.left/right`.
+**Effort**: 2h
 
 ---
 
 ## P7-08 — Reconcile ARB key count mismatch [MED]
 
 **Source**: R06:4.3
-**Files**: `lib/l10n/app_sv.arb` (5,449 keys), `app_en.arb` (5,937 keys)
-**Fix**: Identify and resolve 488 key difference.
+**Files**: `lib/l10n/app_sv.arb` (6,266 keys), `app_en.arb` (6,633 keys)
+**Fix**: Identify and resolve 367 key difference (original numbers were outdated).
 **Effort**: 1d
 
 ---
@@ -101,30 +101,30 @@ Color contrast, semantics, Colors.* cleanup, i18n completion, platform complianc
 
 ---
 
-## P7-12 — Code housekeeping (dividers, dead code, unhandled futures) [LOW]
+## P7-12 — Code housekeeping (dividers, unhandled futures) [LOW]
 
 **Source**: R01:M5.4, R01:L5.1, R01:L4.1
-**Files**: `parsing_correction.dart:31,45,62`, `ingredient_data.dart:78`, `deep_link_service.dart:322-335`, `feature_flag_service.dart:177`, `recipe_parser_service.dart:431`, 6 other files
-**Fix**: (1) Remove 4 `// === Section ===` dividers. (2) Delete ~35 lines of commented-out code. (3) Add `.catchError()` or convert to `async`/`await` for 2 `.then()` calls.
-**Effort**: 1h
+**Files**: `parsing_correction.dart:31,45,62`, `deep_link_service.dart:322-335`, `recipe_parser_service.dart:431`, others
+**Fix**: (1) Remove section dividers in parsing_correction. (2) Add `.catchError()` or convert to `async`/`await` for 2 `.then()` calls. Note: `ingredient_data.dart:78` is NOT commented-out code. `feature_flag_service.dart:177` wrong path reference — verify before fixing.
+**Effort**: 45 min
 
 ---
 
 ## P7-13 — TextFormField widgets without validators [MED]
 
 **Source**: R01:M4.1
-**Files**: `assisted_import_dialog.dart:239-298` (4 fields), `edit_group_dialog.dart:164`
-**Fix**: Add validators using ValidationUtils.
-**Effort**: 2h
+**Files**: `assisted_import_dialog.dart:239-298` (4 fields)
+**Fix**: Add validators using ValidationUtils. Note: `edit_group_dialog.dart:164` already HAS a validator — removed from scope.
+**Effort**: 1h
 
 ---
 
 ## P7-14 — `double.parse()`/`int.parse()` without try-catch [MED]
 
 **Source**: R01:M4.2
-**Files**: `shopping_item_dialog.dart:324`, `json_serializable_mixin.dart:283,299`, `personal_tag_color_picker.dart:44`
-**Fix**: Replace with `tryParse` or wrap in try-catch.
-**Effort**: 1h
+**Files**: `shopping_item_dialog.dart:324`, `personal_tag_color_picker.dart:44`
+**Fix**: Replace with `tryParse` or wrap in try-catch. Note: `json_serializable_mixin.dart:283,299` already HAS try-catch — removed from scope.
+**Effort**: 30 min
 
 ---
 

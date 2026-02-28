@@ -1,6 +1,6 @@
-# Phase 10: Nice-to-Haves (~4 days)
+# Phase 10: Nice-to-Haves (~3 days)
 
-Cooking timer, in-app review, referral mechanism, web hover states, foldable support, etc.
+Cooking timer, in-app review, referral mechanism, web hover states, foldable support, Apple Sign-In (post-beta).
 
 ---
 
@@ -31,16 +31,14 @@ Cooking timer, in-app review, referral mechanism, web hover states, foldable sup
 ## P10-04 — Web hover states on custom widgets [MED]
 
 **Source**: R06:7.1
-**Fix**: No `MouseRegion` or `onHover` patterns beyond standard Material hover. Web users lack visual feedback.
+**Fix**: Minimal hover states exist (1 `MouseRegion` occurrence) but most custom widgets lack `onHover` patterns beyond standard Material hover. Web users lack visual feedback on custom interactive elements.
 **Effort**: 2d
 
 ---
 
-## P10-05 — Keyboard shortcuts for web/desktop [MED]
+## ~~P10-05~~ — ~~Keyboard shortcuts for web/desktop~~ [FIXED]
 
-**Source**: R06:5.2, R06:7.2
-**Fix**: No `Shortcuts`/`Actions` widgets for Ctrl+S, Ctrl+F, etc.
-**Effort**: 2d
+**Status**: Verified fixed — 47 `Shortcuts`/`Actions` occurrences found in codebase. Already implemented.
 
 ---
 
@@ -89,3 +87,12 @@ Cooking timer, in-app review, referral mechanism, web hover states, foldable sup
 **Source**: R10:M3.2
 **Fix**: Integrate Livsmedelsverket API for Swedish nutritional data. Planned for post-beta.
 **Effort**: 3-5d
+
+---
+
+## P10-12 — Apple Sign-In (post-beta) [HIGH]
+
+**Source**: R10:H5.3 (moved from P1-09)
+**Files**: `pubspec.yaml`, `lib/views/auth_view.dart`
+**Fix**: Required by Apple if app offers third-party social login (Review Guideline 4.8). Currently only email/password — becomes required when Google Sign-In is added. Add `sign_in_with_apple` package, wire into auth flow.
+**Effort**: 1d

@@ -1,4 +1,4 @@
-# Phase 1: Store Submission Blockers (~6 days)
+# Phase 1: Store Submission Blockers (~5 days)
 
 Items you literally cannot submit to App Store / Play Store without.
 
@@ -66,7 +66,7 @@ Verify third-party pod privacy manifests are bundled (R09:TS-022).
 ## P1-07 — macOS deployment target too low [MED]
 
 **Source**: R05:dim6
-**Files**: `macos/Runner/Configs/AppInfo.xcconfig`
+**Files**: `macos/Runner.xcodeproj/project.pbxproj` (3 places: MACOSX_DEPLOYMENT_TARGET)
 **Fix**: Raise from 10.14 to 10.15.
 **Effort**: 15 min
 
@@ -81,12 +81,9 @@ Verify third-party pod privacy manifests are bundled (R09:TS-022).
 
 ---
 
-## P1-09 — Apple Sign-In [HIGH]
+## ~~P1-09~~ — ~~Apple Sign-In~~ → Moved to P10-12 [DEFERRED]
 
-**Source**: R10:H5.3
-**Files**: `pubspec.yaml`, `lib/views/auth_view.dart`
-**Fix**: Required by Apple if app offers third-party social login (Review Guideline 4.8). Add `sign_in_with_apple` package, wire into auth flow.
-**Effort**: 1d
+**Status**: Moved to Phase 10. App currently only offers email/password auth — Apple Guideline 4.8 only applies when third-party social login is offered. Social login (Google/Apple) is a post-beta decision.
 
 ---
 

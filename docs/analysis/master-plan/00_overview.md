@@ -1,7 +1,8 @@
 # Butlery Master Fix Plan — Overview
 
 **Created**: 2026-02-28
-**Source**: 10 analysis reports (309 raw issues → 168 deduplicated)
+**Verified**: 2026-02-28 (all 168 items checked against codebase — 6 fixed, 5 reduced scope, 13 descriptions corrected)
+**Source**: 10 analysis reports (309 raw issues → 168 deduplicated → 162 remaining after verification)
 **Status**: Pre-production (no migration concerns, breaking changes are free)
 
 ## Scores by Report
@@ -21,20 +22,20 @@
 
 ## Phase Summary
 
-| Phase | Focus | Est. Effort | Items |
-|-------|-------|-------------|-------|
-| [1](phase_01_store_blockers.md) | Store Submission Blockers | ~6 days | 11 |
-| [2](phase_02_legal_compliance.md) | Legal & Compliance | ~8 days | 17 |
-| [3](phase_03_critical_security.md) | Critical Security | ~9 days | 19 |
-| [4](phase_04_architecture.md) | Architecture Fixes | ~5 days | 15 |
-| [5](phase_05_ai_llm.md) | AI/LLM Safety & Quality | ~5 days | 20 |
-| [6](phase_06_performance.md) | Performance & Scalability | ~3 days | 13 |
-| [7](phase_07_ux_accessibility.md) | UX, Accessibility & Polish | ~4 days | 19 |
-| [8](phase_08_analytics_growth.md) | Analytics & Growth | ~5 days | 22 |
-| [9](phase_09_dependencies.md) | Dependencies & Tech Debt | ~5 days | 21 |
-| [10](phase_10_nice_to_haves.md) | Nice-to-Haves | ~4 days | 11 |
+| Phase | Focus | Est. Effort | Items | Verified |
+|-------|-------|-------------|-------|----------|
+| [1](phase_01_store_blockers.md) | Store Submission Blockers | ~5 days | 10 active (1 deferred) | P1-09→P10-12 |
+| [2](phase_02_legal_compliance.md) | Legal & Compliance | ~8 days | 17 | P2-14 scope expanded |
+| [3](phase_03_critical_security.md) | Critical Security | ~7 days | 19 | P3-04,06,11 corrected |
+| [4](phase_04_architecture.md) | Architecture Fixes | ~4 days | 14 active (1 fixed) | P4-11 fixed, P4-02 reduced |
+| [5](phase_05_ai_llm.md) | AI/LLM Safety & Quality | ~5 days | 20 | P5-02 desc corrected |
+| [6](phase_06_performance.md) | Performance & Scalability | ~2 days | 9 active (4 fixed/irrelevant) | P6-02,03,07,10 removed |
+| [7](phase_07_ux_accessibility.md) | UX, Accessibility & Polish | ~3 days | 19 | P7-05,06,07,08 scope reduced |
+| [8](phase_08_analytics_growth.md) | Analytics & Growth | ~5 days | 22 | P8-07 scope reduced |
+| [9](phase_09_dependencies.md) | Dependencies & Tech Debt | ~5 days | 21 | P9-01,05,06,08,09,18 corrected |
+| [10](phase_10_nice_to_haves.md) | Nice-to-Haves | ~3 days | 11 active (1 fixed, +1 from P1) | P10-05 fixed, P10-12 added |
 
-**Total estimated effort**: ~54 days (single developer)
+**Total estimated effort**: ~47 days (single developer) — down from ~54 after verification
 
 ## Deduplication Log
 
@@ -88,9 +89,26 @@ Items relocated to more appropriate phases:
 | Notification error leakage | Phase 7 (UX) | Phase 3 (P3-19) | Information leakage, not UX |
 | Python site-packages in lib/ | Phase 7 (UX) | Phase 9 (P9-21) | Repo hygiene/tech debt |
 | Apple Sign-In | Phase 10 (Nice) | Phase 1 (P1-09) | Required by Apple Review Guideline 4.8 |
+| Apple Sign-In (back) | Phase 1 (P1-09) | Phase 10 (P10-12) | Only email/password auth exists — Guideline 4.8 N/A until social login added (post-beta) |
 | Demo account | Phase 10 (Nice) | Phase 1 (P1-10) | Required for App Store submission |
 | App store metadata | Phase 10 (Nice) | Phase 1 (P1-11) | Required for App Store submission |
 | Profanity filter | Phase 10 (Nice) | Phase 2 (P2-17) | Baseline Trust & Safety for UGC apps |
+
+## Verification Summary (2026-02-28)
+
+All 168 items checked against actual codebase. Results:
+
+**Removed (6 items — already fixed or wrong):**
+P4-11 (VMs import interfaces correctly), P6-02 (streams have .limit()), P6-03 (audit log retention exists), P6-07 (flutter_cache_manager not used), P6-10 (StreamManagementMixin present), P10-05 (47 keyboard shortcut occurrences)
+
+**Reduced scope (5 items):**
+P4-02 (4 models not 8), P7-05 (42 Colors.* not 361), P7-06 (2-3 strings not 21), P7-07 (11 EdgeInsets not 104), P3-06 (2 rule gaps remain of 9)
+
+**Description corrections (13 items):**
+P1-07, P2-14, P3-04, P3-11, P5-02, P7-08, P7-12, P7-13, P7-14, P8-07, P9-01, P9-05, P9-06, P9-08, P9-09, P9-18, P10-04
+
+**Reprioritized (1 item):**
+P1-09 → P10-12 (Apple Sign-In deferred to post-beta)
 
 ## ID Convention
 
