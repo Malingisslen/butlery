@@ -2,7 +2,7 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 
 /// Service for submitting and managing content reports.
 class ReportService extends BaseService {
@@ -10,11 +10,11 @@ class ReportService extends BaseService {
   String get serviceName => 'ReportService';
 
   final FirebaseReportRepository _reportRepository;
-  final AuthRepository _authRepository;
+  final auth.AuthRepository _authRepository;
 
   ReportService({
     required FirebaseReportRepository reportRepository,
-    required AuthRepository authRepository,
+    required auth.AuthRepository authRepository,
   })  : _reportRepository = reportRepository,
         _authRepository = authRepository;
 

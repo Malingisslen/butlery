@@ -20,7 +20,6 @@ import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Friend profile view displaying stats, messaging, and sharing options.
 class FriendProfileView extends StatelessWidget {

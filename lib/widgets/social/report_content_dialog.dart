@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/moderation/report_service.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Reusable report dialog for any content type.

@@ -4,8 +4,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'dart:ui' show PlatformDispatcher;
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
 
 class TermsOfServiceView extends StatefulWidget {
   const TermsOfServiceView({super.key});
@@ -32,7 +32,7 @@ class _TermsOfServiceViewState extends State<TermsOfServiceView> {
         _errorMessage = null;
       });
 
-      final lang = AppLocale.currentLocale.languageCode;
+      final lang = PlatformDispatcher.instance.locale.languageCode;
       final assetPath = 'assets/legal/terms_of_service_$lang.md';
 
       String content;
