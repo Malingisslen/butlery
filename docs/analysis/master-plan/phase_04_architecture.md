@@ -35,7 +35,7 @@ Repository boundary violations, SerializationUtils adoption, Firebase collection
 
 **Source**: R01:C1.2
 **Files**: `lib/services/feedback/feedback_service.dart:58,76`
-**Fix**: Create FeedbackRepository, inject into FeedbackService. Currently uses `FirebaseFirestore.instance` and `FirebaseStorage.instance` directly.
+**Fix**: Create FeedbackRepository, inject into FeedbackService. Currently uses `FirebaseFirestore.instance` (line 58) and `FirebaseStorage.instance` (line 76) directly.
 **Effort**: 4h
 
 ---

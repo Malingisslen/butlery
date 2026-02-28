@@ -26,7 +26,7 @@ EOL packages, version upgrades, deprecated code removal, documentation updates.
 
 **Source**: R05:dim2, R01:M8.2
 **Files**: `pubspec.yaml:57`
-**Fix**: 8.1.0 → 11.0.0. Android/iOS config changes, API refactor.
+**Fix**: ^8.0.0 → 11.0.0. Android/iOS config changes, API refactor.
 **Effort**: 4-6h
 
 ---

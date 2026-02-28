@@ -1,8 +1,8 @@
 # Butlery Master Fix Plan — Overview
 
 **Created**: 2026-02-28
-**Verified**: 2026-02-28 (all 168 items checked against codebase — 6 fixed, 5 reduced scope, 13 descriptions corrected)
-**Source**: 10 analysis reports (309 raw issues → 168 deduplicated → 162 remaining after verification)
+**Verified**: 2026-02-28 (all 168 items checked against codebase — 7 fixed, 5 reduced scope, 21 descriptions/counts corrected)
+**Source**: 10 analysis reports (309 raw issues → 168 deduplicated → 161 remaining after verification)
 **Status**: Pre-production (no migration concerns, breaking changes are free)
 
 ## Scores by Report
@@ -31,11 +31,11 @@
 | [5](phase_05_ai_llm.md) | AI/LLM Safety & Quality | ~5 days | 20 | P5-02 desc corrected |
 | [6](phase_06_performance.md) | Performance & Scalability | ~2 days | 9 active (4 fixed/irrelevant) | P6-02,03,07,10 removed |
 | [7](phase_07_ux_accessibility.md) | UX, Accessibility & Polish | ~3 days | 19 | P7-05,06,07,08 scope reduced |
-| [8](phase_08_analytics_growth.md) | Analytics & Growth | ~5 days | 22 | P8-07 scope reduced |
+| [8](phase_08_analytics_growth.md) | Analytics & Growth | ~5 days | 21 active (1 fixed) | P8-05 fixed, P8-07 scope reduced |
 | [9](phase_09_dependencies.md) | Dependencies & Tech Debt | ~5 days | 21 | P9-01,05,06,08,09,18 corrected |
 | [10](phase_10_nice_to_haves.md) | Nice-to-Haves | ~3 days | 11 active (1 fixed, +1 from P1) | P10-05 fixed, P10-12 added |
 
-**Total estimated effort**: ~47 days (single developer) — down from ~54 after verification
+**Total estimated effort**: ~47.5 days (single developer) — down from ~54 after verification (P7-09 increase offsets P7-05/P7-11 decreases)
 
 ## Deduplication Log
 
@@ -98,14 +98,14 @@ Items relocated to more appropriate phases:
 
 All 168 items checked against actual codebase. Results:
 
-**Removed (6 items — already fixed or wrong):**
-P4-11 (VMs import interfaces correctly), P6-02 (streams have .limit()), P6-03 (audit log retention exists), P6-07 (flutter_cache_manager not used), P6-10 (StreamManagementMixin present), P10-05 (47 keyboard shortcut occurrences)
+**Removed (7 items — already fixed or wrong):**
+P4-11 (VMs import interfaces correctly), P6-02 (streams have .limit()), P6-03 (audit log retention exists), P6-07 (flutter_cache_manager not used), P6-10 (StreamManagementMixin present), P8-05 (FirebaseAnalyticsObserver already wired in main.dart), P10-05 (47 keyboard shortcut occurrences)
 
 **Reduced scope (5 items):**
-P4-02 (4 models not 8), P7-05 (42 Colors.* not 361), P7-06 (2-3 strings not 21), P7-07 (11 EdgeInsets not 104), P3-06 (2 rule gaps remain of 9)
+P4-02 (4 models not 8), P7-05 (5 Colors.* not 42/361), P7-06 (2-3 strings not 21), P7-07 (16 total RTL issues not 104), P3-06 (2 rule gaps remain of 9)
 
-**Description corrections (13 items):**
-P1-07, P2-14, P3-04, P3-11, P5-02, P7-08, P7-12, P7-13, P7-14, P8-07, P9-01, P9-05, P9-06, P9-08, P9-09, P9-18, P10-04
+**Description/count corrections (21 items):**
+P1-07, P2-11, P2-14, P2-16, P3-04, P3-05, P3-11, P4-04, P5-02, P5-11, P6-06, P6-11, P7-01, P7-08, P7-09, P7-11, P7-12, P7-13, P7-14, P8-07, P9-01, P9-03, P9-05, P9-06, P9-08, P9-09, P9-18, P10-04
 
 **Reprioritized (1 item):**
 P1-09 → P10-12 (Apple Sign-In deferred to post-beta)

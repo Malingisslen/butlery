@@ -96,7 +96,7 @@ GDPR consent wiring, privacy manifest, ToS, community guidelines, UGC moderation
 
 **Source**: R09:TS-027
 **Files**: `assets/legal/privacy_policy_sv.md:113-123`
-**Fix**: Add Mistral AI and Algolia to Section 6.1 (currently only lists Google Firebase and Analytics).
+**Fix**: Add Mistral AI and Algolia to Section 6.1 (currently lists Google Firebase and Google Analytics, but is missing Mistral AI and Algolia).
 **Effort**: 2h
 
 ---
@@ -140,7 +140,7 @@ GDPR consent wiring, privacy manifest, ToS, community guidelines, UGC moderation
 ## P2-16 — Social deletion batch may exceed 500-doc limit [MED]
 
 **Source**: R02:D-19
-**Files**: `lib/services/account/social_deletion_operations.dart:11-78`
+**Files**: `lib/services/account/account_deletion/social_deletion_operations.dart:11-78`
 **Fix**: Add batch chunking to respect Firestore's 500-operation batch limit.
 **Effort**: 2h
 
