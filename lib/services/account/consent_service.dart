@@ -14,7 +14,7 @@ class ConsentService extends BaseService {
   String get serviceName => 'ConsentService';
   static const String _logTag = 'ConsentService';
   static const String _currentConsentVersion =
-      '1.0.0'; // Update when policies change
+      '1.1.0'; // 1.1.0: Added aiProcessing consent purpose
 
   final FirebaseAuth _auth;
   final FirebaseConsentRepository _consentRepository;
@@ -104,6 +104,8 @@ class ConsentService extends BaseService {
         return consent.purposes.essentialServices;
       case 'dataProcessing':
         return consent.purposes.dataProcessing;
+      case 'aiProcessing':
+        return consent.purposes.aiProcessing;
       default:
         app_logger.AppLogger.warning(
             '[$_logTag] Unknown consent purpose: $purpose');
