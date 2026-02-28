@@ -246,12 +246,16 @@ class CoreModule implements DIModule {
       // Validate it's accessible instead
       persistenceService.toString(); // Basic validation
 
-      // Initialize AnalyticsService if available (may not be on web)
-      // Note: AnalyticsService might not need explicit initialization
-      // but we validate it's accessible
+      // Initialize AnalyticsService and wire consent for GDPR compliance
       if (GetIt.instance.isRegistered<AnalyticsService>()) {
         final analyticsService = GetIt.instance<AnalyticsService>();
-        analyticsService.toString(); // Basic validation
+        await analyticsService.initialize();
+
+        // Wire ConsentService so analytics respects user consent
+        if (GetIt.instance.isRegistered<ConsentService>()) {
+          final consentService = GetIt.instance<ConsentService>();
+          analyticsService.setConsentService(consentService);
+        }
       }
     } catch (e) {
       throw DIModuleException(
