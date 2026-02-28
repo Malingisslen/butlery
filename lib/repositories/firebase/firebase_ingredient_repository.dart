@@ -174,6 +174,14 @@ class FirebaseIngredientRepository
       }
     }
 
+    // Index learned aliases (from user corrections, Cloud Function-managed)
+    for (final alias in ingredient.learnedAliasesSv) {
+      final aliasNorm = _normalize(alias);
+      if (aliasNorm.isNotEmpty) {
+        _aliasIndex[aliasNorm] = ingredient.id;
+      }
+    }
+
     // Index compound names
     if (ingredient.isCompoundName) {
       _compoundNames.add(ingredient.swedish.toLowerCase());

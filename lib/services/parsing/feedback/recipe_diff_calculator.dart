@@ -231,6 +231,7 @@ class RecipeDiffCalculator {
       originalQuantity: original.quantity,
       originalUnit: original.unit,
       originalName: original.name,
+      correctedName: nameChanged ? correctedParsed.name : null,
       quantityChanged: quantityChanged,
       unitChanged: unitChanged,
       nameChanged: nameChanged,

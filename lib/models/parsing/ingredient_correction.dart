@@ -58,6 +58,10 @@ class IngredientCorrection {
   /// Whether name was changed
   final bool nameChanged;
 
+  /// The corrected ingredient name (just the name, not the full line).
+  /// Populated when nameChanged is true, used by Cloud Function to learn aliases.
+  final String? correctedName;
+
   const IngredientCorrection({
     required this.type,
     this.originalIndex,
@@ -67,6 +71,7 @@ class IngredientCorrection {
     this.originalUnit,
     this.originalName,
     this.correctedLine,
+    this.correctedName,
     this.quantityChanged = false,
     this.unitChanged = false,
     this.nameChanged = false,
@@ -111,6 +116,7 @@ class IngredientCorrection {
     String? originalQuantity,
     String? originalUnit,
     String? originalName,
+    String? correctedName,
     required bool quantityChanged,
     required bool unitChanged,
     required bool nameChanged,
@@ -141,6 +147,7 @@ class IngredientCorrection {
       originalUnit: originalUnit,
       originalName: originalName,
       correctedLine: _truncate(correctedLine),
+      correctedName: correctedName,
       quantityChanged: quantityChanged,
       unitChanged: unitChanged,
       nameChanged: nameChanged,
@@ -163,6 +170,7 @@ class IngredientCorrection {
         if (originalUnit != null) 'originalUnit': originalUnit,
         if (originalName != null) 'originalName': originalName,
         if (correctedLine != null) 'correctedLine': correctedLine,
+        if (correctedName != null) 'correctedName': correctedName,
         if (quantityChanged) 'quantityChanged': true,
         if (unitChanged) 'unitChanged': true,
         if (nameChanged) 'nameChanged': true,
@@ -181,6 +189,7 @@ class IngredientCorrection {
       originalUnit: json['originalUnit'] as String?,
       originalName: json['originalName'] as String?,
       correctedLine: json['correctedLine'] as String?,
+      correctedName: json['correctedName'] as String?,
       quantityChanged: json['quantityChanged'] as bool? ?? false,
       unitChanged: json['unitChanged'] as bool? ?? false,
       nameChanged: json['nameChanged'] as bool? ?? false,

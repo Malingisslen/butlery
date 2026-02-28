@@ -106,6 +106,10 @@ class IngredientData {
   /// during normalization (e.g., "vitpeppar", "rödlök").
   final bool isCompoundName;
 
+  /// Aliases learned from user corrections (Cloud Function-managed).
+  /// Separate from [aliasesSv] to survive CSV sync tool overwrites.
+  final List<String> learnedAliasesSv;
+
   const IngredientData({
     required this.id,
     required this.swedish,
@@ -128,6 +132,7 @@ class IngredientData {
     this.typicalUnit,
     this.avgPriceSek,
     this.isCompoundName = false,
+    this.learnedAliasesSv = const [],
   });
 
   /// Creates from Firestore document.
@@ -177,6 +182,11 @@ class IngredientData {
       typicalUnit: SerializationUtils.safeNullableString(data, 'typicalUnit'),
       avgPriceSek: SerializationUtils.safeNullableDouble(data, 'avgPriceSek'),
       isCompoundName: SerializationUtils.safeBool(data, 'isCompoundName'),
+      learnedAliasesSv: SerializationUtils.safeStringList(
+        data,
+        'learnedAliasesSv',
+        defaultValue: const [],
+      ),
     );
   }
 
@@ -277,6 +287,7 @@ class IngredientData {
       if (typicalUnit != null) 'typicalUnit': typicalUnit,
       if (avgPriceSek != null) 'avgPriceSek': avgPriceSek,
       'isCompoundName': isCompoundName,
+      if (learnedAliasesSv.isNotEmpty) 'learnedAliasesSv': learnedAliasesSv,
     };
   }
 
@@ -352,6 +363,7 @@ class IngredientData {
         english,
         ...aliasesSv,
         ...aliasesEn,
+        ...learnedAliasesSv,
         ...searchTerms,
       ];
 
@@ -430,6 +442,7 @@ class IngredientData {
     if (typicalUnit != other.typicalUnit) return false;
     if (avgPriceSek != other.avgPriceSek) return false;
     if (isCompoundName != other.isCompoundName) return false;
+    if (!_listEquals(learnedAliasesSv, other.learnedAliasesSv)) return false;
 
     return true;
   }
@@ -475,6 +488,7 @@ class IngredientData {
     String? typicalUnit,
     double? avgPriceSek,
     bool? isCompoundName,
+    List<String>? learnedAliasesSv,
   }) {
     return IngredientData(
       id: id ?? this.id,
@@ -498,6 +512,7 @@ class IngredientData {
       typicalUnit: typicalUnit ?? this.typicalUnit,
       avgPriceSek: avgPriceSek ?? this.avgPriceSek,
       isCompoundName: isCompoundName ?? this.isCompoundName,
+      learnedAliasesSv: learnedAliasesSv ?? this.learnedAliasesSv,
     );
   }
 }
