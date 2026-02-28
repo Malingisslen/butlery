@@ -21,10 +21,10 @@
 
 ## Critical Conventions
 
-**Data Sources** (CRITICAL):
-- `UserService.currentUserProfile` → complete user data (settings, avatar, social)
-- `PermissionService.currentUser` → basic auth/permission checks only
-- ❌ Never mix these - causes settings not persisting
+**Data Sources** (CRITICAL — see `data-source-enforcer` skill):
+- `userService.currentUserProfile` → complete user data (settings, avatar, social)
+- `permissionService.currentUserId` → auth/permission checks only
+- ❌ Never mix these — causes settings not persisting
 
 **Syntax**:
 - Color: `withValues(alpha: 0.8)` not `withOpacity(0.8)` (deprecated)
