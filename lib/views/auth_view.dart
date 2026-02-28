@@ -31,6 +31,7 @@ class _AuthViewState extends State<AuthView> {
   final _emailFocus = FocusNode();
   final _passwordFocus = FocusNode();
   final _nameFocus = FocusNode();
+  bool _ageConfirmed = false;
 
   @override
   void dispose() {
@@ -267,6 +268,41 @@ class _AuthViewState extends State<AuthView> {
                 ),
               ],
 
+              // Age confirmation (registration only)
+              if (!viewModel.isLoginMode) ...[
+                const SizedBox(height: AppDimensions.spacingMd),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Checkbox(
+                        value: _ageConfirmed,
+                        onChanged: viewModel.isLoading
+                            ? null
+                            : (value) =>
+                                setState(() => _ageConfirmed = value ?? false),
+                      ),
+                    ),
+                    const SizedBox(width: AppDimensions.spacingSm),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: viewModel.isLoading
+                            ? null
+                            : () =>
+                                setState(() => _ageConfirmed = !_ageConfirmed),
+                        child: Text(
+                          context.l10n.authAgeConfirmation,
+                          style: AppTextStyles.bodySmall
+                              .copyWith(color: AppColors.textDark),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+
               const SizedBox(height: AppDimensions.spacingLg),
 
               // Error message
@@ -442,6 +478,17 @@ class _AuthViewState extends State<AuthView> {
     viewModel.clearError();
 
     if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // Age confirmation required for registration
+    if (!viewModel.isLoginMode && !_ageConfirmed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.authAgeConfirmationRequired),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
 
