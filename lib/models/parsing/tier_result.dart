@@ -205,3 +205,34 @@ class TierResult {
   String toString() =>
       'TierResult($tierName: ${success ? "success" : failureReason?.name ?? "failed"}, quality: ${quality.toStringAsFixed(2)})';
 }
+
+/// User-facing Swedish messages for tier failure reasons.
+/// Used by RecipeParserService to surface actionable feedback.
+extension TierFailureReasonMessage on TierFailureReason {
+  String get userMessage {
+    switch (this) {
+      case TierFailureReason.rateLimited:
+        return 'Daglig gräns nådd. Försök igen imorgon.';
+      case TierFailureReason.noData:
+        return 'Kunde inte hitta receptinformation.';
+      case TierFailureReason.invalidResponse:
+        return 'AI-svaret kunde inte tolkas.';
+      case TierFailureReason.schemaValidationFailed:
+        return 'Receptet hade ogiltiga värden.';
+      case TierFailureReason.parseError:
+        return 'Ett tekniskt fel uppstod.';
+      case TierFailureReason.timeout:
+        return 'Tidsgränsen överskreds. Försök igen.';
+      case TierFailureReason.networkError:
+        return 'Nätverksfel. Kontrollera din anslutning.';
+      case TierFailureReason.securityBlocked:
+        return 'Innehållet blockerades av säkerhetsskäl.';
+      case TierFailureReason.inputTooLarge:
+        return 'Texten är för lång för bearbetning.';
+      case TierFailureReason.deadlineExceeded:
+        return 'Bearbetningen tog för lång tid.';
+      case TierFailureReason.skipped:
+        return 'Kunde inte hitta receptinformation.';
+    }
+  }
+}

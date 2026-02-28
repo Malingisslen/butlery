@@ -27,13 +27,13 @@ dependencies:
   firebase_performance: ^0.11.0  # For performance monitoring
   firebase_crashlytics: ^5.0.4  # Updated for reporting improvements
   firebase_remote_config: ^6.0.4  # Feature flags and A/B testing
-  flutter_local_notifications: ^20.0.0  # For Android notification channels
-  device_info_plus: ^11.1.0  # For unique device identification
-  flutter_jailbreak_detection: ^1.10.0  # Root/jailbreak detection
+  flutter_local_notifications: ^20.1.0  # For Android notification channels
+  device_info_plus: ^12.3.0  # For unique device identification
+  freerasp: ^7.4.0  # Root/jailbreak detection + tampering, reverse engineering, Frida detection
 
   # ==================== STATE MANAGEMENT ====================
   provider: ^6.1.2
-  get_it: ^9.0.5
+  get_it: ^9.2.1
 
   # ==================== LOCAL STORAGE ====================
   shared_preferences: ^2.3.2
@@ -54,14 +54,13 @@ dependencies:
 
   # ==================== IMAGE HANDLING ====================
   image_picker: ^1.1.2
-  image_cropper: ^8.0.0
+  image_cropper: ^11.0.0
   cached_network_image: ^3.4.1
-  flutter_cache_manager: ^3.4.1
   permission_handler: ^12.0.1
   flutter_image_compress: ^2.3.0
 
   # ==================== UTILITIES ====================
-  uuid: ^4.5.1
+  uuid: ^4.5.3
   intl: ^0.20.2
   collection: ^1.18.0
   rxdart: ^0.28.0
@@ -77,7 +76,7 @@ dependencies:
   # ==================== PARSING & PROCESSING ====================
   html: ^0.15.4
   flutter_inappwebview: ^6.1.5
-  csv: ^6.0.0                 # For CSV file parsing
+  csv: ^6.0.0                 # For CSV file parsing (7.x needs Dart 3.10+)
   excel: ^4.0.6               # For Excel file parsing
 
   # ==================== SOCIAL FEATURES (FAS 18) ====================
@@ -86,7 +85,7 @@ dependencies:
   cloud_functions: ^6.0.4
 
   # ==================== SEARCH (Algolia - migration-ready) ====================
-  algoliasearch: ^1.36.1     # Official Algolia SDK (can migrate to Meilisearch/Typesense later)
+  algoliasearch: ^1.46.1     # Official Algolia SDK (can migrate to Meilisearch/Typesense later)
   html_unescape: ^2.0.0
 
 dev_dependencies:
