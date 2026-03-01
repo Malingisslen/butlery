@@ -84,13 +84,13 @@ jobs:
       if: matrix.platform == 'android'
       run: |
         echo "🏗️ Building Android App Bundle with obfuscation..."
-        flutter build appbundle --release --obfuscate --split-debug-info=build/debug-info
+        flutter build appbundle --release --obfuscate --split-debug-info=build/debug-info --dart-define-from-file=.env
 
     - name: Build for web
       if: matrix.platform == 'web'
       run: |
         echo "🌐 Building for web..."
-        flutter build web --release
+        flutter build web --release --dart-define-from-file=.env
 
   # Summary job
   build-summary:
