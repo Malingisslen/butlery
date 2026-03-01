@@ -74,10 +74,12 @@ class ImportRateLimiter extends BaseService {
       );
     } catch (e) {
       AppLogger.warning('ImportRateLimiter: Error checking limit: $e');
-      // On error, allow the operation but log it
-      return const RateLimitAllowed(
-        remainingInWindow: 1,
+      // Fail closed — deny on Firestore errors to prevent abuse
+      return RateLimitDenied(
+        message: 'Rate limit check unavailable. Please try again shortly.',
+        retryAfter: const Duration(seconds: 30),
         limitType: LimitType.perMinute,
+        suggestedAction: FallbackAction.retryLater,
       );
     }
   }

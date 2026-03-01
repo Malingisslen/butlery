@@ -222,16 +222,17 @@ export async function checkRateLimit(
 
     return result;
   } catch (error) {
-    // On error, allow the request but log it (fail open)
-    functions.logger.warn(
-      `Rate limit check failed for ${operationType}, allowing request:`,
+    // Fail closed — deny on Firestore errors to prevent abuse
+    functions.logger.error(
+      `Rate limit check failed for ${operationType}, denying request:`,
       error
     );
 
     return {
-      allowed: true,
-      remainingTokens: -1, // Unknown
-      reason: "Rate limit check failed, request allowed",
+      allowed: false,
+      remainingTokens: 0,
+      retryAfterMs: 30000,
+      reason: "Rate limit check unavailable. Please try again shortly.",
     };
   }
 }
