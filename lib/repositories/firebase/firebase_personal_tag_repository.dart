@@ -113,6 +113,7 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
   ///
   /// Returns only tags that exist. Missing IDs are silently ignored.
   /// Useful for resolving recipe.personalTagIds to full PersonalTag objects.
+  /// Uses cache-first since tags are display data that rarely changes.
   Future<List<PersonalTag>> getByIds(List<String> tagIds) async {
     if (tagIds.isEmpty) return [];
 
@@ -120,7 +121,7 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
     final ref = getCollectionRef();
 
     final docs = await Future.wait(
-      tagIds.map((id) => ref.doc(id).get()),
+      tagIds.map((id) => getDocCacheFirst(ref.doc(id))),
     );
 
     return docs.where((doc) => doc.exists).map(fromFirestore).toList();

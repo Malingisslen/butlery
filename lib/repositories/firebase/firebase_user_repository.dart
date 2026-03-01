@@ -142,10 +142,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   }
 
   /// Fetch a profile by id. Returns `null` if it doesn't exist.
+  ///
+  /// Uses cache-first strategy since profile display is non-critical
+  /// and profiles rarely change mid-session.
   @override
   Future<UserProfile?> fetchProfile(String userId) async {
-    // Use the base class read method for consistency
-    return await read(userId);
+    return await readCacheFirst(userId);
   }
 
   /// Fetch multiple profiles in batches (Firestore limit 10 per query).

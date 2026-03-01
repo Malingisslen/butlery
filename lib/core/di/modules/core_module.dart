@@ -9,6 +9,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Core interfaces
@@ -115,6 +116,10 @@ class CoreModule implements DIModule {
       final sharedPreferences = await SharedPreferences.getInstance();
       container.registerSingleton<SharedPreferences>(sharedPreferences);
 
+      // Shared HTTP client for import pipeline and external API calls.
+      // Reusing one client enables HTTP keep-alive connection pooling.
+      container.registerSingleton<http.Client>(http.Client());
+
       // LocaleProvider for app language management
       container.registerSingleton<LocaleProvider>(LocaleProvider());
 
@@ -128,13 +133,13 @@ class CoreModule implements DIModule {
       container.registerSingleton<AuthRepository>(FirebaseAuthRepository());
 
       // Audit repository for GDPR Article 30 compliance (persistent audit logging)
-      container.registerSingleton<FirebaseAuditRepository>(
-        FirebaseAuditRepository(),
+      container.registerLazySingleton<FirebaseAuditRepository>(
+        () => FirebaseAuditRepository(),
       );
 
       // Consent repository for GDPR Article 7 compliance (consent management)
-      container.registerSingleton<FirebaseConsentRepository>(
-        FirebaseConsentRepository(
+      container.registerLazySingleton<FirebaseConsentRepository>(
+        () => FirebaseConsentRepository(
           authRepository: container<AuthRepository>(),
           auditRepository: container<FirebaseAuditRepository>(),
         ),
@@ -175,7 +180,9 @@ class CoreModule implements DIModule {
       );
 
       // Persistence service for local data storage and caching
-      container.registerSingleton<PersistenceService>(PersistenceService());
+      container.registerLazySingleton<PersistenceService>(
+        () => PersistenceService(),
+      );
 
       // Account deletion service for GDPR Article 17 (Right to Erasure)
       container.registerLazySingleton<AccountDeletionService>(() {

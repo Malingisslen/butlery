@@ -252,27 +252,26 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         .toList();
     final archived = _filteredConversations.where((c) => c.isArchived).toList();
 
+    // Build a flat list of widgets for indexed access by ListView.builder
+    final items = <Widget>[
+      if (pinned.isNotEmpty) ...[
+        _buildSectionHeader(
+          icon: Icons.push_pin,
+          label: context.l10n.messagingPinned,
+        ),
+        ...pinned.map((c) => _buildConversationItem(c)),
+        Divider(height: 1, color: cs.outlineVariant),
+      ],
+      ...regular.map((c) => _buildConversationItem(c)),
+      if (archived.isNotEmpty) _buildArchivedSection(archived),
+    ];
+
     return RefreshIndicator(
       onRefresh: _refreshConversations,
-      child: ListView(
+      child: ListView.builder(
         padding: const EdgeInsets.symmetric(vertical: AppDimensions.paddingS),
-        children: [
-          // Pinned section
-          if (pinned.isNotEmpty) ...[
-            _buildSectionHeader(
-              icon: Icons.push_pin,
-              label: context.l10n.messagingPinned,
-            ),
-            ...pinned.map((c) => _buildConversationItem(c)),
-            Divider(height: 1, color: cs.outlineVariant),
-          ],
-
-          // Regular section (no header)
-          ...regular.map((c) => _buildConversationItem(c)),
-
-          // Archived section (collapsible)
-          if (archived.isNotEmpty) _buildArchivedSection(archived),
-        ],
+        itemCount: items.length,
+        itemBuilder: (context, index) => items[index],
       ),
     );
   }

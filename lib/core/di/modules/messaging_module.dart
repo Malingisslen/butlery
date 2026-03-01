@@ -72,9 +72,8 @@ class MessagingModule implements DIModule {
   Future<void> configure(GetIt container) async {
     try {
       // Messaging repository for direct messages and conversations
-      // Inject FeatureFlagService for subcollection participants feature
-      container.registerSingleton<MessagingRepository>(
-        FirebaseMessagingRepository(
+      container.registerLazySingleton<MessagingRepository>(
+        () => FirebaseMessagingRepository(
           featureFlagService: container.isRegistered<FeatureFlagService>()
               ? container<FeatureFlagService>()
               : null,
@@ -83,31 +82,35 @@ class MessagingModule implements DIModule {
 
       // Notifications repository (if not already registered by Social Module)
       if (!container.isRegistered<NotificationsRepository>()) {
-        container.registerSingleton<NotificationsRepository>(
-          FirebaseNotificationsRepository(
+        container.registerLazySingleton<NotificationsRepository>(
+          () => FirebaseNotificationsRepository(
               authRepository: container<AuthRepository>()),
         );
       }
       // MessageReactionsService - handles emoji reactions on messages
-      container.registerSingleton<MessageReactionsService>(
-        MessageReactionsService(
+      container.registerLazySingleton<MessageReactionsService>(
+        () => MessageReactionsService(
           firestoreRepository: container<FirestoreRepository>(),
           authRepository: container<AuthRepository>(),
         ),
       );
 
       // MessagingService - handles direct messaging with FCM integration
-      container.registerSingleton<MessagingService>(MessagingService(
-        messagingRepository: container<MessagingRepository>(),
-        authRepository: container<AuthRepository>(),
-        reactionsService: container<MessageReactionsService>(),
-      ));
+      container.registerLazySingleton<MessagingService>(
+        () => MessagingService(
+          messagingRepository: container<MessagingRepository>(),
+          authRepository: container<AuthRepository>(),
+          reactionsService: container<MessageReactionsService>(),
+        ),
+      );
 
       // PresenceService - handles online/offline status and typing indicators
-      container.registerSingleton<PresenceService>(PresenceService(
-        firestoreRepository: container<FirestoreRepository>(),
-        authRepository: container<AuthRepository>(),
-      ));
+      container.registerLazySingleton<PresenceService>(
+        () => PresenceService(
+          firestoreRepository: container<FirestoreRepository>(),
+          authRepository: container<AuthRepository>(),
+        ),
+      );
     } catch (e) {
       throw DIModuleException(
         name,
