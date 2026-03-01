@@ -45,8 +45,8 @@ class CollaborationModule implements DIModule {
   @override
   Future<void> configure(GetIt container) async {
     try {
-      container.registerSingleton<RealtimeSyncService>(
-        RealtimeSyncService(
+      container.registerLazySingleton<RealtimeSyncService>(
+        () => RealtimeSyncService(
           firestoreRepository: container<FirestoreRepository>(),
           authRepository: container<AuthRepository>(),
         ),

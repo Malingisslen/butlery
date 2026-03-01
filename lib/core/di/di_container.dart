@@ -214,14 +214,19 @@ class DIContainer {
             '📋 Module initialization order: ${sortedModules.map((m) => m.name).join(' → ')}');
       }
 
-      // Step 2: Configure all modules (register services)
+      // Step 2: Configure all modules sequentially (registration order matters)
       for (final module in sortedModules) {
         await _configureModule(module);
       }
 
-      // Step 3: Initialize all modules
-      for (final module in sortedModules) {
-        await _initializeModule(module);
+      // Step 3: Initialize modules in parallel dependency tiers
+      final tiers = _buildDependencyTiers(sortedModules);
+      for (final tier in tiers) {
+        if (tier.length == 1) {
+          await _initializeModule(tier.first);
+        } else {
+          await Future.wait(tier.map(_initializeModule));
+        }
       }
 
       // Step 4: Validate all modules are healthy
@@ -392,5 +397,42 @@ class DIContainer {
     sorted.sort((a, b) => a.priority.compareTo(b.priority));
 
     return sorted;
+  }
+
+  /// Group modules into parallel tiers based on dependencies.
+  /// Modules in the same tier have no inter-dependencies and can init concurrently.
+  List<List<DIModule>> _buildDependencyTiers(List<DIModule> sortedModules) {
+    final tiers = <List<DIModule>>[];
+    final assigned = <Type>{};
+
+    while (assigned.length < sortedModules.length) {
+      final tier = <DIModule>[];
+
+      for (final module in sortedModules) {
+        if (assigned.contains(module.runtimeType)) continue;
+
+        final allDepsAssigned =
+            module.dependencies.every((dep) => assigned.contains(dep));
+        if (allDepsAssigned) {
+          tier.add(module);
+        }
+      }
+
+      if (tier.isEmpty) break;
+
+      tiers.add(tier);
+      for (final module in tier) {
+        assigned.add(module.runtimeType);
+      }
+    }
+
+    if (kDebugMode && tiers.length > 1) {
+      for (var i = 0; i < tiers.length; i++) {
+        final names = tiers[i].map((m) => m.name).join(', ');
+        AppLogger.debug('  Tier $i: $names');
+      }
+    }
+
+    return tiers;
   }
 }

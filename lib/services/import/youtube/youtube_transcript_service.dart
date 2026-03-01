@@ -34,9 +34,11 @@ class YouTubeTranscriptService with ErrorHandlingMixin {
   static const _preferredLanguages = ['sv', 'en', 'da', 'no', 'nb'];
 
   final http.Client _client;
+  final bool _ownsClient;
 
   YouTubeTranscriptService({http.Client? client})
-      : _client = client ?? http.Client();
+      : _client = client ?? http.Client(),
+        _ownsClient = client == null;
 
   /// Extract video ID from various YouTube URL formats.
   ///
@@ -397,8 +399,10 @@ class YouTubeTranscriptService with ErrorHandlingMixin {
         .trim();
   }
 
-  /// Dispose resources.
+  /// Dispose resources. Only closes the HTTP client if we created it.
   void dispose() {
-    _client.close();
+    if (_ownsClient) {
+      _client.close();
+    }
   }
 }

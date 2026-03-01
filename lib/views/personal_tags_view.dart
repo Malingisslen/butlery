@@ -268,33 +268,30 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                   await viewModel.loadTagStatistics();
                   await _loadPendingSharedTags();
                 },
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: AppDimensions.spacingMd),
-                  children: [
-                    // Pending shared tags section
-                    if (_pendingSharedTags.isNotEmpty)
-                      _buildSharedTagsSection(context),
-
-                    // Ungrouped tags section
-                    if (ungroupedTags.isNotEmpty) ...[
-                      _buildTagSection(
-                        context,
-                        viewModel,
-                        title: context.l10n.personalTagSectionTags,
-                        tags: ungroupedTags,
-                        groupId: null,
-                      ),
-                    ],
-
-                    // Grouped tags
-                    for (final group in groups) ...[
-                      _buildGroupSection(context, viewModel, group),
-                    ],
-
-                    // Bottom padding
-                    const SizedBox(height: AppDimensions.spacingXxl),
-                  ],
+                child: Builder(
+                  builder: (context) {
+                    final items = <Widget>[
+                      if (_pendingSharedTags.isNotEmpty)
+                        _buildSharedTagsSection(context),
+                      if (ungroupedTags.isNotEmpty)
+                        _buildTagSection(
+                          context,
+                          viewModel,
+                          title: context.l10n.personalTagSectionTags,
+                          tags: ungroupedTags,
+                          groupId: null,
+                        ),
+                      for (final group in groups)
+                        _buildGroupSection(context, viewModel, group),
+                      const SizedBox(height: AppDimensions.spacingXxl),
+                    ];
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: AppDimensions.spacingMd),
+                      itemCount: items.length,
+                      itemBuilder: (context, index) => items[index],
+                    );
+                  },
                 ),
               ),
             ),

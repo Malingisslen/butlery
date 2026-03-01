@@ -596,6 +596,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }) {
     return getCollectionForUser(userId)
         .orderBy('core.updatedAt', descending: true)
+        .limit(50)
         .snapshots()
         .listen((snapshot) {
       final changes = snapshot.docChanges.map((change) {
@@ -634,8 +635,9 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
   @override
   Future<Recipe> fetchArchiveRecipe(String id) async {
-    // Archive recipes are stored in a global collection, not user-scoped
-    final doc = await firestore.collection(FirestoreCollections.butleryArchive).doc(id).get();
+    // Archive recipes are read-only and rarely change -- use cache-first
+    final docRef = firestore.collection(FirestoreCollections.butleryArchive).doc(id);
+    final doc = await getDocCacheFirst(docRef);
     if (!doc.exists) {
       throw Exception('Archive recipe not found');
     }
