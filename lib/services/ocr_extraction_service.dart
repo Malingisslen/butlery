@@ -8,7 +8,6 @@ import 'package:crypto/crypto.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/network/ssl_pinning_service.dart';
 import 'package:butlery/services/ocr/ocr_usage_tracker.dart';
 
 /// OCR processing result with comprehensive metadata and quality metrics
@@ -196,13 +195,7 @@ class OCRExtractionService extends BaseService {
   // Getters with test dependency injection support
   http.Client get _httpClient {
     if (_testHttpClient != null) return _testHttpClient;
-    // Use SSL pinning for production HTTP calls
-    try {
-      return ServiceLocator.get<SslPinningService>().createPinnedClient();
-    } catch (_) {
-      // Fallback to standard client if SSL service not available
-      return http.Client();
-    }
+    return http.Client();
   }
 
   String get _ocrApiKey {
