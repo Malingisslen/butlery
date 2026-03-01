@@ -5,7 +5,7 @@
       "name": "butlery-web",
 
       "runtimeExecutable": "cmd",
-      "runtimeArgs": ["/c", "flutter", "run", "-d", "web-server", "--web-port", "3001", "--web-hostname", "localhost"],
+      "runtimeArgs": ["/c", "flutter", "run", "-d", "web-server", "--web-port", "3001", "--web-hostname", "localhost", "--dart-define-from-file=.env"],
       "port": 3001,
       "autoPort": true,
       "autoVerify": true
