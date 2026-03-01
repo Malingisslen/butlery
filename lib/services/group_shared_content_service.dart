@@ -6,6 +6,7 @@ import 'package:butlery/services/permission_service.dart' as perm_service;
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Model for shared content items displayed in group views
 class SharedContentItem {
@@ -99,7 +100,7 @@ class GroupSharedContentService extends BaseService {
 
       // Query shopping lists shared with at least one group member
       final snapshot = await _firestore
-          .collection('sharedShoppingLists')
+          .collection(FirestoreCollections.sharedShoppingListsDenorm)
           .where('sharedWithUserIds', arrayContainsAny: allMemberIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
@@ -138,7 +139,7 @@ class GroupSharedContentService extends BaseService {
 
       // Query menus shared with at least one group member
       final snapshot = await _firestore
-          .collection('shared_menus')
+          .collection(FirestoreCollections.sharedMenus)
           .where('sharedToUserIds', arrayContainsAny: allMemberIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
@@ -181,7 +182,7 @@ class GroupSharedContentService extends BaseService {
       // Try querying shared_recipes collection if it exists
       // This may need adjustment based on actual recipe sharing structure
       final snapshot = await _firestore
-          .collection('shared_recipes')
+          .collection(FirestoreCollections.sharedRecipes)
           .where('sharedWithUserIds', arrayContainsAny: allMemberIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
@@ -228,7 +229,7 @@ class GroupSharedContentService extends BaseService {
   ) {
     try {
       return _firestore
-          .collection('sharedShoppingLists')
+          .collection(FirestoreCollections.sharedShoppingListsDenorm)
           .where('sharedWithUserIds', arrayContainsAny: group.friendUserIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
@@ -247,7 +248,7 @@ class GroupSharedContentService extends BaseService {
   Stream<List<SharedContentItem>> streamSharedMenus(FriendCategory group) {
     try {
       return _firestore
-          .collection('shared_menus')
+          .collection(FirestoreCollections.sharedMenus)
           .where('sharedToUserIds', arrayContainsAny: group.friendUserIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
@@ -265,7 +266,7 @@ class GroupSharedContentService extends BaseService {
   Stream<List<SharedContentItem>> streamSharedRecipes(FriendCategory group) {
     try {
       return _firestore
-          .collection('shared_recipes')
+          .collection(FirestoreCollections.sharedRecipes)
           .where('sharedWithUserIds', arrayContainsAny: group.friendUserIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)

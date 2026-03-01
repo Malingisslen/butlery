@@ -13,6 +13,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Recipe shopping list action handler
 /// Handles shopping list generation from recipe ingredients with portion scaling.
@@ -273,7 +274,9 @@ class RecipeShoppingHandler {
         );
       } else {
         showSnackBar(
-          context.l10n.errorOccurredWithDetails(e.toString()),
+          context.l10n.errorOccurredWithDetails(
+            SnackBarUtils.userFriendlyMessage(context, e),
+          ),
           backgroundColor: Theme.of(context).colorScheme.error,
         );
       }

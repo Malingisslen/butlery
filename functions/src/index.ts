@@ -24,6 +24,8 @@ export { cleanupExpiredCache } from "./cleanup/cleanup-cache";
 export { cleanupOldRateLimits } from "./cleanup/cleanup-rate-limits";
 export { cleanupOldAuditLogs, getAuditLogStats } from "./cleanup/cleanup-audit-logs";
 export { cleanupDeletedIngredients, getDeletedIngredientStats } from "./cleanup/cleanup-deleted-ingredients";
+export { cleanupSharedContentMetadata } from "./cleanup/cleanup-shared-content-metadata";
+export { onRecipeDeleted } from "./cleanup/cleanup-recipe-storage";
 
 // Parse Event Logging - Server-side analytics (P1-4 security)
 export { logParseEvent } from "./events/log-parse-event";

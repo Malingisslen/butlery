@@ -48,6 +48,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Comprehensive social comment model providing threaded discussion functionality with engagement tracking and moderation capabilities.
 /// This model implements sophisticated social commenting functionality with hierarchical threading, engagement
@@ -231,9 +232,9 @@ class SocialComment {
   factory SocialComment.fromJson(Map<String, dynamic> json) {
     return SocialComment(
       id: json['id'] as String,
-      recipeId: json['recipeId'] as String? ?? '',
-      authorId: json['authorId'] as String? ?? '',
-      text: json['text'] as String? ?? '',
+      recipeId: (json['recipeId'] as String?).orEmpty(),
+      authorId: (json['authorId'] as String?).orEmpty(),
+      text: (json['text'] as String?).orEmpty(),
       createdAt: DateTime.parse(json['createdAt'] as String),
       parentCommentId: json['parentCommentId'] as String?,
       isLiked: json['isLiked'] as bool? ?? false,

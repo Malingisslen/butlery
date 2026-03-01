@@ -7,6 +7,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 enum ShareScope {
   individual,
@@ -133,7 +134,7 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
           core: RecipeCore(
             id: originalRecipeId,
             title: recipeTitle,
-            description: recipeDescription ?? '',
+            description: recipeDescription.orEmpty(),
             ingredients: const [],
             instructions: const [],
             imageUrls: recipeImageUrl != null ? [recipeImageUrl!] : const [],
@@ -151,7 +152,7 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
   String getContentTitle() => recipeTitle;
 
   @override
-  String getContentDescription() => recipeDescription ?? '';
+  String getContentDescription() => recipeDescription.orEmpty();
 
   @override
   BaseSharedContentModel<Recipe> copyWithStatus({
@@ -468,7 +469,7 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
       viewCount: commonFields['viewCount'] as int,
       engagementCount: commonFields['engagementCount'] as int,
       dismissalCount: commonFields['dismissalCount'] as int,
-      originalRecipeId: json['originalRecipeId'] as String? ?? '',
+      originalRecipeId: (json['originalRecipeId'] as String?).orEmpty(),
       recipeTitle: recipeTitle,
       recipeImageUrl: recipeImageUrl,
       recipePortions: recipePortions,

@@ -89,10 +89,13 @@ class MainViewHeader extends StatelessWidget implements PreferredSizeWidget {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             // Title — cream on dark green
-                            Text(
-                              title.toLowerCase(),
-                              style: AppTextStyles.mainViewTitle.copyWith(
-                                color: cs.surface,
+                            Semantics(
+                              header: true,
+                              child: Text(
+                                title.toLowerCase(),
+                                style: AppTextStyles.mainViewTitle.copyWith(
+                                  color: cs.surface,
+                                ),
                               ),
                             ),
                             // Count badge
@@ -225,23 +228,29 @@ class _FilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Material(
-      color: isSelected ? cs.primary : Colors.transparent,
-      borderRadius: BorderRadius.circular(0),
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
-            vertical: AppDimensions.spacingSm,
-          ),
-          decoration: BoxDecoration(
-            border: isSelected ? null : Border.all(color: cs.primary, width: 2),
-          ),
-          child: Text(
-            label,
-            style: AppTextStyles.filterChip.copyWith(
-              color: isSelected ? cs.surface : cs.primaryContainer,
+    return Semantics(
+      label: label,
+      button: true,
+      selected: isSelected,
+      child: Material(
+        color: isSelected ? cs.primary : Colors.transparent,
+        borderRadius: BorderRadius.circular(0),
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingMd,
+              vertical: AppDimensions.spacingSm,
+            ),
+            decoration: BoxDecoration(
+              border:
+                  isSelected ? null : Border.all(color: cs.primary, width: 2),
+            ),
+            child: Text(
+              label,
+              style: AppTextStyles.filterChip.copyWith(
+                color: isSelected ? cs.surface : cs.primaryContainer,
+              ),
             ),
           ),
         ),
@@ -293,9 +302,12 @@ class ButlerySectionHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label.toUpperCase(),
-            style: AppTextStyles.sectionLabel,
+          Semantics(
+            header: true,
+            child: Text(
+              label.toUpperCase(),
+              style: AppTextStyles.sectionLabel,
+            ),
           ),
           if (count != null)
             Text(

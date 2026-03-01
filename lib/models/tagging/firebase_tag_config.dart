@@ -5,6 +5,7 @@
 library;
 
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Complete tag configuration loaded from Firebase.
 class FirebaseTagConfig {
@@ -230,7 +231,7 @@ class FirebaseAllergenEntry {
   static Map<String, String> _parseStringMap(dynamic value) {
     if (value == null || value is! Map) return {};
     return Map<String, String>.from(
-      value.map((k, v) => MapEntry(k.toString(), v?.toString() ?? '')),
+      value.map((k, v) => MapEntry(k.toString(), (v?.toString()).orEmpty())),
     );
   }
 
@@ -358,7 +359,7 @@ class FirebaseDietaryEntry {
   static Map<String, String> _parseStringMap(dynamic value) {
     if (value == null || value is! Map) return {};
     return Map<String, String>.from(
-      value.map((k, v) => MapEntry(k.toString(), v?.toString() ?? '')),
+      value.map((k, v) => MapEntry(k.toString(), (v?.toString()).orEmpty())),
     );
   }
 
@@ -505,7 +506,7 @@ class CuisineEntry {
   static Map<String, String> _parseStringMap(dynamic value) {
     if (value == null || value is! Map) return {};
     return Map<String, String>.from(
-      value.map((k, v) => MapEntry(k.toString(), v?.toString() ?? '')),
+      value.map((k, v) => MapEntry(k.toString(), (v?.toString()).orEmpty())),
     );
   }
 
@@ -580,7 +581,7 @@ class DisplayConfigDocument extends BaseConfigDocument {
       if (entry.value is Map) {
         result[entry.key.toString()] = Map<String, String>.from(
           (entry.value as Map).map(
-            (k, v) => MapEntry(k.toString(), v?.toString() ?? ''),
+            (k, v) => MapEntry(k.toString(), (v?.toString()).orEmpty()),
           ),
         );
       }

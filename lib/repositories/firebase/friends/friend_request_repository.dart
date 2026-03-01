@@ -27,6 +27,7 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase implementation for friend request management with comprehensive lifecycle and security controls.
 /// This repository provides complete friend request functionality using Firebase Firestore with
@@ -73,9 +74,9 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
         );
 
   CollectionReference<Map<String, dynamic>> get _friendRequestsRef =>
-      firestore.collection('friend_requests');
+      firestore.collection(FirestoreCollections.friendRequests);
   @override
-  String get collectionName => 'friend_requests';
+  String get collectionName => FirestoreCollections.friendRequests;
 
   @override
   FriendRequest fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>

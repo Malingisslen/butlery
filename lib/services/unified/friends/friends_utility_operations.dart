@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Utility operations for friends service providing helper methods for:
 /// - Blocked users synchronization
@@ -43,7 +44,10 @@ class FriendsUtilityOperations {
       }
 
       // Save blocked users to user document
-      await firestore.collection('users').doc(userId).update({
+      await firestore
+          .collection(FirestoreCollections.users)
+          .doc(userId)
+          .update({
         'blockedUsers': getBlockedUsers().toList(),
         'updatedAt': DateTime.now(),
       });
@@ -62,7 +66,10 @@ class FriendsUtilityOperations {
       AppLogger.debug('Getting friends of user: $userId');
 
       // Get friend IDs from user document
-      final userDoc = await firestore.collection('users').doc(userId).get();
+      final userDoc = await firestore
+          .collection(FirestoreCollections.users)
+          .doc(userId)
+          .get();
 
       if (!userDoc.exists) {
         AppLogger.warning('User not found: $userId');
@@ -79,8 +86,10 @@ class FriendsUtilityOperations {
       // Fetch friend profiles
       final friendProfiles = <UserProfile>[];
       for (final friendId in friendIds) {
-        final friendDoc =
-            await firestore.collection('users').doc(friendId).get();
+        final friendDoc = await firestore
+            .collection(FirestoreCollections.users)
+            .doc(friendId)
+            .get();
 
         if (friendDoc.exists) {
           final friendData = friendDoc.data()!;
@@ -122,7 +131,7 @@ class FriendsUtilityOperations {
 
       // Get recent collaborators from recipes
       final recentRecipes = await firestore
-          .collection('recipes')
+          .collection(FirestoreCollections.recipes)
           .where('sharedWith', arrayContains: userId)
           .orderBy('lastModified', descending: true)
           .limit(20)
@@ -130,7 +139,7 @@ class FriendsUtilityOperations {
 
       // Get recent collaborators from menus
       final recentMenus = await firestore
-          .collection('menus')
+          .collection(FirestoreCollections.menus)
           .where('sharedWith', arrayContains: userId)
           .orderBy('lastModified', descending: true)
           .limit(20)
@@ -180,8 +189,10 @@ class FriendsUtilityOperations {
       final collaborators = <UserProfile>[];
       for (final collaboratorId in collaboratorIds.take(10)) {
         // Limit to 10 most recent
-        final userDoc =
-            await firestore.collection('users').doc(collaboratorId).get();
+        final userDoc = await firestore
+            .collection(FirestoreCollections.users)
+            .doc(collaboratorId)
+            .get();
 
         if (userDoc.exists) {
           final userData = userDoc.data()!;
@@ -223,7 +234,7 @@ class FriendsUtilityOperations {
 
       // Get recent shopping lists where user is a collaborator
       final recentShoppingLists = await firestore
-          .collection('shopping_lists')
+          .collection(FirestoreCollections.userShoppingLists)
           .where('collaborators', arrayContains: userId)
           .orderBy('lastModified', descending: true)
           .limit(20)
@@ -259,8 +270,10 @@ class FriendsUtilityOperations {
       final collaborators = <UserProfile>[];
       for (final collaboratorId in collaboratorIds.take(10)) {
         // Limit to 10 most recent
-        final userDoc =
-            await firestore.collection('users').doc(collaboratorId).get();
+        final userDoc = await firestore
+            .collection(FirestoreCollections.users)
+            .doc(collaboratorId)
+            .get();
 
         if (userDoc.exists) {
           final userData = userDoc.data()!;

@@ -237,11 +237,14 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
         ),
         const SizedBox(width: AppDimensions.spacingM),
         Expanded(
-          child: Text(
-            _isEditing
-                ? context.l10n.personalTagEditTag
-                : context.l10n.personalTagCreateTag,
-            style: AppTextStyles.titleLarge,
+          child: Semantics(
+            header: true,
+            child: Text(
+              _isEditing
+                  ? context.l10n.personalTagEditTag
+                  : context.l10n.personalTagCreateTag,
+              style: AppTextStyles.titleLarge,
+            ),
           ),
         ),
         IconButton(
@@ -263,6 +266,7 @@ class _PersonalTagEditDialogState extends State<PersonalTagEditDialog> {
           autofocus: !_isEditing,
           textCapitalization: TextCapitalization.sentences,
           decoration: InputDecoration(
+            labelText: context.l10n.commonName,
             hintText: context.l10n.personalTagNameHint,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),

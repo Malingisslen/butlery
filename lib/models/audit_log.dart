@@ -19,6 +19,7 @@
 /// - Logs are NOT deletable (legal requirement for audit trail)
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Immutable audit log entry for security and compliance tracking.
 /// Each audit log records a single permission check or security event with
@@ -64,13 +65,14 @@ class AuditLog {
     final data = doc.data()!;
     return AuditLog(
       id: doc.id,
-      userId: data['userId'] as String,
-      operation: data['operation'] as String,
-      resourceType: data['resourceType'] as String,
-      resourceId: data['resourceId'] as String?,
-      granted: data['granted'] as bool,
-      timestamp: (data['timestamp'] as Timestamp).toDate(),
-      metadata: data['metadata'] as Map<String, dynamic>?,
+      userId: SerializationUtils.safeString(data, 'userId'),
+      operation: SerializationUtils.safeString(data, 'operation'),
+      resourceType: SerializationUtils.safeString(data, 'resourceType'),
+      resourceId: SerializationUtils.safeNullableString(data, 'resourceId'),
+      granted: SerializationUtils.safeBool(data, 'granted'),
+      timestamp:
+          SerializationUtils.safeDateTime(data, 'timestamp') ?? DateTime.now(),
+      metadata: SerializationUtils.safeNullableMap(data, 'metadata'),
     );
   }
 
@@ -104,14 +106,15 @@ class AuditLog {
   /// Create from JSON (for GDPR data import/testing)
   factory AuditLog.fromJson(Map<String, dynamic> json) {
     return AuditLog(
-      id: json['id'] as String,
-      userId: json['userId'] as String,
-      operation: json['operation'] as String,
-      resourceType: json['resourceType'] as String,
-      resourceId: json['resourceId'] as String?,
-      granted: json['granted'] as bool,
-      timestamp: DateTime.parse(json['timestamp'] as String),
-      metadata: json['metadata'] as Map<String, dynamic>?,
+      id: SerializationUtils.safeString(json, 'id'),
+      userId: SerializationUtils.safeString(json, 'userId'),
+      operation: SerializationUtils.safeString(json, 'operation'),
+      resourceType: SerializationUtils.safeString(json, 'resourceType'),
+      resourceId: SerializationUtils.safeNullableString(json, 'resourceId'),
+      granted: SerializationUtils.safeBool(json, 'granted'),
+      timestamp:
+          SerializationUtils.safeDateTime(json, 'timestamp') ?? DateTime.now(),
+      metadata: SerializationUtils.safeNullableMap(json, 'metadata'),
     );
   }
 

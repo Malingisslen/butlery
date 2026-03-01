@@ -66,6 +66,12 @@ class RecipeCacheModule {
   /// BUG-003: Callback for direct recipe removals (used on web where cache is stubbed)
   final void Function(String recipeId)? _onRecipeRemoved;
 
+  /// Firestore sync metadata — whether local writes are pending server confirmation
+  bool _hasPendingWrites = false;
+
+  /// Firestore sync metadata — whether data came from local cache (offline)
+  bool _isFromCache = false;
+
   /// Sync subscriptions (delegated to FirebaseSyncManager)
   final Map<String, StreamSubscription> _syncSubscriptions = {};
 
@@ -153,6 +159,12 @@ class RecipeCacheModule {
       return;
     }
 
+    final firestore = _firestore;
+    if (firestore == null) {
+      AppLogger.warning('Cannot start Firebase sync: No Firestore instance');
+      return;
+    }
+
     try {
       AppLogger.info('🔄 Starting Firebase sync...');
 
@@ -168,7 +180,15 @@ class RecipeCacheModule {
         },
         onRecipeRemoved: _removeCachedRecipe,
         onSyncError: _handleSyncError,
-        firestore: _firestore,
+        firestore: firestore,
+        onSyncStatusChanged: (hasPendingWrites, isFromCache) {
+          if (_hasPendingWrites != hasPendingWrites ||
+              _isFromCache != isFromCache) {
+            _hasPendingWrites = hasPendingWrites;
+            _isFromCache = isFromCache;
+            _notifyListeners();
+          }
+        },
       );
 
       _syncSubscriptions.addAll(subscriptions);
@@ -336,6 +356,12 @@ class RecipeCacheModule {
       currentUserId: _getCurrentUserId(),
     );
   }
+
+  /// Whether local writes are pending server confirmation.
+  bool get hasPendingWrites => _hasPendingWrites;
+
+  /// Whether data came from local cache (device is offline).
+  bool get isFromCache => _isFromCache;
 
   /// Check if currently syncing
   bool get isSyncing => FirebaseSyncManager.isSyncing(_syncSubscriptions);

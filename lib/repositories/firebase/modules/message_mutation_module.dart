@@ -7,6 +7,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Message mutation module for write operations (including complex sendMessage).
 class MessageMutationModule {
@@ -97,8 +98,10 @@ class MessageMutationModule {
           try {
             AppLogger.debug(
                 '📝 [MessageMutation] Fetching profile for user: $otherUserId');
-            final userDoc =
-                await firestore.collection('users').doc(otherUserId).get();
+            final userDoc = await firestore
+                .collection(FirestoreCollections.users)
+                .doc(otherUserId)
+                .get();
             if (userDoc.exists) {
               final userData = userDoc.data();
               otherUserDisplayName = userData?['displayName'] as String?;
@@ -392,5 +395,82 @@ class MessageMutationModule {
       AppLogger.error('Failed to batch mark messages as delivered', e);
       rethrow;
     }
+  }
+
+  /// Vote on a poll option in a message.
+  Future<void> votePoll({
+    required String messageId,
+    required String optionId,
+    required String voterId,
+    required bool allowMultiple,
+  }) async {
+    final messageRef = messagesRef.doc(messageId);
+
+    await firestore.runTransaction((transaction) async {
+      final doc = await transaction.get(messageRef);
+      if (!doc.exists) return;
+
+      final data = doc.data()!;
+      final metadata = Map<String, dynamic>.from(data['metadata'] ?? {});
+      final pollMap = Map<String, dynamic>.from(metadata['poll'] ?? {});
+      final options = (pollMap['options'] as List<dynamic>?)
+              ?.map((o) => Map<String, dynamic>.from(o as Map))
+              .toList() ??
+          [];
+
+      // Remove user from all options if single choice
+      if (!allowMultiple) {
+        for (final option in options) {
+          final voters = List<String>.from(option['voterIds'] ?? []);
+          voters.remove(voterId);
+          option['voterIds'] = voters;
+        }
+      }
+
+      // Toggle vote on target option
+      for (final option in options) {
+        if (option['id'] == optionId) {
+          final voters = List<String>.from(option['voterIds'] ?? []);
+          if (voters.contains(voterId)) {
+            voters.remove(voterId);
+          } else {
+            voters.add(voterId);
+          }
+          option['voterIds'] = voters;
+          break;
+        }
+      }
+
+      pollMap['options'] = options;
+      metadata['poll'] = pollMap;
+      transaction.update(messageRef, {'metadata': metadata});
+    });
+
+    AppLogger.debug('Poll vote recorded for message $messageId');
+  }
+
+  /// Close a poll (creator only).
+  Future<void> closePoll({
+    required String messageId,
+    required String closerId,
+  }) async {
+    final messageRef = messagesRef.doc(messageId);
+    final doc = await messageRef.get();
+    if (!doc.exists) return;
+
+    final data = doc.data()!;
+    final metadata = Map<String, dynamic>.from(data['metadata'] ?? {});
+    final pollMap = Map<String, dynamic>.from(metadata['poll'] ?? {});
+
+    if (pollMap['creatorId'] != closerId) {
+      AppLogger.warning('Non-creator attempted to close poll $messageId');
+      return;
+    }
+
+    pollMap['isClosed'] = true;
+    metadata['poll'] = pollMap;
+    await messageRef.update({'metadata': metadata});
+
+    AppLogger.debug('Poll closed: $messageId');
   }
 }

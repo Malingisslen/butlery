@@ -30,7 +30,6 @@
 
 // lib/viewmodels/shared_content/shared_shopping_viewmodel.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -110,7 +109,7 @@ class SharedShoppingViewModel
   @override
   Future<List<SharedShoppingList>> loadContentWithPagination({
     int limit = 25,
-    DocumentSnapshot? startAfter,
+    Object? startAfter,
   }) async {
     final userId = currentUserId;
     if (userId == null) {
@@ -128,8 +127,7 @@ class SharedShoppingViewModel
   }
 
   @override
-  DocumentSnapshot? getLastDocumentFromContent(
-      List<SharedShoppingList> content) {
+  Object? getLastDocumentFromContent(List<SharedShoppingList> content) {
     return null; // Will be enhanced when repository returns document snapshots
   }
 

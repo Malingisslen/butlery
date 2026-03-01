@@ -41,7 +41,8 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     this._userService,
     this._imagePickerService, {
     ImageUploadService? uploadService,
-  }) : _uploadService = uploadService ?? ImageUploadService() {
+  }) : _uploadService =
+            uploadService ?? ServiceLocator.get<ImageUploadService>() {
     _loadCurrentProfile();
     _userService.addListener(_onUserServiceChanged);
   }

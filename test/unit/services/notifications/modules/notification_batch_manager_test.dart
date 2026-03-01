@@ -12,7 +12,7 @@ import 'package:clock/clock.dart';
 // Production code being tested
 import 'package:butlery/services/notifications/modules/notification_batch_manager.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/services/notifications/notification_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_notification_repository.dart';
 import 'package:butlery/models/notification_batch.dart';
 
 // Test infrastructure

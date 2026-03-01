@@ -24,6 +24,7 @@
 /// - **Batch Operations**: Support for efficient batch operations and transactions
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Centralized Firestore repository providing comprehensive database access and testing abstraction.
 /// This repository class serves as the primary interface for all Firebase Firestore operations
@@ -68,7 +69,10 @@ class FirestoreRepository {
   /// detect connection issues and respond appropriately with offline capabilities.
   /// Returns a [Stream] of [QuerySnapshot] for connectivity monitoring
   Stream<QuerySnapshot<Map<String, dynamic>>> connectivityStream() {
-    return _firestore.collection('connectivity_test').limit(1).snapshots();
+    return _firestore
+        .collection(FirestoreCollections.connectivityTest)
+        .limit(1)
+        .snapshots();
   }
 
   /// Creates a document reference for real-time collaborative resources.
@@ -78,7 +82,9 @@ class FirestoreRepository {
   /// [id] The unique identifier for the real-time resource
   /// Returns a [DocumentReference] for the specified real-time resource
   DocumentReference<Map<String, dynamic>> realtimeResourceDoc(String id) {
-    return _firestore.collection('realtime_resources').doc(id);
+    return _firestore
+        .collection(FirestoreCollections.realtimeResources)
+        .doc(id);
   }
 
   /// Generic helpers for document operations.
@@ -100,7 +106,10 @@ class FirestoreRepository {
 
   /// Collection with a user's recipes.
   CollectionReference<Map<String, dynamic>> userRecipesCollection(String uid) {
-    return _firestore.collection('users').doc(uid).collection('recipes');
+    return _firestore
+        .collection(FirestoreCollections.users)
+        .doc(uid)
+        .collection(FirestoreCollections.recipes);
   }
 
   /// Low level access for generic collections.

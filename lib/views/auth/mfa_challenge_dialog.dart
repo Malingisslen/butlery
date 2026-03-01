@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
+import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -11,7 +11,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 /// Dialog for handling MFA challenge during sign-in.
 /// Shows when a user with MFA enabled attempts to log in.
 class MfaChallengeDialog extends StatefulWidget {
-  final MultiFactorResolver resolver;
+  final MfaResolverInfo resolver;
   final VoidCallback onSuccess;
   final VoidCallback onCancel;
 
@@ -26,7 +26,7 @@ class MfaChallengeDialog extends StatefulWidget {
   /// Returns true if MFA was completed successfully.
   static Future<bool> show(
     BuildContext context,
-    MultiFactorResolver resolver,
+    MfaResolverInfo resolver,
   ) async {
     final result = await showDialog<bool>(
       context: context,
@@ -52,12 +52,10 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
   bool _codeSent = false;
   String? _verificationId;
   String? _errorMessage;
-  String? _phoneHint;
 
   @override
   void initState() {
     super.initState();
-    _extractPhoneHint();
     _startVerification();
   }
 
@@ -65,14 +63,6 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
   void dispose() {
     _codeController.dispose();
     super.dispose();
-  }
-
-  void _extractPhoneHint() {
-    final phoneInfo =
-        widget.resolver.hints.whereType<PhoneMultiFactorInfo>().firstOrNull;
-    if (phoneInfo != null) {
-      _phoneHint = phoneInfo.phoneNumber;
-    }
   }
 
   Future<void> _startVerification() async {
@@ -165,10 +155,10 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
           children: [
             if (!_codeSent) ...[
               Text(context.l10n.mfaSendingCode),
-              if (_phoneHint != null) ...[
+              if (widget.resolver.phoneHint != null) ...[
                 const SizedBox(height: AppDimensions.spacingSm),
                 Text(
-                  context.l10n.mfaSendingTo(_phoneHint!),
+                  context.l10n.mfaSendingTo(widget.resolver.phoneHint!),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
@@ -178,8 +168,8 @@ class _MfaChallengeDialogState extends State<MfaChallengeDialog> {
               ],
             ] else ...[
               Text(
-                context.l10n
-                    .mfaCodeSentTo(_phoneHint ?? context.l10n.mfaYourPhone),
+                context.l10n.mfaCodeSentTo(
+                    widget.resolver.phoneHint ?? context.l10n.mfaYourPhone),
               ),
               const SizedBox(height: AppDimensions.spacingMd),
               TextField(

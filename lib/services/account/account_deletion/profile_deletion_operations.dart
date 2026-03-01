@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles deletion of user profile data (user profile, public profile, preferences, activity feed).
 class ProfileDeletionOperations {
@@ -10,7 +11,10 @@ class ProfileDeletionOperations {
 
   Future<bool> deleteUserProfile(String userId) async {
     try {
-      await _firestore.collection('users').doc(userId).delete();
+      await _firestore
+          .collection(FirestoreCollections.users)
+          .doc(userId)
+          .delete();
       return true;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to delete user profile', e);
@@ -20,7 +24,10 @@ class ProfileDeletionOperations {
 
   Future<bool> deletePublicProfile(String userId) async {
     try {
-      await _firestore.collection('public_profiles').doc(userId).delete();
+      await _firestore
+          .collection(FirestoreCollections.publicProfiles)
+          .doc(userId)
+          .delete();
       return true;
     } catch (e) {
       app_logger.AppLogger.error(
@@ -32,9 +39,9 @@ class ProfileDeletionOperations {
   Future<bool> deleteUserPreferences(String userId) async {
     try {
       final prefsDoc = _firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('settings')
+          .collection(FirestoreCollections.userSettings)
           .doc('preferences');
 
       await prefsDoc.delete();
@@ -48,7 +55,7 @@ class ProfileDeletionOperations {
   Future<bool> deleteActivityFeed(String userId) async {
     try {
       final activities = await _firestore
-          .collection('activity_feed')
+          .collection(FirestoreCollections.activityFeed)
           .where('userId', isEqualTo: userId)
           .get();
 

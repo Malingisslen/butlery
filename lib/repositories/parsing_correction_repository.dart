@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/parsing/parsing_correction.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Repository for storing parsing correction analytics.
 ///
@@ -29,7 +30,7 @@ class ParsingCorrectionRepository {
       : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _collection =>
-      _firestore.collection('parsing_corrections');
+      _firestore.collection(FirestoreCollections.parsingCorrections);
 
   /// Save a parsing correction (fire-and-forget).
   ///

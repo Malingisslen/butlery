@@ -14,6 +14,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/performance/firebase_performance_service.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase Firestore implementation for recipe data operations and real-time synchronization.
 /// This repository implements the [RecipeRepository] interface using Firebase Firestore
@@ -80,7 +81,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     );
   }
   @override
-  String get collectionName => 'recipes';
+  String get collectionName => FirestoreCollections.recipes;
 
   @override
   Recipe fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
@@ -592,11 +593,18 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     String userId,
     void Function(List<RecipeChange>) onData, {
     Function? onError,
+    void Function(bool hasPendingWrites, bool isFromCache)? onSyncStatusChanged,
   }) {
     return getCollectionForUser(userId)
         .orderBy('core.updatedAt', descending: true)
+        .limit(50)
         .snapshots()
         .listen((snapshot) {
+      onSyncStatusChanged?.call(
+        snapshot.metadata.hasPendingWrites,
+        snapshot.metadata.isFromCache,
+      );
+
       final changes = snapshot.docChanges.map((change) {
         final recipe = fromFirestore(change.doc);
         final type = switch (change.type) {
@@ -618,7 +626,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     return await FirebasePerformanceService.traceFirebaseQuery(
       (trace) async {
         final snap = await firestore
-            .collection('butlery_archive')
+            .collection(FirestoreCollections.butleryArchive)
             .orderBy('core.createdAt', descending: true)
             .limit(100) // Load max 100 archive recipes
             .get();
@@ -633,8 +641,10 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
   @override
   Future<Recipe> fetchArchiveRecipe(String id) async {
-    // Archive recipes are stored in a global collection, not user-scoped
-    final doc = await firestore.collection('butlery_archive').doc(id).get();
+    // Archive recipes are read-only and rarely change -- use cache-first
+    final docRef =
+        firestore.collection(FirestoreCollections.butleryArchive).doc(id);
+    final doc = await getDocCacheFirst(docRef);
     if (!doc.exists) {
       throw Exception('Archive recipe not found');
     }

@@ -41,7 +41,7 @@ class PersonalTagColors {
     if (colorStr.length == 6) {
       colorStr = 'FF$colorStr';
     }
-    return Color(int.parse(colorStr, radix: 16));
+    return Color(int.tryParse(colorStr, radix: 16) ?? 0xFF4A7C59);
   }
 }
 

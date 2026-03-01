@@ -5,6 +5,7 @@ import 'package:butlery/models/messaging/conversation_participant.dart';
 import 'package:butlery/models/messaging/conversation_membership.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Module for managing conversation participants using subcollections.
 ///
@@ -58,9 +59,9 @@ class ConversationParticipantModule {
     );
 
     final participantRef = firestore
-        .collection('conversations')
+        .collection(FirestoreCollections.conversations)
         .doc(conversationId)
-        .collection('participants')
+        .collection(FirestoreCollections.participants)
         .doc(participantId);
 
     batch.set(participantRef, participant.toFirestore());
@@ -73,9 +74,9 @@ class ConversationParticipantModule {
     );
 
     final membershipRef = firestore
-        .collection('users')
+        .collection(FirestoreCollections.users)
         .doc(participantId)
-        .collection('conversationMemberships')
+        .collection(FirestoreCollections.userConversationMemberships)
         .doc(conversationId);
 
     batch.set(membershipRef, membership.toFirestore());
@@ -116,9 +117,9 @@ class ConversationParticipantModule {
       );
 
       final participantRef = firestore
-          .collection('conversations')
+          .collection(FirestoreCollections.conversations)
           .doc(conversationId)
-          .collection('participants')
+          .collection(FirestoreCollections.participants)
           .doc(participantId);
 
       batch.set(participantRef, participant.toFirestore());
@@ -131,9 +132,9 @@ class ConversationParticipantModule {
       );
 
       final membershipRef = firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(participantId)
-          .collection('conversationMemberships')
+          .collection(FirestoreCollections.userConversationMemberships)
           .doc(conversationId);
 
       batch.set(membershipRef, membership.toFirestore());
@@ -155,18 +156,18 @@ class ConversationParticipantModule {
 
     // 1. Remove from conversation's participants subcollection
     final participantRef = firestore
-        .collection('conversations')
+        .collection(FirestoreCollections.conversations)
         .doc(conversationId)
-        .collection('participants')
+        .collection(FirestoreCollections.participants)
         .doc(participantId);
 
     batch.delete(participantRef);
 
     // 2. Remove from user's conversationMemberships subcollection
     final membershipRef = firestore
-        .collection('users')
+        .collection(FirestoreCollections.users)
         .doc(participantId)
-        .collection('conversationMemberships')
+        .collection(FirestoreCollections.userConversationMemberships)
         .doc(conversationId);
 
     batch.delete(membershipRef);
@@ -188,9 +189,9 @@ class ConversationParticipantModule {
 
     // 1. Update in participants subcollection
     final participantRef = firestore
-        .collection('conversations')
+        .collection(FirestoreCollections.conversations)
         .doc(conversationId)
-        .collection('participants')
+        .collection(FirestoreCollections.participants)
         .doc(participantId);
 
     batch.update(participantRef, {
@@ -199,9 +200,9 @@ class ConversationParticipantModule {
 
     // 2. Update hasUnread in membership
     final membershipRef = firestore
-        .collection('users')
+        .collection(FirestoreCollections.users)
         .doc(participantId)
-        .collection('conversationMemberships')
+        .collection(FirestoreCollections.userConversationMemberships)
         .doc(conversationId);
 
     batch.update(membershipRef, {
@@ -224,9 +225,9 @@ class ConversationParticipantModule {
 
     for (final participantId in participantIds) {
       final membershipRef = firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(participantId)
-          .collection('conversationMemberships')
+          .collection(FirestoreCollections.userConversationMemberships)
           .doc(conversationId);
 
       batch.update(membershipRef, {
@@ -245,9 +246,9 @@ class ConversationParticipantModule {
     if (!_isEnabled) return [];
 
     final snapshot = await firestore
-        .collection('conversations')
+        .collection(FirestoreCollections.conversations)
         .doc(conversationId)
-        .collection('participants')
+        .collection(FirestoreCollections.participants)
         .get();
 
     return snapshot.docs
@@ -261,9 +262,9 @@ class ConversationParticipantModule {
     if (!_isEnabled) return const Stream.empty();
 
     return firestore
-        .collection('conversations')
+        .collection(FirestoreCollections.conversations)
         .doc(conversationId)
-        .collection('participants')
+        .collection(FirestoreCollections.participants)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => ConversationParticipant.fromFirestore(doc))
@@ -275,9 +276,9 @@ class ConversationParticipantModule {
     if (!_isEnabled) return [];
 
     final snapshot = await firestore
-        .collection('users')
+        .collection(FirestoreCollections.users)
         .doc(userId)
-        .collection('conversationMemberships')
+        .collection(FirestoreCollections.userConversationMemberships)
         .orderBy('lastActivityAt', descending: true)
         .limit(50)
         .get();
@@ -292,9 +293,9 @@ class ConversationParticipantModule {
     if (!_isEnabled) return const Stream.empty();
 
     return firestore
-        .collection('users')
+        .collection(FirestoreCollections.users)
         .doc(userId)
-        .collection('conversationMemberships')
+        .collection(FirestoreCollections.userConversationMemberships)
         .where('isArchived', isEqualTo: false)
         .orderBy('lastActivityAt', descending: true)
         .limit(50)
@@ -312,9 +313,9 @@ class ConversationParticipantModule {
     if (!_isEnabled) return false;
 
     final doc = await firestore
-        .collection('conversations')
+        .collection(FirestoreCollections.conversations)
         .doc(conversationId)
-        .collection('participants')
+        .collection(FirestoreCollections.participants)
         .doc(userId)
         .get();
 
@@ -357,9 +358,9 @@ class ConversationParticipantModule {
       );
 
       final participantRef = firestore
-          .collection('conversations')
+          .collection(FirestoreCollections.conversations)
           .doc(conversationId)
-          .collection('participants')
+          .collection(FirestoreCollections.participants)
           .doc(participantId);
 
       batch.set(participantRef, participant.toFirestore());
@@ -374,17 +375,18 @@ class ConversationParticipantModule {
       );
 
       final membershipRef = firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(participantId)
-          .collection('conversationMemberships')
+          .collection(FirestoreCollections.userConversationMemberships)
           .doc(conversationId);
 
       batch.set(membershipRef, membership.toFirestore());
     }
 
     // Mark conversation as migrated
-    final conversationRef =
-        firestore.collection('conversations').doc(conversationId);
+    final conversationRef = firestore
+        .collection(FirestoreCollections.conversations)
+        .doc(conversationId);
     batch.update(conversationRef, {
       'usesSubcollectionParticipants': true,
     });

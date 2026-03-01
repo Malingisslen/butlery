@@ -7,6 +7,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Module handling shopping item operations with dual storage support.
 /// Supports two storage strategies:
@@ -105,7 +106,7 @@ class ShoppingItemOperationsModule {
 
       await getUserCollection(uid)
           .doc(listId)
-          .collection('items')
+          .collection(FirestoreCollections.items)
           .doc(item.id)
           .set(item.toFirestore());
     }
@@ -192,8 +193,9 @@ class ShoppingItemOperationsModule {
 
       // Use Firebase batch for atomic operation
       final batch = firestore.batch();
-      final itemsCollection =
-          getUserCollection(uid).doc(listId).collection('items');
+      final itemsCollection = getUserCollection(uid)
+          .doc(listId)
+          .collection(FirestoreCollections.items);
 
       for (final item in items) {
         batch.set(itemsCollection.doc(item.id), item.toFirestore());
@@ -259,7 +261,7 @@ class ShoppingItemOperationsModule {
 
       await getUserCollection(uid)
           .doc(listId)
-          .collection('items')
+          .collection(FirestoreCollections.items)
           .doc(itemId)
           .delete();
     }

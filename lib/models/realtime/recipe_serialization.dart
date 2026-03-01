@@ -1,6 +1,7 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Recipe serialization and deserialization.
 class RecipeSerialization {
@@ -69,8 +70,8 @@ class RecipeSerialization {
     return Recipe(
       core: RecipeCore(
         id: coreData['id'] as String? ?? fallbackId,
-        title: coreData['title'] as String? ?? '',
-        description: coreData['description'] as String? ?? '',
+        title: (coreData['title'] as String?).orEmpty(),
+        description: (coreData['description'] as String?).orEmpty(),
         portions: coreData['portions'] as int?,
         timeMinutes: coreData['timeMinutes'] as int?,
         ingredients: List<String>.from(coreData['ingredients'] ?? []),
@@ -165,8 +166,8 @@ class RecipeSerialization {
     final sanitized = <String, dynamic>{};
 
     // Required fields with defaults
-    sanitized['title'] = data['title']?.toString() ?? '';
-    sanitized['description'] = data['description']?.toString() ?? '';
+    sanitized['title'] = (data['title']?.toString()).orEmpty();
+    sanitized['description'] = (data['description']?.toString()).orEmpty();
     sanitized['mealType'] = data['mealType']?.toString() ?? 'Middag';
 
     // List fields
@@ -234,7 +235,7 @@ class RecipeSerialization {
     if (list is! List) return [];
 
     return list
-        .map((item) => item?.toString() ?? '')
+        .map((item) => (item?.toString()).orEmpty())
         .where((s) => s.isNotEmpty)
         .toList();
   }

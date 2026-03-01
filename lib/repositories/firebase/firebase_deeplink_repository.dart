@@ -27,6 +27,7 @@ import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 // import '../interfaces/auth_repository.dart'; // Imported from base class
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase implementation for deep link management with comprehensive URL shortening and analytics.
 /// This repository provides complete deep link functionality using Firebase Firestore collections
@@ -73,7 +74,7 @@ class FirebaseDeepLinkRepository
   });
 
   @override
-  String get collectionName => 'deep_links';
+  String get collectionName => FirestoreCollections.deepLinks;
 
   @override
   Map<String, dynamic> fromFirestore(
@@ -180,7 +181,10 @@ class FirebaseDeepLinkRepository
       });
 
       // Also track click history
-      await collection.doc(shortUrl).collection('clicks').add({
+      await collection
+          .doc(shortUrl)
+          .collection(FirestoreCollections.clicks)
+          .add({
         'timestamp': FieldValue.serverTimestamp(),
         'userId': currentUserId,
       });

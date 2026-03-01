@@ -155,7 +155,7 @@ class PollMessageWidget extends StatelessWidget {
               if (totalVotes > 0)
                 Positioned.fill(
                   child: FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
+                    alignment: AlignmentDirectional.centerStart,
                     widthFactor: percentage,
                     child: Container(
                       decoration: BoxDecoration(
@@ -177,8 +177,8 @@ class PollMessageWidget extends StatelessWidget {
                 children: [
                   if (hasVoted)
                     Padding(
-                      padding:
-                          const EdgeInsets.only(right: AppDimensions.spacingXs),
+                      padding: const EdgeInsetsDirectional.only(
+                          end: AppDimensions.spacingXs),
                       child: Icon(
                         Icons.check_circle,
                         size: 16,

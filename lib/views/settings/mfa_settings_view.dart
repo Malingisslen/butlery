@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
+import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -29,7 +29,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   bool _isEnrolling = false;
   String? _verificationId;
   String? _errorMessage;
-  List<MultiFactorInfo> _enrolledFactors = [];
+  List<MfaFactorInfo> _enrolledFactors = [];
 
   @override
   void initState() {
@@ -134,7 +134,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     setState(() => _isLoading = false);
   }
 
-  Future<void> _unenrollMfa(MultiFactorInfo factor) async {
+  Future<void> _unenrollMfa(MfaFactorInfo factor) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(

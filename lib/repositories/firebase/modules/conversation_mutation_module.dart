@@ -8,6 +8,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Conversation mutation module for write operations.
 class ConversationMutationModule {
@@ -386,7 +387,7 @@ class ConversationMutationModule {
       await firestore
           .collection(collectionName)
           .doc(conversationId)
-          .collection('userSettings')
+          .collection(FirestoreCollections.userSettingsTop)
           .doc(userId)
           .set(settings, SetOptions(merge: true));
 

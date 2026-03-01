@@ -176,14 +176,15 @@ class AdaptiveTextField extends StatelessWidget {
           ),
           prefix: prefix != null
               ? Padding(
-                  padding: const EdgeInsets.only(left: AppDimensions.spacingSm),
+                  padding: const EdgeInsetsDirectional.only(
+                      start: AppDimensions.spacingSm),
                   child: prefix,
                 )
               : null,
           suffix: suffix != null
               ? Padding(
-                  padding:
-                      const EdgeInsets.only(right: AppDimensions.spacingSm),
+                  padding: const EdgeInsetsDirectional.only(
+                      end: AppDimensions.spacingSm),
                   child: suffix,
                 )
               : null,

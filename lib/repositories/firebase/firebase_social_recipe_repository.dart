@@ -9,22 +9,20 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 class FirebaseSocialRecipeRepository
     with PermissionValidationMixin
     implements SocialRecipeRepository {
   final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
   final AuthRepository _authRepository;
   final FirebaseAuditRepository? _auditRepository;
 
   FirebaseSocialRecipeRepository({
     FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
     required AuthRepository authRepository,
     FirebaseAuditRepository? auditRepository,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance,
         _authRepository = authRepository,
         _auditRepository = auditRepository;
 
@@ -66,25 +64,25 @@ class FirebaseSocialRecipeRepository
 
   @override
   CollectionReference<Map<String, dynamic>> get sharedRecipesRef =>
-      _firestore.collection('shared_recipes');
+      _firestore.collection(FirestoreCollections.sharedRecipes);
 
   @override
   CollectionReference<Map<String, dynamic>> get sharedMenusRef =>
-      _firestore.collection('shared_menus');
+      _firestore.collection(FirestoreCollections.sharedMenus);
 
   @override
   CollectionReference<Map<String, dynamic>> get sharedContentRef =>
-      _firestore.collection('shared_content');
+      _firestore.collection(FirestoreCollections.sharedContent);
 
   @override
   CollectionReference<Map<String, dynamic>> get recipeCommentsRef =>
-      _firestore.collection('recipe_comments');
+      _firestore.collection(FirestoreCollections.recipeComments);
 
   @override
-  Stream<User?> authStateChanges() => _auth.authStateChanges();
+  Stream<User?> authStateChanges() => _authRepository.authStateChanges();
 
   @override
-  User? get currentUser => _auth.currentUser;
+  User? get currentUser => _authRepository.currentUser;
 
   @override
   Future<List<SharedRecipe>> getSharedRecipes(String userId) async {

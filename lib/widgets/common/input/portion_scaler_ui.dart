@@ -156,26 +156,34 @@ class PortionScalerUI {
     required VoidCallback? onPressed,
   }) {
     final cs = Theme.of(context).colorScheme;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.zero,
-        child: Container(
-          width: 36,
-          height: 36,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerHighest,
-            border: Border.all(
-              color: onPressed != null ? cs.primary : cs.outlineVariant,
-              width: 2.0,
+    final label = icon == Icons.remove
+        ? context.l10n.portionDecrease
+        : context.l10n.portionIncrease;
+    return Semantics(
+      label: label,
+      button: true,
+      enabled: onPressed != null,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.zero,
+          child: Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerHighest,
+              border: Border.all(
+                color: onPressed != null ? cs.primary : cs.outlineVariant,
+                width: 2.0,
+              ),
             ),
-          ),
-          child: Icon(
-            icon,
-            size: AppDimensions.iconSizeL,
-            color: onPressed != null ? cs.primary : cs.onSurfaceVariant,
+            child: Icon(
+              icon,
+              size: AppDimensions.iconSizeL,
+              color: onPressed != null ? cs.primary : cs.onSurfaceVariant,
+            ),
           ),
         ),
       ),

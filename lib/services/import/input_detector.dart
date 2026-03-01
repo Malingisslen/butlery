@@ -5,6 +5,7 @@
 library;
 
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// The type of input detected.
 enum InputType {
@@ -130,8 +131,8 @@ class InputDetector {
       if (uri.host.isNotEmpty) {
         return uri;
       }
-    } catch (_) {
-      // Invalid URL
+    } catch (e) {
+      AppLogger.debug('InputDetector: Failed to parse URL "$input": $e');
     }
     return null;
   }

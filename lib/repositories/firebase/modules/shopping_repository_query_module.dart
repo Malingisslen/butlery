@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Module handling query operations for shopping lists.
 /// Provides read operations and real-time streams for both personal and collaborative lists.
@@ -42,8 +43,10 @@ class ShoppingRepositoryQueryModule {
         final list = fromFirestore(listDoc);
 
         // Load items for this list from subcollection
-        final itemsSnapshot =
-            await getUserCollection(uid).doc(list.id).collection('items').get();
+        final itemsSnapshot = await getUserCollection(uid)
+            .doc(list.id)
+            .collection(FirestoreCollections.items)
+            .get();
 
         final items = itemsSnapshot.docs
             .map((doc) => UnifiedShoppingItem.fromFirestore(doc.data()))

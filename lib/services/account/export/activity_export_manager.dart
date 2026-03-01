@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/services/account/export/export_pagination_helper.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles export of user activity: comments, ratings, activity history.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -26,7 +27,7 @@ class ActivityExportManager {
       // Get comments (paginated)
       final comments = await ExportPaginationHelper.paginatedQuery(
         query: _firestore
-            .collection('recipe_comments')
+            .collection(FirestoreCollections.recipeComments)
             .where('userId', isEqualTo: userId),
         maxDocuments: commentLimit,
       );
@@ -41,7 +42,7 @@ class ActivityExportManager {
       // Get ratings (paginated)
       final ratings = await ExportPaginationHelper.paginatedQuery(
         query: _firestore
-            .collection('recipe_ratings')
+            .collection(FirestoreCollections.recipeRatings)
             .where('userId', isEqualTo: userId),
         maxDocuments: ratingLimit,
       );
@@ -71,7 +72,7 @@ class ActivityExportManager {
 
       // Get user's activity feed items
       final activitySnapshot = await _firestore
-          .collection('activity_feed')
+          .collection(FirestoreCollections.activityFeed)
           .where('userId', isEqualTo: userId)
           .orderBy('timestamp', descending: true)
           .limit(500) // Limit to last 500 activities

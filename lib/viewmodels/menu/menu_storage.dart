@@ -9,6 +9,7 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/viewmodels/menu/menu_state_manager.dart'
     show SavedMenuInfo;
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firestore-based menu storage module
 ///
@@ -58,9 +59,10 @@ class MenuStorage {
     );
 
     // Save to Firestore
-    final docRef = await _firestoreRepository.collection('menus').add(
-          sharedMenu.toFirestore(),
-        );
+    final docRef =
+        await _firestoreRepository.collection(FirestoreCollections.menus).add(
+              sharedMenu.toFirestore(),
+            );
 
     AppLogger.success(
         '✅ Menu saved to Firestore: $menuName ($totalRecipeCount recipes)');
@@ -98,8 +100,10 @@ class MenuStorage {
       }
 
       // Load from Firestore
-      final doc =
-          await _firestoreRepository.collection('menus').doc(menuId).get();
+      final doc = await _firestoreRepository
+          .collection(FirestoreCollections.menus)
+          .doc(menuId)
+          .get();
 
       if (!doc.exists || doc.data() == null) {
         AppLogger.debug('Menu not found: $menuId');
@@ -151,7 +155,7 @@ class MenuStorage {
 
       // Query user's menus from Firestore
       final snapshot = await _firestoreRepository
-          .collection('menus')
+          .collection(FirestoreCollections.menus)
           .where('sharedByUserId', isEqualTo: userId)
           .get();
 
@@ -202,8 +206,10 @@ class MenuStorage {
       }
 
       // Verify ownership before deletion
-      final doc =
-          await _firestoreRepository.collection('menus').doc(menuId).get();
+      final doc = await _firestoreRepository
+          .collection(FirestoreCollections.menus)
+          .doc(menuId)
+          .get();
 
       if (!doc.exists) {
         AppLogger.warning('Menu not found for deletion: $menuId');
@@ -218,7 +224,10 @@ class MenuStorage {
       }
 
       // Delete from Firestore
-      await _firestoreRepository.collection('menus').doc(menuId).delete();
+      await _firestoreRepository
+          .collection(FirestoreCollections.menus)
+          .doc(menuId)
+          .delete();
 
       AppLogger.success('✅ Menu deleted from Firestore: $menuId');
       return true;
@@ -237,14 +246,19 @@ class MenuStorage {
       if (userId == null) return false;
 
       // Verify ownership
-      final doc =
-          await _firestoreRepository.collection('menus').doc(menuId).get();
+      final doc = await _firestoreRepository
+          .collection(FirestoreCollections.menus)
+          .doc(menuId)
+          .get();
       if (!doc.exists || doc.data()?['sharedByUserId'] != userId) {
         return false;
       }
 
       // Update the document with modified flag
-      await _firestoreRepository.collection('menus').doc(menuId).update({
+      await _firestoreRepository
+          .collection(FirestoreCollections.menus)
+          .doc(menuId)
+          .update({
         'isModified': true,
         'modifiedAt': DateTime.now().toIso8601String(),
       });
@@ -278,9 +292,8 @@ class MenuStorage {
   /// Load imported menu data by key (menus shared with you)
   /// These are stored locally after being imported from social shares
   Future<SavedMenuData?> loadImportedMenuByKey(String menuKey) async {
-    // TODO(imported-menu-flow): Implement imported menu loading from shared_menus collection
-    // Status: Deferred - current social menu flow handles sharing separately
-    // Returns null as imported menus use a different data flow
+    // Stub: imported menus use a separate social sharing flow.
+    // Returns null because shared_menus loading is not yet wired here.
     return null;
   }
 }

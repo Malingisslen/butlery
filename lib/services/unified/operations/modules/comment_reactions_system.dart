@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:get_it/get_it.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Focused module for comment emoji reactions.
 /// Handles toggling emoji reactions on comments using atomic Firestore
@@ -27,7 +28,7 @@ class CommentReactionsSystem {
           'Toggling reaction "$emoji" on comment $commentId for user $userId');
 
       final docRef = _firestoreRepository.firestore
-          .collection('recipe_comments')
+          .collection(FirestoreCollections.recipeComments)
           .doc(commentId);
 
       final doc = await docRef.get();
@@ -69,7 +70,7 @@ class CommentReactionsSystem {
   }) async {
     try {
       final docRef = _firestoreRepository.firestore
-          .collection('recipe_comments')
+          .collection(FirestoreCollections.recipeComments)
           .doc(commentId);
 
       final doc = await docRef.get();

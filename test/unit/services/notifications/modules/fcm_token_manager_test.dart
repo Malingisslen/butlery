@@ -14,7 +14,7 @@ import 'package:get_it/get_it.dart';
 
 // Production code being tested
 import 'package:butlery/services/notifications/modules/fcm_token_manager.dart';
-import 'package:butlery/services/notifications/notification_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_notification_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/notification_preferences.dart';
 

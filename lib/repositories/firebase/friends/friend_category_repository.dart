@@ -31,6 +31,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/modules/friend_category_member_module.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase implementation for friend category management with advanced social organization features.
 /// This repository provides comprehensive friend categorization functionality using Firebase Firestore
@@ -93,9 +94,12 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
   }
 
   CollectionReference<Map<String, dynamic>> _categoriesRef(String userId) =>
-      firestore.collection('users').doc(userId).collection('friendCategories');
+      firestore
+          .collection(FirestoreCollections.users)
+          .doc(userId)
+          .collection(FirestoreCollections.userFriendCategories);
   @override
-  String get collectionName => 'friendCategories';
+  String get collectionName => FirestoreCollections.userFriendCategories;
 
   @override
   FriendCategory fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>

@@ -27,6 +27,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase implementation for friend relationship management with bidirectional consistency and analytics.
 /// This repository provides comprehensive friend relationship functionality using Firebase Firestore
@@ -73,9 +74,12 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
         );
 
   CollectionReference<Map<String, dynamic>> _userFriendsRef(String userId) =>
-      firestore.collection('users').doc(userId).collection('friends');
+      firestore
+          .collection(FirestoreCollections.users)
+          .doc(userId)
+          .collection(FirestoreCollections.userFriends);
   @override
-  String get collectionName => 'public_profiles';
+  String get collectionName => FirestoreCollections.publicProfiles;
 
   @override
   UserProfile fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>

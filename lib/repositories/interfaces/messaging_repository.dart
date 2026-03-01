@@ -181,6 +181,20 @@ abstract class MessagingRepository {
     required String userId,
   });
 
+  /// Vote on a poll option in a message
+  Future<void> votePoll({
+    required String messageId,
+    required String optionId,
+    required String voterId,
+    required bool allowMultiple,
+  });
+
+  /// Close a poll (creator only)
+  Future<void> closePoll({
+    required String messageId,
+    required String closerId,
+  });
+
   /// Update per-user conversation settings (pin, archive, mute)
   Future<void> updateConversationUserSettings({
     required String conversationId,

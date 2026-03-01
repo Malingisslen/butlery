@@ -14,6 +14,7 @@ import 'package:butlery/repositories/firebase/modules/shopping_repository_routin
 import 'package:butlery/repositories/firebase/modules/shopping_repository_query_module.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_item_operations_module.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_template_operations_module.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase Firestore implementation for shopping list operations and template management.
 /// This repository implements the [ShoppingRepository] interface using Firebase Firestore,
@@ -134,7 +135,7 @@ class FirebaseShoppingRepository
   }
 
   @override
-  String get collectionName => 'unified_shopping_lists';
+  String get collectionName => FirestoreCollections.unifiedShoppingLists;
 
   @override
   UnifiedShoppingList fromFirestore(
@@ -199,7 +200,7 @@ class FirebaseShoppingRepository
   }
 
   CollectionReference<Map<String, dynamic>> get _sharedListsRef =>
-      firestore.collection('unified_shared_shopping_lists');
+      firestore.collection(FirestoreCollections.unifiedSharedShoppingLists);
 
   /// Override create method to route collaborative lists to correct collection
   @override
@@ -352,7 +353,7 @@ class FirebaseShoppingRepository
   Stream<List<UnifiedShoppingList>> collaborativeListsStream() =>
       _queryModule.collaborativeListsStream();
   CollectionReference<Map<String, dynamic>> get _templatesRef =>
-      firestore.collection('shoppingListTemplates');
+      firestore.collection(FirestoreCollections.shoppingListTemplates);
 
   @override
   Future<String> saveAsTemplate({

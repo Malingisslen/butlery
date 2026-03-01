@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/services/account/export/export_pagination_helper.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles export of GDPR compliance data: audit logs, consent records.
 /// Implements Article 7 (Consent) and Article 30 (Records of Processing).
@@ -22,7 +23,7 @@ class ComplianceExportManager {
 
       // Get all audit logs for this user
       final auditSnapshot = await _firestore
-          .collection('audit_logs')
+          .collection(FirestoreCollections.auditLogs)
           .where('userId', isEqualTo: userId)
           .orderBy('timestamp', descending: true)
           .limit(1000) // Limit to last 1000 audit entries
@@ -96,9 +97,9 @@ class ComplianceExportManager {
 
       // Get consent records from user's subcollection (limited)
       final consentSnapshot = await _firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('consent')
+          .collection(FirestoreCollections.userConsent)
           .orderBy('timestamp', descending: true)
           .limit(consentLimit)
           .get();
@@ -118,9 +119,9 @@ class ComplianceExportManager {
 
       // Get current consent status
       final currentConsentDoc = await _firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('consent')
+          .collection(FirestoreCollections.userConsent)
           .doc('current')
           .get();
 

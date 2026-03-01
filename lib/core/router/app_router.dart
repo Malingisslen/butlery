@@ -239,8 +239,8 @@ class AppRouter {
         case Routes.realtimeMenu:
           // Navigate to VeckomenyView for collaborative menu
           // The realtime menu ID is passed in arguments for future enhancement
-          // TODO(realtime-menu-sync): Enhance VeckomenyView to load and sync with realtime menu
-          // Status: Deferred - current implementation uses separate realtime menu views
+          // Deferred: VeckomenyView does not yet sync with realtime menus.
+          // Current implementation uses separate realtime menu views.
           return _buildRoute(const vecko.VeckomenyView(), settings,
               Routes.getAnimationType(routeName));
 

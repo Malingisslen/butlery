@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
 import 'package:butlery/services/extraction/platform_detector.dart' as pd;
 
@@ -41,6 +42,8 @@ class HttpContentFetcher {
         }
       }
     } catch (e) {
+      AppLogger.warning(
+          'HttpContentFetcher: Failed to fetch HTML from $url: $e');
       return null;
     }
   }
@@ -68,6 +71,7 @@ class HttpContentFetcher {
         webScraper.dispose();
       }
     } catch (e) {
+      AppLogger.warning('HttpContentFetcher: WebScraper failed for $url: $e');
       return null;
     }
   }

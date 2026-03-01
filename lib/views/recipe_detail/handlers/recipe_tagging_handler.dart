@@ -11,6 +11,7 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Recipe tagging action handler.
 /// Handles manual re-tagging of recipes from the detail view.
@@ -108,7 +109,9 @@ class RecipeTaggingHandler {
       // Close loading dialog if still open
       Navigator.of(context).pop();
       showSnackBar(
-        context.l10n.taggingError(e.toString()),
+        context.l10n.taggingError(
+          SnackBarUtils.userFriendlyMessage(context, e),
+        ),
         backgroundColor: Theme.of(context).colorScheme.error,
       );
     }

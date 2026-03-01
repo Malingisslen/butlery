@@ -23,6 +23,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Conversations list view showing all user's messaging conversations
 /// Provides comprehensive conversation management including:
@@ -173,16 +174,18 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                 desktop: 800,
               ),
             ),
-            child: Column(
-              children: [
-                // Search bar
-                _buildSearchBar(),
+            child: FocusTraversalGroup(
+              child: Column(
+                children: [
+                  // Search bar
+                  _buildSearchBar(),
 
-                // Conversations list
-                Expanded(
-                  child: _buildConversationsList(),
-                ),
-              ],
+                  // Conversations list
+                  Expanded(
+                    child: _buildConversationsList(),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -252,27 +255,26 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         .toList();
     final archived = _filteredConversations.where((c) => c.isArchived).toList();
 
+    // Build a flat list of widgets for indexed access by ListView.builder
+    final items = <Widget>[
+      if (pinned.isNotEmpty) ...[
+        _buildSectionHeader(
+          icon: Icons.push_pin,
+          label: context.l10n.messagingPinned,
+        ),
+        ...pinned.map((c) => _buildConversationItem(c)),
+        Divider(height: 1, color: cs.outlineVariant),
+      ],
+      ...regular.map((c) => _buildConversationItem(c)),
+      if (archived.isNotEmpty) _buildArchivedSection(archived),
+    ];
+
     return RefreshIndicator(
       onRefresh: _refreshConversations,
-      child: ListView(
+      child: ListView.builder(
         padding: const EdgeInsets.symmetric(vertical: AppDimensions.paddingS),
-        children: [
-          // Pinned section
-          if (pinned.isNotEmpty) ...[
-            _buildSectionHeader(
-              icon: Icons.push_pin,
-              label: context.l10n.messagingPinned,
-            ),
-            ...pinned.map((c) => _buildConversationItem(c)),
-            Divider(height: 1, color: cs.outlineVariant),
-          ],
-
-          // Regular section (no header)
-          ...regular.map((c) => _buildConversationItem(c)),
-
-          // Archived section (collapsible)
-          if (archived.isNotEmpty) _buildArchivedSection(archived),
-        ],
+        itemCount: items.length,
+        itemBuilder: (context, index) => items[index],
       ),
     );
   }
@@ -287,23 +289,26 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         horizontal: AppDimensions.paddingL,
         vertical: AppDimensions.paddingS,
       ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: AppDimensions.iconSize14,
-            color: cs.onSurfaceVariant,
-          ),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Text(
-            label,
-            style: AppTextStyles.labelSmall.copyWith(
+      child: Semantics(
+        header: true,
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: AppDimensions.iconSize14,
               color: cs.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
             ),
-          ),
-        ],
+            const SizedBox(width: AppDimensions.spacingXs),
+            Text(
+              label,
+              style: AppTextStyles.labelSmall.copyWith(
+                color: cs.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -505,8 +510,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                 if (mounted) {
                   messenger.showSnackBar(
                     SnackBar(
-                      content:
-                          Text(l10n.messagingCouldNotLeaveGroup(e.toString())),
+                      content: Text(l10n.messagingCouldNotLeaveGroup(
+                        SnackBarUtils.userFriendlyMessage(context, e),
+                      )),
                       backgroundColor: Theme.of(context).colorScheme.error,
                     ),
                   );
@@ -582,11 +588,12 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         arguments: friendProfile,
       );
     } catch (e) {
-      // If friend not found or error occurred, show error message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(l10n.messagingCouldNotShowProfile(e.toString())),
+            content: Text(l10n.messagingCouldNotShowProfile(
+              SnackBarUtils.userFriendlyMessage(context, e),
+            )),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -621,8 +628,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content:
-                Text(l10n.messagingCouldNotDeleteConversation(e.toString())),
+            content: Text(l10n.messagingCouldNotDeleteConversation(
+              SnackBarUtils.userFriendlyMessage(context, e),
+            )),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );

@@ -1,0 +1,13 @@
+/* Swedish localization for iOS permission descriptions */
+
+/* Camera access - for taking photos of recipes and ingredients */
+"NSCameraUsageDescription" = "Butlery behöver tillgång till kameran för att ta bilder av recept och ingredienser";
+
+/* Photo library read access - for selecting images for recipes */
+"NSPhotoLibraryUsageDescription" = "Butlery behöver tillgång till bildgalleriet för att välja bilder till recept";
+
+/* Photo library write access - for saving recipe images */
+"NSPhotoLibraryAddUsageDescription" = "Butlery behöver tillgång till bildgalleriet för att spara bilder av recept";
+
+/* Face ID authentication - for secure login */
+"NSFaceIDUsageDescription" = "Butlery använder Face ID för säker inloggning till ditt konto";

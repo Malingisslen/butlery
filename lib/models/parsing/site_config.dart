@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Configuration for parsing a specific recipe website.
 ///
@@ -177,7 +178,7 @@ class SiteConfig {
 
   /// Creates from Firestore document.
   factory SiteConfig.fromFirestore(Map<String, dynamic> data) => SiteConfig(
-        domain: data['domain'] as String? ?? '',
+        domain: (data['domain'] as String?).orEmpty(),
         titleSelector: data['titleSelector'] as String?,
         ingredientsSelector: data['ingredientsSelector'] as String?,
         instructionsSelector: data['instructionsSelector'] as String?,

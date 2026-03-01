@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Focused module for real-time conflict resolution
 /// This module handles ONLY edit conflict resolution:
@@ -26,7 +27,7 @@ class RealtimeConflictResolver {
 
       // Apply edit immediately (optimistic update)
       await firestore
-          .collection('realtime_recipes')
+          .collection(FirestoreCollections.realtimeRecipes)
           .doc(recipeId)
           .update(editMetadata);
 
@@ -67,8 +68,10 @@ class RealtimeConflictResolver {
           '🔄 Resolving conflicts for recipe $recipeId (${pendingEdits.length} pending edits)');
 
       // Load current recipe state
-      final snapshot =
-          await firestore.collection('realtime_recipes').doc(recipeId).get();
+      final snapshot = await firestore
+          .collection(FirestoreCollections.realtimeRecipes)
+          .doc(recipeId)
+          .get();
 
       if (!snapshot.exists) {
         AppLogger.warning(
@@ -82,7 +85,7 @@ class RealtimeConflictResolver {
 
       // Apply resolved changes
       await firestore
-          .collection('realtime_recipes')
+          .collection(FirestoreCollections.realtimeRecipes)
           .doc(recipeId)
           .update(resolvedData);
 

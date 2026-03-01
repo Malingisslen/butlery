@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
-import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -372,13 +371,12 @@ class _AllergenPreferencesContent extends StatelessWidget {
         retagFunction: (onProgress) async {
           final taggingService = ServiceLocator.get<TaggingService>();
           final authService = ServiceLocator.get<AuthService>();
-          final recipeRepo = ServiceLocator.get<RecipeRepository>();
           final recipeService = ServiceLocator.get<UnifiedRecipeService>();
 
           return await taggingService.retagUserRecipes(
             userId: authService.currentUser!.uid,
-            getRecipes: () =>
-                recipeRepo.fetchAllUserRecipes(authService.currentUser!.uid),
+            getRecipes: () => recipeService.personal
+                .fetchAllUserRecipes(authService.currentUser!.uid),
             saveRecipe: (recipe) => recipeService.personal.updateRecipe(recipe),
             onProgress: onProgress,
           );
