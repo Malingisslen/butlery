@@ -179,11 +179,15 @@ class _AddUnifiedShoppingItemDialogState
         width: double.maxFinite,
         child: Form(
           key: _formKey,
-          child: Column(
+          child: FocusTraversalGroup(
+            policy: OrderedTraversalPolicy(),
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // Article name - focus first
-              StyledInput(
+              FocusTraversalOrder(
+                order: const NumericFocusOrder(1),
+                child: StyledInput(
                 controller: _nameController,
                 autofocus: true,
                 label: context.l10n.shoppingItemName,
@@ -194,7 +198,7 @@ class _AddUnifiedShoppingItemDialogState
                   size: AppDimensions.iconSizeAction,
                 ),
                 validator: FormValidators.shoppingItemName(),
-              ),
+              )),
               const SizedBox(height: AppDimensions.spacingXl),
 
               // Amount and unit on same row - adjusted flex values
@@ -203,7 +207,9 @@ class _AddUnifiedShoppingItemDialogState
                   // Amount (less space - flex: 1)
                   Expanded(
                     flex: 1,
-                    child: StyledInput(
+                    child: FocusTraversalOrder(
+                      order: const NumericFocusOrder(2),
+                      child: StyledInput(
                       controller: _amountController,
                       label: context.l10n.shoppingAmount,
                       hint: '1',
@@ -216,14 +222,16 @@ class _AddUnifiedShoppingItemDialogState
                         decimal: true,
                       ),
                       validator: FormValidators.shoppingItemAmount(),
-                    ),
+                    )),
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
 
                   // Unit - more space for dropdown (flex: 2)
                   Expanded(
                     flex: 2,
-                    child: DropdownButtonFormField<String>(
+                    child: FocusTraversalOrder(
+                      order: const NumericFocusOrder(3),
+                      child: DropdownButtonFormField<String>(
                       initialValue: _selectedUnit,
                       style: AppTextStyles.bodyLarge,
                       decoration: InputDecoration(
@@ -259,14 +267,16 @@ class _AddUnifiedShoppingItemDialogState
                           }
                         }
                       },
-                    ),
+                    )),
                   ),
                 ],
               ),
               const SizedBox(height: AppDimensions.spacingXl),
 
               // Category dropdown
-              DropdownButtonFormField<String>(
+              FocusTraversalOrder(
+                order: const NumericFocusOrder(4),
+                child: DropdownButtonFormField<String>(
                 initialValue: _selectedCategory,
                 style: AppTextStyles.bodyLarge,
                 decoration: InputDecoration(
@@ -300,9 +310,9 @@ class _AddUnifiedShoppingItemDialogState
                     }
                   }
                 },
-              ),
+              )),
             ],
-          ),
+          )),
         ),
       ),
       actions: [

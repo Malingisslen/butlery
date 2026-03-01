@@ -6,7 +6,7 @@ library;
 
 import 'package:flutter/widgets.dart';
 import 'package:butlery/core/bootstrap/stages/bootstrap_stage.dart';
-// Feature flags removed - using modular system only
+import 'package:butlery/core/utils/version_info.dart';
 
 /// Platform stage for basic Flutter and environment setup.
 /// This stage handles the foundational platform initialization that must
@@ -37,7 +37,8 @@ class PlatformStage implements BootstrapStage {
       // Ensure Flutter bindings are initialized
       WidgetsFlutterBinding.ensureInitialized();
 
-      // Basic environment validation - modular DI system enabled
+      // Load version metadata (gracefully fails on web/test)
+      await VersionInfo.initialize();
     } catch (e) {
       throw BootstrapException(
         name,

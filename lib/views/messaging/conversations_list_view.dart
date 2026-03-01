@@ -174,16 +174,18 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                 desktop: 800,
               ),
             ),
-            child: Column(
-              children: [
-                // Search bar
-                _buildSearchBar(),
+            child: FocusTraversalGroup(
+              child: Column(
+                children: [
+                  // Search bar
+                  _buildSearchBar(),
 
-                // Conversations list
-                Expanded(
-                  child: _buildConversationsList(),
-                ),
-              ],
+                  // Conversations list
+                  Expanded(
+                    child: _buildConversationsList(),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

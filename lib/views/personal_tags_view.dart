@@ -130,25 +130,27 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(context),
-      body: Consumer<PersonalTagViewModel>(
-        builder: (context, viewModel, _) {
-          if (viewModel.isLoading && !viewModel.hasTags) {
-            return StateWidget.loading();
-          }
+      body: FocusTraversalGroup(
+        child: Consumer<PersonalTagViewModel>(
+          builder: (context, viewModel, _) {
+            if (viewModel.isLoading && !viewModel.hasTags) {
+              return StateWidget.loading();
+            }
 
-          if (viewModel.hasError) {
-            return StateWidget.error(
-              message: viewModel.error ?? context.l10n.commonErrorOccurred,
-              onAction: viewModel.initialize,
-            );
-          }
+            if (viewModel.hasError) {
+              return StateWidget.error(
+                message: viewModel.error ?? context.l10n.commonErrorOccurred,
+                onAction: viewModel.initialize,
+              );
+            }
 
-          if (!viewModel.hasTags) {
-            return _buildEmptyState(context);
-          }
+            if (!viewModel.hasTags) {
+              return _buildEmptyState(context);
+            }
 
-          return _buildTagList(context, viewModel);
-        },
+            return _buildTagList(context, viewModel);
+          },
+        ),
       ),
     );
   }

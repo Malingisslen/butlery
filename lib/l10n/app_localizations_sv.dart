@@ -182,13 +182,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get validationPasswordRequired => 'Lösenord krävs';
 
   @override
-  String get validationInvalidEmail => 'Ogiltig e-postadress';
-
-  @override
   String get validationInvalidUrl => 'Ogiltig URL';
-
-  @override
-  String get validationInvalidPhone => 'Ogiltigt telefonnummer';
 
   @override
   String get validationInvalidAmount => 'Ogiltigt antal';
@@ -221,9 +215,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get errorNotFound => 'Kunde inte hittas.';
-
-  @override
-  String get errorAlreadyExists => 'Finns redan.';
 
   @override
   String errorCouldNotCreate(String itemType) {
@@ -333,11 +324,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String errorActionSpecific(String action, String issue) {
-    return 'Problem medan $action: $issue';
-  }
-
-  @override
   String successItemCreated(String itemType) {
     return '$itemType skapades!';
   }
@@ -386,9 +372,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get draftRestored => 'Utkast återställt!';
 
   @override
-  String get draftRestoredDetails => 'fält laddades';
-
-  @override
   String get draftCouldNotRestore =>
       'Kunde inte återställa utkast. Börjar med tomt formulär.';
 
@@ -409,59 +392,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get connectivityOfflineMode => 'Offline-läge aktiverat';
-
-  @override
-  String get connectivityRestored => 'Anslutning återställd';
-
-  @override
-  String get connectivitySyncingPending =>
-      'Synkroniserar väntande ändringar...';
-
-  @override
-  String get connectivityLocalSaved => 'Ändringar sparade lokalt';
-
-  @override
-  String get connectivityWillSync => 'Synkroniseras när du är online igen';
-
-  @override
-  String get permissionInsufficient => 'Otillräckliga behörigheter';
-
-  @override
-  String get permissionReadOnly => 'Endast läsrättigheter';
-
-  @override
-  String get permissionOwnerOnly => 'Endast ägaren kan utföra denna åtgärd';
-
-  @override
-  String get permissionRequestEdit => 'Be om redigeringsrättigheter';
-
-  @override
-  String get permissionMakePersonalCopy => 'Skapa personlig kopia';
-
-  @override
-  String get recoveryCheckConnection => 'Kontrollera internetanslutningen';
-
-  @override
-  String get recoveryTryAgain => 'Försök igen';
-
-  @override
-  String get recoveryLoginAgain => 'Logga in på nytt';
-
-  @override
-  String get recoveryContactOwner => 'Kontakta ägaren';
-
-  @override
-  String get recoveryWaitAndRetry => 'Vänta och försök igen';
-
-  @override
-  String get recoveryCheckPermissions => 'Kontrollera behörigheter';
-
-  @override
   String get emptyNoItems => 'Inga objekt hittades.';
-
-  @override
-  String get emptyList => 'Listan är tom.';
 
   @override
   String get emptyNoResults => 'Inga resultat hittades.';
@@ -471,9 +402,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get emptyNoRecipes => 'Du har inga recept än.';
-
-  @override
-  String get emptyNoShoppingLists => 'Du har inga inköpslistor än.';
 
   @override
   String emptyNoRecipesSubtitle(String addButton) {
@@ -585,22 +513,13 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get socialFriendName => 'Vännamn';
-
-  @override
   String get socialGroupName => 'Gruppnamn';
-
-  @override
-  String get socialDisplayName => 'Visningsnamn';
 
   @override
   String get socialCreateGroup => 'Skapa grupp';
 
   @override
   String get socialEditGroup => 'Redigera grupp';
-
-  @override
-  String get socialDeleteGroup => 'Ta bort grupp';
 
   @override
   String get socialAddFriend => 'Lägg till vän';
@@ -610,12 +529,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get socialSendFriendRequest => 'Skicka vänförfrågan';
-
-  @override
-  String get socialAcceptFriendRequest => 'Acceptera vänförfrågan';
-
-  @override
-  String get socialDeclineFriendRequest => 'Avböj vänförfrågan';
 
   @override
   String get menuName => 'Menynamn';
@@ -855,43 +768,13 @@ class AppLocalizationsSv extends AppLocalizations {
       'Är du säker på att du vill ta bort meddelandet?';
 
   @override
-  String get placeholderSearch => 'Sök...';
-
-  @override
-  String get placeholderName => 'Ange namn';
-
-  @override
-  String get placeholderDescription => 'Ange beskrivning (valfritt)';
-
-  @override
-  String get placeholderEmail => 'din@email.com';
-
-  @override
-  String get placeholderUrl => 'https://exempel.se';
-
-  @override
-  String get placeholderPhone => '+46 70 123 45 67';
-
-  @override
   String get statusConnecting => 'Ansluter...';
 
   @override
   String get statusSyncing => 'Synkroniserar...';
 
   @override
-  String get statusUploading => 'Laddar upp...';
-
-  @override
-  String get statusDownloading => 'Laddar ner...';
-
-  @override
-  String get statusProcessing => 'Bearbetar...';
-
-  @override
   String get statusSaving => 'Sparar...';
-
-  @override
-  String get statusDeleting => 'Tar bort...';
 
   @override
   String get statusCreating => 'Skapar...';
@@ -900,73 +783,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get statusUpdating => 'Uppdaterar...';
 
   @override
-  String get accessibilityMenuButton => 'Menyknapp';
-
-  @override
   String get accessibilityBackButton => 'Tillbaka';
-
-  @override
-  String get accessibilityCloseButton => 'Stäng';
-
-  @override
-  String get accessibilityMoreOptions => 'Fler alternativ';
-
-  @override
-  String get accessibilityExpandButton => 'Expandera';
-
-  @override
-  String get accessibilityCollapseButton => 'Kollapsa';
-
-  @override
-  String get timeToday => 'Idag';
-
-  @override
-  String get timeYesterday => 'Igår';
-
-  @override
-  String get timeTomorrow => 'Imorgon';
-
-  @override
-  String get timeThisWeek => 'Denna vecka';
-
-  @override
-  String get timeLastWeek => 'Förra veckan';
-
-  @override
-  String get timeNextWeek => 'Nästa vecka';
 
   @override
   String get unitMinutesShort => 'min';
 
   @override
   String get unitHoursShort => 'h';
-
-  @override
-  String get unitPiecesShort => 'st';
-
-  @override
-  String get unitLiters => 'liter';
-
-  @override
-  String get unitKilograms => 'kg';
-
-  @override
-  String get unitGrams => 'g';
-
-  @override
-  String get technicalShowDetails => 'Visa tekniska detaljer';
-
-  @override
-  String get technicalHideDetails => 'Dölj tekniska detaljer';
-
-  @override
-  String get technicalInformation => 'Teknisk information';
-
-  @override
-  String get technicalContactSupport => 'Kontakta support';
-
-  @override
-  String get technicalTryAgainLater => 'Försök igen senare';
 
   @override
   String get dialogErrorTitle => 'Ett fel uppstod';
@@ -1022,17 +845,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get recipePersonalTags => 'Personliga taggar';
-
-  @override
-  String recipeIngredientsForPortions(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'portioner',
-      one: 'portion',
-    );
-    return 'Ingredienser för $count $_temp0:';
-  }
 
   @override
   String get recipeAnalysisFailed => 'Analys misslyckades';
@@ -1280,12 +1092,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commonSaveChanges => 'Spara ändringar';
 
   @override
-  String get commonSaveMyCopy => 'Spara min kopia';
-
-  @override
-  String get commonSaveAsNew => 'Spara som ny';
-
-  @override
   String get commonSelectAll => 'Välj alla';
 
   @override
@@ -1318,15 +1124,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commonLogoutNow => 'Logga ut nu';
 
   @override
-  String get commonNoAccess => 'Ingen åtkomst';
-
-  @override
-  String get commonCreatingCopy => 'Skapar kopia...';
-
-  @override
-  String get commonToHome => 'Till start';
-
-  @override
   String get commonTakePhoto => 'Ta foto';
 
   @override
@@ -1334,9 +1131,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get commonSelectFriends => 'Välj vänner';
-
-  @override
-  String get commonNoContent => 'Inget innehåll';
 
   @override
   String commonRemoveLabel(String label) {
@@ -2256,9 +2050,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingCreateFirstList => 'Skapa din första inköpslista...';
 
   @override
-  String get shoppingCreateListButton => 'Skapa lista';
-
-  @override
   String get shoppingPreviewAndEditItems =>
       'Förhandsgranska och redigera artiklar';
 
@@ -2284,9 +2075,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingLoadingLists => 'Laddar listor...';
 
   @override
-  String get shoppingErrorLoading => 'Fel vid laddning';
-
-  @override
   String get shoppingLists => 'Inköpslistor';
 
   @override
@@ -2297,11 +2085,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get shoppingNoItemsFromMenu => 'Inga artiklar valda från menyn';
-
-  @override
-  String shoppingAddItemsCount(int count) {
-    return 'Lägg till $count artiklar...';
-  }
 
   @override
   String get shoppingPreview => 'Förhandsgranska';
@@ -2315,21 +2098,6 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String shoppingListCreated(String name) {
     return 'Lista \"$name\" skapad';
-  }
-
-  @override
-  String shoppingCouldNotCreateList(String error) {
-    return 'Kunde inte skapa lista: $error';
-  }
-
-  @override
-  String shoppingItemsAddedToList(int count, String name) {
-    return '$count artiklar tillagda i \"$name\"';
-  }
-
-  @override
-  String shoppingCouldNotAddItems(String error) {
-    return 'Kunde inte lägga till artiklar: $error';
   }
 
   @override
@@ -2387,9 +2155,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileFriends => 'Vänner';
 
   @override
-  String get profileDataAndBackup => 'Data & Backup';
-
-  @override
   String get profileDownloadBackup => 'Ladda ner backup';
 
   @override
@@ -2410,20 +2175,6 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get profilePrivacyPolicySubtitle =>
       'Läs om hur vi hanterar dina personuppgifter (GDPR)';
-
-  @override
-  String get profileManageConsents => 'Hantera samtycken';
-
-  @override
-  String get profileManageConsentsSubtitle =>
-      'Välj hur vi får behandla dina personuppgifter (GDPR)';
-
-  @override
-  String get profileExportMyData => 'Exportera mina data';
-
-  @override
-  String get profileExportMyDataSubtitle =>
-      'Ladda ner all din data i JSON-format (GDPR)';
 
   @override
   String get profileDeleteAccountSubtitle =>
@@ -2464,11 +2215,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String profileCouldNotOpenConsentManager(String error) {
-    return 'Kunde inte öppna samtyckeshantering: $error';
-  }
-
-  @override
   String profileCouldNotOpenDataExport(String error) {
     return 'Kunde inte öppna dataexport: $error';
   }
@@ -2495,19 +2241,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shareShoppingList => 'Dela inköpslista';
 
   @override
-  String get shareCheckOutRecipe => 'Kolla in detta recept:';
-
-  @override
-  String get shareCheckOutMenu => 'Kolla in denna veckomeny:';
-
-  @override
-  String get shareCheckOutShoppingList => 'Kolla in denna inköpslista:';
-
-  @override
   String get shareRealtime => 'realtidsdelning';
-
-  @override
-  String get shareCopy => 'kopia';
 
   @override
   String get shareSelectAtLeastOneFriend => 'Välj minst en vän för att dela';
@@ -2538,12 +2272,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get shareRecipes => 'recept';
-
-  @override
-  String get shareMenus => 'menyer';
-
-  @override
-  String get shareShoppingLists => 'inköpslistor';
 
   @override
   String get shareMessageOptional => 'Meddelande (valfritt)';
@@ -2603,34 +2331,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuNoSavedMenus => 'Inga sparade menyer';
 
   @override
-  String get menuSavedMenusSavedEarlier => 'Sparad tidigare';
-
-  @override
-  String get menuLoadMenu => 'Ladda';
-
-  @override
-  String get menuRemoveMenu => 'Ta bort';
-
-  @override
-  String get menuRemoveMenuTitle => 'Ta bort meny';
-
-  @override
-  String get menuMenuNameRequired => 'Menynamn krävs';
-
-  @override
-  String get menuMenuToSave => 'Meny att spara';
-
-  @override
-  String get menuCommentOptional => 'Kommentar (valfritt)';
-
-  @override
   String get menuCommentHint => 'Beskrivning eller noteringar om menyn';
 
   @override
   String get menuShareWithFriends => 'Dela med vänner';
-
-  @override
-  String get menuShareThisMenu => 'Dela denna meny med valda vänner';
 
   @override
   String get menuSelectFriendsToShare => 'Välj vänner att dela med';
@@ -2639,22 +2343,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuNoFriendsAvailable => 'Inga vänner tillgängliga';
 
   @override
-  String get menuDefaultShareMessage => 'Kolla min nya veckomeny!';
-
-  @override
   String get menuShareMessageLabel => 'Delningsmeddelande';
 
   @override
   String get menuShareMessageHint => 'Meddelande som skickas med menyn';
-
-  @override
-  String get menuMenuNameHint => 'T.ex. Vecka 45 eller Helgmeny';
-
-  @override
-  String get menuUnnamedMenu => 'Namnlös meny';
-
-  @override
-  String get socialUnknownUser => 'Okänd användare';
 
   @override
   String get socialShared => 'Delat';
@@ -2712,24 +2404,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get socialJustNow => 'just nu';
-
-  @override
-  String socialMinutesAgo(int count) {
-    return '$count min sedan';
-  }
-
-  @override
-  String socialHoursAgo(int count) {
-    return '$count timmar sedan';
-  }
-
-  @override
-  String socialDaysAgo(int count) {
-    return '$count dagar sedan';
-  }
-
-  @override
   String get socialPermissionOwner => 'Ägare';
 
   @override
@@ -2770,12 +2444,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialLoadingCategories => 'Laddar kategorier...';
 
   @override
-  String get socialSelectAllLabel => 'Markera alla';
-
-  @override
-  String get socialDeselectAllLabel => 'Avmarkera alla';
-
-  @override
   String get socialInvertLabel => 'Invertera';
 
   @override
@@ -2805,25 +2473,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get invitationSortByMembers => 'Medlemmar';
 
   @override
-  String get invitationAll => 'Alla';
-
-  @override
-  String get invitationNone => 'Inga';
-
-  @override
-  String get invitationGroups => 'Grupper';
-
-  @override
   String get invitationIndividuals => 'Individer';
 
   @override
-  String get invitationAddTarget => 'Lägg till målgrupp';
-
-  @override
   String get invitationSendInvitations => 'Skicka inbjudningar';
-
-  @override
-  String get invitationCreateGroup => 'Skapa grupp';
 
   @override
   String get invitationAffectedTargets => 'Berörda målgrupper:';
@@ -2836,9 +2489,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get invitationInvite => 'Inbjud';
-
-  @override
-  String get invitationViewMembers => 'Visa medlemmar';
 
   @override
   String get invitationLoadingTargets => 'Laddar målgrupper...';
@@ -4840,9 +4490,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeWriteManually => 'Skriv manuellt';
 
   @override
-  String get searchRecipesHint => 'sök bland recepten...';
-
-  @override
   String get shoppingAddItems => 'Lägg till';
 
   @override
@@ -5764,9 +5411,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get stateGenerateMenu => 'Generera meny';
 
   @override
-  String get commonStart => 'Starta';
-
-  @override
   String groupInvitationsCount(int count) {
     return 'Gruppinbjudningar ($count)';
   }
@@ -6395,9 +6039,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingCategoryHint => 'Välj kategori...';
 
   @override
-  String get shoppingCategoryOther => 'Övrigt';
-
-  @override
   String get shoppingClear => 'Rensa';
 
   @override
@@ -7005,12 +6646,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get authEmailHint => 'namn@exempel.se';
 
   @override
-  String get authNoAccountSignUp => 'Har du inget konto? Skapa konto';
-
-  @override
-  String get authHasAccountLogin => 'Har du redan ett konto? Logga in';
-
-  @override
   String get authTermsOfService => 'Villkor';
 
   @override
@@ -7186,21 +6821,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String sharedMenusCount(int count) {
-    return 'Menyer ($count)';
-  }
-
-  @override
-  String sharedRecipesCount(int count) {
-    return 'Recept ($count)';
-  }
-
-  @override
-  String sharedShoppingListsCount(int count) {
-    return 'Inköpslistor ($count)';
-  }
-
-  @override
   String shoppingCouldNotOpenShareMenu(String error) {
     return 'Kunde inte öppna delningsmenyn: $error';
   }
@@ -7285,15 +6905,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String a11ySharedShoppingList(String listName) {
     return 'Delad inköpslista: $listName';
   }
-
-  @override
-  String get a11yDismissSharedRecipe => 'Avvisa delat recept';
-
-  @override
-  String get a11yDismissSharedMenu => 'Avvisa delad meny';
-
-  @override
-  String get a11yDeclineSharedShoppingList => 'Avvisa delad inköpslista';
 
   @override
   String get a11yPrimaryImageTap =>
@@ -7630,9 +7241,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get menuNoRatingsYet => 'Inga betyg än';
-
-  @override
   String get menuTapToRate => 'Tryck för att betygsätta';
 
   @override
@@ -7643,9 +7251,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get menuRatingFailed => 'Kunde inte spara betyg';
-
-  @override
-  String get menuRemoveRating => 'Ta bort betyg';
 
   @override
   String get menuMustBeLoggedInToRate =>
@@ -7688,9 +7293,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingConvertError => 'Kunde inte omvandla listan';
 
   @override
-  String get shoppingConvertSelectFriends => 'Välj minst en vän';
-
-  @override
   String get shoppingDescriptionLabel => 'Beskrivning (valfritt)';
 
   @override
@@ -7722,25 +7324,11 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get menuTemplateSaveFailed => 'Kunde inte spara mall';
-
-  @override
-  String get menuTemplateLoadTemplate => 'Ladda mall';
-
-  @override
   String get menuTemplateNoTemplates => 'Inga mallar';
 
   @override
   String get menuTemplateNoTemplatesDescription =>
       'Du har inga sparade menymmallar. Spara en meny som mall för att återanvända kategoristrukturen.';
-
-  @override
-  String get menuTemplateBrowseTitle => 'Menymmallar';
-
-  @override
-  String menuTemplateCategories(int count) {
-    return '$count kategorier';
-  }
 
   @override
   String menuTemplateRecipes(int count) {
@@ -8091,44 +7679,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get cookingModePortions => 'Portioner';
 
   @override
-  String get faqTitle => 'Vanliga fragor';
-
-  @override
-  String get faqImportQuestion => 'Hur importerar jag recept?';
-
-  @override
-  String get faqImportAnswer =>
-      'Du kan importera recept pa flera satt: klistra in en URL fran en receptsida, ta ett foto av ett recept, eller klistra in recepttext direkt. Tryck pa \"Lagg till\" pa startsidan och valj metod.';
-
-  @override
-  String get faqShareQuestion => 'Hur delar jag recept med vanner?';
-
-  @override
-  String get faqShareAnswer =>
-      'Oppna ett recept och tryck pa dela-ikonen. Du kan skicka receptet till vanner som anvander Butlery, eller dela en lank. Dina vanner kan sedan spara receptet till sin egen samling.';
-
-  @override
-  String get faqMenuQuestion => 'Hur anvander jag veckomeny?';
-
-  @override
-  String get faqMenuAnswer =>
-      'Ga till veckomeny via navigeringen. Dar kan du planera veckans maltider genom att lagga till recept fran din samling. Ingredienser fran menyn kan skickas direkt till inkopslistan.';
-
-  @override
-  String get faqTagsQuestion => 'Hur skapar jag personliga taggar?';
-
-  @override
-  String get faqTagsAnswer =>
-      'Ga till profilen och valj \"Mina taggar\". Dar kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept for enkel filtrering.';
-
-  @override
-  String get faqReportQuestion => 'Hur rapporterar jag problem?';
-
-  @override
-  String get faqReportAnswer =>
-      'Tryck pa \"!\"-knappen som syns langst ner till hoger pa varje sida. Dar kan du beskriva problemet, valja kategori och bifoga en skarmavbild. Vi laser all feedback!';
-
-  @override
   String get feedbackSendLabel => 'Skicka feedback';
 
   @override
@@ -8162,15 +7712,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get feedbackSendButton => 'Skicka';
 
   @override
-  String get feedbackValidationEmpty => 'Ange en beskrivning';
-
-  @override
-  String get feedbackSuccessMessage => 'Tack for din feedback!';
-
-  @override
-  String get feedbackErrorMessage => 'Kunde inte skicka feedback. Forsok igen.';
-
-  @override
   String get substitutionEmptyState => 'Inga ersattningar hittades';
 
   @override
@@ -8188,9 +7729,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get pollRemoveOption => 'Ta bort alternativ';
-
-  @override
   String get pollAddOption => 'Lägg till alternativ';
 
   @override
@@ -8201,20 +7739,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get pollCreate => 'Skapa omröstning';
-
-  @override
-  String pollVoteCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count röster',
-      one: '1 röst',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get pollEnded => 'Avslutad';
 
   @override
   String get pollClose => 'Stäng omröstning';
@@ -8268,10 +7792,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get errorNoItemsFound => 'Inga objekt hittades.';
-
-  @override
-  String get errorNetworkCheckConnection =>
-      'Nätverksfel. Kontrollera din internetanslutning.';
 
   @override
   String get errorNoUserLoggedIn => 'Ingen användare är inloggad';
@@ -8362,12 +7882,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get errorTimeMustBePositive => 'Tid måste vara större än 0 minuter';
-
-  @override
-  String get errorIngredientCannotBeEmpty => 'Ingrediens kan inte vara tom';
-
-  @override
-  String get errorInstructionCannotBeEmpty => 'Instruktion kan inte vara tom';
 
   @override
   String get errorRecipeNeedsIngredient =>
@@ -8470,21 +7984,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorImportConditionsNotMet => 'Importvillkor inte uppfyllda';
 
   @override
-  String get errorSelectAtLeastOneIngredient => 'Välj minst en ingrediens';
-
-  @override
-  String get errorSelectAtLeastOneInstruction => 'Välj minst en instruktion';
-
-  @override
-  String get errorEnterRecipeName => 'Ange ett receptnamn';
-
-  @override
-  String get errorAddAtLeastOneIngredient => 'Lägg till minst en ingrediens';
-
-  @override
-  String get errorAddAtLeastOneInstruction => 'Lägg till minst en instruktion';
-
-  @override
   String get errorImportFailed => 'Import misslyckades';
 
   @override
@@ -8578,10 +8077,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorDescriptionTooLong => 'Beskrivning för lång';
 
   @override
-  String get errorMustSelectAtLeastOneFriend =>
-      'Du måste välja minst en vän att dela med';
-
-  @override
   String get errorGroupNameRequired => 'Gruppnamn krävs';
 
   @override
@@ -8652,12 +8147,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorNameAlreadyTaken => 'Detta namn är redan taget';
 
   @override
-  String get errorNameRequired => 'Namn krävs';
-
-  @override
-  String get errorNameInvalidCharacters => 'Namnet innehåller ogiltiga tecken';
-
-  @override
   String get errorNoPermissionToManageParticipants =>
       'Ingen behörighet att hantera deltagare';
 
@@ -8705,9 +8194,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorSharedTagNotFound => 'Delad tagg hittades inte';
 
   @override
-  String get errorCannotRemoveOwner => 'Kan inte ta bort ägaren från resursen';
-
-  @override
   String get errorOwnerMustKeepPermission =>
       'Ägaren måste behålla owner-behörighet';
 
@@ -8719,12 +8205,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get errorCouldNotValidateImage => 'Kunde inte validera bild';
-
-  @override
-  String get errorCouldNotReadImageSize => 'Kunde inte läsa bildstorlek';
-
-  @override
-  String get errorImageDoesNotExist => 'Bilden finns inte';
 
   @override
   String get actionRecipeSaving => 'sparar recept';
@@ -8989,43 +8469,16 @@ class AppLocalizationsSv extends AppLocalizations {
   String get statusReconnecting => 'Återansluter...';
 
   @override
-  String get statusFetchingContent => 'Hämtar innehåll...';
-
-  @override
-  String get statusAnalyzingRecipe => 'Analyserar recept...';
-
-  @override
-  String get statusCreatingRecipe => 'Skapar recept...';
-
-  @override
   String get statusDone => 'Klar!';
-
-  @override
-  String get statusNeedsHelp => 'Behöver din hjälp';
-
-  @override
-  String get displayUnknownContent => 'Okänt innehåll';
-
-  @override
-  String get displayEmptyList => 'Tom lista';
 
   @override
   String get displayOnlyYou => 'Bara du';
 
   @override
-  String get displayNoDate => 'Inget datum';
-
-  @override
   String get displayUnknownUser => 'Okänd användare';
 
   @override
-  String get displayUntitledRecipe => 'Namnlöst recept';
-
-  @override
   String get displayNoConsent => 'Inget samtycke';
-
-  @override
-  String get displayNoActivity => 'Ingen aktivitet';
 
   @override
   String get resourceTypeRecipe => 'Recept';
@@ -9120,12 +8573,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get notificationTitleShoppingLists => 'Inköpslistor';
-
-  @override
-  String get notificationTitleSocialActivity => 'Social aktivitet';
-
-  @override
-  String get notificationTitleNewActivity => 'Ny aktivitet';
 
   @override
   String get errorWeakPassword =>
@@ -10913,11 +10360,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String timeCompactWeeks(int count) {
-    return '${count}w';
-  }
-
-  @override
   String get expiresExpired => 'Utgången';
 
   @override
@@ -11030,9 +10472,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get commentDeleted => '[Kommentar borttagen]';
 
   @override
-  String get labelSharedMenu => 'Delad meny';
-
-  @override
   String sharedMenuTitlePattern(String name) {
     return '${name}s veckomeny';
   }
@@ -11112,9 +10551,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeSharingStatus => 'Delningsstatus';
 
   @override
-  String get recipeSharingSharedWith => 'Delat med';
-
-  @override
   String get recipeSharingStopAll => 'Sluta dela med alla';
 
   @override
@@ -11142,9 +10578,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get recipeSharingGroups => 'Grupper';
-
-  @override
-  String get recipeSharingNoShares => 'Inte delat med någon';
 
   @override
   String get menuRatingRemoveTitle => 'Ta bort betyg?';
@@ -11184,11 +10617,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingTemplateDelete => 'Ta bort mall';
 
   @override
-  String shoppingTemplateDeleteConfirm(String name) {
-    return 'Vill du ta bort mallen \"$name\"?';
-  }
-
-  @override
   String get shoppingTemplateDeleted => 'Mall borttagen';
 
   @override
@@ -11203,12 +10631,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String shoppingTemplateUsedCount(int count) {
     return 'Använd $count gånger';
   }
-
-  @override
-  String get shoppingCategoryCollapse => 'Fäll ihop';
-
-  @override
-  String get shoppingCategoryExpand => 'Expandera';
 
   @override
   String get labelButleryUser => 'Butlery-användare';
@@ -11454,21 +10876,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get actionReport => 'Rapportera';
 
   @override
-  String get shoppingCatMeatFish => 'Kött & fisk';
-
-  @override
-  String get shoppingCatDairy => 'Mejeri';
-
-  @override
-  String get shoppingCatFruitVeg => 'Frukt & grönt';
-
-  @override
-  String get shoppingCatBreadGrain => 'Bröd & spannmål';
-
-  @override
-  String get shoppingCatPantry => 'Skafferi';
-
-  @override
   String get shareIngredientsLabel => 'Ingredienser:';
 
   @override
@@ -11625,9 +11032,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get unknownUser => 'Okänd användare';
-
-  @override
   String get validationTitleMissing => 'Titel saknas';
 
   @override
@@ -11638,9 +11042,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get validationMealTypeMissing => 'Måltidstyp saknas';
-
-  @override
-  String get unknownActivity => 'Okänd aktivitet';
 
   @override
   String get shareMinutesAbbrev => 'min';
@@ -11865,79 +11266,12 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get socialPermissionOwnerLabel => 'Ägare';
-
-  @override
-  String get socialPermissionAdminLabel => 'Admin';
-
-  @override
-  String get socialPermissionEditorLabel => 'Redigera';
-
-  @override
-  String get socialPermissionViewerLabel => 'Läsa';
-
-  @override
   String get restoreDraft => 'Återställ';
-
-  @override
-  String get startFresh => 'Börja om';
-
-  @override
-  String get couldNotRestoreDraft =>
-      'Kunde inte återställa utkast. Börjar med tomt formulär.';
-
-  @override
-  String get restoringDraft => 'Återställer utkast...';
-
-  @override
-  String get unnamedRecipe => 'Namnlöst recept';
 
   @override
   String fieldsFilledCount(int count) {
     return '$count fält ifyllda';
   }
-
-  @override
-  String get showTechnicalDetails => 'Visa tekniska detaljer';
-
-  @override
-  String get hideTechnicalDetails => 'Dölj tekniska detaljer';
-
-  @override
-  String get contactSupport => 'Kontakta support';
-
-  @override
-  String get tryAgainLater => 'Försök igen senare';
-
-  @override
-  String get offlineMode => 'Offline-läge aktiverat';
-
-  @override
-  String get syncingPendingChanges => 'Synkroniserar väntande ändringar...';
-
-  @override
-  String get localChangesSaved => 'Ändringar sparade lokalt';
-
-  @override
-  String get willSyncWhenOnline => 'Synkroniseras när du är online igen';
-
-  @override
-  String get insufficientPermissions => 'Otillräckliga behörigheter';
-
-  @override
-  String get readOnlyAccess => 'Endast läsrättigheter';
-
-  @override
-  String get ownerOnlyAction => 'Endast ägaren kan utföra denna åtgärd';
-
-  @override
-  String get requestEditAccess => 'Be om redigeringsrättigheter';
-
-  @override
-  String get noItemsFound => 'Inga objekt hittades.';
-
-  @override
-  String get noResults => 'Inga resultat hittades.';
 
   @override
   String get noFriends => 'Du har inga vänner än.';
@@ -11946,49 +11280,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get noRecipes => 'Du har inga recept än.';
 
   @override
-  String get noShoppingLists => 'Du har inga inköpslistor än.';
-
-  @override
   String get addRecipe => 'Lägg till recept';
 
   @override
   String get editRecipe => 'Redigera recept';
-
-  @override
-  String get deleteRecipeAction => 'Ta bort recept';
-
-  @override
-  String get searchPlaceholder => 'Sök...';
-
-  @override
-  String get namePlaceholder => 'Ange namn';
-
-  @override
-  String get descriptionPlaceholder => 'Ange beskrivning (valfritt)';
-
-  @override
-  String get emailPlaceholder => 'din@email.com';
-
-  @override
-  String get urlPlaceholder => 'https://exempel.se';
-
-  @override
-  String get phonePlaceholder => '+46 70 123 45 67';
-
-  @override
-  String get makePersonalCopy => 'Skapa personlig kopia';
-
-  @override
-  String get checkConnection => 'Kontrollera internetanslutningen';
-
-  @override
-  String get loginAgain => 'Logga in på nytt';
-
-  @override
-  String get contactOwner => 'Kontakta ägaren';
-
-  @override
-  String get waitAndRetry => 'Vänta och försök igen';
 
   @override
   String get checkPermissions => 'Kontrollera behörigheter';
@@ -12011,11 +11306,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get sharedFallback => 'Delat';
-
-  @override
-  String deleteItemType(String itemType) {
-    return 'Ta bort $itemType?';
-  }
 
   @override
   String get accountSecurityTitle => 'Kontosäkerhet';
@@ -12105,10 +11395,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get errorDeleteFailed =>
-      'Kunde inte ta bort receptet. Det har återställts.';
-
-  @override
   String get profileFaq => 'Vanliga frågor';
 
   @override
@@ -12122,4 +11408,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get tagImportedSuccess => 'Taggen importerades';
+
+  @override
+  String get noResults => 'Inga resultat';
 }
