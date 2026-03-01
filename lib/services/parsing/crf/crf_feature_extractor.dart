@@ -2,12 +2,17 @@ import 'package:butlery/constants/known_ingredients.dart';
 import 'package:butlery/constants/preparation_words.dart';
 import 'package:butlery/utils/text/quantity_parser.dart';
 import 'package:butlery/utils/text/swedish_compound_splitter.dart';
+import 'package:butlery/utils/text/swedish_definite_normalizer.dart';
 import 'package:butlery/utils/text/unit_definitions.dart';
 
 /// Extracts per-token features for CRF ingredient parsing.
 ///
 /// Returns sparse feature vectors (`Map<String, double>`) for each token,
 /// including context window features from neighboring tokens.
+///
+/// Accepts an optional [enrichedIngredients] set from Firebase to supplement
+/// the static [KnownIngredients] registry. When provided, food detection
+/// checks both the static and enriched sets.
 class CrfFeatureExtractor {
   static final _digitPattern = RegExp(r'^[\d,.\-/]+$');
   static final _rangePattern = RegExp(r'^\d+-\d+$');
@@ -26,6 +31,20 @@ class CrfFeatureExtractor {
     'knappt',
     'lite',
   };
+
+  /// Optional enriched ingredient set from Firebase/Firestore.
+  /// When provided, supplements the static KnownIngredients for food detection.
+  final Set<String>? _enrichedIngredients;
+
+  CrfFeatureExtractor({Set<String>? enrichedIngredients})
+      : _enrichedIngredients = enrichedIngredients;
+
+  /// Checks if a token is a known food ingredient.
+  /// Uses enriched Firebase ingredients when available, falls back to static.
+  bool _isFood(String lower) {
+    if (KnownIngredients.isKnown(lower)) return true;
+    return _enrichedIngredients?.contains(lower) ?? false;
+  }
 
   /// Extracts features for all tokens in a sequence.
   ///
@@ -62,6 +81,27 @@ class CrfFeatureExtractor {
       _addTokenFeatures(features, lowered[index + 1], 'next.');
     }
 
+    // Bigram features (captures word transitions)
+    final current = lowered[index];
+    if (index > 0) {
+      features['bigram.prev=${lowered[index - 1]}|cur=$current'] = 1.0;
+    }
+    if (index < lowered.length - 1) {
+      features['bigram.cur=$current|next=${lowered[index + 1]}'] = 1.0;
+    }
+
+    // Type-level bigram features (more generalizable than word-level)
+    if (index > 0) {
+      final prevType = _tokenType(lowered[index - 1]);
+      final curType = _tokenType(current);
+      features['typeBigram.prev=$prevType|cur=$curType'] = 1.0;
+    }
+    if (index < lowered.length - 1) {
+      final curType = _tokenType(current);
+      final nextType = _tokenType(lowered[index + 1]);
+      features['typeBigram.cur=$curType|next=$nextType'] = 1.0;
+    }
+
     // Window-2 context (reduced feature set for efficiency)
     if (index > 1) {
       _addReducedFeatures(features, lowered[index - 2], 'prev2.');
@@ -84,8 +124,7 @@ class CrfFeatureExtractor {
         QuantityParser.isFraction(lower) ? 1.0 : 0.0;
     features['${prefix}word.isUnit'] =
         UnitDefinitions.isKnownUnit(lower) ? 1.0 : 0.0;
-    features['${prefix}word.isFood'] =
-        KnownIngredients.isKnown(lower) ? 1.0 : 0.0;
+    features['${prefix}word.isFood'] = _isFood(lower) ? 1.0 : 0.0;
     features['${prefix}word.isPrep'] =
         PreparationWords.isPreparationState(lower) ? 1.0 : 0.0;
     features['${prefix}word.isSize'] =
@@ -109,6 +148,13 @@ class CrfFeatureExtractor {
       features['${prefix}word.compoundSuffix=${compoundSplit.$2}'] = 1.0;
     }
 
+    // Definite form detection (löken → lök)
+    final baseForm = SwedishDefiniteNormalizer.tryNormalize(lower);
+    features['${prefix}word.isDefinite'] = baseForm != null ? 1.0 : 0.0;
+    if (baseForm != null) {
+      features['${prefix}word.baseForm=$baseForm'] = 1.0;
+    }
+
     // Length feature (normalized)
     features['${prefix}word.len'] = lower.length / 20.0;
 
@@ -121,6 +167,11 @@ class CrfFeatureExtractor {
       features['${prefix}word.suffix3=${lower.substring(lower.length - 3)}'] =
           1.0;
     }
+
+    // Prefix features (helps distinguish units like "dl" and preps like "de")
+    if (lower.length >= 2) {
+      features['${prefix}word.prefix2=${lower.substring(0, 2)}'] = 1.0;
+    }
   }
 
   /// Reduced feature set for window-2 context (only most discriminative).
@@ -132,8 +183,7 @@ class CrfFeatureExtractor {
     features['${prefix}word.isDigit'] = _isDigit(lower) ? 1.0 : 0.0;
     features['${prefix}word.isUnit'] =
         UnitDefinitions.isKnownUnit(lower) ? 1.0 : 0.0;
-    features['${prefix}word.isFood'] =
-        KnownIngredients.isKnown(lower) ? 1.0 : 0.0;
+    features['${prefix}word.isFood'] = _isFood(lower) ? 1.0 : 0.0;
     features['${prefix}word.isPrep'] =
         PreparationWords.isPreparationState(lower) ? 1.0 : 0.0;
   }
@@ -148,5 +198,20 @@ class CrfFeatureExtractor {
 
   bool _isGroupHeader(String s) {
     return s.endsWith(':') && s.length > 1;
+  }
+
+  /// Classifies a token into a coarse type for type-level bigram features.
+  String _tokenType(String lower) {
+    if (_isDigit(lower) || QuantityParser.isFraction(lower)) return 'NUM';
+    if (UnitDefinitions.isKnownUnit(lower)) return 'UNIT';
+    if (_isFood(lower)) return 'FOOD';
+    if (SwedishDefiniteNormalizer.isDefiniteForm(lower)) return 'FOOD';
+    if (PreparationWords.isPreparationState(lower)) return 'PREP';
+    if (PreparationWords.isSizeDescriptor(lower)) return 'SIZE';
+    if (_conjunctions.contains(lower)) return 'CONJ';
+    if (_optionalMarkers.contains(lower)) return 'OPT';
+    if (_parenPattern.hasMatch(lower)) return 'PAREN';
+    if (_isGroupHeader(lower)) return 'HEADER';
+    return 'WORD';
   }
 }

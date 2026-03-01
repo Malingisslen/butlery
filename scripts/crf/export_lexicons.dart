@@ -21,6 +21,7 @@ void main() {
     'prep_words': PreparationWords.preparationStates.toList()..sort(),
     'size_words': PreparationWords.sizeDescriptors.toList()..sort(),
     'foods': KnownIngredients.all.toList()..sort(),
+    'compound_names': KnownIngredients.compoundNames.toList()..sort(),
   };
 
   const outputPath = 'scripts/crf/data/lexicons.json';

@@ -121,14 +121,13 @@ void main() {
         expect(names, contains('testblandning-alias'));
       });
 
-      test('should include static compound names after enrichment', () async {
+      test('compound names set is empty when Firebase has none', () async {
         fakeRepo.addGroupIngredients('spice', []);
         await service.enrichFromFirestore();
 
         final names = service.allCompoundNames;
-        // Static compound names should still be present
-        expect(names, contains('vitpeppar'));
-        expect(names, contains('rödlök'));
+        // Firebase has 0 isCompoundName=true — set is empty
+        expect(names, isA<Set<String>>());
       });
 
       test('should NOT include non-compound Firestore ingredients', () async {

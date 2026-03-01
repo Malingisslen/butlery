@@ -9,6 +9,7 @@ import 'package:butlery/core/di/modules/content_module.dart';
 import 'package:butlery/core/di/modules/tagging_module.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/parsing/ingredient_registry_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 
@@ -48,6 +49,10 @@ class ContentStage implements BootstrapStage {
       // UnifiedRecipeService.initialize() is called during ContentModule.initialize()
       // No duplicate initialization needed here - the early return guard would prevent it anyway
 
+      // Enrich ingredient registry from Firestore (Firebase = source of truth).
+      // Must run before CRF parser initializes so enriched ingredients are available.
+      await _enrichIngredientRegistry();
+
       // CRIT-5 FIX: Initialize RetaggingScheduler for automatic retry of failed tagging
       await _initializeRetaggingScheduler();
     } catch (e) {
@@ -57,6 +62,20 @@ class ContentStage implements BootstrapStage {
         'Content services initialization failed',
         e,
       );
+    }
+  }
+
+  /// Loads Firestore ingredients into the registry so CRF and normalizer
+  /// can use Firebase as the source of truth for ingredient recognition.
+  Future<void> _enrichIngredientRegistry() async {
+    try {
+      final registry = ServiceLocator.tryGet<IngredientRegistryService>();
+      if (registry != null) {
+        await registry.enrichFromFirestore();
+      }
+    } catch (e) {
+      // Non-critical: falls back to static KnownIngredients
+      AppLogger.warning('Failed to enrich ingredient registry: $e');
     }
   }
 

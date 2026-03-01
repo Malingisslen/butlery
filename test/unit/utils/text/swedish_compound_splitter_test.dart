@@ -4,22 +4,19 @@ import 'package:butlery/utils/text/swedish_compound_splitter.dart';
 void main() {
   group('SwedishCompoundSplitter', () {
     group('trySplit', () {
-      test('splits ingredient+food suffix compounds', () {
-        final result = SwedishCompoundSplitter.trySplit('lingonsylt');
+      test('splits unknown compound with food suffix', () {
+        // rabarbersylt is NOT in KnownIngredients, rabarber IS known
+        final result = SwedishCompoundSplitter.trySplit('rabarbersylt');
         expect(result, isNotNull);
-        expect(result!.$1, 'lingon');
+        expect(result!.$1, 'rabarber');
         expect(result.$2, 'sylt');
       });
 
       test('does not split known compound names with joining s', () {
-        // jordnötssmör is in KnownIngredients.compoundNames
         expect(SwedishCompoundSplitter.trySplit('jordnötssmör'), isNull);
       });
 
       test('splits unknown compound with joining s', () {
-        // vitlöksolja: vitlök + s + olja (vitlök is known, olja is known)
-        // but olivolja is in KnownIngredients.all so it won't split
-        // try: pepparkvarn — peppar + kvarn
         final result = SwedishCompoundSplitter.trySplit('pepparkvarn');
         expect(result, isNotNull);
         expect(result!.$1, 'peppar');
@@ -33,35 +30,31 @@ void main() {
         expect(result.$2, 'press');
       });
 
-      test('splits kokosmjölk - but it is in compoundNames so returns null',
-          () {
-        // kokosmjölk is a known compound name, should not be split
+      test('does not split kokosmjölk (known ingredient)', () {
         final result = SwedishCompoundSplitter.trySplit('kokosmjölk');
         expect(result, isNull);
       });
 
-      test('splits citronjuice', () {
+      test('does not split citronjuice (known ingredient in Firebase)', () {
+        // citronjuice is in the Firebase-generated set
         final result = SwedishCompoundSplitter.trySplit('citronjuice');
-        expect(result, isNotNull);
-        expect(result!.$1, 'citron');
-        expect(result.$2, 'juice');
+        expect(result, isNull);
       });
 
-      test('splits tomatpuré - but known ingredient returns null', () {
-        // tomatpuré is already in KnownIngredients, don't split
+      test('does not split tomatpuré (known ingredient)', () {
         final result = SwedishCompoundSplitter.trySplit('tomatpuré');
         expect(result, isNull);
       });
 
       test('does not split äppelmos (äppel not in registry)', () {
-        // "äpple" is known but "äppel" is not — splitter correctly refuses
         expect(SwedishCompoundSplitter.trySplit('äppelmos'), isNull);
       });
 
-      test('splits laxfilé via food suffix', () {
-        final result = SwedishCompoundSplitter.trySplit('laxfilé');
+      test('splits sillfilé via food suffix', () {
+        // sillfilé is NOT in Firebase, but sill IS known
+        final result = SwedishCompoundSplitter.trySplit('sillfilé');
         expect(result, isNotNull);
-        expect(result!.$1, 'lax');
+        expect(result!.$1, 'sill');
         expect(result.$2, 'filé');
       });
 
@@ -70,10 +63,12 @@ void main() {
         expect(SwedishCompoundSplitter.trySplit('mjöl'), isNull);
       });
 
-      test('does not split known compound names', () {
+      test('does not split known ingredients', () {
         expect(SwedishCompoundSplitter.trySplit('vitpeppar'), isNull);
         expect(SwedishCompoundSplitter.trySplit('rödlök'), isNull);
         expect(SwedishCompoundSplitter.trySplit('blomkål'), isNull);
+        expect(SwedishCompoundSplitter.trySplit('lingonsylt'), isNull);
+        expect(SwedishCompoundSplitter.trySplit('laxfilé'), isNull);
       });
 
       test('does not split already-known simple ingredients', () {
@@ -92,8 +87,12 @@ void main() {
     });
 
     group('isCompound', () {
-      test('returns true for compound food words', () {
-        expect(SwedishCompoundSplitter.isCompound('lingonsylt'), isTrue);
+      test('returns true for unknown compound food words', () {
+        expect(SwedishCompoundSplitter.isCompound('rabarbersylt'), isTrue);
+      });
+
+      test('returns false for known ingredients', () {
+        expect(SwedishCompoundSplitter.isCompound('lingonsylt'), isFalse);
       });
 
       test('returns false for simple words', () {
@@ -102,8 +101,12 @@ void main() {
     });
 
     group('compoundSuffix', () {
-      test('returns suffix for compound words', () {
-        expect(SwedishCompoundSplitter.compoundSuffix('lingonsylt'), 'sylt');
+      test('returns suffix for unknown compound words', () {
+        expect(SwedishCompoundSplitter.compoundSuffix('rabarbersylt'), 'sylt');
+      });
+
+      test('returns null for known ingredients', () {
+        expect(SwedishCompoundSplitter.compoundSuffix('lingonsylt'), isNull);
       });
 
       test('returns null for non-compound words', () {
