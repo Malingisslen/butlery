@@ -211,15 +211,12 @@ void main() {
           expect(result.category, 'nuts_seeds');
         });
 
-        test('should have mandelpotatis in compoundNames', () {
-          expect(
-            KnownIngredients.compoundNames.contains('mandelpotatis'),
-            isTrue,
-          );
+        test('should recognize mandelpotatis as known ingredient', () {
+          expect(KnownIngredients.isKnown('mandelpotatis'), isTrue);
         });
 
-        test('should recognize mandelpotatis as compound name', () {
-          expect(KnownIngredients.isCompoundName('mandelpotatis'), isTrue);
+        test('should recognize mandelpotatis as known', () {
+          expect(KnownIngredients.isKnown('mandelpotatis'), isTrue);
         });
 
         test('should normalize mandelpotatis as compound (not stripped)', () {
@@ -273,10 +270,10 @@ void main() {
         expect(result.isKnown, isTrue);
       });
 
-      test('preserves vitlökspeppar as compound name', () {
+      test('extracts base from vitlökspeppar (not in Firebase)', () {
+        // vitlökspeppar is not in Firebase — compound splitter extracts base
         final result = IngredientNormalizer.normalize('vitlökspeppar');
-        expect(result.normalized, 'vitlökspeppar');
-        expect(result.isKnown, isTrue);
+        expect(result.normalized, 'vitlök');
       });
 
       test('preserves jordnötssmör as compound name', () {
@@ -492,9 +489,9 @@ void main() {
         expect(result.confidence, 1.0);
       });
 
-      test('known ingredient has confidence 0.8', () {
+      test('known ingredient has confidence 1.0', () {
         final result = IngredientNormalizer.normalize('mjölk');
-        expect(result.confidence, 0.8);
+        expect(result.confidence, 1.0);
       });
 
       test('unknown ingredient has confidence 0.3', () {
@@ -507,9 +504,11 @@ void main() {
         expect(result.confidence, 0.0);
       });
 
-      test('diet descriptor with known rest has confidence 0.9', () {
+      test('diet descriptor with known rest has confidence 1.0 (in Firebase)',
+          () {
+        // "glutenfri pasta" is a known ingredient in Firebase
         final result = IngredientNormalizer.normalize('glutenfri pasta');
-        expect(result.confidence, 0.9);
+        expect(result.confidence, 1.0);
       });
 
       test('standalone diet descriptor has confidence 0.4', () {
@@ -522,10 +521,20 @@ void main() {
         expect(result.confidence, 0.85);
       });
 
-      test('Firestore-known ingredient has confidence 0.95', () {
+      test('Firestore-known ingredient has confidence 1.0 (in static set)', () {
+        // tahini is already in the Firebase-generated static set
         final result = IngredientNormalizer.normalize(
           'tahini',
           additionalKnown: {'tahini'},
+        );
+        expect(result.confidence, 1.0);
+      });
+
+      test('additionalKnown-only ingredient has confidence 0.95', () {
+        // Use a word NOT in the static set but provided via additionalKnown
+        final result = IngredientNormalizer.normalize(
+          'xyzuniqueitem',
+          additionalKnown: {'xyzuniqueitem'},
         );
         expect(result.confidence, 0.95);
       });

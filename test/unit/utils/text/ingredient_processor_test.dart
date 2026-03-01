@@ -80,7 +80,8 @@ void main() {
     group('Pattern A: processRawIngredient', () {
       test('should propagate confidence from normalization', () {
         final result = IngredientProcessor.processRawIngredient('2 dl mjölk');
-        expect(result.confidence, 0.8);
+        // mjölk is in Firebase-generated static set → confidence 1.0
+        expect(result.confidence, 1.0);
         expect(result.isKnown, isTrue);
       });
 
@@ -91,10 +92,12 @@ void main() {
         expect(result.normalizedName, 'vitpeppar');
       });
 
-      test('should return 0.95 confidence for Firestore-known ingredients', () {
+      test('should return 0.95 confidence for additionalKnown-only ingredients',
+          () {
+        // Use an item NOT in the static set
         final result = IngredientProcessor.processRawIngredient(
-          '1 msk tahini',
-          additionalKnown: {'tahini'},
+          '1 msk xyzuniqueitem',
+          additionalKnown: {'xyzuniqueitem'},
         );
         expect(result.confidence, 0.95);
         expect(result.isKnown, isTrue);
@@ -127,12 +130,12 @@ void main() {
 
       test('should forward additionalKnown', () {
         final result = IngredientProcessor.parseAndNormalize(
-          '1 msk harissa',
-          additionalKnown: {'harissa'},
+          '1 msk xyzuniqueitem',
+          additionalKnown: {'xyzuniqueitem'},
         );
         expect(result.confidence, 0.95);
         expect(result.isKnown, isTrue);
-        expect(result.normalizedName, 'harissa');
+        expect(result.normalizedName, 'xyzuniqueitem');
       });
 
       test('should preserve original raw text', () {
@@ -151,8 +154,8 @@ void main() {
 
       test('should forward additionalKnown', () {
         final result = IngredientProcessor.normalizeIngredientName(
-          'tahini',
-          additionalKnown: {'tahini'},
+          'xyzuniqueitem',
+          additionalKnown: {'xyzuniqueitem'},
         );
         expect(result.isKnown, isTrue);
         expect(result.confidence, 0.95);
@@ -162,31 +165,31 @@ void main() {
     group('batch methods with additionalKnown', () {
       test('processRawIngredients should forward additionalKnown', () {
         final results = IngredientProcessor.processRawIngredients(
-          ['1 msk tahini', '2 dl mjölk'],
-          additionalKnown: {'tahini'},
+          ['1 msk xyzuniqueitem', '2 dl mjölk'],
+          additionalKnown: {'xyzuniqueitem'},
         );
         expect(results, hasLength(2));
         expect(results[0].isKnown, isTrue);
         expect(results[0].confidence, 0.95);
         expect(results[1].isKnown, isTrue);
-        expect(results[1].confidence, 0.8);
+        expect(results[1].confidence, 1.0);
       });
 
       test('parseAndNormalizeMany should forward additionalKnown', () {
         final results = IngredientProcessor.parseAndNormalizeMany(
-          ['harissa', 'hackad lök'],
-          additionalKnown: {'harissa'},
+          ['xyzuniqueitem', 'hackad lök'],
+          additionalKnown: {'xyzuniqueitem'},
         );
         expect(results, hasLength(2));
         expect(results[0].isKnown, isTrue);
-        expect(results[0].normalizedName, 'harissa');
+        expect(results[0].normalizedName, 'xyzuniqueitem');
         expect(results[1].normalizedName, 'lök');
       });
 
       test('normalizeIngredientNames should forward additionalKnown', () {
         final results = IngredientProcessor.normalizeIngredientNames(
-          ['tahini', 'lök'],
-          additionalKnown: {'tahini'},
+          ['xyzuniqueitem', 'lök'],
+          additionalKnown: {'xyzuniqueitem'},
         );
         expect(results, hasLength(2));
         expect(results[0].isKnown, isTrue);

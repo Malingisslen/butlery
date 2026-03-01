@@ -150,7 +150,8 @@ void main() {
     });
 
     test('compound word has isCompound feature', () {
-      final features = extractor.extractAt(['1', 'burk', 'lingonsylt'], 2);
+      // rabarbersylt is NOT in Firebase, but rabarber IS known → splittable
+      final features = extractor.extractAt(['1', 'burk', 'rabarbersylt'], 2);
       expect(features['word.isCompound'], 1.0);
       expect(features['word.compoundSuffix=sylt'], 1.0);
     });
@@ -168,6 +169,76 @@ void main() {
       // vitpeppar is in KnownIngredients.compoundNames — should NOT split
       final features = extractor.extractAt(['1', 'krm', 'vitpeppar'], 2);
       expect(features['word.isCompound'], 0.0);
+    });
+
+    test('bigram features include prev-cur and cur-next word pairs', () {
+      final features = extractor.extractAt(['2', 'dl', 'mjölk'], 1);
+      expect(features['bigram.prev=2|cur=dl'], 1.0);
+      expect(features['bigram.cur=dl|next=mjölk'], 1.0);
+    });
+
+    test('bigram features absent at boundaries', () {
+      final tokens = ['2', 'dl', 'mjölk'];
+      final first = extractor.extractAt(tokens, 0);
+      expect(first.containsKey('bigram.prev='), false);
+      expect(first['bigram.cur=2|next=dl'], 1.0);
+
+      final last = extractor.extractAt(tokens, 2);
+      expect(last['bigram.prev=dl|cur=mjölk'], 1.0);
+      expect(last.keys.where((k) => k.startsWith('bigram.cur=mjölk|next=')),
+          isEmpty);
+    });
+
+    test('type-level bigram features use coarse token types', () {
+      // "2 dl mjölk" -> NUM UNIT FOOD
+      final features = extractor.extractAt(['2', 'dl', 'mjölk'], 1);
+      expect(features['typeBigram.prev=NUM|cur=UNIT'], 1.0);
+      expect(features['typeBigram.cur=UNIT|next=FOOD'], 1.0);
+    });
+
+    test('type-level bigram for prep token', () {
+      // "hackad lök" -> PREP FOOD
+      final features = extractor.extractAt(['hackad', 'lök'], 0);
+      expect(features['typeBigram.cur=PREP|next=FOOD'], 1.0);
+    });
+
+    test('enrichedIngredients supplements static food detection', () {
+      // "zaatar" is not in static KnownIngredients
+      final plain = CrfFeatureExtractor();
+      final plainFeatures = plain.extractAt(['1', 'msk', 'zaatar'], 2);
+      expect(plainFeatures['word.isFood'], 0.0);
+
+      // With enriched set, zaatar is recognized
+      final enriched = CrfFeatureExtractor(
+        enrichedIngredients: {'zaatar', 'harissa'},
+      );
+      final enrichedFeatures = enriched.extractAt(['1', 'msk', 'zaatar'], 2);
+      expect(enrichedFeatures['word.isFood'], 1.0);
+    });
+
+    test('enrichedIngredients affects type bigrams', () {
+      // With enriched set, "zaatar" becomes FOOD type
+      final enriched = CrfFeatureExtractor(
+        enrichedIngredients: {'zaatar'},
+      );
+      final features = enriched.extractAt(['1', 'msk', 'zaatar'], 1);
+      expect(features['typeBigram.cur=UNIT|next=FOOD'], 1.0);
+    });
+
+    test('definite form detected with isDefinite feature', () {
+      // "tomaterna" is definite plural of "tomat" and NOT in static set
+      final features = extractor.extractAt(['tomaterna'], 0);
+      expect(features['word.isDefinite'], 1.0);
+      expect(features['word.baseForm=tomat'], 1.0);
+    });
+
+    test('non-definite word has isDefinite=0', () {
+      final features = extractor.extractAt(['salt'], 0);
+      expect(features['word.isDefinite'], 0.0);
+      expect(
+        features.keys.where((k) => k.startsWith('word.baseForm=')),
+        isEmpty,
+      );
     });
   });
 }

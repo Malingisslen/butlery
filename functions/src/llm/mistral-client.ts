@@ -14,7 +14,7 @@ import { defineSecret } from "firebase-functions/params";
 export const mistralApiKey = defineSecret("MISTRAL_API_KEY");
 
 /** Prompt version — bump on any prompt change for traceability */
-export const PROMPT_VERSION = "1.0.0";
+export const PROMPT_VERSION = "1.1.0";
 
 // Singleton client instance
 let mistralClient: Mistral | null = null;
@@ -87,7 +87,27 @@ EXEMPEL 2 — Input:
 "Tomatsoppa. 1 burk krossade tomater, 1 gul lök hackad, 2 vitlöksklyftor, 2 msk olivolja, 5 dl grönsaksbuljong, salt och peppar. Fräs lök och vitlök. Häll i tomater och buljong. Koka 15 min, mixa slät."
 
 EXEMPEL 2 — Output:
-{"title":"Tomatsoppa","description":"Enkel krämig tomatsoppa","portions":4,"prepTimeMinutes":10,"cookTimeMinutes":15,"ingredients":[{"amount":1,"unit":"burk","name":"krossade tomater","preparation":null},{"amount":1,"unit":"st","name":"gul lök","preparation":"hackad"},{"amount":2,"unit":"st","name":"vitlöksklyftor","preparation":null},{"amount":2,"unit":"msk","name":"olivolja","preparation":null},{"amount":5,"unit":"dl","name":"grönsaksbuljong","preparation":null},{"amount":null,"unit":null,"name":"salt och peppar","preparation":null}],"instructions":["Fräs lök och vitlök i olivolja.","Häll i krossade tomater och buljong.","Koka i 15 minuter.","Mixa soppan slät. Smaka av med salt och peppar."],"tags":["soppa","vegetariskt"],"difficulty":"easy","source":null}`;
+{"title":"Tomatsoppa","description":"Enkel krämig tomatsoppa","portions":4,"prepTimeMinutes":10,"cookTimeMinutes":15,"ingredients":[{"amount":1,"unit":"burk","name":"krossade tomater","preparation":null},{"amount":1,"unit":"st","name":"gul lök","preparation":"hackad"},{"amount":2,"unit":"st","name":"vitlöksklyftor","preparation":null},{"amount":2,"unit":"msk","name":"olivolja","preparation":null},{"amount":5,"unit":"dl","name":"grönsaksbuljong","preparation":null},{"amount":null,"unit":null,"name":"salt och peppar","preparation":null}],"instructions":["Fräs lök och vitlök i olivolja.","Häll i krossade tomater och buljong.","Koka i 15 minuter.","Mixa soppan slät. Smaka av med salt och peppar."],"tags":["soppa","vegetariskt"],"difficulty":"easy","source":null}
+
+NOTERA — Svåra fall:
+- Intervall ("2-3 msk"): använd mitten av intervallet som amount (2.5), nämn intervallet i preparation
+- Sammansatta ord ("jordnötssmör", "kokosmjölk"): behåll som ett ord, splitta INTE
+- Valbara ingredienser ("ev. lite socker"): markera med preparation "valfritt"
+- Bestämd form ("löken", "smöret"): normalisera till obestämd form ("lök", "smör")
+- Ingredienser utan mängd ("salt och peppar"): amount=null, unit=null
+- Ingrediensgrupper ("Deg:", "Fyllning:"): behåll som separata ingredienser med preparation="deg" etc.
+
+EXEMPEL 3 — Input (svåra ingredienser):
+"Nötfärs med kokosmjölk. 500 g nötfärs, 2-3 msk sojasås, 4 dl kokosmjölk, 1 burk bambuskott (avrunna), ev. 1 tsk jordnötssmör, salt"
+
+EXEMPEL 3 — Output:
+{"title":"Nötfärs med kokosmjölk","description":"Asiatisk-inspirerad nötfärs i kokosmjölk","portions":4,"prepTimeMinutes":10,"cookTimeMinutes":20,"ingredients":[{"amount":500,"unit":"g","name":"nötfärs","preparation":null},{"amount":2.5,"unit":"msk","name":"sojasås","preparation":"2-3 msk"},{"amount":4,"unit":"dl","name":"kokosmjölk","preparation":null},{"amount":1,"unit":"burk","name":"bambuskott","preparation":"avrunna"},{"amount":1,"unit":"tsk","name":"jordnötssmör","preparation":"valfritt"},{"amount":null,"unit":null,"name":"salt","preparation":null}],"instructions":["Bryn nötfärsen i en stekpanna.","Tillsätt sojasås, kokosmjölk och bambuskott.","Låt sjuda i 15 minuter.","Smaka av med jordnötssmör och salt."],"tags":["middag","asiatiskt"],"difficulty":"easy","source":null}
+
+EXEMPEL 4 — Input (grupperade ingredienser):
+"Kanelbullar. Deg: 5 dl vetemjöl, 25 g jäst, 2 dl mjölk, 75 g smör (smält), 1 dl socker. Fyllning: 75 g rumsvarmt smör, 2 msk kanel, 0.5 dl strösocker."
+
+EXEMPEL 4 — Output:
+{"title":"Kanelbullar","description":"Klassiska svenska kanelbullar","portions":16,"prepTimeMinutes":30,"cookTimeMinutes":12,"ingredients":[{"amount":5,"unit":"dl","name":"vetemjöl","preparation":"deg"},{"amount":25,"unit":"g","name":"jäst","preparation":"deg"},{"amount":2,"unit":"dl","name":"mjölk","preparation":"deg"},{"amount":75,"unit":"g","name":"smör","preparation":"smält, deg"},{"amount":1,"unit":"dl","name":"socker","preparation":"deg"},{"amount":75,"unit":"g","name":"smör","preparation":"rumsvarmt, fyllning"},{"amount":2,"unit":"msk","name":"kanel","preparation":"fyllning"},{"amount":0.5,"unit":"dl","name":"strösocker","preparation":"fyllning"}],"instructions":["Smula jästen i en bunke, värm mjölken och lös upp jästen.","Tillsätt smör, socker och mjöl. Knåda degen.","Låt jäsa 30 minuter under handduk.","Kavla ut degen, bred på smör och strö över kanel och socker.","Rulla ihop och skär i bitar. Jäs ytterligare 20 minuter.","Grädda i 225°C i ca 10-12 minuter."],"tags":["fika","bakning"],"difficulty":"medium","source":null}`;
 
 export const RECIPE_ENHANCEMENT_SYSTEM_PROMPT = `${INJECTION_DEFENSE}Du är expert på att förbättra och komplettera delvis extraherade recept.
 

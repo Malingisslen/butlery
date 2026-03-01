@@ -165,15 +165,28 @@ class IngredientNormalizer {
       );
     }
 
-    // Step 1: Check if compound ingredient name (keep as-is!)
-    if (KnownIngredients.isCompoundName(cleaned)) {
-      return NormalizationResult(
-        normalized: cleaned,
-        isKnown: true,
-        category: KnownIngredients.getCategory(cleaned),
-        original: original,
-        confidence: 1.0,
-      );
+    // Step 1: Check if this is already a known ingredient (keep as-is!)
+    // For single words: vitpeppar, kokosmjölk → preserve (already in vocabulary)
+    // For multi-word: skip if any word is a removable prep word
+    //   e.g., "torkad timjan" should NOT short-circuit — "torkad" is prep
+    final isSingleWord = !cleaned.contains(' ');
+    final isKnownExact = KnownIngredients.isKnown(cleaned) ||
+        KnownIngredients.isCompoundName(cleaned);
+
+    if (isKnownExact) {
+      final hasRemovableWord = !isSingleWord &&
+          cleaned
+              .split(RegExp(r'\s+'))
+              .any((w) => PreparationWords.shouldRemove(w));
+      if (!hasRemovableWord) {
+        return NormalizationResult(
+          normalized: cleaned,
+          isKnown: true,
+          category: KnownIngredients.getCategory(cleaned),
+          original: original,
+          confidence: 1.0,
+        );
+      }
     }
 
     // Step 1b: Firestore-known single ingredients (e.g. "tahini", "harissa")

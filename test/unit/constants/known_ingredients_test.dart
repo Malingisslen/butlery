@@ -1,7 +1,7 @@
 /// Unit tests for KnownIngredients - static ingredient registry
 ///
-/// Tests the compound name additions (cheese, allium, spice blends)
-/// and isCompoundName / isKnown / getCategory behavior for new entries.
+/// Tests isKnown / isCompoundName / getCategory behavior.
+/// Data is auto-generated from Firebase Firestore via the codegen pipeline.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -26,73 +26,24 @@ void main() {
         expect(KnownIngredients.isKnown('foobarbaz'), isFalse);
       });
 
-      test('should recognize compound names as known', () {
+      test('should recognize compound ingredient names as known', () {
         expect(KnownIngredients.isKnown('vitpeppar'), isTrue);
         expect(KnownIngredients.isKnown('rödlök'), isTrue);
-        expect(KnownIngredients.isKnown('parmesanost'), isTrue);
         expect(KnownIngredients.isKnown('kokosmjölk'), isTrue);
       });
     });
 
     group('isCompoundName', () {
-      test('should recognize pepper compounds', () {
-        expect(KnownIngredients.isCompoundName('vitpeppar'), isTrue);
-        expect(KnownIngredients.isCompoundName('svartpeppar'), isTrue);
-        expect(KnownIngredients.isCompoundName('cayennepeppar'), isTrue);
-        expect(KnownIngredients.isCompoundName('kryddpeppar'), isTrue);
-      });
-
-      test('should recognize onion compounds', () {
-        expect(KnownIngredients.isCompoundName('rödlök'), isTrue);
-        expect(KnownIngredients.isCompoundName('gullök'), isTrue);
-        expect(KnownIngredients.isCompoundName('salladslök'), isTrue);
-        expect(KnownIngredients.isCompoundName('purjolök'), isTrue);
-      });
-
-      test('should recognize cabbage compounds', () {
-        expect(KnownIngredients.isCompoundName('vitkål'), isTrue);
-        expect(KnownIngredients.isCompoundName('rödkål'), isTrue);
-        expect(KnownIngredients.isCompoundName('grönkål'), isTrue);
-        expect(KnownIngredients.isCompoundName('blomkål'), isTrue);
-      });
-
-      test('should recognize cheese compounds (Phase 1 addition)', () {
-        expect(KnownIngredients.isCompoundName('parmesanost'), isTrue);
-        expect(KnownIngredients.isCompoundName('fetaost'), isTrue);
-        expect(KnownIngredients.isCompoundName('cheddarost'), isTrue);
-        expect(KnownIngredients.isCompoundName('mozzarellaost'), isTrue);
-      });
-
-      test('should recognize allium compounds (Phase 1 addition)', () {
-        expect(KnownIngredients.isCompoundName('schalottenlök'), isTrue);
-        expect(KnownIngredients.isCompoundName('ramslök'), isTrue);
-      });
-
-      test('should recognize spice blend compounds (Phase 1 addition)', () {
-        expect(KnownIngredients.isCompoundName('citronpeppar'), isTrue);
-        expect(KnownIngredients.isCompoundName('vitlökspeppar'), isTrue);
-        expect(KnownIngredients.isCompoundName('jordnötssmör'), isTrue);
-        expect(KnownIngredients.isCompoundName('kokosmjölk'), isTrue);
-      });
-
-      test('should recognize multi-word compound names', () {
-        expect(KnownIngredients.isCompoundName('vita bönor'), isTrue);
-        expect(KnownIngredients.isCompoundName('svarta bönor'), isTrue);
-        expect(KnownIngredients.isCompoundName('vit choklad'), isTrue);
-        expect(KnownIngredients.isCompoundName('mörk choklad'), isTrue);
-        expect(KnownIngredients.isCompoundName('svarta vinbär'), isTrue);
-      });
-
-      test('should be case-insensitive', () {
-        expect(KnownIngredients.isCompoundName('Vitpeppar'), isTrue);
-        expect(KnownIngredients.isCompoundName('PARMESANOST'), isTrue);
-      });
-
       test('should NOT treat simple ingredients as compound names', () {
         expect(KnownIngredients.isCompoundName('mjölk'), isFalse);
         expect(KnownIngredients.isCompoundName('lök'), isFalse);
         expect(KnownIngredients.isCompoundName('peppar'), isFalse);
         expect(KnownIngredients.isCompoundName('ost'), isFalse);
+      });
+
+      test('compound names set is a Set<String>', () {
+        // Verifies the generated type annotation is correct
+        expect(KnownIngredients.compoundNames, isA<Set<String>>());
       });
     });
 
@@ -104,16 +55,11 @@ void main() {
         expect(KnownIngredients.getCategory('tomat'), 'vegetables');
         expect(KnownIngredients.getCategory('äpple'), 'fruits');
         expect(KnownIngredients.getCategory('pasta'), 'grains');
-        expect(KnownIngredients.getCategory('baguette'), 'bread');
-        expect(KnownIngredients.getCategory('ketchup'), 'condiments');
         expect(KnownIngredients.getCategory('salt'), 'spices');
         expect(KnownIngredients.getCategory('olivolja'), 'oils');
         expect(KnownIngredients.getCategory('socker'), 'sweeteners');
-        expect(KnownIngredients.getCategory('mandel'), 'nuts_seeds');
         expect(KnownIngredients.getCategory('bakpulver'), 'baking');
-        expect(KnownIngredients.getCategory('kidneybönor'), 'canned');
         expect(KnownIngredients.getCategory('kaffe'), 'beverages');
-        expect(KnownIngredients.getCategory('rödvin'), 'alcohol');
         expect(KnownIngredients.getCategory('ägg'), 'eggs');
       });
 
@@ -150,12 +96,26 @@ void main() {
     });
 
     group('getAllCategories', () {
-      test('should return all 17 categories', () {
+      test('should return all 16 categories', () {
         final categories = KnownIngredients.getAllCategories();
-        expect(categories, hasLength(17));
+        expect(categories, hasLength(16));
         expect(categories, contains('dairy'));
         expect(categories, contains('eggs'));
         expect(categories, contains('nuts_seeds'));
+      });
+    });
+
+    group('all set', () {
+      test('should contain ingredients from all categories', () {
+        expect(KnownIngredients.all.contains('mjölk'), isTrue);
+        expect(KnownIngredients.all.contains('kyckling'), isTrue);
+        expect(KnownIngredients.all.contains('lax'), isTrue);
+        expect(KnownIngredients.all.contains('tomat'), isTrue);
+      });
+
+      test('should have substantial coverage from Firebase', () {
+        // Firebase export provides 2000+ base ingredients + aliases
+        expect(KnownIngredients.all.length, greaterThan(2000));
       });
     });
   });

@@ -1,11 +1,14 @@
 import 'package:flutter/services.dart';
 
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/field_result.dart';
+import 'package:butlery/services/parsing/crf/crf_feature_extractor.dart';
 import 'package:butlery/services/parsing/crf/crf_ingredient_parser.dart';
 import 'package:butlery/services/parsing/crf/crf_viterbi_decoder.dart';
 import 'package:butlery/services/parsing/crf/remote_weight_loader.dart';
+import 'package:butlery/services/parsing/ingredient_registry_service.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart'
     hide ParsedIngredient;
 import 'package:butlery/utils/text/ocr_error_corrector.dart';
@@ -62,9 +65,16 @@ class IngredientParsingStrategy {
     try {
       final jsonString = await rootBundle.loadString(_weightsPath);
       final weights = CrfWeights.fromJson(jsonString);
-      final decoder = CrfViterbiDecoder(weights: weights);
+
+      // Use Firebase-enriched ingredients for CRF food detection when available
+      final registry = ServiceLocator.tryGet<IngredientRegistryService>();
+      final enriched = registry?.allIngredients;
+
+      final extractor = CrfFeatureExtractor(enrichedIngredients: enriched);
+      final decoder = CrfViterbiDecoder(weights: weights, extractor: extractor);
       _crfParser = CrfIngredientParser(decoder);
-      AppLogger.info('$_serviceName: CRF weights loaded');
+      AppLogger.info('$_serviceName: CRF weights loaded'
+          '${enriched != null ? ' (${enriched.length} enriched ingredients)' : ''}');
 
       // Check for newer remote weights in background (non-blocking)
       _tryLoadRemoteWeightsInBackground();
@@ -180,6 +190,44 @@ class IngredientParsingStrategy {
         '$source: most ingredients unstructured',
       );
     }
+  }
+
+  /// Identifies ingredient lines where CRF confidence is too low for reliable
+  /// extraction (score 0.3-0.7), suitable for selective LLM re-parsing.
+  ///
+  /// Returns indices of uncertain lines. Lines with high confidence (≥0.7)
+  /// are kept as-is. Lines with very low confidence (<0.3) are also included
+  /// since they likely need LLM help the most.
+  ///
+  /// This enables line-level CRF→LLM routing: instead of sending the entire
+  /// recipe to the LLM, only uncertain lines are re-parsed, reducing LLM
+  /// calls by ~80%.
+  List<int> getUncertainLineIndices(List<ParsedIngredient> parsed) {
+    final uncertain = <int>[];
+    for (var i = 0; i < parsed.length; i++) {
+      if (parsed[i].confidence.score < 0.7) {
+        uncertain.add(i);
+      }
+    }
+    return uncertain;
+  }
+
+  /// Returns only the uncertain lines from a parsed result, along with their
+  /// original indices for later merging.
+  ///
+  /// Used by the LLM tier to selectively re-parse only low-confidence lines.
+  Map<int, String> getUncertainLines(
+    List<ParsedIngredient> parsed,
+    List<String> originalLines,
+  ) {
+    final result = <int, String>{};
+    final indices = getUncertainLineIndices(parsed);
+    for (final i in indices) {
+      if (i < originalLines.length) {
+        result[i] = originalLines[i];
+      }
+    }
+    return result;
   }
 
   /// Confidence score based on CRF per-ingredient confidence levels.

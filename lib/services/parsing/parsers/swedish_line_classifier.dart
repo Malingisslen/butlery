@@ -327,8 +327,8 @@ class SwedishLineClassifier {
     final lower = text.toLowerCase();
     final words = lower.split(RegExp(r'\s+'));
 
-    // Quantity at start is strong indicator
-    if (_quantityPattern.hasMatch(text)) {
+    // Quantity at start is strong indicator (but not step numbers like "1.")
+    if (_quantityPattern.hasMatch(text) && !_stepPattern.hasMatch(text)) {
       score += 0.4;
     }
 

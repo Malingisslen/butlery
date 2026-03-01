@@ -56,15 +56,15 @@ void main() {
         expect(result, 'fläsk');
       });
 
-      test('kycklingfilé extracts kyckling', () {
-        // kyckling is in KnownIngredients.meat
+      test('kycklingfilé returns as-is (known in Firebase)', () {
+        // kycklingfilé is in KnownIngredients from Firebase — no splitting
         final result = CompoundSplitter.extractBase('kycklingfilé', null);
-        expect(result, 'kyckling');
+        expect(result, 'kycklingfilé');
       });
 
-      test('kycklingbröst extracts kyckling', () {
+      test('kycklingbröst returns as-is (known in Firebase)', () {
         final result = CompoundSplitter.extractBase('kycklingbröst', null);
-        expect(result, 'kyckling');
+        expect(result, 'kycklingbröst');
       });
     });
 
@@ -179,18 +179,19 @@ void main() {
 
     group('cache behavior', () {
       test('repeated calls return same result', () {
-        final first = CompoundSplitter.extractBase('kycklingfilé', null);
-        final second = CompoundSplitter.extractBase('kycklingfilé', null);
+        // Use sillfilé which is NOT in Firebase but sill IS known
+        final first = CompoundSplitter.extractBase('sillfilé', null);
+        final second = CompoundSplitter.extractBase('sillfilé', null);
         expect(first, second);
-        expect(first, 'kyckling');
+        expect(first, 'sill');
       });
 
       test('cache is cleared by clearCache', () {
-        CompoundSplitter.extractBase('kycklingfilé', null);
+        CompoundSplitter.extractBase('sillfilé', null);
         CompoundSplitter.clearCache();
         // After clear, should still produce correct result
-        final result = CompoundSplitter.extractBase('kycklingfilé', null);
-        expect(result, 'kyckling');
+        final result = CompoundSplitter.extractBase('sillfilé', null);
+        expect(result, 'sill');
       });
     });
 
