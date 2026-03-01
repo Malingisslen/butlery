@@ -56,6 +56,7 @@ import 'package:butlery/repositories/firebase/shared_content/shared_menu_dismiss
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase repository for shared menu operations with consistent API patterns
 class FirebaseSharedMenuRepository
@@ -87,7 +88,7 @@ class FirebaseSharedMenuRepository
         );
 
   @override
-  String get collectionName => 'shared_menus';
+  String get collectionName => FirestoreCollections.sharedMenus;
   @override
   BaseViewRepository get viewRepository => _viewRepository;
 
@@ -124,7 +125,7 @@ class FirebaseSharedMenuRepository
   bool get tracksCounts => true;
   @override
   CollectionReference<Map<String, dynamic>> getCollectionRef() {
-    return firestore.collection('shared_menus');
+    return firestore.collection(FirestoreCollections.sharedMenus);
   }
 
   @override

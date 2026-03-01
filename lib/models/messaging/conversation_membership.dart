@@ -1,6 +1,7 @@
 // lib/models/messaging/conversation_membership.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Inverse index for efficient conversation lookups per user.
 /// Stored at `users/{userId}/conversationMemberships/{conversationId}`.
@@ -89,15 +90,17 @@ class ConversationMembership {
     final data = doc.data()!;
     return ConversationMembership(
       conversationId: doc.id,
-      conversationTitle: data['conversationTitle'] as String? ?? '',
-      isGroup: data['isGroup'] as bool? ?? false,
-      lastActivityAt:
-          (data['lastActivityAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      joinedAt: (data['joinedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      hasUnread: data['hasUnread'] as bool? ?? false,
-      isMuted: data['isMuted'] as bool? ?? false,
-      isPinned: data['isPinned'] as bool? ?? false,
-      isArchived: data['isArchived'] as bool? ?? false,
+      conversationTitle:
+          SerializationUtils.safeString(data, 'conversationTitle'),
+      isGroup: SerializationUtils.safeBool(data, 'isGroup'),
+      lastActivityAt: SerializationUtils.safeDateTime(data, 'lastActivityAt') ??
+          DateTime.now(),
+      joinedAt:
+          SerializationUtils.safeDateTime(data, 'joinedAt') ?? DateTime.now(),
+      hasUnread: SerializationUtils.safeBool(data, 'hasUnread'),
+      isMuted: SerializationUtils.safeBool(data, 'isMuted'),
+      isPinned: SerializationUtils.safeBool(data, 'isPinned'),
+      isArchived: SerializationUtils.safeBool(data, 'isArchived'),
     );
   }
 

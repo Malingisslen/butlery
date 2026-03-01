@@ -8,6 +8,7 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase implementation of MenuCollaborationRepository.
 /// This repository provides comprehensive menu collaboration functionality using
@@ -44,7 +45,7 @@ class FirebaseMenuCollaborationRepository
     super.auditRepository,
   }) : super(authRepository: authRepository ?? FirebaseAuthRepository());
   @override
-  String get collectionName => 'shared_menus';
+  String get collectionName => FirestoreCollections.sharedMenus;
 
   @override
   SharedMenu fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -340,9 +341,9 @@ class FirebaseMenuCollaborationRepository
       };
 
       await firestore
-          .collection('menu_ratings')
+          .collection(FirestoreCollections.menuRatings)
           .doc(menuId)
-          .collection('ratings')
+          .collection(FirestoreCollections.ratings)
           .doc(userId)
           .set(ratingData);
 
@@ -361,9 +362,9 @@ class FirebaseMenuCollaborationRepository
   Future<List<Map<String, dynamic>>> getMenuRatings(String menuId) async {
     try {
       final ratingsSnapshot = await firestore
-          .collection('menu_ratings')
+          .collection(FirestoreCollections.menuRatings)
           .doc(menuId)
-          .collection('ratings')
+          .collection(FirestoreCollections.ratings)
           .orderBy('ratedAt', descending: true)
           .get();
 
@@ -441,9 +442,9 @@ class FirebaseMenuCollaborationRepository
       };
 
       await firestore
-          .collection('menu_comments')
+          .collection(FirestoreCollections.menuComments)
           .doc(menuId)
-          .collection('comments')
+          .collection(FirestoreCollections.comments)
           .add(commentData);
 
       AppLogger.success('Added comment to menu');
@@ -457,9 +458,9 @@ class FirebaseMenuCollaborationRepository
   @override
   Stream<List<Map<String, dynamic>>> getMenuCommentsStream(String menuId) {
     return firestore
-        .collection('menu_comments')
+        .collection(FirestoreCollections.menuComments)
         .doc(menuId)
-        .collection('comments')
+        .collection(FirestoreCollections.comments)
         .orderBy('commentedAt', descending: false)
         .snapshots()
         .map((snapshot) {
@@ -481,9 +482,9 @@ class FirebaseMenuCollaborationRepository
       final userId = requireCurrentUserId();
 
       final commentRef = firestore
-          .collection('menu_comments')
+          .collection(FirestoreCollections.menuComments)
           .doc(menuId)
-          .collection('comments')
+          .collection(FirestoreCollections.comments)
           .doc(commentId);
 
       final commentDoc = await commentRef.get();
@@ -511,9 +512,9 @@ class FirebaseMenuCollaborationRepository
       final userId = requireCurrentUserId();
 
       final ratingRef = firestore
-          .collection('menu_ratings')
+          .collection(FirestoreCollections.menuRatings)
           .doc(menuId)
-          .collection('ratings')
+          .collection(FirestoreCollections.ratings)
           .doc(userId);
 
       final ratingDoc = await ratingRef.get();
@@ -539,9 +540,9 @@ class FirebaseMenuCollaborationRepository
       final userId = requireCurrentUserId();
 
       final commentRef = firestore
-          .collection('menu_comments')
+          .collection(FirestoreCollections.menuComments)
           .doc(menuId)
-          .collection('comments')
+          .collection(FirestoreCollections.comments)
           .doc(commentId);
 
       final commentDoc = await commentRef.get();
@@ -610,8 +611,9 @@ class FirebaseMenuCollaborationRepository
         'categories': menuSnapshot.keys.toList(),
       };
 
-      final docRef =
-          await firestore.collection('menu_templates').add(templateData);
+      final docRef = await firestore
+          .collection(FirestoreCollections.menuTemplates)
+          .add(templateData);
 
       AppLogger.success('Created menu template: $templateName');
       return docRef.id;
@@ -627,7 +629,7 @@ class FirebaseMenuCollaborationRepository
       final userId = requireCurrentUserId();
 
       final snapshot = await firestore
-          .collection('menu_templates')
+          .collection(FirestoreCollections.menuTemplates)
           .where('ownerId', isEqualTo: userId)
           .orderBy('createdAt', descending: true)
           .get();
@@ -656,8 +658,10 @@ class FirebaseMenuCollaborationRepository
       final userId = requireCurrentUserId();
 
       // Verify ownership before deletion
-      final doc =
-          await firestore.collection('menu_templates').doc(templateId).get();
+      final doc = await firestore
+          .collection(FirestoreCollections.menuTemplates)
+          .doc(templateId)
+          .get();
       if (!doc.exists) return false;
 
       final data = doc.data();
@@ -666,7 +670,10 @@ class FirebaseMenuCollaborationRepository
         return false;
       }
 
-      await firestore.collection('menu_templates').doc(templateId).delete();
+      await firestore
+          .collection(FirestoreCollections.menuTemplates)
+          .doc(templateId)
+          .delete();
       AppLogger.success('Deleted menu template: $templateId');
       return true;
     } catch (e, stackTrace) {
@@ -694,8 +701,10 @@ class FirebaseMenuCollaborationRepository
       }
 
       // Get template
-      final templateDoc =
-          await firestore.collection('menu_templates').doc(templateId).get();
+      final templateDoc = await firestore
+          .collection(FirestoreCollections.menuTemplates)
+          .doc(templateId)
+          .get();
 
       if (!templateDoc.exists) {
         AppLogger.error('Template not found');
@@ -729,7 +738,7 @@ class FirebaseMenuCollaborationRepository
 
       // Increment template use count using FieldValue
       await firestore
-          .collection('menu_templates')
+          .collection(FirestoreCollections.menuTemplates)
           .doc(templateId)
           .update({'useCount': FieldValue.increment(1)});
 
@@ -750,9 +759,9 @@ class FirebaseMenuCollaborationRepository
   }) async {
     try {
       await firestore
-          .collection('menu_activity')
+          .collection(FirestoreCollections.menuActivity)
           .doc(menuId)
-          .collection('activities')
+          .collection(FirestoreCollections.activities)
           .add({
         ...activity,
         'menuId': menuId,

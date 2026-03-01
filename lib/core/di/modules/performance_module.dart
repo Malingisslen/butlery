@@ -68,19 +68,19 @@ class PerformanceModule implements DIModule {
         () => IntelligentCacheManager(),
       );
 
-      // Startup optimization manager (singleton - used early in app lifecycle)
-      container.registerSingleton<StartupOptimizationManager>(
-        StartupOptimizationManager(),
+      // Startup optimization manager
+      container.registerLazySingleton<StartupOptimizationManager>(
+        () => StartupOptimizationManager(),
       );
 
-      // Performance monitoring service (singleton)
-      container.registerSingleton<PerformanceMonitoringService>(
-        PerformanceMonitoringService(),
+      // Performance monitoring service
+      container.registerLazySingleton<PerformanceMonitoringService>(
+        () => PerformanceMonitoringService(),
       );
 
-      // App monitoring service for alerting integration (singleton)
-      container.registerSingleton<AppMonitoringService>(
-        AppMonitoringService(),
+      // App monitoring service for alerting integration
+      container.registerLazySingleton<AppMonitoringService>(
+        () => AppMonitoringService(),
       );
 
       // Permission cache service (lazy singleton - requires FeatureFlagService)

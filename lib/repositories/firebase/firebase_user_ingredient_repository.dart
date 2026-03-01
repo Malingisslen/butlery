@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase implementation of user-defined ingredients.
 ///
@@ -29,7 +30,10 @@ class FirebaseUserIngredientRepository
 
   /// Gets the user's ingredient collection.
   CollectionReference<Map<String, dynamic>> _getUserCollection(String userId) {
-    return _firestore.collection('users').doc(userId).collection('ingredients');
+    return _firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.ingredients);
   }
 
   /// Gets the current user ID or throws.

@@ -371,6 +371,11 @@ class UnifiedRecipeService extends ChangeNotifier
     }
   }
 
+  /// Fetch all user recipes using cursor-based pagination (no cap).
+  Future<List<Recipe>> fetchAllUserRecipes(String userId) async {
+    return await _personalModule.fetchAllUserRecipes(userId);
+  }
+
   List<Recipe> get recipes => List.unmodifiable(_recipes);
   List<Recipe> get personalRecipes =>
       recipes.where((r) => r.isPersonal).toList();
@@ -394,6 +399,22 @@ class UnifiedRecipeService extends ChangeNotifier
       return _cacheModule.isSyncing;
     } catch (_) {
       // Module not yet initialized
+      return false;
+    }
+  }
+
+  bool get hasPendingWrites {
+    try {
+      return _cacheModule.hasPendingWrites;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  bool get isFromCache {
+    try {
+      return _cacheModule.isFromCache;
+    } catch (_) {
       return false;
     }
   }

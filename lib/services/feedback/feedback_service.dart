@@ -1,14 +1,12 @@
-/// Service handling beta feedback submission to Firestore and Firebase Storage.
+/// Service handling beta feedback submission.
 
 import 'dart:typed_data';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/feedback_entry.dart';
+import 'package:butlery/repositories/interfaces/feedback_repository.dart';
 import 'package:butlery/services/feedback/interaction_logger.dart';
 
 /// Manages beta feedback submissions including optional screenshot upload.
@@ -21,10 +19,10 @@ class FeedbackService extends BaseService {
 
   AuthRepository get _authRepository => ServiceLocator.get<AuthRepository>();
 
+  FeedbackRepository get _feedbackRepository =>
+      ServiceLocator.get<FeedbackRepository>();
+
   /// Submit user feedback with optional screenshot.
-  ///
-  /// Uploads screenshot to Firebase Storage if provided, then saves
-  /// the feedback entry (with recent interactions) to Firestore.
   Future<bool> submitFeedback({
     required FeedbackCategory category,
     required String description,
@@ -38,9 +36,9 @@ class FeedbackService extends BaseService {
 
         String? screenshotUrl;
 
-        // Upload screenshot if provided
         if (screenshot != null) {
-          screenshotUrl = await _uploadScreenshot(userId, screenshot);
+          screenshotUrl =
+              await _feedbackRepository.uploadScreenshot(userId, screenshot);
         }
 
         final entry = FeedbackEntry(
@@ -55,9 +53,7 @@ class FeedbackService extends BaseService {
           deviceInfo: _buildDeviceInfo(),
         );
 
-        await FirebaseFirestore.instance
-            .collection('feedback')
-            .add(entry.toMap());
+        await _feedbackRepository.saveFeedback(entry);
 
         AppLogger.info('Feedback submitted: ${category.name}');
         return true;
@@ -69,23 +65,7 @@ class FeedbackService extends BaseService {
     return result ?? false;
   }
 
-  /// Upload screenshot bytes to Firebase Storage.
-  Future<String> _uploadScreenshot(String userId, Uint8List bytes) async {
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final ref =
-        FirebaseStorage.instance.ref().child('feedback/$userId/$timestamp.png');
-
-    final uploadTask = await ref.putData(
-      bytes,
-      SettableMetadata(contentType: 'image/png'),
-    );
-
-    return await uploadTask.ref.getDownloadURL();
-  }
-
-  /// Gather basic device info for debugging context.
   String _buildDeviceInfo() {
-    // Platform info is limited on web, but capture what we can
     return 'Flutter Web - ${DateTime.now().timeZoneName}';
   }
 }

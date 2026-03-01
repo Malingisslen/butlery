@@ -30,6 +30,7 @@ import 'package:butlery/models/shared_content.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase implementation for social content sharing with comprehensive community engagement features.
 /// This repository provides complete social sharing functionality using Firebase Firestore as the
@@ -69,7 +70,7 @@ class FirebaseSocialSharingRepository
   });
 
   @override
-  String get collectionName => 'shared_content';
+  String get collectionName => FirestoreCollections.sharedContent;
 
   @override
   SharedContent fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {

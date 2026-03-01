@@ -10,6 +10,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 abstract class BaseFirebaseRepository<T>
     with PermissionValidationMixin
@@ -63,7 +64,10 @@ abstract class BaseFirebaseRepository<T>
 
   CollectionReference<Map<String, dynamic>> getUserCollection(String? userId) {
     final uid = userId ?? requireCurrentUserId();
-    return _firestore.collection('users').doc(uid).collection(collectionName);
+    return _firestore
+        .collection(FirestoreCollections.users)
+        .doc(uid)
+        .collection(collectionName);
   }
 
   CollectionReference<Map<String, dynamic>> getCollectionRef() => collection;
@@ -307,6 +311,67 @@ abstract class BaseFirebaseRepository<T>
     } catch (e) {
       AppLogger.error('Safe read ${T.toString()} $id failed: $e');
       return null;
+    }
+  }
+
+  /// Reads a single document using cache-first strategy.
+  ///
+  /// Tries the local Firestore cache first to avoid a network round-trip.
+  /// Falls back to server on cache miss. Suitable for non-critical reads
+  /// where slightly stale data is acceptable (e.g., displaying a recipe
+  /// detail, showing a user profile). NOT suitable for permission checks
+  /// or pre-update validation where fresh data is required -- use [read].
+  @protected
+  Future<DocumentSnapshot<Map<String, dynamic>>> getDocCacheFirst(
+    DocumentReference<Map<String, dynamic>> docRef,
+  ) async {
+    try {
+      final cached = await docRef.get(const GetOptions(source: Source.cache));
+      if (cached.exists) return cached;
+    } catch (_) {
+      // Cache miss or cache disabled -- fall through to server
+    }
+    return await docRef.get(const GetOptions(source: Source.serverAndCache));
+  }
+
+  /// Cache-first read with full permission validation.
+  ///
+  /// Same as [read] but tries cache first. Use for display-only reads
+  /// where the latest server state is not critical.
+  Future<T?> readCacheFirst(String id) async {
+    try {
+      final userId = requireCurrentUserId();
+      final ref = getCollectionRef();
+      final doc = await getDocCacheFirst(ref.doc(id));
+
+      if (!doc.exists) {
+        return null;
+      }
+
+      final entity = fromFirestore(doc);
+      final canRead = await validateReadPermission(userId, id, entity);
+
+      await logPermissionCheck(
+        userId: userId,
+        resource: '${T.toString()}/$id',
+        operation: 'read',
+        granted: canRead,
+        auditRepository: _auditRepository,
+      );
+
+      if (!canRead) {
+        throw PermissionDeniedException(
+          'User $userId does not have permission to read ${T.toString()} $id',
+        );
+      }
+
+      return entity;
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Failed to read (cache-first) ${T.toString()} $id: $e',
+        stackTrace,
+      );
+      rethrow;
     }
   }
 }

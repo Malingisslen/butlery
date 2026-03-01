@@ -179,130 +179,142 @@ class _AddUnifiedShoppingItemDialogState
         width: double.maxFinite,
         child: Form(
           key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Article name - focus first
-              StyledInput(
-                controller: _nameController,
-                autofocus: true,
-                label: context.l10n.shoppingItemName,
-                hint: context.l10n.shoppingItemHint,
-                prefixIcon: Icon(
-                  Icons.shopping_basket,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: AppDimensions.iconSizeAction,
-                ),
-                validator: FormValidators.shoppingItemName(),
-              ),
-              const SizedBox(height: AppDimensions.spacingXl),
-
-              // Amount and unit on same row - adjusted flex values
-              Row(
+          child: FocusTraversalGroup(
+              policy: OrderedTraversalPolicy(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Amount (less space - flex: 1)
-                  Expanded(
-                    flex: 1,
-                    child: StyledInput(
-                      controller: _amountController,
-                      label: context.l10n.shoppingAmount,
-                      hint: '1',
-                      prefixIcon: Icon(
-                        Icons.numbers,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: AppDimensions.iconSizeAction,
-                      ),
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      validator: FormValidators.shoppingItemAmount(),
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.spacingM),
-
-                  // Unit - more space for dropdown (flex: 2)
-                  Expanded(
-                    flex: 2,
-                    child: DropdownButtonFormField<String>(
-                      initialValue: _selectedUnit,
-                      style: AppTextStyles.bodyLarge,
-                      decoration: InputDecoration(
-                        labelText: context.l10n.shoppingUnit,
-                        labelStyle: AppTextStyles.labelLarge,
+                  // Article name - focus first
+                  FocusTraversalOrder(
+                      order: const NumericFocusOrder(1),
+                      child: StyledInput(
+                        controller: _nameController,
+                        autofocus: true,
+                        label: context.l10n.shoppingItemName,
+                        hint: context.l10n.shoppingItemHint,
                         prefixIcon: Icon(
-                          Icons.straighten,
+                          Icons.shopping_basket,
                           color: Theme.of(context).colorScheme.primary,
                           size: AppDimensions.iconSizeAction,
                         ),
-                        border: const OutlineInputBorder(),
-                        contentPadding:
-                            const EdgeInsets.all(AppDimensions.paddingM),
-                      ),
-                      isDense: true,
-                      isExpanded: true,
-                      items: _getUnits(context).map((unit) {
-                        return DropdownMenuItem<String>(
-                          value: unit['value'],
-                          child: Text(
-                            unit['dropdown']!,
-                            style: AppTextStyles.bodyLarge,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          if (mounted) {
-                            setState(() {
-                              _selectedUnit = value;
-                            });
-                          }
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppDimensions.spacingXl),
+                        validator: FormValidators.shoppingItemName(),
+                      )),
+                  const SizedBox(height: AppDimensions.spacingXl),
 
-              // Category dropdown
-              DropdownButtonFormField<String>(
-                initialValue: _selectedCategory,
-                style: AppTextStyles.bodyLarge,
-                decoration: InputDecoration(
-                  labelText: context.l10n.shoppingCategory,
-                  labelStyle: AppTextStyles.labelLarge,
-                  prefixIcon: Icon(
-                    Icons.category,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: AppDimensions.iconSizeAction,
+                  // Amount and unit on same row - adjusted flex values
+                  Row(
+                    children: [
+                      // Amount (less space - flex: 1)
+                      Expanded(
+                        flex: 1,
+                        child: FocusTraversalOrder(
+                            order: const NumericFocusOrder(2),
+                            child: StyledInput(
+                              controller: _amountController,
+                              label: context.l10n.shoppingAmount,
+                              hint: '1',
+                              prefixIcon: Icon(
+                                Icons.numbers,
+                                color: Theme.of(context).colorScheme.primary,
+                                size: AppDimensions.iconSizeAction,
+                              ),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
+                              validator: FormValidators.shoppingItemAmount(),
+                            )),
+                      ),
+                      const SizedBox(width: AppDimensions.spacingM),
+
+                      // Unit - more space for dropdown (flex: 2)
+                      Expanded(
+                        flex: 2,
+                        child: FocusTraversalOrder(
+                            order: const NumericFocusOrder(3),
+                            child: DropdownButtonFormField<String>(
+                              initialValue: _selectedUnit,
+                              style: AppTextStyles.bodyLarge,
+                              decoration: InputDecoration(
+                                labelText: context.l10n.shoppingUnit,
+                                labelStyle: AppTextStyles.labelLarge,
+                                prefixIcon: Icon(
+                                  Icons.straighten,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  size: AppDimensions.iconSizeAction,
+                                ),
+                                border: const OutlineInputBorder(),
+                                contentPadding: const EdgeInsets.all(
+                                    AppDimensions.paddingM),
+                              ),
+                              isDense: true,
+                              isExpanded: true,
+                              items: _getUnits(context).map((unit) {
+                                return DropdownMenuItem<String>(
+                                  value: unit['value'],
+                                  child: Text(
+                                    unit['dropdown']!,
+                                    style: AppTextStyles.bodyLarge,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                if (value != null) {
+                                  if (mounted) {
+                                    setState(() {
+                                      _selectedUnit = value;
+                                    });
+                                  }
+                                }
+                              },
+                            )),
+                      ),
+                    ],
                   ),
-                  border: const OutlineInputBorder(),
-                  contentPadding: const EdgeInsets.all(AppDimensions.paddingM),
-                ),
-                isExpanded: true,
-                items: _categoryValues.map((category) {
-                  return DropdownMenuItem<String>(
-                    value: category,
-                    child: Text(
-                      _categoryLabel(context, category),
-                      style: AppTextStyles.bodyLarge,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    if (mounted) {
-                      setState(() {
-                        _selectedCategory = value;
-                      });
-                    }
-                  }
-                },
-              ),
-            ],
-          ),
+                  const SizedBox(height: AppDimensions.spacingXl),
+
+                  // Category dropdown
+                  FocusTraversalOrder(
+                      order: const NumericFocusOrder(4),
+                      child: DropdownButtonFormField<String>(
+                        initialValue: _selectedCategory,
+                        style: AppTextStyles.bodyLarge,
+                        decoration: InputDecoration(
+                          labelText: context.l10n.shoppingCategory,
+                          labelStyle: AppTextStyles.labelLarge,
+                          prefixIcon: Icon(
+                            Icons.category,
+                            color: Theme.of(context).colorScheme.primary,
+                            size: AppDimensions.iconSizeAction,
+                          ),
+                          border: const OutlineInputBorder(),
+                          contentPadding:
+                              const EdgeInsets.all(AppDimensions.paddingM),
+                        ),
+                        isExpanded: true,
+                        items: _categoryValues.map((category) {
+                          return DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(
+                              _categoryLabel(context, category),
+                              style: AppTextStyles.bodyLarge,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            if (mounted) {
+                              setState(() {
+                                _selectedCategory = value;
+                              });
+                            }
+                          }
+                        },
+                      )),
+                ],
+              )),
         ),
       ),
       actions: [
@@ -321,9 +333,10 @@ class _AddUnifiedShoppingItemDialogState
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      final amount = double.parse(
-        _amountController.text.replaceAll(',', '.'),
-      );
+      final amount = double.tryParse(
+            _amountController.text.replaceAll(',', '.'),
+          ) ??
+          1.0;
 
       final item = UnifiedShoppingItem(
         id: widget.initialItem?.id,

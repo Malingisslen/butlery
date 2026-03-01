@@ -28,7 +28,8 @@ class XFileUploadHandler {
 
   XFileUploadHandler({
     ImageUploadService? uploadService,
-  }) : _uploadService = uploadService ?? ImageUploadService();
+  }) : _uploadService =
+            uploadService ?? ServiceLocator.get<ImageUploadService>();
 
   /// Get pending XFile by path
   XFile? getPendingXFile(String path) => _pendingXFiles[path];

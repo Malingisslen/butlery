@@ -1,13 +1,13 @@
 # Accepted Large Files
 
-**Last Updated**: December 2025
+**Last Updated**: March 2026
 
 Files intentionally exceeding the 500-line guideline. Review this list before proposing refactoring.
 
 ## Refactoring Summary
 
-- **28 files refactored** across 7 batches
-- **8,233 lines reduced** total
+- **29 files refactored** across 8 batches (latest: personal_tag_rule.dart decomposition)
+- **8,879 lines reduced** total
 - **33 files remain >500 lines** (documented below with reasons)
 
 ## Accepted Files
@@ -24,7 +24,7 @@ Files intentionally exceeding the 500-line guideline. Review this list before pr
 | `unified_recipe_service.dart` | 744 | Service facade coordinating 4 modules - already modular |
 | `firebase_menu_collaboration_repository.dart` | 707 | Repository - tightly coupled to base class |
 | `stream_management_mixin.dart` | 700 | Core infrastructure mixin |
-| `firebase_recipe_repository.dart` | 698 | Refactored (was 862), legacy validator extracted |
+| `firebase_recipe_repository.dart` | 907 | Grew from Phase 4 sync/caching additions |
 | `main.dart` | 696 | App entry point - must be self-contained |
 | `ocr_extraction_service.dart` | 676 | Refactored, usage tracker extracted |
 | `social_recipe_coordinator.dart` | 669 | Service module - already well-organized |
@@ -35,7 +35,7 @@ Files intentionally exceeding the 500-line guideline. Review this list before pr
 | `skriv_sjalv_recept_view.dart` | 630 | Refactored (was 836) |
 | `json_serializable_mixin.dart` | 628 | Core infrastructure mixin |
 | `social_menu_coordinator.dart` | 623 | Service module - already well-organized |
-| `import_manager.dart` | 605 | Refactored (was 722) |
+| `import_manager.dart` | 735 | Grew from Phase 4 pipeline additions |
 | `recipe_discovery_service.dart` | 602 | Service module - cohesive feature |
 | `error_handling_mixin.dart` | 596 | Core infrastructure mixin |
 | `realtime_notification_module.dart` | 592 | Service module - cohesive feature |

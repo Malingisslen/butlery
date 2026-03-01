@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firestore-based fallback search implementation.
 ///
@@ -31,7 +32,9 @@ class FirestoreSearchRepository implements SearchRepository {
     try {
       // Firestore doesn't support full-text search
       // Use array-contains-any for tags or basic filtering
-      var queryRef = _firestore.collection('sharedRecipes').limit(hitsPerPage);
+      var queryRef = _firestore
+          .collection(FirestoreCollections.sharedRecipesDenorm)
+          .limit(hitsPerPage);
 
       // Apply filters
       if (filters?.isPublic == true) {
@@ -102,7 +105,7 @@ class FirestoreSearchRepository implements SearchRepository {
   }) async {
     try {
       final snapshot = await _firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .where('isPublic', isEqualTo: true)
           .limit(hitsPerPage)
           .get();
@@ -189,7 +192,10 @@ class FirestoreSearchRepository implements SearchRepository {
   @override
   Future<bool> healthCheck() async {
     try {
-      await _firestore.collection('sharedRecipes').limit(1).get();
+      await _firestore
+          .collection(FirestoreCollections.sharedRecipesDenorm)
+          .limit(1)
+          .get();
       return true;
     } catch (e) {
       return false;

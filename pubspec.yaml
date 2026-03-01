@@ -42,7 +42,6 @@ dependencies:
   flutter_secure_storage: ^10.0.0  # Platform-secure storage for sensitive data
 
   # ==================== NAVIGATION & UI ====================
-  go_router: ^17.0.0
   dynamic_color: ^1.7.0  # Material You dynamic color support (Android 12+)
   wakelock_plus: ^1.2.8  # Keep screen awake during cooking mode
 
@@ -56,6 +55,9 @@ dependencies:
   cached_network_image: ^3.4.1
   permission_handler: ^12.0.1
   flutter_image_compress: ^2.3.0
+
+  # ==================== PLATFORM INFO ====================
+  package_info_plus: ^8.0.0
 
   # ==================== UTILITIES ====================
   uuid: ^4.5.3

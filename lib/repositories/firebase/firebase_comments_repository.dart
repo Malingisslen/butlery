@@ -5,6 +5,7 @@ import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase Firestore implementation for recipe comment management and social interaction.
 /// This repository implements the [CommentsRepository] interface using Firebase Firestore
@@ -71,7 +72,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
   });
 
   @override
-  String get collectionName => 'recipe_comments';
+  String get collectionName => FirestoreCollections.recipeComments;
 
   @override
   RecipeComment fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
@@ -303,7 +304,8 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       );
     }
 
-    final likesCollection = collection.doc(commentId).collection('likes');
+    final likesCollection =
+        collection.doc(commentId).collection(FirestoreCollections.likes);
     final userLikeDoc = likesCollection.doc(userId);
     final likeSnapshot = await userLikeDoc.get();
 
@@ -344,8 +346,11 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
 
   @override
   Future<bool> hasUserLikedComment(String commentId, String userId) async {
-    final likeDoc =
-        await collection.doc(commentId).collection('likes').doc(userId).get();
+    final likeDoc = await collection
+        .doc(commentId)
+        .collection(FirestoreCollections.likes)
+        .doc(userId)
+        .get();
     return likeDoc.exists;
   }
 
@@ -354,7 +359,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       {int limit = 100}) async {
     final likesSnapshot = await collection
         .doc(commentId)
-        .collection('likes')
+        .collection(FirestoreCollections.likes)
         .orderBy('likedAt', descending: true)
         .limit(limit)
         .get();

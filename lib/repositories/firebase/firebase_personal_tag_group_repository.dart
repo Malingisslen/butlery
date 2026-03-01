@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase repository for personal tag groups (folders for organizing tags).
 ///
@@ -17,7 +18,7 @@ class FirebasePersonalTagGroupRepository
   });
 
   @override
-  String get collectionName => 'personalTagGroups';
+  String get collectionName => FirestoreCollections.userPersonalTagGroups;
 
   @override
   PersonalTagGroup fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {

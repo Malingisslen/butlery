@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles export of user preferences: settings, notifications.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -16,9 +17,9 @@ class PreferencesExportManager {
   Future<Map<String, dynamic>> exportPreferences(String userId) async {
     try {
       final prefsDoc = await _firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('settings')
+          .collection(FirestoreCollections.userSettings)
           .doc('preferences')
           .get();
 
@@ -40,7 +41,7 @@ class PreferencesExportManager {
 
       // Get all user notifications
       final notificationsSnapshot = await _firestore
-          .collection('user_notifications')
+          .collection(FirestoreCollections.userNotifications)
           .where('userId', isEqualTo: userId)
           .orderBy('createdAt', descending: true)
           .limit(500) // Limit to last 500 notifications
@@ -100,13 +101,15 @@ class PreferencesExportManager {
     try {
       // Get notification preferences
       final prefsDoc = await _firestore
-          .collection('user_notification_preferences')
+          .collection(FirestoreCollections.userNotificationPreferences)
           .doc(userId)
           .get();
 
       // Get FCM token (if exists)
-      final fcmDoc =
-          await _firestore.collection('user_fcm_tokens').doc(userId).get();
+      final fcmDoc = await _firestore
+          .collection(FirestoreCollections.userFcmTokens)
+          .doc(userId)
+          .get();
 
       String? fcmTokenUpdatedAt;
       if (fcmDoc.exists) {

@@ -51,8 +51,8 @@ class SearchModule implements DIModule {
         const apiKey = String.fromEnvironment('ALGOLIA_API_KEY');
 
         if (appId.isNotEmpty && apiKey.isNotEmpty) {
-          container.registerSingleton<SearchRepository>(
-            AlgoliaSearchRepository(
+          container.registerLazySingleton<SearchRepository>(
+            () => AlgoliaSearchRepository(
               appId: appId,
               apiKey: apiKey,
             ),
@@ -62,14 +62,14 @@ class SearchModule implements DIModule {
           // Algolia enabled but credentials missing, fall back
           AppLogger.warning(
               'SearchModule: Algolia enabled but credentials missing, using Firestore');
-          container.registerSingleton<SearchRepository>(
-            FirestoreSearchRepository(),
+          container.registerLazySingleton<SearchRepository>(
+            () => FirestoreSearchRepository(),
           );
         }
       } else {
         // Algolia disabled, use Firestore fallback
-        container.registerSingleton<SearchRepository>(
-          FirestoreSearchRepository(),
+        container.registerLazySingleton<SearchRepository>(
+          () => FirestoreSearchRepository(),
         );
         AppLogger.info('SearchModule: Using Firestore search provider');
       }

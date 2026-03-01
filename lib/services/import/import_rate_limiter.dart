@@ -4,6 +4,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/services/import/models/rate_limit_models.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firestore-persisted rate limiter for import operations.
 ///
@@ -142,9 +143,9 @@ class ImportRateLimiter extends BaseService {
   /// Get the rate limit document reference for a user.
   DocumentReference<Map<String, dynamic>> _getRateLimitDoc(String userId) {
     return _firestoreRepo.firestore
-        .collection('users')
+        .collection(FirestoreCollections.users)
         .doc(userId)
-        .collection('rateLimits')
+        .collection(FirestoreCollections.userRateLimits)
         .doc('imports');
   }
 

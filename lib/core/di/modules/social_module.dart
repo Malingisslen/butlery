@@ -5,7 +5,6 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
@@ -52,6 +51,7 @@ import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 class SocialModule implements DIModule {
   @override
@@ -92,19 +92,21 @@ class SocialModule implements DIModule {
   @override
   Future<void> configure(GetIt container) async {
     try {
-      container.registerSingleton<UserRepository>(
-        FirebaseUserRepository(authRepository: container<AuthRepository>()),
+      container.registerLazySingleton<UserRepository>(
+        () =>
+            FirebaseUserRepository(authRepository: container<AuthRepository>()),
       );
 
-      container.registerSingleton<UserService>(
-        UserService(
+      container.registerLazySingleton<UserService>(
+        () => UserService(
           repository: container<UserRepository>(),
           authRepository: container<AuthRepository>(),
         ),
       );
 
-      container.registerSingleton<FriendsRepository>(
-        FirebaseFriendsRepository(authRepository: container<AuthRepository>()),
+      container.registerLazySingleton<FriendsRepository>(
+        () => FirebaseFriendsRepository(
+            authRepository: container<AuthRepository>()),
       );
 
       // Lazy registration for faster startup
@@ -115,35 +117,35 @@ class SocialModule implements DIModule {
         ),
       );
 
-      container.registerSingleton<CommentsRepository>(
-        FirebaseCommentsRepository(authRepository: container<AuthRepository>()),
+      container.registerLazySingleton<CommentsRepository>(
+        () => FirebaseCommentsRepository(
+            authRepository: container<AuthRepository>()),
       );
 
-      container.registerSingleton<RatingsRepository>(
-        FirebaseRatingsRepository(authRepository: container<AuthRepository>()),
+      container.registerLazySingleton<RatingsRepository>(
+        () => FirebaseRatingsRepository(
+            authRepository: container<AuthRepository>()),
       );
 
-      // Social recipe repository
-      container.registerSingleton<SocialRecipeRepository>(
-        FirebaseSocialRecipeRepository(
+      container.registerLazySingleton<SocialRecipeRepository>(
+        () => FirebaseSocialRecipeRepository(
           authRepository: container<AuthRepository>(),
-          auth: FirebaseAuth.instance,
         ),
       );
 
       // Phase 1 shared content repositories (Issue #014)
-      container.registerSingleton<FirebaseSharedRecipeRepository>(
-        FirebaseSharedRecipeRepository(
+      container.registerLazySingleton<FirebaseSharedRecipeRepository>(
+        () => FirebaseSharedRecipeRepository(
             authRepository: container<AuthRepository>()),
       );
 
-      container.registerSingleton<FirebaseSharedMenuRepository>(
-        FirebaseSharedMenuRepository(
+      container.registerLazySingleton<FirebaseSharedMenuRepository>(
+        () => FirebaseSharedMenuRepository(
             authRepository: container<AuthRepository>()),
       );
 
-      container.registerSingleton<FirebaseSharedShoppingRepository>(
-        FirebaseSharedShoppingRepository(
+      container.registerLazySingleton<FirebaseSharedShoppingRepository>(
+        () => FirebaseSharedShoppingRepository(
             authRepository: container<AuthRepository>()),
       );
 
@@ -198,7 +200,7 @@ class SocialModule implements DIModule {
                 AppLogger.error('SocialMenuCoordinator error: $error'),
             notifyListeners: () {}, // Coordinators are services, not ViewModels
             getMenu: (id) async {
-              // FIXME(social-menu-api): Implement when UnifiedMenuService has getById
+              // Stub: UnifiedMenuService.getById not yet available
               AppLogger.warning(
                   'SocialMenuCoordinator.getMenu not yet implemented');
               return null;
@@ -229,7 +231,7 @@ class SocialModule implements DIModule {
                 // Save to menus collection
                 final menuData = sharedMenu.toFirestore();
                 final docRef = await firestoreRepo.firestore
-                    .collection('menus')
+                    .collection(FirestoreCollections.menus)
                     .add(menuData);
 
                 AppLogger.success('✅ Saved imported menu: ${docRef.id}');
@@ -257,13 +259,13 @@ class SocialModule implements DIModule {
                 AppLogger.error('SocialShoppingCoordinator error: $error'),
             notifyListeners: () {}, // Coordinators are services, not ViewModels
             getShoppingList: (id) async {
-              // FIXME(social-shopping-api): Implement when UnifiedShoppingService has getById
+              // Stub: UnifiedShoppingService.getById not yet available
               AppLogger.warning(
                   'SocialShoppingCoordinator.getShoppingList not yet implemented');
               return null;
             },
             saveShoppingList: (list) async {
-              // FIXME(social-shopping-api): Implement when UnifiedShoppingService has save method
+              // Stub: UnifiedShoppingService.save not yet available
               AppLogger.warning(
                   'SocialShoppingCoordinator.saveShoppingList not yet implemented');
               return null;
@@ -292,29 +294,32 @@ class SocialModule implements DIModule {
       );
 
       // Deep link repository and service
-      container.registerSingleton<DeepLinkRepository>(
-        FirebaseDeepLinkRepository(authRepository: container<AuthRepository>()),
-      );
-
-      container.registerSingleton<DeepLinkService>(DeepLinkService(
-        deepLinkRepository: container<DeepLinkRepository>(),
-      ));
-
-      // Connectivity repository and monitoring service
-      container.registerSingleton<ConnectivityRepository>(
-        FirebaseConnectivityRepository(
+      container.registerLazySingleton<DeepLinkRepository>(
+        () => FirebaseDeepLinkRepository(
             authRepository: container<AuthRepository>()),
       );
 
-      container.registerSingleton<ConnectivityMonitoringService>(
-        ConnectivityMonitoringService(
+      container.registerLazySingleton<DeepLinkService>(
+        () => DeepLinkService(
+          deepLinkRepository: container<DeepLinkRepository>(),
+        ),
+      );
+
+      // Connectivity repository and monitoring service
+      container.registerLazySingleton<ConnectivityRepository>(
+        () => FirebaseConnectivityRepository(
+            authRepository: container<AuthRepository>()),
+      );
+
+      container.registerLazySingleton<ConnectivityMonitoringService>(
+        () => ConnectivityMonitoringService(
           connectivityRepository: container<ConnectivityRepository>(),
         ),
       );
 
       // Social sharing repository
-      container.registerSingleton<SocialSharingRepository>(
-        FirebaseSocialSharingRepository(
+      container.registerLazySingleton<SocialSharingRepository>(
+        () => FirebaseSocialSharingRepository(
             authRepository: container<AuthRepository>()),
       );
 

@@ -5,6 +5,7 @@ import 'package:butlery/models/friend_category_member.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Module for managing friend category members using subcollections.
 ///
@@ -38,18 +39,18 @@ class FriendCategoryMemberModule {
     String categoryId,
   ) =>
       firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(ownerId)
-          .collection('friendCategories')
+          .collection(FirestoreCollections.userFriendCategories)
           .doc(categoryId)
-          .collection('members');
+          .collection(FirestoreCollections.members);
 
   /// Get reference to user's category memberships
   CollectionReference<Map<String, dynamic>> _membershipsRef(String userId) =>
       firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('categoryMemberships');
+          .collection(FirestoreCollections.userCategoryMemberships);
 
   /// Add a member to a category using subcollections.
   /// Creates entries in both the category's members subcollection
@@ -93,9 +94,9 @@ class FriendCategoryMemberModule {
 
     // 3. Update member count in category document
     final categoryRef = firestore
-        .collection('users')
+        .collection(FirestoreCollections.users)
         .doc(ownerId)
-        .collection('friendCategories')
+        .collection(FirestoreCollections.userFriendCategories)
         .doc(categoryId);
     batch.update(categoryRef, {
       'memberCount': FieldValue.increment(1),
@@ -120,9 +121,9 @@ class FriendCategoryMemberModule {
 
     final batch = firestore.batch();
     final categoryRef = firestore
-        .collection('users')
+        .collection(FirestoreCollections.users)
         .doc(ownerId)
-        .collection('friendCategories')
+        .collection(FirestoreCollections.userFriendCategories)
         .doc(categoryId);
 
     for (final friendId in friendIds) {
@@ -181,9 +182,9 @@ class FriendCategoryMemberModule {
 
     // 3. Update member count
     final categoryRef = firestore
-        .collection('users')
+        .collection(FirestoreCollections.users)
         .doc(ownerId)
-        .collection('friendCategories')
+        .collection(FirestoreCollections.userFriendCategories)
         .doc(categoryId);
     batch.update(categoryRef, {
       'memberCount': FieldValue.increment(-1),
@@ -204,9 +205,9 @@ class FriendCategoryMemberModule {
 
     final batch = firestore.batch();
     final categoryRef = firestore
-        .collection('users')
+        .collection(FirestoreCollections.users)
         .doc(ownerId)
-        .collection('friendCategories')
+        .collection(FirestoreCollections.userFriendCategories)
         .doc(categoryId);
 
     for (final friendId in friendIds) {
@@ -335,9 +336,9 @@ class FriendCategoryMemberModule {
 
     // Mark category as migrated and store member count
     final categoryRef = firestore
-        .collection('users')
+        .collection(FirestoreCollections.users)
         .doc(category.ownerId)
-        .collection('friendCategories')
+        .collection(FirestoreCollections.userFriendCategories)
         .doc(category.id);
 
     batch.update(categoryRef, {

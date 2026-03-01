@@ -40,6 +40,8 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       _parserService = ServiceLocator.get<RecipeParserService>();
       return _parserService;
     } catch (e) {
+      AppLogger.debug(
+          'UrlImportStrategy: RecipeParserService not available: $e');
       return null;
     }
   }

@@ -11,6 +11,7 @@ import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/user_counters.dart';
 import 'package:butlery/models/shared_content_member.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 abstract class BaseSharedContentRepository<T>
     extends BaseFirebaseRepository<T> {
@@ -38,9 +39,9 @@ abstract class BaseSharedContentRepository<T>
   /// Get reference to user counters document
   DocumentReference<Map<String, dynamic>> _getUserCountersRef(String userId) {
     return firestore
-        .collection('users')
+        .collection(FirestoreCollections.users)
         .doc(userId)
-        .collection('counters')
+        .collection(FirestoreCollections.counters)
         .doc('shared_content');
   }
 
@@ -357,7 +358,7 @@ abstract class BaseSharedContentRepository<T>
 
       await getCollectionRef()
           .doc(contentId)
-          .collection('members')
+          .collection(FirestoreCollections.members)
           .doc(userId)
           .set(member.toFirestore());
 
@@ -380,7 +381,7 @@ abstract class BaseSharedContentRepository<T>
     try {
       var query = getCollectionRef()
           .doc(contentId)
-          .collection('members')
+          .collection(FirestoreCollections.members)
           .orderBy('addedAt', descending: false);
 
       if (limit != null) {
@@ -401,7 +402,7 @@ abstract class BaseSharedContentRepository<T>
     try {
       await getCollectionRef()
           .doc(contentId)
-          .collection('members')
+          .collection(FirestoreCollections.members)
           .doc(userId)
           .delete();
 
@@ -417,7 +418,7 @@ abstract class BaseSharedContentRepository<T>
     try {
       final doc = await getCollectionRef()
           .doc(contentId)
-          .collection('members')
+          .collection(FirestoreCollections.members)
           .doc(userId)
           .get();
       return doc.exists;
@@ -431,7 +432,7 @@ abstract class BaseSharedContentRepository<T>
     try {
       var query = getCollectionRef()
           .doc(contentId)
-          .collection('members')
+          .collection(FirestoreCollections.members)
           .orderBy('addedAt', descending: false);
 
       if (limit != null) {
@@ -535,7 +536,7 @@ abstract class BaseSharedContentRepository<T>
     try {
       await getCollectionRef()
           .doc(contentId)
-          .collection('collaborators')
+          .collection(FirestoreCollections.collaborators)
           .doc(userId)
           .set({
         'userId': userId,
@@ -555,7 +556,7 @@ abstract class BaseSharedContentRepository<T>
     try {
       await getCollectionRef()
           .doc(contentId)
-          .collection('collaborators')
+          .collection(FirestoreCollections.collaborators)
           .doc(userId)
           .delete();
 
@@ -571,7 +572,7 @@ abstract class BaseSharedContentRepository<T>
     try {
       final doc = await getCollectionRef()
           .doc(contentId)
-          .collection('collaborators')
+          .collection(FirestoreCollections.collaborators)
           .doc(userId)
           .get();
       return doc.exists;
@@ -585,7 +586,7 @@ abstract class BaseSharedContentRepository<T>
     try {
       var query = getCollectionRef()
           .doc(contentId)
-          .collection('collaborators')
+          .collection(FirestoreCollections.collaborators)
           .orderBy('joinedAt', descending: false);
 
       if (limit != null) {

@@ -10,6 +10,7 @@
 library;
 
 import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
 
 // Core interfaces
 import 'package:butlery/core/di/interfaces/di_module.dart';
@@ -42,6 +43,7 @@ import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/share_service.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/backup_service.dart';
 import 'package:butlery/services/social_media_extractor.dart';
@@ -129,6 +131,7 @@ class ContentModule implements DIModule {
         StorageRepository,
         StorageService,
         ImagePickerService,
+        ImageUploadService,
         OfflineService,
         CollaborativeRecipeRepository,
         BackupService,
@@ -171,14 +174,14 @@ class ContentModule implements DIModule {
   Future<void> configure(GetIt container) async {
     try {
       // Recipe repository - depends on Auth from Core Module
-      container.registerSingleton<RecipeRepository>(
-        FirebaseRecipeRepository(
+      container.registerLazySingleton<RecipeRepository>(
+        () => FirebaseRecipeRepository(
             authRepository: container<auth.AuthRepository>()),
       );
 
       // Collaborative recipe repository with permission validation and audit logging
-      container.registerSingleton<CollaborativeRecipeRepository>(
-        CollaborativeRecipeRepository(
+      container.registerLazySingleton<CollaborativeRecipeRepository>(
+        () => CollaborativeRecipeRepository(
           authRepository: container<auth.AuthRepository>(),
           auditRepository: container<FirebaseAuditRepository>(),
         ),
@@ -224,10 +227,14 @@ class ContentModule implements DIModule {
       );
 
       // URL normalizer for consistent cache keys
-      container.registerSingleton<UrlNormalizer>(UrlNormalizer());
+      container.registerLazySingleton<UrlNormalizer>(
+        () => UrlNormalizer(),
+      );
 
       // Content fingerprint generator for recipe deduplication
-      container.registerSingleton<ContentFingerprint>(ContentFingerprint());
+      container.registerLazySingleton<ContentFingerprint>(
+        () => ContentFingerprint(),
+      );
 
       // Global recipe cache for cross-user deduplication
       container.registerLazySingleton<GlobalRecipeCache>(
@@ -264,7 +271,9 @@ class ContentModule implements DIModule {
 
       // YouTube transcript service for fetching video transcripts
       container.registerLazySingleton<YouTubeTranscriptService>(
-        () => YouTubeTranscriptService(),
+        () => YouTubeTranscriptService(
+          client: container<http.Client>(),
+        ),
       );
 
       // YouTube import strategy for video recipe imports
@@ -279,6 +288,7 @@ class ContentModule implements DIModule {
       container.registerLazySingleton<TikTokPipeline>(
         () => TikTokPipeline(
           llmService: container<LlmEnhancementService>(),
+          client: container<http.Client>(),
         ),
       );
 
@@ -345,36 +355,51 @@ class ContentModule implements DIModule {
       );
 
       // Menu service for meal planning
-      container.registerSingleton<MenuService>(MenuService());
+      container.registerLazySingleton<MenuService>(
+        () => MenuService(),
+      );
 
       // Unified menu service for collaborative menu planning
-      container.registerSingleton<UnifiedMenuService>(
-        UnifiedMenuService(
+      container.registerLazySingleton<UnifiedMenuService>(
+        () => UnifiedMenuService(
           firestoreRepository: container<FirestoreRepository>(),
         ),
       );
 
       // Search service for content discovery
-      container.registerSingleton<SearchService>(SearchService());
+      container.registerLazySingleton<SearchService>(
+        () => SearchService(),
+      );
 
       // Share service for content sharing
-      container.registerSingleton<ShareService>(ShareService());
+      container.registerLazySingleton<ShareService>(
+        () => ShareService(),
+      );
 
       // Storage repository for storage operations
-      container.registerSingleton<StorageRepository>(
-        FirebaseStorageRepository(
+      container.registerLazySingleton<StorageRepository>(
+        () => FirebaseStorageRepository(
           authRepository: container<auth.AuthRepository>(),
           auditRepository: container<FirebaseAuditRepository>(),
         ),
       );
 
       // Storage service for file management
-      container.registerSingleton<StorageService>(
-        StorageService(repository: container<StorageRepository>()),
+      container.registerLazySingleton<StorageService>(
+        () => StorageService(repository: container<StorageRepository>()),
       );
 
       // Image picker service for photo handling
-      container.registerSingleton<ImagePickerService>(ImagePickerService());
+      container.registerLazySingleton<ImagePickerService>(
+        () => ImagePickerService(),
+      );
+
+      // Image upload service for upload coordination with retry and progress
+      container.registerLazySingleton<ImageUploadService>(
+        () => ImageUploadService(
+          storageService: container<StorageService>(),
+        ),
+      );
 
       // Offline service for content synchronization (lazy for faster startup)
       container.registerLazySingleton<OfflineService>(
@@ -385,17 +410,23 @@ class ContentModule implements DIModule {
       );
 
       // Backup service for recipe data export and import
-      container.registerSingleton<BackupService>(BackupService());
+      container.registerLazySingleton<BackupService>(
+        () => BackupService(),
+      );
 
       // Social media extractor for content extraction from social platforms
-      container.registerSingleton<SocialMediaExtractor>(SocialMediaExtractor());
+      container.registerLazySingleton<SocialMediaExtractor>(
+        () => SocialMediaExtractor(),
+      );
 
       // Extraction manager for multi-platform content extraction pipeline
-      container.registerSingleton<ExtractionManager>(ExtractionManager());
+      container.registerLazySingleton<ExtractionManager>(
+        () => ExtractionManager(),
+      );
 
       // Content detector for intelligent content type detection and classification
-      container.registerSingleton<ContentDetectorService>(
-        ContentDetectorService(),
+      container.registerLazySingleton<ContentDetectorService>(
+        () => ContentDetectorService(),
       );
     } catch (e) {
       throw DIModuleException(

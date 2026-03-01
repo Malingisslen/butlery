@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase Firestore implementation for recipe rating system and statistics management.
 /// This repository implements the [RatingsRepository] interface using Firebase Firestore
@@ -72,7 +73,7 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
   });
 
   @override
-  String get collectionName => 'recipe_ratings';
+  String get collectionName => FirestoreCollections.recipeRatings;
 
   @override
   RecipeRating fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>

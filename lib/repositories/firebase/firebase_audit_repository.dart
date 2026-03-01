@@ -20,6 +20,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/audit_log.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Repository for persistent audit log storage and retrieval.
 /// Manages the complete lifecycle of audit logs from creation through retrieval,
@@ -33,7 +34,7 @@ class FirebaseAuditRepository {
 
   /// Reference to the audit_logs collection
   CollectionReference<Map<String, dynamic>> get _collection =>
-      _firestore.collection('audit_logs');
+      _firestore.collection(FirestoreCollections.auditLogs);
 
   /// Log a permission check to persistent storage.
   /// This is a fire-and-forget operation - failures are logged but don't throw.

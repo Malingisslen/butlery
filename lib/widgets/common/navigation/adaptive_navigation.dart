@@ -100,9 +100,10 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
         if (isMobile) {
           return Scaffold(
             appBar: _buildAppBar(context),
-            body: body,
+            body: FocusTraversalGroup(child: body),
             floatingActionButton: floatingActionButton,
-            bottomNavigationBar: _buildBottomNavigation(context),
+            bottomNavigationBar:
+                FocusTraversalGroup(child: _buildBottomNavigation(context)),
           );
         }
 
@@ -111,8 +112,9 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
           appBar: _buildAppBar(context),
           body: Row(
             children: [
-              _buildNavigationRail(context, isDesktop),
-              Expanded(child: body),
+              FocusTraversalGroup(
+                  child: _buildNavigationRail(context, isDesktop)),
+              Expanded(child: FocusTraversalGroup(child: body)),
             ],
           ),
           floatingActionButton: floatingActionButton,

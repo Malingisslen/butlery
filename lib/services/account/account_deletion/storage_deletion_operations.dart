@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/repositories/base/base_storage_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles deletion of storage and cached data (Firebase Storage, realtime recipes, offline cache).
 /// **Architecture:** Extends BaseStorageRepository for proper repository pattern and GDPR compliance
@@ -71,7 +72,7 @@ class StorageDeletionOperations extends BaseStorageRepository {
   Future<bool> deleteRealtimeRecipes(String userId) async {
     try {
       final realtimeRecipes = await _firestore
-          .collection('realtime_recipes')
+          .collection(FirestoreCollections.realtimeRecipes)
           .where('ownerId', isEqualTo: userId)
           .get();
 

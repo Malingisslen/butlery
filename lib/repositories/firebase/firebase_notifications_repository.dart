@@ -5,6 +5,7 @@ import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase Firestore implementation for push notification and user notification management.
 /// This repository implements the [NotificationsRepository] interface using Firebase Firestore
@@ -73,7 +74,7 @@ class FirebaseNotificationsRepository
   });
 
   @override
-  String get collectionName => 'user_notifications';
+  String get collectionName => FirestoreCollections.userNotifications;
 
   @override
   UserNotification fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
@@ -361,7 +362,8 @@ class FirebaseNotificationsRepository
 
   @override
   Future<void> updateFCMToken(String userId, String token) async {
-    final fcmCollection = firestore.collection('user_fcm_tokens');
+    final fcmCollection =
+        firestore.collection(FirestoreCollections.userFcmTokens);
     await fcmCollection.doc(userId).set({
       'token': token,
       'updatedAt': FieldValue.serverTimestamp(),
@@ -370,7 +372,8 @@ class FirebaseNotificationsRepository
 
   @override
   Future<void> removeFCMToken(String userId, String token) async {
-    final fcmCollection = firestore.collection('user_fcm_tokens');
+    final fcmCollection =
+        firestore.collection(FirestoreCollections.userFcmTokens);
     await fcmCollection.doc(userId).delete();
   }
 

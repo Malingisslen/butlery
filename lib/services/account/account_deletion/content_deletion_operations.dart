@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Handles deletion of user content (recipes, menus, shopping lists).
 class ContentDeletionOperations {
@@ -11,9 +12,9 @@ class ContentDeletionOperations {
   Future<bool> deleteRecipes(String userId) async {
     try {
       final recipesSnapshot = await _firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('recipes')
+          .collection(FirestoreCollections.recipes)
           .get();
 
       final batch = _firestore.batch();
@@ -22,7 +23,7 @@ class ContentDeletionOperations {
       }
 
       final unifiedSnapshot = await _firestore
-          .collection('recipes')
+          .collection(FirestoreCollections.recipes)
           .where('userId', isEqualTo: userId)
           .get();
 
@@ -41,9 +42,9 @@ class ContentDeletionOperations {
   Future<bool> deleteMenus(String userId) async {
     try {
       final menusSnapshot = await _firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('menus')
+          .collection(FirestoreCollections.menus)
           .get();
 
       final batch = _firestore.batch();
@@ -61,9 +62,9 @@ class ContentDeletionOperations {
   Future<bool> deleteShoppingLists(String userId) async {
     try {
       final listsSnapshot = await _firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('shopping_lists')
+          .collection(FirestoreCollections.userShoppingLists)
           .get();
 
       final batch = _firestore.batch();
@@ -83,9 +84,9 @@ class ContentDeletionOperations {
   Future<bool> deletePersonalTags(String userId) async {
     try {
       final tagsSnapshot = await _firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('personalTagIds')
+          .collection(FirestoreCollections.userPersonalTagIds)
           .get();
 
       await _deleteInBatches(tagsSnapshot.docs);
@@ -103,9 +104,9 @@ class ContentDeletionOperations {
   Future<bool> deletePersonalTagGroups(String userId) async {
     try {
       final groupsSnapshot = await _firestore
-          .collection('users')
+          .collection(FirestoreCollections.users)
           .doc(userId)
-          .collection('personalTagGroups')
+          .collection(FirestoreCollections.userPersonalTagGroups)
           .get();
 
       await _deleteInBatches(groupsSnapshot.docs);

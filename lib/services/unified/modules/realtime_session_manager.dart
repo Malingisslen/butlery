@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Focused module for real-time editing session management
 /// This module handles ONLY session lifecycle operations:
@@ -35,7 +36,7 @@ class RealtimeSessionManager {
       // Start listening to real-time changes
       // ignore: cancel_subscriptions - stored and cancelled by caller
       final subscription = firestore
-          .collection('realtime_recipes')
+          .collection(FirestoreCollections.realtimeRecipes)
           .doc(recipeId)
           .snapshots()
           .listen(

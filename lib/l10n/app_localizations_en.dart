@@ -182,13 +182,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validationPasswordRequired => 'Password required';
 
   @override
-  String get validationInvalidEmail => 'Invalid email address';
-
-  @override
   String get validationInvalidUrl => 'Invalid URL';
-
-  @override
-  String get validationInvalidPhone => 'Invalid phone number';
 
   @override
   String get validationInvalidAmount => 'Invalid amount';
@@ -222,9 +216,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorNotFound => 'Could not be found.';
-
-  @override
-  String get errorAlreadyExists => 'Already exists.';
 
   @override
   String errorCouldNotCreate(String itemType) {
@@ -333,11 +324,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String errorActionSpecific(String action, String issue) {
-    return 'Problem while $action: $issue';
-  }
-
-  @override
   String successItemCreated(String itemType) {
     return '$itemType created!';
   }
@@ -386,9 +372,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get draftRestored => 'Draft restored!';
 
   @override
-  String get draftRestoredDetails => 'fields loaded';
-
-  @override
   String get draftCouldNotRestore =>
       'Could not restore draft. Starting with empty form.';
 
@@ -409,58 +392,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get connectivityOfflineMode => 'Offline mode enabled';
-
-  @override
-  String get connectivityRestored => 'Connection restored';
-
-  @override
-  String get connectivitySyncingPending => 'Syncing pending changes...';
-
-  @override
-  String get connectivityLocalSaved => 'Changes saved locally';
-
-  @override
-  String get connectivityWillSync => 'Will sync when you\'re back online';
-
-  @override
-  String get permissionInsufficient => 'Insufficient permissions';
-
-  @override
-  String get permissionReadOnly => 'Read-only access';
-
-  @override
-  String get permissionOwnerOnly => 'Only the owner can perform this action';
-
-  @override
-  String get permissionRequestEdit => 'Request edit permissions';
-
-  @override
-  String get permissionMakePersonalCopy => 'Make a personal copy';
-
-  @override
-  String get recoveryCheckConnection => 'Check your internet connection';
-
-  @override
-  String get recoveryTryAgain => 'Try again';
-
-  @override
-  String get recoveryLoginAgain => 'Sign in again';
-
-  @override
-  String get recoveryContactOwner => 'Contact the owner';
-
-  @override
-  String get recoveryWaitAndRetry => 'Wait and try again';
-
-  @override
-  String get recoveryCheckPermissions => 'Check permissions';
-
-  @override
   String get emptyNoItems => 'No items found.';
-
-  @override
-  String get emptyList => 'The list is empty.';
 
   @override
   String get emptyNoResults => 'No results found.';
@@ -470,9 +402,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emptyNoRecipes => 'No recipes yet';
-
-  @override
-  String get emptyNoShoppingLists => 'No shopping lists yet';
 
   @override
   String emptyNoRecipesSubtitle(String addButton) {
@@ -582,22 +511,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get socialFriendName => 'Friend name';
-
-  @override
   String get socialGroupName => 'Group name';
-
-  @override
-  String get socialDisplayName => 'Display name';
 
   @override
   String get socialCreateGroup => 'Create group';
 
   @override
   String get socialEditGroup => 'Edit group';
-
-  @override
-  String get socialDeleteGroup => 'Delete group';
 
   @override
   String get socialAddFriend => 'Add friend';
@@ -607,12 +527,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get socialSendFriendRequest => 'Send friend request';
-
-  @override
-  String get socialAcceptFriendRequest => 'Accept friend request';
-
-  @override
-  String get socialDeclineFriendRequest => 'Decline friend request';
 
   @override
   String get menuName => 'Menu name';
@@ -851,43 +765,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Are you sure you want to delete the message?';
 
   @override
-  String get placeholderSearch => 'Search...';
-
-  @override
-  String get placeholderName => 'Enter name';
-
-  @override
-  String get placeholderDescription => 'Enter description (optional)';
-
-  @override
-  String get placeholderEmail => 'your@email.com';
-
-  @override
-  String get placeholderUrl => 'https://example.com';
-
-  @override
-  String get placeholderPhone => '+1 555 123 4567';
-
-  @override
   String get statusConnecting => 'Connecting...';
 
   @override
   String get statusSyncing => 'Syncing...';
 
   @override
-  String get statusUploading => 'Uploading...';
-
-  @override
-  String get statusDownloading => 'Downloading...';
-
-  @override
-  String get statusProcessing => 'Processing...';
-
-  @override
   String get statusSaving => 'Saving...';
-
-  @override
-  String get statusDeleting => 'Deleting...';
 
   @override
   String get statusCreating => 'Creating...';
@@ -896,73 +780,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusUpdating => 'Updating...';
 
   @override
-  String get accessibilityMenuButton => 'Menu button';
-
-  @override
   String get accessibilityBackButton => 'Back';
-
-  @override
-  String get accessibilityCloseButton => 'Close';
-
-  @override
-  String get accessibilityMoreOptions => 'More options';
-
-  @override
-  String get accessibilityExpandButton => 'Expand';
-
-  @override
-  String get accessibilityCollapseButton => 'Collapse';
-
-  @override
-  String get timeToday => 'Today';
-
-  @override
-  String get timeYesterday => 'Yesterday';
-
-  @override
-  String get timeTomorrow => 'Tomorrow';
-
-  @override
-  String get timeThisWeek => 'This week';
-
-  @override
-  String get timeLastWeek => 'Last week';
-
-  @override
-  String get timeNextWeek => 'Next week';
 
   @override
   String get unitMinutesShort => 'min';
 
   @override
   String get unitHoursShort => 'h';
-
-  @override
-  String get unitPiecesShort => 'pcs';
-
-  @override
-  String get unitLiters => 'liters';
-
-  @override
-  String get unitKilograms => 'kg';
-
-  @override
-  String get unitGrams => 'g';
-
-  @override
-  String get technicalShowDetails => 'Show technical details';
-
-  @override
-  String get technicalHideDetails => 'Hide technical details';
-
-  @override
-  String get technicalInformation => 'Technical information';
-
-  @override
-  String get technicalContactSupport => 'Contact support';
-
-  @override
-  String get technicalTryAgainLater => 'Try again later';
 
   @override
   String get dialogErrorTitle => 'An error occurred';
@@ -1020,17 +844,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipePersonalTags => 'Personal tags';
 
   @override
-  String recipeIngredientsForPortions(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'servings',
-      one: 'serving',
-    );
-    return 'Ingredients for $count $_temp0:';
-  }
-
-  @override
   String get recipeAnalysisFailed => 'Analysis failed';
 
   @override
@@ -1069,6 +882,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scalerAmericanConverted => 'American units converted to metric';
+
+  @override
+  String get portionDecrease => 'Decrease portions';
+
+  @override
+  String get portionIncrease => 'Increase portions';
 
   @override
   String get menuPromptQuestion => 'What kind of menu do you want?';
@@ -1269,12 +1088,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonSaveChanges => 'Save changes';
 
   @override
-  String get commonSaveMyCopy => 'Save my copy';
-
-  @override
-  String get commonSaveAsNew => 'Save as new';
-
-  @override
   String get commonSelectAll => 'Select all';
 
   @override
@@ -1307,15 +1120,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonLogoutNow => 'Log out now';
 
   @override
-  String get commonNoAccess => 'No access';
-
-  @override
-  String get commonCreatingCopy => 'Creating copy...';
-
-  @override
-  String get commonToHome => 'To home';
-
-  @override
   String get commonTakePhoto => 'Take photo';
 
   @override
@@ -1323,9 +1127,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonSelectFriends => 'Select friends';
-
-  @override
-  String get commonNoContent => 'No content';
 
   @override
   String commonRemoveLabel(String label) {
@@ -2244,9 +2045,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingCreateFirstList => 'Create your first shopping list...';
 
   @override
-  String get shoppingCreateListButton => 'Create list';
-
-  @override
   String get shoppingPreviewAndEditItems => 'Preview and edit items';
 
   @override
@@ -2271,9 +2069,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingLoadingLists => 'Loading lists...';
 
   @override
-  String get shoppingErrorLoading => 'Error loading';
-
-  @override
   String get shoppingLists => 'Shopping lists';
 
   @override
@@ -2284,11 +2079,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shoppingNoItemsFromMenu => 'No items selected from menu';
-
-  @override
-  String shoppingAddItemsCount(int count) {
-    return 'Add $count items...';
-  }
 
   @override
   String get shoppingPreview => 'Preview';
@@ -2302,21 +2092,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String shoppingListCreated(String name) {
     return 'List \"$name\" created';
-  }
-
-  @override
-  String shoppingCouldNotCreateList(String error) {
-    return 'Could not create list: $error';
-  }
-
-  @override
-  String shoppingItemsAddedToList(int count, String name) {
-    return '$count items added to \"$name\"';
-  }
-
-  @override
-  String shoppingCouldNotAddItems(String error) {
-    return 'Could not add items: $error';
   }
 
   @override
@@ -2374,9 +2149,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileFriends => 'Friends';
 
   @override
-  String get profileDataAndBackup => 'Data & Backup';
-
-  @override
   String get profileDownloadBackup => 'Download backup';
 
   @override
@@ -2397,20 +2169,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profilePrivacyPolicySubtitle =>
       'Read about how we handle your personal data (GDPR)';
-
-  @override
-  String get profileManageConsents => 'Manage consents';
-
-  @override
-  String get profileManageConsentsSubtitle =>
-      'Choose how we may process your personal data (GDPR)';
-
-  @override
-  String get profileExportMyData => 'Export my data';
-
-  @override
-  String get profileExportMyDataSubtitle =>
-      'Download all your data in JSON format (GDPR)';
 
   @override
   String get profileDeleteAccountSubtitle =>
@@ -2451,11 +2209,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String profileCouldNotOpenConsentManager(String error) {
-    return 'Could not open consent manager: $error';
-  }
-
-  @override
   String profileCouldNotOpenDataExport(String error) {
     return 'Could not open data export: $error';
   }
@@ -2482,19 +2235,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareShoppingList => 'Share shopping list';
 
   @override
-  String get shareCheckOutRecipe => 'Check out this recipe:';
-
-  @override
-  String get shareCheckOutMenu => 'Check out this weekly menu:';
-
-  @override
-  String get shareCheckOutShoppingList => 'Check out this shopping list:';
-
-  @override
   String get shareRealtime => 'realtime sharing';
-
-  @override
-  String get shareCopy => 'copy';
 
   @override
   String get shareSelectAtLeastOneFriend =>
@@ -2526,12 +2267,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareRecipes => 'recipes';
-
-  @override
-  String get shareMenus => 'menus';
-
-  @override
-  String get shareShoppingLists => 'shopping lists';
 
   @override
   String get shareMessageOptional => 'Message (optional)';
@@ -2591,34 +2326,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuNoSavedMenus => 'No saved menus';
 
   @override
-  String get menuSavedMenusSavedEarlier => 'Saved earlier';
-
-  @override
-  String get menuLoadMenu => 'Load';
-
-  @override
-  String get menuRemoveMenu => 'Remove';
-
-  @override
-  String get menuRemoveMenuTitle => 'Remove menu';
-
-  @override
-  String get menuMenuNameRequired => 'Menu name required';
-
-  @override
-  String get menuMenuToSave => 'Menu to save';
-
-  @override
-  String get menuCommentOptional => 'Comment (optional)';
-
-  @override
   String get menuCommentHint => 'Description or notes about the menu';
 
   @override
   String get menuShareWithFriends => 'Share with friends';
-
-  @override
-  String get menuShareThisMenu => 'Share this menu with selected friends';
 
   @override
   String get menuSelectFriendsToShare => 'Select friends to share with';
@@ -2627,22 +2338,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuNoFriendsAvailable => 'No friends available';
 
   @override
-  String get menuDefaultShareMessage => 'Check out my new weekly menu!';
-
-  @override
   String get menuShareMessageLabel => 'Share message';
 
   @override
   String get menuShareMessageHint => 'Message sent with the menu';
-
-  @override
-  String get menuMenuNameHint => 'E.g. Week 45 or Weekend menu';
-
-  @override
-  String get menuUnnamedMenu => 'Unnamed menu';
-
-  @override
-  String get socialUnknownUser => 'Unknown user';
 
   @override
   String get socialShared => 'Shared';
@@ -2700,24 +2399,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get socialJustNow => 'just now';
-
-  @override
-  String socialMinutesAgo(int count) {
-    return '$count min ago';
-  }
-
-  @override
-  String socialHoursAgo(int count) {
-    return '$count hours ago';
-  }
-
-  @override
-  String socialDaysAgo(int count) {
-    return '$count days ago';
-  }
-
-  @override
   String get socialPermissionOwner => 'Owner';
 
   @override
@@ -2758,12 +2439,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get socialLoadingCategories => 'Loading categories...';
 
   @override
-  String get socialSelectAllLabel => 'Select all';
-
-  @override
-  String get socialDeselectAllLabel => 'Deselect all';
-
-  @override
   String get socialInvertLabel => 'Invert';
 
   @override
@@ -2793,25 +2468,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invitationSortByMembers => 'Members';
 
   @override
-  String get invitationAll => 'All';
-
-  @override
-  String get invitationNone => 'None';
-
-  @override
-  String get invitationGroups => 'Groups';
-
-  @override
   String get invitationIndividuals => 'Individuals';
 
   @override
-  String get invitationAddTarget => 'Add target';
-
-  @override
   String get invitationSendInvitations => 'Send invitations';
-
-  @override
-  String get invitationCreateGroup => 'Create group';
 
   @override
   String get invitationAffectedTargets => 'Affected targets:';
@@ -2824,9 +2484,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invitationInvite => 'Invite';
-
-  @override
-  String get invitationViewMembers => 'View members';
 
   @override
   String get invitationLoadingTargets => 'Loading targets...';
@@ -4825,9 +4482,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeWriteManually => 'Write manually';
 
   @override
-  String get searchRecipesHint => 'search recipes...';
-
-  @override
   String get shoppingAddItems => 'Add';
 
   @override
@@ -5750,9 +5404,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stateGenerateMenu => 'Generate menu';
 
   @override
-  String get commonStart => 'Start';
-
-  @override
   String groupInvitationsCount(int count) {
     return 'Group invitations ($count)';
   }
@@ -6379,9 +6030,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingCategoryHint => 'Select category...';
 
   @override
-  String get shoppingCategoryOther => 'Other';
-
-  @override
   String get shoppingClear => 'Clear';
 
   @override
@@ -6982,12 +6630,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authEmailHint => 'name@example.com';
 
   @override
-  String get authNoAccountSignUp => 'Don\'t have an account? Create account';
-
-  @override
-  String get authHasAccountLogin => 'Already have an account? Log in';
-
-  @override
   String get authTermsOfService => 'Terms';
 
   @override
@@ -7163,21 +6805,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String sharedMenusCount(int count) {
-    return 'Menus ($count)';
-  }
-
-  @override
-  String sharedRecipesCount(int count) {
-    return 'Recipes ($count)';
-  }
-
-  @override
-  String sharedShoppingListsCount(int count) {
-    return 'Shopping lists ($count)';
-  }
-
-  @override
   String shoppingCouldNotOpenShareMenu(String error) {
     return 'Could not open share menu: $error';
   }
@@ -7262,15 +6889,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String a11ySharedShoppingList(String listName) {
     return 'Shared shopping list: $listName';
   }
-
-  @override
-  String get a11yDismissSharedRecipe => 'Dismiss shared recipe';
-
-  @override
-  String get a11yDismissSharedMenu => 'Dismiss shared menu';
-
-  @override
-  String get a11yDeclineSharedShoppingList => 'Decline shared shopping list';
 
   @override
   String get a11yPrimaryImageTap => 'Primary image, tap to view full size';
@@ -7605,9 +7223,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get menuNoRatingsYet => 'No ratings yet';
-
-  @override
   String get menuTapToRate => 'Tap to rate';
 
   @override
@@ -7618,9 +7233,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuRatingFailed => 'Could not save rating';
-
-  @override
-  String get menuRemoveRating => 'Remove rating';
 
   @override
   String get menuMustBeLoggedInToRate => 'You must be logged in to rate';
@@ -7662,9 +7274,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingConvertError => 'Could not convert list';
 
   @override
-  String get shoppingConvertSelectFriends => 'Select at least one friend';
-
-  @override
   String get shoppingDescriptionLabel => 'Description (optional)';
 
   @override
@@ -7696,25 +7305,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get menuTemplateSaveFailed => 'Could not save template';
-
-  @override
-  String get menuTemplateLoadTemplate => 'Load template';
-
-  @override
   String get menuTemplateNoTemplates => 'No templates';
 
   @override
   String get menuTemplateNoTemplatesDescription =>
       'You have no saved menu templates. Save a menu as a template to reuse the category structure.';
-
-  @override
-  String get menuTemplateBrowseTitle => 'Menu templates';
-
-  @override
-  String menuTemplateCategories(int count) {
-    return '$count categories';
-  }
 
   @override
   String menuTemplateRecipes(int count) {
@@ -8064,44 +7659,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookingModePortions => 'Portions';
 
   @override
-  String get faqTitle => 'Frequently asked questions';
-
-  @override
-  String get faqImportQuestion => 'How do I import recipes?';
-
-  @override
-  String get faqImportAnswer =>
-      'You can import recipes in several ways: paste a URL from a recipe site, take a photo of a recipe, or paste recipe text directly. Tap \"Add\" on the home page and choose a method.';
-
-  @override
-  String get faqShareQuestion => 'How do I share recipes with friends?';
-
-  @override
-  String get faqShareAnswer =>
-      'Open a recipe and tap the share icon. You can send the recipe to friends who use Butlery, or share a link. Your friends can then save the recipe to their own collection.';
-
-  @override
-  String get faqMenuQuestion => 'How do I use the weekly menu?';
-
-  @override
-  String get faqMenuAnswer =>
-      'Go to the weekly menu via the navigation. There you can plan the week\'s meals by adding recipes from your collection. Ingredients from the menu can be sent directly to the shopping list.';
-
-  @override
-  String get faqTagsQuestion => 'How do I create personal tags?';
-
-  @override
-  String get faqTagsAnswer =>
-      'Go to your profile and select \"My tags\". There you can create tags like \"Everyday food\" or \"Party food\" and assign them to your recipes for easy filtering.';
-
-  @override
-  String get faqReportQuestion => 'How do I report problems?';
-
-  @override
-  String get faqReportAnswer =>
-      'Tap the \"!\" button visible at the bottom right of every page. There you can describe the problem, choose a category, and attach a screenshot. We read all feedback!';
-
-  @override
   String get feedbackSendLabel => 'Send feedback';
 
   @override
@@ -8135,15 +7692,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackSendButton => 'Send';
 
   @override
-  String get feedbackValidationEmpty => 'Please enter a description';
-
-  @override
-  String get feedbackSuccessMessage => 'Thanks for your feedback!';
-
-  @override
-  String get feedbackErrorMessage => 'Could not send feedback. Try again.';
-
-  @override
   String get substitutionEmptyState => 'No substitutions found';
 
   @override
@@ -8161,9 +7709,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get pollRemoveOption => 'Remove option';
-
-  @override
   String get pollAddOption => 'Add option';
 
   @override
@@ -8174,20 +7719,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pollCreate => 'Create poll';
-
-  @override
-  String pollVoteCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count votes',
-      one: '1 vote',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get pollEnded => 'Ended';
 
   @override
   String get pollClose => 'Close poll';
@@ -8241,10 +7772,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorNoItemsFound => 'No items found.';
-
-  @override
-  String get errorNetworkCheckConnection =>
-      'Network error. Check your internet connection.';
 
   @override
   String get errorNoUserLoggedIn => 'No user is logged in';
@@ -8334,12 +7861,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorTimeMustBePositive => 'Time must be greater than 0 minutes';
-
-  @override
-  String get errorIngredientCannotBeEmpty => 'Ingredient cannot be empty';
-
-  @override
-  String get errorInstructionCannotBeEmpty => 'Instruction cannot be empty';
 
   @override
   String get errorRecipeNeedsIngredient =>
@@ -8441,23 +7962,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorImportConditionsNotMet => 'Import conditions not met';
 
   @override
-  String get errorSelectAtLeastOneIngredient =>
-      'Select at least one ingredient';
-
-  @override
-  String get errorSelectAtLeastOneInstruction =>
-      'Select at least one instruction';
-
-  @override
-  String get errorEnterRecipeName => 'Enter a recipe name';
-
-  @override
-  String get errorAddAtLeastOneIngredient => 'Add at least one ingredient';
-
-  @override
-  String get errorAddAtLeastOneInstruction => 'Add at least one instruction';
-
-  @override
   String get errorImportFailed => 'Import failed';
 
   @override
@@ -8550,10 +8054,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorDescriptionTooLong => 'Description is too long';
 
   @override
-  String get errorMustSelectAtLeastOneFriend =>
-      'You must select at least one friend to share with';
-
-  @override
   String get errorGroupNameRequired => 'Group name is required';
 
   @override
@@ -8626,12 +8126,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorNameAlreadyTaken => 'This name is already taken';
 
   @override
-  String get errorNameRequired => 'Name is required';
-
-  @override
-  String get errorNameInvalidCharacters => 'Name contains invalid characters';
-
-  @override
   String get errorNoPermissionToManageParticipants =>
       'No permission to manage participants';
 
@@ -8678,10 +8172,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorSharedTagNotFound => 'Shared tag not found';
 
   @override
-  String get errorCannotRemoveOwner =>
-      'Cannot remove the owner from the resource';
-
-  @override
   String get errorOwnerMustKeepPermission => 'Owner must keep owner permission';
 
   @override
@@ -8692,12 +8182,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorCouldNotValidateImage => 'Could not validate image';
-
-  @override
-  String get errorCouldNotReadImageSize => 'Could not read image size';
-
-  @override
-  String get errorImageDoesNotExist => 'Image does not exist';
 
   @override
   String get actionRecipeSaving => 'saving recipe';
@@ -8958,43 +8442,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusReconnecting => 'Reconnecting...';
 
   @override
-  String get statusFetchingContent => 'Fetching content...';
-
-  @override
-  String get statusAnalyzingRecipe => 'Analyzing recipe...';
-
-  @override
-  String get statusCreatingRecipe => 'Creating recipe...';
-
-  @override
   String get statusDone => 'Done!';
-
-  @override
-  String get statusNeedsHelp => 'Needs your help';
-
-  @override
-  String get displayUnknownContent => 'Unknown content';
-
-  @override
-  String get displayEmptyList => 'Empty list';
 
   @override
   String get displayOnlyYou => 'Only you';
 
   @override
-  String get displayNoDate => 'No date';
-
-  @override
   String get displayUnknownUser => 'Unknown user';
 
   @override
-  String get displayUntitledRecipe => 'Untitled recipe';
-
-  @override
   String get displayNoConsent => 'No consent';
-
-  @override
-  String get displayNoActivity => 'No activity';
 
   @override
   String get resourceTypeRecipe => 'Recipe';
@@ -9090,12 +8547,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notificationTitleShoppingLists => 'Shopping lists';
-
-  @override
-  String get notificationTitleSocialActivity => 'Social activity';
-
-  @override
-  String get notificationTitleNewActivity => 'New activity';
 
   @override
   String get errorWeakPassword =>
@@ -10877,11 +10328,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String timeCompactWeeks(int count) {
-    return '${count}w';
-  }
-
-  @override
   String get expiresExpired => 'Expired';
 
   @override
@@ -10994,9 +10440,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commentDeleted => '[Comment deleted]';
 
   @override
-  String get labelSharedMenu => 'Shared menu';
-
-  @override
   String sharedMenuTitlePattern(String name) {
     return '$name\'s weekly menu';
   }
@@ -11076,9 +10519,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeSharingStatus => 'Sharing status';
 
   @override
-  String get recipeSharingSharedWith => 'Shared with';
-
-  @override
   String get recipeSharingStopAll => 'Stop sharing with all';
 
   @override
@@ -11106,9 +10546,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recipeSharingGroups => 'Groups';
-
-  @override
-  String get recipeSharingNoShares => 'Not shared with anyone';
 
   @override
   String get menuRatingRemoveTitle => 'Remove rating?';
@@ -11148,11 +10585,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingTemplateDelete => 'Delete template';
 
   @override
-  String shoppingTemplateDeleteConfirm(String name) {
-    return 'Do you want to delete the template \"$name\"?';
-  }
-
-  @override
   String get shoppingTemplateDeleted => 'Template deleted';
 
   @override
@@ -11167,12 +10599,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String shoppingTemplateUsedCount(int count) {
     return 'Used $count times';
   }
-
-  @override
-  String get shoppingCategoryCollapse => 'Collapse';
-
-  @override
-  String get shoppingCategoryExpand => 'Expand';
 
   @override
   String get labelButleryUser => 'Butlery user';
@@ -11419,21 +10845,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionReport => 'Report';
 
   @override
-  String get shoppingCatMeatFish => 'Meat & fish';
-
-  @override
-  String get shoppingCatDairy => 'Dairy';
-
-  @override
-  String get shoppingCatFruitVeg => 'Fruit & vegetables';
-
-  @override
-  String get shoppingCatBreadGrain => 'Bread & grain';
-
-  @override
-  String get shoppingCatPantry => 'Pantry';
-
-  @override
   String get shareIngredientsLabel => 'Ingredients:';
 
   @override
@@ -11590,9 +11001,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get unknownUser => 'Unknown user';
-
-  @override
   String get validationTitleMissing => 'Title is missing';
 
   @override
@@ -11603,9 +11011,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get validationMealTypeMissing => 'Meal type is missing';
-
-  @override
-  String get unknownActivity => 'Unknown activity';
 
   @override
   String get shareMinutesAbbrev => 'min';
@@ -11830,79 +11235,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get socialPermissionOwnerLabel => 'Owner';
-
-  @override
-  String get socialPermissionAdminLabel => 'Admin';
-
-  @override
-  String get socialPermissionEditorLabel => 'Edit';
-
-  @override
-  String get socialPermissionViewerLabel => 'View';
-
-  @override
   String get restoreDraft => 'Restore';
-
-  @override
-  String get startFresh => 'Start fresh';
-
-  @override
-  String get couldNotRestoreDraft =>
-      'Could not restore draft. Starting with an empty form.';
-
-  @override
-  String get restoringDraft => 'Restoring draft...';
-
-  @override
-  String get unnamedRecipe => 'Unnamed recipe';
 
   @override
   String fieldsFilledCount(int count) {
     return '$count fields filled';
   }
-
-  @override
-  String get showTechnicalDetails => 'Show technical details';
-
-  @override
-  String get hideTechnicalDetails => 'Hide technical details';
-
-  @override
-  String get contactSupport => 'Contact support';
-
-  @override
-  String get tryAgainLater => 'Try again later';
-
-  @override
-  String get offlineMode => 'Offline mode enabled';
-
-  @override
-  String get syncingPendingChanges => 'Syncing pending changes...';
-
-  @override
-  String get localChangesSaved => 'Changes saved locally';
-
-  @override
-  String get willSyncWhenOnline => 'Will sync when you are online again';
-
-  @override
-  String get insufficientPermissions => 'Insufficient permissions';
-
-  @override
-  String get readOnlyAccess => 'Read-only access';
-
-  @override
-  String get ownerOnlyAction => 'Only the owner can perform this action';
-
-  @override
-  String get requestEditAccess => 'Request edit access';
-
-  @override
-  String get noItemsFound => 'No items found.';
-
-  @override
-  String get noResults => 'No results found.';
 
   @override
   String get noFriends => 'You have no friends yet.';
@@ -11911,49 +11249,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noRecipes => 'You have no recipes yet.';
 
   @override
-  String get noShoppingLists => 'You have no shopping lists yet.';
-
-  @override
   String get addRecipe => 'Add recipe';
 
   @override
   String get editRecipe => 'Edit recipe';
-
-  @override
-  String get deleteRecipeAction => 'Delete recipe';
-
-  @override
-  String get searchPlaceholder => 'Search...';
-
-  @override
-  String get namePlaceholder => 'Enter name';
-
-  @override
-  String get descriptionPlaceholder => 'Enter description (optional)';
-
-  @override
-  String get emailPlaceholder => 'your@email.com';
-
-  @override
-  String get urlPlaceholder => 'https://example.com';
-
-  @override
-  String get phonePlaceholder => '+1 555 123 4567';
-
-  @override
-  String get makePersonalCopy => 'Create personal copy';
-
-  @override
-  String get checkConnection => 'Check internet connection';
-
-  @override
-  String get loginAgain => 'Log in again';
-
-  @override
-  String get contactOwner => 'Contact the owner';
-
-  @override
-  String get waitAndRetry => 'Wait and try again';
 
   @override
   String get checkPermissions => 'Check permissions';
@@ -11976,11 +11275,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sharedFallback => 'Shared';
-
-  @override
-  String deleteItemType(String itemType) {
-    return 'Delete $itemType?';
-  }
 
   @override
   String get accountSecurityTitle => 'Account Security';
@@ -12070,10 +11364,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get errorDeleteFailed =>
-      'Could not delete recipe. It has been restored.';
-
-  @override
   String get profileFaq => 'FAQ';
 
   @override
@@ -12140,4 +11430,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get contentFilterWarning =>
       'The text contains inappropriate language. Please edit before submitting.';
+
+  @override
+  String get noResults => 'No results';
 }

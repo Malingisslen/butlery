@@ -19,6 +19,7 @@ import 'package:butlery/services/import/cache/url_normalizer.dart';
 import 'package:butlery/services/import/import_manager_result.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:http/http.dart' as http;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -44,7 +45,7 @@ class ImportManager {
       _cache = ServiceLocator.get<GlobalRecipeCache>();
       return _cache;
     } catch (e) {
-      // Cache not available - continue without caching
+      AppLogger.debug('ImportManager: GlobalRecipeCache not available: $e');
       return null;
     }
   }
@@ -56,6 +57,7 @@ class ImportManager {
       _urlNormalizer = ServiceLocator.get<UrlNormalizer>();
       return _urlNormalizer;
     } catch (e) {
+      AppLogger.debug('ImportManager: UrlNormalizer not available: $e');
       return null;
     }
   }
@@ -65,6 +67,7 @@ class ImportManager {
     try {
       return ServiceLocator.get<YouTubeImportStrategy>();
     } catch (e) {
+      AppLogger.debug('ImportManager: YouTubeImportStrategy not available: $e');
       return null;
     }
   }
@@ -74,6 +77,7 @@ class ImportManager {
     try {
       return ServiceLocator.get<TikTokPipeline>();
     } catch (e) {
+      AppLogger.debug('ImportManager: TikTokPipeline not available: $e');
       return null;
     }
   }
@@ -95,7 +99,9 @@ class ImportManager {
     // Register available import strategies in priority order
     _strategies.addAll([
       ArchiveImportStrategy(), // 1. Try archive first (fast, pre-validated)
-      UrlImportStrategy(), // 2. Try URL import (web scraping)
+      UrlImportStrategy(
+        httpClient: ServiceLocator.tryGet<http.Client>(),
+      ), // 2. Try URL import (web scraping)
       TextImportStrategy(), // 3. Try text parsing (fallback for plain text)
       FileImportStrategy(), // 4. File import (explicit file selection)
       PhotoImportStrategy(), // 5. Photo import (OCR extraction)

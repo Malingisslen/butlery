@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'package:clock/clock.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/services/notifications/notification_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_notification_repository.dart';
 import 'package:butlery/models/notification_batch.dart';
 import 'package:butlery/core/utils/logger.dart';
 

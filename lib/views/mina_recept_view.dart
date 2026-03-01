@@ -33,6 +33,7 @@ import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/indicators/sync_indicator.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
 import 'package:butlery/widgets/common/social_components/recipe_list_avatar_badge.dart';
@@ -224,7 +225,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       } catch (e) {
         if (mounted) {
           SnackBarUtils.showError(
-              context, context.l10n.syncFailed(e.toString()));
+              context,
+              context.l10n.syncFailed(
+                SnackBarUtils.userFriendlyMessage(context, e),
+              ));
         }
       }
     }
@@ -399,9 +403,14 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       child: LayoutComponents.mainMenu(
         currentIndex: 0,
         appBar: appBar,
-        body: Column(
+        body: FocusTraversalGroup(
+            child: Column(
           children: [
             LayoutComponents.offlineIndicator(),
+            SyncIndicator(
+              hasPendingWrites: viewModel.hasPendingWrites,
+              isFromCache: viewModel.isFromCache,
+            ),
             if (!viewModel.isSelectionMode) ...[
               SearchFilterWidget(
                 searchQuery: viewModel.searchQuery,
@@ -450,7 +459,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             ],
             Expanded(child: _buildContent(viewModel, offlineService)),
           ],
-        ),
+        )),
       ),
     );
   }
@@ -557,7 +566,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           return false;
         },
         background: Container(
-          alignment: Alignment.centerLeft,
+          alignment: AlignmentDirectional.centerStart,
           padding:
               const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
           color: cs.primary,
@@ -565,7 +574,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               color: cs.onPrimary, size: AppDimensions.iconSize28),
         ),
         secondaryBackground: Container(
-          alignment: Alignment.centerRight,
+          alignment: AlignmentDirectional.centerEnd,
           padding:
               const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
           color: cs.error,

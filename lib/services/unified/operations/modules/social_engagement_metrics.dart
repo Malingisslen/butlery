@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Focused module for social engagement metrics
 /// This module handles ONLY social engagement calculations:
@@ -208,7 +209,7 @@ class SocialEngagementMetrics {
           final batch = recipeIds.skip(i).take(batchSize).toList();
 
           final ratingsSnapshot = await firestore
-              .collection('recipe_ratings')
+              .collection(FirestoreCollections.recipeRatings)
               .where('recipeId', whereIn: batch)
               .get();
 
@@ -222,7 +223,7 @@ class SocialEngagementMetrics {
 
       // Calculate ratings given by user (single query)
       final givenRatingsSnapshot = await firestore
-          .collection('recipe_ratings')
+          .collection(FirestoreCollections.recipeRatings)
           .where('userId', isEqualTo: userId)
           .get();
 

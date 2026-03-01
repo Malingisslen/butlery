@@ -1,5 +1,3 @@
-// lib/viewmodels/recipe_form/recipe_image_manager.dart
-
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
@@ -25,13 +23,10 @@ import 'package:butlery/core/l10n/app_locale.dart';
 // Re-export ImageDisplayInfo for backwards compatibility
 export 'package:butlery/viewmodels/recipe_form/image_management/image_display_info.dart';
 
-/// REFACTORED: Now delegates to ImageUploadService for upload execution
-/// Recipe-specific multi-image coordination for recipe forms.
-/// Handles image selection, recipe-specific state, and upload safety checks.
-/// Upload execution, retry, and progress delegated to ImageUploadService.
-/// Delete operations handled by StorageService.
-
-/// Manages recipe-specific multi-image operations for recipe forms
+/// Manages recipe-specific multi-image operations for recipe forms.
+///
+/// Delegates upload execution to ImageUploadService and
+/// delete operations to StorageService.
 class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   final ImageUploadService _uploadService;
   final StorageService _storageService;
@@ -44,22 +39,21 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   bool _disposed = false;
   bool get disposed => _disposed;
 
-  // CRITICAL FIX: Thread-safe upload operation coordination
+  //Thread-safe upload operation coordination
   bool _uploadsCanceled = false;
 
-  // CRITICAL FIX: State synchronization to prevent race conditions
+  //State synchronization to prevent race conditions
   bool _isStateUpdating = false;
   final List<VoidCallback> _pendingStateUpdates = [];
 
-  // CRITICAL FIX: Notification coordination with disposal protection
+  //Notification coordination with disposal protection
   bool _isNotifying = false;
   Timer? _notificationDebounceTimer;
 
-  // HIGH PRIORITY FIX: Comprehensive state tracking to prevent race conditions
-  final Map<String, ImageUploadStatus> _imageStates =
-      {}; // Complete state tracking system
+  //Comprehensive state tracking to prevent race conditions
+  final Map<String, ImageUploadStatus> _imageStates = {};
 
-  // WEB FIX: Store XFile references for blob URL handling
+  //Store XFile references for blob URL handling
   final Map<String, XFile> _pendingXFiles =
       {}; // Maps blob URL paths to XFile objects
 
@@ -77,7 +71,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     ImageUploadService? uploadService,
     StorageService? storageService,
     ImagePickerService? imagePickerService,
-  })  : _uploadService = uploadService ?? ImageUploadService(),
+  })  : _uploadService =
+            uploadService ?? ServiceLocator.get<ImageUploadService>(),
         _storageService =
             storageService ?? ServiceLocator.get<StorageService>(),
         _imagePickerService =
@@ -678,7 +673,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
     final filePath = imageFile.path;
 
-    // HIGH PRIORITY FIX: Initialize comprehensive state tracking as pending
+    //Initialize comprehensive state tracking as pending
     _imageStates[filePath] = ImageUploadStatus(
       file: imageFile,
       state: ImageUploadState.pending,
@@ -689,7 +684,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     addPendingImage(imageFile);
     _clearImageUploadError();
 
-    // CRITICAL FIX: Immediate UI notification for instant feedback
+    //Immediate UI notification for instant feedback
     _notifyImmediately();
 
     AppLogger.info(
@@ -716,7 +711,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Start background upload for a single file
-  /// REFACTORED: Simplified to delegate to ImageUploadService.
+  ///Simplified to delegate to ImageUploadService.
   /// The service handles progress tracking, retry logic, circuit breaker, and notifications.
   void _startBackgroundUploadForFile(File imageFile, String recipeId) {
     final filePath = imageFile.path;
@@ -733,7 +728,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     // Start upload - service handles all progress tracking, retry, circuit breaker
     _uploadSingleFileWithEnhancedTracking(imageFile, recipeId)
         .then((uploadedUrl) {
-      // CRITICAL FIX: Always update state first, even if disposed/cancelled
+      //Always update state first, even if disposed/cancelled
       // This prevents the spinner from getting stuck when upload completes
       // during disposal (race condition fix)
       if (uploadedUrl != null) {
@@ -768,7 +763,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
             '📦 Upload completed but manager disposed/cancelled, skipping notifications: $filePath');
       }
     }).catchError((error) {
-      // CRITICAL FIX: Always update state first, even if disposed/cancelled
+      //Always update state first, even if disposed/cancelled
       AppLogger.error('❌ Background upload error: $error');
 
       // Service already handled retry/circuit breaker, just update local state
@@ -824,7 +819,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
       // Start upload with XFile handling for web
       _uploadXFileWithWebSupport(xFile, recipeId).then((uploadedUrl) {
-        // CRITICAL FIX: Always update state first, even if disposed/cancelled
+        //Always update state first, even if disposed/cancelled
         // This prevents the spinner from getting stuck
         if (uploadedUrl != null) {
           AppLogger.info(
@@ -854,7 +849,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
               '📦 XFile upload completed but manager disposed/cancelled, skipping notifications: $filePath');
         }
       }).catchError((error) {
-        // CRITICAL FIX: Always update state first, even if disposed/cancelled
+        //Always update state first, even if disposed/cancelled
         AppLogger.error(
             '💥 Background XFile upload error: $filePath -> $error');
         _handleXFileUploadFailure(filePath, xFile, 'Upload error', error);
@@ -875,7 +870,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Upload XFile with web platform support (handles blob URLs)
-  /// REFACTORED: For web blob URLs, convert to File first then use ImageUploadService
+  ///For web blob URLs, convert to File first then use ImageUploadService
   Future<String?> _uploadXFileWithWebSupport(
       XFile xFile, String recipeId) async {
     try {
@@ -908,7 +903,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Handle XFile upload failure
-  /// REFACTORED: Simplified - ImageUploadService handles error classification and retry logic
+  ///Simplified - ImageUploadService handles error classification and retry logic
   void _handleXFileUploadFailure(
       String filePath, XFile xFile, String errorMessage, dynamic error) {
     final currentStatus = _imageStates[filePath];
@@ -981,7 +976,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Upload a single file with enhanced progress tracking and speed calculation
-  /// REFACTORED: Now uses ImageUploadService which provides automatic progress tracking,
+  ///Now uses ImageUploadService which provides automatic progress tracking,
   /// speed calculation, ETA, retry logic, and circuit breaker protection.
   Future<String?> _uploadSingleFileWithEnhancedTracking(
       File imageFile, String recipeId) async {
@@ -1047,7 +1042,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     }
   }
 
-  // CRITICAL FIX: Thread-safe state update methods
+  //Thread-safe state update methods
   void _setUploadingImage(bool uploading) {
     _safeUpdateState(() {
       _isUploadingImage = uploading;
@@ -1073,7 +1068,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     _safeNotifyListeners();
   }
 
-  /// CRITICAL FIX: Thread-safe state update coordination
+  ///Thread-safe state update coordination
   void _safeUpdateState(VoidCallback updateFunction) {
     if (_disposed) return;
 
@@ -1097,12 +1092,12 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     }
   }
 
-  /// CRITICAL FIX: Thread-safe notification with disposal protection and debouncing
+  ///Thread-safe notification with disposal protection and debouncing
   void _safeNotifyListeners({bool immediate = false}) {
     if (_disposed || _isNotifying) return;
 
     if (immediate) {
-      // CRITICAL FIX: Immediate notification for instant UI feedback (e.g., adding images)
+      //Immediate notification for instant UI feedback (e.g., adding images)
       _doSafeNotification();
     } else {
       // Cancel previous debounce timer
@@ -1131,13 +1126,13 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     }
   }
 
-  /// CRITICAL FIX: Immediate notification for instant UI feedback
+  ///Immediate notification for instant UI feedback
   void _notifyImmediately() {
     _safeNotifyListeners(immediate: true);
   }
 
   /// Check if it's safe to save recipe without losing pending uploads
-  /// HIGH PRIORITY FIX: Prevent data corruption from race conditions
+  ///Prevent data corruption from race conditions
   UploadSafetyResult ensureUploadSafety() {
     return _validator.checkUploadSafety(_imageStates);
   }
@@ -1145,7 +1140,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   /// Show dialog to user about pending uploads during save
   /// Returns user choice for how to handle pending uploads
   /// Show upload choice dialog for handling pending/failed uploads.
-  /// REFACTORED: Delegates to upload_choice_dialog widget for UI rendering.
+  ///Delegates to upload_choice_dialog widget for UI rendering.
   /// Maintains separation of concerns (ViewModel should not build widgets).
   Future<UploadChoice?> showUploadChoiceDialog(
       BuildContext context, UploadSafetyResult safetyResult) async {
@@ -1177,7 +1172,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     notifyListeners();
   }
 
-  /// CRITICAL FIX: Thread-safe upload all pending images with cancellation support
+  ///Thread-safe upload all pending images with cancellation support
   Future<List<String>> uploadPendingImagesInBackground(String recipeId,
       {Function(int completed, int total)? onProgress}) async {
     return _coordinator.uploadPendingImagesInBackground(
@@ -1223,7 +1218,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Retry failed upload
-  /// REFACTORED: Simplified to restart upload via ImageUploadService
+  ///Simplified to restart upload via ImageUploadService
   /// Service handles retry delays, exponential backoff, and circuit breaker
   Future<void> retryFailedUpload(String filePath) async {
     final status = _imageStates[filePath];
@@ -1245,12 +1240,12 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   Map<String, dynamic> get uploadQueueSummary =>
       UploadQueueSummaryCalculator.calculateQueueSummary(_imageStates);
 
-  /// CRITICAL FIX: Thread-safe cancel all active uploads with proper coordination
+  ///Thread-safe cancel all active uploads with proper coordination
   void cancelAllUploads() {
     _uploadsCanceled = true;
     AppLogger.info('ðŸ›‘ Thread-safe canceling active uploads');
 
-    // CRITICAL FIX: Thread-safe state update for cancelled uploads
+    //Thread-safe state update for cancelled uploads
     _safeUpdateState(() {
       final activeUploads =
           _imageStates.entries.where((entry) => entry.value.isActive).toList();
@@ -1274,10 +1269,10 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
     AppLogger.info('ðŸ”„ Starting thread-safe disposal of RecipeImageManager');
 
-    // CRITICAL FIX: Cancel all active uploads FIRST with proper coordination
+    //Cancel all active uploads FIRST with proper coordination
     cancelAllUploads();
 
-    // CRITICAL FIX: Cancel notification timers
+    //Cancel notification timers
     _notificationDebounceTimer?.cancel();
     _notificationDebounceTimer = null;
 

@@ -8,6 +8,7 @@ import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:get_it/get_it.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Specialized Firebase synchronization manager providing real-time data streaming and subscription management.
 /// This module implements comprehensive Firebase synchronization following Single Responsibility Principle,
@@ -61,7 +62,8 @@ class FirebaseSyncManager {
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
-    FirebaseFirestore? firestore,
+    required FirebaseFirestore firestore,
+    void Function(bool hasPendingWrites, bool isFromCache)? onSyncStatusChanged,
   }) async {
     try {
       AppLogger.info('🔄 Starting Firebase sync for user: $currentUserId');
@@ -106,6 +108,7 @@ class FirebaseSyncManager {
         onRecipeUpdated: onRecipeUpdated,
         onRecipeRemoved: onRecipeRemoved,
         onSyncError: onSyncError,
+        onSyncStatusChanged: onSyncStatusChanged,
       );
       subscriptions['personal_recipes'] = personalSub;
 
@@ -154,6 +157,7 @@ class FirebaseSyncManager {
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
+    void Function(bool hasPendingWrites, bool isFromCache)? onSyncStatusChanged,
   }) {
     try {
       final recipeRepository = GetIt.instance<RecipeRepository>();
@@ -166,6 +170,7 @@ class FirebaseSyncManager {
           onRecipeRemoved: onRecipeRemoved,
         ),
         onError: (error) => onSyncError('personal_recipes', error),
+        onSyncStatusChanged: onSyncStatusChanged,
       );
 
       AppLogger.debug('Personal recipes sync started');
@@ -205,16 +210,15 @@ class FirebaseSyncManager {
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
-    FirebaseFirestore? firestore,
+    required FirebaseFirestore firestore,
   }) {
     try {
-      // Use injected firestore or fallback to instance
-      final firestoreInstance = firestore ?? FirebaseFirestore.instance;
+      final firestoreInstance = firestore;
 
       // Watch for collaborative recipes where user is a participant
       // Use participantIds array for proper Firestore rules validation
       final subscription = firestoreInstance
-          .collection('realtime_recipes')
+          .collection(FirestoreCollections.realtimeRecipes)
           .where('participantIds', arrayContains: currentUserId)
           .snapshots()
           .listen(
@@ -309,12 +313,14 @@ class FirebaseSyncManager {
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
+    void Function(bool hasPendingWrites, bool isFromCache)? onSyncStatusChanged,
   }) {
     return _startPersonalRecipesSync(
       currentUserId: currentUserId,
       onRecipeUpdated: onRecipeUpdated,
       onRecipeRemoved: onRecipeRemoved,
       onSyncError: onSyncError,
+      onSyncStatusChanged: onSyncStatusChanged,
     );
   }
 
@@ -324,7 +330,7 @@ class FirebaseSyncManager {
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
-    FirebaseFirestore? firestore,
+    required FirebaseFirestore firestore,
   }) {
     return _startCollaborativeRecipesSync(
       currentUserId: currentUserId,
@@ -360,7 +366,8 @@ class FirebaseSyncManager {
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
-    FirebaseFirestore? firestore,
+    required FirebaseFirestore firestore,
+    void Function(bool hasPendingWrites, bool isFromCache)? onSyncStatusChanged,
   }) async {
     try {
       final expectedSyncs = ['personal_recipes', 'collaborative_recipes'];
@@ -385,6 +392,7 @@ class FirebaseSyncManager {
               onRecipeUpdated: onRecipeUpdated,
               onRecipeRemoved: onRecipeRemoved,
               onSyncError: onSyncError,
+              onSyncStatusChanged: onSyncStatusChanged,
             );
             subscriptions[syncType] = sub;
           } else if (syncType == 'collaborative_recipes') {

@@ -26,6 +26,9 @@ class StyledCard extends StatelessWidget {
   final bool showBorder;
   final Color? borderColor;
 
+  /// Semantic label for screen readers when the card is tappable.
+  final String? semanticLabel;
+
   const StyledCard({
     super.key,
     required this.child,
@@ -37,6 +40,7 @@ class StyledCard extends StatelessWidget {
     this.borderRadius,
     this.showBorder = false,
     this.borderColor,
+    this.semanticLabel,
   });
 
   /// Standard card with default Material Design styling
@@ -47,6 +51,7 @@ class StyledCard extends StatelessWidget {
     this.margin,
     this.onTap,
     this.backgroundColor,
+    this.semanticLabel,
   })  : elevation = AppDimensions.elevationLow,
         borderRadius = AppDimensions.borderRadius8,
         showBorder = false,
@@ -60,6 +65,7 @@ class StyledCard extends StatelessWidget {
     this.margin,
     this.onTap,
     this.backgroundColor,
+    this.semanticLabel,
   })  : elevation = AppDimensions.elevationMedium,
         borderRadius = AppDimensions.borderRadius12,
         showBorder = false,
@@ -74,6 +80,7 @@ class StyledCard extends StatelessWidget {
     this.onTap,
     this.backgroundColor,
     this.borderColor,
+    this.semanticLabel,
   })  : elevation = 0,
         borderRadius = AppDimensions.borderRadius8,
         showBorder = true;
@@ -84,6 +91,7 @@ class StyledCard extends StatelessWidget {
     required this.child,
     this.onTap,
     this.backgroundColor,
+    this.semanticLabel,
   })  : padding = null,
         margin = null,
         elevation = AppDimensions.elevationLow,
@@ -97,6 +105,7 @@ class StyledCard extends StatelessWidget {
     required this.child,
     this.onTap,
     this.backgroundColor,
+    this.semanticLabel,
   })  : padding = null,
         margin = null,
         elevation = AppDimensions.elevationLow,
@@ -115,7 +124,8 @@ class StyledCard extends StatelessWidget {
         elevation = AppDimensions.elevationHigh,
         borderRadius = AppDimensions.borderRadius16,
         showBorder = false,
-        borderColor = null;
+        borderColor = null,
+        semanticLabel = null;
 
   /// Selection card (for pickers, selectors)
   /// Note: borderColor resolved to theme primary in build() when showBorder is true
@@ -124,6 +134,7 @@ class StyledCard extends StatelessWidget {
     required this.child,
     this.onTap,
     this.backgroundColor,
+    this.semanticLabel,
     required bool isSelected,
   })  : padding = null,
         margin = null,
@@ -187,12 +198,16 @@ class StyledCard extends StatelessWidget {
     );
 
     if (onTap != null) {
-      return InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(
-          borderRadius ?? AppDimensions.borderRadius8,
+      return Semantics(
+        label: semanticLabel,
+        button: true,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(
+            borderRadius ?? AppDimensions.borderRadius8,
+          ),
+          child: card,
         ),
-        child: card,
       );
     }
 

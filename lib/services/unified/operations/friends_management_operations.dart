@@ -13,6 +13,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/notifications/notification_service.dart'
     as notif;
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Friends management operations handling request lifecycle, relationship management, user discovery, blocking, and notification integration.
 class FriendsManagementOperations extends BaseService {
@@ -433,9 +434,9 @@ class FriendsManagementOperations extends BaseService {
       // Query Firebase for the target user's friends
       final firestore = _parent.firestore;
       final targetUserFriendsQuery = await firestore
-          .collection('userFriends')
+          .collection(FirestoreCollections.userFriendsTop)
           .doc(userId)
-          .collection('friends')
+          .collection(FirestoreCollections.userFriends)
           .get();
 
       // Get target user's friend IDs

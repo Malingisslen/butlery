@@ -209,6 +209,12 @@ class RecipeListViewModel extends ChangeNotifier {
   /// Whether favorites-only filter is active.
   bool get favoritesOnly => _favoritesOnly;
 
+  /// Whether local writes are pending server confirmation (Firestore metadata).
+  bool get hasPendingWrites => _recipeService.hasPendingWrites;
+
+  /// Whether data came from local cache — device is offline (Firestore metadata).
+  bool get isFromCache => _recipeService.isFromCache;
+
   /// Filter presence indicator for UI conditional display and filter management.
   /// Indicates whether any filters are currently active for UI conditional rendering
   /// of filter clear buttons and filter state indicators.

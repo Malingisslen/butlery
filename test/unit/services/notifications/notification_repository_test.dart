@@ -18,7 +18,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Production imports
-import 'package:butlery/services/notifications/notification_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_notification_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/notification_preferences.dart';
 import 'package:get_it/get_it.dart';

@@ -11,6 +11,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Focused module for recipe sharing and collaboration setup
 /// This module handles ONLY recipe sharing responsibilities:
@@ -463,7 +464,7 @@ class RecipeSharingManager {
       final allUserIds = {currentUserId, ...memberIds}.toList();
 
       await _firestoreRepository
-          .collection('shared_recipes')
+          .collection(FirestoreCollections.sharedRecipes)
           .doc(recipeId)
           .set({
         'recipeId': recipeId,

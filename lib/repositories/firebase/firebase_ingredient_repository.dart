@@ -4,6 +4,7 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/repositories/interfaces/ingredient_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase implementation of the ingredient repository.
 ///
@@ -92,7 +93,7 @@ class FirebaseIngredientRepository
 
   /// Collection reference.
   CollectionReference<Map<String, dynamic>> get _collection =>
-      _firestore.collection('ingredients');
+      _firestore.collection(FirestoreCollections.ingredients);
 
   /// Ensures the cache is loaded before querying.
   Future<void> _ensureCacheLoaded() async {

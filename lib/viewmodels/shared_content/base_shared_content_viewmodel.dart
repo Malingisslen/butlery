@@ -27,7 +27,6 @@
 
 // lib/viewmodels/shared_content/base_shared_content_viewmodel.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -59,7 +58,7 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   /// Pagination state
   bool _isLoadingMore = false;
   bool _hasMoreContent = true;
-  DocumentSnapshot? _lastDocument;
+  Object? _lastDocument;
   static const int _pageSize = 25;
 
   /// Show imported content filter (default: false = hide imported for cleaner inbox)
@@ -81,12 +80,12 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   /// [startAfter] Document to start after for pagination
   Future<List<TContent>> loadContentWithPagination({
     int limit = 25,
-    DocumentSnapshot? startAfter,
+    Object? startAfter,
   });
 
-  /// Get the last document snapshot from the latest query
-  /// Used for pagination cursor
-  DocumentSnapshot? getLastDocumentFromContent(List<TContent> content);
+  /// Get the last document from the latest query, used as pagination cursor.
+  /// Opaque to the viewmodel layer - the repository interprets the actual type.
+  Object? getLastDocumentFromContent(List<TContent> content);
 
   /// Get display title from content for logging/UI
   String getContentTitle(TContent content);

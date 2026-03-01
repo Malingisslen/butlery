@@ -148,9 +148,12 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                     size: AppDimensions.iconSizeAction,
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
-                  Text(
-                    context.l10n.tagManageTags,
-                    style: AppTextStyles.titleLarge,
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      context.l10n.tagManageTags,
+                      style: AppTextStyles.titleLarge,
+                    ),
                   ),
                   const Spacer(),
                   IconButton(
@@ -170,9 +173,12 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                     children: [
                       // Active tags section
                       if (sortedTags.isNotEmpty) ...[
-                        Text(
-                          context.l10n.tagActiveTags,
-                          style: AppTextStyles.titleSmall,
+                        Semantics(
+                          header: true,
+                          child: Text(
+                            context.l10n.tagActiveTags,
+                            style: AppTextStyles.titleSmall,
+                          ),
                         ),
                         const SizedBox(height: AppDimensions.spacingS),
                         Wrap(
@@ -187,10 +193,13 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
 
                       // Removed tags section (can be restored)
                       if (removedTagsList.isNotEmpty) ...[
-                        Text(
-                          context.l10n.tagRemovedTags,
-                          style: AppTextStyles.titleSmall.copyWith(
-                            color: cs.onSurfaceVariant,
+                        Semantics(
+                          header: true,
+                          child: Text(
+                            context.l10n.tagRemovedTags,
+                            style: AppTextStyles.titleSmall.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
                           ),
                         ),
                         const SizedBox(height: AppDimensions.spacingS),
@@ -205,9 +214,12 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                       ],
 
                       // Add new tag
-                      Text(
-                        context.l10n.tagAddNewTag,
-                        style: AppTextStyles.titleSmall,
+                      Semantics(
+                        header: true,
+                        child: Text(
+                          context.l10n.tagAddNewTag,
+                          style: AppTextStyles.titleSmall,
+                        ),
                       ),
                       const SizedBox(height: AppDimensions.spacingS),
                       Form(
@@ -218,6 +230,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                               child: TextFormField(
                                 controller: _newTagController,
                                 decoration: InputDecoration(
+                                  labelText: context.l10n.tagAddNewTag,
                                   hintText: context.l10n.tagWriteTagHint,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(

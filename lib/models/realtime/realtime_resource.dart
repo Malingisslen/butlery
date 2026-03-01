@@ -4,6 +4,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Enumeration defining comprehensive realtime resource types for collaborative system classification and routing.
 enum RealtimeResourceType {
@@ -374,17 +375,17 @@ abstract class RealtimeResource {
       'type': RealtimeResourceType.fromString(
         data['type'] as String? ?? 'recipe',
       ),
-      'ownerId': data['ownerId'] as String? ?? '',
-      'ownerDisplayName': data['ownerDisplayName'] as String? ?? '',
+      'ownerId': (data['ownerId'] as String?).orEmpty(),
+      'ownerDisplayName': (data['ownerDisplayName'] as String?).orEmpty(),
       'participants': participants,
       'participantIds': participantIds,
       'createdAt':
           (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       'lastEditedAt':
           (data['lastEditedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      'lastEditedBy': data['lastEditedBy'] as String? ?? '',
+      'lastEditedBy': (data['lastEditedBy'] as String?).orEmpty(),
       'lastEditedByDisplayName':
-          data['lastEditedByDisplayName'] as String? ?? '',
+          (data['lastEditedByDisplayName'] as String?).orEmpty(),
       'editCount': data['editCount'] as int? ?? 0,
       'isActive': data['isActive'] as bool? ?? true,
       'metadata': Map<String, dynamic>.from(data['metadata'] ?? {}),

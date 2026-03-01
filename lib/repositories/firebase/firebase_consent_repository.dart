@@ -4,6 +4,7 @@ import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Repository for GDPR consent management (Article 7: Conditions for consent).
 /// This repository handles persistent storage and retrieval of user consent
@@ -22,8 +23,8 @@ import 'package:butlery/core/utils/logger.dart';
 /// users/{userId}/consent/current
 /// ```
 class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
-  static const String _collectionPath = 'users';
-  static const String _consentSubcollection = 'consent';
+  static const String _collectionPath = FirestoreCollections.users;
+  static const String _consentSubcollection = FirestoreCollections.userConsent;
   static const String _currentConsentDoc = 'current';
 
   // Local reference to audit repository for custom methods

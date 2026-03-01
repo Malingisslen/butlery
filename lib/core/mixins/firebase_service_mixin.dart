@@ -40,6 +40,7 @@ import 'dart:io';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Mixin for standardizing Firebase operations across services.
 /// Built on top of [ErrorHandlingMixin] to provide Firebase-specific error
@@ -591,7 +592,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     try {
       // Attempt a simple read operation with short timeout
       await firestore
-          .collection('connectivity_test')
+          .collection(FirestoreCollections.connectivityTest)
           .limit(1)
           .get(const GetOptions(source: Source.server))
           .timeout(const Duration(seconds: 5));

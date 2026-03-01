@@ -118,12 +118,14 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
 
   final LlmEnhancementService _llmService;
   final http.Client _client;
+  final bool _ownsClient;
 
   TikTokPipeline({
     required LlmEnhancementService llmService,
     http.Client? client,
   })  : _llmService = llmService,
-        _client = client ?? http.Client();
+        _client = client ?? http.Client(),
+        _ownsClient = client == null;
 
   @override
   bool canHandle(String input) {
@@ -467,7 +469,9 @@ class TikTokPipeline extends ImportStrategy with ImportValidationMixin {
   }
 
   void dispose() {
-    _client.close();
+    if (_ownsClient) {
+      _client.close();
+    }
   }
 }
 
