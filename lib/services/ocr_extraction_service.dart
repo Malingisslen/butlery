@@ -7,7 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/ocr/ocr_usage_tracker.dart';
 
 /// OCR processing result with comprehensive metadata and quality metrics

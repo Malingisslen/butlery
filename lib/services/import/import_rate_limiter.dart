@@ -75,9 +75,9 @@ class ImportRateLimiter extends BaseService {
     } catch (e) {
       AppLogger.warning('ImportRateLimiter: Error checking limit: $e');
       // Fail closed — deny on Firestore errors to prevent abuse
-      return RateLimitDenied(
+      return const RateLimitDenied(
         message: 'Rate limit check unavailable. Please try again shortly.',
-        retryAfter: const Duration(seconds: 30),
+        retryAfter: Duration(seconds: 30),
         limitType: LimitType.perMinute,
         suggestedAction: FallbackAction.retryLater,
       );

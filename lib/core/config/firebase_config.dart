@@ -70,11 +70,6 @@ class FirebaseConfig {
 
   /// Read a compile-time constant; throw in debug if missing.
   static String _env(String key) {
-    const value = String.fromEnvironment('');
-    // String.fromEnvironment is const-only, so we use a helper pattern:
-    // each call site passes the key as the const argument.
-    // Dart requires the name to be a const expression, so we
-    // resolve via a lookup map instead.
     final resolved = _envMap[key] ?? '';
     if (resolved.isEmpty) {
       return _throwMissingKey(key);

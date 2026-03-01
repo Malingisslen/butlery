@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/import_strategy.dart';
@@ -149,10 +148,6 @@ void main() {
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
-      // Set up dotenv for testing
-      dotenv.loadFromString(
-          envString:
-              'OCR_API_KEY=test-api-key\nOCR_API_URL=https://api.ocr.space/parse/image');
       registerFallbackValue(ImageSource.camera);
       registerFallbackValue(RecipeFactory.build());
       registerFallbackValue(Uint8List(0));
