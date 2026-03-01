@@ -15,6 +15,7 @@ import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_item_dia
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_list_operations.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Main facade for shopping dialog coordination
 class ShoppingDialogs {
@@ -191,7 +192,9 @@ class ShoppingDialogs {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                context.l10n.shoppingCouldNotShowShareDialog(e.toString())),
+                context.l10n.shoppingCouldNotShowShareDialog(
+                  SnackBarUtils.userFriendlyMessage(context, e),
+                )),
             backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(seconds: 4),
           ),

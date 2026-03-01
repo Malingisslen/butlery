@@ -26,6 +26,7 @@ import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Stateful widget for shared content reception with intelligent content routing.
 class ReceiveShareView extends StatefulWidget {
@@ -206,8 +207,10 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
 
         if (mounted) {
           setState(() {
-            _extractionError = context.l10n
-                .errorWithContext(context.l10n.importExtraction, e.toString());
+            _extractionError = context.l10n.errorWithContext(
+              context.l10n.importExtraction,
+              SnackBarUtils.userFriendlyMessage(context, e),
+            );
             _isExtracting = false;
           });
         }

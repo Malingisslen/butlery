@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// GDPR Article 20 - Right to Data Portability UI
 /// User interface for exporting personal data in compliance with GDPR.
@@ -383,7 +384,9 @@ class DataExportView extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content:
-                Text(context.l10n.dataExportCouldNotSaveFile(e.toString())),
+                Text(context.l10n.dataExportCouldNotSaveFile(
+                  SnackBarUtils.userFriendlyMessage(context, e),
+                )),
             backgroundColor: cs.error,
           ),
         );
@@ -424,7 +427,9 @@ class DataExportView extends StatelessWidget {
         final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n.dataExportCouldNotShare(e.toString())),
+            content: Text(context.l10n.dataExportCouldNotShare(
+              SnackBarUtils.userFriendlyMessage(context, e),
+            )),
             backgroundColor: cs.error,
           ),
         );

@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/import/youtube/youtube_models.dart';
 
 /// Service to fetch YouTube video transcripts and metadata.
@@ -170,6 +171,9 @@ class YouTubeTranscriptService with ErrorHandlingMixin {
 
       return _parseCaptionTracksFromPlayerResponse(playerResponse);
     } catch (e) {
+      AppLogger.warning(
+        'YouTubeTranscriptService: Failed to parse playerResponse JSON: $e',
+      );
       return [];
     }
   }
@@ -212,6 +216,9 @@ class YouTubeTranscriptService with ErrorHandlingMixin {
           .where((track) => track.baseUrl.isNotEmpty)
           .toList();
     } catch (e) {
+      AppLogger.warning(
+        'YouTubeTranscriptService: Failed to parse caption tracks: $e',
+      );
       return [];
     }
   }
@@ -296,10 +303,15 @@ class YouTubeTranscriptService with ErrorHandlingMixin {
       try {
         return _parseJsonTranscript(response.body);
       } catch (e) {
-        // Might be XML format
+        AppLogger.debug(
+          'YouTubeTranscriptService: JSON transcript parse failed, trying XML: $e',
+        );
         return _parseXmlTranscript(response.body);
       }
     } catch (e) {
+      AppLogger.warning(
+        'YouTubeTranscriptService: Failed to fetch transcript from track: $e',
+      );
       return null;
     }
   }
@@ -315,6 +327,9 @@ class YouTubeTranscriptService with ErrorHandlingMixin {
 
       return _parseXmlTranscript(response.body);
     } catch (e) {
+      AppLogger.warning(
+        'YouTubeTranscriptService: Failed to fetch XML transcript: $e',
+      );
       return null;
     }
   }

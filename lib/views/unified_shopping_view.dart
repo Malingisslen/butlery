@@ -287,7 +287,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                       }
                     } catch (e) {
                       if (mounted) {
-                        _showErrorSnackBar(e.toString());
+                        SnackBarUtils.showUserFriendlyError(
+                          context, e,
+                          contextAction: 'Create list from template',
+                        );
                       }
                     }
                   },

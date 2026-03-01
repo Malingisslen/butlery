@@ -45,7 +45,7 @@ class ImportManager {
       _cache = ServiceLocator.get<GlobalRecipeCache>();
       return _cache;
     } catch (e) {
-      // Cache not available - continue without caching
+      AppLogger.debug('ImportManager: GlobalRecipeCache not available: $e');
       return null;
     }
   }
@@ -57,6 +57,7 @@ class ImportManager {
       _urlNormalizer = ServiceLocator.get<UrlNormalizer>();
       return _urlNormalizer;
     } catch (e) {
+      AppLogger.debug('ImportManager: UrlNormalizer not available: $e');
       return null;
     }
   }
@@ -66,6 +67,7 @@ class ImportManager {
     try {
       return ServiceLocator.get<YouTubeImportStrategy>();
     } catch (e) {
+      AppLogger.debug('ImportManager: YouTubeImportStrategy not available: $e');
       return null;
     }
   }
@@ -75,6 +77,7 @@ class ImportManager {
     try {
       return ServiceLocator.get<TikTokPipeline>();
     } catch (e) {
+      AppLogger.debug('ImportManager: TikTokPipeline not available: $e');
       return null;
     }
   }

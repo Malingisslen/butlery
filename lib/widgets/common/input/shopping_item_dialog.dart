@@ -321,9 +321,9 @@ class _AddUnifiedShoppingItemDialogState
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      final amount = double.parse(
+      final amount = double.tryParse(
         _amountController.text.replaceAll(',', '.'),
-      );
+      ) ?? 1.0;
 
       final item = UnifiedShoppingItem(
         id: widget.initialItem?.id,

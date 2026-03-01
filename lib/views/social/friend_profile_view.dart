@@ -199,7 +199,9 @@ class FriendProfileView extends StatelessWidget {
       if (!context.mounted) return;
       SnackBarUtils.showError(
         context,
-        context.l10n.socialCouldNotStartConversation(e.toString()),
+        context.l10n.socialCouldNotStartConversation(
+          SnackBarUtils.userFriendlyMessage(context, e),
+        ),
       );
     }
   }

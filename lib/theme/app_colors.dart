@@ -63,8 +63,8 @@ class AppColors {
   /// Placeholder icon color - for avatar/icon placeholders
   static const Color placeholderIcon = Color(0xFF4B5563);
 
-  /// Light text - tertiary text, placeholders (large text / decorative only — below AA normal)
-  static const Color textLight = Color(0xFF999999);
+  /// Light text - tertiary text, placeholders (WCAG AA 4.54:1 on white)
+  static const Color textLight = Color(0xFF767676);
   static const Color textTertiary = Color(0xFFD1D5DB);
   static const Color textSecondary = textMedium;
 

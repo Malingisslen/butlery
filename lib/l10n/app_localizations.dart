@@ -1976,6 +1976,18 @@ abstract class AppLocalizations {
   /// **'Amerikanska enheter konverterade till svenska'**
   String get scalerAmericanConverted;
 
+  /// No description provided for @portionDecrease.
+  ///
+  /// In sv, this message translates to:
+  /// **'Minska portioner'**
+  String get portionDecrease;
+
+  /// No description provided for @portionIncrease.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öka portioner'**
+  String get portionIncrease;
+
   /// No description provided for @menuPromptQuestion.
   ///
   /// In sv, this message translates to:

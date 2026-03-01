@@ -323,7 +323,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       );
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(context, 'Kunde inte dela taggen');
+        SnackBarUtils.showError(context, context.l10n.tagShareError);
       }
     }
   }

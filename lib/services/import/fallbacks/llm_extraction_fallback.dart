@@ -14,6 +14,7 @@ class LlmExtractionFallback {
       _llmService = ServiceLocator.get<LlmEnhancementService>();
       return _llmService;
     } catch (e) {
+      AppLogger.debug('LlmExtractionFallback: LlmEnhancementService not registered: $e');
       return null;
     }
   }

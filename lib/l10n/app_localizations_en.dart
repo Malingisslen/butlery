@@ -1071,6 +1071,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scalerAmericanConverted => 'American units converted to metric';
 
   @override
+  String get portionDecrease => 'Decrease portions';
+
+  @override
+  String get portionIncrease => 'Increase portions';
+
+  @override
   String get menuPromptQuestion => 'What kind of menu do you want?';
 
   @override

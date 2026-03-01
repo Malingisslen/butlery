@@ -412,10 +412,13 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           child: Row(
             children: [
               Expanded(
-                child: Text(
-                  title,
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    title,
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),
@@ -960,7 +963,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                           Navigator.pop(dialogContext);
 
                           if (!context.mounted) return;
-                          SnackBarUtils.showError(context, e.toString());
+                          SnackBarUtils.showUserFriendlyError(context, e);
                         }
                       },
                 child: isLoading
@@ -1017,7 +1020,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                           Navigator.pop(dialogContext);
 
                           if (!context.mounted) return;
-                          SnackBarUtils.showError(context, e.toString());
+                          SnackBarUtils.showUserFriendlyError(context, e);
                         }
                       },
                 child: isLoading
@@ -1091,7 +1094,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       }
     } catch (e) {
       if (context.mounted) {
-        SnackBarUtils.showError(context, e.toString());
+        SnackBarUtils.showUserFriendlyError(context, e);
       }
     }
   }
@@ -1161,7 +1164,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                           Navigator.pop(dialogContext);
 
                           if (!context.mounted) return;
-                          SnackBarUtils.showError(context, e.toString());
+                          SnackBarUtils.showUserFriendlyError(context, e);
                         }
                       },
                 child: isLoading
@@ -1235,8 +1238,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                               Navigator.pop(dialogContext);
 
                               if (!context.mounted) return;
-                              SnackBarUtils.showError(
-                                  context, e.toString());
+                              SnackBarUtils.showUserFriendlyError(
+                                  context, e);
                             }
                           },
                     child: isLoading
@@ -1294,8 +1297,8 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
                               Navigator.pop(dialogContext);
 
                               if (!context.mounted) return;
-                              SnackBarUtils.showError(
-                                  context, e.toString());
+                              SnackBarUtils.showUserFriendlyError(
+                                  context, e);
                             }
                           },
                     child: isLoading
