@@ -97,8 +97,7 @@ class AccountDeletionService extends BaseService {
         'shared_content': _socialOps.removeFromSharedContent(userId),
         'comments_ratings': _socialOps.deleteCommentsAndRatings(userId),
         'shared_menus': _socialOps.deleteSharedMenus(userId),
-        'shared_shopping_lists':
-            _socialOps.deleteSharedShoppingLists(userId),
+        'shared_shopping_lists': _socialOps.deleteSharedShoppingLists(userId),
         'reports': _socialOps.deleteUserReports(userId),
         'preferences': _profileOps.deleteUserPreferences(userId),
         'fcm_tokens': _profileOps.deleteFcmTokens(userId),

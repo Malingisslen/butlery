@@ -250,8 +250,9 @@ class GroupShoppingListActions {
               content: Text(success
                   ? context.l10n.socialReportSent
                   : context.l10n.socialCouldNotSendReport('')),
-              backgroundColor:
-                  success ? context.butleryColors.success : Theme.of(context).colorScheme.error,
+              backgroundColor: success
+                  ? context.butleryColors.success
+                  : Theme.of(context).colorScheme.error,
             ),
           );
         }

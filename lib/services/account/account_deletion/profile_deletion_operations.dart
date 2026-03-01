@@ -80,8 +80,7 @@ class ProfileDeletionOperations {
       await batch.commit();
       return true;
     } catch (e) {
-      app_logger.AppLogger.error(
-          '[$_logTag] Failed to delete FCM tokens', e);
+      app_logger.AppLogger.error('[$_logTag] Failed to delete FCM tokens', e);
       return false;
     }
   }

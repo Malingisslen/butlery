@@ -171,7 +171,11 @@ class MessageMutationModule {
 
       // 3. Update rate limit doc for server-side enforcement
       batch.set(
-        firestore.collection('users').doc(message.senderId).collection('rateLimits').doc('messages'),
+        firestore
+            .collection('users')
+            .doc(message.senderId)
+            .collection('rateLimits')
+            .doc('messages'),
         {'lastWrite': FieldValue.serverTimestamp()},
         SetOptions(merge: true),
       );

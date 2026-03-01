@@ -148,6 +148,9 @@ class RecipeParserService extends BaseService {
   /// Parsing tiers in execution order.
   late final List<ParsingTier> _tiers;
 
+  /// Shared ingredient parsing strategy (OCR mode toggled per-request).
+  late final IngredientParsingStrategy _ingredientStrategy;
+
   RecipeParserService({
     required String userId,
     SiteConfigRepository? siteConfigRepository,
@@ -158,6 +161,7 @@ class RecipeParserService extends BaseService {
         _llmService = llmService {
     // Shared strategy: CRF when weights available, regex fallback
     final strategy = ingredientStrategy ?? IngredientParsingStrategy();
+    _ingredientStrategy = strategy;
 
     _tiers = [
       SchemaOrgTier(ingredientStrategy: strategy),
@@ -364,6 +368,9 @@ class RecipeParserService extends BaseService {
     required double qualityThreshold,
     required bool useLlm,
   }) async {
+    // Enable OCR error correction for photo/image sources
+    _ingredientStrategy.ocrCorrection = context.source == ImportSource.photo;
+
     final results = <TierResult>[];
     _lastTierFailures = [];
 

@@ -5,7 +5,8 @@ import 'package:butlery/core/utils/serialization_utils.dart';
 class ContentReport {
   final String id;
   final String reporterId;
-  final String contentType; // 'recipe', 'comment', 'message', 'profile', 'shopping_list'
+  final String
+      contentType; // 'recipe', 'comment', 'message', 'profile', 'shopping_list'
   final String contentId;
   final String? contentOwnerId;
   final String reason;
@@ -38,8 +39,8 @@ class ContentReport {
       description: SerializationUtils.safeNullableString(data, 'description'),
       status: SerializationUtils.safeString(data, 'status',
           defaultValue: 'pending'),
-      createdAt: SerializationUtils.safeDateTime(data, 'createdAt') ??
-          DateTime.now(),
+      createdAt:
+          SerializationUtils.safeDateTime(data, 'createdAt') ?? DateTime.now(),
     );
   }
 

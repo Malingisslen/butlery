@@ -5,8 +5,10 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/services/parsing/crf/crf_ingredient_parser.dart';
 import 'package:butlery/services/parsing/crf/crf_viterbi_decoder.dart';
+import 'package:butlery/services/parsing/crf/remote_weight_loader.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart'
     hide ParsedIngredient;
+import 'package:butlery/utils/text/ocr_error_corrector.dart';
 
 /// Unified ingredient parsing strategy that tries CRF first, regex fallback.
 ///
@@ -18,20 +20,39 @@ class IngredientParsingStrategy {
   static const String _weightsPath = 'assets/data/crf_ingredient_weights.json';
   static const String _serviceName = 'IngredientParsingStrategy';
 
+  /// Bundled weight version. Increment when updating the bundled weights file.
+  /// Remote weights with a higher version number will replace these.
+  static const int bundledWeightVersion = 1;
+
   CrfIngredientParser? _crfParser;
   bool _crfLoadFailed = false;
   bool _initialized = false;
+  bool _remoteCheckStarted = false;
+
+  /// Whether to apply OCR error correction before parsing.
+  /// Set by the parser service based on input source (e.g., photo/OCR).
+  bool ocrCorrection;
 
   /// Injected parser for testing.
   final CrfIngredientParser? _injectedParser;
 
-  IngredientParsingStrategy({CrfIngredientParser? crfParser})
-      : _injectedParser = crfParser;
+  /// Remote weight loader for active learning updates.
+  final RemoteWeightLoader? _remoteLoader;
+
+  IngredientParsingStrategy({
+    CrfIngredientParser? crfParser,
+    RemoteWeightLoader? remoteLoader,
+    this.ocrCorrection = false,
+  })  : _injectedParser = crfParser,
+        _remoteLoader = remoteLoader;
 
   /// Whether CRF parsing is available.
   bool get hasCrf => _injectedParser != null || _crfParser != null;
 
   /// Initialize CRF weights (lazy, idempotent).
+  ///
+  /// Loads bundled weights first, then triggers a background check
+  /// for updated remote weights from Firebase Storage.
   Future<void> _ensureInitialized() async {
     if (_initialized || _injectedParser != null) return;
     _initialized = true;
@@ -44,11 +65,36 @@ class IngredientParsingStrategy {
       final decoder = CrfViterbiDecoder(weights: weights);
       _crfParser = CrfIngredientParser(decoder);
       AppLogger.info('$_serviceName: CRF weights loaded');
+
+      // Check for newer remote weights in background (non-blocking)
+      _tryLoadRemoteWeightsInBackground();
     } catch (e) {
       AppLogger.warning('$_serviceName: CRF weights unavailable, '
           'using regex fallback: $e');
       _crfLoadFailed = true;
     }
+  }
+
+  /// Background check for updated CRF weights from Firebase Storage.
+  ///
+  /// Fire-and-forget -- failures never affect parsing.
+  void _tryLoadRemoteWeightsInBackground() {
+    if (_remoteCheckStarted || _remoteLoader == null) return;
+    _remoteCheckStarted = true;
+
+    Future(() async {
+      try {
+        final remoteParser = await _remoteLoader.tryLoadRemoteWeights(
+          bundledVersion: bundledWeightVersion,
+        );
+        if (remoteParser != null) {
+          _crfParser = remoteParser;
+          AppLogger.info('$_serviceName: Upgraded to remote CRF weights');
+        }
+      } catch (e) {
+        AppLogger.debug('$_serviceName: Remote weight check failed: $e');
+      }
+    });
   }
 
   /// Parse a single ingredient line.
@@ -58,23 +104,25 @@ class IngredientParsingStrategy {
   Future<ParsedIngredient> parseLine(String line) async {
     await _ensureInitialized();
 
+    final cleaned = ocrCorrection ? OcrErrorCorrector.correctLine(line) : line;
     final parser = _injectedParser ?? _crfParser;
     if (parser != null) {
-      return parser.parseLine(line);
+      return parser.parseLine(cleaned);
     }
 
-    return _parseWithRegex(line);
+    return _parseWithRegex(cleaned);
   }
 
   /// Parse a single ingredient line synchronously (regex only).
   ///
   /// Used when CRF isn't available and async isn't desired.
   ParsedIngredient parseLineSync(String line) {
+    final cleaned = ocrCorrection ? OcrErrorCorrector.correctLine(line) : line;
     final parser = _injectedParser ?? _crfParser;
     if (parser != null) {
-      return parser.parseLine(line);
+      return parser.parseLine(cleaned);
     }
-    return _parseWithRegex(line);
+    return _parseWithRegex(cleaned);
   }
 
   /// Parse multiple ingredient lines.
@@ -91,8 +139,12 @@ class IngredientParsingStrategy {
     final parsed = <ParsedIngredient>[];
 
     for (final line in lines) {
-      final cleaned = line.trim();
+      var cleaned = line.trim();
       if (cleaned.isEmpty) continue;
+
+      if (ocrCorrection) {
+        cleaned = OcrErrorCorrector.correctLine(cleaned);
+      }
 
       if (parser != null) {
         parsed.add(parser.parseLine(cleaned));

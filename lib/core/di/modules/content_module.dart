@@ -87,9 +87,11 @@ import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
 import 'package:butlery/services/parsing/recipe_parser_service.dart';
 import 'package:butlery/repositories/site_config_repository.dart';
 
-// Parser feedback loop (correction tracking)
+// Parser feedback loop (correction tracking + remote weight updates)
 import 'package:butlery/services/parsing/feedback/recipe_diff_calculator.dart';
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
+import 'package:butlery/services/parsing/crf/remote_weight_loader.dart';
+import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/repositories/parsing_correction_repository.dart';
 
 // Ingredient substitution service
@@ -152,10 +154,12 @@ class ContentModule implements DIModule {
         // Recipe parser services
         SiteConfigRepository,
         RecipeParserService,
-        // Parser feedback loop
+        // Parser feedback loop + active learning
         ParsedRecipeCache,
         RecipeDiffCalculator,
         ParsingCorrectionRepository,
+        RemoteWeightLoader,
+        IngredientParsingStrategy,
         // Ingredient substitution
         IngredientSubstitutionService,
       ];
@@ -283,6 +287,18 @@ class ContentModule implements DIModule {
         () => SiteConfigRepository(),
       );
 
+      // Remote CRF weight loader for active learning updates
+      container.registerLazySingleton<RemoteWeightLoader>(
+        () => RemoteWeightLoader(),
+      );
+
+      // Shared ingredient parsing strategy (CRF + remote weight updates)
+      container.registerLazySingleton<IngredientParsingStrategy>(
+        () => IngredientParsingStrategy(
+          remoteLoader: container<RemoteWeightLoader>(),
+        ),
+      );
+
       // Recipe parser service with tier-based architecture
       // Provides quality-based parsing with Swedish text support
       container.registerLazySingleton<RecipeParserService>(
@@ -295,6 +311,7 @@ class ContentModule implements DIModule {
             userId: userId,
             siteConfigRepository: container<SiteConfigRepository>(),
             llmService: container<LlmService>(),
+            ingredientStrategy: container<IngredientParsingStrategy>(),
           );
         },
       );

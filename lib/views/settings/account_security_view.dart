@@ -355,8 +355,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           leading: const Icon(Icons.people_outline),
           title: Text(context.l10n.legalCommunityGuidelines),
           trailing: const Icon(Icons.chevron_right),
-          onTap: () =>
-              Navigator.pushNamed(context, Routes.communityGuidelines),
+          onTap: () => Navigator.pushNamed(context, Routes.communityGuidelines),
         ),
         ListTile(
           leading: const Icon(Icons.code),
