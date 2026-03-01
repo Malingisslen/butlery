@@ -71,7 +71,7 @@ class FCMTokenManager {
 
   // Secure storage instance for sensitive FCM token data
   static const _secureStorage = FlutterSecureStorage(
-    aOptions: AndroidOptions(),
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
     iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
   );
 
