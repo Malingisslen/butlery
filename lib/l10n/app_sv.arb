@@ -614,6 +614,8 @@
     }
   },
   "scalerAmericanConverted": "Amerikanska enheter konverterade till svenska",
+  "portionDecrease": "Minska portioner",
+  "portionIncrease": "Öka portioner",
   "menuPromptQuestion": "Vad vill du ha för meny?",
   "menuPromptHint": "Ex: 3 middagar, 2 luncher och 1 frukost",
   "menuGenerating": "Genererar...",

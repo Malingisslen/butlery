@@ -16,6 +16,7 @@
 /// Used in phases: Phase 5 - Service Consolidation (import strategy pattern)
 
 import 'package:uuid/uuid.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/data/archived_recipes.dart' as archive;
 import 'package:butlery/services/import/import_strategy.dart';
@@ -209,6 +210,7 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
           .where((recipe) => recipe.id == id)
           .firstOrNull;
     } catch (e) {
+      AppLogger.warning('ArchiveImportStrategy: Failed to find recipe by ID "$id": $e');
       return null;
     }
   }
@@ -220,6 +222,7 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
           .where((recipe) => recipe.title.toLowerCase().contains(lowerName))
           .firstOrNull;
     } catch (e) {
+      AppLogger.warning('ArchiveImportStrategy: Failed to find recipe by name "$name": $e');
       return null;
     }
   }

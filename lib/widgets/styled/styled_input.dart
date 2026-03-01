@@ -32,6 +32,10 @@ class StyledInput extends StatelessWidget {
   final FocusNode? focusNode;
   final Iterable<String>? autofillHints;
 
+  /// Semantic label for screen readers when no visible label is present.
+  /// Falls back to [label] or [hint] if not provided.
+  final String? semanticLabel;
+
   const StyledInput({
     super.key,
     this.label,
@@ -57,6 +61,7 @@ class StyledInput extends StatelessWidget {
     this.contentPadding,
     this.focusNode,
     this.autofillHints,
+    this.semanticLabel,
   });
 
   /// Standard text input
@@ -73,6 +78,7 @@ class StyledInput extends StatelessWidget {
     this.suffixIcon,
     this.focusNode,
     this.autofillHints,
+    this.semanticLabel,
   })  : onTap = null,
         enabled = true,
         readOnly = false,
@@ -100,6 +106,7 @@ class StyledInput extends StatelessWidget {
     this.focusNode,
     this.obscureText = true,
     this.enabled = true,
+    this.semanticLabel,
   })  : onTap = null,
         readOnly = false,
         autofocus = false,
@@ -124,6 +131,7 @@ class StyledInput extends StatelessWidget {
     this.onChanged,
     this.validator,
     this.focusNode,
+    this.semanticLabel,
   })  : onTap = null,
         enabled = true,
         readOnly = false,
@@ -151,6 +159,7 @@ class StyledInput extends StatelessWidget {
     this.onChanged,
     this.validator,
     this.focusNode,
+    this.semanticLabel,
   })  : onTap = null,
         enabled = true,
         readOnly = false,
@@ -181,6 +190,7 @@ class StyledInput extends StatelessWidget {
     this.minLines = 3,
     this.maxLength,
     this.focusNode,
+    this.semanticLabel,
   })  : onTap = null,
         enabled = true,
         readOnly = false,
@@ -205,6 +215,7 @@ class StyledInput extends StatelessWidget {
     this.onChanged,
     this.validator,
     this.focusNode,
+    this.semanticLabel,
   })  : onTap = null,
         enabled = true,
         readOnly = false,
@@ -229,6 +240,7 @@ class StyledInput extends StatelessWidget {
     this.onChanged,
     this.suffixIcon,
     this.focusNode,
+    this.semanticLabel,
   })  : label = null,
         helperText = null,
         errorText = null,
@@ -252,7 +264,11 @@ class StyledInput extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return TextFormField(
+    // Wrap with Semantics when a semanticLabel is provided but no visible label
+    final effectiveSemanticLabel =
+        semanticLabel ?? (label == null ? hint : null);
+
+    final field = TextFormField(
       controller: controller,
       onChanged: onChanged,
       onTap: onTap,
@@ -331,6 +347,18 @@ class StyledInput extends StatelessWidget {
                 .withValues(alpha: AppDimensions.opacityDark),
       ),
     );
+
+    // Only add Semantics wrapper when there is no visible label and a
+    // semantic label was explicitly provided or falls back to hint
+    if (effectiveSemanticLabel != null && label == null) {
+      return Semantics(
+        label: effectiveSemanticLabel,
+        textField: true,
+        child: field,
+      );
+    }
+
+    return field;
   }
 }
 
@@ -355,28 +383,32 @@ class StyledFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (label != null) ...[
-          Row(
-            children: [
-              Text(
-                label!,
-                style: AppTextStyles.labelText,
-              ),
-              if (isRequired)
+    return Semantics(
+      label: label != null
+          ? (isRequired ? '$label (obligatorisk)' : label)
+          : null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (label != null) ...[
+            Row(
+              children: [
                 Text(
-                  ' *',
-                  style: AppTextStyles.labelText.copyWith(
-                    color: cs.error,
-                  ),
+                  label!,
+                  style: AppTextStyles.labelText,
                 ),
-            ],
-          ),
-          const SizedBox(height: AppDimensions.spacingSm),
-        ],
-        child,
+                if (isRequired)
+                  Text(
+                    ' *',
+                    style: AppTextStyles.labelText.copyWith(
+                      color: cs.error,
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppDimensions.spacingSm),
+          ],
+          child,
         if (errorText != null) ...[
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
@@ -394,7 +426,8 @@ class StyledFormField extends StatelessWidget {
           ),
         ],
         const SizedBox(height: AppDimensions.spacingMd),
-      ],
+        ],
+      ),
     );
   }
 }

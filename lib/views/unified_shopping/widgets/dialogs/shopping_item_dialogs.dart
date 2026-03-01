@@ -8,6 +8,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Shopping item dialogs for adding and editing items
 class ShoppingItemDialogs {
@@ -43,7 +44,9 @@ class ShoppingItemDialogs {
         }
       } catch (e) {
         if (context.mounted) {
-          onError(context.l10n.shoppingErrorAdding(e.toString()));
+          onError(context.l10n.shoppingErrorAdding(
+            SnackBarUtils.userFriendlyMessage(context, e),
+          ));
         }
       }
     }
@@ -83,7 +86,9 @@ class ShoppingItemDialogs {
         }
       } catch (e) {
         if (context.mounted) {
-          onError(context.l10n.shoppingErrorUpdating(e.toString()));
+          onError(context.l10n.shoppingErrorUpdating(
+            SnackBarUtils.userFriendlyMessage(context, e),
+          ));
         }
       }
     }

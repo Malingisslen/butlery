@@ -1076,6 +1076,12 @@ class AppLocalizationsSv extends AppLocalizations {
       'Amerikanska enheter konverterade till svenska';
 
   @override
+  String get portionDecrease => 'Minska portioner';
+
+  @override
+  String get portionIncrease => 'Öka portioner';
+
+  @override
   String get menuPromptQuestion => 'Vad vill du ha för meny?';
 
   @override

@@ -614,6 +614,8 @@
     }
   },
   "scalerAmericanConverted": "American units converted to metric",
+  "portionDecrease": "Decrease portions",
+  "portionIncrease": "Increase portions",
   "menuPromptQuestion": "What kind of menu do you want?",
   "menuPromptHint": "E.g. 3 dinners, 2 lunches and 1 breakfast",
   "menuGenerating": "Generating...",

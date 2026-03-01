@@ -13,6 +13,9 @@ class SelectionCard extends StatelessWidget {
   final double? elevation;
   final BorderRadius? borderRadius;
 
+  /// Semantic label for screen readers. Required for accessibility.
+  final String? semanticLabel;
+
   const SelectionCard({
     super.key,
     required this.child,
@@ -20,6 +23,7 @@ class SelectionCard extends StatelessWidget {
     this.onTap,
     this.elevation,
     this.borderRadius,
+    this.semanticLabel,
   });
 
   @override
@@ -38,12 +42,17 @@ class SelectionCard extends StatelessWidget {
               )
             : BorderSide.none,
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: effectiveBorderRadius,
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingM),
-          child: child,
+      child: Semantics(
+        label: semanticLabel,
+        button: onTap != null,
+        selected: isSelected,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: effectiveBorderRadius,
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimensions.paddingM),
+            child: child,
+          ),
         ),
       ),
     );

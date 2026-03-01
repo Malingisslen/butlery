@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Consolidated state class for FileImportView to reduce setState calls
 class FileImportState {
@@ -131,7 +132,9 @@ class _FileImportViewState extends State<FileImportView> {
       setState(() {
         _state = _state.copyWith(
           isLoading: false,
-          statusMessage: context.l10n.importFailed(e.toString()),
+          statusMessage: context.l10n.importFailed(
+            SnackBarUtils.userFriendlyMessage(context, e),
+          ),
         );
       });
     }

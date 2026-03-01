@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:crypto/crypto.dart';
 
 /// Normalizes URLs for consistent cache keys.
@@ -59,7 +60,8 @@ class UrlNormalizer {
     Uri? uri;
     try {
       uri = Uri.parse(trimmed);
-    } catch (_) {
+    } catch (e) {
+      AppLogger.debug('UrlNormalizer: Failed to parse URL "$trimmed": $e');
       return null;
     }
 
@@ -151,7 +153,8 @@ class UrlNormalizer {
         host = host.substring(4);
       }
       return host;
-    } catch (_) {
+    } catch (e) {
+      AppLogger.debug('UrlNormalizer: Failed to extract domain from "$url": $e');
       return null;
     }
   }

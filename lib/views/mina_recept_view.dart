@@ -224,7 +224,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       } catch (e) {
         if (mounted) {
           SnackBarUtils.showError(
-              context, context.l10n.syncFailed(e.toString()));
+              context, context.l10n.syncFailed(
+                SnackBarUtils.userFriendlyMessage(context, e),
+              ));
         }
       }
     }
