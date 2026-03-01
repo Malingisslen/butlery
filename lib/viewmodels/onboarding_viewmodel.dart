@@ -4,12 +4,16 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/analytics_service.dart';
 
 class OnboardingViewModel extends ChangeNotifier {
   int _currentPage = 0;
   final Set<String> _selectedAllergens = {};
   final Set<String> _selectedDietaryPrefs = {};
   bool _isCompleting = false;
+  bool _started = false;
+  late final AnalyticsService? _analytics =
+      ServiceLocator.tryGet<AnalyticsService>();
 
   int get currentPage => _currentPage;
   Set<String> get selectedAllergens => Set.unmodifiable(_selectedAllergens);
@@ -20,6 +24,10 @@ class OnboardingViewModel extends ChangeNotifier {
   bool get isFirstPage => _currentPage == 0;
 
   void setPage(int page) {
+    if (!_started) {
+      _started = true;
+      _analytics?.logEvent(name: 'onboarding_started');
+    }
     _currentPage = page;
     notifyListeners();
   }
@@ -27,6 +35,10 @@ class OnboardingViewModel extends ChangeNotifier {
   void nextPage() {
     if (_currentPage < 3) {
       _currentPage++;
+      _analytics?.logEvent(
+        name: 'onboarding_page_viewed',
+        parameters: {'page': _currentPage},
+      );
       notifyListeners();
     }
   }
@@ -82,6 +94,21 @@ class OnboardingViewModel extends ChangeNotifier {
 
       // Mark onboarding as completed on the profile
       await userService.markOnboardingComplete();
+
+      if (_currentPage < 3) {
+        _analytics?.logEvent(
+          name: 'onboarding_skipped',
+          parameters: {'skipped_at_page': _currentPage},
+        );
+      } else {
+        _analytics?.logEvent(
+          name: 'onboarding_completed',
+          parameters: {
+            'allergen_count': _selectedAllergens.length,
+            'dietary_count': _selectedDietaryPrefs.length,
+          },
+        );
+      }
 
       AppLogger.success('Onboarding completed');
       return true;

@@ -12,6 +12,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/analytics_service.dart';
 
 /// Deep link handler for processing incoming shared content.
 /// Handles various types of deep links including:
@@ -104,6 +105,9 @@ class DeepLinkHandler {
       final path = uri.path;
       final params = uri.queryParameters;
 
+      // P8-21: Campaign attribution from UTM parameters
+      _trackCampaignAttribution(params);
+
       if (!context.mounted) {
         return;
       }
@@ -119,6 +123,26 @@ class DeepLinkHandler {
       }
     } catch (e) {
       // Silently handle deep link processing errors
+    }
+  }
+
+  /// P8-21: Track UTM campaign attribution from deep links.
+  void _trackCampaignAttribution(Map<String, String> params) {
+    final utmSource = params['utm_source'];
+    if (utmSource == null) return;
+
+    try {
+      final analytics = ServiceLocator.tryGet<AnalyticsService>();
+      analytics?.logEvent(
+        name: 'campaign_click',
+        parameters: {
+          'utm_source': utmSource,
+          'utm_medium': params['utm_medium'] ?? '',
+          'utm_campaign': params['utm_campaign'] ?? '',
+        },
+      );
+    } catch (e) {
+      // Campaign tracking not critical
     }
   }
 

@@ -13,6 +13,8 @@ import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart
 import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
 import 'package:butlery/services/parsing/feedback/recipe_diff_calculator.dart';
 import 'package:butlery/repositories/parsing_correction_repository.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Manages recipe persistence with atomic save, fork, and delete operations.
@@ -22,6 +24,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   final RecipeImageManager _imageManager;
   final RecipeCollaborativeManager _collaborativeManager;
   final RecipePermissionManager _permissionManager;
+  final AnalyticsService? _analyticsService;
   final _uuid = const Uuid();
 
   bool _isSaveInProgress = false;
@@ -38,11 +41,14 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     required RecipeImageManager imageManager,
     required RecipeCollaborativeManager collaborativeManager,
     required RecipePermissionManager permissionManager,
+    AnalyticsService? analyticsService,
   })  : _recipeService = recipeService,
         _state = state,
         _imageManager = imageManager,
         _collaborativeManager = collaborativeManager,
-        _permissionManager = permissionManager;
+        _permissionManager = permissionManager,
+        _analyticsService =
+            analyticsService ?? ServiceLocator.tryGet<AnalyticsService>();
 
   /// Saves recipe with atomic coordination, preventing concurrent saves and ensuring image upload completion.
   Future<Recipe?> saveRecipe({
@@ -169,6 +175,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
                 await _recipeService.personal.updateUnifiedRecipe(recipe);
             if (result.isSuccess) {
               savedRecipe = recipe;
+              _logRecipeEdited(recipeId);
             } else {
               throw Exception(result.message ?? 'Failed to update recipe');
             }
@@ -178,9 +185,18 @@ class RecipePersistenceManager with ErrorHandlingMixin {
                 await _recipeService.personal.addUnifiedRecipe(recipe);
             if (result.isSuccess) {
               savedRecipe = recipe;
+              _logRecipeCreated(validImageUrls);
             } else {
               throw Exception(result.message ?? 'Failed to create recipe');
             }
+          }
+
+          if (validImageUrls.isNotEmpty) {
+            _analyticsService?.recipe.logRecipeImageUploaded(
+              recipeId: recipeId,
+              imageCount: validImageUrls.length,
+              uploadSource: 'form',
+            );
           }
 
           if (_disposed) {
@@ -332,6 +348,71 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     }
 
     return result;
+  }
+
+  void _logRecipeCreated(List<String> imageUrls) {
+    final source = _state.originalParsedRecipe != null ? 'import' : 'manual';
+    _analyticsService?.recipe.logRecipeCreated(
+      source: source,
+      hasImage: imageUrls.isNotEmpty,
+    );
+
+    // P8-15: Keep user properties in sync after recipe creation
+    final recipeCount = _recipeService.recipes.length;
+    _analyticsService?.setUserProperties(recipeCount: recipeCount);
+
+    if (source == 'import') {
+      _analyticsService?.setUserProperties(hasUsedImport: true);
+    }
+
+    // P8-10 + P8-20: Activation metric & time-to-first-value (first recipe only)
+    if (recipeCount == 1) {
+      _trackFirstRecipeMetrics();
+    }
+  }
+
+  void _trackFirstRecipeMetrics() {
+    try {
+      final userService = ServiceLocator.tryGet<UserService>();
+      final joinedAt = userService?.currentUserProfile?.joinedAt;
+      if (joinedAt == null) return;
+
+      final now = DateTime.now();
+      final minutesSinceSignup = now.difference(joinedAt).inMinutes;
+
+      // P8-20: Time-to-first-value
+      _analyticsService?.logEvent(
+        name: 'time_to_first_recipe',
+        parameters: {'minutes_since_signup': minutesSinceSignup},
+      );
+
+      // P8-10: Activation metric (recipe within 7 days of signup)
+      if (now.difference(joinedAt).inDays <= 7) {
+        _analyticsService?.logEvent(name: 'user_activated');
+      }
+    } catch (e) {
+      AppLogger.warning('Failed to track first recipe metrics: $e');
+    }
+  }
+
+  void _logRecipeEdited(String recipeId) {
+    final original = _state.originalRecipe;
+    if (original == null) return;
+
+    final changed = <String>[];
+    final current = _state;
+    if (current.title != original.title) changed.add('title');
+    if (current.description != original.description) {
+      changed.add('description');
+    }
+    if (current.mealType != original.mealType) changed.add('mealType');
+    if (current.portions != original.portions) changed.add('portions');
+    if (current.timeMinutes != original.timeMinutes) changed.add('timeMinutes');
+
+    _analyticsService?.recipe.logRecipeEdited(
+      recipeId: recipeId,
+      fieldsChanged: changed.isEmpty ? null : changed,
+    );
   }
 
   void _completePendingSaveOperations(Recipe? result) {

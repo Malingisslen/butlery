@@ -96,8 +96,13 @@ class RecipeDetailViewModel extends ChangeNotifier
             recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
         _analyticsService =
             analyticsService ?? ServiceLocator.get<AnalyticsService>() {
-    // Listen to UnifiedRecipeService for updates
     _recipeService.addListener(_onRecipeServiceUpdate);
+
+    _analyticsService.recipe.logRecipeViewed(
+      recipeId: recipe.id,
+      recipeType: recipe.type.name,
+      source: 'detail',
+    );
   }
 
   /// Performs comprehensive ViewModel disposal with service listener cleanup and memory management.
@@ -212,10 +217,14 @@ class RecipeDetailViewModel extends ChangeNotifier
           // Log analytics for recipe deletion
           await _analyticsService.logRecipeDeleted(
             recipeId: _recipe.id,
-            recipeTitle: _recipe.title,
             mealType: _recipe.mealType,
             isPersonal: _recipe.isPersonal,
             createdAt: _recipe.createdAt,
+          );
+
+          // P8-15: Update recipe count user property
+          await _analyticsService.setUserProperties(
+            recipeCount: _recipeService.recipes.length,
           );
 
           return true;
@@ -268,7 +277,6 @@ class RecipeDetailViewModel extends ChangeNotifier
         // Log analytics with correct method
         await _analyticsService.logRecipeCooked(
           recipeId: _recipe.id,
-          recipeTitle: _recipe.title,
           mealType: _recipe.mealType,
           isFirstTime: isFirstTime,
         );

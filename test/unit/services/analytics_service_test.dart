@@ -89,7 +89,6 @@ void main() {
           )).thenAnswer((_) async {});
       when(() => mockRepository.logRecipeCooked(
             recipeId: any(named: 'recipeId'),
-            recipeTitle: any(named: 'recipeTitle'),
             mealType: any(named: 'mealType'),
             isFirstTime: any(named: 'isFirstTime'),
             daysSinceLastCooked: any(named: 'daysSinceLastCooked'),
@@ -100,7 +99,6 @@ void main() {
           )).thenAnswer((_) async {});
       when(() => mockRepository.logRecipeDeleted(
             recipeId: any(named: 'recipeId'),
-            recipeTitle: any(named: 'recipeTitle'),
             mealType: any(named: 'mealType'),
             isPersonal: any(named: 'isPersonal'),
             createdAt: any(named: 'createdAt'),
@@ -312,14 +310,12 @@ void main() {
       test('should log recipe cooked event', () async {
         // Arrange
         const recipeId = 'recipe_123';
-        const recipeTitle = 'Köttbullar';
         const mealType = 'dinner';
         const isFirstTime = false;
         const daysSinceLastCooked = 7;
 
         when(() => mockRepository.logRecipeCooked(
               recipeId: any(named: 'recipeId'),
-              recipeTitle: any(named: 'recipeTitle'),
               mealType: any(named: 'mealType'),
               isFirstTime: any(named: 'isFirstTime'),
               daysSinceLastCooked: any(named: 'daysSinceLastCooked'),
@@ -328,7 +324,6 @@ void main() {
         // Act
         await analyticsService.logRecipeCooked(
           recipeId: recipeId,
-          recipeTitle: recipeTitle,
           mealType: mealType,
           isFirstTime: isFirstTime,
           daysSinceLastCooked: daysSinceLastCooked,
@@ -337,7 +332,6 @@ void main() {
         // Assert
         verify(() => mockRepository.logRecipeCooked(
               recipeId: recipeId,
-              recipeTitle: recipeTitle,
               mealType: mealType,
               isFirstTime: isFirstTime,
               daysSinceLastCooked: daysSinceLastCooked,
@@ -347,7 +341,6 @@ void main() {
       test('should log recipe deleted event', () async {
         // Arrange
         const recipeId = 'recipe_456';
-        const recipeTitle = 'Pannkakor';
         const mealType = 'breakfast';
         const isPersonal = true;
         final createdAt = DateTime.now().subtract(const Duration(days: 30));
@@ -355,7 +348,6 @@ void main() {
 
         when(() => mockRepository.logRecipeDeleted(
               recipeId: any(named: 'recipeId'),
-              recipeTitle: any(named: 'recipeTitle'),
               mealType: any(named: 'mealType'),
               isPersonal: any(named: 'isPersonal'),
               createdAt: any(named: 'createdAt'),
@@ -365,7 +357,6 @@ void main() {
         // Act
         await analyticsService.logRecipeDeleted(
           recipeId: recipeId,
-          recipeTitle: recipeTitle,
           mealType: mealType,
           isPersonal: isPersonal,
           createdAt: createdAt,
@@ -375,7 +366,6 @@ void main() {
         // Assert
         verify(() => mockRepository.logRecipeDeleted(
               recipeId: recipeId,
-              recipeTitle: recipeTitle,
               mealType: mealType,
               isPersonal: isPersonal,
               createdAt: createdAt,
@@ -386,14 +376,12 @@ void main() {
       test('should calculate days since created if not provided', () async {
         // Arrange
         const recipeId = 'recipe_789';
-        const recipeTitle = 'Laxsallad';
         const mealType = 'lunch';
         const isPersonal = false;
         final createdAt = DateTime.now().subtract(const Duration(days: 15));
 
         when(() => mockRepository.logRecipeDeleted(
               recipeId: any(named: 'recipeId'),
-              recipeTitle: any(named: 'recipeTitle'),
               mealType: any(named: 'mealType'),
               isPersonal: any(named: 'isPersonal'),
               createdAt: any(named: 'createdAt'),
@@ -403,21 +391,18 @@ void main() {
         // Act
         await analyticsService.logRecipeDeleted(
           recipeId: recipeId,
-          recipeTitle: recipeTitle,
           mealType: mealType,
           isPersonal: isPersonal,
           createdAt: createdAt,
-          // daysSinceCreated not provided - should be calculated
         );
 
         // Assert
         verify(() => mockRepository.logRecipeDeleted(
               recipeId: recipeId,
-              recipeTitle: recipeTitle,
               mealType: mealType,
               isPersonal: isPersonal,
               createdAt: createdAt,
-              daysSinceCreated: null, // Not provided, so null is passed
+              daysSinceCreated: null,
             )).called(1);
       });
     });

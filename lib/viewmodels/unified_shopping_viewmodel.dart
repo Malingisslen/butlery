@@ -28,6 +28,7 @@ import 'package:butlery/viewmodels/shopping/shopping_analytics_manager.dart';
 import 'package:butlery/viewmodels/shopping/shopping_item_operations_manager.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Unified shopping ViewModel coordinating shopping operations through service delegation.
@@ -109,6 +110,9 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   String? get currentUserDisplayName => _shoppingService.currentUserDisplayName;
 
   /// Initializes unified shopping ViewModel with service integration and manager setup
+  late final AnalyticsService? _analytics =
+      ServiceLocator.tryGet<AnalyticsService>();
+
   UnifiedShoppingViewModel() {
     _analyticsManager = ShoppingAnalyticsManager(_shoppingService);
     _itemOpsManager = ShoppingItemOperationsManager();
@@ -132,6 +136,13 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     if (ValidationUtils.isNullOrWhitespace(name)) return false;
 
     final listId = await _shoppingService.createPersonalList(name.trim());
+    if (listId != null) {
+      _analytics?.shopping.logShoppingListCreated(
+        listId: listId,
+        listType: 'personal',
+        initialItemCount: 0,
+      );
+    }
     return listId != null;
   }
 
@@ -159,6 +170,13 @@ class UnifiedShoppingViewModel extends ChangeNotifier
       autoRemoveCompleted: autoRemoveCompleted,
     );
 
+    if (listId != null) {
+      _analytics?.shopping.logShoppingListCreated(
+        listId: listId,
+        listType: 'collaborative',
+        initialItemCount: items?.length ?? 0,
+      );
+    }
     return listId != null;
   }
 
@@ -255,6 +273,12 @@ class UnifiedShoppingViewModel extends ChangeNotifier
 
       if (result) {
         AppLogger.success('Successfully added item "${name.trim()}" to list');
+        if (activeList != null) {
+          _analytics?.shopping.logShoppingListItemAdded(
+            listId: activeList!.id,
+            source: 'manual',
+          );
+        }
       } else {
         AppLogger.error('Failed to add item "${name.trim()}" to list');
       }
@@ -288,13 +312,27 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   }
 
   Future<bool> toggleItemBought(String itemId) async {
-    // ULTRATHINK FIX: Check permissions before allowing edit operations
     if (!canEditActiveList) {
       AppLogger.warning('PERMISSION DENIED: User cannot edit active list');
       return false;
     }
 
-    return await _shoppingService.toggleItemBought(itemId);
+    final result = await _shoppingService.toggleItemBought(itemId);
+    if (result && activeList != null) {
+      final checkedCount = activeList!.items.where((i) => i.bought).length;
+      _analytics?.shopping.logShoppingListItemChecked(
+        listId: activeList!.id,
+        itemCount: checkedCount,
+      );
+
+      if (allItemsBought && activeList!.items.isNotEmpty) {
+        _analytics?.shopping.logShoppingListCompleted(
+          listId: activeList!.id,
+          itemCount: activeList!.items.length,
+        );
+      }
+    }
+    return result;
   }
 
   Future<bool> removeItem(String itemId) async {

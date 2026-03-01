@@ -56,4 +56,51 @@ class SocialEventsTracker extends BaseTracker {
       },
     );
   }
+
+  /// Log group created
+  Future<void> logGroupCreated({
+    required String groupId,
+    required String groupType,
+    int memberCount = 0,
+  }) async {
+    if (!await hasAnalyticsConsent()) return;
+    await logEvent(
+      name: 'group_created',
+      parameters: {
+        'group_id': groupId,
+        'group_type': groupType,
+        'member_count': memberCount,
+      },
+    );
+  }
+
+  /// Log group joined
+  Future<void> logGroupJoined({
+    required String groupId,
+    required String source,
+  }) async {
+    if (!await hasAnalyticsConsent()) return;
+    await logEvent(
+      name: 'group_joined',
+      parameters: {
+        'group_id': groupId,
+        'source': source,
+      },
+    );
+  }
+
+  /// Log content shared to group
+  Future<void> logContentSharedToGroup({
+    required String groupId,
+    required String contentType,
+  }) async {
+    if (!await hasAnalyticsConsent()) return;
+    await logEvent(
+      name: 'content_shared_to_group',
+      parameters: {
+        'group_id': groupId,
+        'content_type': contentType,
+      },
+    );
+  }
 }

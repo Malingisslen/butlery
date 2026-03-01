@@ -11,6 +11,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/services/analytics_service.dart';
 
 /// Recipe Query ViewModel
 /// Handles ONLY recipe querying, filtering, searching, and analytics operations.
@@ -27,6 +28,8 @@ class RecipeQueryViewModel extends ChangeNotifier
         AsyncOperationMixin {
   final UnifiedRecipeService _recipeService =
       ServiceLocator.get<UnifiedRecipeService>();
+  late final AnalyticsService? _analyticsService =
+      ServiceLocator.tryGet<AnalyticsService>();
 
   String get serviceName => 'RecipeQueryViewModel';
 
@@ -104,9 +107,25 @@ class RecipeQueryViewModel extends ChangeNotifier
         _searchQuery = query;
         _invalidateCache();
         notifyListeners();
+
+        if (query.trim().isNotEmpty) {
+          _analyticsService?.recipe.logRecipeSearchPerformed(
+            searchQuery: query,
+            resultsCount: filteredRecipes.length,
+            filtersApplied: hasActiveFilters ? _activeFilterNames : null,
+          );
+        }
       },
       const Duration(milliseconds: 300),
     );
+  }
+
+  List<String> get _activeFilterNames {
+    final filters = <String>[];
+    if (_selectedMealType != null) filters.add('mealType');
+    if (_selectedTag != null) filters.add('tag');
+    if (_selectedType != null) filters.add('type');
+    return filters;
   }
 
   void clearSearch() {

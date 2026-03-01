@@ -50,6 +50,12 @@ export { trackUnmatchedIngredients, getUnmatchedIngredientStats } from "./analyt
 // Correction Analytics - Alias learning and domain stats
 export { analyzeCorrections, getCorrectionStats } from "./analytics/analyze-corrections";
 
+// Analytics Functions - User retention and engagement
+export { trackDayNRetention } from "./analytics/track-retention";
+export { sendWeeklyActivityDigest } from "./analytics/send-activity-digest";
+export { detectLapsedUsers } from "./analytics/detect-lapsed-users";
+export { correlateNotificationEffectiveness } from "./analytics/correlate-notifications";
+
 // Feedback Functions - Beta user feedback
 export { onFeedbackCreated } from "./feedback/on-feedback-created";
 

@@ -41,6 +41,7 @@ abstract class AnalyticsRepository {
   Future<void> logImportStarted({
     required String source,
     String? platform,
+    String? sessionId,
   });
 
   /// Log successful import
@@ -48,6 +49,7 @@ abstract class AnalyticsRepository {
     required String source,
     String? platform,
     int? recipeLength,
+    String? sessionId,
   });
 
   /// Log extraction error
@@ -78,7 +80,6 @@ abstract class AnalyticsRepository {
   /// Log when recipe is marked as cooked
   Future<void> logRecipeCooked({
     required String recipeId,
-    required String recipeTitle,
     required String mealType,
     bool isFirstTime = true,
     int? daysSinceLastCooked,
@@ -93,7 +94,6 @@ abstract class AnalyticsRepository {
   /// Log recipe deletion
   Future<void> logRecipeDeleted({
     required String recipeId,
-    required String recipeTitle,
     required String mealType,
     required bool isPersonal,
     required DateTime createdAt,

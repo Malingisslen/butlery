@@ -70,6 +70,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/services/analytics_service.dart';
 
 /// Comprehensive group creation ViewModel providing advanced social group creation through service integration.
 /// Manages group creation form state enabling social group creation with friend selection, form validation,
@@ -122,6 +123,9 @@ class CreateGroupViewModel extends ChangeNotifier
   /// - Form state initialization with default values and validation preparation
   /// - Friend selection state preparation for member management and invitation coordination
   /// - Error handling preparation with Swedish localized error message support
+  late final AnalyticsService? _analytics =
+      ServiceLocator.tryGet<AnalyticsService>();
+
   CreateGroupViewModel({
     UnifiedFriendsService? friendsService,
   }) : _friendsService =
@@ -360,6 +364,12 @@ class CreateGroupViewModel extends ChangeNotifier
 
         // Broadcast group creation event for system-wide coordination
         GroupEventBus.groupCreated();
+
+        _analytics?.social.logGroupCreated(
+          groupId: categoryId,
+          groupType: 'friend_category',
+          memberCount: _selectedFriendIds.length,
+        );
       }, errorPrefix: AppLocale.current.errorCouldNotCreate('grupp'));
 
       return true;

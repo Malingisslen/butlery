@@ -87,7 +87,6 @@ void main() {
       // Setup analytics mock with proper signatures
       when(() => mockAnalyticsService.logRecipeDeleted(
             recipeId: any(named: 'recipeId'),
-            recipeTitle: any(named: 'recipeTitle'),
             mealType: any(named: 'mealType'),
             isPersonal: any(named: 'isPersonal'),
             createdAt: any(named: 'createdAt'),
@@ -95,7 +94,6 @@ void main() {
 
       when(() => mockAnalyticsService.logRecipeCooked(
             recipeId: any(named: 'recipeId'),
-            recipeTitle: any(named: 'recipeTitle'),
             mealType: any(named: 'mealType'),
             isFirstTime: any(named: 'isFirstTime'),
           )).thenAnswer((_) async => Future.value());
@@ -237,7 +235,6 @@ void main() {
         verify(() => mockRecipeService.deleteRecipe(testRecipeId)).called(1);
         verify(() => mockAnalyticsService.logRecipeDeleted(
               recipeId: testRecipeId,
-              recipeTitle: 'Köttbullar med lingonsylt',
               mealType: 'Middag',
               isPersonal: any(named: 'isPersonal'),
               createdAt: any(named: 'createdAt'),
@@ -290,7 +287,6 @@ void main() {
         verify(() => mockRecipeService.updateRecipe(any())).called(1);
         verify(() => mockAnalyticsService.logRecipeCooked(
               recipeId: testRecipeId,
-              recipeTitle: 'Köttbullar med lingonsylt',
               mealType: 'Middag',
               isFirstTime: true,
             )).called(1);
@@ -331,7 +327,7 @@ void main() {
         // Assert
         verify(() => mockAnalyticsService.logRecipeCooked(
               recipeId: any(named: 'recipeId'),
-              recipeTitle: any(named: 'recipeTitle'),
+
               mealType: any(named: 'mealType'),
               isFirstTime: false, // Should be false since already cooked
             )).called(1);
@@ -398,7 +394,6 @@ void main() {
         // Assert
         verify(() => mockAnalyticsService.logRecipeCooked(
               recipeId: testRecipeId,
-              recipeTitle: 'Köttbullar med lingonsylt',
               mealType: 'Middag',
               isFirstTime: true,
             )).called(1);
@@ -415,7 +410,6 @@ void main() {
         // Assert
         verify(() => mockAnalyticsService.logRecipeDeleted(
               recipeId: testRecipeId,
-              recipeTitle: 'Köttbullar med lingonsylt',
               mealType: 'Middag',
               isPersonal: any(named: 'isPersonal'),
               createdAt: any(named: 'createdAt'),
