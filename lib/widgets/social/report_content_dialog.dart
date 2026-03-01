@@ -74,17 +74,18 @@ class ReportContentDialog {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
           title: Text(context.l10n.reportDialogTitle),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: reasons
-                .map((reason) => RadioListTile<String>(
-                      title: Text(reason),
-                      value: reason,
-                      groupValue: selectedReason,
-                      onChanged: (value) =>
-                          setState(() => selectedReason = value),
-                    ))
-                .toList(),
+          content: RadioGroup<String>(
+            groupValue: selectedReason,
+            onChanged: (value) => setState(() => selectedReason = value),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: reasons
+                  .map((reason) => RadioListTile<String>(
+                        title: Text(reason),
+                        value: reason,
+                      ))
+                  .toList(),
+            ),
           ),
           actions: [
             TextButton(
