@@ -13,6 +13,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { checkRateLimit } from "../middleware/rate_limiter";
 
 /**
  * Sanitizes user-provided text by stripping HTML tags.
@@ -70,6 +71,16 @@ export const sendNotification = functions.https.onCall(
     }
 
     const callerUid = context.auth.uid;
+
+    // Rate limit check
+    const rateLimitResult = await checkRateLimit(callerUid, "sendNotification");
+    if (!rateLimitResult.allowed) {
+      throw new functions.https.HttpsError(
+        "resource-exhausted",
+        "Rate limit exceeded. Please try again later."
+      );
+    }
+
     const { targetUserId, title, body, data: payload, imageUrl, silent } = data;
 
     // Validate required fields
@@ -264,7 +275,7 @@ export const sendNotification = functions.https.onCall(
 
       throw new functions.https.HttpsError(
         "internal",
-        `Failed to send notification: ${error}`
+        "Failed to send notification"
       );
     }
   }
@@ -324,6 +335,16 @@ export const sendNotificationBatch = functions.https.onCall(
     }
 
     const callerUid = context.auth.uid;
+
+    // Rate limit check for batch operations
+    const rateLimitResult = await checkRateLimit(callerUid, "sendNotification");
+    if (!rateLimitResult.allowed) {
+      throw new functions.https.HttpsError(
+        "resource-exhausted",
+        "Rate limit exceeded. Please try again later."
+      );
+    }
+
     const { notifications } = data;
 
     if (!notifications || !Array.isArray(notifications)) {
