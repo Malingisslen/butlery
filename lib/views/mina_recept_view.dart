@@ -401,7 +401,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       child: LayoutComponents.mainMenu(
         currentIndex: 0,
         appBar: appBar,
-        body: Column(
+        body: FocusTraversalGroup(
+          child: Column(
           children: [
             LayoutComponents.offlineIndicator(),
             if (!viewModel.isSelectionMode) ...[
@@ -452,7 +453,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             ],
             Expanded(child: _buildContent(viewModel, offlineService)),
           ],
-        ),
+        )),
       ),
     );
   }
