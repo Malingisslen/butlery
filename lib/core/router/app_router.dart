@@ -40,6 +40,10 @@ import 'package:butlery/views/personal_tags_view.dart';
 // Cooking mode
 import 'package:butlery/views/cooking_mode_view.dart';
 
+// Legal
+import 'package:butlery/views/legal/terms_of_service_view.dart';
+import 'package:butlery/views/legal/community_guidelines_view.dart';
+
 // Help
 import 'package:butlery/views/faq_view.dart';
 
@@ -266,6 +270,14 @@ class AppRouter {
 
         case Routes.settingsAccountSecurity:
           return _buildRoute(const AccountSecurityView(), settings,
+              RouteAnimationType.slideFromRight);
+
+        case Routes.termsOfService:
+          return _buildRoute(const TermsOfServiceView(), settings,
+              RouteAnimationType.slideFromRight);
+
+        case Routes.communityGuidelines:
+          return _buildRoute(const CommunityGuidelinesView(), settings,
               RouteAnimationType.slideFromRight);
 
         case Routes.faq:

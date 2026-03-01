@@ -7897,5 +7897,22 @@
   "profileFaqSubtitle": "Hjälp och svar på vanliga frågor",
   "sharedWithYou": "Delade med dig",
   "importTag": "Importera",
-  "tagImportedSuccess": "Taggen importerades"
+  "tagImportedSuccess": "Taggen importerades",
+  "legalTermsOfService": "Användarvillkor",
+  "legalCommunityGuidelines": "Gemenskapsriktlinjer",
+  "legalOpenSourceLicenses": "Öppen källkod-licenser",
+  "authAgeConfirmation": "Jag bekräftar att jag är minst 13 år",
+  "authAgeConfirmationRequired": "Du måste bekräfta din ålder för att skapa ett konto",
+  "reportContent": "Rapportera",
+  "reportReasonInappropriate": "Olämpligt innehåll",
+  "reportReasonSpam": "Spam",
+  "reportReasonHarassment": "Trakasseri",
+  "reportReasonCopyright": "Upphovsrättsintrång",
+  "reportReasonOther": "Annat",
+  "reportDescriptionHint": "Beskriv vad som är fel (valfritt)",
+  "reportSubmitted": "Rapporten har skickats",
+  "reportSubmitFailed": "Kunde inte skicka rapporten",
+  "reportDialogTitle": "Rapportera innehåll",
+  "reportSubmit": "Skicka rapport",
+  "contentFilterWarning": "Texten innehåller olämpligt språk. Vänligen redigera innan du skickar."
 }

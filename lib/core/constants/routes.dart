@@ -77,6 +77,10 @@ class Routes {
   static const String settingsNotifications = '/settings/notifications';
   static const String settingsAccountSecurity = '/settings/account-security';
 
+  // Legal routes
+  static const String termsOfService = '/legal/terms';
+  static const String communityGuidelines = '/legal/community-guidelines';
+
   // Help routes
   static const String faq = '/faq';
 
@@ -134,6 +138,8 @@ class Routes {
 
   /// Routes using slide-from-right animation
   static const Set<String> rightSlideRoutes = {
+    termsOfService,
+    communityGuidelines,
     inkopslista,
     profileEdit,
     friends,
@@ -240,6 +246,10 @@ class Routes {
     settingsPersonalTags,
     settingsNotifications,
     settingsAccountSecurity,
+
+    // Legal
+    termsOfService,
+    communityGuidelines,
 
     // Help
     faq,

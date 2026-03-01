@@ -94,6 +94,7 @@ class ConsentPurposes {
   final bool marketing; // Optional: Marketing communications
   final bool socialFeatures; // Optional: Social features (sharing, friends)
   final bool pushNotifications; // Optional: Push notifications
+  final bool aiProcessing; // Optional: AI recipe processing (Mistral OCR)
 
   const ConsentPurposes({
     required this.essentialServices,
@@ -102,6 +103,7 @@ class ConsentPurposes {
     this.marketing = false,
     this.socialFeatures = false,
     this.pushNotifications = false,
+    this.aiProcessing = false,
   });
 
   /// Create from Firestore map
@@ -119,6 +121,8 @@ class ConsentPurposes {
           defaultValue: false),
       pushNotifications: SerializationUtils.safeBool(map, 'pushNotifications',
           defaultValue: false),
+      aiProcessing: SerializationUtils.safeBool(map, 'aiProcessing',
+          defaultValue: false),
     );
   }
 
@@ -131,6 +135,7 @@ class ConsentPurposes {
       'marketing': marketing,
       'socialFeatures': socialFeatures,
       'pushNotifications': pushNotifications,
+      'aiProcessing': aiProcessing,
     };
   }
 
@@ -143,6 +148,7 @@ class ConsentPurposes {
       marketing: false,
       socialFeatures: false,
       pushNotifications: false,
+      aiProcessing: false,
     );
   }
 
@@ -154,6 +160,7 @@ class ConsentPurposes {
     bool? marketing,
     bool? socialFeatures,
     bool? pushNotifications,
+    bool? aiProcessing,
   }) {
     return ConsentPurposes(
       essentialServices: essentialServices ?? this.essentialServices,
@@ -162,6 +169,7 @@ class ConsentPurposes {
       marketing: marketing ?? this.marketing,
       socialFeatures: socialFeatures ?? this.socialFeatures,
       pushNotifications: pushNotifications ?? this.pushNotifications,
+      aiProcessing: aiProcessing ?? this.aiProcessing,
     );
   }
 
@@ -174,7 +182,8 @@ class ConsentPurposes {
         other.analytics == analytics &&
         other.marketing == marketing &&
         other.socialFeatures == socialFeatures &&
-        other.pushNotifications == pushNotifications;
+        other.pushNotifications == pushNotifications &&
+        other.aiProcessing == aiProcessing;
   }
 
   @override
@@ -186,6 +195,7 @@ class ConsentPurposes {
       marketing,
       socialFeatures,
       pushNotifications,
+      aiProcessing,
     );
   }
 }

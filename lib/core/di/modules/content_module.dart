@@ -69,6 +69,9 @@ import 'package:butlery/services/import/cache/global_recipe_cache.dart';
 // Import rate limiting
 import 'package:butlery/services/import/import_rate_limiter.dart';
 
+// Consent service (for AI processing consent gate)
+import 'package:butlery/services/account/consent_service.dart';
+
 // LLM services
 import 'package:butlery/services/llm/llm_service.dart';
 import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
@@ -243,6 +246,7 @@ class ContentModule implements DIModule {
       container.registerLazySingleton<LlmService>(
         () => LlmService(
           rateLimiter: container<ImportRateLimiter>(),
+          consentService: container<ConsentService>(),
         ),
       );
 

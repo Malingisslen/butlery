@@ -822,14 +822,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.4.1"
-  flutter_dotenv:
-    dependency: "direct main"
-    description:
-      name: flutter_dotenv
-      sha256: d4130c4a43e0b13fefc593bc3961f2cb46e30cb79e253d4a526b1b5d24ae1ce4
-      url: "https://pub.dev"
-    source: hosted
-    version: "6.0.0"
   flutter_driver:
     dependency: "direct dev"
     description: flutter
@@ -1191,14 +1183,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.6.0"
-  http_certificate_pinning:
-    dependency: "direct main"
-    description:
-      name: http_certificate_pinning
-      sha256: "1501c69142a3906a5ad4876d7e71696fa6a6a187fc6f4a746d7a5ba32f9f8fcf"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.1"
   http_multi_server:
     dependency: transitive
     description:
@@ -1653,7 +1637,7 @@ packages:
     source: hosted
     version: "2.1.8"
   pointycastle:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: pointycastle
       sha256: "92aa3841d083cc4b0f4709b5c74fd6409a3e6ba833ffc7dc6a8fee096366acf5"

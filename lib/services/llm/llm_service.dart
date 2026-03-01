@@ -17,6 +17,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/llm/llm_models.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
+import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
 /// Service for LLM-based recipe extraction.
@@ -29,14 +30,17 @@ class LlmService extends BaseService {
 
   final FirebaseFunctions _functions;
   final ImportRateLimiter _rateLimiter;
+  final ConsentService _consentService;
 
   /// Region for Cloud Functions (matches deployment)
   static const _region = 'europe-west1';
 
   LlmService({
     required ImportRateLimiter rateLimiter,
+    required ConsentService consentService,
     FirebaseFunctions? functions,
   })  : _rateLimiter = rateLimiter,
+        _consentService = consentService,
         _functions =
             functions ?? FirebaseFunctions.instanceFor(region: _region);
 
@@ -55,6 +59,14 @@ class LlmService extends BaseService {
     Map<String, dynamic>? partialData,
     String? sourceUrl,
   }) async {
+    // GDPR Art. 5(1)(b): Require explicit consent for AI processing
+    if (!await _consentService.hasConsent('aiProcessing')) {
+      throw const LlmException(
+        'AI-bearbetning kräver ditt samtycke. '
+        'Aktivera "AI-bearbetning" under Integritetsinställningar.',
+      );
+    }
+
     AppLogger.debug(
       'LlmService: structureRecipe called with ${text.length} chars, mode=$mode',
     );
@@ -127,6 +139,14 @@ class LlmService extends BaseService {
     if (imageBytes == null && imageUrl == null) {
       throw const LlmException(
           'Either imageBytes or imageUrl must be provided');
+    }
+
+    // GDPR Art. 5(1)(b): Require explicit consent for AI processing
+    if (!await _consentService.hasConsent('aiProcessing')) {
+      throw const LlmException(
+        'AI-bearbetning kräver ditt samtycke. '
+        'Aktivera "AI-bearbetning" under Integritetsinställningar.',
+      );
     }
 
     AppLogger.debug(

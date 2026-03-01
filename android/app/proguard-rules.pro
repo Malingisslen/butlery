@@ -2,29 +2,18 @@
 -keepattributes Signature
 -keepattributes *Annotation*
 
-# Firebase Firestore
--keep class com.google.firebase.firestore.** { *; }
--keep class com.google.firebase.** { *; }
--keep class com.google.android.gms.** { *; }
-
-# Firebase Auth
--keep class com.google.firebase.auth.** { *; }
--keep class com.google.android.gms.internal.** { *; }
-
-# Prevent obfuscation of Firebase classes
+# Firebase core classes that use reflection
 -keep class com.google.firebase.FirebaseApp { *; }
+-keep class com.google.firebase.auth.** { *; }
+-keep class com.google.firebase.firestore.** { *; }
 -keep class com.google.firebase.analytics.** { *; }
 
-# Keep Google Play Services classes
--keep class com.google.android.gms.common.** { *; }
+# Google Play Services tasks (used by Firebase callbacks)
 -keep class com.google.android.gms.tasks.** { *; }
-
-# Keep Android X classes
--keep class androidx.** { *; }
--keep interface androidx.** { *; }
+-keep class com.google.android.gms.common.** { *; }
 
 # Keep app-specific models if needed
--keep class com.example.butlery.models.** { *; }
+-keep class se.butlery.app.models.** { *; }
 
 # Suppress warnings
 -dontwarn com.google.firebase.**

@@ -7,6 +7,7 @@ import 'package:butlery/widgets/common/emoji_reaction_display.dart';
 import 'package:butlery/widgets/common/emoji_reaction_picker.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/social/report_content_dialog.dart';
 
 /// Widgets for displaying comment items in recipe detail view.
 class CommentItemWidgets {
@@ -323,6 +324,21 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       onPressed: widget.onDelete,
                       icon: Icon(
                         Icons.delete_outline,
+                        color: cs.onSurfaceVariant,
+                        size: AppDimensions.iconSizeM,
+                      ),
+                    ),
+                  // Report button — visible for comments by other users
+                  if (!widget.isOwnComment)
+                    IconButton(
+                      onPressed: () => ReportContentDialog.show(
+                        context: context,
+                        contentType: 'comment',
+                        contentId: '${widget.comment.id}',
+                        contentOwnerId: '${widget.comment.userId}',
+                      ),
+                      icon: Icon(
+                        Icons.flag_outlined,
                         color: cs.onSurfaceVariant,
                         size: AppDimensions.iconSizeM,
                       ),
