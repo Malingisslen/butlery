@@ -149,7 +149,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
               // Add option button
               if (_optionControllers.length < 4)
                 Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerStart,
                   child: TextButton.icon(
                     onPressed: _addOption,
                     icon: const Icon(Icons.add, size: 18),

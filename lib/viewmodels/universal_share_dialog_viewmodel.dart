@@ -365,11 +365,8 @@ class UniversalShareDialogViewModel extends ChangeNotifier
         );
 
         // Share to groups if any selected
-        // FIXME(Phase 6 - Social Features): Implement group invitations for copy mode
-        //   - Extend invitation system to support group sharing
-        //   - Add group member notification system
-        //   - Update UI to show group share status
-        //   - Priority: Medium (friend sharing works, groups are less common use case)
+        // Group copy-sharing is not yet implemented.
+        // Friend sharing works; group support deferred.
         if (groupIds != null && groupIds.isNotEmpty) {
           AppLogger.warning(
               '⚠️ COPY MODE: Group sharing not yet implemented for copy mode');

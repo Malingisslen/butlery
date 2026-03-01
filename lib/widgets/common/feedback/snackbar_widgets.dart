@@ -8,7 +8,7 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 /// SnackbarWidgets - Snackbar utility widgets
 /// Provides consistent snackbar implementations for different message types.
 class SnackbarWidgets {
-  /// Visa success snackbar
+  /// Show success snackbar
   static void showSuccessSnackbar(BuildContext context, String message) {
     final cs = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -34,7 +34,7 @@ class SnackbarWidgets {
     );
   }
 
-  /// Visa error snackbar
+  /// Show error snackbar
   static void showErrorSnackbar(BuildContext context, String message) {
     final cs = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -60,7 +60,7 @@ class SnackbarWidgets {
     );
   }
 
-  /// Visa warning snackbar
+  /// Show warning snackbar
   static void showWarningSnackbar(BuildContext context, String message) {
     final warningColor = context.butleryColors.warning;
     final cs = Theme.of(context).colorScheme;

@@ -1,506 +1,135 @@
 import 'dart:async';
 
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/shared_personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_shared_personal_tag_repository.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
-import 'package:butlery/repositories/interfaces/recipe_repository.dart';
-import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
-import 'package:butlery/services/user_service.dart' as user;
+import 'package:butlery/services/tagging/personal_tag_crud_service.dart';
+import 'package:butlery/services/tagging/personal_tag_rule_evaluator.dart';
+import 'package:butlery/services/tagging/personal_tag_sharing_service.dart';
+import 'package:butlery/services/tagging/personal_tag_types.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
 
-/// Service for managing user-defined personal tags, groups, and automation rules.
+// Re-export types so callers importing PersonalTagService get TagRulePair etc.
+export 'package:butlery/services/tagging/personal_tag_types.dart';
+
+/// Facade for managing user-defined personal tags, groups, and automation rules.
 ///
-/// Provides:
-/// - CRUD operations for PersonalTag, PersonalTagGroup, and embedded rules
-/// - Rule evaluation engine for automatic tag application
-/// - Real-time streams for UI updates
+/// Delegates to three focused sub-services:
+/// - [PersonalTagCrudService] -- tag/group/rule CRUD and cascade operations
+/// - [PersonalTagRuleEvaluator] -- rule evaluation engine
+/// - [PersonalTagSharingService] -- cross-user tag sharing
 ///
-/// Rules are now embedded within PersonalTag documents rather than stored
-/// in a separate collection.
+/// The public API is unchanged from the pre-refactor monolithic service.
+/// Callers interact only with PersonalTagService.
 class PersonalTagService extends BaseService {
+  final PersonalTagCrudService _crud;
+  final PersonalTagRuleEvaluator _evaluator;
+  final PersonalTagSharingService _sharing;
   final FirebasePersonalTagRepository _tagRepository;
   final FirebasePersonalTagGroupRepository _groupRepository;
-  final IngredientLookupService _lookupService;
-
-  static const String _tagsCacheKey = 'personal_tags';
-  static const String _groupsCacheKey = 'personal_groups';
 
   StreamSubscription? _tagStreamSub;
   StreamSubscription? _groupStreamSub;
   bool _streamsInitialized = false;
 
   PersonalTagService({
+    required PersonalTagCrudService crudService,
+    required PersonalTagRuleEvaluator ruleEvaluator,
+    required PersonalTagSharingService sharingService,
     required FirebasePersonalTagRepository tagRepository,
     required FirebasePersonalTagGroupRepository groupRepository,
-    required IngredientLookupService lookupService,
-  })  : _tagRepository = tagRepository,
-        _groupRepository = groupRepository,
-        _lookupService = lookupService;
+  })  : _crud = crudService,
+        _evaluator = ruleEvaluator,
+        _sharing = sharingService,
+        _tagRepository = tagRepository,
+        _groupRepository = groupRepository;
 
   @override
   String get serviceName => 'PersonalTagService';
 
-  /// Creates a new personal tag.
-  Future<PersonalTag?> createTag(PersonalTag tag) async {
-    return await executeServiceOperation(
-      () async {
-        final nameValidation = PersonalTag.validateName(tag.name);
-        if (nameValidation != null) {
-          throw ArgumentError(nameValidation);
-        }
+  // -- Tag CRUD (delegated) --
 
-        if (await _tagRepository.nameExists(tag.name)) {
-          throw ArgumentError(AppLocale.current.errorTagNameExists(tag.name));
-        }
+  Future<PersonalTag?> createTag(PersonalTag tag) => _crud.createTag(tag);
 
-        // Validate groupId exists if specified
-        if (tag.groupId != null) {
-          final group = await _groupRepository.read(tag.groupId!);
-          if (group == null) {
-            throw ArgumentError(AppLocale.current.errorGroupDoesNotExist);
-          }
-        }
+  Future<PersonalTag?> getTag(String tagId) => _crud.getTag(tagId);
 
-        await _tagRepository.create(tag);
-        clearCache(_tagsCacheKey);
-        AppLogger.info('Created personal tag: ${tag.name}');
-        return tag;
-      },
-      operationName: 'Create personal tag',
-      requiresAuth: true,
-    );
-  }
+  Future<List<PersonalTag>> getAllTags() =>
+      _crud.getAllTags(ensureStreams: _ensureStreams);
 
-  /// Gets a personal tag by ID.
-  Future<PersonalTag?> getTag(String tagId) async {
-    return await executeServiceOperation<PersonalTag?>(
-      () async => await _tagRepository.read(tagId),
-      operationName: 'Get personal tag',
-      requiresAuth: true,
-    );
-  }
+  Future<void> updateTag(PersonalTag tag) => _crud.updateTag(tag);
 
-  /// Gets all personal tags sorted by sortOrder.
-  Future<List<PersonalTag>> getAllTags() async {
-    _ensureStreams();
-    return await getCachedOrExecute(
-          _tagsCacheKey,
-          () => _tagRepository.getAllSorted(),
-          cacheDuration: const Duration(minutes: 5),
-        ) ??
-        [];
-  }
+  Future<void> deleteTag(String tagId) => _crud.deleteTag(tagId);
 
-  /// Updates a personal tag.
-  ///
-  /// If the tag name changed, cascades the rename to all recipes
-  /// that contain this tag ID in their personalTagIds.
-  Future<void> updateTag(PersonalTag tag) async {
-    await executeServiceOperation(
-      () async {
-        final nameValidation = PersonalTag.validateName(tag.name);
-        if (nameValidation != null) {
-          throw ArgumentError(nameValidation);
-        }
+  Stream<List<PersonalTag>> watchTags() => _crud.watchTags();
 
-        if (await _tagRepository.nameExists(tag.name, excludeId: tag.id)) {
-          throw ArgumentError(AppLocale.current.errorTagNameExists(tag.name));
-        }
+  Future<bool> tagNameExists(String name, {String? excludeId}) =>
+      _crud.tagNameExists(name, excludeId: excludeId);
 
-        // Validate groupId exists if specified
-        if (tag.groupId != null) {
-          final group = await _groupRepository.read(tag.groupId!);
-          if (group == null) {
-            throw ArgumentError(AppLocale.current.errorGroupDoesNotExist);
-          }
-        }
+  Future<int> getNextTagSortOrder() => _crud.getNextTagSortOrder();
 
-        // Detect name change and cascade to recipes BEFORE updating tag
-        final existingTag = await _tagRepository.read(tag.id);
-        final oldName = existingTag?.name;
-        final nameChanged = oldName != null && oldName != tag.name;
+  Future<void> reorderTags(List<String> tagIds) => _crud.reorderTags(tagIds);
 
-        if (nameChanged) {
-          final recipeRepo = _getRecipeRepository();
-          if (recipeRepo != null) {
-            final count = await recipeRepo.renamePersonalTagInRecipes(
-              tag.id,
-              tag.name,
-            );
-            if (count > 0) {
-              AppLogger.info(
-                'Cascaded tag rename "$oldName" -> "${tag.name}" to $count recipes',
-              );
-            }
-          }
-        }
+  Future<void> moveTagToGroup(String tagId, String? groupId) =>
+      _crud.moveTagToGroup(tagId, groupId);
 
-        final updated = tag.copyWith(updatedAt: DateTime.now());
-        await _tagRepository.update(updated);
+  Future<List<PersonalTag>> getTagsByGroup(String? groupId) =>
+      _crud.getTagsByGroup(groupId);
 
-        clearCache(_tagsCacheKey);
-        AppLogger.info('Updated personal tag: ${tag.name}');
-      },
-      operationName: 'Update personal tag',
-      requiresAuth: true,
-    );
-  }
+  Stream<List<PersonalTag>> watchTagsByGroup(String? groupId) =>
+      _crud.watchTagsByGroup(groupId);
 
-  /// Deletes a personal tag.
-  /// Embedded rules are automatically deleted with the tag document.
-  /// Cascades deletion to all recipes that contain this tag ID.
-  Future<void> deleteTag(String tagId) async {
-    await executeServiceOperation(
-      () async {
-        final recipeRepo = _getRecipeRepository();
-        if (recipeRepo != null) {
-          final count = await recipeRepo.removePersonalTagFromRecipes(tagId);
-          if (count > 0) {
-            AppLogger.info(
-              'Cascaded tag deletion "$tagId" from $count recipes',
-            );
-          }
-        }
+  Future<List<PersonalTag>> getTagsByIds(List<String> tagIds) =>
+      _crud.getTagsByIds(tagIds);
 
-        await _tagRepository.delete(tagId);
+  // -- Group CRUD (delegated) --
 
-        clearCache(_tagsCacheKey);
-        AppLogger.info('Deleted personal tag: $tagId');
-      },
-      operationName: 'Delete personal tag',
-      requiresAuth: true,
-    );
-  }
+  Future<PersonalTagGroup?> createGroup(PersonalTagGroup group) =>
+      _crud.createGroup(group);
 
-  /// Watches all personal tags with real-time updates.
-  Stream<List<PersonalTag>> watchTags() {
-    return _tagRepository.watchAllSorted();
-  }
+  Future<PersonalTagGroup?> getGroup(String groupId) =>
+      _crud.getGroup(groupId);
 
-  /// Checks if a tag name already exists.
-  Future<bool> tagNameExists(String name, {String? excludeId}) async {
-    return await executeServiceOperation(
-          () => _tagRepository.nameExists(name, excludeId: excludeId),
-          operationName: 'Check tag name exists',
-          requiresAuth: true,
-        ) ??
-        false;
-  }
+  Future<List<PersonalTagGroup>> getAllGroups() =>
+      _crud.getAllGroups(ensureStreams: _ensureStreams);
 
-  /// Gets the next available sort order value for tags.
-  Future<int> getNextTagSortOrder() async {
-    return await executeServiceOperation(
-          () => _tagRepository.getNextSortOrder(),
-          operationName: 'Get next tag sort order',
-          requiresAuth: true,
-        ) ??
-        0;
-  }
+  Future<void> updateGroup(PersonalTagGroup group) =>
+      _crud.updateGroup(group);
 
-  /// Reorders tags by updating their sortOrder values.
-  Future<void> reorderTags(List<String> tagIds) async {
-    await executeServiceOperation(
-      () async {
-        await _tagRepository.reorder(tagIds);
-        clearCache(_tagsCacheKey);
-        AppLogger.info('Reordered ${tagIds.length} personal tags');
-      },
-      operationName: 'Reorder personal tags',
-      requiresAuth: true,
-    );
-  }
+  Future<void> deleteGroup(String groupId) => _crud.deleteGroup(groupId);
 
-  /// Moves a tag to a different group.
-  Future<void> moveTagToGroup(String tagId, String? groupId) async {
-    await executeServiceOperation(
-      () async {
-        // Validate groupId exists if specified
-        if (groupId != null) {
-          final group = await _groupRepository.read(groupId);
-          if (group == null) {
-            throw ArgumentError(AppLocale.current.errorGroupDoesNotExist);
-          }
-        }
+  Stream<List<PersonalTagGroup>> watchGroups() => _crud.watchGroups();
 
-        await _tagRepository.moveToGroup(tagId, groupId);
-        clearCache(_tagsCacheKey);
-        AppLogger.info('Moved tag $tagId to group ${groupId ?? "ungrouped"}');
-      },
-      operationName: 'Move tag to group',
-      requiresAuth: true,
-    );
-  }
+  Future<int> getNextGroupSortOrder() => _crud.getNextGroupSortOrder();
 
-  /// Gets tags by group ID (or ungrouped if null).
-  Future<List<PersonalTag>> getTagsByGroup(String? groupId) async {
-    return await executeServiceOperation(
-          () => _tagRepository.getByGroupId(groupId),
-          operationName: 'Get tags by group',
-          requiresAuth: true,
-        ) ??
-        [];
-  }
+  Future<void> reorderGroups(List<String> groupIds) =>
+      _crud.reorderGroups(groupIds);
 
-  /// Watches tags by group ID (or ungrouped if null).
-  Stream<List<PersonalTag>> watchTagsByGroup(String? groupId) {
-    return _tagRepository.watchByGroupId(groupId);
-  }
+  // -- Rule CRUD (delegated) --
 
-  /// Creates a new personal tag group.
-  Future<PersonalTagGroup?> createGroup(PersonalTagGroup group) async {
-    return await executeServiceOperation(
-      () async {
-        final nameValidation = PersonalTagGroup.validateName(group.name);
-        if (nameValidation != null) {
-          throw ArgumentError(nameValidation);
-        }
+  Future<void> addRuleToTag(String tagId, PersonalTagRule rule) =>
+      _crud.addRuleToTag(tagId, rule);
 
-        if (await _groupRepository.nameExists(group.name)) {
-          throw ArgumentError(
-            AppLocale.current.errorGroupNameExistsWithName(group.name),
-          );
-        }
+  Future<void> updateRuleInTag(String tagId, PersonalTagRule rule) =>
+      _crud.updateRuleInTag(tagId, rule);
 
-        await _groupRepository.create(group);
-        clearCache(_groupsCacheKey);
-        AppLogger.info('Created personal tag group: ${group.name}');
-        return group;
-      },
-      operationName: 'Create personal tag group',
-      requiresAuth: true,
-    );
-  }
+  Future<void> removeRuleFromTag(String tagId, String ruleId) =>
+      _crud.removeRuleFromTag(tagId, ruleId);
 
-  /// Gets a personal tag group by ID.
-  Future<PersonalTagGroup?> getGroup(String groupId) async {
-    return await executeServiceOperation<PersonalTagGroup?>(
-      () async => await _groupRepository.read(groupId),
-      operationName: 'Get personal tag group',
-      requiresAuth: true,
-    );
-  }
-
-  /// Gets all personal tag groups sorted by sortOrder.
-  Future<List<PersonalTagGroup>> getAllGroups() async {
-    _ensureStreams();
-    return await getCachedOrExecute(
-          _groupsCacheKey,
-          () => _groupRepository.getAllSorted(),
-          cacheDuration: const Duration(minutes: 5),
-        ) ??
-        [];
-  }
-
-  /// Updates a personal tag group.
-  Future<void> updateGroup(PersonalTagGroup group) async {
-    await executeServiceOperation(
-      () async {
-        final nameValidation = PersonalTagGroup.validateName(group.name);
-        if (nameValidation != null) {
-          throw ArgumentError(nameValidation);
-        }
-
-        if (await _groupRepository.nameExists(group.name,
-            excludeId: group.id)) {
-          throw ArgumentError(
-            AppLocale.current.errorGroupNameExistsWithName(group.name),
-          );
-        }
-
-        final updated = group.copyWith(updatedAt: DateTime.now());
-        await _groupRepository.update(updated);
-        clearCache(_groupsCacheKey);
-        AppLogger.info('Updated personal tag group: ${group.name}');
-      },
-      operationName: 'Update personal tag group',
-      requiresAuth: true,
-    );
-  }
-
-  /// Deletes a personal tag group.
-  /// Tags in this group will have their groupId cleared (become ungrouped).
-  ///
-  /// #7: Uses atomic batch operation to ensure data consistency.
-  /// Both tag updates and group deletion happen in a single transaction.
-  Future<void> deleteGroup(String groupId) async {
-    await executeServiceOperation(
-      () async {
-        // #7: Create single batch for atomic operation
-        final batch = _tagRepository.newWriteBatch();
-
-        // Add tag updates to batch (clears groupId from all tags in group)
-        final clearedCount =
-            await _tagRepository.addClearGroupToBatch(batch, groupId);
-
-        // Add group deletion to same batch
-        _groupRepository.addDeleteToBatch(batch, groupId);
-
-        // Commit atomically - either all succeed or all fail
-        await batch.commit();
-
-        if (clearedCount > 0) {
-          AppLogger.info(
-              '#7: Atomically cleared group from $clearedCount tags');
-        }
-
-        clearCache(_groupsCacheKey);
-        clearCache(_tagsCacheKey); // Tags were modified
-        AppLogger.info('Deleted personal tag group: $groupId');
-      },
-      operationName: 'Delete personal tag group',
-      requiresAuth: true,
-    );
-  }
-
-  /// Watches all personal tag groups with real-time updates.
-  Stream<List<PersonalTagGroup>> watchGroups() {
-    return _groupRepository.watchAllSorted();
-  }
-
-  /// Gets the next available sort order value for groups.
-  Future<int> getNextGroupSortOrder() async {
-    return await executeServiceOperation(
-          () => _groupRepository.getNextSortOrder(),
-          operationName: 'Get next group sort order',
-          requiresAuth: true,
-        ) ??
-        0;
-  }
-
-  /// Reorders groups by updating their sortOrder values.
-  Future<void> reorderGroups(List<String> groupIds) async {
-    await executeServiceOperation(
-      () async {
-        await _groupRepository.reorder(groupIds);
-        clearCache(_groupsCacheKey);
-        AppLogger.info('Reordered ${groupIds.length} personal tag groups');
-      },
-      operationName: 'Reorder personal tag groups',
-      requiresAuth: true,
-    );
-  }
-
-  /// Adds a rule to a tag.
-  Future<void> addRuleToTag(String tagId, PersonalTagRule rule) async {
-    await executeServiceOperation(
-      () async {
-        final validation = PersonalTagRule.validate(rule, requireTagId: false);
-        if (validation != null) {
-          throw ArgumentError(validation);
-        }
-
-        final tag = await _tagRepository.read(tagId);
-        if (tag == null) {
-          throw ArgumentError(AppLocale.current.errorTagDoesNotExist);
-        }
-
-        final updatedRules = [...tag.rules, rule];
-        final updatedTag = tag.copyWith(rules: updatedRules);
-        await _tagRepository.update(updatedTag);
-        clearCache(_tagsCacheKey);
-        AppLogger.info('Added rule "${rule.name}" to tag "${tag.name}"');
-      },
-      operationName: 'Add rule to tag',
-      requiresAuth: true,
-    );
-  }
-
-  /// Updates a rule within a tag.
-  Future<void> updateRuleInTag(String tagId, PersonalTagRule rule) async {
-    await executeServiceOperation(
-      () async {
-        final validation = PersonalTagRule.validate(rule, requireTagId: false);
-        if (validation != null) {
-          throw ArgumentError(validation);
-        }
-
-        final tag = await _tagRepository.read(tagId);
-        if (tag == null) {
-          throw ArgumentError(AppLocale.current.errorTagDoesNotExist);
-        }
-
-        final ruleIndex = tag.rules.indexWhere((r) => r.id == rule.id);
-        if (ruleIndex == -1) {
-          throw ArgumentError(AppLocale.current.errorRuleDoesNotExist);
-        }
-
-        final updatedRules = [...tag.rules];
-        updatedRules[ruleIndex] = rule.copyWith(updatedAt: DateTime.now());
-        final updatedTag = tag.copyWith(rules: updatedRules);
-        await _tagRepository.update(updatedTag);
-        clearCache(_tagsCacheKey);
-        AppLogger.info('Updated rule "${rule.name}" in tag "${tag.name}"');
-      },
-      operationName: 'Update rule in tag',
-      requiresAuth: true,
-    );
-  }
-
-  /// Removes a rule from a tag.
-  Future<void> removeRuleFromTag(String tagId, String ruleId) async {
-    await executeServiceOperation(
-      () async {
-        final tag = await _tagRepository.read(tagId);
-        if (tag == null) {
-          throw ArgumentError(AppLocale.current.errorTagDoesNotExist);
-        }
-
-        final updatedRules = tag.rules.where((r) => r.id != ruleId).toList();
-        final updatedTag = tag.copyWith(rules: updatedRules);
-        await _tagRepository.update(updatedTag);
-        clearCache(_tagsCacheKey);
-        AppLogger.info('Removed rule $ruleId from tag "${tag.name}"');
-      },
-      operationName: 'Remove rule from tag',
-      requiresAuth: true,
-    );
-  }
-
-  /// Enables or disables a rule within a tag.
   Future<void> setRuleEnabled(
     String tagId,
     String ruleId, {
     required bool enabled,
-  }) async {
-    await executeServiceOperation(
-      () async {
-        final tag = await _tagRepository.read(tagId);
-        if (tag == null) {
-          throw ArgumentError(AppLocale.current.errorTagDoesNotExist);
-        }
+  }) =>
+      _crud.setRuleEnabled(tagId, ruleId, enabled: enabled);
 
-        final ruleIndex = tag.rules.indexWhere((r) => r.id == ruleId);
-        if (ruleIndex == -1) {
-          throw ArgumentError(AppLocale.current.errorRuleDoesNotExist);
-        }
+  // -- Rule queries --
 
-        final updatedRules = [...tag.rules];
-        updatedRules[ruleIndex] = updatedRules[ruleIndex].copyWith(
-          isEnabled: enabled,
-          updatedAt: DateTime.now(),
-        );
-        final updatedTag = tag.copyWith(rules: updatedRules);
-        await _tagRepository.update(updatedTag);
-        clearCache(_tagsCacheKey);
-        AppLogger.info('Set rule $ruleId enabled: $enabled');
-      },
-      operationName: 'Set rule enabled',
-      requiresAuth: true,
-    );
-  }
-
-  /// Gets all enabled rules from all tags.
   Future<List<TagRulePair>> getEnabledRules() async {
     final tags = await getAllTags();
     final rules = <TagRulePair>[];
@@ -516,8 +145,6 @@ class PersonalTagService extends BaseService {
     return rules;
   }
 
-  /// Watches all enabled rules with real-time updates.
-  /// Returns pairs of (tag, rule) for context.
   Stream<List<TagRulePair>> watchEnabledRules() {
     return watchTags().map((tags) {
       final rules = <TagRulePair>[];
@@ -532,207 +159,84 @@ class PersonalTagService extends BaseService {
     });
   }
 
-  /// Evaluates all enabled rules against a recipe.
-  ///
-  /// Returns the set of tag IDs that should be applied to the recipe
-  /// based on matching rules. Respects exclusive group constraints -
-  /// only one tag from each exclusive group will be included.
+  // -- Rule evaluation (delegated to evaluator) --
+
   Future<Set<String>> evaluateRulesForRecipe(Recipe recipe) async {
-    final result = await executeServiceOperation(
-      () async {
-        final tagRulePairs = await getEnabledRules();
-        if (tagRulePairs.isEmpty) return <String>{};
+    final tagRulePairs = await getEnabledRules();
+    if (tagRulePairs.isEmpty) return {};
 
-        // CRIT-5: Pass userId to enable user-defined ingredient matching
-        final userId = _getCurrentUserId();
-        final matchingTags =
-            await _evaluateRules(recipe, tagRulePairs, userId: userId);
-
-        // #6: Enforce exclusive group constraints
-        return await _enforceExclusiveGroups(matchingTags);
-      },
-      operationName: 'Evaluate rules for recipe',
-      requiresAuth: true,
-    );
-    return result ?? {};
+    final allTags = await getAllTags();
+    final allGroups = await getAllGroups();
+    return _evaluator.evaluateRulesForRecipe(
+        recipe, tagRulePairs, allTags, allGroups);
   }
 
-  /// Evaluates rules against multiple recipes.
-  ///
-  /// Returns a map of recipe ID to matching tag IDs.
-  /// Respects exclusive group constraints for each recipe.
   Future<Map<String, Set<String>>> evaluateRulesForRecipes(
     List<Recipe> recipes,
   ) async {
-    final result = await executeServiceOperation(
-      () async {
-        final tagRulePairs = await getEnabledRules();
-        if (tagRulePairs.isEmpty || recipes.isEmpty) {
-          return <String, Set<String>>{};
-        }
+    final tagRulePairs = await getEnabledRules();
+    if (tagRulePairs.isEmpty || recipes.isEmpty) return {};
 
-        // CRIT-5: Pass userId to enable user-defined ingredient matching
-        final userId = _getCurrentUserId();
-        final results = <String, Set<String>>{};
-
-        for (final recipe in recipes) {
-          final matchingTags = await _evaluateRules(
-            recipe,
-            tagRulePairs,
-            userId: userId,
-          );
-          if (matchingTags.isNotEmpty) {
-            // #6: Enforce exclusive group constraints per recipe
-            final filtered = await _enforceExclusiveGroups(matchingTags);
-            if (filtered.isNotEmpty) {
-              results[recipe.id] = filtered;
-            }
-          }
-        }
-
-        return results;
-      },
-      operationName: 'Evaluate rules for recipes',
-      requiresAuth: true,
-    );
-    return result ?? {};
+    final allTags = await getAllTags();
+    final allGroups = await getAllGroups();
+    return _evaluator.evaluateRulesForRecipes(
+        recipes, tagRulePairs, allTags, allGroups);
   }
 
-  /// Evaluates rules and returns a map of tag ID to matching rule IDs.
-  ///
-  /// Unlike [evaluateRulesForRecipe], this tracks which specific rules
-  /// caused each tag to match — used for source tracking in RecipePersonalTag.
   Future<Map<String, List<String>>> evaluateRulesWithSources(
     Recipe recipe,
   ) async {
-    final result = await executeServiceOperation(
-      () async {
-        final tagRulePairs = await getEnabledRules();
-        if (tagRulePairs.isEmpty) return <String, List<String>>{};
+    final tagRulePairs = await getEnabledRules();
+    if (tagRulePairs.isEmpty) return {};
 
-        final userId = _getCurrentUserId();
-        final sourcesMap = await _evaluateRulesWithSources(
-          recipe,
-          tagRulePairs,
-          userId: userId,
-        );
-
-        // Enforce exclusive groups on the tag IDs
-        final filteredIds =
-            await _enforceExclusiveGroups(sourcesMap.keys.toSet());
-
-        // Remove tags that were filtered out by exclusive group enforcement
-        sourcesMap.removeWhere((tagId, _) => !filteredIds.contains(tagId));
-
-        return sourcesMap;
-      },
-      operationName: 'Evaluate rules with sources',
-      requiresAuth: true,
-    );
-    return result ?? {};
+    final allTags = await getAllTags();
+    final allGroups = await getAllGroups();
+    return _evaluator.evaluateRulesWithSources(
+        recipe, tagRulePairs, allTags, allGroups);
   }
 
-  /// Evaluates rules with source tracking for multiple recipes.
-  ///
-  /// Returns a map of recipeId → (tagId → list of ruleIds).
   Future<Map<String, Map<String, List<String>>>>
       evaluateRulesWithSourcesForRecipes(List<Recipe> recipes) async {
-    final result = await executeServiceOperation(
-      () async {
-        final tagRulePairs = await getEnabledRules();
-        if (tagRulePairs.isEmpty || recipes.isEmpty) {
-          return <String, Map<String, List<String>>>{};
-        }
+    final tagRulePairs = await getEnabledRules();
+    if (tagRulePairs.isEmpty || recipes.isEmpty) return {};
 
-        final userId = _getCurrentUserId();
-        final results = <String, Map<String, List<String>>>{};
-
-        for (final recipe in recipes) {
-          final sourcesMap = await _evaluateRulesWithSources(
-            recipe,
-            tagRulePairs,
-            userId: userId,
-          );
-          if (sourcesMap.isNotEmpty) {
-            final filteredIds =
-                await _enforceExclusiveGroups(sourcesMap.keys.toSet());
-            sourcesMap.removeWhere((tagId, _) => !filteredIds.contains(tagId));
-            if (sourcesMap.isNotEmpty) {
-              results[recipe.id] = sourcesMap;
-            }
-          }
-        }
-
-        return results;
-      },
-      operationName: 'Evaluate rules with sources for recipes',
-      requiresAuth: true,
-    );
-    return result ?? {};
+    final allTags = await getAllTags();
+    final allGroups = await getAllGroups();
+    return _evaluator.evaluateRulesWithSourcesForRecipes(
+        recipes, tagRulePairs, allTags, allGroups);
   }
 
-  /// Internal method to evaluate rules against a recipe.
-  ///
-  /// CRIT-5: Accepts userId to enable user-defined ingredient matching.
-  /// Without userId, rules with property conditions won't match user-created
-  /// ingredients that have custom properties.
-  Future<Set<String>> _evaluateRules(
-    Recipe recipe,
-    List<TagRulePair> tagRulePairs, {
-    String? userId,
-  }) async {
-    final sourcesMap = await _evaluateRulesWithSources(
-      recipe,
-      tagRulePairs,
-      userId: userId,
-    );
-    return sourcesMap.keys.toSet();
-  }
-
-  /// Internal method to evaluate rules and track which rules matched each tag.
-  ///
-  /// Returns a map of tagId → list of ruleIds that matched.
-  Future<Map<String, List<String>>> _evaluateRulesWithSources(
-    Recipe recipe,
-    List<TagRulePair> tagRulePairs, {
-    String? userId,
-  }) async {
-    final result = <String, List<String>>{};
-
-    // Check if any rule requires ingredient lookup
-    final requiresLookup = tagRulePairs.any((p) => p.rule.requiresLookup);
-
-    IngredientLookupResult? lookup;
-    if (requiresLookup) {
-      // CRIT-5: Pass userId to find user-defined ingredients with custom properties
-      lookup = await _lookupService.lookupFromRaw(
-        recipe.ingredients,
-        userId: userId,
-      );
-    }
-
-    for (final pair in tagRulePairs) {
-      if (pair.rule.evaluate(recipe, lookup, currentUserId: userId)) {
-        result.putIfAbsent(pair.tag.id, () => []).add(pair.rule.id);
-      }
-    }
-
-    return result;
-  }
-
-  /// Suggests tags for a recipe based on rule evaluation.
-  ///
-  /// Returns a list of PersonalTag objects that would be applied.
   Future<List<PersonalTag>> suggestTagsForRecipe(Recipe recipe) async {
-    final matchingTagIds = await evaluateRulesForRecipe(recipe);
-    if (matchingTagIds.isEmpty) return [];
+    final tagRulePairs = await getEnabledRules();
+    if (tagRulePairs.isEmpty) return [];
 
-    final tags = await getAllTags();
-    return tags.where((tag) => matchingTagIds.contains(tag.id)).toList();
+    final allTags = await getAllTags();
+    final allGroups = await getAllGroups();
+    return _evaluator.suggestTagsForRecipe(
+        recipe, tagRulePairs, allTags, allGroups);
   }
+
+  // -- Sharing (delegated) --
+
+  Future<String?> shareTag(
+    String tagId, {
+    List<String> recipientUserIds = const [],
+  }) =>
+      _sharing.shareTag(tagId, recipientUserIds: recipientUserIds);
+
+  Future<List<SharedPersonalTag>> getPendingSharedTags(String userId) =>
+      _sharing.getPendingSharedTags(userId);
+
+  Future<PersonalTag?> importSharedTag(String shareId) =>
+      _sharing.importSharedTag(
+        shareId,
+        onCacheInvalidated: () =>
+            _crud.clearCache(PersonalTagCrudService.tagsCacheKey),
+      );
+
+  // -- Orchestration methods (remain in facade) --
 
   /// Watches tags and groups together for hierarchical UI display.
-  /// Returns groups with their tags, plus ungrouped tags.
   Stream<PersonalTagsWithGroups> watchTagsWithGroups() {
     return Rx.combineLatest2(
       watchTags(),
@@ -740,21 +244,17 @@ class PersonalTagService extends BaseService {
       (List<PersonalTag> tags, List<PersonalTagGroup> groups) {
         final tagsByGroup = <String?, List<PersonalTag>>{};
 
-        // Initialize with null key for ungrouped
         tagsByGroup[null] = [];
 
-        // Initialize groups
         for (final group in groups) {
           tagsByGroup[group.id] = [];
         }
 
-        // Assign tags to groups
         for (final tag in tags) {
           final key = tag.groupId;
           if (tagsByGroup.containsKey(key)) {
             tagsByGroup[key]!.add(tag);
           } else {
-            // Group was deleted but tag still references it
             tagsByGroup[null]!.add(tag);
           }
         }
@@ -769,9 +269,6 @@ class PersonalTagService extends BaseService {
   }
 
   /// Gets the current tag version as epoch milliseconds.
-  ///
-  /// Derived from the latest `updatedAt` across all tags.
-  /// Returns 0 if no tags exist.
   Future<int> getCurrentTagVersion() async {
     final tags = await getAllTags();
     if (tags.isEmpty) return 0;
@@ -786,10 +283,6 @@ class PersonalTagService extends BaseService {
   }
 
   /// Checks if a recipe has stale personal tags.
-  ///
-  /// A recipe is stale if any tag has been updated since the recipe's
-  /// personalTagVersion was last set. Recipes without a version are
-  /// always considered stale.
   Future<bool> isRecipeStale(Recipe recipe) async {
     final recipeVersion = recipe.core.personalTagVersion;
     if (recipeVersion == null) return true;
@@ -799,9 +292,6 @@ class PersonalTagService extends BaseService {
   }
 
   /// Gets usage count for each tag based on the provided recipes.
-  ///
-  /// Returns a map of tag ID to the number of recipes that have that tag.
-  /// Tags with zero usage are not included in the result.
   Map<String, int> getTagUsageCounts(List<Recipe> recipes) {
     final counts = <String, int>{};
 
@@ -816,8 +306,6 @@ class PersonalTagService extends BaseService {
   }
 
   /// Gets tags sorted by usage count (most used first).
-  ///
-  /// If [limit] is provided, returns only the top N tags.
   Future<List<PersonalTag>> getTagsByUsage(
     List<Recipe> recipes, {
     int? limit,
@@ -827,7 +315,6 @@ class PersonalTagService extends BaseService {
 
     final tags = await getAllTags();
 
-    // Sort tags by usage count (descending)
     final sortedTags = tags.toList()
       ..sort((a, b) {
         final countA = counts[a.id] ?? 0;
@@ -842,155 +329,21 @@ class PersonalTagService extends BaseService {
     return sortedTags;
   }
 
-  /// Gets multiple tags by their IDs.
-  ///
-  /// Useful for resolving recipe.personalTagIds to full PersonalTag objects.
-  Future<List<PersonalTag>> getTagsByIds(List<String> tagIds) async {
-    if (tagIds.isEmpty) return [];
-
-    return await executeServiceOperation(
-          () => _tagRepository.getByIds(tagIds),
-          operationName: 'Get tags by IDs',
-          requiresAuth: true,
-        ) ??
-        [];
-  }
-
-  /// Shares a personal tag by creating a snapshot in the shared collection.
-  ///
-  /// Returns the share ID that can be sent to other users for import.
-  Future<String?> shareTag(
-    String tagId, {
-    List<String> recipientUserIds = const [],
-  }) async {
-    return await executeServiceOperation(
-      () async {
-        final tag = await _tagRepository.read(tagId);
-        if (tag == null) {
-          throw ArgumentError(AppLocale.current.errorTagDoesNotExist);
-        }
-
-        final userId = _getCurrentUserId();
-        if (userId == null) {
-          throw StateError(AppLocale.current.errorNoUserLoggedIn);
-        }
-
-        final userService = ServiceLocator.get<user.UserService>();
-        final displayName =
-            userService.currentUserProfile?.displayName ?? 'Unknown';
-
-        // Snapshot matching recipe IDs at share time
-        final recipeRepo = _getRecipeRepository();
-        final matchingRecipeIds = <String>[];
-        if (recipeRepo != null) {
-          final recipes = await recipeRepo.fetchAllUserRecipes(userId);
-          for (final recipe in recipes) {
-            final tagIds = recipe.personalTagIds ?? [];
-            if (tagIds.contains(tagId)) {
-              matchingRecipeIds.add(recipe.id);
-            }
-          }
-        }
-
-        // Serialize rules as embedded maps
-        final serializedRules =
-            tag.rules.map((r) => r.toEmbeddedMap()).toList();
-
-        final sharedTag = SharedPersonalTag.create(
-          tagName: tag.name,
-          sharedByUserId: userId,
-          sharedByDisplayName: displayName,
-          matchingRecipeIds: matchingRecipeIds,
-          tagRules: serializedRules,
-          recipientUserIds: recipientUserIds,
-        );
-
-        final repo = ServiceLocator.get<FirebaseSharedPersonalTagRepository>();
-        await repo.create(sharedTag);
-
-        AppLogger.info(
-          'Shared personal tag "${tag.name}" with ${matchingRecipeIds.length} recipes',
-        );
-
-        return sharedTag.id;
-      },
-      operationName: 'Share personal tag',
-      requiresAuth: true,
-    );
-  }
-
-  /// Gets pending shared tags for a user.
-  Future<List<SharedPersonalTag>> getPendingSharedTags(String userId) async {
-    final repo = ServiceLocator.get<FirebaseSharedPersonalTagRepository>();
-    return await repo.getPendingForUser(userId);
-  }
-
-  /// Imports a shared tag by creating a local copy for the current user.
-  Future<PersonalTag?> importSharedTag(String shareId) async {
-    return await executeServiceOperation(
-      () async {
-        final repo = ServiceLocator.get<FirebaseSharedPersonalTagRepository>();
-        final sharedTag = await repo.read(shareId);
-        if (sharedTag == null) {
-          throw ArgumentError(AppLocale.current.errorSharedTagNotFound);
-        }
-
-        // Check for duplicate name and make unique if needed
-        var tagName = sharedTag.tagName;
-        if (await _tagRepository.nameExists(tagName)) {
-          tagName = '$tagName (importerad)';
-          // If that also exists, add a number
-          var counter = 2;
-          while (await _tagRepository.nameExists(tagName)) {
-            tagName = '${sharedTag.tagName} (importerad $counter)';
-            counter++;
-          }
-        }
-
-        // Reconstruct rules from snapshot
-        final rules = sharedTag.tagRules
-            .map((data) => PersonalTagRule.fromEmbeddedMap(data))
-            .toList();
-
-        final nextOrder = await _tagRepository.getNextSortOrder();
-        final localTag = PersonalTag.create(
-          name: tagName,
-          sortOrder: nextOrder,
-          rules: rules,
-        );
-
-        await _tagRepository.create(localTag);
-        clearCache(_tagsCacheKey);
-
-        AppLogger.info(
-          'Imported shared tag "${sharedTag.tagName}" as "$tagName" from ${sharedTag.sharedByDisplayName}',
-        );
-
-        return localTag;
-      },
-      operationName: 'Import shared tag',
-      requiresAuth: true,
-    );
-  }
+  // -- Lifecycle --
 
   @override
   Future<void> onInitialize() async {
-    // Stream setup deferred until user is authenticated.
-    // watchAllSorted() requires a user-scoped collection path which
-    // is unavailable at DI initialization time (before login).
     AppLogger.info('PersonalTagService ready (streams deferred until auth)');
   }
 
-  /// Sets up cache-invalidation streams for the authenticated user.
-  /// Called lazily on first service operation that needs live data.
   void _ensureStreams() {
     if (_streamsInitialized) return;
     try {
       _tagStreamSub = _tagRepository.watchAllSorted().listen((_) {
-        clearCache(_tagsCacheKey);
+        _crud.clearCache(PersonalTagCrudService.tagsCacheKey);
       });
       _groupStreamSub = _groupRepository.watchAllSorted().listen((_) {
-        clearCache(_groupsCacheKey);
+        _crud.clearCache(PersonalTagCrudService.groupsCacheKey);
       });
       _streamsInitialized = true;
     } catch (e) {
@@ -1003,121 +356,6 @@ class PersonalTagService extends BaseService {
     await _tagStreamSub?.cancel();
     await _groupStreamSub?.cancel();
     _streamsInitialized = false;
-    clearAllCache();
+    _crud.clearAllCache();
   }
-
-  /// CRIT-5: Gets current user ID for ingredient lookup context.
-  /// Used to find user-defined ingredients with custom properties during rule evaluation.
-  String? _getCurrentUserId() {
-    try {
-      final authRepository = ServiceLocator.get<auth.AuthRepository>();
-      return authRepository.currentUserId;
-    } catch (e) {
-      AppLogger.error('Failed to get current user ID: $e');
-      return null;
-    }
-  }
-
-  /// Gets recipe repository for tag cascade operations (rename/delete).
-  RecipeRepository? _getRecipeRepository() {
-    try {
-      return ServiceLocator.get<RecipeRepository>();
-    } catch (e) {
-      AppLogger.error('Failed to get recipe repository for tag cascade: $e');
-      return null;
-    }
-  }
-
-  /// #6: Filters matching tags to respect exclusive group constraints.
-  ///
-  /// When multiple tags from an exclusive group would be applied, only the
-  /// first one (by sort order) is kept. Uses cached data from getAllTags()
-  /// and getAllGroups() to avoid redundant Firestore queries.
-  ///
-  /// Non-exclusive groups and ungrouped tags are always included.
-  Future<Set<String>> _enforceExclusiveGroups(
-      Set<String> matchingTagIds) async {
-    if (matchingTagIds.isEmpty) return matchingTagIds;
-
-    // Get cached data (these use getCachedOrExecute with 5 min cache)
-    final tags = await getAllTags();
-    final groups = await getAllGroups();
-
-    if (tags.isEmpty) return matchingTagIds;
-
-    // Find exclusive group IDs
-    final exclusiveGroupIds =
-        groups.where((g) => g.isExclusive).map((g) => g.id).toSet();
-
-    if (exclusiveGroupIds.isEmpty) return matchingTagIds;
-
-    // Build tag lookup map
-    final tagById = {for (final tag in tags) tag.id: tag};
-
-    final result = <String>{};
-    final seenExclusiveGroups = <String>{};
-    int skippedCount = 0;
-
-    for (final tagId in matchingTagIds) {
-      final tag = tagById[tagId];
-      if (tag == null) {
-        // Tag not found in cache - include it to be safe
-        result.add(tagId);
-        continue;
-      }
-
-      if (tag.groupId != null && exclusiveGroupIds.contains(tag.groupId)) {
-        // Tag is in an exclusive group
-        if (!seenExclusiveGroups.contains(tag.groupId)) {
-          result.add(tagId);
-          seenExclusiveGroups.add(tag.groupId!);
-        } else {
-          // Skip - already have a tag from this exclusive group
-          skippedCount++;
-        }
-      } else {
-        // Non-exclusive or ungrouped - always include
-        result.add(tagId);
-      }
-    }
-
-    if (skippedCount > 0) {
-      AppLogger.debug(
-        '#6: Exclusive group enforcement skipped $skippedCount tag(s)',
-      );
-    }
-
-    return result;
-  }
-}
-
-/// Helper for pairing a tag with one of its rules.
-/// Used when evaluating rules across all tags.
-class TagRulePair {
-  final PersonalTag tag;
-  final PersonalTagRule rule;
-
-  TagRulePair(this.tag, this.rule);
-}
-
-/// Result of watching tags with groups for hierarchical display.
-class PersonalTagsWithGroups {
-  final List<PersonalTagGroup> groups;
-  final Map<String?, List<PersonalTag>> tagsByGroup;
-  final List<PersonalTag> ungroupedTags;
-
-  PersonalTagsWithGroups({
-    required this.groups,
-    required this.tagsByGroup,
-    required this.ungroupedTags,
-  });
-
-  /// Gets tags for a specific group (or ungrouped if null).
-  List<PersonalTag> getTagsForGroup(String? groupId) {
-    return tagsByGroup[groupId] ?? [];
-  }
-
-  /// Gets total tag count.
-  int get totalTagCount =>
-      tagsByGroup.values.fold(0, (sum, tags) => sum + tags.length);
 }

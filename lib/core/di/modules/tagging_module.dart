@@ -26,6 +26,9 @@ import 'package:butlery/repositories/firebase/firebase_shared_personal_tag_repos
 
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/tagging/tagging_service.dart';
+import 'package:butlery/services/tagging/personal_tag_crud_service.dart';
+import 'package:butlery/services/tagging/personal_tag_rule_evaluator.dart';
+import 'package:butlery/services/tagging/personal_tag_sharing_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
 import 'package:butlery/services/tagging/tag_editing_service.dart';
@@ -64,6 +67,9 @@ class TaggingModule implements DIModule {
         FirebasePersonalTagRepository,
         FirebasePersonalTagGroupRepository,
         FirebaseSharedPersonalTagRepository,
+        PersonalTagCrudService,
+        PersonalTagRuleEvaluator,
+        PersonalTagSharingService,
         PersonalTagService,
         TagEditingService,
         TagResolutionService,
@@ -137,12 +143,34 @@ class TaggingModule implements DIModule {
         () => TagEditingService(),
       );
 
-      // Personal tag service for tag management and rule evaluation
-      container.registerLazySingleton<PersonalTagService>(
-        () => PersonalTagService(
+      // Personal tag sub-services (registered before facade)
+      container.registerLazySingleton<PersonalTagCrudService>(
+        () => PersonalTagCrudService(
           tagRepository: container<FirebasePersonalTagRepository>(),
           groupRepository: container<FirebasePersonalTagGroupRepository>(),
+        ),
+      );
+
+      container.registerLazySingleton<PersonalTagRuleEvaluator>(
+        () => PersonalTagRuleEvaluator(
           lookupService: container<IngredientLookupService>(),
+        ),
+      );
+
+      container.registerLazySingleton<PersonalTagSharingService>(
+        () => PersonalTagSharingService(
+          tagRepository: container<FirebasePersonalTagRepository>(),
+        ),
+      );
+
+      // Personal tag facade - delegates to sub-services
+      container.registerLazySingleton<PersonalTagService>(
+        () => PersonalTagService(
+          crudService: container<PersonalTagCrudService>(),
+          ruleEvaluator: container<PersonalTagRuleEvaluator>(),
+          sharingService: container<PersonalTagSharingService>(),
+          tagRepository: container<FirebasePersonalTagRepository>(),
+          groupRepository: container<FirebasePersonalTagGroupRepository>(),
         ),
       );
       // Tag resolution service - unified tag data for recipes
@@ -204,6 +232,9 @@ class TaggingModule implements DIModule {
             container<FirebasePersonalTagGroupRepository>(),
         'FirebaseSharedPersonalTagRepository':
             container<FirebaseSharedPersonalTagRepository>(),
+        'PersonalTagCrudService': container<PersonalTagCrudService>(),
+        'PersonalTagRuleEvaluator': container<PersonalTagRuleEvaluator>(),
+        'PersonalTagSharingService': container<PersonalTagSharingService>(),
         'PersonalTagService': container<PersonalTagService>(),
         'TagEditingService': container<TagEditingService>(),
         'TagResolutionService': container<TagResolutionService>(),

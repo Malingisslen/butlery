@@ -6,7 +6,6 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:go_router/go_router.dart';
 import 'package:receive_intent/receive_intent.dart' as receive_intent;
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
@@ -136,10 +135,10 @@ class DeepLinkHandler {
       if (context.mounted) {
         if (type == 'friend') {
           // Navigate to friend requests view
-          GoRouter.of(context).push(Routes.friendRequests);
+          Navigator.of(context).pushNamed(Routes.friendRequests);
         } else {
           // Default to friends list for unknown invitation types
-          GoRouter.of(context).push(Routes.friends);
+          Navigator.of(context).pushNamed(Routes.friends);
         }
       }
     }
@@ -155,7 +154,10 @@ class DeepLinkHandler {
     if (recipeId != null) {
       if (context.mounted) {
         // Navigate to recipe detail view with recipe ID as query parameter
-        GoRouter.of(context).push('${Routes.receptDetalj}?recipeId=$recipeId');
+        Navigator.of(context).pushNamed(
+          Routes.receptDetalj,
+          arguments: recipeId,
+        );
       }
     }
   }
@@ -173,7 +175,7 @@ class DeepLinkHandler {
 
       if (context.mounted) {
         // Navigate to shared with me view to see the menu
-        GoRouter.of(context).push(Routes.shared);
+        Navigator.of(context).pushNamed(Routes.shared);
       }
     }
   }
@@ -191,7 +193,7 @@ class DeepLinkHandler {
 
       if (context.mounted) {
         // Navigate to collaborative shopping view
-        GoRouter.of(context).push(Routes.collaborativeShopping);
+        Navigator.of(context).pushNamed(Routes.collaborativeShopping);
       }
     }
   }

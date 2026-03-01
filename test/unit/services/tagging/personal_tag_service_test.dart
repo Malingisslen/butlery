@@ -11,6 +11,9 @@ import 'package:butlery/repositories/firebase/firebase_personal_tag_group_reposi
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
+import 'package:butlery/services/tagging/personal_tag_crud_service.dart';
+import 'package:butlery/services/tagging/personal_tag_rule_evaluator.dart';
+import 'package:butlery/services/tagging/personal_tag_sharing_service.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -77,10 +80,25 @@ void main() {
     // #6: Default group repository stub for exclusive group enforcement
     when(() => mockGroupRepository.getAllSorted()).thenAnswer((_) async => []);
 
-    service = PersonalTagService(
+    final crudService = PersonalTagCrudService(
       tagRepository: mockTagRepository,
       groupRepository: mockGroupRepository,
+    );
+
+    final ruleEvaluator = PersonalTagRuleEvaluator(
       lookupService: mockLookupService,
+    );
+
+    final sharingService = PersonalTagSharingService(
+      tagRepository: mockTagRepository,
+    );
+
+    service = PersonalTagService(
+      crudService: crudService,
+      ruleEvaluator: ruleEvaluator,
+      sharingService: sharingService,
+      tagRepository: mockTagRepository,
+      groupRepository: mockGroupRepository,
     );
   });
 

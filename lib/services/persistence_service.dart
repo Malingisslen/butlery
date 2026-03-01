@@ -106,11 +106,11 @@ class PersistenceService extends BaseService {
     try {
       final prefs = await _prefs;
 
-      // Konvertera varje recept till en Map (dictionary/objekt)
+      // Convert each recipe to a Map
       final List<Map<String, dynamic>> recipesJson =
           recipes.map((recipe) => recipe.toJson()).toList();
 
-      // Konvertera hela listan till JSON-text
+      // Convert the full list to JSON text
       final String recipesString = jsonEncode(recipesJson);
 
       // Save to phone with our key
@@ -133,7 +133,7 @@ class PersistenceService extends BaseService {
   }
 
   /// Loads all recipes from local storage
-  /// Konverterar JSON-text tillbaka till Recipe-objekt
+  /// Converts JSON text back to Recipe objects
   Future<List<Recipe>> loadRecipes() async {
     try {
       final prefs = await _prefs;
@@ -141,7 +141,7 @@ class PersistenceService extends BaseService {
       // Try to retrieve the saved JSON text
       final String? recipesString = prefs.getString(_recipesKey);
 
-      // Om ingen data finns, returnera tom lista
+      // If no data exists, return empty list
       if (recipesString == null || recipesString.isEmpty) {
         AppLogger.info(
           'Inga sparade recept hittades - startar med tom lista',
@@ -150,10 +150,10 @@ class PersistenceService extends BaseService {
         return [];
       }
 
-      // Konvertera JSON-text tillbaka till lista av Map-objekt
+      // Convert JSON text back to list of Map objects
       final List<dynamic> recipesJson = jsonDecode(recipesString);
 
-      // Konvertera varje Map tillbaka till Recipe-objekt
+      // Convert each Map back to a Recipe object
       final List<Recipe> recipes = recipesJson
           .map((json) => Recipe.fromJson(json as Map<String, dynamic>))
           .toList();
@@ -182,8 +182,7 @@ class PersistenceService extends BaseService {
     }
   }
 
-  /// 💾 Sparar aktuell veckomeny
-  /// Sparar en lista med recept-ID:n som representerar veckans meny
+  /// Saves recipe IDs representing the current weekly menu
   Future<bool> saveCurrentMenu(List<String> recipeIds) async {
     try {
       final prefs = await _prefs;
@@ -195,8 +194,7 @@ class PersistenceService extends BaseService {
     }
   }
 
-  /// 📖 Laddar aktuell veckomeny
-  /// Returnerar lista med recept-ID:n
+  /// Loads current weekly menu, returns list of recipe IDs
   Future<List<String>> loadCurrentMenu() async {
     try {
       final prefs = await _prefs;
@@ -255,7 +253,7 @@ class PersistenceService extends BaseService {
         prefs.remove(_lastUpdatedKey),
       ]);
 
-      // Returnera true om alla operationer lyckades
+      // Return true if all operations succeeded
       return results.every((success) => success);
     } catch (e) {
       AppLogger.error('Fel vid rensning av all data', e, 'Persistence');
