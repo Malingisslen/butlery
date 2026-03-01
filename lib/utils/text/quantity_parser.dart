@@ -67,6 +67,21 @@ class QuantityParser {
     '⅗': 0.6,
   };
 
+  /// Returns true if the string looks like a fraction (Unicode or ASCII).
+  static bool isFraction(String text) {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return false;
+
+    // Check Unicode fractions
+    for (final key in _unicodeFractions.keys) {
+      if (trimmed.contains(key)) return true;
+    }
+
+    // Check ASCII fractions like "1/2", "3/4", "1 1/2"
+    return RegExp(r'^\d+\s*\/\s*\d+$').hasMatch(trimmed) ||
+        RegExp(r'^\d+\s+\d+\s*\/\s*\d+$').hasMatch(trimmed);
+  }
+
   /// Returns 1.0 for invalid input.
   static double parse(String qtyString) {
     final trimmed = qtyString.trim();
