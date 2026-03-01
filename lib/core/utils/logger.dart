@@ -200,6 +200,14 @@ class AppLogger {
     _trackErrorAnalytics(message, error, name);
   }
 
+  /// Redact Firebase UIDs and other PII before sending to Crashlytics.
+  static String _sanitizeForCrashlytics(String message) {
+    return message.replaceAllMapped(
+      RegExp(r'\b[a-zA-Z0-9]{20,28}\b'),
+      (m) => '${m.group(0)!.substring(0, 4)}***',
+    );
+  }
+
   /// Logs message and error to Firebase Crashlytics (safe to call even if not initialized)
   static void _logToCrashlytics(
     String message,
@@ -210,21 +218,19 @@ class AppLogger {
     if (kIsWeb) return;
 
     try {
-      // Log the message to Crashlytics
-      FirebaseCrashlytics.instance.log(message);
+      final sanitized = _sanitizeForCrashlytics(message);
+      FirebaseCrashlytics.instance.log(sanitized);
 
-      // If there's an error object, record it as a non-fatal error
       if (error != null) {
         FirebaseCrashlytics.instance.recordError(
           error,
           stackTrace,
-          reason: message,
+          reason: sanitized,
           fatal: false,
         );
       }
     } catch (e) {
       // Silently fail if Crashlytics not initialized
-      // This prevents errors during app initialization
     }
   }
 
