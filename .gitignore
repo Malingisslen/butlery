@@ -89,6 +89,14 @@ nul
 # Temp analysis files
 *tmp_analyze*
 
+# Python artifacts (pip installs for tooling)
+lib/site-packages/
+scripts/*.exe
+
+# Claude Code worktrees
+.claude/worktrees/
+.worktreeinclude
+
 # Node.js
 node_modules/
 service-account.json
