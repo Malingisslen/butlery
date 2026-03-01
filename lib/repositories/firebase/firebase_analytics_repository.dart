@@ -106,12 +106,14 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   Future<void> logImportStarted({
     required String source,
     String? platform,
+    String? sessionId,
   }) async {
     await logEvent(
       name: 'import_started',
       parameters: {
         'source': source,
         if (platform != null) 'platform': platform,
+        if (sessionId != null) 'session_id': sessionId,
         'timestamp': DateTime.now().toIso8601String(),
       },
     );
@@ -122,6 +124,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     required String source,
     String? platform,
     int? recipeLength,
+    String? sessionId,
   }) async {
     await logEvent(
       name: 'import_success',
@@ -129,6 +132,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         'source': source,
         if (platform != null) 'platform': platform,
         if (recipeLength != null) 'recipe_length': recipeLength,
+        if (sessionId != null) 'session_id': sessionId,
         'timestamp': DateTime.now().toIso8601String(),
       },
     );
@@ -207,7 +211,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   @override
   Future<void> logRecipeCooked({
     required String recipeId,
-    required String recipeTitle,
     required String mealType,
     bool isFirstTime = true,
     int? daysSinceLastCooked,
@@ -216,7 +219,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       name: 'recipe_cooked',
       parameters: {
         'recipe_id': recipeId,
-        'recipe_title': recipeTitle,
         'meal_type': mealType,
         'is_first_time': isFirstTime ? 'true' : 'false',
         if (daysSinceLastCooked != null) 'days_since_last': daysSinceLastCooked,
@@ -245,7 +247,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   @override
   Future<void> logRecipeDeleted({
     required String recipeId,
-    required String recipeTitle,
     required String mealType,
     required bool isPersonal,
     required DateTime createdAt,
@@ -259,7 +260,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       name: 'recipe_deleted',
       parameters: {
         'recipe_id': recipeId,
-        'recipe_title': recipeTitle,
         'meal_type': mealType,
         'recipe_type': isPersonal ? 'personal' : 'collaborative',
         'days_since_created': actualDaysSinceCreated,
@@ -268,7 +268,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       },
     );
 
-    AppLogger.info('📊 Recipe deletion logged: $recipeTitle ($mealType)');
+    AppLogger.info('📊 Recipe deletion logged: $recipeId ($mealType)');
   }
 
   @override

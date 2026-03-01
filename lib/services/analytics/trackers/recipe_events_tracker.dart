@@ -22,14 +22,12 @@ class RecipeEventsTracker extends BaseTracker {
   /// Log when recipe is marked as cooked
   Future<void> logRecipeCooked({
     required String recipeId,
-    required String recipeTitle,
     required String mealType,
     bool isFirstTime = true,
     int? daysSinceLastCooked,
   }) async {
     await repository.logRecipeCooked(
       recipeId: recipeId,
-      recipeTitle: recipeTitle,
       mealType: mealType,
       isFirstTime: isFirstTime,
       daysSinceLastCooked: daysSinceLastCooked,
@@ -39,7 +37,6 @@ class RecipeEventsTracker extends BaseTracker {
   /// Log recipe deletion
   Future<void> logRecipeDeleted({
     required String recipeId,
-    required String recipeTitle,
     required String mealType,
     required bool isPersonal,
     required DateTime createdAt,
@@ -47,7 +44,6 @@ class RecipeEventsTracker extends BaseTracker {
   }) async {
     await repository.logRecipeDeleted(
       recipeId: recipeId,
-      recipeTitle: recipeTitle,
       mealType: mealType,
       isPersonal: isPersonal,
       createdAt: createdAt,

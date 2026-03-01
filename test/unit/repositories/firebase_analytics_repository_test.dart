@@ -415,7 +415,6 @@ void main() {
       test('should log recipe cooked event', () async {
         // Arrange
         const recipeId = 'recipe-123';
-        const recipeTitle = 'Köttbullar';
         const mealType = 'dinner';
         const isFirstTime = false;
         const daysSinceLastCooked = 7;
@@ -423,7 +422,6 @@ void main() {
         // Act
         await repository.logRecipeCooked(
           recipeId: recipeId,
-          recipeTitle: recipeTitle,
           mealType: mealType,
           isFirstTime: isFirstTime,
           daysSinceLastCooked: daysSinceLastCooked,
@@ -436,7 +434,6 @@ void main() {
             )).captured.single as Map<String, Object>;
 
         expect(captured['recipe_id'], equals(recipeId));
-        expect(captured['recipe_title'], equals(recipeTitle));
         expect(captured['meal_type'], equals(mealType));
         expect(captured['is_first_time'], equals('false'));
         expect(captured['days_since_last'], equals(daysSinceLastCooked));
@@ -451,7 +448,6 @@ void main() {
       test('should log recipe deleted event', () async {
         // Arrange
         const recipeId = 'recipe-456';
-        const recipeTitle = 'Pannkakor';
         const mealType = 'breakfast';
         const isPersonal = true;
         final createdAt = DateTime.now().subtract(Duration(days: 30));
@@ -460,7 +456,6 @@ void main() {
         // Act
         await repository.logRecipeDeleted(
           recipeId: recipeId,
-          recipeTitle: recipeTitle,
           mealType: mealType,
           isPersonal: isPersonal,
           createdAt: createdAt,
@@ -474,7 +469,6 @@ void main() {
             )).captured.single as Map<String, Object>;
 
         expect(captured['recipe_id'], equals(recipeId));
-        expect(captured['recipe_title'], equals(recipeTitle));
         expect(captured['meal_type'], equals(mealType));
         expect(captured['recipe_type'], equals('personal'));
         expect(captured['days_since_created'], equals(daysSinceCreated));
@@ -485,7 +479,6 @@ void main() {
       test('should calculate days since created if not provided', () async {
         // Arrange
         const recipeId = 'recipe-789';
-        const recipeTitle = 'Laxpudding';
         const mealType = 'dinner';
         const isPersonal = false;
         final createdAt = DateTime.now().subtract(Duration(days: 15));
@@ -493,11 +486,9 @@ void main() {
         // Act
         await repository.logRecipeDeleted(
           recipeId: recipeId,
-          recipeTitle: recipeTitle,
           mealType: mealType,
           isPersonal: isPersonal,
           createdAt: createdAt,
-          // daysSinceCreated not provided
         );
 
         // Assert

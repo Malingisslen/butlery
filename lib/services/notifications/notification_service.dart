@@ -372,14 +372,15 @@ class NotificationService extends BaseService {
     }
   }
 
+  /// Callback for notification tap routing. Set from main.dart to wire navigation.
+  static void Function(String route, Map<String, String?> data)?
+      onNotificationTapped;
+
   /// Handle message opened app
   void _handleMessageOpened(RemoteMessage message) {
     try {
       AppLogger.info(
           '🔔 Coordinator: Handling message opened app: ${message.notification?.title}');
-
-      // Navigate to appropriate screen
-      // This would need a BuildContext or navigation service
 
       // Record analytics
       final notificationId = message.data['notificationId'] as String?;
@@ -389,6 +390,13 @@ class NotificationService extends BaseService {
           notificationId: notificationId,
           context: message.data,
         );
+      }
+
+      // P8-16: Route to appropriate screen based on notification data
+      final route = message.data['route'] as String?;
+      if (route != null && onNotificationTapped != null) {
+        final targetId = message.data['targetId'] as String?;
+        onNotificationTapped!(route, {'id': targetId});
       }
     } catch (e) {
       AppLogger.error('❌ Failed to handle message opened', e);

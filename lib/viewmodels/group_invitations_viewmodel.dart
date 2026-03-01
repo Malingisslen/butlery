@@ -12,6 +12,7 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/services/analytics_service.dart';
 
 class GroupInvitationsViewModel extends ChangeNotifier
     with ErrorHandlingMixin, StateNotifierMixin, AsyncOperationMixin {
@@ -24,6 +25,9 @@ class GroupInvitationsViewModel extends ChangeNotifier
   List<GroupInvitation> _receivedInvitations = [];
   final Set<String> _respondingInvitationIds =
       {}; // Operation-specific tracking for concurrent responses
+
+  late final AnalyticsService? _analytics =
+      ServiceLocator.tryGet<AnalyticsService>();
 
   GroupInvitationsViewModel({
     required UnifiedFriendsService friendsService,
@@ -411,6 +415,10 @@ class GroupInvitationsViewModel extends ChangeNotifier
     try {
       AppLogger.info(
         '📊 Analytics: Användare accepterade inbjudan från ${invitation.fromUserName}',
+      );
+      _analytics?.social.logGroupJoined(
+        groupId: invitation.groupId,
+        source: 'invitation',
       );
     } catch (e) {
       AppLogger.warning('⚠️ Kunde inte logga accept invitation event: $e');

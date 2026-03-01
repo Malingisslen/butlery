@@ -1,4 +1,8 @@
-/// Analytics service facade for tracking user interactions and app metrics
+/// Analytics service facade for tracking user interactions and app metrics.
+///
+/// **North Star Metric (P8-14):** "Recipes interacted with per week"
+/// Computed from existing events: recipe_viewed, recipe_cooked, recipe_edited.
+/// Define as a Firebase Analytics audience or BigQuery query over these events.
 
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/services/content_detector_service.dart';
@@ -164,19 +168,35 @@ class AnalyticsService extends BaseService {
 
   // Delegate methods for backward compatibility
 
-  Future<void> logImportStarted({required String source, String? platform}) =>
-      _importTracker.logImportStarted(source: source, platform: platform);
+  Future<void> logImportStarted({
+    required String source,
+    String? platform,
+    String? sessionId,
+  }) =>
+      _importTracker.logImportStarted(
+        source: source,
+        platform: platform,
+        sessionId: sessionId,
+      );
 
   Future<void> logImportSuccess({
     required String source,
     String? platform,
     int? recipeLength,
+    String? sessionId,
   }) =>
       _importTracker.logImportSuccess(
         source: source,
         platform: platform,
         recipeLength: recipeLength,
+        sessionId: sessionId,
       );
+
+  Future<void> logImportCancelled({
+    required String source,
+    String? sessionId,
+  }) =>
+      _importTracker.logImportCancelled(source: source, sessionId: sessionId);
 
   Future<void> logExtractionError({
     required String url,
@@ -206,14 +226,12 @@ class AnalyticsService extends BaseService {
 
   Future<void> logRecipeCooked({
     required String recipeId,
-    required String recipeTitle,
     required String mealType,
     bool isFirstTime = true,
     int? daysSinceLastCooked,
   }) =>
       _recipeTracker.logRecipeCooked(
         recipeId: recipeId,
-        recipeTitle: recipeTitle,
         mealType: mealType,
         isFirstTime: isFirstTime,
         daysSinceLastCooked: daysSinceLastCooked,
@@ -221,7 +239,6 @@ class AnalyticsService extends BaseService {
 
   Future<void> logRecipeDeleted({
     required String recipeId,
-    required String recipeTitle,
     required String mealType,
     required bool isPersonal,
     required DateTime createdAt,
@@ -229,7 +246,6 @@ class AnalyticsService extends BaseService {
   }) =>
       _recipeTracker.logRecipeDeleted(
         recipeId: recipeId,
-        recipeTitle: recipeTitle,
         mealType: mealType,
         isPersonal: isPersonal,
         createdAt: createdAt,

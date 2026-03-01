@@ -16,6 +16,7 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/services/analytics_service.dart';
 
 /// Manages group-shared content (recipes, menus, shopping lists) with filtering and activity tracking.
 /// Uses AsyncOperationMixin for loading state management while maintaining
@@ -38,6 +39,9 @@ class GroupContentViewModel extends ChangeNotifier
   List<SharedMenu> _groupSharedMenus = [];
   List<UnifiedShoppingList> _groupSharedShoppingLists = [];
   List<Map<String, dynamic>> _groupActivityFeed = [];
+
+  late final AnalyticsService? _analytics =
+      ServiceLocator.tryGet<AnalyticsService>();
 
   GroupContentViewModel({
     required SocialSharingRepository sharingRepository,
@@ -259,6 +263,11 @@ class GroupContentViewModel extends ChangeNotifier
 
       // Reload group content to include the new share
       await loadGroupContent();
+
+      _analytics?.social.logContentSharedToGroup(
+        groupId: _group!.id,
+        contentType: content.contentType,
+      );
 
       AppLogger.success('✅ Content shared to group successfully');
       return true;

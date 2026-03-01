@@ -2,6 +2,8 @@
 
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/analytics_service.dart';
 
 /// Feature flag service using Firebase Remote Config.
 /// Enables gradual rollouts, A/B testing, and kill switches without code deploys.
@@ -148,7 +150,20 @@ class FeatureFlagService {
 
     // Stable hash based on flag + userId
     final hash = '${flag}_$userId'.hashCode.abs();
-    return (hash % 100) < percentage;
+    final result = (hash % 100) < percentage;
+
+    // P8-19: Log feature flag assignment as user property
+    try {
+      final analytics = ServiceLocator.tryGet<AnalyticsService>();
+      analytics?.logEvent(
+        name: 'feature_flag_evaluated',
+        parameters: {'flag': flag, 'enabled': result.toString()},
+      );
+    } catch (_) {
+      // Analytics not critical for feature flag evaluation
+    }
+
+    return result;
   }
 
   /// Get all current flag values for debugging.

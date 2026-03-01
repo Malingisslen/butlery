@@ -13,20 +13,29 @@ class ImportEventsTracker extends BaseTracker {
   Future<void> logImportStarted({
     required String source,
     String? platform,
+    String? sessionId,
   }) async {
     if (!await hasAnalyticsConsent()) return;
 
     if (_parentService != null) {
       await _parentService.executeServiceOperation(
         () async {
-          await repository.logImportStarted(source: source, platform: platform);
+          await repository.logImportStarted(
+            source: source,
+            platform: platform,
+            sessionId: sessionId,
+          );
         },
         operationName: 'Log import started',
         requiresAuth: false,
         requiresNetwork: false,
       );
     } else {
-      await repository.logImportStarted(source: source, platform: platform);
+      await repository.logImportStarted(
+        source: source,
+        platform: platform,
+        sessionId: sessionId,
+      );
     }
   }
 
@@ -35,12 +44,29 @@ class ImportEventsTracker extends BaseTracker {
     required String source,
     String? platform,
     int? recipeLength,
+    String? sessionId,
   }) async {
     if (!await hasAnalyticsConsent()) return;
     await repository.logImportSuccess(
       source: source,
       platform: platform,
       recipeLength: recipeLength,
+      sessionId: sessionId,
+    );
+  }
+
+  /// Log import cancelled
+  Future<void> logImportCancelled({
+    required String source,
+    String? sessionId,
+  }) async {
+    if (!await hasAnalyticsConsent()) return;
+    await logEvent(
+      name: 'import_cancelled',
+      parameters: {
+        'source': source,
+        if (sessionId != null) 'session_id': sessionId,
+      },
     );
   }
 

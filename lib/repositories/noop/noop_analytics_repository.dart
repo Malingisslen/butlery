@@ -56,6 +56,7 @@ class NoOpAnalyticsRepository implements AnalyticsRepository {
   Future<void> logImportStarted({
     required String source,
     String? platform,
+    String? sessionId,
   }) async {
     // No-op: Analytics not supported
   }
@@ -65,6 +66,7 @@ class NoOpAnalyticsRepository implements AnalyticsRepository {
     required String source,
     String? platform,
     int? recipeLength,
+    String? sessionId,
   }) async {
     // No-op: Analytics not supported
   }
@@ -105,7 +107,6 @@ class NoOpAnalyticsRepository implements AnalyticsRepository {
   @override
   Future<void> logRecipeCooked({
     required String recipeId,
-    required String recipeTitle,
     required String mealType,
     bool isFirstTime = true,
     int? daysSinceLastCooked,
@@ -124,7 +125,6 @@ class NoOpAnalyticsRepository implements AnalyticsRepository {
   @override
   Future<void> logRecipeDeleted({
     required String recipeId,
-    required String recipeTitle,
     required String mealType,
     required bool isPersonal,
     required DateTime createdAt,

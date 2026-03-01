@@ -8,6 +8,8 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/analytics_service.dart';
 
 /// Comprehensive shopping list sharing ViewModel providing advanced social shopping distribution through service integration.
 /// Manages shopping list sharing state enabling social shopping distribution with friend selection, share message customization,
@@ -60,6 +62,9 @@ class ShoppingShareViewModel extends ChangeNotifier
   /// - UnifiedFriendsService integration for friend management and social relationship coordination
   /// - Command pattern implementation for organized operation management and state coordination
   /// - Mixin integration for enhanced state management and asynchronous operation support
+  late final AnalyticsService? _analytics =
+      ServiceLocator.tryGet<AnalyticsService>();
+
   ShoppingShareViewModel({
     required UnifiedShoppingService shoppingService,
     required UnifiedFriendsService friendsService,
@@ -195,6 +200,11 @@ class ShoppingShareViewModel extends ChangeNotifier
       }
 
       if (allSuccessful) {
+        _analytics?.shopping.logShoppingListShared(
+          listId: shoppingList.id,
+          recipientCount: _selectedFriendIds.length,
+          shareMethod: 'friends',
+        );
         return true;
       } else {
         _setError(AppLocale.current.errorSomeSharesFailed);
