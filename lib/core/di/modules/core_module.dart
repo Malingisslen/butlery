@@ -39,12 +39,6 @@ import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 
-// Network security
-import 'package:butlery/core/network/ssl_pinning_service.dart';
-
-// Data encryption
-import 'package:butlery/services/encryption/field_encryption_service.dart';
-
 // Device security
 import 'package:butlery/services/device_integrity_service.dart';
 // Feature flags
@@ -201,16 +195,6 @@ class CoreModule implements DIModule {
           auth: FirebaseAuth.instance,
           consentRepository: container<FirebaseConsentRepository>(),
         ),
-      );
-
-      // SSL certificate pinning service for MITM protection
-      container.registerLazySingleton<SslPinningService>(
-        () => SslPinningService(),
-      );
-
-      // Field-level encryption for sensitive Firestore data
-      container.registerLazySingleton<FieldEncryptionService>(
-        () => FieldEncryptionService(),
       );
 
       // Device integrity service for root/jailbreak detection
