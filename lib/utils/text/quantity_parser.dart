@@ -107,4 +107,12 @@ class QuantityParser {
 
     return parsed;
   }
+
+  /// Whether the text looks like a fraction (Unicode or ASCII).
+  static bool isFraction(String text) {
+    final trimmed = text.trim();
+    if (_unicodeFractions.containsKey(trimmed)) return true;
+    return RegExp(r'^\d+\s*/\s*\d+$').hasMatch(trimmed) ||
+        RegExp(r'^\d+\s+\d+\s*/\s*\d+$').hasMatch(trimmed);
+  }
 }

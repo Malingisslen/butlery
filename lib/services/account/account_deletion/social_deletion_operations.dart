@@ -5,7 +5,8 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 class SocialDeletionOperations {
   final FirebaseFirestore _firestore;
   static const String _logTag = 'SocialDeletionOps';
-  static const int _batchLimit = 450; // Safety margin under Firestore's 500-op limit
+  static const int _batchLimit =
+      450; // Safety margin under Firestore's 500-op limit
 
   SocialDeletionOperations(this._firestore);
 
@@ -25,11 +26,7 @@ class SocialDeletionOperations {
       var opCount = 0;
 
       final queries = [
-        _firestore
-            .collection('users')
-            .doc(userId)
-            .collection('friends')
-            .get(),
+        _firestore.collection('users').doc(userId).collection('friends').get(),
         _firestore
             .collection('users')
             .doc(userId)
@@ -249,8 +246,7 @@ class SocialDeletionOperations {
       if (opCount > 0) await batch.commit();
       return true;
     } catch (e) {
-      app_logger.AppLogger.error(
-          '[$_logTag] Failed to delete shared menus', e);
+      app_logger.AppLogger.error('[$_logTag] Failed to delete shared menus', e);
       return false;
     }
   }
@@ -322,8 +318,7 @@ class SocialDeletionOperations {
       if (opCount > 0) await batch.commit();
       return true;
     } catch (e) {
-      app_logger.AppLogger.error(
-          '[$_logTag] Failed to delete user reports', e);
+      app_logger.AppLogger.error('[$_logTag] Failed to delete user reports', e);
       return false;
     }
   }

@@ -121,8 +121,8 @@ class ConsentPurposes {
           defaultValue: false),
       pushNotifications: SerializationUtils.safeBool(map, 'pushNotifications',
           defaultValue: false),
-      aiProcessing: SerializationUtils.safeBool(map, 'aiProcessing',
-          defaultValue: false),
+      aiProcessing:
+          SerializationUtils.safeBool(map, 'aiProcessing', defaultValue: false),
     );
   }
 

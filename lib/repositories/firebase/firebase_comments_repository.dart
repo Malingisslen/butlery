@@ -174,7 +174,11 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     final docRef = collection.doc();
     batch.set(docRef, commentData);
     batch.set(
-      firestore.collection('users').doc(userId).collection('rateLimits').doc('comments'),
+      firestore
+          .collection('users')
+          .doc(userId)
+          .collection('rateLimits')
+          .doc('comments'),
       {'lastWrite': FieldValue.serverTimestamp()},
       SetOptions(merge: true),
     );

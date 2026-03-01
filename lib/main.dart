@@ -216,8 +216,7 @@ Future<void> _enableCollectionIfConsented() async {
     await Future.wait([
       FirebaseCrashlytics.instance
           .setCrashlyticsCollectionEnabled(hasConsent && !kDebugMode),
-      FirebasePerformance.instance
-          .setPerformanceCollectionEnabled(hasConsent),
+      FirebasePerformance.instance.setPerformanceCollectionEnabled(hasConsent),
     ]);
 
     AppLogger.info(

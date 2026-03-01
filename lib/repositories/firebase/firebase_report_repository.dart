@@ -71,7 +71,9 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
           .orderBy('createdAt', descending: true)
           .get();
 
-      return snapshot.docs.map((doc) => ContentReport.fromFirestore(doc)).toList();
+      return snapshot.docs
+          .map((doc) => ContentReport.fromFirestore(doc))
+          .toList();
     } catch (e) {
       AppLogger.error('[ReportRepository] Failed to get user reports', e);
       return [];
