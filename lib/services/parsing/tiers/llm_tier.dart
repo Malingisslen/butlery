@@ -19,9 +19,26 @@ import 'package:butlery/core/utils/retry_helper.dart';
 /// suspicious patterns to prevent prompt injection attacks.
 /// Known Swedish measurement units for validation.
 const _knownSwedishUnits = <String>{
-  'dl', 'cl', 'ml', 'l', 'msk', 'tsk', 'krm',
-  'g', 'kg', 'st', 'nypa', 'knippe', 'klyfta',
-  'skiva', 'port', 'bit', 'burk', 'paket', 'pkt', 'förp',
+  'dl',
+  'cl',
+  'ml',
+  'l',
+  'msk',
+  'tsk',
+  'krm',
+  'g',
+  'kg',
+  'st',
+  'nypa',
+  'knippe',
+  'klyfta',
+  'skiva',
+  'port',
+  'bit',
+  'burk',
+  'paket',
+  'pkt',
+  'förp',
 };
 
 class LlmTier extends ParsingTier with QualityScoring {
@@ -70,11 +87,27 @@ class LlmTier extends ParsingTier with QualityScoring {
         );
       }
 
+      // Use enhance mode when earlier tiers produced a partial result
+      // with only 1-2 weak fields — reduces LLM token usage by ~60-70%.
+      final partial = context.bestPartialRecipe;
+      final useEnhance = partial != null && partial.shouldEnhance;
+
+      final mode = useEnhance ? StructureMode.enhance : StructureMode.extract;
+      final partialData = useEnhance ? partial.goodFields : null;
+
+      if (useEnhance) {
+        AppLogger.info(
+          '$tierName: Using enhance mode for fields: '
+          '${partial.weakFields.join(", ")}',
+        );
+      }
+
       // Call LLM service with retry logic
       final response = await RetryHelper.retryNetworkOperation(
         () => llmService!.structureRecipe(
           text: text,
-          mode: StructureMode.extract,
+          mode: mode,
+          partialData: partialData,
           sourceUrl: context.sourceUrl,
         ),
         maxRetries: 2,

@@ -12,6 +12,7 @@ import 'package:butlery/repositories/site_config_repository.dart';
 import 'package:butlery/services/llm/llm_service.dart';
 import 'package:butlery/services/parsing/cache/local_recipe_cache.dart';
 import 'package:butlery/services/parsing/common/recipe_merger.dart';
+import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/tiers/llm_tier.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
@@ -25,13 +26,22 @@ import 'package:butlery/core/providers/application_provider.dart';
 const String parserVersion = '2.0.0';
 
 /// Quality threshold for accepting a tier result without continuing.
-const double defaultQualityThreshold = 0.7;
+const double defaultQualityThreshold = 0.65;
 
 /// Extra threshold for reliable domains to avoid unnecessary LLM calls.
 const double _reliableDomainBoost = 0.15;
 
 /// Cap so even boosted thresholds don't reject genuinely good parses.
 const double _maxEffectiveThreshold = 0.95;
+
+/// Per-tier quality discount: structured tiers get a lower bar since their
+/// data is inherently more trustworthy (JSON-LD, CSS selectors) than
+/// heuristic extraction. A 0.55 SchemaOrg result (e.g. missing time) is
+/// still better than triggering an expensive LLM call.
+const Map<String, double> _tierQualityDiscount = {
+  'SchemaOrg': 0.10, // JSON-LD is highly structured
+  'SiteConfig': 0.05, // CSS selectors are semi-structured
+};
 
 /// Result of parsing operation.
 class ParseResult {
@@ -89,11 +99,14 @@ class ParseResult {
 
 /// Main recipe parsing service with tier-based architecture.
 ///
-/// Orchestrates parsing through multiple tiers:
+/// Orchestrates parsing through 4 tiers:
 /// 1. SchemaOrgTier - JSON-LD structured data
 /// 2. SiteConfigTier - Firestore CSS selectors
-/// 3. RuleBasedTier - Swedish line classification
+/// 3. RuleBasedTier - Swedish line classification + CRF ingredient parsing
 /// 4. LlmTier - AI extraction (fallback)
+///
+/// All tiers share a single [IngredientParsingStrategy] that tries CRF
+/// (on-device model) first, falling back to regex when weights unavailable.
 ///
 /// Features:
 /// - Quality-based tier progression
@@ -139,17 +152,20 @@ class RecipeParserService extends BaseService {
     required String userId,
     SiteConfigRepository? siteConfigRepository,
     LlmService? llmService,
+    IngredientParsingStrategy? ingredientStrategy,
   })  : _userId = userId,
         _siteConfigRepository = siteConfigRepository,
         _llmService = llmService {
-    // Note: _cache is lazily initialized in init() after OfflineService is ready
+    // Shared strategy: CRF when weights available, regex fallback
+    final strategy = ingredientStrategy ?? IngredientParsingStrategy();
 
     _tiers = [
-      SchemaOrgTier(),
+      SchemaOrgTier(ingredientStrategy: strategy),
       SiteConfigTier(
         configLoader: _siteConfigRepository?.getConfigIfExists,
+        ingredientStrategy: strategy,
       ),
-      RuleBasedTier(),
+      RuleBasedTier(ingredientStrategy: strategy),
       LlmTier(llmService: _llmService),
     ];
   }
@@ -332,7 +348,9 @@ class RecipeParserService extends BaseService {
   bool _shouldSkipTier(ParsingTier tier, ParsingContext context, bool useLlm) {
     if (tier is LlmTier && !useLlm) return true;
     if (context.source != ImportSource.url) {
-      if (tier is SchemaOrgTier || tier is SiteConfigTier) return true;
+      if (tier is SchemaOrgTier || tier is SiteConfigTier) {
+        return true;
+      }
     }
     return tier.shouldSkip(context);
   }
@@ -359,6 +377,12 @@ class RecipeParserService extends BaseService {
         break;
       }
 
+      // Before LLM tier: check if earlier tiers produced a partial result
+      // that can be enhanced instead of fully re-extracted.
+      if (tier is LlmTier) {
+        _preparePartialForEnhancement(results, context);
+      }
+
       final result = await tier.parseWithTimeout(context);
       results.add(result);
 
@@ -371,12 +395,67 @@ class RecipeParserService extends BaseService {
         '${result.success ? "success (${(result.quality * 100).toInt()}%)" : "failed"}',
       );
 
-      if (result.success && result.quality >= qualityThreshold) {
-        break;
+      if (result.success) {
+        final discount = _tierQualityDiscount[tier.tierName] ?? 0.0;
+        if (result.quality >= (qualityThreshold - discount)) {
+          break;
+        }
       }
     }
 
     return _merger.merge(results);
+  }
+
+  /// Extract good fields from the best partial result and set them on the
+  /// context so the LLM tier can use enhance mode instead of full extraction.
+  void _preparePartialForEnhancement(
+    List<TierResult> results,
+    ParsingContext context,
+  ) {
+    // Find best successful result from earlier tiers
+    final bestResult = results
+        .where((r) => r.success && r.recipe != null)
+        .fold<TierResult?>(null, (best, r) {
+      if (best == null || r.quality > best.quality) return r;
+      return best;
+    });
+
+    if (bestResult == null) return;
+
+    final recipe = bestResult.recipe!;
+    final weakFields = recipe.fieldsNeedingImprovement;
+
+    // Only use enhance mode when 1-2 fields are weak (selective patching)
+    if (weakFields.isEmpty || weakFields.length > 2) return;
+
+    final goodFields = <String, dynamic>{};
+
+    if (recipe.title.hasValue && !weakFields.contains('title')) {
+      goodFields['title'] = recipe.title.value;
+    }
+    if (recipe.portions.hasValue && !weakFields.contains('portions')) {
+      goodFields['portions'] = recipe.portions.value;
+    }
+    if (recipe.ingredients.hasValue && !weakFields.contains('ingredients')) {
+      goodFields['ingredients'] =
+          recipe.ingredients.value!.map((i) => i.originalLine).toList();
+    }
+    if (recipe.instructions.hasValue && !weakFields.contains('instructions')) {
+      goodFields['instructions'] = recipe.instructions.value;
+    }
+    if (recipe.totalTime.hasValue && !weakFields.contains('totalTime')) {
+      goodFields['totalTime'] = recipe.totalTime.value!.inMinutes;
+    }
+
+    context.bestPartialRecipe = ParsedRecipePartial(
+      goodFields: goodFields,
+      weakFields: weakFields,
+    );
+
+    AppLogger.info(
+      '$serviceName: LLM will enhance ${weakFields.length} weak field(s): '
+      '${weakFields.join(", ")} (${goodFields.length} fields already good)',
+    );
   }
 
   /// Pick the most actionable user message from accumulated tier failures.
@@ -396,9 +475,8 @@ class RecipeParserService extends BaseService {
     ];
 
     for (final reason in priority) {
-      final match = _lastTierFailures
-          .where((r) => r.failureReason == reason)
-          .firstOrNull;
+      final match =
+          _lastTierFailures.where((r) => r.failureReason == reason).firstOrNull;
       if (match != null) {
         return reason.userMessage;
       }

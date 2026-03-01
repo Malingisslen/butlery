@@ -7,10 +7,9 @@ import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/site_config.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
+import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
-import 'package:butlery/utils/text/ingredient_parser.dart'
-    hide ParsedIngredient;
 import 'package:butlery/core/utils/logger.dart';
 
 /// Tier 2: Site-specific CSS selector extraction.
@@ -24,10 +23,13 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
   /// Optional pre-loaded config for testing.
   final SiteConfig? preloadedConfig;
 
+  final IngredientParsingStrategy _ingredientStrategy;
+
   SiteConfigTier({
     this.configLoader,
     this.preloadedConfig,
-  });
+    IngredientParsingStrategy? ingredientStrategy,
+  }) : _ingredientStrategy = ingredientStrategy ?? IngredientParsingStrategy();
 
   @override
   String get tierName => 'SiteConfig';
@@ -83,7 +85,7 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
     }
 
     // Extract using selectors
-    final recipe = _extractWithSelectors(document, config, context);
+    final recipe = await _extractWithSelectors(document, config, context);
 
     if (recipe == null) {
       return TierResult.noData(
@@ -127,11 +129,11 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
     }
   }
 
-  ParsedRecipe? _extractWithSelectors(
+  Future<ParsedRecipe?> _extractWithSelectors(
     Document document,
     SiteConfig config,
     ParsingContext context,
-  ) {
+  ) async {
     // Sites frequently A/B test markup — fallback selectors catch redesigns
     var title = _extractBySelector(document, config.titleSelector);
     if ((title == null || title.isEmpty) &&
@@ -146,7 +148,7 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
       ingredientElements =
           _extractAllBySelector(document, config.ingredientsSelectorFallback);
     }
-    final ingredients = _parseIngredients(ingredientElements);
+    final ingredients = await _parseIngredients(ingredientElements);
 
     var instructionElements =
         _extractAllBySelector(document, config.instructionsSelector);
@@ -250,41 +252,15 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
     }
   }
 
-  FieldResult<List<ParsedIngredient>> _parseIngredients(List<String> texts) {
-    if (texts.isEmpty) {
-      return FieldResult.failed('No ingredients found');
-    }
+  Future<FieldResult<List<ParsedIngredient>>> _parseIngredients(
+    List<String> texts,
+  ) async {
+    final cleaned = texts
+        .map((t) => t.replaceAll(RegExp(r'\s+'), ' ').trim())
+        .where((t) => t.isNotEmpty)
+        .toList();
 
-    final parsed = <ParsedIngredient>[];
-
-    for (final text in texts) {
-      // Clean up text
-      final cleaned = text.replaceAll(RegExp(r'\s+'), ' ').trim();
-
-      if (cleaned.isEmpty) continue;
-
-      // Use existing IngredientParser
-      final result = IngredientParser.parseIngredient(cleaned);
-
-      parsed.add(ParsedIngredient(
-        name: result.name,
-        originalLine: cleaned,
-        quantity: result.quantity > 0 ? result.quantity.toString() : null,
-        unit: result.unit.isNotEmpty ? result.unit : null,
-        confidence: result.quantity > 0 || result.unit.isNotEmpty
-            ? ParseConfidence.medium
-            : ParseConfidence.low,
-      ));
-    }
-
-    if (parsed.isEmpty) {
-      return FieldResult.failed('Could not parse ingredients');
-    }
-
-    return FieldResult.mediumConfidence(
-      parsed,
-      'Extracted via CSS selectors',
-    );
+    return _ingredientStrategy.parseLines(cleaned);
   }
 
   FieldResult<List<String>> _parseInstructions(List<String> texts) {

@@ -3,11 +3,10 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
+import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
 import 'package:butlery/utils/recipe_scraper.dart';
-import 'package:butlery/utils/text/ingredient_parser.dart'
-    hide ParsedIngredient;
 
 /// Tier 1: Schema.org JSON-LD and Microdata extraction.
 ///
@@ -15,6 +14,11 @@ import 'package:butlery/utils/text/ingredient_parser.dart'
 /// data from HTML content. It's the fastest and most reliable tier
 /// for websites that implement schema.org Recipe markup.
 class SchemaOrgTier extends ParsingTier with QualityScoring {
+  final IngredientParsingStrategy _ingredientStrategy;
+
+  SchemaOrgTier({IngredientParsingStrategy? ingredientStrategy})
+      : _ingredientStrategy = ingredientStrategy ?? IngredientParsingStrategy();
+
   @override
   String get tierName => 'SchemaOrg';
 
@@ -57,7 +61,7 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
     context.jsonLdData = data;
 
     // Convert schema.org data to ParsedRecipe
-    final recipe = _convertToRecipe(data, context);
+    final recipe = await _convertToRecipe(data, context);
 
     if (recipe == null) {
       return TierResult.noData(
@@ -74,10 +78,10 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
   }
 
   /// Convert schema.org data to ParsedRecipe.
-  ParsedRecipe? _convertToRecipe(
+  Future<ParsedRecipe?> _convertToRecipe(
     Map<String, dynamic> data,
     ParsingContext context,
-  ) {
+  ) async {
     // Extract title
     final title = _extractTitle(data);
     if (!title.hasValue) return null;
@@ -86,7 +90,7 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
     final portions = _extractPortions(data);
 
     // Extract ingredients
-    final ingredients = _extractIngredients(data);
+    final ingredients = await _extractIngredients(data);
 
     // Extract instructions
     final instructions = _extractInstructions(data);
@@ -176,52 +180,22 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
     return FieldResult.lowConfidence(4, 'Defaulting to 4 portions');
   }
 
-  FieldResult<List<ParsedIngredient>> _extractIngredients(
+  Future<FieldResult<List<ParsedIngredient>>> _extractIngredients(
     Map<String, dynamic> data,
-  ) {
+  ) async {
     final rawIngredients = data['recipeIngredient'];
 
     if (rawIngredients is! List || rawIngredients.isEmpty) {
       return FieldResult.failed('No ingredients in schema.org data');
     }
 
-    final parsed = <ParsedIngredient>[];
+    final lines = rawIngredients
+        .whereType<String>()
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
 
-    for (final item in rawIngredients) {
-      if (item is String && item.trim().isNotEmpty) {
-        final line = item.trim();
-
-        // Use existing IngredientParser
-        final result = IngredientParser.parseIngredient(line);
-
-        parsed.add(ParsedIngredient(
-          name: result.name,
-          originalLine: line,
-          quantity: result.quantity > 0 ? result.quantity.toString() : null,
-          unit: result.unit.isNotEmpty ? result.unit : null,
-          confidence: result.quantity > 0 || result.unit.isNotEmpty
-              ? ParseConfidence.high
-              : ParseConfidence.medium,
-        ));
-      }
-    }
-
-    if (parsed.isEmpty) {
-      return FieldResult.failed('Could not parse ingredients');
-    }
-
-    // Score based on how many have structured data
-    final structuredCount = parsed.where((p) => p.isStructured).length;
-    final ratio = structuredCount / parsed.length;
-
-    if (ratio >= 0.7) {
-      return FieldResult.success(parsed);
-    } else if (ratio >= 0.3) {
-      return FieldResult.mediumConfidence(
-          parsed, 'Some ingredients unstructured');
-    } else {
-      return FieldResult.lowConfidence(parsed, 'Most ingredients unstructured');
-    }
+    return _ingredientStrategy.parseLines(lines);
   }
 
   FieldResult<List<String>> _extractInstructions(Map<String, dynamic> data) {

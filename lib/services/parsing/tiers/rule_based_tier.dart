@@ -1,12 +1,9 @@
-import 'package:butlery/models/parsing/field_result.dart';
-import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
+import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/parsers/swedish_line_classifier.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
-import 'package:butlery/utils/text/ingredient_parser.dart'
-    hide ParsedIngredient;
 import 'package:html_unescape/html_unescape.dart';
 
 /// Tier 3: Rule-based Swedish text parsing.
@@ -15,6 +12,11 @@ import 'package:html_unescape/html_unescape.dart';
 /// Instagram, TikTok, YouTube descriptions, and other social media sources.
 /// Also serves as fallback for URL content that lacks structured data.
 class RuleBasedTier extends ParsingTier with QualityScoring {
+  final IngredientParsingStrategy _ingredientStrategy;
+
+  RuleBasedTier({IngredientParsingStrategy? ingredientStrategy})
+      : _ingredientStrategy = ingredientStrategy ?? IngredientParsingStrategy();
+
   @override
   String get tierName => 'RuleBased';
 
@@ -60,7 +62,7 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
     }
 
     // Convert to ParsedRecipe
-    final recipe = _convertToRecipe(structure, context);
+    final recipe = await _convertToRecipe(structure, context);
 
     if (recipe == null) {
       return TierResult.noData(
@@ -133,11 +135,12 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
     return _htmlUnescape.convert(text);
   }
 
-  ParsedRecipe? _convertToRecipe(
+  Future<ParsedRecipe?> _convertToRecipe(
     ParsedRecipeStructure structure,
     ParsingContext context,
-  ) {
-    final ingredients = _parseIngredients(structure.ingredients);
+  ) async {
+    final ingredients =
+        await _ingredientStrategy.parseLines(structure.ingredients);
     if (ingredients.value == null || ingredients.value!.isEmpty) {
       return null;
     }
@@ -153,59 +156,5 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
       ingredients: ingredients,
       instructions: instructions,
     );
-  }
-
-  FieldResult<List<ParsedIngredient>> _parseIngredients(List<String> lines) {
-    if (lines.isEmpty) {
-      return FieldResult.failed('No ingredients found');
-    }
-
-    final parsed = <ParsedIngredient>[];
-
-    for (final line in lines) {
-      final cleaned = line.trim();
-      if (cleaned.isEmpty) continue;
-
-      // Use existing IngredientParser
-      final result = IngredientParser.parseIngredient(cleaned);
-
-      // Determine confidence based on structure
-      ParseConfidence confidence;
-      if (result.quantity > 0 && result.unit.isNotEmpty) {
-        confidence = ParseConfidence.high;
-      } else if (result.quantity > 0 || result.unit.isNotEmpty) {
-        confidence = ParseConfidence.medium;
-      } else {
-        confidence = ParseConfidence.low;
-      }
-
-      parsed.add(ParsedIngredient(
-        name: result.name,
-        originalLine: cleaned,
-        quantity: result.quantity > 0 ? result.quantity.toString() : null,
-        unit: result.unit.isNotEmpty ? result.unit : null,
-        confidence: confidence,
-      ));
-    }
-
-    if (parsed.isEmpty) {
-      return FieldResult.failed('Could not parse ingredients');
-    }
-
-    // Score based on how many are structured
-    final structuredCount = parsed.where((p) => p.isStructured).length;
-    final ratio = parsed.isEmpty ? 0.0 : structuredCount / parsed.length;
-
-    if (ratio >= 0.5) {
-      return FieldResult.mediumConfidence(
-        parsed,
-        'Extracted via Swedish line classification',
-      );
-    } else {
-      return FieldResult.lowConfidence(
-        parsed,
-        'Most ingredients unstructured',
-      );
-    }
   }
 }

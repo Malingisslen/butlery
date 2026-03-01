@@ -1,0 +1,970 @@
+[
+  {
+    "input": "2 dl mjölk",
+    "tokens": ["2", "dl", "mjölk"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "mjölk" },
+    "tags": ["standard"],
+    "description": "Basic quantity + unit + ingredient"
+  },
+  {
+    "input": "400 g vetemjöl",
+    "tokens": ["400", "g", "vetemjöl"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "400", "unit": "g", "name": "vetemjöl" },
+    "tags": ["standard"],
+    "description": "Weight measurement"
+  },
+  {
+    "input": "1 msk olivolja",
+    "tokens": ["1", "msk", "olivolja"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "msk", "name": "olivolja" },
+    "tags": ["standard"],
+    "description": "Tablespoon measurement"
+  },
+  {
+    "input": "3 st ägg",
+    "tokens": ["3", "st", "ägg"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "3", "unit": "st", "name": "ägg" },
+    "tags": ["standard"],
+    "description": "Count unit"
+  },
+  {
+    "input": "1 tsk salt",
+    "tokens": ["1", "tsk", "salt"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "tsk", "name": "salt" },
+    "tags": ["standard"],
+    "description": "Teaspoon"
+  },
+  {
+    "input": "2 krm svartpeppar",
+    "tokens": ["2", "krm", "svartpeppar"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "krm", "name": "svartpeppar" },
+    "tags": ["standard", "compound"],
+    "description": "Kryddmått with compound name"
+  },
+  {
+    "input": "1 kg potatis",
+    "tokens": ["1", "kg", "potatis"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "kg", "name": "potatis" },
+    "tags": ["standard"],
+    "description": "Kilogram"
+  },
+  {
+    "input": "1 hg ost",
+    "tokens": ["1", "hg", "ost"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "hg", "name": "ost" },
+    "tags": ["standard"],
+    "description": "Hectogram"
+  },
+  {
+    "input": "1 pkt torrjäst",
+    "tokens": ["1", "pkt", "torrjäst"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "pkt", "name": "torrjäst" },
+    "tags": ["standard"],
+    "description": "Package unit"
+  },
+  {
+    "input": "2 klyfta vitlök",
+    "tokens": ["2", "klyfta", "vitlök"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "klyfta", "name": "vitlök" },
+    "tags": ["standard"],
+    "description": "Clove unit"
+  },
+  {
+    "input": "1 nypa saffran",
+    "tokens": ["1", "nypa", "saffran"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "nypa", "name": "saffran" },
+    "tags": ["standard"],
+    "description": "Pinch unit"
+  },
+  {
+    "input": "½ dl socker",
+    "tokens": ["½", "dl", "socker"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "½", "unit": "dl", "name": "socker" },
+    "tags": ["standard", "fraction"],
+    "description": "Unicode fraction"
+  },
+  {
+    "input": "¾ dl strösocker",
+    "tokens": ["¾", "dl", "strösocker"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "¾", "unit": "dl", "name": "strösocker" },
+    "tags": ["standard", "fraction"],
+    "description": "Three-quarter fraction"
+  },
+  {
+    "input": "1½ dl grädde",
+    "tokens": ["1½", "dl", "grädde"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1½", "unit": "dl", "name": "grädde" },
+    "tags": ["standard", "fraction"],
+    "description": "Mixed number fraction"
+  },
+  {
+    "input": "1 1/2 dl mjöl",
+    "tokens": ["1", "1/2", "dl", "mjöl"],
+    "labels": ["B-QTY", "I-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1 1/2", "unit": "dl", "name": "mjöl" },
+    "tags": ["standard", "fraction"],
+    "description": "ASCII mixed fraction - two QTY tokens"
+  },
+  {
+    "input": "1/2 dl olja",
+    "tokens": ["1/2", "dl", "olja"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1/2", "unit": "dl", "name": "olja" },
+    "tags": ["standard", "fraction"],
+    "description": "ASCII fraction"
+  },
+  {
+    "input": "2,5 dl grädde",
+    "tokens": ["2,5", "dl", "grädde"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "2,5", "unit": "dl", "name": "grädde" },
+    "tags": ["standard", "decimal"],
+    "description": "Swedish decimal comma"
+  },
+  {
+    "input": "salt",
+    "tokens": ["salt"],
+    "labels": ["B-NAME"],
+    "expected": { "name": "salt" },
+    "tags": ["no_quantity"],
+    "description": "Ingredient without quantity"
+  },
+  {
+    "input": "svartpeppar",
+    "tokens": ["svartpeppar"],
+    "labels": ["B-NAME"],
+    "expected": { "name": "svartpeppar" },
+    "tags": ["no_quantity", "compound"],
+    "description": "Compound name without quantity"
+  },
+  {
+    "input": "färsk basilika",
+    "tokens": ["färsk", "basilika"],
+    "labels": ["B-NAME", "I-NAME"],
+    "expected": { "name": "färsk basilika" },
+    "tags": ["no_quantity", "multi_word"],
+    "description": "Multi-word ingredient name"
+  },
+  {
+    "input": "hackad gul lök",
+    "tokens": ["hackad", "gul", "lök"],
+    "labels": ["B-PREP", "B-NAME", "I-NAME"],
+    "expected": { "name": "gul lök", "preparation": "hackad" },
+    "tags": ["preparation"],
+    "description": "Prep word before ingredient"
+  },
+  {
+    "input": "finriven ost",
+    "tokens": ["finriven", "ost"],
+    "labels": ["B-PREP", "B-NAME"],
+    "expected": { "name": "ost", "preparation": "finriven" },
+    "tags": ["preparation"],
+    "description": "Grated cheese"
+  },
+  {
+    "input": "2 dl hackad persilja",
+    "tokens": ["2", "dl", "hackad", "persilja"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "persilja", "preparation": "hackad" },
+    "tags": ["preparation", "standard"],
+    "description": "Full structure with prep"
+  },
+  {
+    "input": "1 stor gul lök",
+    "tokens": ["1", "stor", "gul", "lök"],
+    "labels": ["B-QTY", "B-SIZE", "B-NAME", "I-NAME"],
+    "expected": { "quantity": "1", "name": "stor gul lök" },
+    "tags": ["size"],
+    "description": "Size descriptor"
+  },
+  {
+    "input": "2 stora morötter",
+    "tokens": ["2", "stora", "morötter"],
+    "labels": ["B-QTY", "B-SIZE", "B-NAME"],
+    "expected": { "quantity": "2", "name": "stora morötter" },
+    "tags": ["size"],
+    "description": "Plural size descriptor"
+  },
+  {
+    "input": "1 liten bit ingefära",
+    "tokens": ["1", "liten", "bit", "ingefära"],
+    "labels": ["B-QTY", "B-SIZE", "B-NAME", "I-NAME"],
+    "expected": { "quantity": "1", "name": "liten bit ingefära" },
+    "tags": ["size"],
+    "description": "Small piece"
+  },
+  {
+    "input": "2-3 dl grädde",
+    "tokens": ["2-3", "dl", "grädde"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "2-3", "unit": "dl", "name": "grädde" },
+    "tags": ["range"],
+    "description": "Quantity range"
+  },
+  {
+    "input": "3-4 st ägg",
+    "tokens": ["3-4", "st", "ägg"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "3-4", "unit": "st", "name": "ägg" },
+    "tags": ["range"],
+    "description": "Count range"
+  },
+  {
+    "input": "1-2 msk socker",
+    "tokens": ["1-2", "msk", "socker"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1-2", "unit": "msk", "name": "socker" },
+    "tags": ["range"],
+    "description": "Tablespoon range"
+  },
+  {
+    "input": "ca 2 dl vatten",
+    "tokens": ["ca", "2", "dl", "vatten"],
+    "labels": ["O", "B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "vatten" },
+    "tags": ["optional"],
+    "description": "Approximation marker 'ca'"
+  },
+  {
+    "input": "ev. 1 krm salt",
+    "tokens": ["ev.", "1", "krm", "salt"],
+    "labels": ["O", "B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "krm", "name": "salt" },
+    "tags": ["optional"],
+    "description": "Optional marker 'ev.'"
+  },
+  {
+    "input": "eventuellt 1 msk honung",
+    "tokens": ["eventuellt", "1", "msk", "honung"],
+    "labels": ["O", "B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "msk", "name": "honung" },
+    "tags": ["optional"],
+    "description": "Long optional marker"
+  },
+  {
+    "input": "cirka 3 msk olivolja",
+    "tokens": ["cirka", "3", "msk", "olivolja"],
+    "labels": ["O", "B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "3", "unit": "msk", "name": "olivolja" },
+    "tags": ["optional"],
+    "description": "Approximation 'cirka'"
+  },
+  {
+    "input": "gärna 1 dl grädde",
+    "tokens": ["gärna", "1", "dl", "grädde"],
+    "labels": ["O", "B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "dl", "name": "grädde" },
+    "tags": ["optional"],
+    "description": "Optional marker 'gärna'"
+  },
+  {
+    "input": "smör eller margarin",
+    "tokens": ["smör", "eller", "margarin"],
+    "labels": ["B-NAME", "O", "B-NAME"],
+    "expected": { "name": "smör" },
+    "tags": ["alternative"],
+    "description": "Simple alternative with 'eller'"
+  },
+  {
+    "input": "1 dl grädde eller kokosmjölk",
+    "tokens": ["1", "dl", "grädde", "eller", "kokosmjölk"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "O", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "dl", "name": "grädde" },
+    "tags": ["alternative"],
+    "description": "Alternative with quantity"
+  },
+  {
+    "input": "rapsolja eller olivolja",
+    "tokens": ["rapsolja", "eller", "olivolja"],
+    "labels": ["B-NAME", "O", "B-NAME"],
+    "expected": { "name": "rapsolja" },
+    "tags": ["alternative"],
+    "description": "Oil alternative"
+  },
+  {
+    "input": "2 dl socker eller honung",
+    "tokens": ["2", "dl", "socker", "eller", "honung"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "O", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "socker" },
+    "tags": ["alternative"],
+    "description": "Sweetener alternative with quantity"
+  },
+  {
+    "input": "1 dl mjölk (kall)",
+    "tokens": ["1", "dl", "mjölk", "(", "kall", ")"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "O", "B-PREP", "O"],
+    "expected": { "quantity": "1", "unit": "dl", "name": "mjölk", "preparation": "kall" },
+    "tags": ["parenthetical"],
+    "description": "Parenthetical preparation note"
+  },
+  {
+    "input": "2 dl grädde (gärna vispgrädde)",
+    "tokens": ["2", "dl", "grädde", "(", "gärna", "vispgrädde", ")"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "O", "O", "I-NAME", "O"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "grädde" },
+    "tags": ["parenthetical"],
+    "description": "Parenthetical suggestion"
+  },
+  {
+    "input": "100 g smör (rumstempererat)",
+    "tokens": ["100", "g", "smör", "(", "rumstempererat", ")"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "O", "B-PREP", "O"],
+    "expected": { "quantity": "100", "unit": "g", "name": "smör", "preparation": "rumstempererat" },
+    "tags": ["parenthetical"],
+    "description": "Butter with temperature prep note"
+  },
+  {
+    "input": "1 burk krossade tomater",
+    "tokens": ["1", "burk", "krossade", "tomater"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "burk", "name": "tomater", "preparation": "krossade" },
+    "tags": ["standard", "preparation"],
+    "description": "Container unit with prep"
+  },
+  {
+    "input": "3 dl vispgrädde",
+    "tokens": ["3", "dl", "vispgrädde"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "3", "unit": "dl", "name": "vispgrädde" },
+    "tags": ["standard"],
+    "description": "Whipping cream"
+  },
+  {
+    "input": "200 g bacon",
+    "tokens": ["200", "g", "bacon"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "200", "unit": "g", "name": "bacon" },
+    "tags": ["standard"],
+    "description": "Meat weight"
+  },
+  {
+    "input": "300 g laxfilé",
+    "tokens": ["300", "g", "laxfilé"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "300", "unit": "g", "name": "laxfilé" },
+    "tags": ["standard", "compound"],
+    "description": "Salmon fillet compound"
+  },
+  {
+    "input": "500 g kycklingfilé",
+    "tokens": ["500", "g", "kycklingfilé"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "500", "unit": "g", "name": "kycklingfilé" },
+    "tags": ["standard", "compound"],
+    "description": "Chicken fillet compound"
+  },
+  {
+    "input": "2 msk tomatpuré",
+    "tokens": ["2", "msk", "tomatpuré"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "msk", "name": "tomatpuré" },
+    "tags": ["standard", "compound"],
+    "description": "Tomato puree"
+  },
+  {
+    "input": "1 dl crème fraiche",
+    "tokens": ["1", "dl", "crème", "fraiche"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "I-NAME"],
+    "expected": { "quantity": "1", "unit": "dl", "name": "crème fraiche" },
+    "tags": ["multi_word"],
+    "description": "Multi-word ingredient name"
+  },
+  {
+    "input": "2 dl riven parmesanost",
+    "tokens": ["2", "dl", "riven", "parmesanost"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "parmesanost", "preparation": "riven" },
+    "tags": ["preparation"],
+    "description": "Grated parmesan"
+  },
+  {
+    "input": "3 skivad tomat",
+    "tokens": ["3", "skivad", "tomat"],
+    "labels": ["B-QTY", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "3", "name": "tomat", "preparation": "skivad" },
+    "tags": ["preparation"],
+    "description": "Sliced with no unit"
+  },
+  {
+    "input": "2 dl finhackad dill",
+    "tokens": ["2", "dl", "finhackad", "dill"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "dill", "preparation": "finhackad" },
+    "tags": ["preparation"],
+    "description": "Finely chopped dill"
+  },
+  {
+    "input": "1 pressad citron",
+    "tokens": ["1", "pressad", "citron"],
+    "labels": ["B-QTY", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "1", "name": "citron", "preparation": "pressad" },
+    "tags": ["preparation"],
+    "description": "Pressed lemon"
+  },
+  {
+    "input": "rimmat fläsk",
+    "tokens": ["rimmat", "fläsk"],
+    "labels": ["B-PREP", "B-NAME"],
+    "expected": { "name": "fläsk", "preparation": "rimmat" },
+    "tags": ["preparation"],
+    "description": "Cured pork"
+  },
+  {
+    "input": "strimlade morötter",
+    "tokens": ["strimlade", "morötter"],
+    "labels": ["B-PREP", "B-NAME"],
+    "expected": { "name": "morötter", "preparation": "strimlade" },
+    "tags": ["preparation"],
+    "description": "Shredded carrots"
+  },
+  {
+    "input": "tinad spenat",
+    "tokens": ["tinad", "spenat"],
+    "labels": ["B-PREP", "B-NAME"],
+    "expected": { "name": "spenat", "preparation": "tinad" },
+    "tags": ["preparation"],
+    "description": "Thawed spinach"
+  },
+  {
+    "input": "kokt potatis",
+    "tokens": ["kokt", "potatis"],
+    "labels": ["B-PREP", "B-NAME"],
+    "expected": { "name": "potatis", "preparation": "kokt" },
+    "tags": ["preparation"],
+    "description": "Boiled potato"
+  },
+  {
+    "input": "Fyllning:",
+    "tokens": ["Fyllning:"],
+    "labels": ["O"],
+    "expected": {},
+    "tags": ["group_header"],
+    "description": "Group header - filling section"
+  },
+  {
+    "input": "Deg:",
+    "tokens": ["Deg:"],
+    "labels": ["O"],
+    "expected": {},
+    "tags": ["group_header"],
+    "description": "Group header - dough section"
+  },
+  {
+    "input": "Till servering:",
+    "tokens": ["Till", "servering:"],
+    "labels": ["O", "O"],
+    "expected": {},
+    "tags": ["group_header"],
+    "description": "Group header - serving section"
+  },
+  {
+    "input": "Sås:",
+    "tokens": ["Sås:"],
+    "labels": ["O"],
+    "expected": {},
+    "tags": ["group_header"],
+    "description": "Group header - sauce section"
+  },
+  {
+    "input": "Marinad:",
+    "tokens": ["Marinad:"],
+    "labels": ["O"],
+    "expected": {},
+    "tags": ["group_header"],
+    "description": "Group header - marinade"
+  },
+  {
+    "input": "1 burk kokta vita bönor",
+    "tokens": ["1", "burk", "kokta", "vita", "bönor"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME", "I-NAME"],
+    "expected": { "quantity": "1", "unit": "burk", "name": "vita bönor", "preparation": "kokta" },
+    "tags": ["multi_word", "preparation"],
+    "description": "Cooked white beans"
+  },
+  {
+    "input": "1 msk finhackad färsk rosmarin",
+    "tokens": ["1", "msk", "finhackad", "färsk", "rosmarin"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME", "I-NAME"],
+    "expected": { "quantity": "1", "unit": "msk", "name": "färsk rosmarin", "preparation": "finhackad" },
+    "tags": ["multi_word", "preparation"],
+    "description": "Fresh rosemary with prep"
+  },
+  {
+    "input": "drygt 1 dl socker",
+    "tokens": ["drygt", "1", "dl", "socker"],
+    "labels": ["O", "B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "dl", "name": "socker" },
+    "tags": ["optional"],
+    "description": "Approximation 'drygt'"
+  },
+  {
+    "input": "knappt 2 dl mjöl",
+    "tokens": ["knappt", "2", "dl", "mjöl"],
+    "labels": ["O", "B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "mjöl" },
+    "tags": ["optional"],
+    "description": "Approximation 'knappt'"
+  },
+  {
+    "input": "valfritt 2 tsk vaniljsocker",
+    "tokens": ["valfritt", "2", "tsk", "vaniljsocker"],
+    "labels": ["O", "B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "tsk", "name": "vaniljsocker" },
+    "tags": ["optional"],
+    "description": "Optional 'valfritt'"
+  },
+  {
+    "input": "2 DL MJÖLK",
+    "tokens": ["2", "DL", "MJÖLK"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "DL", "name": "MJÖLK" },
+    "tags": ["social_media"],
+    "description": "Uppercase input"
+  },
+  {
+    "input": "• 2 dl mjölk",
+    "tokens": ["•", "2", "dl", "mjölk"],
+    "labels": ["O", "B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "mjölk" },
+    "tags": ["social_media"],
+    "description": "Bullet point prefix"
+  },
+  {
+    "input": "- 1 msk smör",
+    "tokens": ["-", "1", "msk", "smör"],
+    "labels": ["O", "B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "msk", "name": "smör" },
+    "tags": ["social_media"],
+    "description": "Dash bullet"
+  },
+  {
+    "input": "* 3 dl mjöl",
+    "tokens": ["*", "3", "dl", "mjöl"],
+    "labels": ["O", "B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "3", "unit": "dl", "name": "mjöl" },
+    "tags": ["social_media"],
+    "description": "Star bullet"
+  },
+  {
+    "input": "2 dl mjölk, kall",
+    "tokens": ["2", "dl", "mjölk", ",", "kall"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "O", "B-PREP"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "mjölk", "preparation": "kall" },
+    "tags": ["comma_separated"],
+    "description": "Comma-separated prep"
+  },
+  {
+    "input": "500 g köttfärs, nöt och fläsk",
+    "tokens": ["500", "g", "köttfärs", ",", "nöt", "och", "fläsk"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "O", "I-NAME", "O", "I-NAME"],
+    "expected": { "quantity": "500", "unit": "g", "name": "köttfärs" },
+    "tags": ["comma_separated"],
+    "description": "Mince with type clarification"
+  },
+  {
+    "input": "1 dl ströbröd eller panko",
+    "tokens": ["1", "dl", "ströbröd", "eller", "panko"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "O", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "dl", "name": "ströbröd" },
+    "tags": ["alternative"],
+    "description": "Breadcrumb alternative"
+  },
+  {
+    "input": "2 msk smör eller olja till stekning",
+    "tokens": ["2", "msk", "smör", "eller", "olja", "till", "stekning"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "O", "B-NAME", "O", "O"],
+    "expected": { "quantity": "2", "unit": "msk", "name": "smör" },
+    "tags": ["alternative", "purpose"],
+    "description": "Alternative with purpose clause"
+  },
+  {
+    "input": "2 dl grönsaksbuljonk",
+    "tokens": ["2", "dl", "grönsaksbuljonk"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "grönsaksbuljonk" },
+    "tags": ["compound"],
+    "description": "Vegetable stock compound"
+  },
+  {
+    "input": "1 msk sesamolja",
+    "tokens": ["1", "msk", "sesamolja"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "msk", "name": "sesamolja" },
+    "tags": ["compound"],
+    "description": "Sesame oil compound"
+  },
+  {
+    "input": "2 dl kokosgrädde",
+    "tokens": ["2", "dl", "kokosgrädde"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "kokosgrädde" },
+    "tags": ["compound"],
+    "description": "Coconut cream compound"
+  },
+  {
+    "input": "1 tsk vitvinsvinäger",
+    "tokens": ["1", "tsk", "vitvinsvinäger"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "tsk", "name": "vitvinsvinäger" },
+    "tags": ["compound"],
+    "description": "White wine vinegar compound"
+  },
+  {
+    "input": "1 dl rödvinsvinäger",
+    "tokens": ["1", "dl", "rödvinsvinäger"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "dl", "name": "rödvinsvinäger" },
+    "tags": ["compound"],
+    "description": "Red wine vinegar compound"
+  },
+  {
+    "input": "3 kvistar färsk timjan",
+    "tokens": ["3", "kvistar", "färsk", "timjan"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "I-NAME"],
+    "expected": { "quantity": "3", "unit": "kvistar", "name": "färsk timjan" },
+    "tags": ["multi_word"],
+    "description": "Sprigs of fresh thyme"
+  },
+  {
+    "input": "en näve ruccola",
+    "tokens": ["en", "näve", "ruccola"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "en", "unit": "näve", "name": "ruccola" },
+    "tags": ["text_quantity"],
+    "description": "Text quantity 'en'"
+  },
+  {
+    "input": "lite smör",
+    "tokens": ["lite", "smör"],
+    "labels": ["O", "B-NAME"],
+    "expected": { "name": "smör" },
+    "tags": ["text_quantity"],
+    "description": "Vague quantity 'lite'"
+  },
+  {
+    "input": "en skvätt mjölk",
+    "tokens": ["en", "skvätt", "mjölk"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "en", "unit": "skvätt", "name": "mjölk" },
+    "tags": ["text_quantity"],
+    "description": "Splash of milk"
+  },
+  {
+    "input": "1 msk finhackad vitlök",
+    "tokens": ["1", "msk", "finhackad", "vitlök"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "msk", "name": "vitlök", "preparation": "finhackad" },
+    "tags": ["preparation"],
+    "description": "Finely chopped garlic"
+  },
+  {
+    "input": "2 tsk torkad oregano",
+    "tokens": ["2", "tsk", "torkad", "oregano"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "tsk", "name": "oregano", "preparation": "torkad" },
+    "tags": ["preparation"],
+    "description": "Dried oregano"
+  },
+  {
+    "input": "1 krm nymalen svartpeppar",
+    "tokens": ["1", "krm", "nymalen", "svartpeppar"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "krm", "name": "svartpeppar", "preparation": "nymalen" },
+    "tags": ["preparation", "compound"],
+    "description": "Freshly ground pepper"
+  },
+  {
+    "input": "3 dl skalade räkor",
+    "tokens": ["3", "dl", "skalade", "räkor"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "3", "unit": "dl", "name": "räkor", "preparation": "skalade" },
+    "tags": ["preparation"],
+    "description": "Peeled shrimp"
+  },
+  {
+    "input": "200 g tärnad fetaost",
+    "tokens": ["200", "g", "tärnad", "fetaost"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "200", "unit": "g", "name": "fetaost", "preparation": "tärnad" },
+    "tags": ["preparation"],
+    "description": "Diced feta"
+  },
+  {
+    "input": "1 tsk malen koriander",
+    "tokens": ["1", "tsk", "malen", "koriander"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "tsk", "name": "koriander", "preparation": "malen" },
+    "tags": ["preparation"],
+    "description": "Ground coriander"
+  },
+  {
+    "input": "2 tsk malen spiskummin",
+    "tokens": ["2", "tsk", "malen", "spiskummin"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "tsk", "name": "spiskummin", "preparation": "malen" },
+    "tags": ["preparation"],
+    "description": "Ground cumin"
+  },
+  {
+    "input": "4 skivor cheddar",
+    "tokens": ["4", "skivor", "cheddar"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "4", "unit": "skivor", "name": "cheddar" },
+    "tags": ["standard"],
+    "description": "Slices as unit"
+  },
+  {
+    "input": "2 bitar mörk choklad",
+    "tokens": ["2", "bitar", "mörk", "choklad"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "I-NAME"],
+    "expected": { "quantity": "2", "unit": "bitar", "name": "mörk choklad" },
+    "tags": ["multi_word"],
+    "description": "Pieces of dark chocolate"
+  },
+  {
+    "input": "1 förp rökta korvar",
+    "tokens": ["1", "förp", "rökta", "korvar"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "förp", "name": "korvar", "preparation": "rökta" },
+    "tags": ["standard", "preparation"],
+    "description": "Package of smoked sausages"
+  },
+  {
+    "input": "ca 3-5 dl mjölk",
+    "tokens": ["ca", "3-5", "dl", "mjölk"],
+    "labels": ["O", "B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "3-5", "unit": "dl", "name": "mjölk" },
+    "tags": ["range", "optional"],
+    "description": "Approximate range"
+  },
+  {
+    "input": "",
+    "tokens": [],
+    "labels": [],
+    "expected": {},
+    "tags": ["edge_case"],
+    "description": "Empty input"
+  },
+  {
+    "input": "   ",
+    "tokens": [],
+    "labels": [],
+    "expected": {},
+    "tags": ["edge_case"],
+    "description": "Whitespace only"
+  },
+  {
+    "input": "2 dl matlagningsgrädde (15%)",
+    "tokens": ["2", "dl", "matlagningsgrädde", "(", "15%", ")"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "O", "O", "O"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "matlagningsgrädde" },
+    "tags": ["parenthetical"],
+    "description": "Fat percentage in parens"
+  },
+  {
+    "input": "1 burk kokosmjölk (400 ml)",
+    "tokens": ["1", "burk", "kokosmjölk", "(", "400", "ml", ")"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "O", "O", "O", "O"],
+    "expected": { "quantity": "1", "unit": "burk", "name": "kokosmjölk" },
+    "tags": ["parenthetical"],
+    "description": "Volume clarification in parens"
+  },
+  {
+    "input": "1 msk japansk soja (ljus)",
+    "tokens": ["1", "msk", "japansk", "soja", "(", "ljus", ")"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "I-NAME", "O", "O", "O"],
+    "expected": { "quantity": "1", "unit": "msk", "name": "japansk soja" },
+    "tags": ["parenthetical", "multi_word"],
+    "description": "Multi-word with paren clarification"
+  },
+  {
+    "input": "2 dl mjöl, gärna vetemjöl",
+    "tokens": ["2", "dl", "mjöl", ",", "gärna", "vetemjöl"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "O", "O", "I-NAME"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "mjöl" },
+    "tags": ["comma_separated"],
+    "description": "Comma suggestion"
+  },
+  {
+    "input": "3 dl ris, basmati",
+    "tokens": ["3", "dl", "ris", ",", "basmati"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "O", "I-NAME"],
+    "expected": { "quantity": "3", "unit": "dl", "name": "ris" },
+    "tags": ["comma_separated"],
+    "description": "Rice type clarification"
+  },
+  {
+    "input": "olja till stekning",
+    "tokens": ["olja", "till", "stekning"],
+    "labels": ["B-NAME", "O", "O"],
+    "expected": { "name": "olja" },
+    "tags": ["purpose"],
+    "description": "Purpose clause - for frying"
+  },
+  {
+    "input": "smör till stekning",
+    "tokens": ["smör", "till", "stekning"],
+    "labels": ["B-NAME", "O", "O"],
+    "expected": { "name": "smör" },
+    "tags": ["purpose"],
+    "description": "Purpose clause - butter for frying"
+  },
+  {
+    "input": "2 msk strösocker till garnering",
+    "tokens": ["2", "msk", "strösocker", "till", "garnering"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "O", "O"],
+    "expected": { "quantity": "2", "unit": "msk", "name": "strösocker" },
+    "tags": ["purpose"],
+    "description": "Sugar for garnish"
+  },
+  {
+    "input": "1 liten gul lök, finhackad",
+    "tokens": ["1", "liten", "gul", "lök", ",", "finhackad"],
+    "labels": ["B-QTY", "B-SIZE", "B-NAME", "I-NAME", "O", "B-PREP"],
+    "expected": { "quantity": "1", "name": "liten gul lök", "preparation": "finhackad" },
+    "tags": ["size", "preparation", "comma_separated"],
+    "description": "Size + name + comma prep"
+  },
+  {
+    "input": "2 stora tomater, urkärnade och hackade",
+    "tokens": ["2", "stora", "tomater", ",", "urkärnade", "och", "hackade"],
+    "labels": ["B-QTY", "B-SIZE", "B-NAME", "O", "B-PREP", "I-PREP", "I-PREP"],
+    "expected": { "quantity": "2", "name": "stora tomater", "preparation": "urkärnade och hackade" },
+    "tags": ["size", "preparation", "comma_separated"],
+    "description": "Large tomatoes with multi-word prep"
+  },
+  {
+    "input": "1 dl turkish peppar",
+    "tokens": ["1", "dl", "turkish", "peppar"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "I-NAME"],
+    "expected": { "quantity": "1", "unit": "dl", "name": "turkish peppar" },
+    "tags": ["multi_word"],
+    "description": "Unknown multi-word ingredient"
+  },
+  {
+    "input": "1 näve babyspenat",
+    "tokens": ["1", "näve", "babyspenat"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "näve", "name": "babyspenat" },
+    "tags": ["text_quantity"],
+    "description": "Handful of baby spinach"
+  },
+  {
+    "input": "2 tsk dijonsenap",
+    "tokens": ["2", "tsk", "dijonsenap"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "tsk", "name": "dijonsenap" },
+    "tags": ["compound"],
+    "description": "Dijon mustard compound"
+  },
+  {
+    "input": "3 dl passerade tomater",
+    "tokens": ["3", "dl", "passerade", "tomater"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "3", "unit": "dl", "name": "tomater", "preparation": "passerade" },
+    "tags": ["preparation"],
+    "description": "Strained tomatoes"
+  },
+  {
+    "input": "1 förpackning färsk pasta",
+    "tokens": ["1", "förpackning", "färsk", "pasta"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "I-NAME"],
+    "expected": { "quantity": "1", "unit": "förpackning", "name": "färsk pasta" },
+    "tags": ["multi_word"],
+    "description": "Package of fresh pasta"
+  },
+  {
+    "input": "2 dl osötad mandelmjölk",
+    "tokens": ["2", "dl", "osötad", "mandelmjölk"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "mandelmjölk", "preparation": "osötad" },
+    "tags": ["preparation", "compound"],
+    "description": "Unsweetened almond milk"
+  },
+  {
+    "input": "smör",
+    "tokens": ["smör"],
+    "labels": ["B-NAME"],
+    "expected": { "name": "smör" },
+    "tags": ["no_quantity"],
+    "description": "Single word ingredient"
+  },
+  {
+    "input": "peppar",
+    "tokens": ["peppar"],
+    "labels": ["B-NAME"],
+    "expected": { "name": "peppar" },
+    "tags": ["no_quantity"],
+    "description": "Just pepper"
+  },
+  {
+    "input": "salt och peppar",
+    "tokens": ["salt", "och", "peppar"],
+    "labels": ["B-NAME", "O", "B-NAME"],
+    "expected": { "name": "salt" },
+    "tags": ["alternative"],
+    "description": "Salt and pepper combined"
+  },
+  {
+    "input": "2 dl mixed sallad",
+    "tokens": ["2", "dl", "mixed", "sallad"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "I-NAME"],
+    "expected": { "quantity": "2", "unit": "dl", "name": "mixed sallad" },
+    "tags": ["multi_word"],
+    "description": "Mixed salad"
+  },
+  {
+    "input": "100 g rå cashewnötter",
+    "tokens": ["100", "g", "rå", "cashewnötter"],
+    "labels": ["B-QTY", "B-UNIT", "B-PREP", "B-NAME"],
+    "expected": { "quantity": "100", "unit": "g", "name": "cashewnötter", "preparation": "rå" },
+    "tags": ["preparation"],
+    "description": "Raw cashews"
+  },
+  {
+    "input": "1 skiva leverpastej",
+    "tokens": ["1", "skiva", "leverpastej"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME"],
+    "expected": { "quantity": "1", "unit": "skiva", "name": "leverpastej" },
+    "tags": ["standard"],
+    "description": "Slice of liver pâté"
+  },
+  {
+    "input": "1 dl bladpersilja, grovhackad",
+    "tokens": ["1", "dl", "bladpersilja", ",", "grovhackad"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "O", "B-PREP"],
+    "expected": { "quantity": "1", "unit": "dl", "name": "bladpersilja", "preparation": "grovhackad" },
+    "tags": ["comma_separated", "preparation"],
+    "description": "Flat-leaf parsley, roughly chopped"
+  },
+  {
+    "input": "1 citron, saft och skal",
+    "tokens": ["1", "citron", ",", "saft", "och", "skal"],
+    "labels": ["B-QTY", "B-NAME", "O", "B-PREP", "I-PREP", "I-PREP"],
+    "expected": { "quantity": "1", "name": "citron", "preparation": "saft och skal" },
+    "tags": ["comma_separated", "preparation"],
+    "description": "Lemon, juice and zest"
+  },
+  {
+    "input": "3 cm färsk ingefära",
+    "tokens": ["3", "cm", "färsk", "ingefära"],
+    "labels": ["B-QTY", "B-UNIT", "B-NAME", "I-NAME"],
+    "expected": { "quantity": "3", "unit": "cm", "name": "färsk ingefära" },
+    "tags": ["multi_word"],
+    "description": "Length measurement"
+  }
+]
