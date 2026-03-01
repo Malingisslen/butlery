@@ -148,7 +148,7 @@ class _AuthViewState extends State<AuthView> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Align(
-                alignment: Alignment.centerLeft,
+                alignment: AlignmentDirectional.centerStart,
                 child: Text(
                   viewModel.isLoginMode
                       ? context.l10n.authLogin
@@ -248,7 +248,7 @@ class _AuthViewState extends State<AuthView> {
               if (viewModel.isLoginMode) ...[
                 const SizedBox(height: AppDimensions.spacingSm),
                 Align(
-                  alignment: Alignment.centerRight,
+                  alignment: AlignmentDirectional.centerEnd,
                   child: TextButton(
                     onPressed: viewModel.isLoading
                         ? null

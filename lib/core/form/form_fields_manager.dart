@@ -149,7 +149,7 @@ class FormFieldsManager {
     for (int i = 0; i < _values.length; i++) {
       final key = 'field_$i';
 
-      // Skapa ny controller om den inte finns
+      // Create new controller if it doesn't exist
       if (!_controllers.containsKey(key)) {
         final controller = TextEditingController(text: _values[i]);
 
@@ -194,7 +194,7 @@ class FormFieldsManager {
     }
   }
 
-  /// Ta bort controller vid specifikt index
+  /// Remove controller at specific index
   void removeController(int index) {
     if (index < 0 || index >= _values.length) return;
 
@@ -325,12 +325,12 @@ class FormFieldsManager {
   /// Get all values
   List<String> get values => List.unmodifiable(_values);
 
-  /// Kontrollera om en specifik controller finns
+  /// Check if a specific controller exists
   bool hasController(int index) {
     return _controllers.containsKey('field_$index');
   }
 
-  /// Rensa och dispose alla controllers
+  /// Clear and dispose all controllers
   void dispose() {
     // CRITICAL FIX: Remove listeners before disposing controllers
     for (final entry in _controllers.entries) {
