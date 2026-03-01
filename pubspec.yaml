@@ -43,7 +43,6 @@ dependencies:
   pointycastle: ^4.0.0  # Cryptography for AES field-level encryption (matches firebase_auth_mocks)
 
   # ==================== NAVIGATION & UI ====================
-  go_router: ^17.0.0
   dynamic_color: ^1.7.0  # Material You dynamic color support (Android 12+)
   wakelock_plus: ^1.2.8  # Keep screen awake during cooking mode
 

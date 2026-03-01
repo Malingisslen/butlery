@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
@@ -459,31 +460,31 @@ class SocialCollaborativeComponents {
         return _PermissionConfig(
           icon: Icons.star,
           label: context?.l10n.socialPermissionOwner ?? 'Ägare',
-          color: cs?.primary ?? Colors.green,
+          color: cs?.primary ?? AppColors.forestGreen,
         );
       case 'admin':
         return _PermissionConfig(
           icon: Icons.admin_panel_settings,
           label: context?.l10n.socialPermissionAdmin ?? 'Admin',
-          color: cs?.primary ?? Colors.green,
+          color: cs?.primary ?? AppColors.forestGreen,
         );
       case 'editor':
         return _PermissionConfig(
           icon: Icons.edit,
           label: context?.l10n.socialPermissionEditor ?? 'Redigera',
-          color: cs?.primary ?? Colors.green,
+          color: cs?.primary ?? AppColors.forestGreen,
         );
       case 'viewer':
         return _PermissionConfig(
           icon: Icons.visibility,
           label: context?.l10n.socialPermissionViewer ?? 'Läsa',
-          color: cs?.onSurfaceVariant ?? Colors.grey,
+          color: cs?.onSurfaceVariant ?? AppColors.textLight,
         );
       default:
         return _PermissionConfig(
           icon: Icons.help_outline,
           label: context?.l10n.socialPermissionUnknown ?? '?',
-          color: cs?.onSurfaceVariant ?? Colors.grey,
+          color: cs?.onSurfaceVariant ?? AppColors.textLight,
         );
     }
   }

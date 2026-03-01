@@ -53,7 +53,7 @@ class ConversationListItem extends StatelessWidget {
           return false;
         },
         background: Container(
-          alignment: Alignment.centerLeft,
+          alignment: AlignmentDirectional.centerStart,
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingLg,
           ),
@@ -64,7 +64,7 @@ class ConversationListItem extends StatelessWidget {
           ),
         ),
         secondaryBackground: Container(
-          alignment: Alignment.centerRight,
+          alignment: AlignmentDirectional.centerEnd,
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingLg,
           ),

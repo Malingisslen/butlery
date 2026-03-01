@@ -1,6 +1,7 @@
 /// Import first recipe page for the onboarding wizard.
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -18,15 +19,14 @@ class OnboardingImportPage extends StatelessWidget {
         children: [
           const SizedBox(height: AppDimensions.spacingXl),
           Text(
-            'Importera ditt forsta recept',
+            context.l10n.onboardingImportTitle,
             style: AppTextStyles.headlineMedium.copyWith(
               color: cs.primary,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
-            'Kom igang snabbt genom att importera ett recept fran webben '
-            'eller ett foto.',
+            context.l10n.onboardingImportDescription,
             style: AppTextStyles.bodyMedium.copyWith(
               color: cs.onSurfaceVariant,
             ),
@@ -35,8 +35,8 @@ class OnboardingImportPage extends StatelessWidget {
           // URL import card
           _ImportOptionCard(
             icon: Icons.link,
-            title: 'Fran en webbadress',
-            description: 'Klistra in en lank till ett recept',
+            title: context.l10n.onboardingImportUrlTitle,
+            description: context.l10n.onboardingImportUrlDescription,
             onTap: () {
               Navigator.of(context).pushNamed(Routes.importViaUrl);
             },
@@ -45,8 +45,8 @@ class OnboardingImportPage extends StatelessWidget {
           // Photo import card
           _ImportOptionCard(
             icon: Icons.camera_alt_outlined,
-            title: 'Importera fran foto',
-            description: 'Ta ett foto eller valj fran galleriet',
+            title: context.l10n.onboardingImportPhotoTitle,
+            description: context.l10n.onboardingImportPhotoDescription,
             onTap: () {
               Navigator.of(context).pushNamed(Routes.photoImport);
             },
@@ -54,7 +54,7 @@ class OnboardingImportPage extends StatelessWidget {
           const Spacer(),
           Center(
             child: Text(
-              'Du kan hoppa over detta steg och importera senare.',
+              context.l10n.onboardingImportSkipNote,
               style: AppTextStyles.bodySmall.copyWith(
                 color: cs.outline,
               ),

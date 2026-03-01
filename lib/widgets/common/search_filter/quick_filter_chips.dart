@@ -101,7 +101,7 @@ class QuickFilterChips extends StatelessWidget {
 
           // Individual filter chips
           ...options.map((option) => Padding(
-                padding: const EdgeInsets.only(left: AppDimensions.spacingSm),
+                padding: const EdgeInsetsDirectional.only(start: AppDimensions.spacingSm),
                 child: _QuickChip(
                   label: option.label,
                   icon: option.icon,
@@ -113,7 +113,7 @@ class QuickFilterChips extends StatelessWidget {
           // Trailing widget (e.g. sort button)
           if (trailing != null)
             Padding(
-              padding: const EdgeInsets.only(left: AppDimensions.spacingSm),
+              padding: const EdgeInsetsDirectional.only(start: AppDimensions.spacingSm),
               child: trailing!,
             ),
         ],

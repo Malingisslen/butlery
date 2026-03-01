@@ -559,7 +559,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           return false;
         },
         background: Container(
-          alignment: Alignment.centerLeft,
+          alignment: AlignmentDirectional.centerStart,
           padding:
               const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
           color: cs.primary,
@@ -567,7 +567,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               color: cs.onPrimary, size: AppDimensions.iconSize28),
         ),
         secondaryBackground: Container(
-          alignment: Alignment.centerRight,
+          alignment: AlignmentDirectional.centerEnd,
           padding:
               const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
           color: cs.error,

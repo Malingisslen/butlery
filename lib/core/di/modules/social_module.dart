@@ -190,7 +190,7 @@ class SocialModule implements DIModule {
                 AppLogger.error('SocialMenuCoordinator error: $error'),
             notifyListeners: () {}, // Coordinators are services, not ViewModels
             getMenu: (id) async {
-              // FIXME(social-menu-api): Implement when UnifiedMenuService has getById
+              // Stub: UnifiedMenuService.getById not yet available
               AppLogger.warning(
                   'SocialMenuCoordinator.getMenu not yet implemented');
               return null;
@@ -249,13 +249,13 @@ class SocialModule implements DIModule {
                 AppLogger.error('SocialShoppingCoordinator error: $error'),
             notifyListeners: () {}, // Coordinators are services, not ViewModels
             getShoppingList: (id) async {
-              // FIXME(social-shopping-api): Implement when UnifiedShoppingService has getById
+              // Stub: UnifiedShoppingService.getById not yet available
               AppLogger.warning(
                   'SocialShoppingCoordinator.getShoppingList not yet implemented');
               return null;
             },
             saveShoppingList: (list) async {
-              // FIXME(social-shopping-api): Implement when UnifiedShoppingService has save method
+              // Stub: UnifiedShoppingService.save not yet available
               AppLogger.warning(
                   'SocialShoppingCoordinator.saveShoppingList not yet implemented');
               return null;
