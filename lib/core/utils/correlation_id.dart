@@ -18,7 +18,7 @@ import 'dart:math';
 class CorrelationId {
   CorrelationId._(); // Private constructor - utility class
 
-  static final Random _random = Random();
+  static final Random _random = Random.secure();
   static String? _current;
 
   /// Generate a new correlation ID and set it as current.

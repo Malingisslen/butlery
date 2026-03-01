@@ -82,10 +82,10 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'dart:async';
 import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:butlery/firebase_options.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -99,23 +99,20 @@ Future<void> main() async {
       50 * 1024 * 1024; // 50 MB
 
   try {
-    // Load environment variables first - required for Firebase configuration
-    await dotenv.load(fileName: '.env');
-
-    // Initialize Firebase with configuration from .env
+    // Initialize Firebase with configuration from compile-time --dart-define
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    // Initialize Firebase Crashlytics and App Check in parallel for faster startup
+    // Default Crashlytics to disabled until consent is verified (GDPR)
+    // App Check can proceed immediately (security, not analytics)
     await Future.wait([
       if (!kIsWeb)
-        FirebaseCrashlytics.instance
-            .setCrashlyticsCollectionEnabled(!kDebugMode),
+        FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false),
       if (!kDebugMode)
         FirebaseAppCheck.instance.activate(
           providerWeb: ReCaptchaV3Provider(
-            dotenv.env['RECAPTCHA_SITE_KEY'] ?? '',
+            const String.fromEnvironment('RECAPTCHA_SITE_KEY'),
           ),
           providerAndroid: const AndroidPlayIntegrityProvider(),
           providerApple: const AppleDeviceCheckProvider(),
@@ -148,26 +145,23 @@ Future<void> main() async {
     // Skip startup optimization manager - it conflicts with the modular bootstrap system
     // The modular system already handles all initialization properly
 
-    // Setup zone error handling for async errors
+    // Run app inside guarded zone to catch async errors
     runZonedGuarded(
-      () async {
-        // This zone will catch async errors but app is started outside
+      () {
+        runApp(const ButleryApp());
       },
       (error, stack) {
-        // Log to Crashlytics (mobile only)
         if (!kIsWeb) {
           FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
         }
       },
     );
-
-    // Start the application (must be in same zone as ensureInitialized)
-    runApp(const ButleryApp());
   } catch (e, stackTrace) {
-    // Show error app with more details
     runApp(
       _ErrorApp(
-        'Application failed to initialize: $e\n\nStack trace:\n$stackTrace',
+        kDebugMode
+            ? 'Application failed to initialize: $e\n\nStack trace:\n$stackTrace'
+            : 'Application failed to initialize. Please restart.',
       ),
     );
   }
@@ -196,16 +190,44 @@ Future<void> _initializeModularSystem() async {
     UIStage(),
   ];
 
-  // Start Firebase Performance trace for app startup
-  final startupTrace = FirebasePerformance.instance.newTrace('app_startup');
-  await startupTrace.start();
+  // Default Performance collection to disabled until consent (GDPR)
+  await FirebasePerformance.instance.setPerformanceCollectionEnabled(false);
 
   // Initialize with modules and stages
   // This also initializes the ServiceLocator internally
   await ApplicationBootstrap.initialize(modules: modules, stages: stages);
 
-  // Stop startup trace after initialization complete
-  await startupTrace.stop();
+  // Enable Crashlytics and Performance only if user has analytics consent
+  await _enableCollectionIfConsented();
+}
+
+/// Enable Crashlytics and Performance collection only when the user
+/// has granted analytics consent. Safe default: disabled.
+Future<void> _enableCollectionIfConsented() async {
+  if (kIsWeb) return;
+
+  try {
+    final bootstrap = ApplicationBootstrap();
+    if (!bootstrap.isInitialized) return;
+
+    final consentService = bootstrap.container.get<ConsentService>();
+    final hasConsent = await consentService.hasConsent('analytics');
+
+    await Future.wait([
+      FirebaseCrashlytics.instance
+          .setCrashlyticsCollectionEnabled(hasConsent && !kDebugMode),
+      FirebasePerformance.instance
+          .setPerformanceCollectionEnabled(hasConsent),
+    ]);
+
+    AppLogger.info(
+      'Collection consent: analytics=$hasConsent → '
+      'Crashlytics=${hasConsent && !kDebugMode}, Performance=$hasConsent',
+    );
+  } catch (e) {
+    // Consent check failed — leave collection disabled (safe default)
+    AppLogger.warning('Failed to check analytics consent: $e');
+  }
 }
 
 class _ErrorApp extends StatelessWidget {

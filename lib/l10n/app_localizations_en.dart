@@ -12087,4 +12087,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tagImportedSuccess => 'Tag imported successfully';
+
+  @override
+  String get legalTermsOfService => 'Terms of Service';
+
+  @override
+  String get legalCommunityGuidelines => 'Community Guidelines';
+
+  @override
+  String get legalOpenSourceLicenses => 'Open Source Licenses';
+
+  @override
+  String get authAgeConfirmation => 'I confirm that I am at least 13 years old';
+
+  @override
+  String get authAgeConfirmationRequired =>
+      'You must confirm your age to create an account';
+
+  @override
+  String get reportContent => 'Report';
+
+  @override
+  String get reportReasonInappropriate => 'Inappropriate content';
+
+  @override
+  String get reportReasonSpam => 'Spam';
+
+  @override
+  String get reportReasonHarassment => 'Harassment';
+
+  @override
+  String get reportReasonCopyright => 'Copyright infringement';
+
+  @override
+  String get reportReasonOther => 'Other';
+
+  @override
+  String get reportDescriptionHint => 'Describe the issue (optional)';
+
+  @override
+  String get reportSubmitted => 'Report submitted';
+
+  @override
+  String get reportSubmitFailed => 'Could not submit report';
+
+  @override
+  String get reportDialogTitle => 'Report content';
+
+  @override
+  String get reportSubmit => 'Submit report';
+
+  @override
+  String get contentFilterWarning =>
+      'The text contains inappropriate language. Please edit before submitting.';
 }

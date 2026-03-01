@@ -9,8 +9,10 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:receive_intent/receive_intent.dart' as receive_intent;
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 
 /// Deep link handler for processing incoming shared content.
 /// Handles various types of deep links including:
@@ -82,29 +84,31 @@ class DeepLinkHandler {
   }
 
   /// Process a deep link URL and navigate to the appropriate view.
-  /// Parses the incoming URL to extract the path and query parameters,
-  /// then routes to the correct handler based on the content type.
-  /// [deepLinkUrl] The complete deep link URL to process
-  /// [context] The BuildContext for navigation
-  /// Supports the following URL patterns:
-  /// - `/invite?id=xxx&from=yyy&type=friend` - Friend invitations
-  /// - `/recipe?id=xxx&from=yyy` - Shared recipes
-  /// - `/menu?id=xxx&from=yyy` - Shared menus
-  /// - `/shopping?id=xxx&from=yyy` - Shared shopping lists
   Future<void> processDeepLink(String deepLinkUrl, BuildContext context) async {
     try {
+      // Auth gate: require authentication before processing deep links
+      final authRepo = ServiceLocator.get<AuthRepository>();
+      if (authRepo.currentUser == null) {
+        _pendingDeepLink = deepLinkUrl;
+        return;
+      }
+
       final uri = Uri.parse(deepLinkUrl);
 
-      // Extract path and parameters
+      // Host validation for custom scheme
+      if (uri.scheme == 'butlery' &&
+          uri.host.isNotEmpty &&
+          uri.host != 'butlery.app') {
+        return;
+      }
+
       final path = uri.path;
       final params = uri.queryParameters;
 
-      // Ensure context is still valid
       if (!context.mounted) {
         return;
       }
 
-      // Route based on deep link type
       if (path.startsWith('/invite')) {
         await _handleInvitationLink(params, context);
       } else if (path.startsWith('/recipe')) {
@@ -119,6 +123,12 @@ class DeepLinkHandler {
     }
   }
 
+  /// Validate that an ID looks like a valid Firestore document ID.
+  static bool _isValidFirestoreId(String id) {
+    if (id.length < 20 || id.length > 28) return false;
+    return RegExp(r'^[a-zA-Z0-9]+$').hasMatch(id);
+  }
+
   /// Handle friend invitation deep links.
   Future<void> _handleInvitationLink(
     Map<String, String> params,
@@ -128,7 +138,10 @@ class DeepLinkHandler {
     final fromUserId = params['from'];
     final type = params['type'];
 
-    if (invitationId != null && fromUserId != null) {
+    if (invitationId != null &&
+        fromUserId != null &&
+        _isValidFirestoreId(invitationId) &&
+        _isValidFirestoreId(fromUserId)) {
       // Pre-load social module before navigation
       await _ensureSocialModuleLoaded();
 
@@ -152,7 +165,7 @@ class DeepLinkHandler {
   ) async {
     final recipeId = params['id'];
 
-    if (recipeId != null) {
+    if (recipeId != null && _isValidFirestoreId(recipeId)) {
       if (context.mounted) {
         // Navigate to recipe detail view with recipe ID as query parameter
         GoRouter.of(context).push('${Routes.receptDetalj}?recipeId=$recipeId');
@@ -167,7 +180,7 @@ class DeepLinkHandler {
   ) async {
     final menuId = params['id'];
 
-    if (menuId != null) {
+    if (menuId != null && _isValidFirestoreId(menuId)) {
       // Pre-load social module before navigation
       await _ensureSocialModuleLoaded();
 
@@ -185,7 +198,7 @@ class DeepLinkHandler {
   ) async {
     final listId = params['id'];
 
-    if (listId != null) {
+    if (listId != null && _isValidFirestoreId(listId)) {
       // Pre-load social module before navigation
       await _ensureSocialModuleLoaded();
 
@@ -215,9 +228,11 @@ class DeepLinkHandler {
   }
 
   /// Get debug information about the handler state.
-  Map<String, dynamic> get debugInfo => {
-        'initialized': _isInitialized,
-        'has_pending_link': _pendingDeepLink != null,
-        'pending_link': _pendingDeepLink,
-      };
+  Map<String, dynamic> get debugInfo => kDebugMode
+      ? {
+          'initialized': _isInitialized,
+          'has_pending_link': _pendingDeepLink != null,
+          'pending_link': _pendingDeepLink,
+        }
+      : {};
 }

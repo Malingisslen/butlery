@@ -14,6 +14,14 @@ pre-commit:
       run: dart format --set-exit-if-changed {staged_files}
       stage_fixed: true
 
+    # Scan for potential secrets in staged files
+    secret-scan:
+      glob: "*.{dart,ts,json,yaml,yml,env}"
+      run: >
+        grep -rlE '(AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|sk-[a-zA-Z0-9]{20,}|-----BEGIN (RSA|EC) PRIVATE KEY)' {staged_files}
+        && echo "Potential secrets detected!" && exit 1
+        || true
+
     # Run Flutter analyze (non-blocking for infos)
     analyze:
       run: flutter analyze --no-fatal-infos

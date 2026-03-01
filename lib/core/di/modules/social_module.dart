@@ -47,6 +47,9 @@ import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
+import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
+import 'package:butlery/services/moderation/report_service.dart';
+import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
 
@@ -78,6 +81,9 @@ class SocialModule implements DIModule {
         SocialRecipeCoordinator,
         SocialMenuCoordinator,
         SocialShoppingCoordinator,
+        FirebaseReportRepository,
+        ReportService,
+        ContentFilterService,
       ];
 
   @override
@@ -265,6 +271,24 @@ class SocialModule implements DIModule {
             cacheHelper: container<JsonCacheHelper>(),
           );
         },
+      );
+
+      // Content reporting repository and service
+      container.registerLazySingleton<FirebaseReportRepository>(
+        () => FirebaseReportRepository(
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
+      container.registerLazySingleton<ReportService>(
+        () => ReportService(
+          reportRepository: container<FirebaseReportRepository>(),
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
+      container.registerLazySingleton<ContentFilterService>(
+        () => ContentFilterService(),
       );
 
       // Deep link repository and service

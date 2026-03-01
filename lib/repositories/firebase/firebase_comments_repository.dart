@@ -169,7 +169,17 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       'replyCount': 0,
     };
 
-    final docRef = await collection.add(commentData);
+    // Batch write: comment + rate limit doc for server-side enforcement
+    final batch = firestore.batch();
+    final docRef = collection.doc();
+    batch.set(docRef, commentData);
+    batch.set(
+      firestore.collection('users').doc(userId).collection('rateLimits').doc('comments'),
+      {'lastWrite': FieldValue.serverTimestamp()},
+      SetOptions(merge: true),
+    );
+    await batch.commit();
+
     final doc = await docRef.get();
 
     logPermissionCheck(

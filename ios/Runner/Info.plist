@@ -54,16 +54,12 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Butlery behöver tillgång till bildgalleriet för att spara bilder av recept</string>
 
-	<!-- Biometric Authentication (Face ID) -->
-	<key>NSFaceIDUsageDescription</key>
-	<string>Butlery använder Face ID för säker inloggning till ditt konto</string>
-
 	<!-- Deep Link Configuration -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>com.butlery.app</string>
+			<string>se.butlery.app</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>butlery</string>

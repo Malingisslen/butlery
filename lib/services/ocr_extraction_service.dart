@@ -5,11 +5,8 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/network/ssl_pinning_service.dart';
 import 'package:butlery/services/ocr/ocr_usage_tracker.dart';
 
 /// OCR processing result with comprehensive metadata and quality metrics
@@ -197,48 +194,30 @@ class OCRExtractionService extends BaseService {
   // Getters with test dependency injection support
   http.Client get _httpClient {
     if (_testHttpClient != null) return _testHttpClient;
-    // Use SSL pinning for production HTTP calls
-    try {
-      return ServiceLocator.get<SslPinningService>().createPinnedClient();
-    } catch (_) {
-      // Fallback to standard client if SSL service not available
-      return http.Client();
-    }
+    return http.Client();
   }
 
   String get _ocrApiKey {
     if (_testOcrApiKey != null) return _testOcrApiKey;
-    try {
-      return dotenv.env['OCR_API_KEY'] ?? '';
-    } catch (_) {
-      return '';
-    }
+    return const String.fromEnvironment('OCR_API_KEY');
   }
 
   String get _ocrApiUrl {
-    try {
-      return dotenv.env['OCR_API_URL'] ?? 'https://api.ocr.space/parse/image';
-    } catch (_) {
-      return 'https://api.ocr.space/parse/image';
-    }
+    const url = String.fromEnvironment(
+      'OCR_API_URL',
+      defaultValue: 'https://api.ocr.space/parse/image',
+    );
+    return url;
   }
 
   String get _googleVisionKey {
     if (_testGoogleVisionKey != null) return _testGoogleVisionKey;
-    try {
-      return dotenv.env['GOOGLE_VISION_API_KEY'] ?? '';
-    } catch (_) {
-      return '';
-    }
+    return const String.fromEnvironment('GOOGLE_VISION_API_KEY');
   }
 
   String get _tesseractApiUrl {
     if (_testTesseractApiUrl != null) return _testTesseractApiUrl;
-    try {
-      return dotenv.env['TESSERACT_API_URL'] ?? '';
-    } catch (_) {
-      return '';
-    }
+    return const String.fromEnvironment('TESSERACT_API_URL');
   }
 
   DateTime get _now => _testTimeProvider?.call() ?? DateTime.now();

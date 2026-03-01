@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/account_security_viewmodel.dart';
 import 'package:butlery/views/settings/mfa_settings_view.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
@@ -113,6 +114,10 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
                     const Divider(),
                     const SizedBox(height: AppDimensions.spacingXl),
                     _buildMfaSection(),
+                    const SizedBox(height: AppDimensions.spacingXl),
+                    const Divider(),
+                    const SizedBox(height: AppDimensions.spacingXl),
+                    _buildLegalSection(),
                   ],
                 ),
               ),
@@ -318,6 +323,49 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
               ),
             );
           },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLegalSection() {
+    final cs = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.gavel_outlined, color: cs.primary),
+            const SizedBox(width: AppDimensions.spacingSm),
+            Text(
+              context.l10n.legalTermsOfService,
+              style: AppTextStyles.headlineSmall,
+            ),
+          ],
+        ),
+        const SizedBox(height: AppDimensions.spacingMd),
+        ListTile(
+          leading: const Icon(Icons.description_outlined),
+          title: Text(context.l10n.legalTermsOfService),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.pushNamed(context, Routes.termsOfService),
+        ),
+        ListTile(
+          leading: const Icon(Icons.people_outline),
+          title: Text(context.l10n.legalCommunityGuidelines),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () =>
+              Navigator.pushNamed(context, Routes.communityGuidelines),
+        ),
+        ListTile(
+          leading: const Icon(Icons.code),
+          title: Text(context.l10n.legalOpenSourceLicenses),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => showLicensePage(
+            context: context,
+            applicationName: 'Butlery',
+          ),
         ),
       ],
     );

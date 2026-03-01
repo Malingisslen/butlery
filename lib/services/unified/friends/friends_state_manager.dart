@@ -8,6 +8,7 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Consolidated friends state manager handling all friend-related state with real-time synchronization
@@ -79,6 +80,7 @@ class FriendsStateManager extends ChangeNotifier {
         _loadFriendRequests(),
         _loadCategories(currentUserId),
         _loadGroupInvitations(currentUserId),
+        _loadBlockedUsers(currentUserId),
       ]);
 
       _setupRealtimeListeners(currentUserId);
@@ -162,6 +164,28 @@ class FriendsStateManager extends ChangeNotifier {
     } catch (e) {
       _receivedInvitations = [];
       _sentInvitations = [];
+    }
+  }
+
+  Future<void> _loadBlockedUsers(String userId) async {
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+      if (userDoc.exists) {
+        final data = userDoc.data();
+        final blocked = data?['blockedUsers'];
+        if (blocked is List) {
+          _blockedUsers
+            ..clear()
+            ..addAll(blocked.cast<String>());
+          AppLogger.debug(
+              'Loaded ${_blockedUsers.length} blocked users from Firestore');
+        }
+      }
+    } catch (e) {
+      AppLogger.warning('Failed to load blocked users: $e');
     }
   }
 

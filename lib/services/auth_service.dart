@@ -10,6 +10,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/services/notifications/modules/fcm_token_manager.dart';
 
 /// Firebase authentication service managing login, registration, and session state.
 class AuthService extends ChangeNotifier
@@ -141,6 +142,7 @@ class AuthService extends ChangeNotifier
 
   Future<void> signOut() async {
     await executeAsync(() async {
+      await _cleanupFcmTokens();
       await _authRepository.signOut();
       _currentUser = null;
       AppLogger.info('User signed out successfully');
@@ -153,6 +155,7 @@ class AuthService extends ChangeNotifier
   /// Logout for session timeout - tracks separately for security monitoring.
   Future<void> logoutDueToInactivity() async {
     await executeAsync(() async {
+      await _cleanupFcmTokens();
       await _authRepository.signOut();
       _currentUser = null;
       AppLogger.info('User logged out due to session inactivity');
@@ -481,6 +484,20 @@ class AuthService extends ChangeNotifier
     } catch (e) {
       setError(AppLocale.current.errorUnexpected);
       return false;
+    }
+  }
+
+  /// Clean up FCM tokens before sign-out to prevent stale delivery.
+  Future<void> _cleanupFcmTokens() async {
+    try {
+      final userId = _authRepository.currentUserId;
+      if (userId != null) {
+        final tokenManager = FCMTokenManager(userId: userId);
+        await tokenManager.cleanup();
+      }
+    } catch (e) {
+      // Don't block logout if FCM cleanup fails
+      AppLogger.warning('FCM token cleanup failed during sign-out: $e');
     }
   }
 

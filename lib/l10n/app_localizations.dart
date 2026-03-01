@@ -20763,6 +20763,108 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Taggen importerades'**
   String get tagImportedSuccess;
+
+  /// No description provided for @legalTermsOfService.
+  ///
+  /// In sv, this message translates to:
+  /// **'Användarvillkor'**
+  String get legalTermsOfService;
+
+  /// No description provided for @legalCommunityGuidelines.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gemenskapsriktlinjer'**
+  String get legalCommunityGuidelines;
+
+  /// No description provided for @legalOpenSourceLicenses.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppen källkod-licenser'**
+  String get legalOpenSourceLicenses;
+
+  /// No description provided for @authAgeConfirmation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Jag bekräftar att jag är minst 13 år'**
+  String get authAgeConfirmation;
+
+  /// No description provided for @authAgeConfirmationRequired.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du måste bekräfta din ålder för att skapa ett konto'**
+  String get authAgeConfirmationRequired;
+
+  /// No description provided for @reportContent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rapportera'**
+  String get reportContent;
+
+  /// No description provided for @reportReasonInappropriate.
+  ///
+  /// In sv, this message translates to:
+  /// **'Olämpligt innehåll'**
+  String get reportReasonInappropriate;
+
+  /// No description provided for @reportReasonSpam.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spam'**
+  String get reportReasonSpam;
+
+  /// No description provided for @reportReasonHarassment.
+  ///
+  /// In sv, this message translates to:
+  /// **'Trakasseri'**
+  String get reportReasonHarassment;
+
+  /// No description provided for @reportReasonCopyright.
+  ///
+  /// In sv, this message translates to:
+  /// **'Upphovsrättsintrång'**
+  String get reportReasonCopyright;
+
+  /// No description provided for @reportReasonOther.
+  ///
+  /// In sv, this message translates to:
+  /// **'Annat'**
+  String get reportReasonOther;
+
+  /// No description provided for @reportDescriptionHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beskriv vad som är fel (valfritt)'**
+  String get reportDescriptionHint;
+
+  /// No description provided for @reportSubmitted.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rapporten har skickats'**
+  String get reportSubmitted;
+
+  /// No description provided for @reportSubmitFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte skicka rapporten'**
+  String get reportSubmitFailed;
+
+  /// No description provided for @reportDialogTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rapportera innehåll'**
+  String get reportDialogTitle;
+
+  /// No description provided for @reportSubmit.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka rapport'**
+  String get reportSubmit;
+
+  /// No description provided for @contentFilterWarning.
+  ///
+  /// In sv, this message translates to:
+  /// **'Texten innehåller olämpligt språk. Vänligen redigera innan du skickar.'**
+  String get contentFilterWarning;
 }
 
 class _AppLocalizationsDelegate

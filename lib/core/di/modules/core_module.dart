@@ -39,12 +39,6 @@ import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 
-// Network security
-import 'package:butlery/core/network/ssl_pinning_service.dart';
-
-// Data encryption
-import 'package:butlery/services/encryption/field_encryption_service.dart';
-
 // Device security
 import 'package:butlery/services/device_integrity_service.dart';
 // Feature flags
@@ -203,16 +197,6 @@ class CoreModule implements DIModule {
         ),
       );
 
-      // SSL certificate pinning service for MITM protection
-      container.registerLazySingleton<SslPinningService>(
-        () => SslPinningService(),
-      );
-
-      // Field-level encryption for sensitive Firestore data
-      container.registerLazySingleton<FieldEncryptionService>(
-        () => FieldEncryptionService(),
-      );
-
       // Device integrity service for root/jailbreak detection
       container.registerLazySingleton<DeviceIntegrityService>(
         () => DeviceIntegrityService(),
@@ -246,12 +230,16 @@ class CoreModule implements DIModule {
       // Validate it's accessible instead
       persistenceService.toString(); // Basic validation
 
-      // Initialize AnalyticsService if available (may not be on web)
-      // Note: AnalyticsService might not need explicit initialization
-      // but we validate it's accessible
+      // Initialize AnalyticsService and wire consent for GDPR compliance
       if (GetIt.instance.isRegistered<AnalyticsService>()) {
         final analyticsService = GetIt.instance<AnalyticsService>();
-        analyticsService.toString(); // Basic validation
+        await analyticsService.initialize();
+
+        // Wire ConsentService so analytics respects user consent
+        if (GetIt.instance.isRegistered<ConsentService>()) {
+          final consentService = GetIt.instance<ConsentService>();
+          analyticsService.setConsentService(consentService);
+        }
       }
     } catch (e) {
       throw DIModuleException(

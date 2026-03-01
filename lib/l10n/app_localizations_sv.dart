@@ -12116,4 +12116,57 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get tagImportedSuccess => 'Taggen importerades';
+
+  @override
+  String get legalTermsOfService => 'Användarvillkor';
+
+  @override
+  String get legalCommunityGuidelines => 'Gemenskapsriktlinjer';
+
+  @override
+  String get legalOpenSourceLicenses => 'Öppen källkod-licenser';
+
+  @override
+  String get authAgeConfirmation => 'Jag bekräftar att jag är minst 13 år';
+
+  @override
+  String get authAgeConfirmationRequired =>
+      'Du måste bekräfta din ålder för att skapa ett konto';
+
+  @override
+  String get reportContent => 'Rapportera';
+
+  @override
+  String get reportReasonInappropriate => 'Olämpligt innehåll';
+
+  @override
+  String get reportReasonSpam => 'Spam';
+
+  @override
+  String get reportReasonHarassment => 'Trakasseri';
+
+  @override
+  String get reportReasonCopyright => 'Upphovsrättsintrång';
+
+  @override
+  String get reportReasonOther => 'Annat';
+
+  @override
+  String get reportDescriptionHint => 'Beskriv vad som är fel (valfritt)';
+
+  @override
+  String get reportSubmitted => 'Rapporten har skickats';
+
+  @override
+  String get reportSubmitFailed => 'Kunde inte skicka rapporten';
+
+  @override
+  String get reportDialogTitle => 'Rapportera innehåll';
+
+  @override
+  String get reportSubmit => 'Skicka rapport';
+
+  @override
+  String get contentFilterWarning =>
+      'Texten innehåller olämpligt språk. Vänligen redigera innan du skickar.';
 }
