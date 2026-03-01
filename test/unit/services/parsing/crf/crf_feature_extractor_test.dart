@@ -86,14 +86,88 @@ void main() {
       expect(all[2]['word.isFood'], 1.0);
     });
 
-    test('range token detected as digit', () {
+    test('range token detected as digit and range', () {
       final features = extractor.extractAt(['1-2', 'msk', 'socker'], 0);
       expect(features['word.isDigit'], 1.0);
+      expect(features['word.isRange'], 1.0);
     });
 
     test('comma token has hasComma feature', () {
       final features = extractor.extractAt(['salt,'], 0);
       expect(features['word.hasComma'], 1.0);
+    });
+
+    test('conjunction has isConjunction feature', () {
+      final features = extractor.extractAt(['smör', 'eller', 'olja'], 1);
+      expect(features['word.isConjunction'], 1.0);
+    });
+
+    test('optional marker has isOptional feature', () {
+      final features = extractor.extractAt(['ev.', '1', 'krm', 'salt'], 0);
+      expect(features['word.isOptional'], 1.0);
+    });
+
+    test('ca is optional marker', () {
+      final features = extractor.extractAt(['ca', '2', 'dl'], 0);
+      expect(features['word.isOptional'], 1.0);
+    });
+
+    test('group header has isGroupHeader feature', () {
+      final features = extractor.extractAt(['Fyllning:'], 0);
+      expect(features['word.isGroupHeader'], 1.0);
+    });
+
+    test('paren has isParen feature', () {
+      final features = extractor.extractAt(['(', 'kall', ')'], 0);
+      expect(features['word.isParen'], 1.0);
+    });
+
+    test('includes prev2 features for window-2 context', () {
+      final features = extractor.extractAt(['2', 'dl', 'hackad', 'lök'], 2);
+      expect(features['prev2.word.isDigit'], 1.0);
+      expect(features['prev2.word.isUnit'], 0.0);
+    });
+
+    test('includes next2 features for window-2 context', () {
+      final features = extractor.extractAt(['2', 'dl', 'hackad', 'lök'], 1);
+      expect(features['next2.word.isFood'], 1.0);
+    });
+
+    test('no prev2 for second token', () {
+      final features = extractor.extractAt(['2', 'dl', 'mjölk'], 1);
+      expect(features.containsKey('prev2.word.isDigit'), false);
+    });
+
+    test('no next2 for second-to-last token', () {
+      final features = extractor.extractAt(['2', 'dl', 'mjölk'], 1);
+      expect(features.containsKey('next2.word.isFood'), false);
+    });
+
+    test('prev2 reduced features do not include word.lower', () {
+      final features = extractor.extractAt(['ca', '2', 'dl', 'mjölk'], 2);
+      expect(features.containsKey('prev2.word.isDigit'), true);
+      expect(features.containsKey('prev2.word.lower=ca'), false);
+    });
+
+    test('compound word has isCompound feature', () {
+      final features = extractor.extractAt(['1', 'burk', 'lingonsylt'], 2);
+      expect(features['word.isCompound'], 1.0);
+      expect(features['word.compoundSuffix=sylt'], 1.0);
+    });
+
+    test('non-compound word has isCompound=0', () {
+      final features = extractor.extractAt(['2', 'dl', 'mjölk'], 2);
+      expect(features['word.isCompound'], 0.0);
+      expect(
+        features.keys.where((k) => k.startsWith('word.compoundSuffix=')),
+        isEmpty,
+      );
+    });
+
+    test('known compound name does not trigger isCompound', () {
+      // vitpeppar is in KnownIngredients.compoundNames — should NOT split
+      final features = extractor.extractAt(['1', 'krm', 'vitpeppar'], 2);
+      expect(features['word.isCompound'], 0.0);
     });
   });
 }

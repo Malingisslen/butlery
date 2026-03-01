@@ -134,6 +134,11 @@ class ParsingContext {
   /// Time elapsed since parsing started.
   Duration get elapsed => DateTime.now().difference(startTime);
 
+  /// Best partial result from earlier tiers, for selective LLM enhancement.
+  /// When set, the LLM tier can use enhance mode to patch only weak fields
+  /// instead of doing full extraction.
+  ParsedRecipePartial? bestPartialRecipe;
+
   // Single-entry cache for parseStructure results
   ParsedRecipeStructure? _cachedStructure;
   String? _structureCacheKey;
@@ -213,4 +218,21 @@ class TierResultEntry {
   String toString() =>
       'TierResultEntry($tierName: ${success ? "success" : "failed"}, '
       'quality: ${(quality * 100).toInt()}%)';
+}
+
+/// Partial recipe data from earlier tiers for selective LLM enhancement.
+///
+/// Contains good fields that don't need re-extraction and identifies
+/// which fields the LLM should focus on.
+class ParsedRecipePartial {
+  final Map<String, dynamic> goodFields;
+  final List<String> weakFields;
+
+  const ParsedRecipePartial({
+    required this.goodFields,
+    required this.weakFields,
+  });
+
+  /// Whether enhancement mode should be used (few weak fields).
+  bool get shouldEnhance => weakFields.length <= 2 && goodFields.isNotEmpty;
 }

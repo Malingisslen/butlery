@@ -3,12 +3,21 @@
     "B-QTY": {
       "word.isDigit": 3.0,
       "word.isFraction": 3.0,
+      "word.isRange": 2.5,
       "BOS": 1.5,
       "next.word.isUnit": 1.5,
       "word.isUnit": -2.0,
       "word.isFood": -2.0,
       "word.isPrep": -2.0,
-      "word.lower=ca": -1.0
+      "word.isCompound": -2.0,
+      "word.isOptional": -2.0,
+      "word.isConjunction": -2.0,
+      "word.isParen": -2.0,
+      "word.isGroupHeader": -2.0,
+      "word.lower=ca": -1.0,
+      "prev.word.isOptional": 0.8,
+      "next2.word.isFood": 0.5,
+      "prev2.word.isDigit": -1.0
     },
     "I-QTY": {
       "word.isDigit": 2.0,
@@ -17,35 +26,64 @@
       "prev.word.isFraction": 1.5,
       "word.isUnit": -2.0,
       "word.isFood": -2.0,
-      "word.lower=-": 1.0
+      "word.lower=-": 1.0,
+      "word.isRange": -1.0,
+      "word.isOptional": -2.0,
+      "word.isConjunction": -2.0,
+      "word.isParen": -2.0
     },
     "B-UNIT": {
       "word.isUnit": 3.5,
       "prev.word.isDigit": 1.5,
       "prev.word.isFraction": 1.5,
+      "prev.word.isRange": 1.0,
       "next.word.isFood": 1.0,
+      "next.word.isCompound": 0.5,
       "word.isDigit": -2.0,
       "word.isFood": -1.5,
       "word.isPrep": -2.0,
-      "BOS": -1.0
+      "word.isCompound": -2.0,
+      "word.isOptional": -2.0,
+      "word.isConjunction": -2.0,
+      "word.isParen": -2.0,
+      "word.isGroupHeader": -2.0,
+      "BOS": -1.0,
+      "next2.word.isFood": 0.5,
+      "prev2.word.isDigit": 0.3
     },
     "B-NAME": {
       "word.isFood": 3.0,
+      "word.isCompound": 2.5,
       "prev.word.isUnit": 2.0,
       "word.isDigit": -2.5,
       "word.isFraction": -2.0,
       "word.isUnit": -1.5,
       "word.isPrep": -1.0,
       "word.isSize": -1.0,
-      "next.word.isFood": 0.5
+      "word.isOptional": -2.0,
+      "word.isConjunction": -2.0,
+      "word.isParen": -2.0,
+      "word.isGroupHeader": -2.0,
+      "word.isRange": -2.0,
+      "next.word.isFood": 0.5,
+      "prev2.word.isUnit": 0.5,
+      "prev2.word.isDigit": 0.3
     },
     "I-NAME": {
       "word.isFood": 2.5,
+      "word.isCompound": 2.0,
       "prev.word.isFood": 2.0,
+      "prev.word.isCompound": 1.0,
       "word.isDigit": -2.0,
       "word.isUnit": -1.5,
       "word.isPrep": -0.5,
-      "word.isSize": -1.0
+      "word.isSize": -1.0,
+      "word.isOptional": -1.5,
+      "word.isConjunction": -1.5,
+      "word.isParen": -1.5,
+      "word.isGroupHeader": -2.0,
+      "word.isRange": -2.0,
+      "prev2.word.isFood": 0.5
     },
     "B-PREP": {
       "word.isPrep": 3.5,
@@ -55,14 +93,26 @@
       "word.suffix2=na": 0.8,
       "word.isDigit": -2.0,
       "word.isUnit": -2.0,
-      "word.isFood": -0.5
+      "word.isFood": -0.5,
+      "word.isCompound": -1.5,
+      "word.isOptional": -2.0,
+      "word.isConjunction": -1.5,
+      "word.isParen": -1.5,
+      "word.isGroupHeader": -2.0,
+      "word.isRange": -2.0,
+      "next.word.isFood": 1.0
     },
     "I-PREP": {
       "word.isPrep": 2.0,
       "prev.word.isPrep": 1.5,
       "word.isDigit": -2.0,
       "word.isUnit": -2.0,
-      "word.isFood": -1.0
+      "word.isFood": -1.0,
+      "word.isOptional": -2.0,
+      "word.isConjunction": 0.5,
+      "word.isParen": -1.5,
+      "word.isGroupHeader": -2.0,
+      "word.isRange": -2.0
     },
     "B-SIZE": {
       "word.isSize": 3.5,
@@ -71,7 +121,13 @@
       "word.isDigit": -2.0,
       "word.isUnit": -2.0,
       "word.isFood": -1.0,
-      "word.isPrep": -1.0
+      "word.isPrep": -1.0,
+      "word.isOptional": -2.0,
+      "word.isConjunction": -2.0,
+      "word.isParen": -2.0,
+      "word.isGroupHeader": -2.0,
+      "word.isRange": -2.0,
+      "next2.word.isFood": 0.5
     },
     "O": {
       "word.lower=ca": 2.5,
@@ -83,7 +139,12 @@
       "word.lower=)": 2.0,
       "word.lower=,": 1.5,
       "word.lower=till": 1.5,
+      "word.lower=lite": 1.5,
       "word.hasComma": 0.5,
+      "word.isOptional": 3.0,
+      "word.isConjunction": 2.5,
+      "word.isParen": 2.5,
+      "word.isGroupHeader": 3.0,
       "word.isDigit": -1.0,
       "word.isUnit": -1.5,
       "word.isFood": -1.5,
