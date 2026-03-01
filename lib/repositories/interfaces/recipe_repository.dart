@@ -15,6 +15,7 @@ abstract class RecipeRepository extends Repository<Recipe>
     String userId,
     void Function(List<RecipeChange>) onData, {
     Function? onError,
+    void Function(bool hasPendingWrites, bool isFromCache)? onSyncStatusChanged,
   });
 
   /// Search recipes by query text.

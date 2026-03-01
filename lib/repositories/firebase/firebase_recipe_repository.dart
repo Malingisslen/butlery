@@ -593,12 +593,18 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     String userId,
     void Function(List<RecipeChange>) onData, {
     Function? onError,
+    void Function(bool hasPendingWrites, bool isFromCache)? onSyncStatusChanged,
   }) {
     return getCollectionForUser(userId)
         .orderBy('core.updatedAt', descending: true)
         .limit(50)
         .snapshots()
         .listen((snapshot) {
+      onSyncStatusChanged?.call(
+        snapshot.metadata.hasPendingWrites,
+        snapshot.metadata.isFromCache,
+      );
+
       final changes = snapshot.docChanges.map((change) {
         final recipe = fromFirestore(change.doc);
         final type = switch (change.type) {

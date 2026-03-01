@@ -403,6 +403,22 @@ class UnifiedRecipeService extends ChangeNotifier
     }
   }
 
+  bool get hasPendingWrites {
+    try {
+      return _cacheModule.hasPendingWrites;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  bool get isFromCache {
+    try {
+      return _cacheModule.isFromCache;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// BUG-003: Handle direct recipe updates on web (bypasses stubbed cache)
   void _handleDirectRecipeUpdate(Recipe recipe) {
     final existingIndex = _recipes.indexWhere((r) => r.id == recipe.id);

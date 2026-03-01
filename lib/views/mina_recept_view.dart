@@ -33,6 +33,7 @@ import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/indicators/sync_indicator.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
 import 'package:butlery/widgets/common/social_components/recipe_list_avatar_badge.dart';
@@ -405,6 +406,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           child: Column(
           children: [
             LayoutComponents.offlineIndicator(),
+            SyncIndicator(
+              hasPendingWrites: viewModel.hasPendingWrites,
+              isFromCache: viewModel.isFromCache,
+            ),
             if (!viewModel.isSelectionMode) ...[
               SearchFilterWidget(
                 searchQuery: viewModel.searchQuery,
