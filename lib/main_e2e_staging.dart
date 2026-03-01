@@ -11,8 +11,6 @@ library;
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 // Core application
 import 'package:butlery/main.dart';
 
@@ -90,12 +88,7 @@ Future<void> main() async {
 /// This loads environment configuration specific to staging testing,
 /// including staging Firebase project settings and API keys.
 Future<void> _loadStagingEnvironment() async {
-  try {
-    // Load staging-specific environment file
-    await dotenv.load(fileName: '.env.staging');
-  } catch (e) {
-    // Continue without staging env - use defaults
-  }
+  // Staging env vars are now provided at compile time via --dart-define-from-file=.env.staging
 }
 
 /// Initialize Firebase App Check for staging environment

@@ -82,7 +82,6 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'dart:async';
 import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:butlery/firebase_options.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/auth_service.dart';
@@ -100,10 +99,7 @@ Future<void> main() async {
       50 * 1024 * 1024; // 50 MB
 
   try {
-    // Load environment variables first - required for Firebase configuration
-    await dotenv.load(fileName: '.env');
-
-    // Initialize Firebase with configuration from .env
+    // Initialize Firebase with configuration from compile-time --dart-define
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
@@ -116,7 +112,7 @@ Future<void> main() async {
       if (!kDebugMode)
         FirebaseAppCheck.instance.activate(
           providerWeb: ReCaptchaV3Provider(
-            dotenv.env['RECAPTCHA_SITE_KEY'] ?? '',
+            const String.fromEnvironment('RECAPTCHA_SITE_KEY'),
           ),
           providerAndroid: const AndroidPlayIntegrityProvider(),
           providerApple: const AppleDeviceCheckProvider(),
@@ -149,26 +145,23 @@ Future<void> main() async {
     // Skip startup optimization manager - it conflicts with the modular bootstrap system
     // The modular system already handles all initialization properly
 
-    // Setup zone error handling for async errors
+    // Run app inside guarded zone to catch async errors
     runZonedGuarded(
-      () async {
-        // This zone will catch async errors but app is started outside
+      () {
+        runApp(const ButleryApp());
       },
       (error, stack) {
-        // Log to Crashlytics (mobile only)
         if (!kIsWeb) {
           FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
         }
       },
     );
-
-    // Start the application (must be in same zone as ensureInitialized)
-    runApp(const ButleryApp());
   } catch (e, stackTrace) {
-    // Show error app with more details
     runApp(
       _ErrorApp(
-        'Application failed to initialize: $e\n\nStack trace:\n$stackTrace',
+        kDebugMode
+            ? 'Application failed to initialize: $e\n\nStack trace:\n$stackTrace'
+            : 'Application failed to initialize. Please restart.',
       ),
     );
   }

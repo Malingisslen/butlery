@@ -1,7 +1,6 @@
 // lib/core/di/modules/search_module.dart
 
 import 'package:get_it/get_it.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
@@ -48,10 +47,10 @@ class SearchModule implements DIModule {
 
       if (useAlgolia) {
         // Try to configure Algolia
-        final appId = dotenv.env['ALGOLIA_APP_ID'];
-        final apiKey = dotenv.env['ALGOLIA_API_KEY'];
+        const appId = String.fromEnvironment('ALGOLIA_APP_ID');
+        const apiKey = String.fromEnvironment('ALGOLIA_API_KEY');
 
-        if (appId != null && apiKey != null && appId.isNotEmpty) {
+        if (appId.isNotEmpty && apiKey.isNotEmpty) {
           container.registerSingleton<SearchRepository>(
             AlgoliaSearchRepository(
               appId: appId,
