@@ -105,6 +105,19 @@ service cloud.firestore {
       );
     }
 
+    // P3-14: Check if the requesting user is blocked by the target user
+    function isNotBlockedBy(targetUserId) {
+      return !exists(/databases/$(database)/documents/users/$(targetUserId))
+        || !(request.auth.uid in get(/databases/$(database)/documents/users/$(targetUserId)).data.get('blockedUsers', []));
+    }
+
+    // P3-13: Server-side UGC rate limiting via rateLimits subcollection
+    function rateLimitWrite(collection, seconds) {
+      let limitsPath = /databases/$(database)/documents/users/$(request.auth.uid)/rateLimits/$(collection);
+      return !exists(limitsPath)
+        || get(limitsPath).data.lastWrite + duration.value(seconds, 's') <= request.time;
+    }
+
     // ========================================
     // USER DATA - Private to each user
     // ========================================
@@ -204,8 +217,22 @@ service cloud.firestore {
       match /conversations/{conversationId} {
         allow read, write: if isOwner(userId);
       }
+
+      // P3-06: Rate limit tracking subcollection — owner read/write only
+      match /rateLimits/{type} {
+        allow read, write: if isOwner(userId);
+      }
     }
-    
+
+    // ========================================
+    // DELETION AUDIT LOGS - Server-only
+    // ========================================
+
+    // P3-06: Audit logs for account deletions — deny all client access
+    match /deletion_audit_logs/{logId} {
+      allow read, write: if false;
+    }
+
     // ========================================
     // PUBLIC PROFILES - Readable by all authenticated users
     // ========================================
@@ -245,11 +272,13 @@ service cloud.firestore {
         request.auth.uid == resource.data.toUserId
       );
       
-      // Can create if you're the sender
-      allow create: if isAuthenticated() 
+      // Can create if you're the sender, not blocked by recipient, within rate limit
+      allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.fromUserId
         && request.resource.data.status == 'pending'
-        && hasRequiredFields(['fromUserId', 'toUserId', 'status', 'sentAt']);
+        && hasRequiredFields(['fromUserId', 'toUserId', 'status', 'sentAt'])
+        && isNotBlockedBy(request.resource.data.toUserId)
+        && rateLimitWrite('friend_requests', 10);
       
       // Can update if you're the recipient (to accept/reject)
       allow update: if isAuthenticated() 
@@ -874,12 +903,13 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/shared_recipes/$(resource.data.recipeId)/members/$(request.auth.uid))
       );
 
-      // Can create if authenticated and providing required fields
+      // Can create if authenticated, not blocked, and within rate limit
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.authorId
         && hasRequiredFields(['authorId', 'recipeId', 'text', 'createdAt'])
         && request.resource.data.text.size() > 0
-        && request.resource.data.text.size() <= 1000;
+        && request.resource.data.text.size() <= 1000
+        && rateLimitWrite('comments', 5);
 
       // Can update only your own comments
       allow update: if isAuthenticated()
@@ -942,10 +972,11 @@ service cloud.firestore {
       allow read: if isAuthenticated()
         && request.auth.uid in get(/databases/$(database)/documents/conversations/$(resource.data.conversationId)).data.participantIds;
 
-      // Can create messages if you're the sender
+      // Can create messages if you're the sender, within rate limit
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.senderId
-        && hasRequiredFields(['senderId', 'conversationId', 'content', 'sentAt']);
+        && hasRequiredFields(['senderId', 'conversationId', 'content', 'sentAt'])
+        && rateLimitWrite('messages', 5);
 
       // Can update your own messages
       allow update: if isAuthenticated() && request.auth.uid == resource.data.senderId;

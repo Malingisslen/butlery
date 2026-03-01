@@ -169,7 +169,14 @@ class MessageMutationModule {
       AppLogger.debug(
           '📤 [MessageMutation] Added conversation update to batch: ${message.conversationId}');
 
-      // Commit batch - either BOTH succeed or BOTH fail (atomicity guaranteed)
+      // 3. Update rate limit doc for server-side enforcement
+      batch.set(
+        firestore.collection('users').doc(message.senderId).collection('rateLimits').doc('messages'),
+        {'lastWrite': FieldValue.serverTimestamp()},
+        SetOptions(merge: true),
+      );
+
+      // Commit batch - all writes succeed or all fail (atomicity guaranteed)
       AppLogger.debug('📤 [MessageMutation] Committing atomic batch...');
       try {
         await batch.commit();

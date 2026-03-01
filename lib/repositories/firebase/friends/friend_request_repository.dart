@@ -147,7 +147,15 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
       );
     }
 
-    await _friendRequestsRef.doc(request.id).set(request.toFirestore());
+    // Batch write: request + rate limit doc for server-side enforcement
+    final batch = firestore.batch();
+    batch.set(_friendRequestsRef.doc(request.id), request.toFirestore());
+    batch.set(
+      firestore.collection('users').doc(currentUser).collection('rateLimits').doc('friend_requests'),
+      {'lastWrite': FieldValue.serverTimestamp()},
+      SetOptions(merge: true),
+    );
+    await batch.commit();
 
     logPermissionCheck(
       userId: currentUser,
