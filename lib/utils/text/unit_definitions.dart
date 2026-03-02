@@ -22,10 +22,15 @@ class UnitDefinitions {
     'dl', 'l', 'ml', 'cl',
     'msk', 'tsk', 'krm',
     'burk', 'pkt', 'förpackning', 'förp', 'påse', 'ask', 'flaska',
-    'st', 'bit', 'skiva', 'skvätt', 'nypa', 'klyfta', 'sked',
+    'st', 'bit', 'bitar', 'skiva', 'skivor', 'skvätt', 'nypa',
+    'klyfta', 'klyftor', 'sked',
     'glas', 'kopp', 'mugg', 'port', 'portioner', 'pers', 'personer',
-    'knippe', 'bunch', 'blad', 'kvist', 'tube', 'tub',
+    'knippe', 'bunch', 'blad', 'kvist', 'kvistar', 'tube', 'tub',
     'kasse', 'låda', 'burkar', 'paket',
+    // Informal Swedish measures
+    'näve', 'nävar', 'gnutta', 'klick', 'droppe', 'droppar',
+    // Length measures (for "3 cm ingefära")
+    'cm', 'mm',
 
     // Swedish full-word unit forms
     'matsked', 'matskedar', 'tesked', 'teskedar', 'kryddmått',

@@ -11,22 +11,66 @@ class CrfIngredientParser {
 
   CrfIngredientParser(this._decoder);
 
+  static final _bulletPrefix = RegExp(r'^[•●▪★]\s*');
+  static final _dashBullet = RegExp(r'^[-–—]\s+');
+  static final _starBullet = RegExp(r'^\*\s+');
+  static final _purposeClause = RegExp(
+    r'(?:^|\s+)till\s+(stekning|garnering|servering|redning|jäsning|utbakning'
+    r'|panering|dusting|topping|formen|pensling|fritering|gratinering'
+    r'|bakning|glazering|inläggning|marinering)$',
+    caseSensitive: false,
+  );
+  static final _efterPhrase = RegExp(
+    r'\s+efter\s+(smak|behov|önskan)$',
+    caseSensitive: false,
+  );
+  static const _freshnessWords = {'färsk', 'färskt', 'färska'};
+
   /// Parses a single ingredient line into a structured ingredient.
   ParsedIngredient parseLine(String line) {
-    final tokens = tokenize(line);
+    final trimmed = line.trim();
+
+    // Group headers (e.g., "Fyllning:", "Deg:") → empty ingredient
+    if (trimmed.endsWith(':') && trimmed.length < 40) {
+      return ParsedIngredient(
+        name: '',
+        originalLine: line,
+        confidence: ParseConfidence.low,
+      );
+    }
+
+    // Strip bullet prefixes from social media formatting
+    var cleaned = trimmed;
+    cleaned = cleaned.replaceFirst(_bulletPrefix, '');
+    cleaned = cleaned.replaceFirst(_dashBullet, '');
+    cleaned = cleaned.replaceFirst(_starBullet, '');
+
+    // Strip purpose clauses ("till stekning", "till garnering")
+    cleaned = cleaned.replaceFirst(_purposeClause, '');
+    // Strip "efter smak/behov" phrases
+    cleaned = cleaned.replaceFirst(_efterPhrase, '');
+    cleaned = cleaned.trim();
+
+    final tokens = tokenize(cleaned);
     if (tokens.isEmpty) {
       return ParsedIngredient.simple(line);
     }
 
     final labels = _decoder.decode(tokens);
+
+    // Post-processing: "färsk"/"färskt"/"färska" before a NAME token is part
+    // of the name (e.g., "färsk basilika"), not a preparation descriptor
+    _relabelFreshnessAsName(tokens, labels);
+
     return _assembleIngredient(tokens, labels, line);
   }
 
-  /// Parses multiple ingredient lines.
+  /// Parses multiple ingredient lines, filtering out group headers.
   List<ParsedIngredient> parseLines(List<String> lines) {
     return lines
         .where((l) => l.trim().isNotEmpty)
         .map((l) => parseLine(l.trim()))
+        .where((p) => p.name.isNotEmpty)
         .toList();
   }
 
@@ -107,20 +151,59 @@ class CrfIngredientParser {
   }
 
   /// Groups consecutive tokens by their BIO label type into span strings.
+  /// Filters out punctuation-only tokens and parenthetical content to prevent
+  /// comma/paren artifacts in QTY/UNIT spans.
   Map<_SpanType, String> _groupSpans(
     List<String> tokens,
     List<BioLabel> labels,
   ) {
     final result = <_SpanType, List<String>>{};
 
+    // Track parenthesis depth to suppress QTY/UNIT inside parens
+    var parenDepth = 0;
     for (var i = 0; i < tokens.length; i++) {
-      final type = _spanTypeFor(labels[i]);
-      if (type == null) continue;
+      if (tokens[i] == '(') parenDepth++;
 
-      result.putIfAbsent(type, () => []).add(tokens[i]);
+      final type = _spanTypeFor(labels[i]);
+      if (type != null) {
+        // Skip punctuation tokens
+        if (!_punctuationOnly.hasMatch(tokens[i])) {
+          // Inside parens: suppress QTY/UNIT to avoid "1 burk X (400 ml)"
+          // leaking 400 into the quantity span
+          final suppress = parenDepth > 0 &&
+              (type == _SpanType.qty || type == _SpanType.unit);
+          if (!suppress) {
+            result.putIfAbsent(type, () => []).add(tokens[i]);
+          }
+        }
+      }
+
+      if (tokens[i] == ')') parenDepth = (parenDepth - 1).clamp(0, 99);
     }
 
     return result.map((k, v) => MapEntry(k, v.join(' ')));
+  }
+
+  static final _punctuationOnly = RegExp(r'^[(),;]+$');
+
+  /// Mutates [labels] in place: re-labels "färsk"/"färskt"/"färska" from PREP
+  /// to NAME when followed by a NAME token. Swedish ingredient names often
+  /// include freshness as part of the name: "färsk basilika", "färsk timjan".
+  void _relabelFreshnessAsName(List<String> tokens, List<BioLabel> labels) {
+    for (var i = 0; i < tokens.length - 1; i++) {
+      final isPrep = labels[i] == BioLabel.bPrep || labels[i] == BioLabel.iPrep;
+      if (!isPrep) continue;
+      if (!_freshnessWords.contains(tokens[i].toLowerCase())) continue;
+
+      // Check if followed by a NAME token
+      if (labels[i + 1] == BioLabel.bName || labels[i + 1] == BioLabel.iName) {
+        labels[i] = BioLabel.bName;
+        // Demote the next token from B-NAME to I-NAME if it was B-NAME
+        if (labels[i + 1] == BioLabel.bName) {
+          labels[i + 1] = BioLabel.iName;
+        }
+      }
+    }
   }
 
   _SpanType? _spanTypeFor(BioLabel label) {
