@@ -2,7 +2,7 @@
 
 ## Context
 
-The Butlery parser is a 4-tier cascading system for extracting structured recipe data from Swedish text. It currently sits at **57.9% all-fields exact match** on a 121-entry golden dataset, with a roadmap targeting 75% (CRF) → 83% (DistilBERT).
+The Butlery parser is a 4-tier cascading system for extracting structured recipe data from Swedish text. It currently sits at **92.5% all-fields exact match** on a 318-entry golden dataset, far exceeding the original 75% CRF target.
 
 ---
 
@@ -20,11 +20,11 @@ The Butlery parser is a 4-tier cascading system for extracting structured recipe
 
 | Area | Current State | Gap |
 |------|--------------|-----|
-| **Accuracy** | 57.9% exact match | Industry leaders hit 95%+ |
-| **CRF weights** | Hand-crafted, 5.7KB | Trained CRFs are typically 100KB-1MB |
-| **Training data** | 121 golden entries | Far too small — need 10K+ |
-| **Ingredient vocab** | ~350 static entries | Livsmedelsverket has 2,400+ |
-| **Preparation vocab** | ~296 static entries | Good but static |
+| **Accuracy** | 92.5% exact match (was 57.9%) | Industry leaders hit 95%+ |
+| **CRF weights** | ML-trained, 2,361 features | Was hand-crafted 5.7KB |
+| **Training data** | 13K+ scraped lines | Was 121 golden entries |
+| **Ingredient vocab** | 5,527 entries (Firebase synced) | Was ~350 static |
+| **Preparation vocab** | 143 entries | Was ~106 |
 | **LLM provider** | Mistral only | No structured output guarantee |
 | **Instruction parsing** | Minimal structure | Just splits by line |
 
@@ -34,16 +34,16 @@ The Butlery parser is a 4-tier cascading system for extracting structured recipe
 
 ### Tier A: Zero Ongoing Cost, High Accuracy Gain (Do First)
 
-| # | Enhancement | Dev Days | Expected Accuracy Gain |
-|---|------------|----------|----------------------|
-| 1 | Scrape 10K+ lines + retrain CRF | 3-5 | 57% → ~75% |
-| 2 | Bigram + gazeteer CRF features | 1 | +2-5% |
-| 3 | Expand KnownIngredients → 1,500+ | 1-2 | +3-5% feature accuracy |
-| 4 | Definite form + compound splitter upgrade | 3-5 | +5-10% Swedish text |
-| 5 | Few-shot Swedish examples in LLM prompt | 0.5 | +10-20% when LLM used |
-| 6 | CRF→LLM line-level routing | 2 | Same, 80% fewer LLM calls |
-| 7 | Expand golden dataset to 500+ | 3-5 | Reliable measurement |
-| **Total** | | **~14-20 days** | **~75-85% accuracy** |
+| # | Enhancement | Status | Accuracy Impact |
+|---|------------|--------|----------------|
+| 1 | Scrape 10K+ lines + retrain CRF | **DONE** | 57.9% → 71.4% |
+| 2 | Bigram + gazeteer CRF features | **DONE** | Included in training |
+| 3 | Expand KnownIngredients → 5,527 | **DONE** | Firebase-synced vocab |
+| 4 | Definite form + compound splitter + vocab | **DONE** | 71.4% → 92.5% |
+| 5 | Few-shot Swedish examples in LLM prompt | Not started | +10-20% when LLM used |
+| 6 | CRF→LLM line-level routing | Scaffolded | Same, 80% fewer LLM calls |
+| 7 | Expand golden dataset to 500+ | **318 entries** | More reliable measurement |
+| **Result** | | **92.5% accuracy** | **Exceeded 75% target** |
 
 ### Tier B: Zero Cost, Good Returns
 

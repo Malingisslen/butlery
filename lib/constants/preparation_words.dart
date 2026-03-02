@@ -46,6 +46,9 @@ class PreparationWords {
     'grovriven',
     'grovrivet',
     'grovrivna',
+    'nyriven',
+    'nyrivet',
+    'nyrivna',
 
     // Crushing/grinding/pressing
     'stött',
@@ -53,6 +56,9 @@ class PreparationWords {
     'malen',
     'malet',
     'malda',
+    'nymalen',
+    'nymalet',
+    'nymalda',
     'pressad',
     'pressat',
     'pressade',
@@ -85,6 +91,7 @@ class PreparationWords {
     'rimmad',
     'rimmade',
     'rökt',
+    'rökta',
     'rökte',
     'saltad',
     'saltat',
@@ -148,6 +155,53 @@ class PreparationWords {
     'smulad',
     'smulat',
     'smulade',
+
+    // Straining/puréeing
+    'passerad',
+    'passerat',
+    'passerade',
+
+    // Sweetness/flavor modifiers
+    'osötad',
+    'osötat',
+    'osötade',
+    'sötad',
+    'sötat',
+    'sötade',
+
+    // Raw/unprocessed
+    'rå',
+    'rått',
+    'råa',
+
+    // Wringing/squeezing
+    'urkramad',
+    'urkramat',
+    'urkramade',
+
+    // Pitting/deseeding
+    'urkärnad',
+    'urkärnat',
+    'urkärnade',
+
+    // Mashing/puréeing
+    'mosad',
+    'mosat',
+    'mosade',
+
+    // Freeze-drying
+    'frystorkad',
+    'frystorkat',
+    'frystorkade',
+
+    // Temperature state
+    'rumstempererad',
+    'rumstempererat',
+    'rumstempererade',
+
+    // Adverb modifiers for preparation (thin/thick)
+    'tunt',
+    'grovt',
   };
 
   /// Size descriptors

@@ -32,6 +32,27 @@ class CrfFeatureExtractor {
     'lite',
   };
 
+  /// Swedish number words that can appear as text quantities.
+  static const _textQuantities = {
+    'en',
+    'ett',
+    'två',
+    'tre',
+    'fyra',
+    'fem',
+    'sex',
+    'sju',
+    'åtta',
+    'nio',
+    'tio',
+    'halv',
+    'halva',
+    'halvt',
+  };
+
+  /// Purpose clause marker — "till stekning", "till garnering" etc.
+  static const _purposeMarker = 'till';
+
   /// Optional enriched ingredient set from Firebase/Firestore.
   /// When provided, supplements the static KnownIngredients for food detection.
   final Set<String>? _enrichedIngredients;
@@ -140,6 +161,9 @@ class CrfFeatureExtractor {
     features['${prefix}word.isGroupHeader'] = _isGroupHeader(lower) ? 1.0 : 0.0;
     features['${prefix}word.isParen'] =
         _parenPattern.hasMatch(lower) ? 1.0 : 0.0;
+    features['${prefix}word.isTextQty'] =
+        _textQuantities.contains(lower) ? 1.0 : 0.0;
+    features['${prefix}word.isPurpose'] = lower == _purposeMarker ? 1.0 : 0.0;
 
     // Compound word detection
     final compoundSplit = SwedishCompoundSplitter.trySplit(lower);
@@ -197,12 +221,13 @@ class CrfFeatureExtractor {
   }
 
   bool _isGroupHeader(String s) {
-    return s.endsWith(':') && s.length > 1;
+    return s.endsWith(':') && s.length > 1 && s.length < 40;
   }
 
   /// Classifies a token into a coarse type for type-level bigram features.
   String _tokenType(String lower) {
     if (_isDigit(lower) || QuantityParser.isFraction(lower)) return 'NUM';
+    if (_textQuantities.contains(lower)) return 'NUM';
     if (UnitDefinitions.isKnownUnit(lower)) return 'UNIT';
     if (_isFood(lower)) return 'FOOD';
     if (SwedishDefiniteNormalizer.isDefiniteForm(lower)) return 'FOOD';
@@ -210,6 +235,7 @@ class CrfFeatureExtractor {
     if (PreparationWords.isSizeDescriptor(lower)) return 'SIZE';
     if (_conjunctions.contains(lower)) return 'CONJ';
     if (_optionalMarkers.contains(lower)) return 'OPT';
+    if (lower == _purposeMarker) return 'PURPOSE';
     if (_parenPattern.hasMatch(lower)) return 'PAREN';
     if (_isGroupHeader(lower)) return 'HEADER';
     return 'WORD';

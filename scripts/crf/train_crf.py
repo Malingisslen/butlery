@@ -33,6 +33,12 @@ OPTIONAL_MARKERS = {
     'valfritt', 'drygt', 'knappt', 'lite',
 }
 
+TEXT_QUANTITIES = {
+    'en', 'ett', 'två', 'tre', 'fyra', 'fem', 'sex', 'sju',
+    'åtta', 'nio', 'tio', 'halv', 'halva', 'halvt',
+}
+PURPOSE_MARKER = 'till'
+
 _RANGE_PATTERN = re.compile(r'^\d+-\d+$')
 _PAREN_PATTERN = re.compile(r'^[()]$')
 
@@ -160,12 +166,14 @@ def is_range(s):
 
 
 def is_group_header(s):
-    return s.endswith(':') and len(s) > 1
+    return s.endswith(':') and 1 < len(s) < 40
 
 
 def _token_type(lower):
     """Classify token into coarse type for type-level bigrams (must match Dart)."""
     if is_digit(lower) or is_fraction(lower):
+        return 'NUM'
+    if lower in TEXT_QUANTITIES:
         return 'NUM'
     if lower in KNOWN_UNITS:
         return 'UNIT'
@@ -181,6 +189,8 @@ def _token_type(lower):
         return 'CONJ'
     if lower in OPTIONAL_MARKERS:
         return 'OPT'
+    if lower == PURPOSE_MARKER:
+        return 'PURPOSE'
     if bool(_PAREN_PATTERN.match(lower)):
         return 'PAREN'
     if is_group_header(lower):
@@ -209,6 +219,8 @@ def extract_features(tokens, i):
         features[f'{prefix}word.isOptional'] = 1.0 if word in OPTIONAL_MARKERS else 0.0
         features[f'{prefix}word.isGroupHeader'] = 1.0 if is_group_header(word) else 0.0
         features[f'{prefix}word.isParen'] = 1.0 if bool(_PAREN_PATTERN.match(word)) else 0.0
+        features[f'{prefix}word.isTextQty'] = 1.0 if word in TEXT_QUANTITIES else 0.0
+        features[f'{prefix}word.isPurpose'] = 1.0 if word == PURPOSE_MARKER else 0.0
         # Compound word detection
         compound = try_compound_split(word)
         features[f'{prefix}word.isCompound'] = 1.0 if compound else 0.0

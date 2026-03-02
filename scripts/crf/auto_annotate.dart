@@ -56,6 +56,18 @@ List<_TokenLabel>? _annotateLine(String line) {
   // Step 1: Label quantity tokens (digits, fractions, ranges)
   _labelTokens(tokens, labels, _isQuantityToken, 'B-QTY', 'I-QTY');
 
+  // Step 1b: Label Swedish text quantities ("en", "ett", "två", etc.)
+  // Only label if at position 0 and followed by a known unit
+  for (var i = 0; i < tokens.length; i++) {
+    if (labels[i] == 'O' && _textQuantities.contains(tokens[i].toLowerCase())) {
+      // "en näve" → en=B-QTY, näve=B-UNIT; "två ägg" → två=B-QTY
+      // Only label as QTY if it's early in the line (before any name)
+      if (i < 3) {
+        labels[i] = 'B-QTY';
+      }
+    }
+  }
+
   // Step 2: Label first unlabeled unit token
   for (var i = 0; i < tokens.length; i++) {
     if (labels[i] == 'O' &&
@@ -81,10 +93,30 @@ List<_TokenLabel>? _annotateLine(String line) {
     }
   }
 
-  // Step 5: Remaining tokens that look like ingredient names
-  // Skip tokens after "eller" (alternatives) and inside parentheses
+  // Step 5: Mark purpose clauses ("till stekning", "till garnering") → O
+  // Find "till" followed by a non-ingredient word → mark till + rest as O
+  for (var i = 0; i < tokens.length - 1; i++) {
+    if (tokens[i].toLowerCase() == 'till') {
+      final next = tokens[i + 1].toLowerCase();
+      if (_purposeNouns.contains(next) ||
+          next.endsWith('ning') ||
+          next.endsWith('ring') ||
+          next.endsWith('ing')) {
+        // Mark "till" and all subsequent tokens as O
+        for (var j = i; j < tokens.length; j++) {
+          labels[j] = 'O';
+        }
+        break;
+      }
+    }
+  }
+
+  // Step 6: Remaining tokens that look like ingredient names
+  // Skip tokens after "eller" (alternatives), inside parentheses,
+  // after commas (clarifications), and after "till" (purpose clauses)
   var inName = false;
   var afterEller = false;
+  var afterComma = false;
   var parenDepth = 0;
   for (var i = 0; i < tokens.length; i++) {
     final lower = tokens[i].toLowerCase();
@@ -100,6 +132,12 @@ List<_TokenLabel>? _annotateLine(String line) {
     }
     if (parenDepth > 0) continue; // inside parens → stays O
 
+    if (lower == ',') {
+      afterComma = true;
+      inName = false;
+      continue;
+    }
+
     if (lower == 'eller') {
       afterEller = true;
       inName = false;
@@ -113,6 +151,13 @@ List<_TokenLabel>? _annotateLine(String line) {
 
     // Don't label tokens after "eller" as NAME (alternative ingredient)
     if (afterEller) continue;
+
+    // After a comma: only label known prep words (handled in step 3),
+    // skip other tokens (type clarifications like "nöt och fläsk")
+    if (afterComma) {
+      // Prep words after comma were already labeled in step 3
+      continue;
+    }
 
     if (_couldBeName(lower)) {
       labels[i] = inName ? 'I-NAME' : 'B-NAME';
@@ -135,11 +180,13 @@ void _labelTokens(
   String beginLabel,
   String insideLabel,
 ) {
-  var first = true;
+  var inSpan = false;
   for (var i = 0; i < tokens.length; i++) {
     if (labels[i] == 'O' && predicate(tokens[i])) {
-      labels[i] = first ? beginLabel : insideLabel;
-      first = false;
+      labels[i] = inSpan ? insideLabel : beginLabel;
+      inSpan = true;
+    } else {
+      inSpan = false;
     }
   }
 }
@@ -153,8 +200,26 @@ bool _couldBeName(String token) {
   if (UnitDefinitions.isKnownUnit(token)) return false;
   if (RegExp(r'^[(),;:]+$').hasMatch(token)) return false;
   if (_skipWords.contains(token)) return false;
+  if (_textQuantities.contains(token)) return false;
   return token.length > 1;
 }
+
+const _textQuantities = {
+  'en',
+  'ett',
+  'två',
+  'tre',
+  'fyra',
+  'fem',
+  'sex',
+  'sju',
+  'åtta',
+  'nio',
+  'tio',
+  'halv',
+  'halva',
+  'halvt',
+};
 
 const _skipWords = {
   // Conjunctions
@@ -164,6 +229,24 @@ const _skipWords = {
   'valfritt', 'drygt', 'knappt', 'lite',
   // Purpose
   'till', 'för',
+};
+
+/// Common nouns in Swedish purpose clauses
+const _purposeNouns = {
+  'stekning',
+  'garnering',
+  'servering',
+  'redning',
+  'jäsning',
+  'utbakning',
+  'panering',
+  'dusting',
+  'topping',
+  'formen',
+  'pensling',
+  'fritering',
+  'gratinering',
+  'bakning',
 };
 
 /// Detect group headers like "Fyllning:", "Deg:", "Till servering:"
