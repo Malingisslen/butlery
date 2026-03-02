@@ -85,6 +85,7 @@ nul
 
 # One-off scripts
 *.py
+!scripts/crf/train_crf.py
 
 # Temp analysis files
 *tmp_analyze*
@@ -100,3 +101,10 @@ scripts/*.exe
 # Node.js
 node_modules/
 service-account.json
+
+# CRF training pipeline (regenerable from scripts)
+scripts/crf/data/urls.txt
+scripts/crf/data/urls_sample.txt
+scripts/crf/data/raw_ingredients.txt
+scripts/crf/data/training.conll
+*.crfsuite
