@@ -477,12 +477,12 @@ void main() {
     // ignore: avoid_print
     print(report);
 
-    // Assertions — thresholds will tighten as we train from real data
+    // Threshold tightened after training on 13K+ scraped ingredient lines
     final fieldPct = result.allFieldsExact / result.totalEntries * 100;
     expect(
       fieldPct,
-      greaterThanOrEqualTo(40.0),
-      reason: 'All-fields exact match should be at least 40%. '
+      greaterThanOrEqualTo(65.0),
+      reason: 'All-fields exact match should be at least 65%. '
           'Got ${fieldPct.toStringAsFixed(1)}% '
           '(${result.allFieldsExact}/${result.totalEntries})',
     );
