@@ -1,8 +1,8 @@
 # Manual Testing Log - Butlery App
 
 **Created**: 2026-01-07
-**Last Updated**: 2026-03-01 (Session 22 - Social, import, profile verification; 64.3% reached)
-**Status**: In Progress (1 open bug)
+**Last Updated**: 2026-03-03 (Session 23 - BUG-026 fixed, profile stats dynamic; 64.5% reached)
+**Status**: In Progress (0 open bugs)
 
 ---
 
@@ -28,7 +28,7 @@
 | 15. Error Handling | 13 | 13 | 13 | 0 | 0 |
 | 16. Social E2E Tests | 35 | 13 | 11 | 0 | 8 |
 | 17. Import Tagging Verification | 32 | 0 | 0 | 0 | 0 |
-| **TOTAL** | **538** | **346** | **330** | **2** | **19** |
+| **TOTAL** | **538** | **347** | **330** | **2** | **19** |
 
 ---
 
@@ -60,6 +60,7 @@
 | BUG-024 | "Skapa kopia" navigates to unknown route /editRecipe | 3 | Medium | FIXED |
 | BUG-025 | Create new tag (+) button crashes with RenderBox assertion | 9 | High | FIXED |
 | BUG-022 | Tag group creation dialog crashes app on web | 18 | High | FIXED |
+| BUG-026 | Profile panel shows 0 VÄNNER but friends list shows 3 | 7 | Low | FIXED |
 
 **BUG-003 Details:**
 - **Root Cause 1**: Firestore security rules rejected `errorReason` field in tagResult
@@ -107,14 +108,7 @@
 ### Open Bugs
 | Bug ID | Title | Phase | Test ID | Severity | Status |
 |--------|-------|-------|---------|----------|--------|
-| BUG-026 | Profile panel shows 0 VÄNNER but friends list shows 3 | 7 | SOCIAL-26 | Low | OPEN |
-
-**BUG-026 Details:**
-- **Issue**: Profile panel (MG avatar dropdown) displays "0 VÄNNER" in the stats row, but navigating to Vänner & grupper → Vänner tab shows 3 friends (malin, test.testsson2, send)
-- **Platform**: Web (Chrome)
-- **Steps to reproduce**: Click MG avatar → observe "0 VÄNNER" → click Vänner och grupper → see 3 friends listed
-- **Expected**: Friend count should match the actual friends list
-- **Likely cause**: Profile stats query uses a different data source or cached count that isn't updated when friends are added
+| (none) | | | | | |
 
 **BUG-022 Details (FIXED 2026-02-25):**
 - **Error**: Flutter assertion failed: `_dependents.isEmpty is not true` (framework.dart:6171:14)
@@ -152,6 +146,15 @@
 - **Fix**: Deferred PopupMenuButton `onSelected` callback via `WidgetsBinding.instance.addPostFrameCallback` so popup fully dismisses before dialog opens
 - **File**: `lib/views/personal_tags_view.dart:185-213`
 - **Verified**: 2026-02-24 - "+" button opens popup menu, selecting "Ny tagg" or "Ny grupp" opens dialog without crash
+
+**BUG-026 Details (FIXED 2026-03-03):**
+- **Issue**: Profile panel stats row showed "0 VÄNNER" but friends list shows 3 friends. Also RECEPT (48) and MENYER (12) were hardcoded.
+- **Root Cause 1**: Friends count used `_pendingRequestsCount` (incoming friend *requests*) instead of accepted friends count
+- **Root Cause 2**: Recipe count was hardcoded string '48', menu count hardcoded '12'
+- **Root Cause 3**: All stats were loaded inside same try-catch as async notification loading; if any async call failed, stats were never set
+- **Fix**: Split `_loadProfileStats()` from `_loadNotificationCounts()`. Stats now load synchronously from singleton services (`UnifiedRecipeService.recipes.length`, `UnifiedMenuService.menus.length`, `UnifiedFriendsService.friends.length`)
+- **File**: `lib/widgets/common/profile/profile_menu.dart`
+- **Verified**: 2026-03-03 - Profile panel shows 24 RECEPT, 8 MENYER, 3 VÄNNER (all dynamic, all correct)
 
 **BUG-013 Details (FIXED 2026-01-11):**
 - **Issue**: Clicking "Spara ändringar" (Save changes) in group edit dialog throws TypeError
@@ -485,7 +488,7 @@
 | DETAIL-08 | Add comment | Pass | PARTIAL | Kommentarer section expands on click, shows user avatar (MG), input field "Skriv en kommentar" with send arrow button. Cannot type text due to CanvasKit limitation, but UI elements present and functional. (Session 20) |
 | DETAIL-09 | Rate recipe | Pass | PARTIAL | Rating displays correctly (5 yellow stars, "5.0" text on "1111" recipe) but stars are not clickable to change rating on detail view. Display-only. |
 | DETAIL-10 | Share with friends | Pass | Pass | Dialog shows sharing options (static/realtime), message, recipients |
-| DETAIL-11 | Share externally | Pending | - | - |
+| DETAIL-11 | Share externally | Blocked | N/A | Web Share API requires trusted user gesture. Browser automation (JS-dispatched events) cannot trigger navigator.share(). Share icon present in top bar. (Session 23) |
 | DETAIL-12 | More menu | Pass | Pass | Shows 4 options: "Redigera recept", "Skapa kopia", "Skapa inköpslista", "Uppdatera taggar". (Updated Session 20) |
 | DETAIL-13 | Edit recipe | Pass | Pass | Opens edit form with all fields pre-filled |
 | DETAIL-14 | Fork recipe | Pass | FAIL | **BUG-024**: "Skapa kopia" navigates to "Unknown route: /editRecipe". Route not registered. |
