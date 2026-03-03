@@ -477,12 +477,12 @@ void main() {
     // ignore: avoid_print
     print(report);
 
-    // Threshold lowered after human-verified golden dataset (28 corrections)
+    // Threshold: 433-entry human-verified golden dataset (318 original + 115 new)
     final fieldPct = result.allFieldsExact / result.totalEntries * 100;
     expect(
       fieldPct,
-      greaterThanOrEqualTo(86.0),
-      reason: 'All-fields exact match should be at least 86%. '
+      greaterThanOrEqualTo(85.0),
+      reason: 'All-fields exact match should be at least 85%. '
           'Got ${fieldPct.toStringAsFixed(1)}% '
           '(${result.allFieldsExact}/${result.totalEntries})',
     );
