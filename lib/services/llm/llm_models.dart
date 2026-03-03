@@ -18,6 +18,9 @@ enum StructureMode {
 
   /// Extract from video transcript (YouTube, TikTok)
   spoken,
+
+  /// Parse individual ingredient lines (selective CRF→LLM routing)
+  ingredientLines,
 }
 
 /// Request for structureRecipe Cloud Function.

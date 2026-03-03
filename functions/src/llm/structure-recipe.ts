@@ -14,10 +14,13 @@ import {
   RECIPE_EXTRACTION_SYSTEM_PROMPT,
   RECIPE_ENHANCEMENT_SYSTEM_PROMPT,
   SPOKEN_CONTENT_SYSTEM_PROMPT,
+  INGREDIENT_LINE_SYSTEM_PROMPT,
+  INGREDIENT_LINE_MAX_TOKENS,
   TEXT_MODEL,
   MAX_TOKENS,
   TEMPERATURE,
   parseRecipeResponse,
+  parseIngredientLinesResponse,
   ExtractedRecipe,
 } from "./mistral-client";
 import { withRateLimit } from "../middleware/rate_limiter";
@@ -32,8 +35,8 @@ interface StructureRecipeRequest {
   text: string;
   /** Optional partial data to enhance (for enhancement mode) */
   partialData?: Partial<ExtractedRecipe>;
-  /** Extraction mode: 'extract' (default), 'enhance', or 'spoken' */
-  mode?: "extract" | "enhance" | "spoken";
+  /** Extraction mode: 'extract' (default), 'enhance', 'spoken', or 'ingredientLines' */
+  mode?: "extract" | "enhance" | "spoken" | "ingredientLines";
   /** Source URL for reference */
   sourceUrl?: string;
 }
@@ -111,6 +114,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
       // Select system prompt based on mode
       let systemPrompt: string;
       let userPrompt: string;
+      const isIngredientLines = mode === "ingredientLines";
 
       switch (mode) {
         case "enhance":
@@ -120,6 +124,10 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
         case "spoken":
           systemPrompt = SPOKEN_CONTENT_SYSTEM_PROMPT;
           userPrompt = buildSpokenPrompt(cleanText, cleanSourceUrl);
+          break;
+        case "ingredientLines":
+          systemPrompt = INGREDIENT_LINE_SYSTEM_PROMPT;
+          userPrompt = buildIngredientLinesPrompt(cleanText);
           break;
         default:
           systemPrompt = RECIPE_EXTRACTION_SYSTEM_PROMPT;
@@ -137,7 +145,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        maxTokens: MAX_TOKENS,
+        maxTokens: isIngredientLines ? INGREDIENT_LINE_MAX_TOKENS : MAX_TOKENS,
         temperature: TEMPERATURE,
         responseFormat: { type: "json_object" },
       });
@@ -155,7 +163,42 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
       // Calculate actual cost from API usage
       const actualCost = calculateTextCost(response.usage);
 
-      // Parse response
+      // Parse response — ingredient lines mode returns array, others return recipe
+      if (isIngredientLines) {
+        const ingredients = parseIngredientLinesResponse(content);
+        if (!ingredients) {
+          console.error("[structureRecipe] Failed to parse ingredient lines:", content);
+          return {
+            success: false,
+            error: "Kunde inte tolka AI-svaret som ingredienser.",
+            estimatedCost: actualCost,
+          };
+        }
+
+        console.log(
+          `[structureRecipe] Parsed ${ingredients.length} ingredient lines (cost: $${actualCost.toFixed(6)})`
+        );
+
+        // Wrap in minimal recipe so existing response type works
+        return {
+          success: true,
+          recipe: {
+            title: "_ingredientLines",
+            description: null,
+            portions: null,
+            prepTimeMinutes: null,
+            cookTimeMinutes: null,
+            ingredients,
+            instructions: [],
+            tags: [],
+            difficulty: null,
+            source: null,
+          },
+          estimatedCost: actualCost,
+          promptVersion: PROMPT_VERSION,
+        };
+      }
+
       const recipe = parseRecipeResponse(content);
       if (!recipe) {
         console.error("[structureRecipe] Failed to parse response:", content);
@@ -234,6 +277,12 @@ function buildEnhancementPrompt(
   }
 
   return prompt;
+}
+
+function buildIngredientLinesPrompt(text: string): string {
+  // Text is newline-separated ingredient lines from the Dart side
+  const lines = text.split("\n").filter((l) => l.trim().length > 0);
+  return `Extrahera ingrediensinformation från dessa ${lines.length} rader:\n${JSON.stringify(lines)}`;
 }
 
 function buildSpokenPrompt(transcript: string, sourceUrl?: string): string {

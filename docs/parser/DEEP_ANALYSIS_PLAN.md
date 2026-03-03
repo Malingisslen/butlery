@@ -40,8 +40,8 @@ The Butlery parser is a 4-tier cascading system for extracting structured recipe
 | 2 | Bigram + gazeteer CRF features | **DONE** | Included in training |
 | 3 | Expand KnownIngredients → 5,527 | **DONE** | Firebase-synced vocab |
 | 4 | Definite form + compound splitter + vocab | **DONE** | 71.4% → 92.5% |
-| 5 | Few-shot Swedish examples in LLM prompt | Not started | +10-20% when LLM used |
-| 6 | CRF→LLM line-level routing | Scaffolded | Same, 80% fewer LLM calls |
+| 5 | Few-shot Swedish examples in LLM prompt | **DONE** | +10-20% when LLM used |
+| 6 | CRF→LLM line-level routing | **DONE** | Same, 80% fewer LLM calls |
 | 7 | Expand golden dataset to 500+ | **318 entries** | More reliable measurement |
 | **Result** | | **92.5% accuracy** | **Exceeded 75% target** |
 
@@ -53,7 +53,7 @@ The Butlery parser is a 4-tier cascading system for extracting structured recipe
 | 9 | Golden dataset expansion via Claude AI Max | 1-2 |
 | 10 | User correction → retrain pipeline | 2-3 |
 | 11 | Livsmedelsverket ingredient DB | 5-7 |
-| 12 | Unify ParsedIngredient models | 2-3 |
+| 12 | Unify ParsedIngredient models | **DONE** |
 
 ### Tier C: Ongoing API Costs (Consider Carefully)
 

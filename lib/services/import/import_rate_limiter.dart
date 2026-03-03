@@ -251,6 +251,7 @@ class ImportRateLimiter extends BaseService {
     if (_isInWindow(usage.dayWindowStart, now, const Duration(days: 1))) {
       switch (operation.llmType) {
         case LlmOperationType.enhancement:
+        case LlmOperationType.ingredientLines:
           if (usage.llmEnhancementsToday >=
               ImportRateLimits.llmEnhancementsPerDay) {
             return _createLlmDenied(usage.dayWindowStart!, now);
@@ -423,6 +424,7 @@ class ImportRateLimiter extends BaseService {
     if (operation.requiresLlm) {
       switch (operation.llmType) {
         case LlmOperationType.enhancement:
+        case LlmOperationType.ingredientLines:
           newEnhancements++;
           break;
         case LlmOperationType.fullExtraction:

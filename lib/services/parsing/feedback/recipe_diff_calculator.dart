@@ -1,11 +1,11 @@
 import 'package:butlery/models/parsing/field_correction.dart';
 import 'package:butlery/models/parsing/ingredient_correction.dart';
 import 'package:butlery/models/parsing/instruction_correction.dart';
-import 'package:butlery/models/parsing/parsed_ingredient.dart' as parsing;
+import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/parsing_correction.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/utils/text/ingredient_parser.dart' as util;
+import 'package:butlery/utils/text/ingredient_parser.dart';
 
 /// Calculates the diff between a parsed recipe and user's corrected version.
 ///
@@ -85,7 +85,7 @@ class RecipeDiffCalculator {
   /// 2. Match by fuzzy name similarity
   /// 3. Detect added/removed/modified ingredients
   List<IngredientCorrection> _diffIngredients(
-    List<parsing.ParsedIngredient> original,
+    List<ParsedIngredient> original,
     List<String> corrected,
   ) {
     final corrections = <IngredientCorrection>[];
@@ -96,7 +96,7 @@ class RecipeDiffCalculator {
     final correctedParsed = corrected
         .map((line) => (
               line: line,
-              parsed: util.IngredientParser.parseIngredient(line),
+              parsed: IngredientParser.parseIngredient(line),
             ))
         .toList();
 
@@ -184,9 +184,9 @@ class RecipeDiffCalculator {
   IngredientCorrection? _compareIngredient({
     required int originalIndex,
     required int correctedIndex,
-    required parsing.ParsedIngredient original,
+    required ParsedIngredient original,
     required String correctedLine,
-    required util.ParsedIngredient correctedParsed,
+    required RegexParseResult correctedParsed,
   }) {
     // Compare fields
     final quantityChanged = !_quantitiesEqual(

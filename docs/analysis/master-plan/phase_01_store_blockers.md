@@ -23,7 +23,7 @@ Items you literally cannot submit to App Store / Play Store without.
 
 ---
 
-## P1-03 — Remove orphan `NSFaceIDUsageDescription` [HIGH]
+## P1-03 — Remove orphan `NSFaceIDUsageDescription` [HIGH] [DONE]
 
 **Source**: R02:C-09, R06:2.1 (implicit), R09:TS-025, R10:H5.1
 **Files**: `ios/Runner/Info.plist:57-59`
@@ -41,7 +41,7 @@ Items you literally cannot submit to App Store / Play Store without.
 
 ---
 
-## P1-05 — Create iOS Privacy Manifest (`PrivacyInfo.xcprivacy`) [CRIT]
+## P1-05 — Create iOS Privacy Manifest (`PrivacyInfo.xcprivacy`) [CRIT] [DONE]
 
 **Source**: R09:TS-020, R09:TS-021
 **Files**: `ios/Runner/` (new file)
@@ -54,7 +54,7 @@ Verify third-party pod privacy manifests are bundled (R09:TS-022).
 
 ---
 
-## P1-06 — iOS deployment target too low [HIGH]
+## P1-06 — iOS deployment target too low [HIGH] [DONE]
 
 **Source**: R05:dim6
 **Files**: `ios/Runner.xcodeproj/project.pbxproj` (IPHONEOS_DEPLOYMENT_TARGET)
@@ -63,7 +63,7 @@ Verify third-party pod privacy manifests are bundled (R09:TS-022).
 
 ---
 
-## P1-07 — macOS deployment target too low [MED]
+## P1-07 — macOS deployment target too low [MED] [DONE]
 
 **Source**: R05:dim6
 **Files**: `macos/Runner.xcodeproj/project.pbxproj` (3 places: MACOSX_DEPLOYMENT_TARGET)

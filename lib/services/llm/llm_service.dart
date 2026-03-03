@@ -3,6 +3,7 @@
 /// This service provides:
 /// - Text-to-recipe extraction (structureRecipe)
 /// - Image-to-recipe OCR (ocrRecipeImage)
+/// - Selective ingredient line parsing (parseIngredientLines)
 /// - Rate limiting integration
 /// - Cost tracking
 library;
@@ -35,6 +36,9 @@ class LlmService extends BaseService {
   /// Region for Cloud Functions (matches deployment)
   static const _region = 'europe-west1';
 
+  /// Consent purpose key for AI processing (GDPR Art. 5(1)(b))
+  static const _consentPurpose = 'aiProcessing';
+
   LlmService({
     required ImportRateLimiter rateLimiter,
     required ConsentService consentService,
@@ -59,66 +63,41 @@ class LlmService extends BaseService {
     Map<String, dynamic>? partialData,
     String? sourceUrl,
   }) async {
-    // GDPR Art. 5(1)(b): Require explicit consent for AI processing
-    if (!await _consentService.hasConsent('aiProcessing')) {
-      throw const LlmException(
-        'AI-bearbetning kräver ditt samtycke. '
-        'Aktivera "AI-bearbetning" under Integritetsinställningar.',
-      );
-    }
-
     AppLogger.debug(
       'LlmService: structureRecipe called with ${text.length} chars, mode=$mode',
     );
 
-    // Check rate limit
     final llmType = mode == StructureMode.enhance
         ? LlmOperationType.enhancement
         : LlmOperationType.fullExtraction;
     final operation = ImportOperation.withLlm('llm', llmType);
-    final limitCheck = await _rateLimiter.checkLimit(operation);
+    final request = StructureRecipeRequest(
+      text: text,
+      mode: mode,
+      partialData: partialData,
+      sourceUrl: sourceUrl,
+    );
 
-    if (limitCheck.isDenied) {
-      final denied = limitCheck as RateLimitDenied;
-      AppLogger.warning('LlmService: Rate limited - ${denied.message}');
-      return StructureRecipeResponse(
+    final response = await _executeLlmCall(
+      operation: operation,
+      functionName: 'structureRecipe',
+      requestJson: request.toJson(),
+      parseResponse: StructureRecipeResponse.fromJson,
+      buildDeniedResponse: (message) => StructureRecipeResponse(
         success: false,
-        error: denied.swedishMessage,
+        error: message,
         estimatedCost: 0.0,
+      ),
+    );
+
+    if (response.success) {
+      AppLogger.info(
+        'LlmService: Successfully extracted "${response.recipe?.title}" '
+        '(cost: \$${response.estimatedCost.toStringAsFixed(4)})',
       );
     }
 
-    try {
-      final callable = _functions.httpsCallable('structureRecipe');
-      final request = StructureRecipeRequest(
-        text: text,
-        mode: mode,
-        partialData: partialData,
-        sourceUrl: sourceUrl,
-      );
-
-      final result =
-          await callable.call<Map<String, dynamic>>(request.toJson());
-      final response = StructureRecipeResponse.fromJson(result.data);
-
-      // Record usage with cost
-      if (response.success) {
-        await _rateLimiter.recordUsage(operation,
-            llmCost: response.estimatedCost);
-        AppLogger.info(
-          'LlmService: Successfully extracted "${response.recipe?.title}" '
-          '(cost: \$${response.estimatedCost.toStringAsFixed(4)})',
-        );
-      }
-
-      return response;
-    } on FirebaseFunctionsException catch (e) {
-      AppLogger.error('LlmService: Firebase error - ${e.code}: ${e.message}');
-      throw LlmException.fromFirebase(e);
-    } catch (e) {
-      AppLogger.error('LlmService: Unexpected error - $e');
-      throw LlmException(AppLocale.current.llmUnexpectedError('$e'));
-    }
+    return response;
   }
 
   /// Extract recipe from image using OCR and vision AI.
@@ -141,77 +120,102 @@ class LlmService extends BaseService {
           'Either imageBytes or imageUrl must be provided');
     }
 
-    // GDPR Art. 5(1)(b): Require explicit consent for AI processing
-    if (!await _consentService.hasConsent('aiProcessing')) {
-      throw const LlmException(
-        'AI-bearbetning kräver ditt samtycke. '
-        'Aktivera "AI-bearbetning" under Integritetsinställningar.',
-      );
-    }
-
     AppLogger.debug(
       'LlmService: ocrRecipeImage called '
       '${imageBytes != null ? "with ${imageBytes.length} bytes" : "with URL: $imageUrl"}',
     );
 
-    // Check rate limit - vision is more expensive
     final operation = ImportOperation.withLlm('llm', LlmOperationType.vision);
-    final limitCheck = await _rateLimiter.checkLimit(operation);
 
-    if (limitCheck.isDenied) {
-      final denied = limitCheck as RateLimitDenied;
-      AppLogger.warning('LlmService: Rate limited - ${denied.message}');
-      return OcrRecipeImageResponse(
+    final OcrRecipeImageRequest request;
+    if (imageBytes != null) {
+      request = OcrRecipeImageRequest.fromBytes(
+        imageBytes,
+        mimeType: mimeType,
+        context: context,
+      );
+    } else {
+      request = OcrRecipeImageRequest.fromUrl(
+        imageUrl!,
+        context: context,
+      );
+    }
+
+    final response = await _executeLlmCall(
+      operation: operation,
+      functionName: 'ocrRecipeImage',
+      requestJson: request.toJson(),
+      parseResponse: OcrRecipeImageResponse.fromJson,
+      buildDeniedResponse: (message) => OcrRecipeImageResponse(
         success: false,
-        error: denied.swedishMessage,
+        error: message,
+        estimatedCost: 0.0,
+      ),
+      recordUsageOnFailure: true,
+    );
+
+    if (response.success) {
+      AppLogger.info(
+        'LlmService: Successfully extracted "${response.recipe?.title}" from image '
+        '(cost: \$${response.estimatedCost.toStringAsFixed(4)})',
+      );
+    } else if (response.rawText != null) {
+      AppLogger.info(
+        'LlmService: Got raw text (${response.rawText!.length} chars) but no structured recipe',
+      );
+    }
+
+    return response;
+  }
+
+  /// Parse individual ingredient lines via LLM.
+  ///
+  /// Used by selective CRF→LLM routing: only low-confidence CRF lines
+  /// are sent for re-parsing instead of the entire recipe.
+  /// Returns a [StructureRecipeResponse] where `recipe.ingredients`
+  /// contains the parsed lines (other recipe fields are placeholders).
+  Future<StructureRecipeResponse> parseIngredientLines({
+    required List<String> lines,
+  }) async {
+    if (lines.isEmpty) {
+      return const StructureRecipeResponse(
+        success: false,
+        error: 'No ingredient lines to parse',
         estimatedCost: 0.0,
       );
     }
 
-    try {
-      final callable = _functions.httpsCallable('ocrRecipeImage');
+    AppLogger.debug(
+      'LlmService: parseIngredientLines called with ${lines.length} lines',
+    );
 
-      final OcrRecipeImageRequest request;
-      if (imageBytes != null) {
-        request = OcrRecipeImageRequest.fromBytes(
-          imageBytes,
-          mimeType: mimeType,
-          context: context,
-        );
-      } else {
-        request = OcrRecipeImageRequest.fromUrl(
-          imageUrl!,
-          context: context,
-        );
-      }
+    final operation =
+        ImportOperation.withLlm('llm', LlmOperationType.ingredientLines);
+    final request = StructureRecipeRequest(
+      text: lines.join('\n'),
+      mode: StructureMode.ingredientLines,
+    );
 
-      final result =
-          await callable.call<Map<String, dynamic>>(request.toJson());
-      final response = OcrRecipeImageResponse.fromJson(result.data);
+    final response = await _executeLlmCall(
+      operation: operation,
+      functionName: 'structureRecipe',
+      requestJson: request.toJson(),
+      parseResponse: StructureRecipeResponse.fromJson,
+      buildDeniedResponse: (message) => StructureRecipeResponse(
+        success: false,
+        error: message,
+        estimatedCost: 0.0,
+      ),
+    );
 
-      // Record usage with cost
-      await _rateLimiter.recordUsage(operation,
-          llmCost: response.estimatedCost);
-
-      if (response.success) {
-        AppLogger.info(
-          'LlmService: Successfully extracted "${response.recipe?.title}" from image '
-          '(cost: \$${response.estimatedCost.toStringAsFixed(4)})',
-        );
-      } else if (response.rawText != null) {
-        AppLogger.info(
-          'LlmService: Got raw text (${response.rawText!.length} chars) but no structured recipe',
-        );
-      }
-
-      return response;
-    } on FirebaseFunctionsException catch (e) {
-      AppLogger.error('LlmService: Firebase error - ${e.code}: ${e.message}');
-      throw LlmException.fromFirebase(e);
-    } catch (e) {
-      AppLogger.error('LlmService: Unexpected error - $e');
-      throw LlmException(AppLocale.current.llmUnexpectedError('$e'));
+    if (response.success) {
+      AppLogger.info(
+        'LlmService: Parsed ${response.recipe?.ingredients.length ?? 0} '
+        'ingredient lines (cost: \$${response.estimatedCost.toStringAsFixed(4)})',
+      );
     }
+
+    return response;
   }
 
   /// Check if LLM service is available (not rate limited, not killed).
@@ -231,5 +235,72 @@ class LlmService extends BaseService {
   /// Get current LLM usage stats.
   Future<UsageLimits> getUsageStats() async {
     return _rateLimiter.getUsageStats();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private helpers
+  // ---------------------------------------------------------------------------
+
+  /// Shared pipeline: consent → rate limit → Firebase callable → record usage.
+  ///
+  /// Encapsulates the boilerplate shared by all LLM operations:
+  /// 1. GDPR consent check
+  /// 2. Rate-limit guard
+  /// 3. Firebase Cloud Function call + response parsing
+  /// 4. Usage recording (on success, or always if [recordUsageOnFailure])
+  /// 5. Error handling (Firebase and generic exceptions)
+  Future<T> _executeLlmCall<T>({
+    required ImportOperation operation,
+    required String functionName,
+    required Map<String, dynamic> requestJson,
+    required T Function(Map<String, dynamic> data) parseResponse,
+    required T Function(String message) buildDeniedResponse,
+    bool recordUsageOnFailure = false,
+  }) async {
+    if (!await _consentService.hasConsent(_consentPurpose)) {
+      throw const LlmException(
+        'AI-bearbetning kräver ditt samtycke. '
+        'Aktivera "AI-bearbetning" under Integritetsinställningar.',
+      );
+    }
+
+    final limitCheck = await _rateLimiter.checkLimit(operation);
+    if (limitCheck.isDenied) {
+      final denied = limitCheck as RateLimitDenied;
+      AppLogger.warning('LlmService: Rate limited - ${denied.message}');
+      return buildDeniedResponse(denied.swedishMessage);
+    }
+
+    try {
+      final callable = _functions.httpsCallable(functionName);
+      final result = await callable.call<Map<String, dynamic>>(requestJson);
+      final response = parseResponse(result.data);
+
+      final success = _isSuccessful(response);
+      if (success || recordUsageOnFailure) {
+        final cost = _extractCost(response);
+        await _rateLimiter.recordUsage(operation, llmCost: cost);
+      }
+
+      return response;
+    } on FirebaseFunctionsException catch (e) {
+      AppLogger.error('LlmService: Firebase error - ${e.code}: ${e.message}');
+      throw LlmException.fromFirebase(e);
+    } catch (e) {
+      AppLogger.error('LlmService: Unexpected error - $e');
+      throw LlmException(AppLocale.current.llmUnexpectedError('$e'));
+    }
+  }
+
+  bool _isSuccessful(dynamic response) {
+    if (response is StructureRecipeResponse) return response.success;
+    if (response is OcrRecipeImageResponse) return response.success;
+    return false;
+  }
+
+  double _extractCost(dynamic response) {
+    if (response is StructureRecipeResponse) return response.estimatedCost;
+    if (response is OcrRecipeImageResponse) return response.estimatedCost;
+    return 0.0;
   }
 }

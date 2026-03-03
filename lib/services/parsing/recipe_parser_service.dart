@@ -5,13 +5,17 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/circuit_breaker.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/parsing/field_result.dart';
+import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
+import 'package:butlery/services/llm/llm_models.dart';
 import 'package:butlery/repositories/site_config_repository.dart';
 import 'package:butlery/services/llm/llm_service.dart';
 import 'package:butlery/services/parsing/cache/local_recipe_cache.dart';
 import 'package:butlery/services/parsing/common/recipe_merger.dart';
+import 'package:butlery/services/parsing/ingredient_conversion.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/tiers/llm_tier.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
@@ -384,9 +388,15 @@ class RecipeParserService extends BaseService {
         break;
       }
 
-      // Before LLM tier: check if earlier tiers produced a partial result
-      // that can be enhanced instead of fully re-extracted.
+      // Before LLM tier: try lightweight ingredient-line routing first,
+      // then fall back to full recipe enhancement if needed.
       if (tier is LlmTier) {
+        final patched = await _trySelectiveIngredientEnhancement(
+          results,
+          context,
+          qualityThreshold: qualityThreshold,
+        );
+        if (patched) break;
         _preparePartialForEnhancement(results, context);
       }
 
@@ -413,19 +423,23 @@ class RecipeParserService extends BaseService {
     return _merger.merge(results);
   }
 
+  /// Find the highest-quality successful result from a list of tier results.
+  TierResult? _bestSuccessfulResult(List<TierResult> results) {
+    return results
+        .where((r) => r.success && r.recipe != null)
+        .fold<TierResult?>(null, (best, r) {
+      if (best == null || r.quality > best.quality) return r;
+      return best;
+    });
+  }
+
   /// Extract good fields from the best partial result and set them on the
   /// context so the LLM tier can use enhance mode instead of full extraction.
   void _preparePartialForEnhancement(
     List<TierResult> results,
     ParsingContext context,
   ) {
-    // Find best successful result from earlier tiers
-    final bestResult = results
-        .where((r) => r.success && r.recipe != null)
-        .fold<TierResult?>(null, (best, r) {
-      if (best == null || r.quality > best.quality) return r;
-      return best;
-    });
+    final bestResult = _bestSuccessfulResult(results);
 
     if (bestResult == null) return;
 
@@ -463,6 +477,149 @@ class RecipeParserService extends BaseService {
       '$serviceName: LLM will enhance ${weakFields.length} weak field(s): '
       '${weakFields.join(", ")} (${goodFields.length} fields already good)',
     );
+  }
+
+  /// Try selective ingredient-line enhancement before full LLM extraction.
+  ///
+  /// If earlier tiers produced a recipe where only some ingredient lines
+  /// have low confidence, sends just those lines to the LLM for re-parsing
+  /// (~500 tokens) instead of the entire recipe (~3000 tokens).
+  ///
+  /// Returns true if quality now passes the threshold (LlmTier can be skipped).
+  Future<bool> _trySelectiveIngredientEnhancement(
+    List<TierResult> results,
+    ParsingContext context, {
+    required double qualityThreshold,
+  }) async {
+    if (_llmService == null) return false;
+
+    // Find best result with ingredients from earlier tiers
+    final bestResult = _bestSuccessfulResult(results);
+
+    if (bestResult == null) return false;
+    final recipe = bestResult.recipe!;
+    if (!recipe.ingredients.hasValue) return false;
+
+    final parsed = recipe.ingredients.value!;
+    final originalLines = parsed.map((p) => p.originalLine).toList();
+
+    // Get uncertain lines from CRF output
+    final uncertainLines =
+        _ingredientStrategy.getUncertainLines(parsed, originalLines);
+
+    if (uncertainLines.isEmpty) return false;
+
+    // Skip if majority of lines are uncertain — full LLM is better
+    if (uncertainLines.length > parsed.length / 2) {
+      AppLogger.debug(
+        '$serviceName: ${uncertainLines.length}/${parsed.length} lines uncertain '
+        '— skipping selective enhancement, using full LLM',
+      );
+      return false;
+    }
+
+    AppLogger.info(
+      '$serviceName: Selective ingredient enhancement — '
+      '${uncertainLines.length}/${parsed.length} lines to re-parse',
+    );
+
+    try {
+      final stopwatch = Stopwatch()..start();
+      final response = await _llmService.parseIngredientLines(
+        lines: uncertainLines.values.toList(),
+      );
+
+      if (!response.success ||
+          response.recipe == null ||
+          response.recipe!.ingredients.isEmpty) {
+        AppLogger.debug(
+          '$serviceName: Selective enhancement failed — falling through to LLM',
+        );
+        return false;
+      }
+
+      final llmIngredients = response.recipe!.ingredients;
+
+      // Splice LLM results back into the CRF result at original indices
+      final patchedList = List<ParsedIngredient>.from(parsed);
+      final uncertainIndices = uncertainLines.keys.toList();
+
+      for (var i = 0;
+          i < uncertainIndices.length && i < llmIngredients.length;
+          i++) {
+        final idx = uncertainIndices[i];
+        final llmIng = llmIngredients[i];
+        patchedList[idx] = parsedIngredientFromExtracted(
+          llmIng,
+          originalLine: originalLines[idx],
+        );
+      }
+
+      // Recalculate ingredient confidence
+      final avgConfidence = patchedList.fold<double>(
+            0.0,
+            (sum, p) => sum + p.confidence.score,
+          ) /
+          patchedList.length;
+
+      final FieldResult<List<ParsedIngredient>> newIngredients;
+      if (avgConfidence >= 0.7) {
+        newIngredients = FieldResult.success(patchedList);
+      } else if (avgConfidence >= 0.5) {
+        newIngredients = FieldResult.mediumConfidence(
+          patchedList,
+          'Selective LLM enhancement',
+        );
+      } else {
+        newIngredients = FieldResult.lowConfidence(
+          patchedList,
+          'Selective LLM enhancement — still low confidence',
+        );
+      }
+
+      // Rebuild recipe with patched ingredients
+      final patchedRecipe = ParsedRecipe(
+        title: recipe.title,
+        portions: recipe.portions,
+        ingredients: newIngredients,
+        instructions: recipe.instructions,
+        totalTime: recipe.totalTime,
+        metadata: recipe.metadata,
+        imageUrl: recipe.imageUrl,
+        description: recipe.description,
+      );
+
+      final newQuality = patchedRecipe.overallQuality;
+      final discount = _tierQualityDiscount[bestResult.tierName] ?? 0.0;
+
+      AppLogger.info(
+        '$serviceName: Selective enhancement result — '
+        'quality ${(bestResult.quality * 100).toInt()}% → ${(newQuality * 100).toInt()}% '
+        '(threshold: ${((qualityThreshold - discount) * 100).toInt()}%)',
+      );
+
+      if (newQuality >= (qualityThreshold - discount)) {
+        results.add(TierResult.success(
+          tierName: 'SelectiveEnhance',
+          recipe: patchedRecipe,
+          duration: stopwatch.elapsed,
+          costSek: response.estimatedCost,
+        ));
+        return true;
+      }
+
+      return false;
+    } on LlmException catch (e) {
+      AppLogger.debug(
+        '$serviceName: Selective enhancement LLM error: ${e.message}',
+      );
+      return false;
+    } catch (e) {
+      AppLogger.debug(
+        '$serviceName: Selective enhancement error: $e',
+      );
+      return false;
+    }
   }
 
   /// Pick the most actionable user message from accumulated tier failures.

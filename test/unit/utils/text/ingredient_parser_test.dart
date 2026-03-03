@@ -432,9 +432,9 @@ void main() {
       });
     });
 
-    group('ParsedIngredient Model', () {
+    group('RegexParseResult model', () {
       test('should create parsed ingredient correctly', () {
-        const parsed = ParsedIngredient(
+        const parsed = RegexParseResult(
           quantity: 2.5,
           unit: 'dl',
           name: 'mjölk',
@@ -446,14 +446,14 @@ void main() {
       });
 
       test('should generate correct key for grouping', () {
-        const parsed1 = ParsedIngredient(
+        const parsed1 = RegexParseResult(
           quantity: 2.0,
           unit: 'dl',
           name: 'mjölk',
         );
         expect(parsed1.key, equals('dl mjölk'));
 
-        const parsed2 = ParsedIngredient(
+        const parsed2 = RegexParseResult(
           quantity: 1.0,
           unit: '',
           name: 'stor lök',
@@ -462,14 +462,14 @@ void main() {
       });
 
       test('should format toString correctly', () {
-        const parsed1 = ParsedIngredient(
+        const parsed1 = RegexParseResult(
           quantity: 2.5,
           unit: 'dl',
           name: 'mjölk',
         );
         expect(parsed1.toString(), equals('2.5 dl mjölk'));
 
-        const parsed2 = ParsedIngredient(
+        const parsed2 = RegexParseResult(
           quantity: 3.0,
           unit: '',
           name: 'ägg',
@@ -478,19 +478,19 @@ void main() {
       });
 
       test('should implement equality correctly', () {
-        const parsed1 = ParsedIngredient(
+        const parsed1 = RegexParseResult(
           quantity: 2.0,
           unit: 'dl',
           name: 'mjölk',
         );
 
-        const parsed2 = ParsedIngredient(
+        const parsed2 = RegexParseResult(
           quantity: 2.0,
           unit: 'dl',
           name: 'mjölk',
         );
 
-        const parsed3 = ParsedIngredient(
+        const parsed3 = RegexParseResult(
           quantity: 3.0,
           unit: 'dl',
           name: 'mjölk',
@@ -501,13 +501,13 @@ void main() {
       });
 
       test('should generate consistent hash codes', () {
-        const parsed1 = ParsedIngredient(
+        const parsed1 = RegexParseResult(
           quantity: 2.0,
           unit: 'dl',
           name: 'mjölk',
         );
 
-        const parsed2 = ParsedIngredient(
+        const parsed2 = RegexParseResult(
           quantity: 2.0,
           unit: 'dl',
           name: 'mjölk',
