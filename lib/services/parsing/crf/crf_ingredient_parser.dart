@@ -136,9 +136,6 @@ class CrfIngredientParser {
     final unit = spans[_SpanType.unit];
     final size = spans[_SpanType.size];
     final rawName = spans[_SpanType.name];
-    // Fold size into name (e.g., "stor" + "lök" → "stor lök")
-    final name =
-        size != null && rawName != null ? '$size $rawName' : rawName ?? size;
     final prep = spans[_SpanType.prep];
 
     // Determine confidence based on label coverage
@@ -146,19 +143,20 @@ class CrfIngredientParser {
     final coverage = tokens.isEmpty ? 0.0 : labeledCount / tokens.length;
 
     ParseConfidence confidence;
-    if (name != null && quantity != null && coverage >= 0.6) {
+    if (rawName != null && quantity != null && coverage >= 0.6) {
       confidence = ParseConfidence.high;
-    } else if (name != null && coverage >= 0.3) {
+    } else if (rawName != null && coverage >= 0.3) {
       confidence = ParseConfidence.medium;
     } else {
       confidence = ParseConfidence.low;
     }
 
     return ParsedIngredient(
-      name: name ?? originalLine.trim(),
+      name: rawName ?? originalLine.trim(),
       originalLine: originalLine,
       quantity: quantity,
       unit: unit,
+      size: size,
       preparation: prep,
       confidence: confidence,
     );

@@ -516,7 +516,8 @@
     ],
     "expected": {
       "quantity": "1",
-      "name": "stor gul lök"
+      "size": "stor",
+      "name": "gul lök"
     },
     "tags": [
       "size"
@@ -537,7 +538,8 @@
     ],
     "expected": {
       "quantity": "2",
-      "name": "stora morötter"
+      "size": "stora",
+      "name": "morötter"
     },
     "tags": [
       "size"
@@ -560,7 +562,8 @@
     ],
     "expected": {
       "quantity": "1",
-      "name": "liten bit ingefära"
+      "size": "liten",
+      "name": "bit ingefära"
     },
     "tags": [
       "size"
@@ -2389,7 +2392,8 @@
     ],
     "expected": {
       "quantity": "1",
-      "name": "liten gul lök",
+      "size": "liten",
+      "name": "gul lök",
       "preparation": "finhackad"
     },
     "tags": [
@@ -2421,7 +2425,8 @@
     ],
     "expected": {
       "quantity": "2",
-      "name": "stora tomater",
+      "size": "stora",
+      "name": "tomater",
       "preparation": "urkärnade och hackade"
     },
     "tags": [
@@ -8776,12 +8781,13 @@
     ],
     "expected": {
       "quantity": "1",
-      "name": "stor paprika"
+      "size": "stor",
+      "name": "paprika"
     },
     "tags": [
       "size"
     ],
-    "description": "Large pepper — size in name"
+    "description": "Large pepper"
   },
   {
     "input": "2 medelstora lökar",
@@ -8797,7 +8803,8 @@
     ],
     "expected": {
       "quantity": "2",
-      "name": "medelstora lökar"
+      "size": "medelstora",
+      "name": "lökar"
     },
     "tags": [
       "size"
@@ -8818,7 +8825,8 @@
     ],
     "expected": {
       "quantity": "3",
-      "name": "små potatisar"
+      "size": "små",
+      "name": "potatisar"
     },
     "tags": [
       "size"
@@ -8841,6 +8849,7 @@
     ],
     "expected": {
       "quantity": "1",
+      "size": "stor",
       "unit": "bunt",
       "name": "dill"
     },
@@ -8867,7 +8876,8 @@
     ],
     "expected": {
       "quantity": "2",
-      "name": "stora morötter",
+      "size": "stora",
+      "name": "morötter",
       "preparation": "skalade"
     },
     "tags": [
@@ -8891,7 +8901,8 @@
     ],
     "expected": {
       "quantity": "1",
-      "name": "liten zucchini"
+      "size": "liten",
+      "name": "zucchini"
     },
     "tags": [
       "size"
@@ -8912,7 +8923,8 @@
     ],
     "expected": {
       "quantity": "4",
-      "name": "stora vitlöksklyftor"
+      "size": "stora",
+      "name": "vitlöksklyftor"
     },
     "tags": [
       "size",

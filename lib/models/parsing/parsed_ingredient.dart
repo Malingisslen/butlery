@@ -17,6 +17,9 @@ class ParsedIngredient {
   /// Measurement unit (e.g., "dl", "msk", "g", "st").
   final String? unit;
 
+  /// Size descriptor (e.g., "stor", "liten", "små", "medelstora").
+  final String? size;
+
   /// Preparation instructions (e.g., "hackad", "skivad", "rumstempererad").
   final String? preparation;
 
@@ -32,6 +35,7 @@ class ParsedIngredient {
     required this.confidence,
     this.quantity,
     this.unit,
+    this.size,
     this.preparation,
     this.notes,
   });
@@ -49,6 +53,7 @@ class ParsedIngredient {
     required String originalLine,
     String? quantity,
     String? unit,
+    String? size,
     String? preparation,
   }) =>
       ParsedIngredient(
@@ -56,6 +61,7 @@ class ParsedIngredient {
         originalLine: originalLine,
         quantity: quantity,
         unit: unit,
+        size: size,
         preparation: preparation,
         confidence: ParseConfidence.high,
       );
@@ -74,6 +80,7 @@ class ParsedIngredient {
     final parts = <String>[];
     if (hasQuantity) parts.add(quantity!);
     if (hasUnit) parts.add(unit!);
+    if (size != null && size!.isNotEmpty) parts.add(size!);
     parts.add(name);
     if (preparation != null && preparation!.isNotEmpty) {
       parts.add('($preparation)');
@@ -87,6 +94,7 @@ class ParsedIngredient {
     String? originalLine,
     String? quantity,
     String? unit,
+    String? size,
     String? preparation,
     ParseConfidence? confidence,
     String? notes,
@@ -96,6 +104,7 @@ class ParsedIngredient {
         originalLine: originalLine ?? this.originalLine,
         quantity: quantity ?? this.quantity,
         unit: unit ?? this.unit,
+        size: size ?? this.size,
         preparation: preparation ?? this.preparation,
         confidence: confidence ?? this.confidence,
         notes: notes ?? this.notes,
@@ -108,6 +117,7 @@ class ParsedIngredient {
         'confidence': confidence.name,
         if (quantity != null) 'quantity': quantity,
         if (unit != null) 'unit': unit,
+        if (size != null) 'size': size,
         if (preparation != null) 'preparation': preparation,
         if (notes != null) 'notes': notes,
       };
@@ -121,6 +131,7 @@ class ParsedIngredient {
             .byName(json['confidence'] as String? ?? 'medium'),
         quantity: json['quantity'] as String?,
         unit: json['unit'] as String?,
+        size: json['size'] as String?,
         preparation: json['preparation'] as String?,
         notes: json['notes'] as String?,
       );
