@@ -81,6 +81,7 @@ class CrfEvaluationResult {
   int quantityExact = 0;
   int unitExact = 0;
   int nameExact = 0;
+  int sizeExact = 0;
   int prepExact = 0;
   int allFieldsExact = 0;
 
@@ -138,6 +139,7 @@ class CrfEvaluationResult {
     String? predQuantity,
     String? predUnit,
     String? predName,
+    String? predSize,
     String? predPrep,
   ) {
     totalEntries++;
@@ -146,28 +148,33 @@ class CrfEvaluationResult {
     final expQty = entry.expected['quantity'];
     final expUnit = entry.expected['unit'];
     final expName = entry.expected['name'];
+    final expSize = entry.expected['size'];
     final expPrep = entry.expected['preparation'];
 
     final qtyMatch = _fieldMatch(expQty, predQuantity);
     final unitMatch = _fieldMatch(expUnit, predUnit);
     final nameMatch = _fieldMatch(expName, predName);
+    final sizeMatch = _fieldMatch(expSize, predSize);
     final prepMatch = _fieldMatch(expPrep, predPrep);
 
     if (qtyMatch) quantityExact++;
     if (unitMatch) unitExact++;
     if (nameMatch) nameExact++;
+    if (sizeMatch) sizeExact++;
     if (prepMatch) prepExact++;
-    if (qtyMatch && unitMatch && nameMatch && prepMatch) {
+    final allMatch =
+        qtyMatch && unitMatch && nameMatch && sizeMatch && prepMatch;
+    if (allMatch) {
       allFieldsExact++;
     }
 
     for (final tag in entry.tags) {
       final stats = tagStats.putIfAbsent(tag, () => TagStats(tag));
       stats.total++;
-      if (qtyMatch && unitMatch && nameMatch && prepMatch) stats.exact++;
+      if (allMatch) stats.exact++;
     }
 
-    if (!(qtyMatch && unitMatch && nameMatch && prepMatch)) {
+    if (!allMatch) {
       failures.add(FailureEntry(
         input: entry.input,
         tags: entry.tags,
@@ -175,10 +182,12 @@ class CrfEvaluationResult {
         expectedQty: expQty,
         expectedUnit: expUnit,
         expectedName: expName,
+        expectedSize: expSize,
         expectedPrep: expPrep,
         actualQty: predQuantity,
         actualUnit: predUnit,
         actualName: predName,
+        actualSize: predSize,
         actualPrep: predPrep,
       ));
     }
@@ -239,6 +248,8 @@ class CrfEvaluationResult {
           '(${_pct(unitExact, totalEntries)})')
       ..writeln('  Name:         $nameExact/$totalEntries '
           '(${_pct(nameExact, totalEntries)})')
+      ..writeln('  Size:         $sizeExact/$totalEntries '
+          '(${_pct(sizeExact, totalEntries)})')
       ..writeln('  Preparation:  $prepExact/$totalEntries '
           '(${_pct(prepExact, totalEntries)})')
       ..writeln('')
@@ -302,6 +313,10 @@ class CrfEvaluationResult {
           buf.writeln('    name: expected="${f.expectedName}" '
               'actual="${f.actualName}"');
         }
+        if (f.expectedSize?.toLowerCase() != f.actualSize?.toLowerCase()) {
+          buf.writeln('    size: expected="${f.expectedSize}" '
+              'actual="${f.actualSize}"');
+        }
         if (f.expectedPrep?.toLowerCase() != f.actualPrep?.toLowerCase()) {
           buf.writeln('    prep: expected="${f.expectedPrep}" '
               'actual="${f.actualPrep}"');
@@ -337,10 +352,12 @@ class FailureEntry {
   final String? expectedQty;
   final String? expectedUnit;
   final String? expectedName;
+  final String? expectedSize;
   final String? expectedPrep;
   final String? actualQty;
   final String? actualUnit;
   final String? actualName;
+  final String? actualSize;
   final String? actualPrep;
 
   const FailureEntry({
@@ -350,10 +367,12 @@ class FailureEntry {
     this.expectedQty,
     this.expectedUnit,
     this.expectedName,
+    this.expectedSize,
     this.expectedPrep,
     this.actualQty,
     this.actualUnit,
     this.actualName,
+    this.actualSize,
     this.actualPrep,
   });
 }
@@ -441,7 +460,7 @@ void main() {
   test('CRF evaluation against golden dataset', () {
     for (final entry in goldenData) {
       if (entry.tokens.isEmpty) {
-        result.recordFieldMatch(entry, null, null, null, null);
+        result.recordFieldMatch(entry, null, null, null, null, null);
         continue;
       }
 
@@ -468,6 +487,7 @@ void main() {
         parsed.quantity,
         parsed.unit,
         parsed.name,
+        parsed.size,
         parsed.preparation,
       );
     }
