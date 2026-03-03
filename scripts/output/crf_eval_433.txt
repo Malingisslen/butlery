@@ -1,0 +1,201 @@
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 85.0.0 (97.0.0 available)
+  analyzer 7.7.1 (11.0.0 available)
+  archive 3.6.1 (4.0.9 available)
+  build 3.1.0 (4.0.4 available)
+  build_config 1.2.0 (1.3.0 available)
+  build_resolvers 3.0.3 (3.0.4 available)
+  build_runner 2.7.1 (2.11.1 available)
+  build_runner_core 9.3.1 (9.3.2 available)
+  characters 1.4.0 (1.4.1 available)
+  csv 6.0.0 (7.1.0 available)
+  dart_style 3.1.1 (3.1.6 available)
+  dio 5.9.1 (5.9.2 available)
+  drift 2.29.0 (2.32.0 available)
+  drift_dev 2.29.0 (2.32.0 available)
+  google_sign_in_ios 6.2.5 (6.3.0 available)
+  image_picker_ios 0.8.13+3 (0.8.13+6 available)
+  matcher 0.12.17 (0.12.19 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  meta 1.16.0 (1.18.1 available)
+  package_info_plus 8.3.1 (9.0.0 available)
+  path_provider_foundation 2.5.1 (2.6.0 available)
+  rx 0.4.0 (0.5.0 available)
+  source_gen 4.0.0 (4.2.0 available)
+  sqlcipher_flutter_libs 0.6.8 (0.7.0+eol available)
+  sqlite3 2.9.4 (3.1.6 available)
+  sqlparser 0.42.1 (0.44.0 available)
+  test 1.26.2 (1.30.0 available)
+  test_api 0.7.6 (0.7.10 available)
+  test_core 0.6.11 (0.6.16 available)
+  timezone 0.10.1 (0.11.0 available)
+  url_launcher_ios 6.3.6 (6.4.1 available)
+  url_launcher_web 2.4.1 (2.4.2 available)
+  very_good_analysis 10.0.0 (10.2.0 available)
+  wakelock_plus 1.3.3 (1.4.0 available)
+  win32 5.15.0 (6.0.0 available)
+  win32_registry 2.1.0 (3.0.2 available)
+Got dependencies!
+36 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading C:/Butlery/butlery/test/evaluation/crf_evaluator.dart
+00:00 +0: (setUpAll)
+00:00 +0: CRF evaluation against golden dataset
+
+=== CRF EVALUATION REPORT ===
+
+FIELD-LEVEL EXACT MATCH:
+  All fields:   368/433 (85.0%)
+  Quantity:     420/433 (97.0%)
+  Unit:         417/433 (96.3%)
+  Name:         381/433 (88.0%)
+  Preparation:  405/433 (93.5%)
+
+TOKEN-LEVEL METRICS (per label):
+  B-NAME: P=0.895 R=0.919 F1=0.907 (support=419)
+  B-PREP: P=0.800 R=0.901 F1=0.848 (support=71)
+  B-QTY: P=0.929 R=0.981 F1=0.954 (support=320)
+  B-SIZE: P=1.000 R=0.917 F1=0.957 (support=12)
+  B-UNIT: P=0.990 R=0.977 F1=0.983 (support=300)
+  I-NAME: P=0.610 R=0.632 F1=0.621 (support=57)
+  I-PREP: P=0.000 R=0.000 F1=0.000 (support=13)
+  I-QTY: P=0.600 R=1.000 F1=0.750 (support=3)
+  O: P=0.847 R=0.751 F1=0.796 (support=213)
+  --- Macro-avg F1: 0.757 ---
+
+SPAN-LEVEL METRICS (per entity type):
+  NAME: P=0.854 R=0.859 F1=0.856 (support=410)
+  PREP: P=0.787 R=0.831 F1=0.808 (support=71)
+  QTY: P=0.921 R=0.916 F1=0.918 (support=320)
+  SIZE: P=1.000 R=0.917 F1=0.957 (support=12)
+  UNIT: P=0.990 R=0.973 F1=0.982 (support=300)
+
+PER-TAG BREAKDOWN:
+  alternative: 8/10 (80.0%)
+  colloquial: 15/15 (100.0%)
+  comma_separated: 11/19 (57.9%)
+  compound: 61/65 (93.8%)
+  decimal: 5/5 (100.0%)
+  definite_form: 20/20 (100.0%)
+  edge_case: 1/3 (33.3%)
+  fraction: 9/9 (100.0%)
+  group_header: 16/16 (100.0%)
+  multi_word: 33/36 (91.7%)
+  no_quantity: 33/38 (86.8%)
+  ocr_error: 0/5 (0.0%)
+  optional: 11/11 (100.0%)
+  parenthetical: 19/30 (63.3%)
+  preparation: 46/68 (67.6%)
+  purpose: 15/15 (100.0%)
+  range: 16/16 (100.0%)
+  size: 9/12 (75.0%)
+  social_media: 15/24 (62.5%)
+  standard: 79/81 (97.5%)
+  text_quantity: 14/20 (70.0%)
+
+FAILURES (62):
+
+  INPUT: "1 liten bit ingefära" [size]
+  DESC:  Small piece
+    unit: expected="null" actual="bit"
+    name: expected="liten bit ingefära" actual="liten ingefära"
+
+  INPUT: "1 burk krossade tomater" [standard, preparation]
+  DESC:  Container unit with prep
+    name: expected="krossade tomater" actual="tomater"
+    prep: expected="null" actual="krossade"
+
+  INPUT: "rimmat fläsk" [preparation]
+  DESC:  Cured pork
+    name: expected="rimmat fläsk" actual="fläsk"
+    prep: expected="null" actual="rimmat"
+
+  INPUT: "500 g köttfärs, nöt och fläsk" [comma_separated]
+  DESC:  Mince with type clarification
+    name: expected="köttfärs" actual="köttfärs fläsk"
+
+  INPUT: "1 förp rökta korvar" [standard, preparation]
+  DESC:  Package of smoked sausages
+    name: expected="rökta korvar" actual="korvar"
+    prep: expected="null" actual="rökta"
+
+  INPUT: "1 burk kokosmjölk (400 ml)" [parenthetical]
+  DESC:  Volume clarification in parens
+    qty:  expected="400" actual="1"
+    unit: expected="ml" actual="burk"
+
+  INPUT: "1 msk japansk soja (ljus)" [parenthetical, multi_word]
+  DESC:  Multi-word with paren clarification
+    name: expected="ljus japansk soja" actual="japansk soja"
+
+  INPUT: "2 dl mjöl, gärna vetemjöl" [comma_separated]
+  DESC:  Comma suggestion
+    name: expected="vetemjöl" actual="mjöl"
+
+  INPUT: "3 dl ris, basmati" [comma_separated]
+  DESC:  Rice type clarification
+    name: expected="basmatiris" actual="ris"
+
+  INPUT: "2 stora tomater, urkärnade och hackade" [size, preparation, comma_separated]
+  DESC:  Large tomatoes with multi-word prep
+    prep: expected="urkärnade och hackade" actual="urkärnade hackade"
+
+  INPUT: "3 dl passerade tomater" [preparation]
+  DESC:  Strained tomatoes
+    name: expected="passerade tomater" actual="tomater"
+    prep: expected="null" actual="passerade"
+
+  INPUT: "2 dl osötad mandelmjölk" [preparation, compound]
+  DESC:  Unsweetened almond milk
+    name: expected="osötad mandelmjölk" actual="mandelmjölk"
+    prep: expected="null" actual="osötad"
+
+  INPUT: "salt och peppar" [alternative]
+  DESC:  Salt and pepper combined
+    name: expected="salt och peppar" actual="salt peppar"
+
+  INPUT: "1 citron, saft och skal" [comma_separated, preparation]
+  DESC:  Lemon, juice and zest
+    prep: expected="saft och skal" actual="null"
+
+  INPUT: "1 burk san marzano tomater" [multi_word]
+  DESC:  Three-word ingredient name
+    name: expected="tomater" actual="san marzano tomater"
+    prep: expected="san marzano" actual="null"
+
+  INPUT: "lite salt och peppar" [text_quantity, alternative]
+  DESC:  Some salt and pepper
+    name: expected="salt och peppar" actual="peppar"
+
+  INPUT: "en halv citron" [text_quantity]
+  DESC:  Half a lemon written out
+    qty:  expected="en halv" actual="halv"
+    name: expected="citron" actual="en citron"
+
+  INPUT: "1 dl finhackad och urkramad spenat" [preparation]
+  DESC:  Multi-word preparation with och
+    prep: expected="finhackad och urkramad" actual="finhackad urkramad"
+
+  INPUT: "2 st kokt och skalad potatis" [preparation]
+  DESC:  Boiled and peeled preparation
+    prep: expected="kokt och skalad" actual="kokt skalad"
+
+  INPUT: "2 dl mjölk (laktosfri)" [parenthetical]
+  DESC:  Lactose-free specification
+    name: expected="laktosfri mjölk" actual="mjölk"
+  ... and 42 more
+
+=== END REPORT ===
+
+00:00 +0 -1: CRF evaluation against golden dataset [E]
+  Expected: a value greater than or equal to <86.0>
+    Actual: <84.98845265588915>
+     Which: is not a value greater than or equal to <86.0>
+  All-fields exact match should be at least 86%. Got 85.0% (368/433)
+  
+  package:matcher                           expect
+  test\evaluation\crf_evaluator.dart 482:5  main.<fn>
+  
+00:00 +0 -1: (tearDownAll)
+00:00 +0 -1: Some tests failed.
