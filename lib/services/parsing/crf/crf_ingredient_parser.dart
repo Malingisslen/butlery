@@ -11,9 +11,15 @@ class CrfIngredientParser {
 
   CrfIngredientParser(this._decoder);
 
-  static final _bulletPrefix = RegExp(r'^[•●▪★]\s*');
+  static final _bulletPrefix = RegExp(r'^[•●▪★→]\s*');
   static final _dashBullet = RegExp(r'^[-–—]\s+');
   static final _starBullet = RegExp(r'^\*\s+');
+  static final _numberedBullet = RegExp(r'^\d+[.)]\s+');
+  static final _emojiPrefix = RegExp(
+    r'^[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}]+\s*',
+    unicode: true,
+  );
+  static final _mergedQtyUnit = RegExp(r'(\d)([a-zåäöA-ZÅÄÖ])');
   static final _purposeClause = RegExp(
     r'(?:^|\s+)till\s+(stekning|garnering|servering|redning|jäsning|utbakning'
     r'|panering|dusting|topping|formen|pensling|fritering|gratinering'
@@ -39,11 +45,19 @@ class CrfIngredientParser {
       );
     }
 
-    // Strip bullet prefixes from social media formatting
+    // Strip bullet/emoji prefixes from social media formatting
     var cleaned = trimmed;
     cleaned = cleaned.replaceFirst(_bulletPrefix, '');
     cleaned = cleaned.replaceFirst(_dashBullet, '');
     cleaned = cleaned.replaceFirst(_starBullet, '');
+    cleaned = cleaned.replaceFirst(_numberedBullet, '');
+    cleaned = cleaned.replaceFirst(_emojiPrefix, '');
+
+    // Split merged quantity+unit tokens ("2dl" → "2 dl", "1MSK" → "1 MSK")
+    cleaned = cleaned.replaceAllMapped(
+      _mergedQtyUnit,
+      (m) => '${m[1]} ${m[2]}',
+    );
 
     // Strip purpose clauses ("till stekning", "till garnering")
     cleaned = cleaned.replaceFirst(_purposeClause, '');
@@ -153,6 +167,9 @@ class CrfIngredientParser {
   /// Groups consecutive tokens by their BIO label type into span strings.
   /// Filters out punctuation-only tokens and parenthetical content to prevent
   /// comma/paren artifacts in QTY/UNIT spans.
+  ///
+  /// Retains "och" tokens labeled O when they bridge two tokens of the same
+  /// span type (e.g., "hackad och skalad" → prep = "hackad och skalad").
   Map<_SpanType, String> _groupSpans(
     List<String> tokens,
     List<BioLabel> labels,
@@ -161,6 +178,8 @@ class CrfIngredientParser {
 
     // Track parenthesis depth to suppress QTY/UNIT inside parens
     var parenDepth = 0;
+    _SpanType? lastType;
+
     for (var i = 0; i < tokens.length; i++) {
       if (tokens[i] == '(') parenDepth++;
 
@@ -174,7 +193,14 @@ class CrfIngredientParser {
               (type == _SpanType.qty || type == _SpanType.unit);
           if (!suppress) {
             result.putIfAbsent(type, () => []).add(tokens[i]);
+            lastType = type;
           }
+        }
+      } else if (tokens[i].toLowerCase() == 'och' && lastType != null) {
+        // "och" labeled O bridging same-type spans: look ahead
+        final nextType = _nextNonOSpanType(labels, i + 1);
+        if (nextType == lastType) {
+          result[lastType]!.add(tokens[i]);
         }
       }
 
@@ -182,6 +208,14 @@ class CrfIngredientParser {
     }
 
     return result.map((k, v) => MapEntry(k, v.join(' ')));
+  }
+
+  _SpanType? _nextNonOSpanType(List<BioLabel> labels, int from) {
+    for (var i = from; i < labels.length; i++) {
+      final type = _spanTypeFor(labels[i]);
+      if (type != null) return type;
+    }
+    return null;
   }
 
   static final _punctuationOnly = RegExp(r'^[(),;]+$');
