@@ -121,6 +121,9 @@ enum LlmOperationType {
 
   /// Vision-based extraction from image
   vision,
+
+  /// Selective ingredient line re-parsing (CRF→LLM routing)
+  ingredientLines,
 }
 
 /// Extension for LLM operation costs
@@ -134,6 +137,8 @@ extension LlmOperationCost on LlmOperationType {
         return 0.03; // ~3000 tokens
       case LlmOperationType.vision:
         return 0.05; // Vision is more expensive
+      case LlmOperationType.ingredientLines:
+        return 0.005; // ~500 tokens, ingredient-only prompt
     }
   }
 }

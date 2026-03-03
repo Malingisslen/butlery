@@ -32,14 +32,14 @@ class IngredientParser {
       QuantityParser.parse(qtyString);
 
   /// Parses an ingredient string into structured components.
-  static ParsedIngredient parseIngredient(String rawIngredient) {
+  static RegexParseResult parseIngredient(String rawIngredient) {
     if (rawIngredient.isEmpty) {
-      return const ParsedIngredient(quantity: 1.0, unit: '', name: '');
+      return const RegexParseResult(quantity: 1.0, unit: '', name: '');
     }
 
     final ingredient = _normalizeWhitespace(rawIngredient);
     if (ingredient.isEmpty) {
-      return const ParsedIngredient(quantity: 1.0, unit: '', name: '');
+      return const RegexParseResult(quantity: 1.0, unit: '', name: '');
     }
 
     final words = ingredient.split(RegExp(r'\s+'));
@@ -53,13 +53,13 @@ class IngredientParser {
         final remainingWords = words.skip(2).toList();
         if (remainingWords.isNotEmpty &&
             UnitDefinitions.isKnownUnit(remainingWords[0])) {
-          return ParsedIngredient(
+          return RegexParseResult(
             quantity: asciiQty,
             unit: remainingWords[0].toLowerCase(),
             name: remainingWords.skip(1).join(' ').toLowerCase(),
           );
         } else {
-          return ParsedIngredient(
+          return RegexParseResult(
             quantity: asciiQty,
             unit: '',
             name: remainingWords.join(' ').toLowerCase(),
@@ -74,13 +74,13 @@ class IngredientParser {
         final remainingWords = words.skip(1).toList();
         if (remainingWords.isNotEmpty &&
             UnitDefinitions.isKnownUnit(remainingWords[0])) {
-          return ParsedIngredient(
+          return RegexParseResult(
             quantity: asciiQty,
             unit: remainingWords[0].toLowerCase(),
             name: remainingWords.skip(1).join(' ').toLowerCase(),
           );
         } else {
-          return ParsedIngredient(
+          return RegexParseResult(
             quantity: asciiQty,
             unit: '',
             name: remainingWords.join(' ').toLowerCase(),
@@ -101,7 +101,7 @@ class IngredientParser {
           quantity = parseQuantity(beforeUnit.join(' '));
         }
 
-        return ParsedIngredient(
+        return RegexParseResult(
           quantity: quantity,
           unit: lowerWords[i],
           name: afterUnit.join(' ').toLowerCase(),
@@ -118,7 +118,7 @@ class IngredientParser {
       final quantity = parseQuantity(qtyString);
 
       if (attachedUnit != null && attachedUnit.isNotEmpty) {
-        return ParsedIngredient(
+        return RegexParseResult(
           quantity: quantity,
           unit: attachedUnit.toLowerCase(),
           name: rest.toLowerCase(),
@@ -127,13 +127,13 @@ class IngredientParser {
         final tokens = rest.split(RegExp(r'\s+'));
         if (tokens.isNotEmpty && UnitDefinitions.isKnownUnit(tokens[0])) {
           final unitName = rest.substring(tokens[0].length).trim();
-          return ParsedIngredient(
+          return RegexParseResult(
             quantity: quantity,
             unit: tokens[0].toLowerCase(),
             name: unitName.toLowerCase(),
           );
         } else {
-          return ParsedIngredient(
+          return RegexParseResult(
               quantity: quantity, unit: '', name: rest.toLowerCase());
         }
       }
@@ -142,26 +142,26 @@ class IngredientParser {
     // Step 4: Check if ingredient starts with a unit
     final tokens = ingredient.split(RegExp(r'\s+'));
     if (tokens.isNotEmpty && UnitDefinitions.isKnownUnit(tokens[0])) {
-      return ParsedIngredient(
+      return RegexParseResult(
         quantity: 1.0,
         unit: tokens[0].toLowerCase(),
         name: ingredient.substring(tokens[0].length).trim().toLowerCase(),
       );
     }
 
-    return ParsedIngredient(
+    return RegexParseResult(
         quantity: 1.0, unit: '', name: ingredient.toLowerCase());
   }
 
   /// Parses compound ingredients containing "och" (and) into separate items.
-  static List<ParsedIngredient> parseCompoundIngredient(String rawIngredient) {
+  static List<RegexParseResult> parseCompoundIngredient(String rawIngredient) {
     if (rawIngredient.isEmpty) {
-      return const [ParsedIngredient(quantity: 1.0, unit: '', name: '')];
+      return const [RegexParseResult(quantity: 1.0, unit: '', name: '')];
     }
 
     final normalized = _normalizeWhitespace(rawIngredient);
     if (normalized.isEmpty) {
-      return const [ParsedIngredient(quantity: 1.0, unit: '', name: '')];
+      return const [RegexParseResult(quantity: 1.0, unit: '', name: '')];
     }
 
     final ingredient = normalized.toLowerCase();
@@ -171,7 +171,7 @@ class IngredientParser {
 
     final parts = ingredient.split(RegExp(r'\s+och\s+'));
     final first = parseIngredient(parts[0]);
-    final results = <ParsedIngredient>[first];
+    final results = <RegexParseResult>[first];
 
     for (int i = 1; i < parts.length; i++) {
       final part = parts[i].trim();
@@ -187,7 +187,7 @@ class IngredientParser {
       final inheritUnit = parsed.unit.isEmpty && first.unit.isNotEmpty;
 
       if (inheritQuantity || inheritUnit) {
-        results.add(ParsedIngredient(
+        results.add(RegexParseResult(
           quantity: inheritQuantity ? first.quantity : parsed.quantity,
           unit: inheritUnit ? first.unit : parsed.unit,
           name: parsed.name,
@@ -240,13 +240,16 @@ class IngredientParser {
   }
 }
 
-/// Structured representation of a parsed ingredient.
-class ParsedIngredient {
+/// Structured representation of a regex-parsed ingredient.
+///
+/// Named distinctly from the canonical [ParsedIngredient] model to avoid
+/// class name collisions when both are imported.
+class RegexParseResult {
   final double quantity;
   final String unit;
   final String name;
 
-  const ParsedIngredient({
+  const RegexParseResult({
     required this.quantity,
     required this.unit,
     required this.name,
@@ -264,7 +267,7 @@ class ParsedIngredient {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is ParsedIngredient &&
+    return other is RegexParseResult &&
         other.quantity == quantity &&
         other.unit == unit &&
         other.name == name;

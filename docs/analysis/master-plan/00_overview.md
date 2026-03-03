@@ -37,6 +37,26 @@
 
 **Total estimated effort**: ~47.5 days (single developer) — down from ~54 after verification (P7-09 increase offsets P7-05/P7-11 decreases)
 
+## Progress (updated 2026-03-01)
+
+Phases 1-7 and 9 executed across three parallel tracks (now merged to main).
+
+| Phase | Status | Completed | Remaining |
+|-------|--------|-----------|-----------|
+| 1 | Partial | 3 of 10 | 4 postponed (external/pre-submission), 3 done (P1-03, P1-05–07) |
+| 2 | **DONE** | 17/17 | — |
+| 3 | **DONE** | 19/19 | P3-06 has 2 minor Firestore rule gaps (tracked) |
+| 4 | **DONE** | 14/14 | — |
+| 5 | Near-done | 19/20 | P5-17 golden dataset deferred |
+| 6 | **DONE** | 9/9 | — |
+| 7 | **DONE** | 19/19 | — |
+| 8 | Not started | 0/21 | All 21 items — now unblocked |
+| 9 | Partial | 15/21 | P9-01 deferred, 5 invalid/blocked |
+| 10 | Not started | 0/11 | Post-beta |
+
+**Totals**: 109 of 161 items completed (68%)
+**Remaining effort**: ~10 days (Phase 8 ~5d + Phase 10 ~3d + stragglers ~2d)
+
 ## Deduplication Log
 
 Issues appearing in 2+ reports — each listed exactly once in the phase where it's most actionable:

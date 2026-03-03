@@ -14,7 +14,7 @@ import { defineSecret } from "firebase-functions/params";
 export const mistralApiKey = defineSecret("MISTRAL_API_KEY");
 
 /** Prompt version — bump on any prompt change for traceability */
-export const PROMPT_VERSION = "1.1.0";
+export const PROMPT_VERSION = "1.3.0";
 
 // Singleton client instance
 let mistralClient: Mistral | null = null;
@@ -40,7 +40,10 @@ Svenska mått att känna igen:
 - dl (deciliter), cl (centiliter), ml (milliliter), l (liter)
 - msk (matsked, 15ml), tsk (tesked, 5ml), krm (kryddmått, 1ml)
 - st (stycken), g (gram), kg (kilogram)
-- nypa, knippe, klyfta, skiva
+- nypa, knippe, klyfta, skiva, bit
+- burk, paket (pkt), förpackning (förp)
+- näve, klick, droppe
+- Textmängder: "en" = 1, "ett" = 1, "två" = 2, "tre" = 3, etc.
 `;
 
 // Injection defense prefix — prepended to all system prompts
@@ -96,6 +99,11 @@ NOTERA — Svåra fall:
 - Bestämd form ("löken", "smöret"): normalisera till obestämd form ("lök", "smör")
 - Ingredienser utan mängd ("salt och peppar"): amount=null, unit=null
 - Ingrediensgrupper ("Deg:", "Fyllning:"): behåll som separata ingredienser med preparation="deg" etc.
+- Textmängder ("en näve basilika", "två klyftor vitlök"): "en"/"ett" = amount 1, "två" = 2, etc.
+- "efter smak/behov" ("peppar efter smak"): amount=null, unit=null, preparation="efter smak"
+- Sociala medier-format (•, 🍳, emojis, versaler): ignorera formatering, extrahera normalt
+- Bestämd form i kontext ("löken, hackad"): normalisera → "lök", preparation="hackad"
+- Kommaseparerade förberedelser ("hackad, skivad"): kombinera i preparation-fältet
 
 EXEMPEL 3 — Input (svåra ingredienser):
 "Nötfärs med kokosmjölk. 500 g nötfärs, 2-3 msk sojasås, 4 dl kokosmjölk, 1 burk bambuskott (avrunna), ev. 1 tsk jordnötssmör, salt"
@@ -107,7 +115,18 @@ EXEMPEL 4 — Input (grupperade ingredienser):
 "Kanelbullar. Deg: 5 dl vetemjöl, 25 g jäst, 2 dl mjölk, 75 g smör (smält), 1 dl socker. Fyllning: 75 g rumsvarmt smör, 2 msk kanel, 0.5 dl strösocker."
 
 EXEMPEL 4 — Output:
-{"title":"Kanelbullar","description":"Klassiska svenska kanelbullar","portions":16,"prepTimeMinutes":30,"cookTimeMinutes":12,"ingredients":[{"amount":5,"unit":"dl","name":"vetemjöl","preparation":"deg"},{"amount":25,"unit":"g","name":"jäst","preparation":"deg"},{"amount":2,"unit":"dl","name":"mjölk","preparation":"deg"},{"amount":75,"unit":"g","name":"smör","preparation":"smält, deg"},{"amount":1,"unit":"dl","name":"socker","preparation":"deg"},{"amount":75,"unit":"g","name":"smör","preparation":"rumsvarmt, fyllning"},{"amount":2,"unit":"msk","name":"kanel","preparation":"fyllning"},{"amount":0.5,"unit":"dl","name":"strösocker","preparation":"fyllning"}],"instructions":["Smula jästen i en bunke, värm mjölken och lös upp jästen.","Tillsätt smör, socker och mjöl. Knåda degen.","Låt jäsa 30 minuter under handduk.","Kavla ut degen, bred på smör och strö över kanel och socker.","Rulla ihop och skär i bitar. Jäs ytterligare 20 minuter.","Grädda i 225°C i ca 10-12 minuter."],"tags":["fika","bakning"],"difficulty":"medium","source":null}`;
+{"title":"Kanelbullar","description":"Klassiska svenska kanelbullar","portions":16,"prepTimeMinutes":30,"cookTimeMinutes":12,"ingredients":[{"amount":5,"unit":"dl","name":"vetemjöl","preparation":"deg"},{"amount":25,"unit":"g","name":"jäst","preparation":"deg"},{"amount":2,"unit":"dl","name":"mjölk","preparation":"deg"},{"amount":75,"unit":"g","name":"smör","preparation":"smält, deg"},{"amount":1,"unit":"dl","name":"socker","preparation":"deg"},{"amount":75,"unit":"g","name":"smör","preparation":"rumsvarmt, fyllning"},{"amount":2,"unit":"msk","name":"kanel","preparation":"fyllning"},{"amount":0.5,"unit":"dl","name":"strösocker","preparation":"fyllning"}],"instructions":["Smula jästen i en bunke, värm mjölken och lös upp jästen.","Tillsätt smör, socker och mjöl. Knåda degen.","Låt jäsa 30 minuter under handduk.","Kavla ut degen, bred på smör och strö över kanel och socker.","Rulla ihop och skär i bitar. Jäs ytterligare 20 minuter.","Grädda i 225°C i ca 10-12 minuter."],"tags":["fika","bakning"],"difficulty":"medium","source":null}
+
+EXEMPEL 5 — Input (sociala medier / informellt format):
+"🍝 PASTA CARBONARA 🍝
+• 400g spaghetti
+• en bit pecorino (ca 100g), finriven
+• 4 äggulor
+• 200g guanciale, skivad
+• svartpeppar efter smak"
+
+EXEMPEL 5 — Output:
+{"title":"Pasta Carbonara","description":"Klassisk italiensk carbonara med guanciale och pecorino","portions":4,"prepTimeMinutes":10,"cookTimeMinutes":15,"ingredients":[{"amount":400,"unit":"g","name":"spaghetti","preparation":null},{"amount":100,"unit":"g","name":"pecorino","preparation":"finriven"},{"amount":4,"unit":"st","name":"äggulor","preparation":null},{"amount":200,"unit":"g","name":"guanciale","preparation":"skivad"},{"amount":null,"unit":null,"name":"svartpeppar","preparation":"efter smak"}],"instructions":["Koka pastan al dente.","Stek guanciale krispig.","Blanda äggulor och riven pecorino.","Vänd pastan med ägg-ost-blandningen och guanciale. Krydda med svartpeppar."],"tags":["pasta","middag","italienskt"],"difficulty":"medium","source":null}`;
 
 export const RECIPE_ENHANCEMENT_SYSTEM_PROMPT = `${INJECTION_DEFENSE}Du är expert på att förbättra och komplettera delvis extraherade recept.
 
@@ -124,14 +143,23 @@ Din uppgift:
 
 ${SWEDISH_MEASUREMENTS}
 
-EXEMPEL — Delvis data:
+EXEMPEL 1 — Delvis data:
 {"title":"Pasta","ingredients":[{"name":"pasta"}],"instructions":[]}
 
-EXEMPEL — Originaltext:
+EXEMPEL 1 — Originaltext:
 "Enkel pasta med pesto. Koka 400g pasta. Blanda med 2 msk pesto och 1 dl riven parmesan."
 
-EXEMPEL — Output:
-{"title":"Pasta med pesto","description":"Enkel pasta med pesto och parmesan","portions":2,"prepTimeMinutes":5,"cookTimeMinutes":10,"ingredients":[{"amount":400,"unit":"g","name":"pasta","preparation":null},{"amount":2,"unit":"msk","name":"pesto","preparation":null},{"amount":1,"unit":"dl","name":"parmesan","preparation":"riven"}],"instructions":["Koka pastan enligt förpackningens anvisning.","Blanda pastan med pesto och riven parmesan."],"tags":["pasta","snabbt"],"difficulty":"easy","source":null}`;
+EXEMPEL 1 — Output:
+{"title":"Pasta med pesto","description":"Enkel pasta med pesto och parmesan","portions":2,"prepTimeMinutes":5,"cookTimeMinutes":10,"ingredients":[{"amount":400,"unit":"g","name":"pasta","preparation":null},{"amount":2,"unit":"msk","name":"pesto","preparation":null},{"amount":1,"unit":"dl","name":"parmesan","preparation":"riven"}],"instructions":["Koka pastan enligt förpackningens anvisning.","Blanda pastan med pesto och riven parmesan."],"tags":["pasta","snabbt"],"difficulty":"easy","source":null}
+
+EXEMPEL 2 — Delvis data (CRF-extraherat med svaga fält):
+{"title":"Thailändsk kycklinggryta","ingredients":[{"amount":500,"unit":"g","name":"kycklingfilé","preparation":null},{"amount":4,"unit":"dl","name":"kokosmjölk","preparation":null},{"amount":2,"unit":"msk","name":"röd","preparation":null},{"amount":1,"unit":"st","name":"lime","preparation":null}],"instructions":[]}
+
+EXEMPEL 2 — Originaltext:
+"Thailändsk kycklinggryta. 500g kycklingfilé i bitar. 4 dl kokosmjölk. 2 msk röd currypasta. Saft av 1 lime. Stek kycklingen, tillsätt currypasta och kokosmjölk. Sjud 15 min. Pressa över lime."
+
+EXEMPEL 2 — Output:
+{"title":"Thailändsk kycklinggryta","description":"Krämig thai-gryta med kokosmjölk och röd curry","portions":4,"prepTimeMinutes":10,"cookTimeMinutes":15,"ingredients":[{"amount":500,"unit":"g","name":"kycklingfilé","preparation":"i bitar"},{"amount":4,"unit":"dl","name":"kokosmjölk","preparation":null},{"amount":2,"unit":"msk","name":"röd currypasta","preparation":null},{"amount":1,"unit":"st","name":"lime","preparation":null}],"instructions":["Stek kycklingbitarna.","Tillsätt currypasta och kokosmjölk.","Sjud i 15 minuter.","Pressa över limesaft vid servering."],"tags":["thai","gryta","middag"],"difficulty":"easy","source":null}`;
 
 export const IMAGE_OCR_SYSTEM_PROMPT = `${INJECTION_DEFENSE}Du är expert på att läsa recept från bilder på svenska.
 
@@ -163,6 +191,114 @@ EXEMPEL — Transkription:
 EXEMPEL — Output:
 {"title":"Smoothie","description":"Enkel frukt-smoothie med banan och jordgubbar","portions":1,"prepTimeMinutes":5,"cookTimeMinutes":null,"ingredients":[{"amount":2,"unit":"st","name":"bananer","preparation":null},{"amount":2,"unit":"dl","name":"mjölk","preparation":null},{"amount":1,"unit":"dl","name":"jordgubbar","preparation":"frysta"}],"instructions":["Lägg bananer, mjölk och frysta jordgubbar i en mixer.","Mixa allt till en slät smoothie."],"tags":["smoothie","frukost","snabbt"],"difficulty":"easy","source":null}`;
 
+export const INGREDIENT_LINE_SYSTEM_PROMPT = `${INJECTION_DEFENSE}Du är expert på att extrahera ingrediensinformation från svenska ingrediensrader.
+
+Givet en lista med ingrediensrader, extrahera varje rad till:
+- amount: mängd som nummer eller null
+- unit: enhet som sträng eller null
+- name: ingrediensnamn (obestämd form)
+- preparation: förberedelse eller null
+
+Svara ENDAST med en JSON-array av ingredienser i SAMMA ORDNING som input.
+
+${SWEDISH_MEASUREMENTS}
+
+NOTERA:
+- Textmängder ("en näve", "två klyftor"): "en"/"ett" = 1, "två" = 2, etc.
+- "efter smak/behov": amount=null, unit=null, preparation="efter smak"
+- Bestämd form ("löken", "smöret"): normalisera → "lök", "smör"
+- Kommaseparerade förberedelser ("hackad, skivad"): kombinera i preparation
+- Intervall ("2-3 msk"): mitten som amount (2.5), nämn intervallet i preparation
+
+EXEMPEL 1 — Input:
+["en näve basilika", "2 msk röd currypasta", "peppar efter smak"]
+
+EXEMPEL 1 — Output:
+[{"amount":1,"unit":"näve","name":"basilika","preparation":null},{"amount":2,"unit":"msk","name":"röd currypasta","preparation":null},{"amount":null,"unit":null,"name":"peppar","preparation":"efter smak"}]
+
+EXEMPEL 2 — Input:
+["200g guanciale, skivad", "löken, finhackad", "1-2 dl grädde"]
+
+EXEMPEL 2 — Output:
+[{"amount":200,"unit":"g","name":"guanciale","preparation":"skivad"},{"amount":1,"unit":"st","name":"lök","preparation":"finhackad"},{"amount":1.5,"unit":"dl","name":"grädde","preparation":"1-2 dl"}]`;
+
+/** Maximum tokens for ingredient line responses (smaller than full recipe, but
+ *  must accommodate up to ~15 lines at ~60 tokens each) */
+export const INGREDIENT_LINE_MAX_TOKENS = 1000;
+
+/**
+ * Parse LLM response as a JSON array of ingredients.
+ * Used by the ingredientLines mode for selective line-level re-parsing.
+ */
+export function parseIngredientLinesResponse(response: string): ExtractedIngredient[] | null {
+  try {
+    const jsonStr = stripCodeFences(response);
+    let parsed = JSON.parse(jsonStr);
+
+    // Handle json_object mode wrapping array in an object
+    if (!Array.isArray(parsed) && parsed && typeof parsed === "object") {
+      const values = Object.values(parsed);
+      if (values.length === 1 && Array.isArray(values[0])) {
+        parsed = values[0];
+      }
+    }
+
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      console.warn("Invalid ingredient lines response: not a non-empty array");
+      return null;
+    }
+
+    const ingredients: ExtractedIngredient[] = [];
+    for (const ing of parsed) {
+      const validated = validateIngredient(ing);
+      if (validated) ingredients.push(validated);
+    }
+
+    if (ingredients.length === 0) {
+      console.warn("No valid ingredients after validation");
+      return null;
+    }
+
+    return ingredients;
+  } catch (error) {
+    console.error("Failed to parse ingredient lines response:", error);
+    return null;
+  }
+}
+
+// =============================================================================
+// Shared Helpers
+// =============================================================================
+
+/** Strip markdown code fences from LLM response */
+function stripCodeFences(response: string): string {
+  let s = response.trim();
+  if (s.startsWith("```json")) {
+    s = s.slice(7);
+  } else if (s.startsWith("```")) {
+    s = s.slice(3);
+  }
+  if (s.endsWith("```")) {
+    s = s.slice(0, -3);
+  }
+  return s.trim();
+}
+
+/** Validate and coerce a raw ingredient object from LLM JSON */
+function validateIngredient(ing: unknown): ExtractedIngredient | null {
+  if (!ing || typeof ing !== "object") return null;
+  const obj = ing as Record<string, unknown>;
+  const name = typeof obj.name === "string" ? obj.name.trim() : "";
+  if (!name) return null;
+
+  return {
+    amount: typeof obj.amount === "number" && Number.isFinite(obj.amount) ? obj.amount : null,
+    unit: typeof obj.unit === "string" && (obj.unit as string).trim() ? (obj.unit as string).trim() : null,
+    name,
+    preparation: typeof obj.preparation === "string" && (obj.preparation as string).trim() ? (obj.preparation as string).trim() : null,
+  };
+}
+
 // =============================================================================
 // Response Types
 // =============================================================================
@@ -192,18 +328,7 @@ export interface ExtractedRecipe {
  */
 export function parseRecipeResponse(response: string): ExtractedRecipe | null {
   try {
-    // Remove markdown code blocks if present
-    let jsonStr = response.trim();
-    if (jsonStr.startsWith("```json")) {
-      jsonStr = jsonStr.slice(7);
-    } else if (jsonStr.startsWith("```")) {
-      jsonStr = jsonStr.slice(3);
-    }
-    if (jsonStr.endsWith("```")) {
-      jsonStr = jsonStr.slice(0, -3);
-    }
-    jsonStr = jsonStr.trim();
-
+    const jsonStr = stripCodeFences(response);
     const parsed = JSON.parse(jsonStr);
 
     // Validate required fields
@@ -232,16 +357,8 @@ export function parseRecipeResponse(response: string): ExtractedRecipe | null {
 
     // Validate each ingredient
     for (const ing of parsed.ingredients) {
-      if (!ing || typeof ing !== "object") continue;
-      const name = typeof ing.name === "string" ? ing.name.trim() : "";
-      if (!name) continue;
-
-      recipe.ingredients.push({
-        amount: typeof ing.amount === "number" && Number.isFinite(ing.amount) ? ing.amount : null,
-        unit: typeof ing.unit === "string" && ing.unit.trim() ? ing.unit.trim() : null,
-        name,
-        preparation: typeof ing.preparation === "string" && ing.preparation.trim() ? ing.preparation.trim() : null,
-      });
+      const validated = validateIngredient(ing);
+      if (validated) recipe.ingredients.push(validated);
     }
 
     if (recipe.ingredients.length === 0) {
@@ -269,7 +386,7 @@ export function parseRecipeResponse(response: string): ExtractedRecipe | null {
     }
 
     // Log unknown units server-side
-    const knownUnits = new Set(["dl", "cl", "ml", "l", "msk", "tsk", "krm", "g", "kg", "st", "nypa", "knippe", "klyfta", "skiva", "port", "bit", "burk", "paket", "pkt", "förp"]);
+    const knownUnits = new Set(["dl", "cl", "ml", "l", "msk", "tsk", "krm", "g", "kg", "st", "nypa", "knippe", "klyfta", "skiva", "port", "bit", "burk", "paket", "pkt", "förp", "näve", "klick", "droppe"]);
     for (const ing of recipe.ingredients) {
       if (ing.unit && !knownUnits.has(ing.unit.toLowerCase())) {
         console.warn(`[parseRecipeResponse] Unknown unit: "${ing.unit}" in ingredient "${ing.name}"`);

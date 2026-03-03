@@ -1,6 +1,7 @@
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
+import 'package:butlery/services/parsing/ingredient_conversion.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/services/llm/llm_models.dart';
@@ -39,6 +40,9 @@ const _knownSwedishUnits = <String>{
   'paket',
   'pkt',
   'förp',
+  'näve',
+  'klick',
+  'droppe',
 };
 
 class LlmTier extends ParsingTier with QualityScoring {
@@ -490,14 +494,7 @@ class LlmTier extends ParsingTier with QualityScoring {
     final parsed = <ParsedIngredient>[];
 
     for (final ing in deduped) {
-      parsed.add(ParsedIngredient(
-        name: ing.name,
-        originalLine: ing.formatted,
-        quantity: ing.amount?.toString(),
-        unit: ing.unit,
-        preparation: ing.preparation,
-        confidence: ParseConfidence.medium,
-      ));
+      parsed.add(parsedIngredientFromExtracted(ing));
     }
 
     return FieldResult.mediumConfidence(parsed, 'LLM extraction');

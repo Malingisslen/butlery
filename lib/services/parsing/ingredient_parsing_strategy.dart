@@ -9,8 +9,7 @@ import 'package:butlery/services/parsing/crf/crf_ingredient_parser.dart';
 import 'package:butlery/services/parsing/crf/crf_viterbi_decoder.dart';
 import 'package:butlery/services/parsing/crf/remote_weight_loader.dart';
 import 'package:butlery/services/parsing/ingredient_registry_service.dart';
-import 'package:butlery/utils/text/ingredient_parser.dart'
-    hide ParsedIngredient;
+import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/ocr_error_corrector.dart';
 
 /// Unified ingredient parsing strategy that tries CRF first, regex fallback.
