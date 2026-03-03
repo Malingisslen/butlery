@@ -1,0 +1,991 @@
+400	B-QTY
+g	B-UNIT
+lammkött	B-NAME
+
+300	B-QTY
+g	B-UNIT
+fläskfilé	B-NAME
+
+4	B-QTY
+st	B-UNIT
+kycklinglår	B-NAME
+
+150	B-QTY
+g	B-UNIT
+tonfisk	B-NAME
+
+200	B-QTY
+g	B-UNIT
+inlagd	B-NAME
+sill	I-NAME
+
+500	B-QTY
+g	B-UNIT
+nötkött	B-NAME
+
+1	B-QTY
+purjolök	B-NAME
+
+1	B-QTY
+st	B-UNIT
+blomkål	B-NAME
+
+200	B-QTY
+g	B-UNIT
+rödbeta	B-NAME
+
+2	B-QTY
+dl	B-UNIT
+ärter	B-NAME
+
+200	B-QTY
+g	B-UNIT
+sparris	B-NAME
+
+1	B-QTY
+st	B-UNIT
+aubergine	B-NAME
+
+1	B-QTY
+st	B-UNIT
+fänkål	B-NAME
+
+200	B-QTY
+g	B-UNIT
+brysselkål	B-NAME
+
+1	B-QTY
+dl	B-UNIT
+sockerärter	B-NAME
+
+125	B-QTY
+g	B-UNIT
+mozzarella	B-NAME
+
+200	B-QTY
+g	B-UNIT
+ricotta	B-NAME
+
+3	B-QTY
+st	B-UNIT
+äggulor	B-NAME
+
+3	B-QTY
+dl	B-UNIT
+filmjölk	B-NAME
+
+1	B-QTY
+tsk	B-UNIT
+bikarbonat	B-NAME
+
+1	B-QTY
+tsk	B-UNIT
+kardemumma	B-NAME
+
+2	B-QTY
+msk	B-UNIT
+kakao	B-NAME
+
+100	B-QTY
+g	B-UNIT
+mandel	B-NAME
+
+50	B-QTY
+g	B-UNIT
+valnötter	B-NAME
+
+200	B-QTY
+g	B-UNIT
+spaghetti	B-NAME
+
+200	B-QTY
+g	B-UNIT
+penne	B-NAME
+
+2	B-QTY
+dl	B-UNIT
+couscous	B-NAME
+
+2	B-QTY
+dl	B-UNIT
+quinoa	B-NAME
+
+1	B-QTY
+msk	B-UNIT
+worcestershiresås	B-NAME
+
+2	B-QTY
+st	B-UNIT
+lagerblad	B-NAME
+
+2	B-QTY
+msk	B-UNIT
+gräslök	B-NAME
+
+1	B-QTY
+krm	B-UNIT
+kryddpeppar	B-NAME
+
+300	B-QTY
+g	B-UNIT
+kycklingbröst	B-NAME
+,	O
+strimlad	B-PREP
+
+250	B-QTY
+g	B-UNIT
+smör	B-NAME
+,	O
+kallt	B-PREP
+
+1	B-QTY
+gul	B-NAME
+lök	I-NAME
+,	O
+grovhackad	B-PREP
+
+400	B-QTY
+g	B-UNIT
+mjöl	B-NAME
+,	O
+siktat	B-PREP
+
+2	B-QTY
+st	B-UNIT
+morötter	B-NAME
+,	O
+skalade	B-PREP
+
+500	B-QTY
+g	B-UNIT
+potatis	B-NAME
+,	O
+skuren	B-PREP
+i	I-PREP
+bitar	I-PREP
+
+1	B-QTY
+st	B-UNIT
+lök	B-NAME
+,	O
+hackad	B-PREP
+och	I-PREP
+brynt	I-PREP
+
+2	B-QTY
+dl	B-UNIT
+buljong	B-NAME
+,	O
+gärna	O
+kycklingbuljong	O
+
+3	B-QTY
+dl	B-UNIT
+grädde	B-NAME
+,	O
+helst	O
+vispgrädde	O
+
+200	B-QTY
+g	B-UNIT
+lax	B-NAME
+,	O
+utan	O
+skinn	O
+
+300	B-QTY
+g	B-UNIT
+kyckling	B-NAME
+,	O
+tärnad	B-PREP
+
+400	B-QTY
+g	B-UNIT
+fläsk	B-NAME
+,	O
+skivad	B-PREP
+
+1	B-QTY
+st	B-UNIT
+gurka	B-NAME
+,	O
+tunt	B-PREP
+skivad	I-PREP
+
+250	B-QTY
+g	B-UNIT
+lax	B-NAME
+,	O
+skinnfri	B-PREP
+
+2	B-QTY
+st	B-UNIT
+paprika	B-NAME
+,	O
+urkärnade	B-PREP
+
+3	B-QTY
+st	B-UNIT
+tomater	B-NAME
+,	O
+skivade	B-PREP
+
+1	B-QTY
+st	B-UNIT
+zucchini	B-NAME
+,	O
+riven	B-PREP
+
+200	B-QTY
+g	B-UNIT
+tofu	B-NAME
+,	O
+pressad	B-PREP
+och	I-PREP
+tärnad	I-PREP
+
+2	B-QTY
+dl	B-UNIT
+bönor	B-NAME
+,	O
+avrunna	B-PREP
+
+400	B-QTY
+g	B-UNIT
+grillad	B-NAME
+kyckling	I-NAME
+
+200	B-QTY
+g	B-UNIT
+rökt	B-NAME
+lax	I-NAME
+
+soltorkade	B-NAME
+tomater	I-NAME
+
+1	B-QTY
+burk	B-UNIT
+avrunna	B-PREP
+kikärtor	B-NAME
+
+stekt	B-NAME
+fläsk	I-NAME
+
+2	B-QTY
+dl	B-UNIT
+inlagd	B-NAME
+gurka	I-NAME
+
+500	B-QTY
+g	B-UNIT
+urbenad	B-PREP
+kycklinglår	B-NAME
+
+300	B-QTY
+g	B-UNIT
+skalad	B-PREP
+potatis	B-NAME
+
+kokt	B-NAME
+ris	I-NAME
+
+2	B-QTY
+dl	B-UNIT
+hackad	B-PREP
+persilja	B-NAME
+
+1	B-QTY
+dl	B-UNIT
+rostade	B-NAME
+pumpakärnor	I-NAME
+
+100	B-QTY
+g	B-UNIT
+torkad	B-NAME
+frukt	I-NAME
+
+500	B-QTY
+g	B-UNIT
+riven	B-PREP
+ost	B-NAME
+
+2	B-QTY
+msk	B-UNIT
+pressad	B-PREP
+citron	B-NAME
+
+3	B-QTY
+dl	B-UNIT
+krossade	B-NAME
+tomater	I-NAME
+
+1	B-QTY
+burk	B-UNIT
+krossade	B-NAME
+tomater	I-NAME
+
+rimmat	B-NAME
+fläsk	I-NAME
+
+3	B-QTY
+dl	B-UNIT
+passerade	B-NAME
+tomater	I-NAME
+
+2	B-QTY
+dl	B-UNIT
+osötad	B-NAME
+mandelmjölk	I-NAME
+
+rökta	B-NAME
+korvar	I-NAME
+
+1	B-QTY
+förp	B-UNIT
+rökta	B-NAME
+korvar	I-NAME
+
+2	B-QTY
+dl	B-UNIT
+fryst	B-NAME
+spenat	I-NAME
+
+200	B-QTY
+g	B-UNIT
+kokt	B-NAME
+skinka	I-NAME
+
+strimlade	B-PREP
+morötter	B-NAME
+
+marinerad	B-NAME
+tofu	I-NAME
+
+gravad	B-NAME
+lax	I-NAME
+
+200	B-QTY
+g	B-UNIT
+kycklingfilé	B-NAME
+(	O
+utan	O
+skinn	O
+)	O
+
+3	B-QTY
+st	B-UNIT
+ägg	B-NAME
+(	O
+L-storlek	O
+)	O
+
+100	B-QTY
+g	B-UNIT
+mandel	B-NAME
+(	O
+skalade	B-PREP
+)	O
+
+1	B-QTY
+dl	B-UNIT
+olja	B-NAME
+(	O
+neutral	O
+)	O
+
+3	B-QTY
+dl	B-UNIT
+mjölk	B-NAME
+(	O
+hel-	O
+eller	O
+lättmjölk	O
+)	O
+
+1	B-QTY
+tsk	B-UNIT
+socker	B-NAME
+(	O
+eller	O
+honung	O
+)	O
+
+2	B-QTY
+dl	B-UNIT
+grädde	B-NAME
+(	O
+varmrörd	B-PREP
+)	O
+
+500	B-QTY
+g	B-UNIT
+lax	B-NAME
+(	O
+benfri	B-PREP
+)	O
+
+250	B-QTY
+g	B-UNIT
+ost	B-NAME
+(	O
+kan	O
+uteslutas	O
+)	O
+
+1	B-QTY
+dl	B-UNIT
+mjölk	B-NAME
+(	O
+kall	B-PREP
+)	O
+
+2	B-QTY
+dl	B-UNIT
+grädde	B-NAME
+(	O
+rumstempererad	B-PREP
+)	O
+
+300	B-QTY
+g	B-UNIT
+nötfärs	B-NAME
+(	O
+eller	O
+blandad	O
+)	O
+
+1	B-QTY
+dl	B-UNIT
+ost	B-NAME
+(	O
+riven	B-PREP
+)	O
+
+2	B-QTY
+msk	B-UNIT
+smör	B-NAME
+(	O
+smält	B-PREP
+)	O
+
+500	B-QTY
+g	B-UNIT
+potatis	B-NAME
+(	O
+gärna	O
+fast	O
+)	O
+
+1	B-QTY
+stor	B-SIZE
+paprika	B-NAME
+
+2	B-QTY
+medelstora	B-SIZE
+lökar	B-NAME
+
+3	B-QTY
+små	B-SIZE
+potatisar	B-NAME
+
+1	B-QTY
+stor	B-SIZE
+bunt	B-UNIT
+dill	B-NAME
+
+2	B-QTY
+stora	B-SIZE
+morötter	B-NAME
+,	O
+skalade	B-PREP
+
+1	B-QTY
+liten	B-SIZE
+zucchini	B-NAME
+
+4	B-QTY
+stora	B-SIZE
+vitlöksklyftor	B-NAME
+
+1	B-QTY
+stor	B-SIZE
+gul	B-NAME
+lök	I-NAME
+
+2	B-QTY
+stora	B-SIZE
+tomater	B-NAME
+
+1	B-QTY
+liten	B-SIZE
+bit	B-UNIT
+ingefära	B-NAME
+
+3	B-QTY
+medelstora	B-SIZE
+potatisar	B-NAME
+
+1	B-QTY
+stor	B-SIZE
+rödlök	B-NAME
+
+2	B-QTY
+stora	B-SIZE
+paprikor	B-NAME
+,	O
+urkärnade	B-PREP
+
+ett	B-QTY
+halvt	I-QTY
+paket	B-UNIT
+smör	B-NAME
+
+fyra	B-QTY
+ägg	B-NAME
+
+en	B-QTY
+handfull	B-UNIT
+nötter	B-NAME
+
+ett	B-QTY
+gäng	B-UNIT
+persilja	B-NAME
+
+rikligt	O
+med	O
+olivolja	B-NAME
+
+lagom	O
+med	O
+salt	B-NAME
+
+två	B-QTY
+dl	B-UNIT
+mjölk	B-NAME
+
+tre	B-QTY
+msk	B-UNIT
+smör	B-NAME
+
+fem	B-QTY
+st	B-UNIT
+ägg	B-NAME
+
+en	B-QTY
+näve	B-UNIT
+spenat	B-NAME
+
+en	B-QTY
+klick	B-UNIT
+smör	B-NAME
+
+en	B-QTY
+skvätt	B-UNIT
+grädde	B-NAME
+
+en	B-QTY
+nypa	B-UNIT
+muskotnöt	B-NAME
+
+¼	B-QTY
+tsk	B-UNIT
+salt	B-NAME
+
+⅓	B-QTY
+dl	B-UNIT
+olja	B-NAME
+
+¾	B-QTY
+dl	B-UNIT
+vatten	B-NAME
+
+3/4	B-QTY
+dl	B-UNIT
+strösocker	B-NAME
+
+½	B-QTY
+dl	B-UNIT
+smör	B-NAME
+
+1/2	B-QTY
+dl	B-UNIT
+mjöl	B-NAME
+
+0,5	B-QTY
+dl	B-UNIT
+olja	B-NAME
+
+1,5	B-QTY
+dl	B-UNIT
+mjölk	B-NAME
+
+1.5	B-QTY
+dl	B-UNIT
+grädde	B-NAME
+
+2,5	B-QTY
+dl	B-UNIT
+vetemjöl	B-NAME
+
+0,75	B-QTY
+dl	B-UNIT
+socker	B-NAME
+
+2-3	B-QTY
+dl	B-UNIT
+mjölk	B-NAME
+
+1-2	B-QTY
+msk	B-UNIT
+olivolja	B-NAME
+
+3-4	B-QTY
+st	B-UNIT
+potatisar	B-NAME
+
+4-5	B-QTY
+dl	B-UNIT
+vatten	B-NAME
+
+2-3	B-QTY
+st	B-UNIT
+morötter	B-NAME
+
+salt	B-NAME
+och	O
+peppar	B-NAME
+
+lite	O
+salt	B-NAME
+och	O
+peppar	B-NAME
+
+salt	B-NAME
+,	O
+peppar	B-NAME
+
+1	B-QTY
+dl	B-UNIT
+kokosgrädde	B-NAME
+
+2	B-QTY
+msk	B-UNIT
+fisksås	B-NAME
+
+1	B-QTY
+tsk	B-UNIT
+sambal	B-NAME
+oelek	I-NAME
+
+3	B-QTY
+dl	B-UNIT
+grönsaksbuljon	B-NAME
+
+1	B-QTY
+msk	B-UNIT
+majsstärkelse	B-NAME
+
+2	B-QTY
+dl	B-UNIT
+crème	B-NAME
+fraîche	I-NAME
+
+1	B-QTY
+dl	B-UNIT
+dulce	B-NAME
+de	I-NAME
+leche	I-NAME
+
+3	B-QTY
+dl	B-UNIT
+turkisk	B-NAME
+yoghurt	I-NAME
+
+purjolök	B-NAME
+
+blomkål	B-NAME
+
+sparris	B-NAME
+
+rödbeta	B-NAME
+
+kardemumma	B-NAME
+
+bikarbonat	B-NAME
+
+mozzarella	B-NAME
+
+gräslök	B-NAME
+
+mynta	B-NAME
+
+lagerblad	B-NAME
+
+färsk	B-PREP
+mynta	B-NAME
+
+färsk	B-PREP
+gräslök	B-NAME
+
+salladslök	B-NAME
+
+1	B-QTY
+dl	B-UNIT
+tomatpassata	B-NAME
+
+2	B-QTY
+msk	B-UNIT
+balsamvinäger	B-NAME
+
+1	B-QTY
+tsk	B-UNIT
+gurkmeja	B-NAME
+
+1	B-QTY
+krm	B-UNIT
+saffran	B-NAME
+
+2	B-QTY
+msk	B-UNIT
+sesamfrön	B-NAME
+
+100	B-QTY
+g	B-UNIT
+fetaost	B-NAME
+
+2	B-QTY
+msk	B-UNIT
+hoisinsås	B-NAME
+
+1	B-QTY
+msk	B-UNIT
+ostronsås	B-NAME
+
+250	B-QTY
+g	B-UNIT
+halloumi	B-NAME
+
+3	B-QTY
+dl	B-UNIT
+bulgur	B-NAME
+
+2	B-QTY
+dl	B-UNIT
+röda	B-NAME
+linser	I-NAME
+
+1	B-QTY
+burk	B-UNIT
+svarta	B-NAME
+bönor	I-NAME
+
+3	B-QTY
+msk	B-UNIT
+sweet	B-NAME
+chilisås	I-NAME
+
+200	B-QTY
+g	B-UNIT
+västerbottenost	B-NAME
+
+1	B-QTY
+dl	B-UNIT
+lingon	B-NAME
+
+2	B-QTY
+msk	B-UNIT
+pepparrot	B-NAME
+
+1	B-QTY
+tsk	B-UNIT
+vaniljpulver	B-NAME
+
+2	B-QTY
+msk	B-UNIT
+lönnsirap	B-NAME
+
+300	B-QTY
+g	B-UNIT
+färsk	B-PREP
+pasta	B-NAME
+
+200	B-QTY
+g	B-UNIT
+blancherade	B-PREP
+bönor	B-NAME
+
+1	B-QTY
+dl	B-UNIT
+marinerade	B-NAME
+oliver	I-NAME
+
+2	B-QTY
+msk	B-UNIT
+hackad	B-PREP
+dill	B-NAME
+
+1	B-QTY
+msk	B-UNIT
+finriven	B-PREP
+ingefära	B-NAME
+
+3	B-QTY
+klyftor	B-UNIT
+vitlök	B-NAME
+,	O
+pressade	B-PREP
+
+2	B-QTY
+st	B-UNIT
+ägg	B-NAME
+,	O
+vispade	B-PREP
+
+1	B-QTY
+dl	B-UNIT
+ströbröd	B-NAME
+,	O
+gärna	O
+panko	O
+
+2	B-QTY
+dl	B-UNIT
+ost	B-NAME
+,	O
+riven	B-PREP
+
+500	B-QTY
+g	B-UNIT
+köttfärs	B-NAME
+,	O
+gärna	O
+blandfärs	O
+
+1	B-QTY
+st	B-UNIT
+purjolök	B-NAME
+,	O
+skivad	B-PREP
+
+250	B-QTY
+g	B-UNIT
+champinjoner	B-NAME
+,	O
+skivade	B-PREP
+
+3	B-QTY
+dl	B-UNIT
+mjölk	B-NAME
+,	O
+varm	B-PREP
+
+2	B-QTY
+dl	B-UNIT
+grädde	B-NAME
+,	O
+kall	B-PREP
+
+400	B-QTY
+g	B-UNIT
+torsk	B-NAME
+,	O
+benfri	B-PREP
+
+1	B-QTY
+kg	B-UNIT
+potatis	B-NAME
+,	O
+skalad	B-PREP
+och	I-PREP
+skuren	I-PREP
+
+Fyllning:	O
+
+Sås:	O
+
+Deg:	O
+
+Till	O
+servering:	O
+
+Topping:	O
+
+Marinad:	O
+
+Garnering:	O
+
+---	O
+
+Ingredienser:	O
+
+ca	O
+2	B-QTY
+dl	B-UNIT
+mjölk	B-NAME
+
+ca	O
+1	B-QTY
+msk	B-UNIT
+smör	B-NAME
+
+ca	O
+500	B-QTY
+g	B-UNIT
+potatis	B-NAME
+
+ungefär	O
+3	B-QTY
+dl	B-UNIT
+vatten	B-NAME
+
+eventuellt	O
+lite	O
+socker	B-NAME
+
+1	B-QTY
+dl	B-UNIT
+mjölk	B-NAME
+,	O
+eller	O
+vatten	O
+
+smör	B-NAME
+eller	O
+olja	B-NAME
+
+2	B-QTY
+dl	B-UNIT
+mjölk	B-NAME
+eller	O
+grädde	O
+
+pepparrotskräm	B-NAME
+
+kycklinggryta	B-NAME
+
+grönsakssoppa	B-NAME
+
+rotfruktsgratäng	B-NAME
+
+potatissallad	B-NAME
+
+1	B-QTY
+pkt	B-UNIT
+torrjäst	B-NAME
+
+2	B-QTY
+förp	B-UNIT
+gräddfil	B-NAME
+
+1	B-QTY
+burk	B-UNIT
+kokosgrädde	B-NAME
+
+1	B-QTY
+paket	B-UNIT
+smördeg	B-NAME
+
+3	B-QTY
+burk	B-UNIT
+vita	B-NAME
+bönor	I-NAME

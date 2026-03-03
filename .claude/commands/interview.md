@@ -17,7 +17,7 @@ Be very in-depth and continue interviewing me continually until it's complete, t
 
 After writing the spec, persist key decisions:
 
-1. **interview-decisions.md** (`/root/.claude/projects/-home-user-butlery/memory/interview-decisions.md`):
+1. **interview-decisions.md** (`C:\Users\malla\.claude\projects\C--Butlery-butlery\memory\interview-decisions.md`):
    - Add consolidated answers: user preferences, requirements, constraints, rejected approaches
    - Format: prescriptive ("User wants X", "Never do Y") not descriptive ("We discussed X")
    - Merge with existing entries - update if a preference changed, don't just append

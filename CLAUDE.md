@@ -82,6 +82,17 @@ New code must use project mixins and base classes. See `mixin-advisor` skill for
 9. **Terse follow-up after "done" = you missed something** - if the user sends a short prompt right after you claimed completion (e.g. "you test", "did you test it?"), re-read what you skipped. Don't ask what they mean.
 10. **"No" starts a redirect, not a discussion** - when user says "No, I want X", you misunderstood. Re-read their prior request. Don't ask what went wrong.
 11. **Be accurate about scope** - don't call simple tasks "massive" or over-estimate complexity. The user notices and loses trust.
+12. **No retry loops on plan/review gates** - when exiting plan mode or completing a review gate, do it once. If the first attempt fails or is rejected, ask the user what they want instead of retrying the same action.
+
+## Pre-Commit Checks
+
+After making code changes, always run `dart analyze --fatal-infos` before committing. Fix any errors before staging.
+
+## Git Workflow
+
+Git pre-commit hooks (lefthook) exist in this project and may reformat files. After the first commit attempt, if it fails due to formatting, re-stage all changed files and commit again with the same message. Do not panic or start over.
+
+Another Claude Code session may be running in parallel in a worktree or on a different branch. If `git status` shows unexpected changes or merge conflicts you didn't create, **stop and ask the user** — do not reset, clean, or force-push. The other session's work is just as important.
 
 ## Workflow Discipline
 
@@ -132,6 +143,8 @@ New code must use project mixins and base classes. See `mixin-advisor` skill for
 - Process files in small chunks (50-100 items), never entire large files at once
 - Define explicit chunk boundaries before launching agents
 - Each agent must checkpoint progress and report completion status
+- When using parallel task agents for large plans, verify that agents are not overwriting each other's changes. After all agents complete, diff the working tree to confirm no regressions
+- If the plan has 10+ items, process them sequentially or in small batches of 2-3 to avoid conflicts
 
 ## Stop Hook Response
 

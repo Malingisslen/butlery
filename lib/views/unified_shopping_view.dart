@@ -288,7 +288,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                     } catch (e) {
                       if (mounted) {
                         SnackBarUtils.showUserFriendlyError(
-                          context,
+                          this.context,
                           e,
                           contextAction: 'Create list from template',
                         );
