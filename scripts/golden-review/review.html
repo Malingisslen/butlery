@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Golden Dataset Review — Butlery CRF Parser</title>
+<style>
+  :root {
+    --bg: #faf9f6;
+    --card: #fff;
+    --border: #e0ddd8;
+    --green: #4A7C59;
+    --green-light: #e8f0eb;
+    --rust: #B85C38;
+    --rust-light: #fdf0eb;
+    --gold: #D4A03C;
+    --gold-light: #fdf6e8;
+    --gray: #666;
+    --gray-light: #f5f4f2;
+    --text: #1a1a1a;
+    --text-muted: #999;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* Header */
+  .header {
+    background: var(--card);
+    border-bottom: 2px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .progress-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--gray-light);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s;
+    background: var(--green);
+  }
+
+  .progress-text {
+    font-size: 13px;
+    color: var(--gray);
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  /* Buttons */
+  button {
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  button:hover { opacity: 0.85; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-primary { background: var(--green); color: #fff; }
+  .btn-export { background: var(--rust); color: #fff; }
+  .btn-secondary { background: var(--gray-light); color: var(--text); border: 1px solid var(--border); }
+
+  /* Landing screen */
+  .landing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    gap: 24px;
+    text-align: center;
+    padding: 24px;
+  }
+
+  .landing h2 { font-size: 24px; }
+  .landing p { color: var(--gray); max-width: 500px; }
+
+  .load-btn {
+    padding: 16px 32px;
+    font-size: 16px;
+    background: var(--green);
+    color: #fff;
+    border-radius: 6px;
+  }
+
+  .resume-btn {
+    padding: 12px 24px;
+    font-size: 14px;
+    background: var(--gold);
+    color: #fff;
+    border-radius: 6px;
+  }
+
+  /* Filter bar */
+  .filter-bar {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 24px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .filter-bar label {
+    font-size: 13px;
+    color: var(--gray);
+  }
+
+  .filter-bar select, .filter-bar input[type="text"] {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 13px;
+    background: #fff;
+  }
+
+  .filter-bar input[type="text"] {
+    width: 200px;
+  }
+
+  .filter-counts {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: auto;
+  }
+
+  .filter-counts span {
+    margin: 0 6px;
+  }
+  .count-approved { color: var(--green); font-weight: 600; }
+  .count-modified { color: var(--gold); font-weight: 600; }
+  .count-rejected { color: var(--rust); font-weight: 600; }
+
+  /* Table */
+  .table-container {
+    padding: 16px 24px;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  th {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 2px solid var(--border);
+    font-weight: 600;
+    color: var(--gray);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    position: sticky;
+    top: 68px;
+    background: var(--bg);
+    z-index: 50;
+  }
+
+  td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  tr:hover { background: rgba(0,0,0,0.02); }
+
+  tr.selected { background: #e8f4fd !important; }
+
+  tr.status-approved { border-left: 3px solid var(--green); }
+  tr.status-modified { border-left: 3px solid var(--gold); }
+  tr.status-rejected { border-left: 3px solid var(--rust); }
+  tr.status-unreviewed { border-left: 3px solid transparent; }
+
+  .input-cell {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    max-width: 300px;
+    word-break: break-word;
+  }
+
+  .field-cell {
+    min-width: 80px;
+  }
+
+  .field-cell input {
+    width: 100%;
+    min-width: 60px;
+    padding: 4px 6px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    font-size: 13px;
+    background: transparent;
+    font-family: inherit;
+  }
+
+  .field-cell input:focus {
+    border-color: var(--green);
+    background: #fff;
+    outline: none;
+  }
+
+  .field-cell input.modified {
+    background: var(--gold-light);
+    border-color: var(--gold);
+  }
+
+  .field-empty input {
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .tags-cell {
+    max-width: 150px;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    background: var(--gray-light);
+    color: var(--gray);
+    margin: 1px 2px;
+  }
+
+  .desc-cell {
+    max-width: 200px;
+    color: var(--gray);
+    font-size: 12px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .badge-approved { background: var(--green-light); color: var(--green); }
+  .badge-modified { background: var(--gold-light); color: var(--gold); }
+  .badge-rejected { background: var(--rust-light); color: var(--rust); }
+  .badge-unreviewed { background: var(--gray-light); color: var(--text-muted); }
+
+  .row-actions {
+    display: flex;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .row-actions button {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+
+  .btn-approve { background: var(--green-light); color: var(--green); }
+  .btn-reject { background: var(--rust-light); color: var(--rust); }
+  .btn-reset { background: var(--gray-light); color: var(--gray); }
+
+  /* Keyboard help */
+  .keyboard-help {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--gray);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    z-index: 200;
+  }
+
+  .keyboard-help kbd {
+    display: inline-block;
+    padding: 1px 5px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--gray-light);
+    font-family: monospace;
+    font-size: 11px;
+    margin: 0 2px;
+  }
+
+  .keyboard-help div { margin: 3px 0; }
+
+  /* Stats panel */
+  .stats-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 24px;
+    margin: 16px 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 16px;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+  }
+  .stat-label {
+    font-size: 12px;
+    color: var(--gray);
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    z-index: 300;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .toast.visible { opacity: 1; }
+
+  #fileInput { display: none; }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Landing screen -->
+  <div id="landing" class="landing">
+    <h2>Golden Dataset Review</h2>
+    <p>Verify and correct CRF parser golden entries. Each entry needs your approval before it becomes trusted ground truth.</p>
+    <button class="load-btn" onclick="document.getElementById('fileInput').click()">
+      Load crf_ingredients.json
+    </button>
+    <button id="resumeBtn" class="resume-btn" style="display:none" onclick="resumeSession()">
+      Resume previous session
+    </button>
+    <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">
+      File location: <code>test/golden/crf_ingredients.json</code>
+    </p>
+    <input type="file" id="fileInput" accept=".json" onchange="loadFile(event)">
+  </div>
+
+  <!-- Review screen -->
+  <div id="reviewScreen" style="display:none">
+    <div class="header">
+      <h1>Golden Dataset Review</h1>
+      <div class="progress-section">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <span class="progress-text" id="progressText">0 / 0</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn-secondary" onclick="approveAllVisible()">Approve all visible</button>
+        <button class="btn-secondary" onclick="jumpToNextUnreviewed()">Next unreviewed</button>
+        <button class="btn-export" onclick="exportJson()">Export verified JSON</button>
+        <button class="btn-secondary" onclick="clearSession()">Reset</button>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <label>Status:</label>
+      <select id="filterStatus" onchange="applyFilters()">
+        <option value="all">All</option>
+        <option value="unreviewed">Unreviewed</option>
+        <option value="approved">Approved</option>
+        <option value="modified">Modified</option>
+        <option value="rejected">Rejected</option>
+      </select>
+
+      <label>Tag:</label>
+      <select id="filterTag" onchange="applyFilters()">
+        <option value="all">All tags</option>
+      </select>
+
+      <label>Search:</label>
+      <input type="text" id="filterSearch" placeholder="Search input text..." oninput="applyFilters()">
+
+      <div class="filter-counts">
+        Showing <span id="showingCount">0</span> |
+        <span class="count-approved" id="approvedCount">0</span> approved
+        <span class="count-modified" id="modifiedCount">0</span> modified
+        <span class="count-rejected" id="rejectedCount">0</span> rejected
+      </div>
+    </div>
+
+    <div class="stats-panel" id="statsPanel">
+      <div class="stat"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total</div></div>
+      <div class="stat"><div class="stat-value count-approved" id="statApproved">0</div><div class="stat-label">Approved</div></div>
+      <div class="stat"><div class="stat-value count-modified" id="statModified">0</div><div class="stat-label">Modified</div></div>
+      <div class="stat"><div class="stat-value count-rejected" id="statRejected">0</div><div class="stat-label">Rejected</div></div>
+      <div class="stat"><div class="stat-value" id="statUnreviewed" style="color:var(--text-muted)">0</div><div class="stat-label">Unreviewed</div></div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Input</th>
+            <th>Quantity</th>
+            <th>Unit</th>
+            <th>Name</th>
+            <th>Preparation</th>
+            <th>Tags</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="keyboard-help" id="keyboardHelp" style="display:none">
+  <div><kbd>A</kbd> Approve selected</div>
+  <div><kbd>R</kbd> Reject selected</div>
+  <div><kbd>U</kbd> Un-review selected</div>
+  <div><kbd>&uarr;</kbd><kbd>&darr;</kbd> Navigate rows</div>
+  <div><kbd>N</kbd> Next unreviewed</div>
+  <div><kbd>E</kbd> Edit quantity field</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ——— State ———
+let entries = [];        // Original JSON entries
+let reviewState = {};    // { index: { status, modified: {field: newValue} } }
+let selectedIndex = -1;
+let filteredIndices = [];
+const STORAGE_KEY = 'butlery_golden_review';
+
+// ——— File loading ———
+function loadFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      entries = JSON.parse(e.target.result);
+      if (!Array.isArray(entries)) throw new Error('Expected JSON array');
+      initReview(false);
+    } catch (err) {
+      alert('Failed to parse JSON: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function resumeSession() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) return;
+  const data = JSON.parse(saved);
+  entries = data.entries;
+  reviewState = data.reviewState || {};
+  initReview(true);
+}
+
+function initReview(isResume) {
+  if (!isResume) {
+    // Initialize review state for new entries
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const data = JSON.parse(saved);
+      // Match by input text to preserve reviews across file reloads
+      const oldStateByInput = {};
+      if (data.entries && data.reviewState) {
+        for (const [idx, state] of Object.entries(data.reviewState)) {
+          const entry = data.entries[parseInt(idx)];
+          if (entry) oldStateByInput[entry.input] = state;
+        }
+      }
+      reviewState = {};
+      entries.forEach((entry, i) => {
+        if (oldStateByInput[entry.input]) {
+          reviewState[i] = oldStateByInput[entry.input];
+        }
+      });
+    } else {
+      reviewState = {};
+    }
+  }
+
+  // Populate tag filter
+  const tags = new Set();
+  entries.forEach(e => (e.tags || []).forEach(t => tags.add(t)));
+  const tagSelect = document.getElementById('filterTag');
+  tagSelect.innerHTML = '<option value="all">All tags</option>';
+  [...tags].sort().forEach(t => {
+    tagSelect.innerHTML += `<option value="${t}">${t}</option>`;
+  });
+
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('reviewScreen').style.display = '';
+  document.getElementById('keyboardHelp').style.display = '';
+
+  applyFilters();
+  updateStats();
+  saveState();
+}
+
+// ——— Rendering ———
+function applyFilters() {
+  const status = document.getElementById('filterStatus').value;
+  const tag = document.getElementById('filterTag').value;
+  const search = document.getElementById('filterSearch').value.toLowerCase();
+
+  filteredIndices = [];
+  entries.forEach((entry, i) => {
+    const entryStatus = getStatus(i);
+    if (status !== 'all' && entryStatus !== status) return;
+    if (tag !== 'all' && !(entry.tags || []).includes(tag)) return;
+    if (search && !entry.input.toLowerCase().includes(search)) return;
+    filteredIndices.push(i);
+  });
+
+  renderTable();
+  document.getElementById('showingCount').textContent = filteredIndices.length;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+
+  filteredIndices.forEach(i => {
+    const entry = entries[i];
+    const state = reviewState[i] || {};
+    const status = state.status || 'unreviewed';
+    const modified = state.modified || {};
+
+    const tr = document.createElement('tr');
+    tr.className = `status-${status}` + (i === selectedIndex ? ' selected' : '');
+    tr.dataset.index = i;
+    tr.onclick = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+      selectRow(i);
+    };
+
+    const expected = entry.expected || {};
+
+    tr.innerHTML = `
+      <td style="color:var(--text-muted); font-size:11px">${i + 1}</td>
+      <td class="input-cell">${escHtml(entry.input || '(empty)')}</td>
+      <td class="field-cell ${!expected.quantity && !modified.quantity ? 'field-empty' : ''}">
+        <input type="text"
+          value="${escHtml(modified.quantity !== undefined ? modified.quantity : (expected.quantity || ''))}"
+          data-field="quantity" data-index="${i}"
+          data-original="${escHtml(expected.quantity || '')}"
+          placeholder="—"
+          oninput="onFieldEdit(this)"
+          class="${modified.quantity !== undefined ? 'modified' : ''}">
+      </td>
+      <td class="field-cell ${!expected.unit && !modified.unit ? 'field-empty' : ''}">
+        <input type="text"
+          value="${escHtml(modified.unit !== undefined ? modified.unit : (expected.unit || ''))}"
+          data-field="unit" data-index="${i}"
+          data-original="${escHtml(expected.unit || '')}"
+          placeholder="—"
+          oninput="onFieldEdit(this)"
+          class="${modified.unit !== undefined ? 'modified' : ''}">
+      </td>
+      <td class="field-cell ${!expected.name && !modified.name ? 'field-empty' : ''}">
+        <input type="text"
+          value="${escHtml(modified.name !== undefined ? modified.name : (expected.name || ''))}"
+          data-field="name" data-index="${i}"
+          data-original="${escHtml(expected.name || '')}"
+          placeholder="—"
+          oninput="onFieldEdit(this)"
+          class="${modified.name !== undefined ? 'modified' : ''}">
+      </td>
+      <td class="field-cell ${!expected.preparation && !modified.preparation ? 'field-empty' : ''}">
+        <input type="text"
+          value="${escHtml(modified.preparation !== undefined ? modified.preparation : (expected.preparation || ''))}"
+          data-field="preparation" data-index="${i}"
+          data-original="${escHtml(expected.preparation || '')}"
+          placeholder="—"
+          oninput="onFieldEdit(this)"
+          class="${modified.preparation !== undefined ? 'modified' : ''}">
+      </td>
+      <td class="tags-cell">${(entry.tags || []).map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</td>
+      <td><span class="status-badge badge-${status}">${status}</span></td>
+      <td class="row-actions">
+        <button class="btn-approve" onclick="setStatus(${i}, 'approved')" title="Approve (A)">&#10003;</button>
+        <button class="btn-reject" onclick="setStatus(${i}, 'rejected')" title="Reject (R)">&#10007;</button>
+        <button class="btn-reset" onclick="resetEntry(${i})" title="Reset (U)">&#8634;</button>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+function onFieldEdit(input) {
+  const index = parseInt(input.dataset.index);
+  const field = input.dataset.field;
+  const original = input.dataset.original;
+  const newValue = input.value;
+
+  if (!reviewState[index]) reviewState[index] = {};
+  if (!reviewState[index].modified) reviewState[index].modified = {};
+
+  if (newValue === original) {
+    delete reviewState[index].modified[field];
+    input.classList.remove('modified');
+    if (Object.keys(reviewState[index].modified).length === 0) {
+      delete reviewState[index].modified;
+    }
+  } else {
+    reviewState[index].modified[field] = newValue;
+    input.classList.add('modified');
+    // Auto-set status to modified if was unreviewed
+    if (!reviewState[index].status || reviewState[index].status === 'unreviewed') {
+      reviewState[index].status = 'modified';
+    }
+  }
+
+  saveState();
+  updateStats();
+}
+
+// ——— Actions ———
+function setStatus(index, status) {
+  if (!reviewState[index]) reviewState[index] = {};
+  reviewState[index].status = status;
+  saveState();
+  updateStats();
+  renderTable();
+  showToast(`#${index + 1} ${status}`);
+}
+
+function resetEntry(index) {
+  delete reviewState[index];
+  saveState();
+  updateStats();
+  renderTable();
+  showToast(`#${index + 1} reset`);
+}
+
+function selectRow(index) {
+  selectedIndex = index;
+  renderTable();
+  // Scroll row into view
+  const row = document.querySelector(`tr[data-index="${index}"]`);
+  if (row) row.scrollIntoView({ block: 'nearest' });
+}
+
+function jumpToNextUnreviewed() {
+  // Find next unreviewed in filtered list
+  const current = filteredIndices.indexOf(selectedIndex);
+  for (let offset = 1; offset <= filteredIndices.length; offset++) {
+    const idx = filteredIndices[(current + offset) % filteredIndices.length];
+    if (getStatus(idx) === 'unreviewed') {
+      selectRow(idx);
+      const row = document.querySelector(`tr[data-index="${idx}"]`);
+      if (row) row.scrollIntoView({ block: 'center' });
+      return;
+    }
+  }
+  showToast('All entries reviewed!');
+}
+
+function approveAllVisible() {
+  const unreviewed = filteredIndices.filter(i => getStatus(i) === 'unreviewed');
+  if (unreviewed.length === 0) {
+    showToast('No unreviewed entries in current view');
+    return;
+  }
+  if (!confirm(`Approve ${unreviewed.length} unreviewed entries in current view?`)) return;
+  unreviewed.forEach(i => {
+    if (!reviewState[i]) reviewState[i] = {};
+    reviewState[i].status = 'approved';
+  });
+  saveState();
+  updateStats();
+  renderTable();
+  showToast(`${unreviewed.length} entries approved`);
+}
+
+// ——— Stats ———
+function getStatus(index) {
+  return (reviewState[index] && reviewState[index].status) || 'unreviewed';
+}
+
+function updateStats() {
+  let approved = 0, modified = 0, rejected = 0, unreviewed = 0;
+  entries.forEach((_, i) => {
+    const s = getStatus(i);
+    if (s === 'approved') approved++;
+    else if (s === 'modified') modified++;
+    else if (s === 'rejected') rejected++;
+    else unreviewed++;
+  });
+
+  const reviewed = approved + modified + rejected;
+  const total = entries.length;
+  const pct = total > 0 ? Math.round((reviewed / total) * 100) : 0;
+
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${reviewed} / ${total} (${pct}%)`;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statApproved').textContent = approved;
+  document.getElementById('statModified').textContent = modified;
+  document.getElementById('statRejected').textContent = rejected;
+  document.getElementById('statUnreviewed').textContent = unreviewed;
+
+  document.getElementById('approvedCount').textContent = approved;
+  document.getElementById('modifiedCount').textContent = modified;
+  document.getElementById('rejectedCount').textContent = rejected;
+}
+
+// ——— Export ———
+function exportJson() {
+  const reviewed = entries.map((entry, i) => {
+    const state = reviewState[i] || {};
+    const status = state.status || 'unreviewed';
+    const modified = state.modified || {};
+
+    // Build the final expected object with modifications applied
+    const expected = { ...(entry.expected || {}) };
+    for (const [field, value] of Object.entries(modified)) {
+      if (value === '') {
+        delete expected[field];
+      } else {
+        expected[field] = value;
+      }
+    }
+
+    // Clean expected: remove empty string values
+    for (const key of Object.keys(expected)) {
+      if (expected[key] === '') delete expected[key];
+    }
+
+    return {
+      ...entry,
+      expected,
+      _reviewStatus: status,
+    };
+  });
+
+  // Separate: export only approved + modified entries as the clean golden dataset
+  const clean = reviewed
+    .filter(e => e._reviewStatus === 'approved' || e._reviewStatus === 'modified')
+    .map(e => {
+      const { _reviewStatus, ...rest } = e;
+      return rest;
+    });
+
+  // Also export full review state for reference
+  const fullExport = {
+    exportedAt: new Date().toISOString(),
+    stats: {
+      total: entries.length,
+      approved: reviewed.filter(e => e._reviewStatus === 'approved').length,
+      modified: reviewed.filter(e => e._reviewStatus === 'modified').length,
+      rejected: reviewed.filter(e => e._reviewStatus === 'rejected').length,
+      unreviewed: reviewed.filter(e => e._reviewStatus === 'unreviewed').length,
+    },
+    cleanEntries: clean,
+    allEntries: reviewed,
+  };
+
+  // Download clean golden dataset
+  downloadJson(clean, 'crf_ingredients_verified.json');
+
+  // Also download full review report
+  setTimeout(() => {
+    downloadJson(fullExport, 'golden_review_report.json');
+  }, 500);
+}
+
+function downloadJson(data, filename) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(`Downloaded ${filename}`);
+}
+
+// ——— Persistence ———
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      entries,
+      reviewState,
+      savedAt: new Date().toISOString(),
+    }));
+  } catch (e) {
+    console.warn('Failed to save state:', e);
+  }
+}
+
+function clearSession() {
+  if (!confirm('Clear all review progress? This cannot be undone.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  reviewState = {};
+  updateStats();
+  renderTable();
+  showToast('Session cleared');
+}
+
+// ——— Keyboard shortcuts ———
+document.addEventListener('keydown', (e) => {
+  // Don't intercept when typing in an input
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+    if (e.key === 'Escape') {
+      e.target.blur();
+      e.preventDefault();
+    }
+    return;
+  }
+
+  const key = e.key.toLowerCase();
+  const visibleIdx = filteredIndices.indexOf(selectedIndex);
+
+  switch (key) {
+    case 'a':
+      if (selectedIndex >= 0) {
+        setStatus(selectedIndex, 'approved');
+        moveToNext(visibleIdx);
+      }
+      break;
+    case 'r':
+      if (selectedIndex >= 0) setStatus(selectedIndex, 'rejected');
+      break;
+    case 'u':
+      if (selectedIndex >= 0) resetEntry(selectedIndex);
+      break;
+    case 'n':
+      jumpToNextUnreviewed();
+      break;
+    case 'e':
+      if (selectedIndex >= 0) {
+        const qtyInput = document.querySelector(`tr[data-index="${selectedIndex}"] input[data-field="quantity"]`);
+        if (qtyInput) qtyInput.focus();
+      }
+      break;
+    case 'arrowdown':
+      e.preventDefault();
+      if (visibleIdx < filteredIndices.length - 1) {
+        selectRow(filteredIndices[visibleIdx + 1]);
+      } else if (visibleIdx === -1 && filteredIndices.length > 0) {
+        selectRow(filteredIndices[0]);
+      }
+      break;
+    case 'arrowup':
+      e.preventDefault();
+      if (visibleIdx > 0) {
+        selectRow(filteredIndices[visibleIdx - 1]);
+      }
+      break;
+  }
+});
+
+function moveToNext(currentVisibleIdx) {
+  if (currentVisibleIdx < filteredIndices.length - 1) {
+    selectRow(filteredIndices[currentVisibleIdx + 1]);
+    const row = document.querySelector(`tr[data-index="${filteredIndices[currentVisibleIdx + 1]}"]`);
+    if (row) row.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+// ——— Helpers ———
+function escHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('visible');
+  setTimeout(() => toast.classList.remove('visible'), 1500);
+}
+
+// ——— Init ———
+(function checkResume() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    const data = JSON.parse(saved);
+    const reviewed = Object.values(data.reviewState || {}).filter(s => s.status).length;
+    if (reviewed > 0) {
+      const btn = document.getElementById('resumeBtn');
+      btn.style.display = '';
+      btn.textContent = `Resume session (${reviewed} reviewed, saved ${new Date(data.savedAt).toLocaleString()})`;
+    }
+  }
+})();
+</script>
+
+</body>
+</html>

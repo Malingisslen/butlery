@@ -54,6 +54,36 @@ The Butlery parser is a 4-tier cascading system for extracting structured recipe
 | 10 | User correction → retrain pipeline | 2-3 |
 | 11 | Livsmedelsverket ingredient DB | 5-7 |
 | 12 | Unify ParsedIngredient models | **DONE** |
+| 18 | Add `size` field to ParsedIngredient | 0.5 |
+| 19 | Fix range quantity handling across display/scaling/shopping | 2 |
+
+#### Item 18: Size field on ParsedIngredient
+
+The CRF already tags `B-SIZE` tokens ("stor", "stora", "liten") but there's no `size` field on `ParsedIngredient` — size words get absorbed into `name`. This means "stor gul lök" and "gul lök" could be treated as different ingredients on the shopping list.
+
+**Tagging/allergens are NOT affected** — `IngredientNormalizer` already strips "stor", "gul" etc. before database lookup. Both "stor gul lök" and "gul lök" resolve to the same `IngredientData`. This is purely a shopping list compounding issue.
+
+**Fix:** Add `size` field to `ParsedIngredient`, wire CRF SIZE spans to it. Name becomes "gul lök" in both cases → shopping list compounds correctly. Update ~5 golden entries with `size` tag.
+
+#### Item 19: Fix range quantity handling
+
+**This is NOT just a shopping list problem.** Range quantities like "2-3" are broken in multiple downstream consumers because `QuantityParser.parse("2-3")` does `double.tryParse("2-3")` → null → silently returns `1.0`.
+
+| Consumer | Impact |
+|----------|--------|
+| Recipe detail display | "2-3 ägg" shows as "1 ägg" |
+| Portion scaling | Scales from 1.0 instead of 2-3 |
+| Shopping list compounding | Compounds as 1.0 per recipe |
+| Regex fallback parser | Stores "1" instead of "2-3" |
+
+**Root cause:** `QuantityParser` doesn't handle range strings. The import pipeline's `IngredientPreprocessor` normalizes ranges to max before `QuantityParser` sees them, but the display/scaling path (Pattern B) skips preprocessing entirely.
+
+**Fix options:**
+1. Make `QuantityParser` range-aware: parse "2-3" → return max (3.0), store range metadata separately
+2. Run `IngredientPreprocessor` in Pattern B too (normalize before display/scaling)
+3. Store structured quantity data (min/max/single) instead of raw strings in `Recipe.ingredients`
+
+**Tagging/allergens are NOT affected** — they work on ingredient names only, never quantities.
 
 ### Tier C: Ongoing API Costs (Consider Carefully)
 

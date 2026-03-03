@@ -1,5 +1,8 @@
 {
   "autoMemoryEnabled": true,
+  "env": {
+    "ENABLE_CLAUDEAI_MCP_SERVERS": "false"
+  },
   "permissions": {
     "allow": [
       "Bash",

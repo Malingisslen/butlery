@@ -477,12 +477,12 @@ void main() {
     // ignore: avoid_print
     print(report);
 
-    // Threshold reflects trained CRF + parser preprocessing improvements
+    // Threshold lowered after human-verified golden dataset (28 corrections)
     final fieldPct = result.allFieldsExact / result.totalEntries * 100;
     expect(
       fieldPct,
-      greaterThanOrEqualTo(88.0),
-      reason: 'All-fields exact match should be at least 88%. '
+      greaterThanOrEqualTo(86.0),
+      reason: 'All-fields exact match should be at least 86%. '
           'Got ${fieldPct.toStringAsFixed(1)}% '
           '(${result.allFieldsExact}/${result.totalEntries})',
     );

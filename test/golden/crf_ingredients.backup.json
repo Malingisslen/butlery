@@ -950,7 +950,8 @@
     "expected": {
       "quantity": "1",
       "unit": "burk",
-      "name": "krossade tomater"
+      "name": "tomater",
+      "preparation": "krossade"
     },
     "tags": [
       "standard",
@@ -1200,7 +1201,8 @@
       "B-NAME"
     ],
     "expected": {
-      "name": "rimmat fläsk"
+      "name": "fläsk",
+      "preparation": "rimmat"
     },
     "tags": [
       "preparation"
@@ -1478,8 +1480,8 @@
     ],
     "expected": {
       "quantity": "2",
-      "unit": "dl",
-      "name": "mjölk"
+      "unit": "DL",
+      "name": "MJÖLK"
     },
     "tags": [
       "social_media"
@@ -2107,7 +2109,8 @@
     "expected": {
       "quantity": "1",
       "unit": "förp",
-      "name": "rökta korvar"
+      "name": "korvar",
+      "preparation": "rökta"
     },
     "tags": [
       "standard",
@@ -2209,8 +2212,8 @@
       "O"
     ],
     "expected": {
-      "quantity": "400",
-      "unit": "ml",
+      "quantity": "1",
+      "unit": "burk",
       "name": "kokosmjölk"
     },
     "tags": [
@@ -2241,7 +2244,7 @@
     "expected": {
       "quantity": "1",
       "unit": "msk",
-      "name": "ljus japansk soja"
+      "name": "japansk soja"
     },
     "tags": [
       "parenthetical",
@@ -2270,7 +2273,7 @@
     "expected": {
       "quantity": "2",
       "unit": "dl",
-      "name": "vetemjöl"
+      "name": "mjöl"
     },
     "tags": [
       "comma_separated"
@@ -2296,7 +2299,7 @@
     "expected": {
       "quantity": "3",
       "unit": "dl",
-      "name": "basmatiris"
+      "name": "ris"
     },
     "tags": [
       "comma_separated"
@@ -2516,7 +2519,8 @@
     "expected": {
       "quantity": "3",
       "unit": "dl",
-      "name": "passerade tomater"
+      "name": "tomater",
+      "preparation": "passerade"
     },
     "tags": [
       "preparation"
@@ -2564,7 +2568,8 @@
     "expected": {
       "quantity": "2",
       "unit": "dl",
-      "name": "osötad mandelmjölk"
+      "name": "mandelmjölk",
+      "preparation": "osötad"
     },
     "tags": [
       "preparation",
@@ -2617,7 +2622,7 @@
       "B-NAME"
     ],
     "expected": {
-      "name": "salt och peppar"
+      "name": "salt"
     },
     "tags": [
       "alternative"
@@ -3627,8 +3632,7 @@
     "expected": {
       "quantity": "1",
       "unit": "burk",
-      "name": "tomater",
-      "preparation": "san marzano"
+      "name": "san marzano tomater"
     },
     "tags": [
       "multi_word"
@@ -4688,7 +4692,7 @@
       "B-NAME"
     ],
     "expected": {
-      "name": "salt och peppar"
+      "name": "salt"
     },
     "tags": [
       "text_quantity",
@@ -5200,7 +5204,7 @@
     "expected": {
       "quantity": "2",
       "unit": "dl",
-      "name": "laktosfri mjölk"
+      "name": "mjölk"
     },
     "tags": [
       "parenthetical"
@@ -5288,7 +5292,7 @@
     "expected": {
       "quantity": "3",
       "unit": "dl",
-      "name": "vispgrädde"
+      "name": "grädde"
     },
     "tags": [
       "parenthetical"
@@ -5316,7 +5320,7 @@
     "expected": {
       "quantity": "1",
       "unit": "tsk",
-      "name": "havssalt"
+      "name": "salt"
     },
     "tags": [
       "parenthetical"
@@ -5344,7 +5348,7 @@
     "expected": {
       "quantity": "2",
       "unit": "dl",
-      "name": "glutenfritt mjöl"
+      "name": "mjöl"
     },
     "tags": [
       "parenthetical"
@@ -5461,7 +5465,7 @@
     "expected": {
       "quantity": "1",
       "unit": "dl",
-      "name": "turkiskyoghurt"
+      "name": "yoghurt"
     },
     "tags": [
       "parenthetical"
@@ -5489,7 +5493,7 @@
     "expected": {
       "quantity": "2",
       "unit": "dl",
-      "name": "jasminris"
+      "name": "ris"
     },
     "tags": [
       "parenthetical"
@@ -6243,9 +6247,7 @@
       "B-NAME"
     ],
     "expected": {
-      "name": "mjölk",
-      "quantity": "2",
-      "unit": "dl"
+      "name": "mjölk"
     },
     "tags": [
       "social_media"
@@ -6261,7 +6263,7 @@
       "B-NAME"
     ],
     "expected": {
-      "name": "smör"
+      "name": "smör(massa)"
     },
     "tags": [
       "social_media"
@@ -6279,9 +6281,7 @@
       "B-NAME"
     ],
     "expected": {
-      "name": "mjölk",
-      "quantity": "2",
-      "unit": "dl"
+      "name": "mjölk"
     },
     "tags": [
       "social_media"
@@ -6321,9 +6321,7 @@
       "B-NAME"
     ],
     "expected": {
-      "name": "OLIVOLJA",
-      "quantity": "1",
-      "unit": "msk"
+      "name": "OLIVOLJA"
     },
     "tags": [
       "social_media"
@@ -6343,7 +6341,7 @@
       "B-NAME"
     ],
     "expected": {
-      "name": "SALT OCH PEPPAR"
+      "name": "SALT"
     },
     "tags": [
       "social_media"
@@ -6361,7 +6359,7 @@
       "B-NAME"
     ],
     "expected": {
-      "quantity": "2",
+      "quantity": "2x",
       "name": "ägg"
     },
     "tags": [
@@ -6384,7 +6382,7 @@
     "expected": {
       "quantity": "1",
       "unit": "dl",
-      "name": "mjölk"
+      "name": "mjölk!!!"
     },
     "tags": [
       "social_media"
@@ -6453,7 +6451,7 @@
     ],
     "expected": {
       "quantity": "1",
-      "unit": "dl",
+      "unit": "di",
       "name": "mjölk"
     },
     "tags": [
@@ -6519,7 +6517,7 @@
     ],
     "expected": {
       "quantity": "2",
-      "unit": "dl",
+      "unit": "d1",
       "name": "mjöl"
     },
     "tags": [
@@ -6540,7 +6538,7 @@
       "B-NAME"
     ],
     "expected": {
-      "quantity": "0,5",
+      "quantity": "O,5",
       "unit": "dl",
       "name": "grädde"
     },
