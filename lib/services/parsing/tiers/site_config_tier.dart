@@ -31,8 +31,10 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
     IngredientParsingStrategy? ingredientStrategy,
   }) : _ingredientStrategy = ingredientStrategy ?? IngredientParsingStrategy();
 
+  static const tierIdentifier = 'SiteConfig';
+
   @override
-  String get tierName => 'SiteConfig';
+  String get tierName => tierIdentifier;
 
   @override
   int get priority => 2;
@@ -148,7 +150,7 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
       ingredientElements =
           _extractAllBySelector(document, config.ingredientsSelectorFallback);
     }
-    final ingredients = await _parseIngredients(ingredientElements);
+    final ingredients = await _parseIngredients(ingredientElements, context);
 
     var instructionElements =
         _extractAllBySelector(document, config.instructionsSelector);
@@ -254,13 +256,17 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
 
   Future<FieldResult<List<ParsedIngredient>>> _parseIngredients(
     List<String> texts,
+    ParsingContext context,
   ) async {
     final cleaned = texts
         .map((t) => t.replaceAll(RegExp(r'\s+'), ' ').trim())
         .where((t) => t.isNotEmpty)
         .toList();
 
-    return _ingredientStrategy.parseLines(cleaned);
+    return _ingredientStrategy.parseLines(
+      cleaned,
+      ocrCorrection: context.isOcrSource,
+    );
   }
 
   FieldResult<List<String>> _parseInstructions(List<String> texts) {

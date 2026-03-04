@@ -128,7 +128,8 @@ enum LlmOperationType {
 
 /// Extension for LLM operation costs
 extension LlmOperationCost on LlmOperationType {
-  /// Estimated cost in USD per operation
+  /// Estimated cost in USD per operation.
+  /// Based on Gemini 2.0 Flash pricing: ~$0.10/1M input, ~$0.40/1M output
   double get estimatedCost {
     switch (this) {
       case LlmOperationType.enhancement:
@@ -136,7 +137,7 @@ extension LlmOperationCost on LlmOperationType {
       case LlmOperationType.fullExtraction:
         return 0.03; // ~3000 tokens
       case LlmOperationType.vision:
-        return 0.05; // Vision is more expensive
+        return 0.04; // Gemini Flash: same model for vision, slightly cheaper than Pixtral
       case LlmOperationType.ingredientLines:
         return 0.005; // ~500 tokens, ingredient-only prompt
     }

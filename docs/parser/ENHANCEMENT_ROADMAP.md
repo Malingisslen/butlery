@@ -4,7 +4,7 @@
 
 All Phase 1, Phase 2, and actionable Phase 3 items are complete:
 
-- **1.1** Golden dataset (121 entries) + CRF evaluation framework (`test/evaluation/crf_evaluator.dart`)
+- **1.1** Golden dataset (433 entries) + CRF evaluation framework (`test/evaluation/crf_evaluator.dart`)
 - **1.2** CRF weights updated with edge case + compound features
 - **1.3** Unified ingredient parsing via `IngredientParsingStrategy` (CRF first, regex fallback)
 - **2.1** Edge case CRF features (ranges, conjunctions, optionals, group headers, parens)
@@ -14,28 +14,67 @@ All Phase 1, Phase 2, and actionable Phase 3 items are complete:
 - **2.5** Swedish compound word detection (`SwedishCompoundSplitter`)
 - **3.3** Selective LLM enhancement: patch only weak fields via `StructureMode.enhance`
 - **3.4** OCR error correction (`OcrErrorCorrector`) with Swedish confusion matrix
+- **10** User correction → retrain pipeline (`export-corrections.ts` + `export_corrections.dart`)
+- **11** Livsmedelsverket ingredient fetch script (`fetch-livsmedelsverket.ts`)
+- **13** Replaced Mistral with Gemini 2.0 Flash (`gemini-client.ts`)
 
-Baseline evaluation: 57.9% all-fields exact match on golden dataset.
+Current accuracy: **89.6%** all-fields exact match on 433-entry golden dataset.
 
 ---
 
-## Remaining: Neural Models + Future Vision
+## Ready to Train: On-Device BERT NER (Item 15)
 
-These items require ML model training infrastructure (Python pipelines, GPU training, ONNX export) and cannot be implemented as pure code changes.
+Code scaffolding is **complete**. All that remains is training the model and uploading to Firebase Storage.
 
-### On-Device DistilBERT for Ingredient NER
+### What's built
+- **Python pipeline**: `scripts/ner/train_bert_ner.py`, `distill_to_student.py`, `export_onnx.py`
+- **Dart inference**: `lib/services/parsing/ner/` — WordPiece tokenizer, ONNX service, neural parser, model manager
+- **Cascade integration**: `IngredientParsingStrategy` routes uncertain CRF lines → BERT NER → Gemini
+- **Tests**: 35 tests passing (tokenizer, parser, strategy)
+- **Runtime**: `flutter_onnxruntime` (MIT licensed, not `fonnx` which is GPL)
 
-**Why**: CRF tops out at ~75% F1. BERT-CRF hybrids reach ~83%.
+### To train and deploy
 
-- Fine-tune KB-BERT (Swedish) or DistilBERT on Swedish ingredient NER task
-- Distill to ONNX (<20MB model size)
-- Use `fonnx` Flutter package (CoreML on iOS, NNAPI on Android, WASM on Web)
-- **Hybrid cascade**: CRF first, DistilBERT only on uncertain lines
-- Build WordPiece tokenizer in Dart
+```bash
+# 1. Install Python dependencies
+pip install -r scripts/ner/requirements.txt
 
-**New files**: `neural_ingredient_parser.dart`, `onnx_inference_service.dart`, `wordpiece_tokenizer.dart`, `assets/models/ingredient_ner.onnx`
+# 2. Fine-tune KB-BERT on ingredient NER (needs GPU, ~2h on A100)
+python scripts/ner/train_bert_ner.py \
+    --input scripts/crf/data/training.conll \
+    --output scripts/ner/output/kb-bert-ner \
+    --golden test/golden/crf_ingredients.json \
+    --epochs 10
 
-**Effort**: 10-15 days | **Impact**: F1 ~75% -> ~83%
+# 3. Distill 12-layer → 4-layer student
+python scripts/ner/distill_to_student.py \
+    --teacher scripts/ner/output/kb-bert-ner \
+    --input scripts/crf/data/training.conll \
+    --output scripts/ner/output/student-ner \
+    --golden test/golden/crf_ingredients.json \
+    --epochs 20
+
+# 4. Export to ONNX with INT8 quantization (<20MB)
+python scripts/ner/export_onnx.py \
+    --model scripts/ner/output/student-ner \
+    --output scripts/ner/output/onnx \
+    --verify
+
+# 5. Upload to Firebase Storage
+# model.onnx + vocab.txt → models/ingredient_ner/v1/
+# Create latest_version.txt with content "1"
+```
+
+### Expected impact
+- **F1**: ~75% (CRF alone) → ~83-88% (CRF + BERT)
+- **Gemini calls**: 50-70% reduction (BERT handles uncertain lines on-device)
+- **Model size**: ~15MB download, cached locally
+- **Runtime cost**: Zero (on-device inference)
+- **Graceful degradation**: If model not downloaded, cascade skips BERT tier entirely
+
+---
+
+## Remaining: Future Vision
 
 ### Neural Line Classification
 
@@ -45,7 +84,7 @@ These items require ML model training infrastructure (Python pipelines, GPU trai
 - Replace hand-crafted emission probabilities in Viterbi with neural scores
 - Keep transition matrix but learn from data
 
-**Effort**: 5-7 days | **Dependencies**: DistilBERT above | **Impact**: +10-15% on unstructured text
+**Effort**: 5-7 days | **Dependencies**: BERT NER above | **Impact**: +10-15% on unstructured text
 
 ### On-Device SLM (Small Language Model)
 
@@ -68,7 +107,7 @@ Train on-device, aggregate only model updates. GDPR-optimal. **Effort**: 20+ day
 ## Key Sources
 
 - [KB-BERT](https://huggingface.co/KB/bert-base-swedish-cased) — Swedish BERT from KBLab
-- [fonnx](https://github.com/Telosnex/fonnx) — ONNX for Flutter (CoreML/NNAPI/WASM)
+- [flutter_onnxruntime](https://pub.dev/packages/flutter_onnxruntime) — ONNX Runtime for Flutter (MIT)
 - [Livsmedelsverket API](https://www.livsmedelsverket.se/en/about-us/open-data/food-composition-data/) — 2,400 Swedish food items
 - [FoodBERT](https://www.charlenechambliss.com/blog/introducing-foodbert) — DistilBERT for food entities
 - [Confidence-aware routing](https://arxiv.org/html/2510.01237) — model cascade with calibrated confidence

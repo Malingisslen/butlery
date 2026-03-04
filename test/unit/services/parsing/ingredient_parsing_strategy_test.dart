@@ -73,7 +73,8 @@ void main() {
   });
 
   group('getUncertainLines', () {
-    test('should return map of uncertain line indices to original text', () {
+    test('should return map of uncertain line indices to original text',
+        () async {
       final parsed = [
         _ingredient('2 dl mjölk', ParseConfidence.high),
         _ingredient('lite salt', ParseConfidence.low),
@@ -81,22 +82,22 @@ void main() {
       ];
       final originalLines = ['2 dl mjölk', 'lite salt', '1 msk socker'];
 
-      final result = strategy.getUncertainLines(parsed, originalLines);
+      final result = await strategy.getUncertainLines(parsed, originalLines);
       expect(result, {1: 'lite salt'});
     });
 
-    test('should return empty map when all lines are confident', () {
+    test('should return empty map when all lines are confident', () async {
       final parsed = [
         _ingredient('mjölk', ParseConfidence.high),
         _ingredient('smör', ParseConfidence.high),
       ];
       final originalLines = ['2 dl mjölk', '50 g smör'];
 
-      final result = strategy.getUncertainLines(parsed, originalLines);
+      final result = await strategy.getUncertainLines(parsed, originalLines);
       expect(result, isEmpty);
     });
 
-    test('should handle index out of bounds gracefully', () {
+    test('should handle index out of bounds gracefully', () async {
       // More parsed results than original lines
       final parsed = [
         _ingredient('mjölk', ParseConfidence.high),
@@ -105,13 +106,13 @@ void main() {
       ];
       final originalLines = ['2 dl mjölk', 'lite salt'];
 
-      final result = strategy.getUncertainLines(parsed, originalLines);
+      final result = await strategy.getUncertainLines(parsed, originalLines);
       // index 1 maps to 'lite salt', index 2 is out of bounds and skipped
       expect(result, {1: 'lite salt'});
       expect(result.containsKey(2), false);
     });
 
-    test('should return multiple uncertain lines', () {
+    test('should return multiple uncertain lines', () async {
       final parsed = [
         _ingredient('a', ParseConfidence.low),
         _ingredient('b', ParseConfidence.high),
@@ -120,12 +121,12 @@ void main() {
       ];
       final originalLines = ['line a', 'line b', 'line c', 'line d'];
 
-      final result = strategy.getUncertainLines(parsed, originalLines);
+      final result = await strategy.getUncertainLines(parsed, originalLines);
       expect(result, {0: 'line a', 2: 'line c', 3: 'line d'});
     });
 
-    test('should return empty map for empty input', () {
-      final result = strategy.getUncertainLines([], []);
+    test('should return empty map for empty input', () async {
+      final result = await strategy.getUncertainLines([], []);
       expect(result, isEmpty);
     });
   });

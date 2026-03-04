@@ -1,23 +1,21 @@
 /**
- * Cloud Function for OCR and recipe extraction from images using Mistral Pixtral.
+ * Cloud Function for OCR and recipe extraction from images using Gemini Vision.
  *
  * This callable function takes an image (base64 or URL) and extracts
- * a structured recipe using vision capabilities.
+ * a structured recipe using Gemini's native multimodal capabilities.
  */
 
 import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import {
-  getMistralClient,
-  mistralApiKey,
+  getGeminiClient,
+  getVisionModel,
+  geminiApiKey,
   PROMPT_VERSION,
   IMAGE_OCR_SYSTEM_PROMPT,
-  VISION_MODEL,
-  MAX_TOKENS,
-  TEMPERATURE,
   parseRecipeResponse,
   ExtractedRecipe,
-} from "./mistral-client";
+} from "./gemini-client";
 import { withRateLimit } from "../middleware/rate_limiter";
 import { scrubPii } from "./pii-scrubber";
 
@@ -62,7 +60,7 @@ interface OcrRecipeImageResponse {
  */
 export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
   {
-    secrets: [mistralApiKey],
+    secrets: [geminiApiKey],
     memory: "1GiB", // Vision needs more memory
     timeoutSeconds: 120,
     cors: true,
@@ -107,15 +105,13 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
         };
       }
 
-      const client = getMistralClient(mistralApiKey.value());
+      const client = getGeminiClient(geminiApiKey.value());
+      const model = getVisionModel(client);
 
       console.log(
         `[ocrRecipeImage] Processing image for user ${request.auth!.uid} (prompt v${PROMPT_VERSION})`,
         imageUrl ? `URL: ${imageUrl}` : `Base64: ${imageBase64?.length} chars`
       );
-
-      // Build image content for Mistral vision
-      const imageContent = buildImageContent(imageBase64, imageUrl, mimeType);
 
       // Build user prompt — scrub context text for PII
       let userPrompt =
@@ -124,34 +120,29 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
         userPrompt += `\n\nKontext: ${scrubPii(context)}`;
       }
 
-      // Call Mistral Vision API
-      const response = await client.chat.complete({
-        model: VISION_MODEL,
-        messages: [
-          { role: "system", content: IMAGE_OCR_SYSTEM_PROMPT },
-          {
-            role: "user",
-            content: [
-              imageContent,
-              { type: "text", text: userPrompt },
-            ],
-          },
+      // Build content parts for Gemini
+      const parts = buildContentParts(imageBase64, imageUrl, mimeType, userPrompt);
+
+      // Call Gemini Vision API
+      const result = await model.generateContent({
+        contents: [
+          { role: "user", parts },
         ],
-        maxTokens: MAX_TOKENS,
-        temperature: TEMPERATURE,
+        systemInstruction: { role: "model", parts: [{ text: IMAGE_OCR_SYSTEM_PROMPT }] },
       });
 
-      const content = response.choices?.[0]?.message?.content;
+      const response = result.response;
+      const content = response.text();
 
       // Calculate actual cost from API usage
-      // Pixtral: $0.15/1M input tokens, $0.15/1M output tokens
-      const usage = response.usage as { promptTokens?: number; completionTokens?: number } | undefined;
-      const inputCost = ((usage?.promptTokens ?? 0) / 1_000_000) * 0.15;
-      const outputCost = ((usage?.completionTokens ?? 0) / 1_000_000) * 0.15;
+      // Gemini 2.0 Flash: ~$0.10/1M input tokens, ~$0.40/1M output tokens
+      const usage = response.usageMetadata;
+      const inputCost = ((usage?.promptTokenCount ?? 0) / 1_000_000) * 0.10;
+      const outputCost = ((usage?.candidatesTokenCount ?? 0) / 1_000_000) * 0.40;
       const actualCost = Math.max(inputCost + outputCost, 0.01);
 
-      if (!content || typeof content !== "string") {
-        console.error("[ocrRecipeImage] Empty response from Mistral");
+      if (!content) {
+        console.error("[ocrRecipeImage] Empty response from Gemini");
         return {
           success: false,
           error: "Inget svar från AI-tjänsten.",
@@ -210,9 +201,72 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
 // Helper Functions
 // =============================================================================
 
-interface ImageContent {
-  type: "image_url";
-  imageUrl: string | { url: string };
+interface TextPart {
+  text: string;
+}
+
+interface InlineDataPart {
+  inlineData: {
+    mimeType: string;
+    data: string;
+  };
+}
+
+interface FileDataPart {
+  fileData: {
+    mimeType: string;
+    fileUri: string;
+  };
+}
+
+type ContentPart = TextPart | InlineDataPart | FileDataPart;
+
+/**
+ * Build content parts array for Gemini multimodal input.
+ * Gemini uses inlineData for base64 images (not image_url like Mistral).
+ */
+function buildContentParts(
+  base64?: string,
+  url?: string,
+  mimeType?: string,
+  textPrompt?: string
+): ContentPart[] {
+  const parts: ContentPart[] = [];
+
+  if (base64) {
+    // Strip data URL prefix if present
+    let rawBase64 = base64;
+    if (rawBase64.startsWith("data:")) {
+      const commaIndex = rawBase64.indexOf(",");
+      if (commaIndex > 0) {
+        rawBase64 = rawBase64.substring(commaIndex + 1);
+      }
+    }
+
+    const mime = mimeType || detectMimeType(rawBase64);
+    parts.push({
+      inlineData: {
+        mimeType: mime,
+        data: rawBase64,
+      },
+    });
+  } else if (url) {
+    // For URL images, Gemini supports fileData with URI
+    // However, for HTTPS URLs we use inlineData after fetching
+    // For simplicity, pass as fileData — Gemini handles HTTPS URLs
+    parts.push({
+      fileData: {
+        mimeType: mimeType || "image/jpeg",
+        fileUri: url,
+      },
+    });
+  }
+
+  if (textPrompt) {
+    parts.push({ text: textPrompt });
+  }
+
+  return parts;
 }
 
 /**
@@ -253,34 +307,6 @@ function isAllowedUrl(url: string): boolean {
   } catch {
     return false;
   }
-}
-
-function buildImageContent(
-  base64?: string,
-  url?: string,
-  mimeType?: string
-): ImageContent {
-  if (url) {
-    return {
-      type: "image_url",
-      imageUrl: url,
-    };
-  }
-
-  if (base64) {
-    // Determine MIME type
-    const mime = mimeType || detectMimeType(base64);
-    const dataUrl = base64.startsWith("data:")
-      ? base64
-      : `data:${mime};base64,${base64}`;
-
-    return {
-      type: "image_url",
-      imageUrl: dataUrl,
-    };
-  }
-
-  throw new Error("No image data provided");
 }
 
 /**

@@ -82,6 +82,30 @@ class FieldResult<T> {
         failureReason: reason,
       );
 
+  /// Maps a numeric confidence score to the appropriate confidence level.
+  ///
+  /// Thresholds: ≥0.7 → success, ≥0.5 → medium, ≥0.3 → low, <0.3 → low.
+  static FieldResult<T> fromConfidenceScore<T>(
+    T value,
+    double score,
+    String source,
+  ) {
+    if (score >= 0.7) return FieldResult.success(value);
+    if (score >= 0.5) {
+      return FieldResult.mediumConfidence(value, 'Parsed via $source');
+    }
+    if (score >= 0.3) {
+      return FieldResult.lowConfidence(
+        value,
+        '$source: some items unstructured',
+      );
+    }
+    return FieldResult.lowConfidence(
+      value,
+      '$source: most items unstructured',
+    );
+  }
+
   /// Creates a low-confidence result with optional reason.
   factory FieldResult.lowConfidence(T value, [String? reason]) => FieldResult(
         value: value,

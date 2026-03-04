@@ -77,6 +77,7 @@ dependencies:
   flutter_inappwebview: ^6.1.5
   csv: ^6.0.0                 # For CSV file parsing (7.x needs Dart 3.10+)
   excel: ^4.0.6               # For Excel file parsing
+  flutter_onnxruntime: ^1.5.1  # On-device BERT NER inference (MIT licensed)
 
   # ==================== SOCIAL FEATURES (FAS 18) ====================
   timeago: ^3.6.1

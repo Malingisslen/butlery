@@ -139,8 +139,10 @@ class ParseMetadata {
       tierResults.where((t) => t.success).map((t) => t.tierName).firstOrNull;
 
   /// Whether parsing used LLM.
-  bool get usedLlm => tierResults
-      .any((t) => t.tierName == 'LLM' && t.success && t.tokensUsed != null);
+  bool get usedLlm => tierResults.any((t) =>
+      t.tierName == 'LLM' &&
+      t.success &&
+      t.tokensUsed != null); // matches LlmTier.tierIdentifier
 
   /// The quality from the final successful tier.
   double get finalQuality =>

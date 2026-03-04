@@ -9,15 +9,17 @@ import 'package:butlery/services/parsing/crf/crf_ingredient_parser.dart';
 import 'package:butlery/services/parsing/crf/crf_viterbi_decoder.dart';
 import 'package:butlery/services/parsing/crf/remote_weight_loader.dart';
 import 'package:butlery/services/parsing/ingredient_registry_service.dart';
+import 'package:butlery/services/parsing/ner/neural_ingredient_parser.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/ocr_error_corrector.dart';
 
-/// Unified ingredient parsing strategy that tries CRF first, regex fallback.
+/// Unified ingredient parsing strategy: CRF → BERT NER → regex fallback.
 ///
 /// All tiers route through this single entry point for consistent quality.
 /// When CRF weights are available, uses the trained CRF model which handles
 /// edge cases (ranges, alternatives, optionals) better than regex.
-/// Falls back to legacy IngredientParser when weights are unavailable.
+/// Uncertain CRF lines are re-parsed with BERT NER if the model is available.
+/// Falls back to legacy IngredientParser when neither model is available.
 class IngredientParsingStrategy {
   static const String _weightsPath = 'assets/data/crf_ingredient_weights.json';
   static const String _serviceName = 'IngredientParsingStrategy';
@@ -26,14 +28,16 @@ class IngredientParsingStrategy {
   /// Remote weights with a higher version number will replace these.
   static const int bundledWeightVersion = 1;
 
+  /// Confidence threshold below which CRF-parsed lines are considered uncertain
+  /// and routed to BERT NER or cloud LLM for re-parsing.
+  static const double _uncertaintyThreshold = 0.7;
+
   CrfIngredientParser? _crfParser;
   bool _crfLoadFailed = false;
   bool _initialized = false;
   bool _remoteCheckStarted = false;
-
-  /// Whether to apply OCR error correction before parsing.
-  /// Set by the parser service based on input source (e.g., photo/OCR).
-  bool ocrCorrection;
+  bool _nerInitStarted = false;
+  DateTime? _nerLastAttempt;
 
   /// Injected parser for testing.
   final CrfIngredientParser? _injectedParser;
@@ -41,15 +45,22 @@ class IngredientParsingStrategy {
   /// Remote weight loader for active learning updates.
   final RemoteWeightLoader? _remoteLoader;
 
+  /// On-device BERT NER parser (optional, downloaded on demand).
+  final NeuralIngredientParser? _neuralParser;
+
   IngredientParsingStrategy({
     CrfIngredientParser? crfParser,
     RemoteWeightLoader? remoteLoader,
-    this.ocrCorrection = false,
+    NeuralIngredientParser? neuralParser,
   })  : _injectedParser = crfParser,
-        _remoteLoader = remoteLoader;
+        _remoteLoader = remoteLoader,
+        _neuralParser = neuralParser;
 
   /// Whether CRF parsing is available.
   bool get hasCrf => _injectedParser != null || _crfParser != null;
+
+  /// Whether BERT NER is available for uncertain line re-parsing.
+  bool get hasNer => _neuralParser?.isAvailable ?? false;
 
   /// Initialize CRF weights (lazy, idempotent).
   ///
@@ -77,6 +88,9 @@ class IngredientParsingStrategy {
 
       // Check for newer remote weights in background (non-blocking)
       _tryLoadRemoteWeightsInBackground();
+
+      // Initialize BERT NER model in background (download-on-first-use)
+      _tryInitNerInBackground();
     } catch (e) {
       AppLogger.warning('$_serviceName: CRF weights unavailable, '
           'using regex fallback: $e');
@@ -110,7 +124,10 @@ class IngredientParsingStrategy {
   ///
   /// Tries CRF first for better accuracy on edge cases,
   /// falls back to regex IngredientParser.
-  Future<ParsedIngredient> parseLine(String line) async {
+  Future<ParsedIngredient> parseLine(
+    String line, {
+    bool ocrCorrection = false,
+  }) async {
     await _ensureInitialized();
 
     final cleaned = ocrCorrection ? OcrErrorCorrector.correctLine(line) : line;
@@ -125,7 +142,10 @@ class IngredientParsingStrategy {
   /// Parse a single ingredient line synchronously (regex only).
   ///
   /// Used when CRF isn't available and async isn't desired.
-  ParsedIngredient parseLineSync(String line) {
+  ParsedIngredient parseLineSync(
+    String line, {
+    bool ocrCorrection = false,
+  }) {
     final cleaned = ocrCorrection ? OcrErrorCorrector.correctLine(line) : line;
     final parser = _injectedParser ?? _crfParser;
     if (parser != null) {
@@ -136,8 +156,9 @@ class IngredientParsingStrategy {
 
   /// Parse multiple ingredient lines.
   Future<FieldResult<List<ParsedIngredient>>> parseLines(
-    List<String> lines,
-  ) async {
+    List<String> lines, {
+    bool ocrCorrection = false,
+  }) async {
     if (lines.isEmpty) {
       return FieldResult.failed('No ingredients found');
     }
@@ -174,55 +195,109 @@ class IngredientParsingStrategy {
     final confidenceScore =
         parser != null ? _crfConfidenceScore(parsed) : _structuredRatio(parsed);
 
-    if (confidenceScore >= 0.7) {
-      return FieldResult.success(parsed);
-    } else if (confidenceScore >= 0.5) {
-      return FieldResult.mediumConfidence(parsed, 'Parsed via $source');
-    } else if (confidenceScore >= 0.3) {
-      return FieldResult.lowConfidence(
-        parsed,
-        '$source: some ingredients unstructured',
-      );
-    } else {
-      return FieldResult.lowConfidence(
-        parsed,
-        '$source: most ingredients unstructured',
-      );
+    return FieldResult.fromConfidenceScore(parsed, confidenceScore, source);
+  }
+
+  /// Initialize BERT NER model in background (fire-and-forget).
+  ///
+  /// Downloads the ONNX model from Firebase Storage if not cached,
+  /// then loads it into ONNX Runtime. Failures never block parsing.
+  void _tryInitNerInBackground() {
+    if (_neuralParser == null || _neuralParser.isAvailable) return;
+    if (_nerInitStarted) return;
+    // Don't retry more often than once per hour
+    if (_nerLastAttempt != null &&
+        DateTime.now().difference(_nerLastAttempt!) <
+            const Duration(hours: 1)) {
+      return;
     }
+    _nerInitStarted = true;
+
+    Future(() async {
+      try {
+        final ready = await _neuralParser.ensureInitialized();
+        if (ready) {
+          AppLogger.info('$_serviceName: BERT NER model ready');
+        }
+      } catch (e) {
+        AppLogger.debug('$_serviceName: NER init failed: $e');
+      } finally {
+        _nerInitStarted = false;
+        _nerLastAttempt = DateTime.now();
+      }
+    });
   }
 
   /// Identifies ingredient lines where CRF confidence is too low for reliable
-  /// extraction (score 0.3-0.7), suitable for selective LLM re-parsing.
+  /// extraction (score < 0.7), suitable for BERT NER or LLM re-parsing.
   ///
   /// Returns indices of uncertain lines. Lines with high confidence (≥0.7)
-  /// are kept as-is. Lines with very low confidence (<0.3) are also included
-  /// since they likely need LLM help the most.
+  /// are kept as-is.
   ///
-  /// This enables line-level CRF→LLM routing: instead of sending the entire
-  /// recipe to the LLM, only uncertain lines are re-parsed, reducing LLM
-  /// calls by ~80%.
+  /// This enables the CRF → BERT → LLM cascade: uncertain lines are first
+  /// tried with BERT NER (on-device), then remaining uncertain lines go to
+  /// the cloud LLM.
   List<int> getUncertainLineIndices(List<ParsedIngredient> parsed) {
     final uncertain = <int>[];
     for (var i = 0; i < parsed.length; i++) {
-      if (parsed[i].confidence.score < 0.7) {
+      if (parsed[i].confidence.score < _uncertaintyThreshold) {
         uncertain.add(i);
       }
     }
     return uncertain;
   }
 
-  /// Returns only the uncertain lines from a parsed result, along with their
-  /// original indices for later merging.
+  /// Returns uncertain lines that still need LLM help after BERT NER.
   ///
-  /// Used by the LLM tier to selectively re-parse only low-confidence lines.
-  Map<int, String> getUncertainLines(
+  /// If BERT NER is available, tries it on uncertain CRF lines first.
+  /// Lines that BERT handles confidently are merged into [parsed].
+  /// Only lines that both CRF and BERT are uncertain about are returned
+  /// for LLM re-parsing.
+  ///
+  /// **Note**: [parsed] is mutated in place — lines where BERT NER succeeds
+  /// are replaced with the improved result.
+  Future<Map<int, String>> getUncertainLines(
     List<ParsedIngredient> parsed,
     List<String> originalLines,
-  ) {
+  ) async {
+    final uncertainIndices = getUncertainLineIndices(parsed);
+    if (uncertainIndices.isEmpty) return {};
+
+    // Try BERT NER on uncertain lines first
+    if (_neuralParser != null && _neuralParser.isAvailable) {
+      final uncertainTexts = <String>[];
+      for (final i in uncertainIndices) {
+        if (i < originalLines.length) {
+          uncertainTexts.add(originalLines[i]);
+        }
+      }
+
+      if (uncertainTexts.isNotEmpty) {
+        final nerResults = await _neuralParser.parseLines(uncertainTexts);
+
+        // Merge BERT results back — only keep lines BERT couldn't handle
+        var nerHandled = 0;
+        for (var j = 0; j < uncertainTexts.length; j++) {
+          if (nerResults.containsKey(j)) {
+            final idx = uncertainIndices[j];
+            parsed[idx] = nerResults[j]!;
+            nerHandled++;
+          }
+        }
+
+        if (nerHandled > 0) {
+          AppLogger.debug(
+            '$_serviceName: BERT NER handled $nerHandled/${uncertainTexts.length} uncertain lines',
+          );
+        }
+      }
+    }
+
+    // Return lines that are still uncertain (BERT didn't handle)
     final result = <int, String>{};
-    final indices = getUncertainLineIndices(parsed);
-    for (final i in indices) {
-      if (i < originalLines.length) {
+    for (final i in uncertainIndices) {
+      if (i < originalLines.length &&
+          parsed[i].confidence.score < _uncertaintyThreshold) {
         result[i] = originalLines[i];
       }
     }

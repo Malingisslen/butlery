@@ -17,8 +17,10 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
   RuleBasedTier({IngredientParsingStrategy? ingredientStrategy})
       : _ingredientStrategy = ingredientStrategy ?? IngredientParsingStrategy();
 
+  static const tierIdentifier = 'RuleBased';
+
   @override
-  String get tierName => 'RuleBased';
+  String get tierName => tierIdentifier;
 
   @override
   int get priority => 3;
@@ -139,8 +141,10 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
     ParsedRecipeStructure structure,
     ParsingContext context,
   ) async {
-    final ingredients =
-        await _ingredientStrategy.parseLines(structure.ingredients);
+    final ingredients = await _ingredientStrategy.parseLines(
+      structure.ingredients,
+      ocrCorrection: context.isOcrSource,
+    );
     if (ingredients.value == null || ingredients.value!.isEmpty) {
       return null;
     }
