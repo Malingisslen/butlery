@@ -110,13 +110,16 @@ scripts/crf/data/training.conll
 *.crfsuite
 scripts/ner/output/
 
-# Python venv artifacts (root-anchored /Lib, case-insensitive Windows caveat)
+# Python venv artifacts
+# Note: can't use /Scripts/ blanket — conflicts with scripts/ on case-insensitive Windows
 /Lib/
-# /Scripts/ excluded via *.exe pattern (line 95) — blanket /Scripts/ rule
-# conflicts with our scripts/ directory on case-insensitive Windows
 Scripts/*.cfg
 Scripts/*.pth
 Scripts/python*
 Scripts/pip*
 Scripts/activate*
+# Python venv entry points that leak into scripts/ on Windows
+scripts/get_gprof
+scripts/get_objgraph
+scripts/undill
 share/
