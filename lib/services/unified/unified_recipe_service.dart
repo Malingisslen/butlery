@@ -569,6 +569,9 @@ class UnifiedRecipeService extends ChangeNotifier
         sourceUrl: sourceUrl,
       );
 
+  Future<void> saveRecipeRaw(Recipe recipe) async =>
+      _personalCrud.saveRecipeRaw(recipe);
+
   Future<bool> updateRecipe(Recipe updatedRecipe) async =>
       _personalCrud.updateRecipe(updatedRecipe);
 
