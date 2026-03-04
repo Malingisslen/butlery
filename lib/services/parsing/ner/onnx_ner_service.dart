@@ -18,6 +18,9 @@ import 'package:butlery/services/parsing/ner/wordpiece_tokenizer.dart';
 class OnnxNerService {
   static const _serviceName = 'OnnxNerService';
   static const _maxLength = 128;
+  static const _singleTimeout = Duration(seconds: 5);
+  static const _batchTimeout = Duration(seconds: 10);
+  static const _maxBatchSize = 32;
 
   /// BIO label ordering — must match training script's LABELS list.
   static const _labels = [
@@ -109,7 +112,7 @@ class OnnxNerService {
         final outputs = await _session!.run({
           _inputIdName!: inputIds,
           _attentionMaskName!: attentionMask,
-        }).timeout(const Duration(seconds: 5));
+        }).timeout(_singleTimeout);
 
         try {
           final logitsRaw = await outputs[_outputName]!.asList();
@@ -124,35 +127,12 @@ class OnnxNerService {
         attentionMask.dispose();
       }
 
-      // Map subword predictions back to word-level
-      final numLabels = _labels.length;
-      final seqLen = flatLogits.length ~/ numLabels;
-      final firstSubwordMap = tokenized.firstSubwordIndices;
-      final wordLabels = <BioLabel>[];
-      var totalConfidence = 0.0;
-
-      for (var wordIdx = 0; wordIdx < words.length; wordIdx++) {
-        final subwordPos = firstSubwordMap[wordIdx];
-        if (subwordPos == null || subwordPos >= seqLen) {
-          wordLabels.add(BioLabel.other);
-          continue;
-        }
-
-        final wordLogits = _getLogitsAt(flatLogits, subwordPos, numLabels);
-        final (bestIdx, confidence) = _argmaxSoftmax(wordLogits);
-
-        wordLabels.add(
-          bestIdx < _labels.length ? _labels[bestIdx] : BioLabel.other,
-        );
-        totalConfidence += confidence;
-      }
-
-      final avgConfidence =
-          words.isNotEmpty ? totalConfidence / words.length : 0.0;
-
-      return NerPrediction(
-        labels: wordLabels,
-        confidence: avgConfidence,
+      return _extractPrediction(
+        flatLogits: flatLogits,
+        logitOffset: 0,
+        seqLen: flatLogits.length ~/ _labels.length,
+        words: words,
+        firstSubwordMap: tokenized.firstSubwordIndices,
       );
     } catch (e) {
       AppLogger.warning('$_serviceName: Prediction failed: $e');
@@ -164,6 +144,7 @@ class OnnxNerService {
   ///
   /// More efficient than calling [predict] in a loop — builds a single
   /// batched tensor of shape [N, maxLen] and runs one inference pass.
+  /// Batches larger than [_maxBatchSize] are split into chunks.
   /// Returns one [NerPrediction?] per input (null for empty/failed lines).
   Future<List<NerPrediction?>> predictBatch(
       List<List<String>> wordsList) async {
@@ -183,12 +164,31 @@ class OnnxNerService {
     }
     if (validWords.isEmpty) return List.filled(wordsList.length, null);
 
+    // Split into chunks to avoid OOM on large inputs
+    final results = List<NerPrediction?>.filled(wordsList.length, null);
+    for (var chunkStart = 0;
+        chunkStart < validWords.length;
+        chunkStart += _maxBatchSize) {
+      final chunkEnd = (chunkStart + _maxBatchSize).clamp(0, validWords.length);
+      final chunkWords = validWords.sublist(chunkStart, chunkEnd);
+      final chunkIndices = validIndices.sublist(chunkStart, chunkEnd);
+
+      final chunkResults = await _predictChunk(chunkWords);
+      if (chunkResults == null) continue;
+
+      for (var i = 0; i < chunkResults.length; i++) {
+        results[chunkIndices[i]] = chunkResults[i];
+      }
+    }
+    return results;
+  }
+
+  Future<List<NerPrediction?>?> _predictChunk(
+      List<List<String>> validWords) async {
     try {
-      // Tokenize all lines
       final tokenResults =
           validWords.map((w) => _tokenizer!.tokenizeWords(w)).toList();
 
-      // Build batched tensors [N, maxLen]
       final batchSize = validWords.length;
       final allInputIds = Int64List(batchSize * _maxLength);
       final allAttention = Int64List(batchSize * _maxLength);
@@ -215,13 +215,12 @@ class OnnxNerService {
         [batchSize, _maxLength],
       );
 
-      // Single inference call
       final List<double> flatLogits;
       try {
         final outputs = await _session!.run({
           _inputIdName!: inputIds,
           _attentionMaskName!: attentionMask,
-        }).timeout(const Duration(seconds: 10));
+        }).timeout(_batchTimeout);
 
         try {
           final logitsRaw = await outputs[_outputName]!.asList();
@@ -236,55 +235,66 @@ class OnnxNerService {
         attentionMask.dispose();
       }
 
-      // Extract per-line predictions from [batch, seq_len, num_labels]
-      final numLabels = _labels.length;
       const seqLen = _maxLength;
-      final lineLogitsSize = seqLen * numLabels;
+      final lineLogitsSize = seqLen * _labels.length;
 
-      final results = List<NerPrediction?>.filled(wordsList.length, null);
+      final chunkResults = <NerPrediction?>[];
       for (var b = 0; b < batchSize; b++) {
-        final words = validWords[b];
-        final lineOffset = b * lineLogitsSize;
-        final firstSubwordMap = tokenResults[b].firstSubwordIndices;
-        final wordLabels = <BioLabel>[];
-        var totalConfidence = 0.0;
-
-        for (var wordIdx = 0; wordIdx < words.length; wordIdx++) {
-          final subwordPos = firstSubwordMap[wordIdx];
-          if (subwordPos == null || subwordPos >= seqLen) {
-            wordLabels.add(BioLabel.other);
-            continue;
-          }
-
-          final logitStart = lineOffset + subwordPos * numLabels;
-          final wordLogits =
-              flatLogits.sublist(logitStart, logitStart + numLabels);
-          final (bestIdx, confidence) = _argmaxSoftmax(wordLogits);
-
-          wordLabels.add(
-            bestIdx < _labels.length ? _labels[bestIdx] : BioLabel.other,
-          );
-          totalConfidence += confidence;
-        }
-
-        results[validIndices[b]] = NerPrediction(
-          labels: wordLabels,
-          confidence: words.isNotEmpty ? totalConfidence / words.length : 0.0,
-        );
+        chunkResults.add(_extractPrediction(
+          flatLogits: flatLogits,
+          logitOffset: b * lineLogitsSize,
+          seqLen: seqLen,
+          words: validWords[b],
+          firstSubwordMap: tokenResults[b].firstSubwordIndices,
+        ));
       }
-
-      return results;
+      return chunkResults;
     } catch (e) {
       AppLogger.warning('$_serviceName: Batch prediction failed: $e');
-      return List.filled(wordsList.length, null);
+      return null;
     }
+  }
+
+  /// Extract word-level labels + confidence from logits for one line.
+  NerPrediction _extractPrediction({
+    required List<double> flatLogits,
+    required int logitOffset,
+    required int seqLen,
+    required List<String> words,
+    required Map<int, int?> firstSubwordMap,
+  }) {
+    final numLabels = _labels.length;
+    final wordLabels = <BioLabel>[];
+    var totalConfidence = 0.0;
+
+    for (var wordIdx = 0; wordIdx < words.length; wordIdx++) {
+      final subwordPos = firstSubwordMap[wordIdx];
+      if (subwordPos == null || subwordPos >= seqLen) {
+        wordLabels.add(BioLabel.other);
+        continue;
+      }
+
+      final logitStart = logitOffset + subwordPos * numLabels;
+      final wordLogits = flatLogits.sublist(logitStart, logitStart + numLabels);
+      final (bestIdx, confidence) = _argmaxSoftmax(wordLogits);
+
+      wordLabels.add(
+        bestIdx < _labels.length ? _labels[bestIdx] : BioLabel.other,
+      );
+      totalConfidence += confidence;
+    }
+
+    return NerPrediction(
+      labels: wordLabels,
+      confidence: words.isNotEmpty ? totalConfidence / words.length : 0.0,
+    );
   }
 
   /// Flatten the raw ONNX output into a single list of doubles.
   ///
-  /// The output is [batch=1, seq_len, num_labels], possibly nested
+  /// The output is [batch, seq_len, num_labels], possibly nested
   /// depending on the ONNX Runtime wrapper. We flatten it once and
-  /// extract per-position logits on demand via [_getLogitsAt].
+  /// extract per-position logits on demand.
   List<double> _flattenToDoubles(List<dynamic> raw) {
     final flat = <double>[];
     _recursiveFlatten(raw, flat);
@@ -299,12 +309,6 @@ class OnnxNerService {
     } else if (value is num) {
       out.add(value.toDouble());
     }
-  }
-
-  /// Extract logits for a single position from the flat array.
-  List<double> _getLogitsAt(List<double> flat, int pos, int numLabels) {
-    final start = pos * numLabels;
-    return flat.sublist(start, start + numLabels);
   }
 
   /// Fused argmax + softmax: finds the best label index and its probability
