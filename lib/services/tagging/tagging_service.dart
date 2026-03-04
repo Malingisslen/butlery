@@ -66,24 +66,27 @@ class TaggingService extends BaseService {
   /// Throws [TimeoutException] if generation takes longer than 30 seconds.
   Future<TagResult?> generateTags(Recipe recipe) async {
     return await executeServiceOperation(
-      () async {
-        AppLogger.info('🏷️ Generating tags for: ${recipe.core.title}');
-
-        // Get normalized ingredients (or use raw if not available)
-        final ingredients =
-            recipe.core.ingredientsNormalized ?? recipe.core.ingredients;
-
-        if (ingredients.isEmpty) {
-          AppLogger.warning('No ingredients found for recipe');
-          return TagResult.empty();
-        }
-
-        // Wrap in timeout to prevent hanging on complex recipes
-        return await _generateTagsWithTimeout(recipe, ingredients);
-      },
+      () => _generateTagsCore(recipe),
       operationName: 'Generate tags',
       requiresAuth: false, // Tagging doesn't require auth
     );
+  }
+
+  /// Core tag generation without error wrapping.
+  /// Used directly by retagUserRecipes to get actionable error messages
+  /// instead of silent nulls from executeServiceOperation.
+  Future<TagResult> _generateTagsCore(Recipe recipe) async {
+    AppLogger.info('🏷️ Generating tags for: ${recipe.core.title}');
+
+    final ingredients =
+        recipe.core.ingredientsNormalized ?? recipe.core.ingredients;
+
+    if (ingredients.isEmpty) {
+      AppLogger.warning('No ingredients found for recipe');
+      return TagResult.empty();
+    }
+
+    return await _generateTagsWithTimeout(recipe, ingredients);
   }
 
   /// CRIT-3: Internal method with timeout that preserves partial results.
@@ -385,119 +388,120 @@ class TaggingService extends BaseService {
 
   /// Checks if a recipe needs retagging.
   ///
-  /// Returns true if:
-  /// - Recipe has no tags
-  /// - Tag generator version has changed
-  /// - Ingredients have changed since last tagging
+  /// Delegates to TagResult.needsRetagging for consistent behavior
+  /// between the UI banner and the retag-all service operation.
   bool needsRetagging(Recipe recipe) {
     final existingResult = recipe.core.tagResult;
-
-    // No existing tags
     if (existingResult == null) return true;
-
-    // Version mismatch
-    if (existingResult.generatorVersion != kTagGeneratorVersion) {
-      return true;
-    }
-
-    // Could add ingredient hash comparison here for change detection
-
-    return false;
+    return existingResult.needsRetagging;
   }
 
   /// Re-tags all recipes for a user.
   ///
-  /// Use after ingredient database updates.
+  /// Use after ingredient database updates or when user requests retag.
   /// Processes in batches of 50 for scalability.
   ///
+  /// [forceRetag] skips the needsRetagging filter, retagging ALL recipes.
+  /// Use when the user explicitly requests a full retag (e.g. from settings).
   /// [onProgress] is called with (current, total) counts after each batch.
   Future<int> retagUserRecipes({
     required String userId,
     required Future<List<Recipe>> Function() getRecipes,
     required Future<void> Function(Recipe) saveRecipe,
     void Function(int current, int total)? onProgress,
+    bool forceRetag = false,
   }) async {
-    final result = await executeServiceOperation(
-      () async {
-        final recipes = await getRecipes();
-        final recipesToRetag = recipes.where(needsRetagging).toList();
-        final total = recipesToRetag.length;
-
-        if (total == 0) {
-          AppLogger.info('No recipes need retagging for user $userId');
-          onProgress?.call(0, 0);
-          return 0;
-        }
-
-        var retaggedCount = 0;
-        const batchSize = 50;
-
-        // M9: Track failures for debugging
-        final failedRecipes = <String>[];
-
-        // Process in batches for scalability
-        for (var i = 0; i < recipesToRetag.length; i += batchSize) {
-          final batchEnd = (i + batchSize).clamp(0, recipesToRetag.length);
-          final batch = recipesToRetag.sublist(i, batchEnd);
-
-          // Process batch in parallel
-          final results = await Future.wait(
-            batch.map((recipe) async {
-              try {
-                final tagResult = await generateTags(recipe);
-                // MED-9: Validate tagResult before saving to prevent corrupt data
-                if (tagResult != null && _isValidTagResult(tagResult)) {
-                  final updatedRecipe = Recipe(
-                    core: recipe.core.copyWith(tagResult: tagResult),
-                    type: recipe.type,
-                    socialData: recipe.socialData,
-                    realtimeData: recipe.realtimeData,
-                    offlineData: recipe.offlineData,
-                  );
-                  await saveRecipe(updatedRecipe);
-                  return true;
-                } else if (tagResult != null && !_isValidTagResult(tagResult)) {
-                  AppLogger.warning(
-                    'MED-9: Invalid tagResult for recipe ${recipe.id}, skipping',
-                    'TaggingService',
-                  );
-                }
-                // M9: Track failed recipe
-                failedRecipes.add(recipe.id);
-                return false;
-              } catch (e) {
-                // M9: Log individual recipe failures
-                AppLogger.warning(
-                  'Failed to retag recipe ${recipe.id}: $e',
-                  'TaggingService',
-                );
-                failedRecipes.add(recipe.id);
-                return false;
-              }
-            }),
-          );
-
-          retaggedCount += results.where((success) => success).length;
-          // H12: Report actual completed count, not batch end position
-          onProgress?.call(retaggedCount, total);
-        }
-
-        // M9: Log summary of failures
-        if (failedRecipes.isNotEmpty) {
-          AppLogger.warning(
-            '⚠️ Retagging completed with ${failedRecipes.length} failures: ${failedRecipes.take(5).join(', ')}${failedRecipes.length > 5 ? '...' : ''}',
-            'TaggingService',
-          );
-        }
-
-        AppLogger.info('🔄 Retagged $retaggedCount recipes for user $userId');
-        return retaggedCount;
-      },
-      operationName: 'Retag user recipes',
-      requiresAuth: true,
+    // Don't use executeServiceOperation here — errors must propagate
+    // to the RetagProgressDialog so the user sees what went wrong
+    // instead of a silent "0 recept omtaggade"
+    final recipes = await getRecipes();
+    AppLogger.info(
+      'Retag: fetched ${recipes.length} recipes for user $userId'
+      ' (forceRetag: $forceRetag)',
+      'TaggingService',
     );
+    final recipesToRetag =
+        forceRetag ? recipes : recipes.where(needsRetagging).toList();
+    final total = recipesToRetag.length;
 
-    return result ?? 0;
+    if (total == 0) {
+      AppLogger.info('No recipes need retagging for user $userId');
+      onProgress?.call(0, 0);
+      return 0;
+    }
+
+    var retaggedCount = 0;
+    const batchSize = 50;
+
+    // M9: Track failures for debugging
+    final failedRecipes = <String>[];
+
+    // Process in batches for scalability
+    for (var i = 0; i < recipesToRetag.length; i += batchSize) {
+      final batchEnd = (i + batchSize).clamp(0, recipesToRetag.length);
+      final batch = recipesToRetag.sublist(i, batchEnd);
+
+      // Process batch in parallel
+      final results = await Future.wait(
+        batch.map((recipe) async {
+          try {
+            // Use _generateTagsCore directly to bypass executeServiceOperation
+            // so errors propagate instead of being silently swallowed as null
+            final tagResult = await _generateTagsCore(recipe);
+            // MED-9: Validate tagResult before saving to prevent corrupt data
+            if (_isValidTagResult(tagResult)) {
+              final updatedRecipe = Recipe(
+                core: recipe.core.copyWith(tagResult: tagResult),
+                type: recipe.type,
+                socialData: recipe.socialData,
+                realtimeData: recipe.realtimeData,
+                offlineData: recipe.offlineData,
+              );
+              await saveRecipe(updatedRecipe);
+              return true;
+            } else if (!_isValidTagResult(tagResult)) {
+              AppLogger.warning(
+                'MED-9: Invalid tagResult for recipe ${recipe.id}, skipping',
+                'TaggingService',
+              );
+            }
+            // M9: Track failed recipe
+            failedRecipes.add(recipe.id);
+            return false;
+          } catch (e) {
+            // M9: Log individual recipe failures with browser-visible output
+            final msg = 'Failed to retag recipe ${recipe.id}: $e';
+            AppLogger.warning(msg, 'TaggingService');
+            // ignore: avoid_print
+            print('[TaggingService] $msg');
+            failedRecipes.add(recipe.id);
+            return false;
+          }
+        }),
+      );
+
+      retaggedCount += results.where((success) => success).length;
+      // H12: Report actual completed count, not batch end position
+      onProgress?.call(retaggedCount, total);
+    }
+
+    // M9: Log summary of failures
+    if (failedRecipes.isNotEmpty) {
+      AppLogger.warning(
+        'Retagging completed with ${failedRecipes.length} failures: ${failedRecipes.take(5).join(', ')}${failedRecipes.length > 5 ? '...' : ''}',
+        'TaggingService',
+      );
+    }
+
+    // Surface total failure to user instead of silent "0 recept omtaggade"
+    if (retaggedCount == 0 && failedRecipes.isNotEmpty) {
+      throw Exception(
+        'All ${failedRecipes.length} recipes failed to retag',
+      );
+    }
+
+    AppLogger.info('Retagged $retaggedCount recipes for user $userId');
+    return retaggedCount;
   }
 
   /// MED-9: Basic validation of TagResult before saving.

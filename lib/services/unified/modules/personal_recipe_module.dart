@@ -281,6 +281,22 @@ class PersonalRecipeModule {
     }
   }
 
+  /// Save a recipe directly without re-tagging or personal tag rules.
+  /// Used by batch retag to avoid double-tagging and rate limiter throttling.
+  Future<void> saveRecipeRaw(Recipe recipe) async {
+    await _saveToCache(recipe);
+
+    if (kIsWeb) {
+      final syncSuccess =
+          await _syncRecipeToFirebaseAwaited(recipe, 'retag');
+      if (!syncSuccess) {
+        throw Exception('Failed to sync retagged recipe to Firebase');
+      }
+    } else {
+      _startBackgroundRecipeSync(recipe, 'retag');
+    }
+  }
+
   Future<bool> deletePersonalRecipe(String recipeId) async {
     final currentUserId = PermissionHelper.requireAuthWithError(
       getCurrentUserId: _getCurrentUserId,

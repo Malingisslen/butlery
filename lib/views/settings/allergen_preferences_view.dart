@@ -377,8 +377,11 @@ class _AllergenPreferencesContent extends StatelessWidget {
             userId: authService.currentUser!.uid,
             getRecipes: () => recipeService.personal
                 .fetchAllUserRecipes(authService.currentUser!.uid),
-            saveRecipe: (recipe) => recipeService.personal.updateRecipe(recipe),
+            // Use raw save to avoid double-tagging via updatePersonalRecipe
+            saveRecipe: (recipe) => recipeService.personal.saveRecipeRaw(recipe),
             onProgress: onProgress,
+            // User explicitly requested retag — process all recipes
+            forceRetag: true,
           );
         },
       ),
