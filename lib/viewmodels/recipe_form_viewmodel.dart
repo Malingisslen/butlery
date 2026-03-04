@@ -205,6 +205,13 @@ class RecipeFormViewModel extends ChangeNotifier
   List<String> get ingredients => _state.ingredients;
   List<String> get instructions => _state.instructions;
   List<String> get tags => _state.tags;
+
+  // Parse quality for imported recipes (null when not an import)
+  bool get needsReview => _state.originalParsedRecipe?.needsReview ?? false;
+  double? get parseQuality => _state.originalParsedRecipe?.overallQuality;
+  List<String> get fieldsNeedingImprovement =>
+      _state.originalParsedRecipe?.fieldsNeedingImprovement ?? [];
+
   FormFieldsManager get ingredientsManager => _state.ingredientsManager;
   FormFieldsManager get instructionsManager => _state.instructionsManager;
   FormFieldsManager get tagsManager => _state.tagsManager;

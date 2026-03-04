@@ -1,9 +1,10 @@
 /**
  * Parse Event Logging - Server-side analytics for recipe parsing
  *
- * P1-4 Security: Server ignores client-provided tierSummaries,
- * only trusts server-validated fields. This prevents clients from
- * injecting false analytics data.
+ * P1-4 Security: Structured tier arrays/maps are rejected to prevent
+ * forged execution histories. Simple validated scalars (successfulTier,
+ * finalQuality, usedLlm, totalCostSek) are accepted — same trust level
+ * as parseTimeMs.
  */
 
 import * as functions from "firebase-functions";
@@ -17,6 +18,9 @@ const getDb = () => admin.firestore();
  * Valid import sources
  */
 const VALID_SOURCES = ["url", "text", "instagram", "tiktok", "youtube", "ocr"];
+
+/** Valid parsing tier names (must match Dart-side tier identifiers). */
+const VALID_TIERS = ["SchemaOrg", "SiteConfig", "RuleBased", "LLM", "SelectiveEnhance"];
 
 /**
  * Sanitize URL by removing sensitive query parameters
@@ -104,7 +108,10 @@ interface ParseEventData {
   fromCache?: boolean;
   parseTimeMs?: number;
   parserVersion?: string;
-  // Note: tierSummaries intentionally NOT included - P1-4 security
+  successfulTier?: string;
+  finalQuality?: number;
+  usedLlm?: boolean;
+  totalCostSek?: number;
 }
 
 /**
@@ -145,7 +152,7 @@ export const logParseEvent = functions.https.onCall(
       );
     }
 
-    // P1-4: Only accept trusted fields, ignore client tierSummaries
+    // P1-4: Only accept validated scalars (no structured tier arrays/maps)
     const trustedFields = {
       userId,
       url: sanitizedUrl,
@@ -156,8 +163,10 @@ export const logParseEvent = functions.https.onCall(
       parseTimeMs: clamp(data.parseTimeMs, 0, 60000),
       parserVersion: validateParserVersion(data.parserVersion),
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      // Note: We do NOT include any client-provided tier data
-      // Server would need to reconstruct this from its own sources if needed
+      successfulTier: typeof data.successfulTier === "string" && VALID_TIERS.includes(data.successfulTier) ? data.successfulTier : null,
+      finalQuality: typeof data.finalQuality === "number" ? clamp(data.finalQuality, 0, 1) : null,
+      usedLlm: typeof data.usedLlm === "boolean" ? data.usedLlm : null,
+      totalCostSek: typeof data.totalCostSek === "number" ? clamp(data.totalCostSek, 0, 10) : null,
     };
 
     try {

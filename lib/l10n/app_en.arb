@@ -2217,6 +2217,22 @@
   "importStep1SelectIngredients": "Step 1: Select ingredients",
   "importStep2SelectInstructions": "Step 2: Select instructions",
   "importStep3ReviewEdit": "Step 3: Review and edit",
+  "importParseQualityWarning": "Recipe parsed with {quality}% confidence. Review the fields below.",
+  "@importParseQualityWarning": {
+    "placeholders": {
+      "quality": {
+        "type": "int"
+      }
+    }
+  },
+  "importFieldsNeedReview": "{count} field(s) may need adjustment",
+  "@importFieldsNeedReview": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "menuCardMoreRecipes": "+ {count} more recipes",
   "@menuCardMoreRecipes": {
     "placeholders": {

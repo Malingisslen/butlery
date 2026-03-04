@@ -6201,6 +6201,18 @@ abstract class AppLocalizations {
   /// **'Steg 3: Granska och redigera'**
   String get importStep3ReviewEdit;
 
+  /// No description provided for @importParseQualityWarning.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet tolkades med {quality}% konfidens. Granska fälten nedan.'**
+  String importParseQualityWarning(int quality);
+
+  /// No description provided for @importFieldsNeedReview.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} fält kan behöva justeras'**
+  String importFieldsNeedReview(int count);
+
   /// No description provided for @menuCardMoreRecipes.
   ///
   /// In sv, this message translates to:

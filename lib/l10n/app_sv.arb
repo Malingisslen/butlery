@@ -2217,6 +2217,22 @@
   "importStep1SelectIngredients": "Steg 1: Välj ingredienser",
   "importStep2SelectInstructions": "Steg 2: Välj instruktioner",
   "importStep3ReviewEdit": "Steg 3: Granska och redigera",
+  "importParseQualityWarning": "Receptet tolkades med {quality}% konfidens. Granska fälten nedan.",
+  "@importParseQualityWarning": {
+    "placeholders": {
+      "quality": {
+        "type": "int"
+      }
+    }
+  },
+  "importFieldsNeedReview": "{count} fält kan behöva justeras",
+  "@importFieldsNeedReview": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "menuCardMoreRecipes": "+ {count} fler recept",
   "@menuCardMoreRecipes": {
     "placeholders": {
