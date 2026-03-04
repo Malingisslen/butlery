@@ -96,36 +96,12 @@ class OnnxNerService {
     try {
       final tokenized = _tokenizer!.tokenizeWords(words);
 
-      // Create input tensors — tokenizer returns Int64List directly
-      final inputIds = await OrtValue.fromList(
+      final flatLogits = await _runInference(
         tokenized.inputIds,
-        [1, _maxLength],
-      );
-      final attentionMask = await OrtValue.fromList(
         tokenized.attentionMask,
         [1, _maxLength],
+        _singleTimeout,
       );
-
-      // Run inference, ensuring tensors are always disposed
-      final List<double> flatLogits;
-      try {
-        final outputs = await _session!.run({
-          _inputIdName!: inputIds,
-          _attentionMaskName!: attentionMask,
-        }).timeout(_singleTimeout);
-
-        try {
-          final logitsRaw = await outputs[_outputName]!.asList();
-          flatLogits = _flattenToDoubles(logitsRaw);
-        } finally {
-          for (final tensor in outputs.values) {
-            tensor.dispose();
-          }
-        }
-      } finally {
-        inputIds.dispose();
-        attentionMask.dispose();
-      }
 
       return _extractPrediction(
         flatLogits: flatLogits,
@@ -206,34 +182,12 @@ class OnnxNerService {
         );
       }
 
-      final inputIds = await OrtValue.fromList(
+      final flatLogits = await _runInference(
         allInputIds,
-        [batchSize, _maxLength],
-      );
-      final attentionMask = await OrtValue.fromList(
         allAttention,
         [batchSize, _maxLength],
+        _batchTimeout,
       );
-
-      final List<double> flatLogits;
-      try {
-        final outputs = await _session!.run({
-          _inputIdName!: inputIds,
-          _attentionMaskName!: attentionMask,
-        }).timeout(_batchTimeout);
-
-        try {
-          final logitsRaw = await outputs[_outputName]!.asList();
-          flatLogits = _flattenToDoubles(logitsRaw);
-        } finally {
-          for (final tensor in outputs.values) {
-            tensor.dispose();
-          }
-        }
-      } finally {
-        inputIds.dispose();
-        attentionMask.dispose();
-      }
 
       const seqLen = _maxLength;
       final lineLogitsSize = seqLen * _labels.length;
@@ -252,6 +206,34 @@ class OnnxNerService {
     } catch (e) {
       AppLogger.warning('$_serviceName: Batch prediction failed: $e');
       return null;
+    }
+  }
+
+  /// Create tensors, run ONNX inference, dispose tensors, return flat logits.
+  Future<List<double>> _runInference(
+    List<int> inputIdData,
+    List<int> attentionData,
+    List<int> shape,
+    Duration timeout,
+  ) async {
+    final inputIds = await OrtValue.fromList(inputIdData, shape);
+    final attentionMask = await OrtValue.fromList(attentionData, shape);
+    try {
+      final outputs = await _session!.run({
+        _inputIdName!: inputIds,
+        _attentionMaskName!: attentionMask,
+      }).timeout(timeout);
+      try {
+        final logitsRaw = await outputs[_outputName]!.asList();
+        return _flattenToDoubles(logitsRaw);
+      } finally {
+        for (final tensor in outputs.values) {
+          tensor.dispose();
+        }
+      }
+    } finally {
+      inputIds.dispose();
+      attentionMask.dispose();
     }
   }
 
@@ -275,8 +257,8 @@ class OnnxNerService {
       }
 
       final logitStart = logitOffset + subwordPos * numLabels;
-      final wordLogits = flatLogits.sublist(logitStart, logitStart + numLabels);
-      final (bestIdx, confidence) = _argmaxSoftmax(wordLogits);
+      final (bestIdx, confidence) =
+          _argmaxSoftmax(flatLogits, logitStart, numLabels);
 
       wordLabels.add(
         bestIdx < _labels.length ? _labels[bestIdx] : BioLabel.other,
@@ -311,15 +293,20 @@ class OnnxNerService {
     }
   }
 
-  /// Fused argmax + softmax: finds the best label index and its probability
-  /// in a single pass with zero list allocations.
-  (int index, double confidence) _argmaxSoftmax(List<double> logits) {
-    final maxVal = logits.reduce(math.max);
+  /// Fused argmax + softmax over a slice of [logits] starting at [offset]
+  /// for [length] elements. Zero list allocations.
+  (int index, double confidence) _argmaxSoftmax(
+      List<double> logits, int offset, int length) {
+    var maxVal = logits[offset];
+    for (var i = 1; i < length; i++) {
+      final v = logits[offset + i];
+      if (v > maxVal) maxVal = v;
+    }
     var sumExp = 0.0;
     var bestIdx = 0;
     var bestExp = 0.0;
-    for (var i = 0; i < logits.length; i++) {
-      final e = math.exp(logits[i] - maxVal);
+    for (var i = 0; i < length; i++) {
+      final e = math.exp(logits[offset + i] - maxVal);
       sumExp += e;
       if (e > bestExp) {
         bestExp = e;
