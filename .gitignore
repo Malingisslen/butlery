@@ -113,3 +113,4 @@ scripts/ner/output/
 # Python venv artifacts (use /Lib to avoid matching Flutter's /lib on Windows)
 /Lib/
 /Scripts/
+share/
