@@ -13,6 +13,8 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/widgets/common/profile/profile_actions.dart';
 
 /// Profile menu display components
@@ -59,17 +61,39 @@ class _ProfileMenuState extends State<ProfileMenu> {
   int _pendingGroupInvitationsCount = 0;
   int _sharedItemsCount = 0;
   int _unreadMessagesCount = 0;
+  int _friendsCount = 0;
+  int _recipesCount = 0;
+  int _menusCount = 0;
 
   @override
   void initState() {
     super.initState();
-    // Defer loading until after the build is complete
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadProfileStats();
       _loadNotificationCounts();
     });
   }
 
-  /// Load notification counters
+  /// Load profile stats from singleton services (available immediately)
+  void _loadProfileStats() {
+    if (!mounted) return;
+
+    try {
+      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+      final menuService = ServiceLocator.get<UnifiedMenuService>();
+      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+
+      setState(() {
+        _recipesCount = recipeService.recipes.length;
+        _menusCount = menuService.menus.length;
+        _friendsCount = friendsService.friends.length;
+      });
+    } catch (e) {
+      AppLogger.warning('Could not load profile stats: $e');
+    }
+  }
+
+  /// Load notification counters (async - may take time)
   Future<void> _loadNotificationCounts() async {
     if (!mounted) return;
 
@@ -98,10 +122,12 @@ class _ProfileMenuState extends State<ProfileMenu> {
           _pendingGroupInvitationsCount = groupInvitations;
           _sharedItemsCount = newSharedItems;
           _unreadMessagesCount = unreadMessages;
+          // Update friends count with fresh data from viewmodel
+          _friendsCount = friendsViewModel.friendsCount;
         });
       }
     } catch (e) {
-      AppLogger.warning('⚠️ Kunde inte ladda notification-räknare: $e');
+      AppLogger.warning('Could not load notification counts: $e');
     }
   }
 
@@ -248,11 +274,11 @@ class _ProfileMenuState extends State<ProfileMenu> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildStatItem('48', context.l10n.profileRecipes),
+        _buildStatItem('$_recipesCount', context.l10n.profileRecipes),
         const SizedBox(width: AppDimensions.spacingXl),
-        _buildStatItem('12', context.l10n.profileMenus),
+        _buildStatItem('$_menusCount', context.l10n.profileMenus),
         const SizedBox(width: AppDimensions.spacingXl),
-        _buildStatItem('$_pendingRequestsCount', context.l10n.profileFriends),
+        _buildStatItem('$_friendsCount', context.l10n.profileFriends),
       ],
     );
   }

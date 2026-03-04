@@ -1504,6 +1504,18 @@ service cloud.firestore {
     }
 
     // ========================================
+    // GLOBAL INGREDIENT DATABASE - Allergen/dietary lookup
+    // ========================================
+
+    // Admin-curated ingredient database used by the tagging system.
+    // Authenticated users need read access for ingredient lookup during
+    // tag generation. Write access restricted to admin (Cloud Functions).
+    match /ingredients/{ingredientId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // ========================================
     // DEFAULT DENY - Catch all other paths
     // ========================================
 

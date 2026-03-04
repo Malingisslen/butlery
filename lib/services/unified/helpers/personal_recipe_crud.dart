@@ -69,6 +69,17 @@ class PersonalRecipeCrud {
     return recipeId;
   }
 
+  /// Save recipe directly without re-tagging (for batch retag operations).
+  Future<void> saveRecipeRaw(Recipe recipe) async {
+    await personalModule.saveRecipeRaw(recipe);
+
+    final index = recipes.indexWhere((r) => r.id == recipe.id);
+    if (index != -1) {
+      recipes[index] = recipe;
+      notifyListeners();
+    }
+  }
+
   /// Update a recipe and update local list.
   Future<bool> updateRecipe(Recipe updatedRecipe) async {
     final success = await personalModule.updatePersonalRecipe(updatedRecipe);

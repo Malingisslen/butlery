@@ -1,7 +1,7 @@
 # Manual Testing Log - Butlery App
 
 **Created**: 2026-01-07
-**Last Updated**: 2026-03-01 (Session 21 cont. - Phases 6, 8 complete, 61.3% reached)
+**Last Updated**: 2026-03-03 (Session 23 - BUG-026 fixed, profile stats dynamic; 64.5% reached)
 **Status**: In Progress (0 open bugs)
 
 ---
@@ -13,10 +13,10 @@
 | 1. Authentication | 16 | 12 | 11 | 0 | 1 |
 | 2. Navigation & Home | 27 | 27 | 25 | 1 | 1 |
 | 3. Recipe Detail & Editing | 33 | 33 | 28 | 1 | 1 |
-| 4. Recipe Import | 32 | 19 | 19 | 0 | 0 |
+| 4. Recipe Import | 32 | 27 | 27 | 0 | 0 |
 | 5. Weekly Menu | 14 | 14 | 13 | 0 | 2 |
 | 6. Shopping Lists | 29 | 29 | 29 | 0 | 0 |
-| 7. Social Features | 40 | 28 | 27 | 0 | 1 |
+| 7. Social Features | 40 | 36 | 35 | 0 | 2 |
 | 8. Messaging | 23 | 23 | 22 | 0 | 0 |
 | 9. Personal Tags | 21 | 21 | 20 | 0 | 1 |
 | **18. Tag & Allergen System** | **129** | **28** | **22** | **0** | **1** |
@@ -28,7 +28,7 @@
 | 15. Error Handling | 13 | 13 | 13 | 0 | 0 |
 | 16. Social E2E Tests | 35 | 13 | 11 | 0 | 8 |
 | 17. Import Tagging Verification | 32 | 0 | 0 | 0 | 0 |
-| **TOTAL** | **538** | **330** | **314** | **2** | **18** |
+| **TOTAL** | **538** | **347** | **330** | **2** | **19** |
 
 ---
 
@@ -60,6 +60,7 @@
 | BUG-024 | "Skapa kopia" navigates to unknown route /editRecipe | 3 | Medium | FIXED |
 | BUG-025 | Create new tag (+) button crashes with RenderBox assertion | 9 | High | FIXED |
 | BUG-022 | Tag group creation dialog crashes app on web | 18 | High | FIXED |
+| BUG-026 | Profile panel shows 0 VÄNNER but friends list shows 3 | 7 | Low | FIXED |
 
 **BUG-003 Details:**
 - **Root Cause 1**: Firestore security rules rejected `errorReason` field in tagResult
@@ -107,7 +108,7 @@
 ### Open Bugs
 | Bug ID | Title | Phase | Test ID | Severity | Status |
 |--------|-------|-------|---------|----------|--------|
-| (none) | All bugs resolved | - | - | - | - |
+| (none) | | | | | |
 
 **BUG-022 Details (FIXED 2026-02-25):**
 - **Error**: Flutter assertion failed: `_dependents.isEmpty is not true` (framework.dart:6171:14)
@@ -145,6 +146,15 @@
 - **Fix**: Deferred PopupMenuButton `onSelected` callback via `WidgetsBinding.instance.addPostFrameCallback` so popup fully dismisses before dialog opens
 - **File**: `lib/views/personal_tags_view.dart:185-213`
 - **Verified**: 2026-02-24 - "+" button opens popup menu, selecting "Ny tagg" or "Ny grupp" opens dialog without crash
+
+**BUG-026 Details (FIXED 2026-03-03):**
+- **Issue**: Profile panel stats row showed "0 VÄNNER" but friends list shows 3 friends. Also RECEPT (48) and MENYER (12) were hardcoded.
+- **Root Cause 1**: Friends count used `_pendingRequestsCount` (incoming friend *requests*) instead of accepted friends count
+- **Root Cause 2**: Recipe count was hardcoded string '48', menu count hardcoded '12'
+- **Root Cause 3**: All stats were loaded inside same try-catch as async notification loading; if any async call failed, stats were never set
+- **Fix**: Split `_loadProfileStats()` from `_loadNotificationCounts()`. Stats now load synchronously from singleton services (`UnifiedRecipeService.recipes.length`, `UnifiedMenuService.menus.length`, `UnifiedFriendsService.friends.length`)
+- **File**: `lib/widgets/common/profile/profile_menu.dart`
+- **Verified**: 2026-03-03 - Profile panel shows 24 RECEPT, 8 MENYER, 3 VÄNNER (all dynamic, all correct)
 
 **BUG-013 Details (FIXED 2026-01-11):**
 - **Issue**: Clicking "Spara ändringar" (Save changes) in group edit dialog throws TypeError
@@ -478,7 +488,7 @@
 | DETAIL-08 | Add comment | Pass | PARTIAL | Kommentarer section expands on click, shows user avatar (MG), input field "Skriv en kommentar" with send arrow button. Cannot type text due to CanvasKit limitation, but UI elements present and functional. (Session 20) |
 | DETAIL-09 | Rate recipe | Pass | PARTIAL | Rating displays correctly (5 yellow stars, "5.0" text on "1111" recipe) but stars are not clickable to change rating on detail view. Display-only. |
 | DETAIL-10 | Share with friends | Pass | Pass | Dialog shows sharing options (static/realtime), message, recipients |
-| DETAIL-11 | Share externally | Pending | - | - |
+| DETAIL-11 | Share externally | Blocked | N/A | Web Share API requires trusted user gesture. Browser automation (JS-dispatched events) cannot trigger navigator.share(). Share icon present in top bar. (Session 23) |
 | DETAIL-12 | More menu | Pass | Pass | Shows 4 options: "Redigera recept", "Skapa kopia", "Skapa inköpslista", "Uppdatera taggar". (Updated Session 20) |
 | DETAIL-13 | Edit recipe | Pass | Pass | Opens edit form with all fields pre-filled |
 | DETAIL-14 | Fork recipe | Pass | FAIL | **BUG-024**: "Skapa kopia" navigates to "Unknown route: /editRecipe". Route not registered. |
@@ -1227,6 +1237,36 @@ See full test case details in:
   - SHOP-25 (Uncheck all): PASS — "Avmarkera alla" button visible
 - **11 phases now complete:** 3, 5, 6, 8, 9, 10, 11, 12, 13, 15 (+ partial on 5 others)
 - **Status**: 330/538 tests (61.3%), 314 passed, 2 failed, **0 open bugs**
+
+**Session 22 - 2026-03-01 (Social features, import verification, profile; 65.2% reached):**
+- **Phase 1 (12→12):** No new completable tests
+  - AUTH-06 (Register with valid data): Blocked — requires creating a new account (prohibited in automation)
+  - AUTH-11 (Network error during login): Blocked — cannot simulate network disconnection in browser
+  - MFA-03, MFA-04: Remain blocked (require real SMS verification)
+- **Phase 14 (6→6):** No new completable tests
+  - A11Y-06 (Keyboard navigation): Remains blocked — Flutter Web CanvasKit renders to canvas, no visible focus indicators
+- **Phase 7 (28→36):** +8 tests
+  - SOCIAL-25 (Shared content page): PASS — "Delat innehåll" shows empty state "Inga delade recept an" with "Lagg till vanner" CTA and refresh icon
+  - SOCIAL-26 (Friends list with avatars): PASS — Vanner tab shows 3 friends: malin (MA), test.testsson2 (TE), send (SE)
+  - SOCIAL-27 (Groups tab overview): PASS — "Mina grupper (8)" with search bar, group cards: BUG-018 Test (2), a test (2), arne (1), Test Remove Member (1)
+  - SOCIAL-28 (Hitta vanner tab): PASS — Search bar "Sok nya vanner", instruction card, "Skickade forfragningar (2)" with kompis/testa pending
+  - SOCIAL-29 (Profile edit page): PASS — Avatar (MG) with edit/remove buttons, display name "Malin Gisslen", privacy toggles (Synlig i sokningar ON, Sokbar via e-post ON), language Svenska
+  - SOCIAL-30 (Collaborative shopping error): PASS — Direct navigation to /collaborative-shopping shows "Kunde inte ladda sidan" (expected, requires context parameter)
+  - SOCIAL-31 (Shared shopping lists): PASS — "Delade inkopslistor" shows placeholder "Kommer snart..." with shopping cart icon
+  - SOCIAL-32 (Messages list): PASS — "meddelanden" with search bar, 1 conversation (send, "Du: Test session 21", 3d ago, unread dot), new message FAB
+  - Note: Profile panel shows 0 VANNER but friends list shows 3 — potential count sync issue (LOW severity, cosmetic)
+- **Phase 4 (19→27):** +8 tests
+  - IMPORT-16 (Smart import detail): PASS — "Importera recept" page with text area, "Klistra in fran urklipp" button, disabled "Importera" button, "Importera manuellt" link
+  - IMPORT-17 (Photo import page): PASS — "Importera fran foto" with info text, "Valj bild" button, "Ingen bild vald" placeholder
+  - IMPORT-18 (Archive full page): PASS — 16 tag chips, 4 time filters, 6 recipe cards with images/metadata/ratings, search bar, Valj alla/Importera alla buttons
+  - IMPORT-19 (Archive all 6 recipes): PASS — Pasta Bolognese (30m/4p/4.5), Chicken Curry (35m/4p/4.7), Vegetable Stir Fry (20m/3p/4.3), Fish & Chips (40m/4p/4.4), Caesar Salad (15m/2p/4.2), Pancakes (20m/3p/4.6)
+  - IMPORT-20 (Tag filter - fisk): PASS — Fisk chip shows checkmark, "Filter: 1 taggar", correctly filters to Fish & Chips only
+  - IMPORT-21 (Combined filter - fisk + <= 30 min): PASS — Shows empty state "Inga recept matchade filtren" (Fish & Chips is 40 min, correctly excluded)
+  - IMPORT-22 (Time filter <= 30 min): PASS — Shows 4 recipes: Pasta Bolognese, Vegetable Stir Fry, Caesar Salad, Pancakes (excludes Chicken Curry 35m and Fish & Chips 40m)
+  - IMPORT-23 (Select all with filter): PASS — "Valj alla" selects 4 filtered recipes, button shows "4 valda"
+- **12 phases now partially or fully complete**
+- **BUG-026:** Profile panel shows 0 VÄNNER but friends list shows 3 — Low severity
+- **Status**: 346/538 tests (64.3%), 330 passed, 2 failed, **1 open bug**
 
 ---
 

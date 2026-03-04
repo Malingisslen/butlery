@@ -152,6 +152,10 @@ class PersonalRecipeOperations {
     return await _parent.fetchAllUserRecipes(userId);
   }
 
+  Future<void> saveRecipeRaw(Recipe recipe) async {
+    return await _parent.saveRecipeRaw(recipe);
+  }
+
   Future<bool> updateRecipe(Recipe recipe) async {
     return await _parent.updateRecipe(recipe);
   }
