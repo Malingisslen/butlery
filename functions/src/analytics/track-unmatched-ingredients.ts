@@ -16,6 +16,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { stripDiacritics } from "../shared/swedish-normalize";
 
 // Lazy initialization to avoid calling firestore() before initializeApp()
 const getDb = () => admin.firestore();
@@ -26,15 +27,10 @@ const getDb = () => admin.firestore();
  * Matches Dart-side normalization in ingredient_lookup_service.dart
  */
 function normalizeIngredientName(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/å/g, "a")
-    .replace(/ä/g, "a")
-    .replace(/ö/g, "o")
-    .replace(/[^a-z0-9]/g, "-") // Replace non-alphanumeric with dashes
-    .replace(/-+/g, "-") // Collapse multiple dashes
-    .replace(/^-|-$/g, ""); // Trim leading/trailing dashes
+  return stripDiacritics(name.toLowerCase().trim())
+    .replace(/[^a-z0-9]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 /**

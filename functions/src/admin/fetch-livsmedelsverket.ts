@@ -17,6 +17,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { stripDiacritics } from "../shared/swedish-normalize";
 
 const API_BASE = "https://dataportal.livsmedelsverket.se/livsmedel/api/v1";
 const PAGE_SIZE = 100;
@@ -188,15 +189,7 @@ async function fetchHuvudgrupp(nummer: number): Promise<string> {
  * Normalize ingredient name for comparison.
  */
 function normalize(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/å/g, "a")
-    .replace(/ä/g, "a")
-    .replace(/ö/g, "o")
-    .replace(/é/g, "e")
-    .replace(/è/g, "e")
-    .replace(/ü/g, "u")
+  return stripDiacritics(name.toLowerCase().trim())
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, " ");
 }
@@ -267,13 +260,7 @@ function parseCsvLine(line: string): string[] {
  * Generate a kebab-case ID from a Swedish name.
  */
 function toId(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/å/g, "a")
-    .replace(/ä/g, "a")
-    .replace(/ö/g, "o")
-    .replace(/é/g, "e")
+  return stripDiacritics(name.toLowerCase().trim())
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")

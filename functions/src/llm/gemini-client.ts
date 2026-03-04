@@ -66,22 +66,6 @@ export function getIngredientLinesModel(client: GoogleGenerativeAI): GenerativeM
   });
 }
 
-/**
- * Get a Gemini model configured for vision/OCR tasks.
- * Uses the same model as text — Gemini Flash is natively multimodal.
- */
-export function getVisionModel(client: GoogleGenerativeAI): GenerativeModel {
-  return client.getGenerativeModel({
-    model: TEXT_MODEL,
-    generationConfig: {
-      temperature: TEMPERATURE,
-      maxOutputTokens: MAX_TOKENS,
-      responseMimeType: "application/json",
-      responseSchema: RECIPE_SCHEMA,
-    },
-  });
-}
-
 // =============================================================================
 // JSON Schemas for Structured Output
 // =============================================================================
@@ -547,3 +531,21 @@ export const MAX_TOKENS = 2000;
 
 /** Temperature for recipe extraction (lower = more deterministic) */
 export const TEMPERATURE = 0.3;
+
+// Gemini 2.0 Flash pricing per 1M tokens
+const INPUT_COST_PER_M = 0.10;
+const OUTPUT_COST_PER_M = 0.40;
+
+/**
+ * Calculate actual cost from Gemini API usage data.
+ * Co-located with model config so pricing updates happen in one place.
+ */
+export function calculateGeminiCost(
+  usage: { promptTokenCount?: number; candidatesTokenCount?: number } | undefined,
+  minCost = 0.001,
+): number {
+  if (!usage) return minCost;
+  const inputCost = ((usage.promptTokenCount ?? 0) / 1_000_000) * INPUT_COST_PER_M;
+  const outputCost = ((usage.candidatesTokenCount ?? 0) / 1_000_000) * OUTPUT_COST_PER_M;
+  return Math.max(inputCost + outputCost, minCost);
+}

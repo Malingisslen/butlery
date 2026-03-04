@@ -80,11 +80,13 @@ class NerModelManager {
       // Check model file first — cheapest check and most likely to fail
       if (!await File(modelPath).exists()) return null;
 
-      // Read vocab and version — catch handles missing files
-      final vocabContent =
-          await File('${dir.path}/$_vocabFileName').readAsString();
-      final version =
-          (await File('${dir.path}/$_versionFileName').readAsString()).trim();
+      // Read vocab and version in parallel — catch handles missing files
+      final results = await Future.wait([
+        File('${dir.path}/$_vocabFileName').readAsString(),
+        File('${dir.path}/$_versionFileName').readAsString(),
+      ]);
+      final vocabContent = results[0];
+      final version = results[1].trim();
 
       _cachedModelPath = modelPath;
       AppLogger.debug('$_serviceName: Using cached model v$version');

@@ -39,6 +39,9 @@ class NeuralIngredientParser {
     if (_nerService.isAvailable) return true;
 
     try {
+      // Reset state if a previous attempt failed, allowing retry
+      await _nerService.dispose();
+
       // Ensure model files are available locally
       final modelFiles = await _modelManager.ensureModelAvailable();
       if (modelFiles == null) {

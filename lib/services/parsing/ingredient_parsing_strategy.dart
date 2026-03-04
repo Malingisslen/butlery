@@ -30,7 +30,9 @@ class IngredientParsingStrategy {
 
   /// Confidence threshold below which CRF-parsed lines are considered uncertain
   /// and routed to BERT NER or cloud LLM for re-parsing.
-  static const double _uncertaintyThreshold = 0.7;
+  /// Shared with [NeuralIngredientParser.confidenceThreshold] for cascade consistency.
+  static const double _uncertaintyThreshold =
+      NeuralIngredientParser.confidenceThreshold;
 
   CrfIngredientParser? _crfParser;
   bool _crfLoadFailed = false;
@@ -228,11 +230,8 @@ class IngredientParsingStrategy {
     });
   }
 
-  /// Identifies ingredient lines where CRF confidence is too low for reliable
-  /// extraction (score < 0.7), suitable for BERT NER or LLM re-parsing.
-  ///
-  /// Returns indices of uncertain lines. Lines with high confidence (≥0.7)
-  /// are kept as-is.
+  /// Identifies ingredient lines where CRF confidence is below
+  /// [_uncertaintyThreshold], suitable for BERT NER or LLM re-parsing.
   ///
   /// This enables the CRF → BERT → LLM cascade: uncertain lines are first
   /// tried with BERT NER (on-device), then remaining uncertain lines go to
@@ -265,9 +264,11 @@ class IngredientParsingStrategy {
 
     // Try BERT NER on uncertain lines first
     if (_neuralParser != null && _neuralParser.isAvailable) {
+      final filteredIndices = <int>[];
       final uncertainTexts = <String>[];
       for (final i in uncertainIndices) {
         if (i < originalLines.length) {
+          filteredIndices.add(i);
           uncertainTexts.add(originalLines[i]);
         }
       }
@@ -279,8 +280,7 @@ class IngredientParsingStrategy {
         var nerHandled = 0;
         for (var j = 0; j < uncertainTexts.length; j++) {
           if (nerResults.containsKey(j)) {
-            final idx = uncertainIndices[j];
-            parsed[idx] = nerResults[j]!;
+            parsed[filteredIndices[j]] = nerResults[j]!;
             nerHandled++;
           }
         }

@@ -10,52 +10,16 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { stripDiacritics } from "../shared/swedish-normalize";
+
+import { withTimeout, CASCADE_TIMEOUT_MS } from "../shared/with-timeout";
 
 // Lazy initialization to avoid calling firestore() before initializeApp()
 const getDb = () => admin.firestore();
 
-// HIGH-6, MED-10: Timeout for cascade operations
-// Increased from 30s to 120s (2 minutes) to handle large cascades
-// Cloud Functions default is 540s (9 minutes), but we use a shorter timeout
-// to fail fast on truly stuck operations while completing most cascades
-const CASCADE_TIMEOUT_MS = 120000; // 2 minutes
-
-/**
- * MED-10: Wraps an async operation with a timeout.
- * Throws if the operation doesn't complete within the specified time.
- */
-async function withTimeout<T>(
-  operation: Promise<T>,
-  timeoutMs: number,
-  operationName: string
-): Promise<T> {
-  let timeoutId: NodeJS.Timeout;
-
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => {
-      reject(new Error(`${operationName} timed out after ${timeoutMs}ms`));
-    }, timeoutMs);
-  });
-
-  try {
-    return await Promise.race([operation, timeoutPromise]);
-  } finally {
-    clearTimeout(timeoutId!);
-  }
-}
-
-/**
- * CRIT-5: Normalize Swedish text to match Dart-side normalization.
- *
- * Must be identical to lib/services/tagging/ingredient_lookup_service.dart:_cleanForLookup()
- * which converts Swedish diacritics: å→a, ä→a, ö→o
- */
+/** Normalize Swedish text for ingredient matching (superset of Dart-side å/ä/ö). */
 function normalizeSwedish(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/å/g, "a")
-    .replace(/ä/g, "a")
-    .replace(/ö/g, "o");
+  return stripDiacritics(text.toLowerCase());
 }
 
 /**

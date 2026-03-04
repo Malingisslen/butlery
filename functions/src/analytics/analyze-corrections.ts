@@ -15,6 +15,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { stripDiacritics } from "../shared/swedish-normalize";
 
 const getDb = () => admin.firestore();
 
@@ -26,17 +27,7 @@ const ALIAS_APPROVAL_THRESHOLD = 3;
  * Matches Dart-side normalization in FirebaseIngredientRepository._normalize.
  */
 function normalizeIngredientName(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/å/g, "a")
-    .replace(/ä/g, "a")
-    .replace(/ö/g, "o")
-    .replace(/é/g, "e")
-    .replace(/è/g, "e")
-    .replace(/ê/g, "e")
-    .replace(/ü/g, "u")
-    .replace(/ñ/g, "n");
+  return stripDiacritics(name.toLowerCase().trim());
 }
 
 /**

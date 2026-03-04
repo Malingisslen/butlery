@@ -9,11 +9,12 @@ import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import {
   getGeminiClient,
-  getVisionModel,
+  getTextModel,
   geminiApiKey,
   PROMPT_VERSION,
   IMAGE_OCR_SYSTEM_PROMPT,
   parseRecipeResponse,
+  calculateGeminiCost,
   ExtractedRecipe,
 } from "./gemini-client";
 import { withRateLimit } from "../middleware/rate_limiter";
@@ -106,7 +107,7 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
       }
 
       const client = getGeminiClient(geminiApiKey.value());
-      const model = getVisionModel(client);
+      const model = getTextModel(client);
 
       console.log(
         `[ocrRecipeImage] Processing image for user ${request.auth!.uid} (prompt v${PROMPT_VERSION})`,
@@ -134,12 +135,8 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
       const response = result.response;
       const content = response.text();
 
-      // Calculate actual cost from API usage
-      // Gemini 2.0 Flash: ~$0.10/1M input tokens, ~$0.40/1M output tokens
-      const usage = response.usageMetadata;
-      const inputCost = ((usage?.promptTokenCount ?? 0) / 1_000_000) * 0.10;
-      const outputCost = ((usage?.candidatesTokenCount ?? 0) / 1_000_000) * 0.40;
-      const actualCost = Math.max(inputCost + outputCost, 0.01);
+      // Calculate actual cost from API usage (higher min floor for vision)
+      const actualCost = calculateGeminiCost(response.usageMetadata, 0.01);
 
       if (!content) {
         console.error("[ocrRecipeImage] Empty response from Gemini");
