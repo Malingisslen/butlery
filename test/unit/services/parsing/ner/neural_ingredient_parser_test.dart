@@ -21,6 +21,15 @@ class MockOnnxNerService extends OnnxNerService {
   Future<NerPrediction?> predict(List<String> words) async {
     return nextPrediction;
   }
+
+  @override
+  Future<List<NerPrediction?>> predictBatch(
+      List<List<String>> wordsList) async {
+    return wordsList.map((words) {
+      if (words.isEmpty) return null;
+      return nextPrediction;
+    }).toList();
+  }
 }
 
 /// Mock model manager that reports model as available.
