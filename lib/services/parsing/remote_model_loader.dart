@@ -18,7 +18,13 @@ abstract class RemoteModelLoader {
   RemoteModelLoader({FirebaseStorage? storage}) : _injectedStorage = storage;
 
   @protected
-  FirebaseStorage get storage => _injectedStorage ?? FirebaseStorage.instance;
+  FirebaseStorage get storage {
+    assert(
+      _injectedStorage != null,
+      'FirebaseStorage not injected — register via DI',
+    );
+    return _injectedStorage!;
+  }
 
   @protected
   String get serviceName;

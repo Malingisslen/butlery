@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/parsing/remote_model_loader.dart';
@@ -91,9 +90,15 @@ class NerModelManager extends RemoteModelLoader {
     }
   }
 
-  Future<NerModelFiles?> _tryDownload({int? knownVersion}) async {
-    if (isCheckThrottled || !canCacheLocally) return null;
-    startCheck();
+  Future<NerModelFiles?> _tryDownload({
+    int? knownVersion,
+    bool alreadyChecking = false,
+  }) async {
+    if (!canCacheLocally) return null;
+    if (!alreadyChecking) {
+      if (isCheckThrottled) return null;
+      startCheck();
+    }
 
     try {
       final latestVersion = knownVersion ?? await _getLatestVersion();
@@ -158,9 +163,6 @@ class NerModelManager extends RemoteModelLoader {
     }
   }
 
-  @visibleForTesting
-  Future<int?> getLatestVersion() => _getLatestVersion();
-
   Future<int?> _getLatestVersion() async {
     try {
       final metaRef = storage.ref('$_storageBasePath/latest_version.txt');
@@ -184,14 +186,20 @@ class NerModelManager extends RemoteModelLoader {
 
   void _checkForUpdateInBackground() {
     if (isCheckThrottled) return;
+    startCheck();
 
     Future(() async {
       try {
         final latestVersion = await _getLatestVersion();
-        endCheck();
-        if (latestVersion == null) return;
+        if (latestVersion == null) {
+          endCheck();
+          return;
+        }
 
-        if (!canCacheLocally) return;
+        if (!canCacheLocally) {
+          endCheck();
+          return;
+        }
         final dir = await getCacheDir();
         final cachedVersionStr =
             await File('${dir.path}/$_versionFileName').readAsString();
@@ -201,7 +209,13 @@ class NerModelManager extends RemoteModelLoader {
           AppLogger.info(
             '$serviceName: Newer model available (v$latestVersion > v$cachedVersion)',
           );
-          await _tryDownload(knownVersion: latestVersion);
+          // endCheck() is called inside _tryDownload's finally block
+          await _tryDownload(
+            knownVersion: latestVersion,
+            alreadyChecking: true,
+          );
+        } else {
+          endCheck();
         }
       } catch (e) {
         endCheck();
