@@ -100,6 +100,40 @@ class RemoteWeightLoader extends RemoteModelLoader {
   Future<CrfIngredientParser?> _tryDownloadAndCache({
     required int bundledVersion,
   }) async {
+    final result = await _downloadRemoteWeights(bundledVersion: bundledVersion);
+    if (result == null) return null;
+
+    final (parser, jsonString, remoteVersion) = result;
+
+    final dir = await getCacheDir();
+    await dir.create(recursive: true);
+    await File('${dir.path}/$_localFileName').writeAsString(jsonString);
+    await File('${dir.path}/$_versionFileName')
+        .writeAsString(remoteVersion.toString());
+
+    AppLogger.info(
+      '$serviceName: Downloaded remote weights v$remoteVersion '
+      '(was bundled v$bundledVersion)',
+    );
+    return parser;
+  }
+
+  Future<CrfIngredientParser?> _tryDownloadWeights({
+    required int bundledVersion,
+  }) async {
+    final result = await _downloadRemoteWeights(bundledVersion: bundledVersion);
+    if (result == null) return null;
+
+    final (parser, _, remoteVersion) = result;
+    AppLogger.info(
+      '$serviceName: Downloaded remote weights v$remoteVersion (web)',
+    );
+    return parser;
+  }
+
+  /// Shared download logic: fetch metadata, check version, download, parse.
+  Future<(CrfIngredientParser, String jsonString, int version)?>
+      _downloadRemoteWeights({required int bundledVersion}) async {
     try {
       final ref = storage.ref(_storagePath);
       final metadata = await ref.getMetadata();
@@ -121,53 +155,11 @@ class RemoteWeightLoader extends RemoteModelLoader {
       final weights = CrfWeights.fromJson(jsonString);
       final decoder = CrfViterbiDecoder(weights: weights);
 
-      final dir = await getCacheDir();
-      await dir.create(recursive: true);
-      await File('${dir.path}/$_localFileName').writeAsString(jsonString);
-      await File('${dir.path}/$_versionFileName')
-          .writeAsString(remoteVersion.toString());
-
-      AppLogger.info(
-        '$serviceName: Downloaded remote weights v$remoteVersion '
-        '(was bundled v$bundledVersion)',
-      );
-      return CrfIngredientParser(decoder);
+      return (CrfIngredientParser(decoder), jsonString, remoteVersion);
     } on FirebaseException catch (e) {
       if (e.code == 'object-not-found') {
         AppLogger.debug('$serviceName: No remote weights uploaded yet');
       } else {
-        AppLogger.debug('$serviceName: Firebase Storage error: ${e.code}');
-      }
-      return null;
-    }
-  }
-
-  Future<CrfIngredientParser?> _tryDownloadWeights({
-    required int bundledVersion,
-  }) async {
-    try {
-      final ref = storage.ref(_storagePath);
-      final metadata = await ref.getMetadata();
-
-      final remoteVersion =
-          int.tryParse(metadata.customMetadata?['version'] ?? '');
-      if (remoteVersion == null || remoteVersion <= bundledVersion) {
-        return null;
-      }
-
-      final data = await ref.getData(_maxWeightsSize);
-      if (data == null) return null;
-
-      final jsonString = utf8.decode(data);
-      final weights = CrfWeights.fromJson(jsonString);
-      final decoder = CrfViterbiDecoder(weights: weights);
-
-      AppLogger.info(
-        '$serviceName: Downloaded remote weights v$remoteVersion (web)',
-      );
-      return CrfIngredientParser(decoder);
-    } on FirebaseException catch (e) {
-      if (e.code != 'object-not-found') {
         AppLogger.debug('$serviceName: Firebase Storage error: ${e.code}');
       }
       return null;

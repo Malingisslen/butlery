@@ -49,7 +49,7 @@ class MockNerModelManager extends NerModelManager {
         ? NerModelFiles(
             modelPath: '/fake/model.onnx',
             vocabContent: '[PAD]\n[UNK]\n[CLS]\n[SEP]',
-            version: '1',
+            version: 1,
           )
         : null;
   }
