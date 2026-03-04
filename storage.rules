@@ -53,6 +53,11 @@ service firebase.storage {
         && resource.metadata.uploadedBy == request.auth.uid;
     }
 
+    // ML model files - read-only for authenticated users
+    match /models/{allPaths=**} {
+      allow read: if request.auth != null;
+    }
+
     // Default deny for all other paths
     match /{allPaths=**} {
       allow read, write: if false;
