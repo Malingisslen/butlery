@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 
@@ -107,7 +109,7 @@ class OnnxNerService {
         final outputs = await _session!.run({
           _inputIdName!: inputIds,
           _attentionMaskName!: attentionMask,
-        });
+        }).timeout(const Duration(seconds: 5));
 
         try {
           final logitsRaw = await outputs[_outputName]!.asList();
@@ -155,6 +157,126 @@ class OnnxNerService {
     } catch (e) {
       AppLogger.warning('$_serviceName: Prediction failed: $e');
       return null;
+    }
+  }
+
+  /// Predict BIO labels for multiple word lists in a single ONNX call.
+  ///
+  /// More efficient than calling [predict] in a loop — builds a single
+  /// batched tensor of shape [N, maxLen] and runs one inference pass.
+  /// Returns one [NerPrediction?] per input (null for empty/failed lines).
+  Future<List<NerPrediction?>> predictBatch(
+      List<List<String>> wordsList) async {
+    if (!isAvailable || _session == null || _tokenizer == null) {
+      return List.filled(wordsList.length, null);
+    }
+    if (wordsList.isEmpty) return [];
+
+    // Filter out empty word lists, tracking original indices
+    final validIndices = <int>[];
+    final validWords = <List<String>>[];
+    for (var i = 0; i < wordsList.length; i++) {
+      if (wordsList[i].isNotEmpty) {
+        validIndices.add(i);
+        validWords.add(wordsList[i]);
+      }
+    }
+    if (validWords.isEmpty) return List.filled(wordsList.length, null);
+
+    try {
+      // Tokenize all lines
+      final tokenResults =
+          validWords.map((w) => _tokenizer!.tokenizeWords(w)).toList();
+
+      // Build batched tensors [N, maxLen]
+      final batchSize = validWords.length;
+      final allInputIds = Int64List(batchSize * _maxLength);
+      final allAttention = Int64List(batchSize * _maxLength);
+      for (var i = 0; i < batchSize; i++) {
+        final offset = i * _maxLength;
+        allInputIds.setRange(
+          offset,
+          offset + _maxLength,
+          tokenResults[i].inputIds,
+        );
+        allAttention.setRange(
+          offset,
+          offset + _maxLength,
+          tokenResults[i].attentionMask,
+        );
+      }
+
+      final inputIds = await OrtValue.fromList(
+        allInputIds,
+        [batchSize, _maxLength],
+      );
+      final attentionMask = await OrtValue.fromList(
+        allAttention,
+        [batchSize, _maxLength],
+      );
+
+      // Single inference call
+      final List<double> flatLogits;
+      try {
+        final outputs = await _session!.run({
+          _inputIdName!: inputIds,
+          _attentionMaskName!: attentionMask,
+        }).timeout(const Duration(seconds: 10));
+
+        try {
+          final logitsRaw = await outputs[_outputName]!.asList();
+          flatLogits = _flattenToDoubles(logitsRaw);
+        } finally {
+          for (final tensor in outputs.values) {
+            tensor.dispose();
+          }
+        }
+      } finally {
+        inputIds.dispose();
+        attentionMask.dispose();
+      }
+
+      // Extract per-line predictions from [batch, seq_len, num_labels]
+      final numLabels = _labels.length;
+      const seqLen = _maxLength;
+      final lineLogitsSize = seqLen * numLabels;
+
+      final results = List<NerPrediction?>.filled(wordsList.length, null);
+      for (var b = 0; b < batchSize; b++) {
+        final words = validWords[b];
+        final lineOffset = b * lineLogitsSize;
+        final firstSubwordMap = tokenResults[b].firstSubwordIndices;
+        final wordLabels = <BioLabel>[];
+        var totalConfidence = 0.0;
+
+        for (var wordIdx = 0; wordIdx < words.length; wordIdx++) {
+          final subwordPos = firstSubwordMap[wordIdx];
+          if (subwordPos == null || subwordPos >= seqLen) {
+            wordLabels.add(BioLabel.other);
+            continue;
+          }
+
+          final logitStart = lineOffset + subwordPos * numLabels;
+          final wordLogits =
+              flatLogits.sublist(logitStart, logitStart + numLabels);
+          final (bestIdx, confidence) = _argmaxSoftmax(wordLogits);
+
+          wordLabels.add(
+            bestIdx < _labels.length ? _labels[bestIdx] : BioLabel.other,
+          );
+          totalConfidence += confidence;
+        }
+
+        results[validIndices[b]] = NerPrediction(
+          labels: wordLabels,
+          confidence: words.isNotEmpty ? totalConfidence / words.length : 0.0,
+        );
+      }
+
+      return results;
+    } catch (e) {
+      AppLogger.warning('$_serviceName: Batch prediction failed: $e');
+      return List.filled(wordsList.length, null);
     }
   }
 
