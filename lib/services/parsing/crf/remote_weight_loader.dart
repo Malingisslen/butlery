@@ -22,6 +22,7 @@ class RemoteWeightLoader extends RemoteModelLoader {
   static const _storagePath = 'models/crf_ingredient_weights.json';
   static const _localFileName = 'crf_remote_weights.json';
   static const _versionFileName = 'crf_remote_version.txt';
+  static const _maxWeightsSize = 5 * 1024 * 1024;
 
   RemoteWeightLoader({super.storage});
 
@@ -71,18 +72,17 @@ class RemoteWeightLoader extends RemoteModelLoader {
 
     try {
       final dir = await getCacheDir();
-      // Read both files concurrently — FileSystemException if missing
-      final results = await Future.wait([
-        File('${dir.path}/$_versionFileName').readAsString(),
-        File('${dir.path}/$_localFileName').readAsString(),
-      ]);
 
-      final cachedVersion = int.tryParse(results[0].trim());
+      // Read version first — skip large weights file if version is stale
+      final versionStr =
+          await File('${dir.path}/$_versionFileName').readAsString();
+      final cachedVersion = int.tryParse(versionStr.trim());
       if (cachedVersion == null || cachedVersion <= bundledVersion) {
         return null;
       }
 
-      final jsonString = results[1];
+      final jsonString =
+          await File('${dir.path}/$_localFileName').readAsString();
       final weights = CrfWeights.fromJson(jsonString);
       final decoder = CrfViterbiDecoder(weights: weights);
 
@@ -114,7 +114,7 @@ class RemoteWeightLoader extends RemoteModelLoader {
         return null;
       }
 
-      final data = await ref.getData(5 * 1024 * 1024);
+      final data = await ref.getData(_maxWeightsSize);
       if (data == null) return null;
 
       final jsonString = utf8.decode(data);
@@ -155,7 +155,7 @@ class RemoteWeightLoader extends RemoteModelLoader {
         return null;
       }
 
-      final data = await ref.getData(5 * 1024 * 1024);
+      final data = await ref.getData(_maxWeightsSize);
       if (data == null) return null;
 
       final jsonString = utf8.decode(data);

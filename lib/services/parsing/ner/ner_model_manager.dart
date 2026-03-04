@@ -55,7 +55,7 @@ class NerModelManager extends RemoteModelLoader {
   Future<NerModelFiles?> ensureModelAvailable() async {
     final cached = await _tryLoadCached();
     if (cached != null) {
-      _checkForUpdateInBackground();
+      _checkForUpdateInBackground(int.tryParse(cached.version) ?? 0);
       return cached;
     }
     return await _tryDownload();
@@ -186,7 +186,7 @@ class NerModelManager extends RemoteModelLoader {
     }
   }
 
-  void _checkForUpdateInBackground() {
+  void _checkForUpdateInBackground(int cachedVersion) {
     if (isCheckThrottled || !canCacheLocally) return;
     startCheck();
 
@@ -194,11 +194,6 @@ class NerModelManager extends RemoteModelLoader {
       try {
         final latestVersion = await _getLatestVersion();
         if (latestVersion == null) return;
-
-        final dir = await getCacheDir();
-        final cachedVersionStr =
-            await File('${dir.path}/$_versionFileName').readAsString();
-        final cachedVersion = int.tryParse(cachedVersionStr.trim()) ?? 0;
 
         if (latestVersion > cachedVersion) {
           AppLogger.info(
