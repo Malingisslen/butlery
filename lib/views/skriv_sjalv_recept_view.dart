@@ -22,6 +22,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/recipe/recipe_draft_recovery_handler.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
@@ -60,6 +61,7 @@ class _SkrivSjalvReceptViewContentState
 
   // CRITICAL FIX: Track save operation to prevent navigation race conditions
   bool _isSaving = false;
+  bool _showQualityWarning = true;
 
   // Enhanced upload notification system
   StreamSubscription<UploadNotificationEvent>? _uploadNotificationSubscription;
@@ -331,6 +333,9 @@ class _SkrivSjalvReceptViewContentState
                     key: _formKey,
                     child: ListView(
                       children: [
+                        // Parse quality warning for imported recipes
+                        if (viewModel.needsReview && _showQualityWarning)
+                          _buildQualityWarningBanner(context, viewModel),
                         // Meal type - Custom layout to fix text cutoff
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -634,9 +639,73 @@ class _SkrivSjalvReceptViewContentState
     );
   }
 
+  Widget _buildQualityWarningBanner(
+    BuildContext context,
+    RecipeFormViewModel viewModel,
+  ) {
+    final quality = viewModel.parseQuality ?? 0.0;
+    final qualityPercent = (quality * 100).toInt();
+    final fields = viewModel.fieldsNeedingImprovement;
+    final colors = context.butleryColors;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimensions.spacingL),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppDimensions.paddingM),
+        decoration: BoxDecoration(
+          color: colors.warningContainer,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+          border: Border.all(
+            color: colors.warning.withValues(alpha: 0.4),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.warning_amber_rounded,
+                  color: colors.warning,
+                  size: AppDimensions.iconSizeM,
+                ),
+                const SizedBox(width: AppDimensions.spacingS),
+                Expanded(
+                  child: Text(
+                    context.l10n.importParseQualityWarning(qualityPercent),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: colors.onWarningContainer,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => setState(() => _showQualityWarning = false),
+                  child: Icon(
+                    Icons.close,
+                    size: AppDimensions.iconSizeS,
+                    color: colors.onWarningContainer,
+                  ),
+                ),
+              ],
+            ),
+            if (fields.isNotEmpty) ...[
+              const SizedBox(height: AppDimensions.spacingS),
+              Text(
+                context.l10n.importFieldsNeedReview(fields.length),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: colors.onWarningContainer.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
-    // HIGH PRIORITY FIX: Proper resource disposal to prevent memory leaks
     // Cancel upload notification subscription to prevent memory leaks
     _uploadNotificationSubscription?.cancel();
 

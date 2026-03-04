@@ -110,7 +110,13 @@ scripts/crf/data/training.conll
 *.crfsuite
 scripts/ner/output/
 
-# Python venv artifacts (use /Lib to avoid matching Flutter's /lib on Windows)
+# Python venv artifacts (root-anchored /Lib, case-insensitive Windows caveat)
 /Lib/
-/Scripts/
+# /Scripts/ excluded via *.exe pattern (line 95) — blanket /Scripts/ rule
+# conflicts with our scripts/ directory on case-insensitive Windows
+Scripts/*.cfg
+Scripts/*.pth
+Scripts/python*
+Scripts/pip*
+Scripts/activate*
 share/
