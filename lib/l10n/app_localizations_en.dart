@@ -3528,6 +3528,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importStep3ReviewEdit => 'Step 3: Review and edit';
 
   @override
+  String importParseQualityWarning(int quality) {
+    return 'Recipe parsed with $quality% confidence. Review the fields below.';
+  }
+
+  @override
+  String importFieldsNeedReview(int count) {
+    return '$count field(s) may need adjustment';
+  }
+
+  @override
   String menuCardMoreRecipes(int count) {
     return '+ $count more recipes';
   }

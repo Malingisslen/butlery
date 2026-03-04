@@ -263,11 +263,12 @@ class RecipeParserService extends BaseService {
     }
 
     // Run parsing tiers
-    final result = await _runTiers(
+    final tierData = await _runTiers(
       context,
       qualityThreshold: effectiveThreshold,
       useLlm: useLlm,
     );
+    final result = tierData.recipe;
 
     if (result == null) {
       _logParseEvent(
@@ -300,12 +301,23 @@ class RecipeParserService extends BaseService {
       }
     }
 
+    final successfulTier =
+        tierData.tierResults.where((t) => t.success).lastOrNull;
     _logParseEvent(
       url: url,
       source: context.source.name,
       success: true,
       fromCache: false,
       parseTimeMs: stopwatch.elapsedMilliseconds,
+      successfulTier: successfulTier?.tierName,
+      finalQuality: result.overallQuality,
+      usedLlm: tierData.tierResults.any(
+        (t) => t.tierName == 'LLM' && t.success,
+      ),
+      totalCostSek: tierData.tierResults.fold<double>(
+        0,
+        (sum, t) => sum + (t.costSek ?? 0),
+      ),
     );
     return ParseResult.success(result, totalTime: stopwatch.elapsed);
   }
@@ -326,11 +338,12 @@ class RecipeParserService extends BaseService {
       parserVersion: parserVersion,
     );
 
-    final result = await _runTiers(
+    final tierData = await _runTiers(
       context,
       qualityThreshold: qualityThreshold,
       useLlm: useLlm,
     );
+    final result = tierData.recipe;
 
     if (result == null) {
       _logParseEvent(
@@ -347,12 +360,23 @@ class RecipeParserService extends BaseService {
       );
     }
 
+    final successfulTier =
+        tierData.tierResults.where((t) => t.success).lastOrNull;
     _logParseEvent(
       url: null,
       source: source.name,
       success: true,
       fromCache: false,
       parseTimeMs: stopwatch.elapsedMilliseconds,
+      successfulTier: successfulTier?.tierName,
+      finalQuality: result.overallQuality,
+      usedLlm: tierData.tierResults.any(
+        (t) => t.tierName == 'LLM' && t.success,
+      ),
+      totalCostSek: tierData.tierResults.fold<double>(
+        0,
+        (sum, t) => sum + (t.costSek ?? 0),
+      ),
     );
     return ParseResult.success(result, totalTime: stopwatch.elapsed);
   }
@@ -372,7 +396,10 @@ class RecipeParserService extends BaseService {
   List<TierResult> _lastTierFailures = [];
 
   /// Run parsing tiers in order until quality threshold is met.
-  Future<ParsedRecipe?> _runTiers(
+  ///
+  /// Returns both the merged recipe and the raw tier results so callers
+  /// can extract metrics (successfulTier, quality, cost) for analytics.
+  Future<({ParsedRecipe? recipe, List<TierResult> tierResults})> _runTiers(
     ParsingContext context, {
     required double qualityThreshold,
     required bool useLlm,
@@ -422,7 +449,7 @@ class RecipeParserService extends BaseService {
       }
     }
 
-    return _merger.merge(results);
+    return (recipe: _merger.merge(results), tierResults: results);
   }
 
   /// Find the highest-quality successful result from a list of tier results.
@@ -709,6 +736,10 @@ class RecipeParserService extends BaseService {
     required bool success,
     required bool fromCache,
     required int parseTimeMs,
+    String? successfulTier,
+    double? finalQuality,
+    bool? usedLlm,
+    double? totalCostSek,
   }) {
     // Fire and forget - don't await, don't fail on error
     _functions.httpsCallable('logParseEvent').call<Map<String, dynamic>>({
@@ -718,6 +749,10 @@ class RecipeParserService extends BaseService {
       'fromCache': fromCache,
       'parseTimeMs': parseTimeMs,
       'parserVersion': parserVersion,
+      if (successfulTier != null) 'successfulTier': successfulTier,
+      if (finalQuality != null) 'finalQuality': finalQuality,
+      if (usedLlm != null) 'usedLlm': usedLlm,
+      if (totalCostSek != null) 'totalCostSek': totalCostSek,
     }).then((_) {
       // Success - do nothing
     }).catchError((e) {
