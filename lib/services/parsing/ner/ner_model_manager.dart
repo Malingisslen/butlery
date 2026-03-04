@@ -115,12 +115,10 @@ class NerModelManager extends RemoteModelLoader {
 
       final modelRef = storage.ref('$versionPath/$_modelFileName');
       final vocabRef = storage.ref('$versionPath/$_vocabFileName');
-      final results = await Future.wait([
+      final [modelData, vocabData] = await Future.wait([
         modelRef.getData(_maxModelSize),
         vocabRef.getData(_maxVocabSize),
       ]);
-      final modelData = results[0];
-      final vocabData = results[1];
       if (modelData == null || vocabData == null) {
         AppLogger.warning('$serviceName: Download returned null');
         return null;
