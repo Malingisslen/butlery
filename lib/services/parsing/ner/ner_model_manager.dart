@@ -55,7 +55,7 @@ class NerModelManager extends RemoteModelLoader {
   Future<NerModelFiles?> ensureModelAvailable() async {
     final cached = await _tryLoadCached();
     if (cached != null) {
-      _checkForUpdateInBackground(int.tryParse(cached.version) ?? 0);
+      _checkForUpdateInBackground(cached.version);
       return cached;
     }
     return await _tryDownload();
@@ -75,7 +75,8 @@ class NerModelManager extends RemoteModelLoader {
         File('${dir.path}/$_versionFileName').readAsString(),
       ]);
       final vocabContent = results[0];
-      final version = results[1].trim();
+      final version = int.tryParse(results[1].trim());
+      if (version == null) return null;
 
       _cachedModelPath = modelPath;
       AppLogger.debug('$serviceName: Using cached model v$version');
@@ -150,7 +151,7 @@ class NerModelManager extends RemoteModelLoader {
       return NerModelFiles(
         modelPath: modelFile.path,
         vocabContent: vocabContent,
-        version: latestVersion.toString(),
+        version: latestVersion,
       );
     } on FirebaseException catch (e) {
       if (e.code == 'object-not-found') {
@@ -219,8 +220,8 @@ class NerModelFiles {
   /// Content of vocab.txt for the WordPiece tokenizer.
   final String vocabContent;
 
-  /// Model version string.
-  final String version;
+  /// Model version number.
+  final int version;
 
   const NerModelFiles({
     required this.modelPath,
