@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 /// Pure Dart WordPiece tokenizer matching BERT's tokenization.
 ///
@@ -105,12 +106,16 @@ class WordPieceTokenizer {
     allSubwordIds.add(_sepTokenId);
     wordIdMapping.add(null);
 
-    // Pad to maxInputLength
+    // Pad to maxInputLength — use Int64List directly for ONNX compatibility
     final seqLen = allSubwordIds.length;
-    final inputIds = List<int>.filled(maxInputLength, _padTokenId);
-    final attentionMask = List<int>.filled(maxInputLength, 0);
+    final inputIds = Int64List(maxInputLength);
+    final attentionMask = Int64List(maxInputLength);
     final paddedWordIds = List<int?>.filled(maxInputLength, null);
 
+    // Fill pad token for inputIds (attentionMask defaults to 0)
+    for (var i = 0; i < maxInputLength; i++) {
+      inputIds[i] = _padTokenId;
+    }
     for (var i = 0; i < seqLen; i++) {
       inputIds[i] = allSubwordIds[i];
       attentionMask[i] = 1;
@@ -179,10 +184,12 @@ class WordPieceTokenizer {
 /// Result of tokenizing a sequence of words.
 class TokenizedInput {
   /// Token IDs including [CLS], subwords, [SEP], and padding.
-  final List<int> inputIds;
+  /// Int64List for direct ONNX Runtime consumption (no copy needed).
+  final Int64List inputIds;
 
   /// 1 for real tokens, 0 for padding.
-  final List<int> attentionMask;
+  /// Int64List for direct ONNX Runtime consumption (no copy needed).
+  final Int64List attentionMask;
 
   /// Maps each position to the original word index.
   /// null for [CLS], [SEP], and padding positions.

@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:typed_data';
 
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 
@@ -46,14 +45,13 @@ class OnnxNerService {
 
   /// Initialize with model and vocabulary data.
   ///
-  /// [modelPath] is the path to the ONNX model file on disk.
-  /// [vocabContent] is the content of vocab.txt as a string.
+  /// Can be retried after transient failures — call [dispose] first
+  /// to reset state, or simply call initialize again with new paths.
   Future<bool> initialize({
     required String modelPath,
     required String vocabContent,
   }) async {
     if (_initialized) return !_initFailed;
-    if (_initFailed) return false;
 
     try {
       _tokenizer = WordPieceTokenizer.fromVocabString(
@@ -68,12 +66,14 @@ class OnnxNerService {
       _outputName = _session!.outputNames[0];
 
       _initialized = true;
+      _initFailed = false;
       AppLogger.info(
         '$_serviceName: Initialized (vocab: ${_tokenizer!.vocabSize} tokens)',
       );
       return true;
     } catch (e) {
       _initFailed = true;
+      _initialized = true; // Mark as attempted so isAvailable returns false
       AppLogger.warning('$_serviceName: Initialization failed: $e');
       return false;
     }
@@ -91,18 +91,18 @@ class OnnxNerService {
     try {
       final tokenized = _tokenizer!.tokenizeWords(words);
 
-      // Create input tensors (Int64List for BERT model compatibility)
+      // Create input tensors — tokenizer returns Int64List directly
       final inputIds = await OrtValue.fromList(
-        Int64List.fromList(tokenized.inputIds),
+        tokenized.inputIds,
         [1, _maxLength],
       );
       final attentionMask = await OrtValue.fromList(
-        Int64List.fromList(tokenized.attentionMask),
+        tokenized.attentionMask,
         [1, _maxLength],
       );
 
       // Run inference, ensuring tensors are always disposed
-      final List<List<double>> logits;
+      final List<double> flatLogits;
       try {
         final outputs = await _session!.run({
           _inputIdName!: inputIds,
@@ -111,7 +111,7 @@ class OnnxNerService {
 
         try {
           final logitsRaw = await outputs[_outputName]!.asList();
-          logits = _flattenLogits(logitsRaw, _labels.length);
+          flatLogits = _flattenToDoubles(logitsRaw);
         } finally {
           for (final tensor in outputs.values) {
             tensor.dispose();
@@ -123,25 +123,26 @@ class OnnxNerService {
       }
 
       // Map subword predictions back to word-level
+      final numLabels = _labels.length;
+      final seqLen = flatLogits.length ~/ numLabels;
       final firstSubwordMap = tokenized.firstSubwordIndices;
       final wordLabels = <BioLabel>[];
       var totalConfidence = 0.0;
 
       for (var wordIdx = 0; wordIdx < words.length; wordIdx++) {
         final subwordPos = firstSubwordMap[wordIdx];
-        if (subwordPos == null || subwordPos >= logits.length) {
+        if (subwordPos == null || subwordPos >= seqLen) {
           wordLabels.add(BioLabel.other);
           continue;
         }
 
-        final wordLogits = logits[subwordPos];
-        final softmax = _softmax(wordLogits);
-        final bestIdx = _argmax(softmax);
+        final wordLogits = _getLogitsAt(flatLogits, subwordPos, numLabels);
+        final (bestIdx, confidence) = _argmaxSoftmax(wordLogits);
 
         wordLabels.add(
           bestIdx < _labels.length ? _labels[bestIdx] : BioLabel.other,
         );
-        totalConfidence += softmax[bestIdx];
+        totalConfidence += confidence;
       }
 
       final avgConfidence =
@@ -157,24 +158,15 @@ class OnnxNerService {
     }
   }
 
-  /// Parse the raw output list into per-position logit vectors.
+  /// Flatten the raw ONNX output into a single list of doubles.
   ///
-  /// The ONNX output is a flat list of doubles representing
-  /// [batch=1, seq_len, num_labels]. We need to reshape it.
-  List<List<double>> _flattenLogits(List<dynamic> raw, int numLabels) {
-    // The output might be nested or flat depending on the ONNX Runtime wrapper
+  /// The output is [batch=1, seq_len, num_labels], possibly nested
+  /// depending on the ONNX Runtime wrapper. We flatten it once and
+  /// extract per-position logits on demand via [_getLogitsAt].
+  List<double> _flattenToDoubles(List<dynamic> raw) {
     final flat = <double>[];
     _recursiveFlatten(raw, flat);
-
-    final seqLen = flat.length ~/ numLabels;
-    final result = <List<double>>[];
-    for (var i = 0; i < seqLen; i++) {
-      final start = i * numLabels;
-      if (start + numLabels <= flat.length) {
-        result.add(flat.sublist(start, start + numLabels));
-      }
-    }
-    return result;
+    return flat;
   }
 
   void _recursiveFlatten(dynamic value, List<double> out) {
@@ -187,25 +179,35 @@ class OnnxNerService {
     }
   }
 
-  List<double> _softmax(List<double> logits) {
-    final maxVal = logits.reduce(math.max);
-    final exps = logits.map((x) => math.exp(x - maxVal)).toList();
-    final sum = exps.reduce((a, b) => a + b);
-    return exps.map((e) => e / sum).toList();
+  /// Extract logits for a single position from the flat array.
+  List<double> _getLogitsAt(List<double> flat, int pos, int numLabels) {
+    final start = pos * numLabels;
+    return flat.sublist(start, start + numLabels);
   }
 
-  int _argmax(List<double> values) {
+  /// Fused argmax + softmax: finds the best label index and its probability
+  /// in a single pass with zero list allocations.
+  (int index, double confidence) _argmaxSoftmax(List<double> logits) {
+    final maxVal = logits.reduce(math.max);
+    var sumExp = 0.0;
     var bestIdx = 0;
-    for (var i = 1; i < values.length; i++) {
-      if (values[i] > values[bestIdx]) bestIdx = i;
+    var bestExp = 0.0;
+    for (var i = 0; i < logits.length; i++) {
+      final e = math.exp(logits[i] - maxVal);
+      sumExp += e;
+      if (e > bestExp) {
+        bestExp = e;
+        bestIdx = i;
+      }
     }
-    return bestIdx;
+    return (bestIdx, bestExp / sumExp);
   }
 
   /// Release ONNX session resources.
   Future<void> dispose() async {
     await _session?.close();
     _session = null;
+    _tokenizer = null;
     _initialized = false;
     _initFailed = false;
     _inputIdName = null;

@@ -19,6 +19,7 @@ import {
   INGREDIENT_LINE_SYSTEM_PROMPT,
   parseRecipeResponse,
   parseIngredientLinesResponse,
+  calculateGeminiCost,
   ExtractedRecipe,
 } from "./gemini-client";
 import { withRateLimit } from "../middleware/rate_limiter";
@@ -163,8 +164,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
       }
 
       // Calculate actual cost from API usage
-      const usage = response.usageMetadata;
-      const actualCost = calculateTextCost(usage);
+      const actualCost = calculateGeminiCost(response.usageMetadata);
 
       // Parse response — ingredient lines mode returns array, others return recipe
       if (isIngredientLines) {
@@ -296,17 +296,3 @@ function buildSpokenPrompt(transcript: string, sourceUrl?: string): string {
   return prompt;
 }
 
-/**
- * Calculate actual cost from Gemini API usage data.
- * Gemini 2.0 Flash: ~$0.10/1M input tokens, ~$0.40/1M output tokens
- */
-function calculateTextCost(usage: { promptTokenCount?: number; candidatesTokenCount?: number } | undefined): number {
-  if (!usage) {
-    return 0.01; // Fallback estimate
-  }
-
-  const inputCost = ((usage.promptTokenCount ?? 0) / 1_000_000) * 0.10;
-  const outputCost = ((usage.candidatesTokenCount ?? 0) / 1_000_000) * 0.40;
-
-  return Math.max(inputCost + outputCost, 0.001); // Minimum cost floor
-}

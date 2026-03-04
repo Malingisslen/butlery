@@ -10,45 +10,17 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { stripDiacritics } from "../shared/swedish-normalize";
+import { withTimeout, CASCADE_TIMEOUT_MS } from "../shared/with-timeout";
 
 // Lazy initialization to avoid calling firestore() before initializeApp()
 const getDb = () => admin.firestore();
-
-// Timeout for cascade operations (2 minutes)
-const CASCADE_TIMEOUT_MS = 120000;
-
-/**
- * Wraps an async operation with a timeout.
- */
-async function withTimeout<T>(
-  operation: Promise<T>,
-  timeoutMs: number,
-  operationName: string
-): Promise<T> {
-  let timeoutId: NodeJS.Timeout;
-
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => {
-      reject(new Error(`${operationName} timed out after ${timeoutMs}ms`));
-    }, timeoutMs);
-  });
-
-  try {
-    return await Promise.race([operation, timeoutPromise]);
-  } finally {
-    clearTimeout(timeoutId!);
-  }
-}
 
 /**
  * Normalize Swedish text to match Dart-side normalization.
  */
 function normalizeSwedish(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/å/g, "a")
-    .replace(/ä/g, "a")
-    .replace(/ö/g, "o");
+  return stripDiacritics(text.toLowerCase());
 }
 
 /**
