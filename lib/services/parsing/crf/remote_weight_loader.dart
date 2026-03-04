@@ -71,20 +71,18 @@ class RemoteWeightLoader extends RemoteModelLoader {
 
     try {
       final dir = await getCacheDir();
-      final versionFile = File('${dir.path}/$_versionFileName');
-      final weightsFile = File('${dir.path}/$_localFileName');
+      // Read both files concurrently — FileSystemException if missing
+      final results = await Future.wait([
+        File('${dir.path}/$_versionFileName').readAsString(),
+        File('${dir.path}/$_localFileName').readAsString(),
+      ]);
 
-      if (!await versionFile.exists() || !await weightsFile.exists()) {
-        return null;
-      }
-
-      final cachedVersion =
-          int.tryParse((await versionFile.readAsString()).trim());
+      final cachedVersion = int.tryParse(results[0].trim());
       if (cachedVersion == null || cachedVersion <= bundledVersion) {
         return null;
       }
 
-      final jsonString = await weightsFile.readAsString();
+      final jsonString = results[1];
       final weights = CrfWeights.fromJson(jsonString);
       final decoder = CrfViterbiDecoder(weights: weights);
 

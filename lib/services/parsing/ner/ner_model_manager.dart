@@ -28,6 +28,7 @@ class NerModelManager extends RemoteModelLoader {
 
   /// Maximum model file size (25MB — safety limit).
   static const _maxModelSize = 25 * 1024 * 1024;
+  static const _maxVocabSize = 5 * 1024 * 1024;
 
   NerModelManager({super.storage});
 
@@ -90,16 +91,19 @@ class NerModelManager extends RemoteModelLoader {
     }
   }
 
-  Future<NerModelFiles?> _tryDownload({
-    int? knownVersion,
-    bool alreadyChecking = false,
-  }) async {
-    if (!canCacheLocally) return null;
-    if (!alreadyChecking) {
-      if (isCheckThrottled) return null;
-      startCheck();
+  /// Throttled entry point for downloading — manages check lifecycle.
+  Future<NerModelFiles?> _tryDownload() async {
+    if (!canCacheLocally || isCheckThrottled) return null;
+    startCheck();
+    try {
+      return await _downloadModel();
+    } finally {
+      endCheck();
     }
+  }
 
+  /// Pure download logic — no check lifecycle management.
+  Future<NerModelFiles?> _downloadModel({int? knownVersion}) async {
     try {
       final latestVersion = knownVersion ?? await _getLatestVersion();
       if (latestVersion == null) {
@@ -113,7 +117,7 @@ class NerModelManager extends RemoteModelLoader {
       final vocabRef = storage.ref('$versionPath/$_vocabFileName');
       final results = await Future.wait([
         modelRef.getData(_maxModelSize),
-        vocabRef.getData(5 * 1024 * 1024),
+        vocabRef.getData(_maxVocabSize),
       ]);
       final modelData = results[0];
       final vocabData = results[1];
@@ -158,8 +162,6 @@ class NerModelManager extends RemoteModelLoader {
     } catch (e) {
       AppLogger.debug('$serviceName: Download failed: $e');
       return null;
-    } finally {
-      endCheck();
     }
   }
 
@@ -185,21 +187,14 @@ class NerModelManager extends RemoteModelLoader {
   }
 
   void _checkForUpdateInBackground() {
-    if (isCheckThrottled) return;
+    if (isCheckThrottled || !canCacheLocally) return;
     startCheck();
 
     Future(() async {
       try {
         final latestVersion = await _getLatestVersion();
-        if (latestVersion == null) {
-          endCheck();
-          return;
-        }
+        if (latestVersion == null) return;
 
-        if (!canCacheLocally) {
-          endCheck();
-          return;
-        }
         final dir = await getCacheDir();
         final cachedVersionStr =
             await File('${dir.path}/$_versionFileName').readAsString();
@@ -207,19 +202,15 @@ class NerModelManager extends RemoteModelLoader {
 
         if (latestVersion > cachedVersion) {
           AppLogger.info(
-            '$serviceName: Newer model available (v$latestVersion > v$cachedVersion)',
+            '$serviceName: Newer model available '
+            '(v$latestVersion > v$cachedVersion)',
           );
-          // endCheck() is called inside _tryDownload's finally block
-          await _tryDownload(
-            knownVersion: latestVersion,
-            alreadyChecking: true,
-          );
-        } else {
-          endCheck();
+          await _downloadModel(knownVersion: latestVersion);
         }
       } catch (e) {
-        endCheck();
         AppLogger.debug('$serviceName: Update check failed: $e');
+      } finally {
+        endCheck();
       }
     });
   }
