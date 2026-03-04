@@ -67,7 +67,7 @@ The Butlery parser is a 4-tier cascading system for extracting structured recipe
 
 | # | Enhancement | Dev Days | When |
 |---|------------|----------|------|
-| 15 | On-device DistilBERT NER | 10-15 | **IN PROGRESS** — code scaffolding done (Python training pipeline + Dart inference layer + cascade integration), awaiting model training |
+| 15 | On-device DistilBERT NER | **DONE** | 4-layer student, 19.7MB INT8 ONNX, span F1 98.7%, uploaded to Firebase Storage v1 |
 | 16 | On-device VLM (Gemma 3n) | 15-20 | When API costs significant |
 | 17 | Multi-language support | 10-15/lang | Market expansion |
 

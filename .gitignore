@@ -108,3 +108,8 @@ scripts/crf/data/urls_sample.txt
 scripts/crf/data/raw_ingredients.txt
 scripts/crf/data/training.conll
 *.crfsuite
+scripts/ner/output/
+
+# Python venv artifacts
+Lib/
+Scripts/
