@@ -97,6 +97,7 @@ import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/repositories/parsing_correction_repository.dart';
 
 // On-device BERT NER for ingredient parsing
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:butlery/services/parsing/ner/onnx_ner_service.dart';
 import 'package:butlery/services/parsing/ner/ner_model_manager.dart';
 import 'package:butlery/services/parsing/ner/neural_ingredient_parser.dart';
@@ -306,14 +307,19 @@ class ContentModule implements DIModule {
         () => SiteConfigRepository(),
       );
 
+      // Firebase Storage instance for model loaders
+      container.registerLazySingleton<FirebaseStorage>(
+        () => FirebaseStorage.instance,
+      );
+
       // Remote CRF weight loader for active learning updates
       container.registerLazySingleton<RemoteWeightLoader>(
-        () => RemoteWeightLoader(),
+        () => RemoteWeightLoader(storage: container<FirebaseStorage>()),
       );
 
       // On-device BERT NER model manager + inference service
       container.registerLazySingleton<NerModelManager>(
-        () => NerModelManager(),
+        () => NerModelManager(storage: container<FirebaseStorage>()),
       );
       container.registerLazySingleton<OnnxNerService>(
         () => OnnxNerService(),

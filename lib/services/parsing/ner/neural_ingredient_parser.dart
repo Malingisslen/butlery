@@ -90,7 +90,7 @@ class NeuralIngredientParser {
         tokens, prediction.labels, line);
   }
 
-  /// Parse multiple ingredient lines, returning results for confident predictions.
+  /// Parse multiple ingredient lines in a single batch inference call.
   ///
   /// Returns a map of line index → ParsedIngredient for lines where BERT
   /// confidence was above threshold. Missing indices should fall through to Gemini.
@@ -99,13 +99,29 @@ class NeuralIngredientParser {
   ) async {
     if (!_nerService.isAvailable) return {};
 
-    final results = <int, ParsedIngredient>{};
+    final allTokens =
+        lines.map((l) => CrfIngredientParser.tokenize(l.trim())).toList();
 
+    final predictions = await _nerService.predictBatch(allTokens);
+
+    final results = <int, ParsedIngredient>{};
     for (var i = 0; i < lines.length; i++) {
-      final result = await parseLine(lines[i]);
-      if (result != null) {
-        results[i] = result;
+      final prediction = predictions[i];
+      if (prediction == null) continue;
+
+      if (prediction.confidence < confidenceThreshold) {
+        AppLogger.debug(
+          '$_serviceName: Low confidence ${prediction.confidence.toStringAsFixed(2)} '
+          'on "${lines[i]}" — deferring to LLM',
+        );
+        continue;
       }
+
+      results[i] = CrfIngredientParser.assembleFromLabels(
+        allTokens[i],
+        prediction.labels,
+        lines[i],
+      );
     }
 
     return results;
