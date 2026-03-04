@@ -103,6 +103,12 @@ Another Claude Code session may be running in parallel in a worktree or on a dif
 - Task state persists on disk - PreCompact hook reads both Claude Code tasks and `/tasks/todo.md`
 - If going sideways → STOP and re-plan immediately
 - Before presenting plans, review against `.claude/plan-review-checklist.md`
+- **Plain-language summary (MANDATORY):** Every plan MUST end with a section called "## What this means in plain language" that:
+  - Explains what the user will notice changing (new button, different behavior, etc.)
+  - Uses zero technical jargon — no "viewmodel", "repository", "mixin", "provider", "widget tree"
+  - Summarizes the risk: what could break, and how easy it is to undo
+  - Is max 5-8 bullet points, written as if explaining to a friend who doesn't code
+  - Example: "You'll get a new 'Share' button on the recipe page. Tapping it lets you send a recipe link to someone. Nothing else in the app changes. Low risk — if something goes wrong we just remove the button."
 
 **Fit Check (when 2+ approaches exist):**
 - Requirements as rows, approaches as columns
