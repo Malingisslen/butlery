@@ -70,12 +70,11 @@ class NerModelManager extends RemoteModelLoader {
 
       if (!await File(modelPath).exists()) return null;
 
-      final results = await Future.wait([
+      final [vocabContent, versionStr] = await Future.wait([
         File('${dir.path}/$_vocabFileName').readAsString(),
         File('${dir.path}/$_versionFileName').readAsString(),
       ]);
-      final vocabContent = results[0];
-      final version = int.tryParse(results[1].trim());
+      final version = int.tryParse(versionStr.trim());
       if (version == null) return null;
 
       _cachedModelPath = modelPath;

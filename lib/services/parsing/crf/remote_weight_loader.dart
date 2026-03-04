@@ -53,7 +53,14 @@ class RemoteWeightLoader extends RemoteModelLoader {
       if (localParser != null) return localParser;
 
       if (!canCacheLocally) {
-        return await _tryDownloadWeights(bundledVersion: bundledVersion);
+        final result =
+            await _downloadRemoteWeights(bundledVersion: bundledVersion);
+        if (result == null) return null;
+        final (parser, _, version) = result;
+        AppLogger.info(
+          '$serviceName: Downloaded remote weights v$version (web)',
+        );
+        return parser;
       }
 
       return await _tryDownloadAndCache(bundledVersion: bundledVersion);
@@ -114,19 +121,6 @@ class RemoteWeightLoader extends RemoteModelLoader {
     AppLogger.info(
       '$serviceName: Downloaded remote weights v$remoteVersion '
       '(was bundled v$bundledVersion)',
-    );
-    return parser;
-  }
-
-  Future<CrfIngredientParser?> _tryDownloadWeights({
-    required int bundledVersion,
-  }) async {
-    final result = await _downloadRemoteWeights(bundledVersion: bundledVersion);
-    if (result == null) return null;
-
-    final (parser, _, remoteVersion) = result;
-    AppLogger.info(
-      '$serviceName: Downloaded remote weights v$remoteVersion (web)',
     );
     return parser;
   }
