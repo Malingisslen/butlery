@@ -4,6 +4,9 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/services/parsing/common/recipe_merger.dart';
+import 'package:butlery/services/parsing/tiers/llm_tier.dart';
+import 'package:butlery/services/parsing/tiers/rule_based_tier.dart';
+import 'package:butlery/services/parsing/tiers/schema_org_tier.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -363,17 +366,17 @@ void main() {
         titleConfidence: ParseConfidence.low,
       );
       final result = merger.merge([
-        tierSuccess(recipe1, tierName: 'SchemaOrg'),
-        tierSuccess(recipe2, tierName: 'RuleBased'),
-        tierFailure(tierName: 'LLM'),
+        tierSuccess(recipe1, tierName: SchemaOrgTier.tierIdentifier),
+        tierSuccess(recipe2, tierName: RuleBasedTier.tierIdentifier),
+        tierFailure(tierName: LlmTier.tierIdentifier),
       ]);
 
       expect(result, isNotNull);
       final tierNames =
           result!.metadata.tierResults.map((t) => t.tierName).toList();
-      expect(tierNames, contains('SchemaOrg'));
-      expect(tierNames, contains('RuleBased'));
-      expect(tierNames, contains('LLM'));
+      expect(tierNames, contains(SchemaOrgTier.tierIdentifier));
+      expect(tierNames, contains(RuleBasedTier.tierIdentifier));
+      expect(tierNames, contains(LlmTier.tierIdentifier));
       expect(tierNames.length, 3);
     });
   });

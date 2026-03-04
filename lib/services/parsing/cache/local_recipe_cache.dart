@@ -30,8 +30,11 @@ class LocalRecipeCache {
   /// Current parser version (entries from old versions are invalid).
   final String parserVersion;
 
-  /// User ID for per-user isolation.
-  final String userId;
+  /// User ID for per-user isolation, resolved at call time.
+  final String Function() _getCurrentUserId;
+
+  /// Current user ID.
+  String get userId => _getCurrentUserId();
 
   /// Drift cache DAO
   final CacheDao _cacheDao;
@@ -39,12 +42,13 @@ class LocalRecipeCache {
   bool _initialized = false;
 
   LocalRecipeCache({
-    required this.userId,
+    required String Function() getCurrentUserId,
     required this.parserVersion,
     required CacheDao cacheDao,
     this.maxAgeDays = 30,
     this.maxEntries = 100,
-  }) : _cacheDao = cacheDao;
+  })  : _getCurrentUserId = getCurrentUserId,
+        _cacheDao = cacheDao;
 
   /// Initialize the cache.
   Future<void> init() async {

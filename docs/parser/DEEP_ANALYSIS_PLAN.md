@@ -51,8 +51,8 @@ The Butlery parser is a 4-tier cascading system for extracting structured recipe
 |---|------------|----------|
 | 8 | Synthetic training data via Claude AI Max | **DONE** | 85.0% → 87.8% |
 | 9 | Golden dataset expansion via Claude AI Max | **DONE** | 318 → 433 entries |
-| 10 | User correction → retrain pipeline | 2-3 |
-| 11 | Livsmedelsverket ingredient DB | 5-7 |
+| 10 | User correction → retrain pipeline | **DONE** | export-corrections.ts + export_corrections.dart |
+| 11 | Livsmedelsverket ingredient DB | **DONE** | fetch-livsmedelsverket.ts (candidates for review) |
 | 12 | Unify ParsedIngredient models | **DONE** |
 | 18 | Add `size` field to ParsedIngredient | **DONE** |
 
@@ -60,14 +60,14 @@ The Butlery parser is a 4-tier cascading system for extracting structured recipe
 
 | # | Enhancement | Dev Days | When |
 |---|------------|----------|------|
-| 13 | Gemini Flash structured outputs | 3-5 | After Tier A proves insufficient |
+| 13 | Gemini Flash structured outputs | **DONE** | Replaced Mistral with Gemini 2.0 Flash |
 | 14 | VLM direct photo→recipe | 3-5 | If photo import is key |
 
 ### Tier D: High Dev Cost, Zero Ongoing (Long-Term)
 
 | # | Enhancement | Dev Days | When |
 |---|------------|----------|------|
-| 15 | On-device DistilBERT NER | 10-15 | After CRF ceiling is hit |
+| 15 | On-device DistilBERT NER | 10-15 | **IN PROGRESS** — code scaffolding done (Python training pipeline + Dart inference layer + cascade integration), awaiting model training |
 | 16 | On-device VLM (Gemma 3n) | 15-20 | When API costs significant |
 | 17 | Multi-language support | 10-15/lang | Market expansion |
 

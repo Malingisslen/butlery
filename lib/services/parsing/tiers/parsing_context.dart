@@ -21,6 +21,9 @@ class ParsingContext {
   /// Import source type.
   final ImportSource source;
 
+  /// Whether the input source requires OCR error correction.
+  bool get isOcrSource => source == ImportSource.photo;
+
   /// Domain extracted from URL.
   final String? domain;
 

@@ -43,8 +43,8 @@ const double _maxEffectiveThreshold = 0.95;
 /// heuristic extraction. A 0.55 SchemaOrg result (e.g. missing time) is
 /// still better than triggering an expensive LLM call.
 const Map<String, double> _tierQualityDiscount = {
-  'SchemaOrg': 0.10, // JSON-LD is highly structured
-  'SiteConfig': 0.05, // CSS selectors are semi-structured
+  SchemaOrgTier.tierIdentifier: 0.10, // JSON-LD is highly structured
+  SiteConfigTier.tierIdentifier: 0.05, // CSS selectors are semi-structured
 };
 
 /// Result of parsing operation.
@@ -121,9 +121,14 @@ class RecipeParserService extends BaseService {
   @override
   String get serviceName => 'RecipeParserService';
 
+  static const _selectiveEnhanceTierName = 'SelectiveEnhance';
+
   final SiteConfigRepository? _siteConfigRepository;
   final LlmService? _llmService;
-  final String _userId;
+  final String Function() _getCurrentUserId;
+
+  /// Current user ID, resolved at call time to handle login/logout.
+  String get _userId => _getCurrentUserId();
 
   /// Local cache for parsed recipes (lazily initialized).
   LocalRecipeCache? _cacheField;
@@ -156,11 +161,11 @@ class RecipeParserService extends BaseService {
   late final IngredientParsingStrategy _ingredientStrategy;
 
   RecipeParserService({
-    required String userId,
+    required String Function() getCurrentUserId,
     SiteConfigRepository? siteConfigRepository,
     LlmService? llmService,
     IngredientParsingStrategy? ingredientStrategy,
-  })  : _userId = userId,
+  })  : _getCurrentUserId = getCurrentUserId,
         _siteConfigRepository = siteConfigRepository,
         _llmService = llmService {
     // Shared strategy: CRF when weights available, regex fallback
@@ -183,7 +188,7 @@ class RecipeParserService extends BaseService {
     // Create cache with CacheDao from OfflineService
     final offlineService = ServiceLocator.get<OfflineService>();
     _cacheField = LocalRecipeCache(
-      userId: _userId,
+      getCurrentUserId: _getCurrentUserId,
       parserVersion: parserVersion,
       cacheDao: offlineService.database.cacheDao,
     );
@@ -372,9 +377,6 @@ class RecipeParserService extends BaseService {
     required double qualityThreshold,
     required bool useLlm,
   }) async {
-    // Enable OCR error correction for photo/image sources
-    _ingredientStrategy.ocrCorrection = context.source == ImportSource.photo;
-
     final results = <TierResult>[];
     _lastTierFailures = [];
 
@@ -503,9 +505,9 @@ class RecipeParserService extends BaseService {
     final parsed = recipe.ingredients.value!;
     final originalLines = parsed.map((p) => p.originalLine).toList();
 
-    // Get uncertain lines from CRF output
+    // Get uncertain lines (CRF → BERT NER → remaining for LLM)
     final uncertainLines =
-        _ingredientStrategy.getUncertainLines(parsed, originalLines);
+        await _ingredientStrategy.getUncertainLines(parsed, originalLines);
 
     if (uncertainLines.isEmpty) return false;
 
@@ -562,20 +564,11 @@ class RecipeParserService extends BaseService {
           ) /
           patchedList.length;
 
-      final FieldResult<List<ParsedIngredient>> newIngredients;
-      if (avgConfidence >= 0.7) {
-        newIngredients = FieldResult.success(patchedList);
-      } else if (avgConfidence >= 0.5) {
-        newIngredients = FieldResult.mediumConfidence(
-          patchedList,
-          'Selective LLM enhancement',
-        );
-      } else {
-        newIngredients = FieldResult.lowConfidence(
-          patchedList,
-          'Selective LLM enhancement — still low confidence',
-        );
-      }
+      final newIngredients = FieldResult.fromConfidenceScore(
+        patchedList,
+        avgConfidence,
+        'Selective LLM enhancement',
+      );
 
       // Rebuild recipe with patched ingredients
       final patchedRecipe = ParsedRecipe(
@@ -600,7 +593,7 @@ class RecipeParserService extends BaseService {
 
       if (newQuality >= (qualityThreshold - discount)) {
         results.add(TierResult.success(
-          tierName: 'SelectiveEnhance',
+          tierName: _selectiveEnhanceTierName,
           recipe: patchedRecipe,
           duration: stopwatch.elapsed,
           costSek: response.estimatedCost,

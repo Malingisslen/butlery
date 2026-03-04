@@ -30,8 +30,10 @@ class CrfTier extends ParsingTier with QualityScoring {
 
   CrfTier({CrfIngredientParser? parser}) : _injectedParser = parser;
 
+  static const tierIdentifier = 'CRF';
+
   @override
-  String get tierName => 'CRF';
+  String get tierName => tierIdentifier;
 
   @override
   int get priority => 4;
@@ -158,16 +160,6 @@ class CrfTier extends ParsingTier with QualityScoring {
     final structuredCount = parsed.where((p) => p.isStructured).length;
     final ratio = structuredCount / parsed.length;
 
-    if (ratio >= 0.5) {
-      return FieldResult.mediumConfidence(
-        parsed,
-        'Parsed via CRF model',
-      );
-    } else {
-      return FieldResult.lowConfidence(
-        parsed,
-        'CRF: most ingredients unstructured',
-      );
-    }
+    return FieldResult.fromConfidenceScore(parsed, ratio, 'CRF model');
   }
 }

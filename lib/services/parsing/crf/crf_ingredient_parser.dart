@@ -76,7 +76,7 @@ class CrfIngredientParser {
     // of the name (e.g., "färsk basilika"), not a preparation descriptor
     _relabelFreshnessAsName(tokens, labels);
 
-    return _assembleIngredient(tokens, labels, line);
+    return assembleFromLabels(tokens, labels, line);
   }
 
   /// Parses multiple ingredient lines, filtering out group headers.
@@ -125,7 +125,11 @@ class CrfIngredientParser {
     return ch == '(' || ch == ')' || ch == ',' || ch == ';';
   }
 
-  ParsedIngredient _assembleIngredient(
+  /// Assembles BIO labels into a structured [ParsedIngredient].
+  ///
+  /// Shared between CRF and NER parsers to ensure consistent output.
+  /// Handles paren suppression and Swedish "och" bridging.
+  static ParsedIngredient assembleFromLabels(
     List<String> tokens,
     List<BioLabel> labels,
     String originalLine,
@@ -168,7 +172,7 @@ class CrfIngredientParser {
   ///
   /// Retains "och" tokens labeled O when they bridge two tokens of the same
   /// span type (e.g., "hackad och skalad" → prep = "hackad och skalad").
-  Map<_SpanType, String> _groupSpans(
+  static Map<_SpanType, String> _groupSpans(
     List<String> tokens,
     List<BioLabel> labels,
   ) {
@@ -208,7 +212,7 @@ class CrfIngredientParser {
     return result.map((k, v) => MapEntry(k, v.join(' ')));
   }
 
-  _SpanType? _nextNonOSpanType(List<BioLabel> labels, int from) {
+  static _SpanType? _nextNonOSpanType(List<BioLabel> labels, int from) {
     for (var i = from; i < labels.length; i++) {
       final type = _spanTypeFor(labels[i]);
       if (type != null) return type;
@@ -238,7 +242,7 @@ class CrfIngredientParser {
     }
   }
 
-  _SpanType? _spanTypeFor(BioLabel label) {
+  static _SpanType? _spanTypeFor(BioLabel label) {
     switch (label) {
       case BioLabel.bQty:
       case BioLabel.iQty:

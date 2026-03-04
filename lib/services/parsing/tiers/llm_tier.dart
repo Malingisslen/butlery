@@ -53,8 +53,10 @@ class LlmTier extends ParsingTier with QualityScoring {
     this.llmService,
   });
 
+  static const tierIdentifier = 'LLM';
+
   @override
-  String get tierName => 'LLM';
+  String get tierName => tierIdentifier;
 
   @override
   int get priority => 4;

@@ -1,5 +1,5 @@
 /**
- * Cloud Function for structuring recipe text using Mistral LLM.
+ * Cloud Function for structuring recipe text using Gemini LLM.
  *
  * This callable function takes raw text (from web scraping, OCR, etc.)
  * and returns a structured recipe object.
@@ -8,21 +8,19 @@
 import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import {
-  getMistralClient,
-  mistralApiKey,
+  getGeminiClient,
+  getTextModel,
+  getIngredientLinesModel,
+  geminiApiKey,
   PROMPT_VERSION,
   RECIPE_EXTRACTION_SYSTEM_PROMPT,
   RECIPE_ENHANCEMENT_SYSTEM_PROMPT,
   SPOKEN_CONTENT_SYSTEM_PROMPT,
   INGREDIENT_LINE_SYSTEM_PROMPT,
-  INGREDIENT_LINE_MAX_TOKENS,
-  TEXT_MODEL,
-  MAX_TOKENS,
-  TEMPERATURE,
   parseRecipeResponse,
   parseIngredientLinesResponse,
   ExtractedRecipe,
-} from "./mistral-client";
+} from "./gemini-client";
 import { withRateLimit } from "../middleware/rate_limiter";
 import { scrubPii, scrubUrlParams } from "./pii-scrubber";
 
@@ -62,10 +60,11 @@ interface StructureRecipeResponse {
  * - extract: Full extraction from raw text (default)
  * - enhance: Improve partial extraction with original text
  * - spoken: Extract from video transcript (YouTube, TikTok)
+ * - ingredientLines: Parse individual ingredient lines
  */
 export const structureRecipe = onCall<StructureRecipeRequest>(
   {
-    secrets: [mistralApiKey],
+    secrets: [geminiApiKey],
     memory: "512MiB",
     timeoutSeconds: 60,
     cors: true,
@@ -105,7 +104,13 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
         };
       }
 
-      const client = getMistralClient(mistralApiKey.value());
+      const client = getGeminiClient(geminiApiKey.value());
+      const isIngredientLines = mode === "ingredientLines";
+
+      // Get the appropriate model (with schema baked in)
+      const model = isIngredientLines
+        ? getIngredientLinesModel(client)
+        : getTextModel(client);
 
       // Scrub PII before sending to LLM
       const cleanText = scrubPii(text);
@@ -114,7 +119,6 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
       // Select system prompt based on mode
       let systemPrompt: string;
       let userPrompt: string;
-      const isIngredientLines = mode === "ingredientLines";
 
       switch (mode) {
         case "enhance":
@@ -138,21 +142,19 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
         `[structureRecipe] Processing ${text.length} chars in ${mode} mode for user ${request.auth!.uid} (prompt v${PROMPT_VERSION})`
       );
 
-      // Call Mistral API
-      const response = await client.chat.complete({
-        model: TEXT_MODEL,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
+      // Call Gemini API
+      const result = await model.generateContent({
+        contents: [
+          { role: "user", parts: [{ text: userPrompt }] },
         ],
-        maxTokens: isIngredientLines ? INGREDIENT_LINE_MAX_TOKENS : MAX_TOKENS,
-        temperature: TEMPERATURE,
-        responseFormat: { type: "json_object" },
+        systemInstruction: { role: "model", parts: [{ text: systemPrompt }] },
       });
 
-      const content = response.choices?.[0]?.message?.content;
-      if (!content || typeof content !== "string") {
-        console.error("[structureRecipe] Empty response from Mistral");
+      const response = result.response;
+      const content = response.text();
+
+      if (!content) {
+        console.error("[structureRecipe] Empty response from Gemini");
         return {
           success: false,
           error: "Inget svar från AI-tjänsten.",
@@ -161,7 +163,8 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
       }
 
       // Calculate actual cost from API usage
-      const actualCost = calculateTextCost(response.usage);
+      const usage = response.usageMetadata;
+      const actualCost = calculateTextCost(usage);
 
       // Parse response — ingredient lines mode returns array, others return recipe
       if (isIngredientLines) {
@@ -294,16 +297,16 @@ function buildSpokenPrompt(transcript: string, sourceUrl?: string): string {
 }
 
 /**
- * Calculate actual cost from Mistral API usage data.
- * Mistral Small: $0.1/1M input tokens, $0.3/1M output tokens
+ * Calculate actual cost from Gemini API usage data.
+ * Gemini 2.0 Flash: ~$0.10/1M input tokens, ~$0.40/1M output tokens
  */
-function calculateTextCost(usage: { promptTokens?: number; completionTokens?: number } | undefined): number {
+function calculateTextCost(usage: { promptTokenCount?: number; candidatesTokenCount?: number } | undefined): number {
   if (!usage) {
     return 0.01; // Fallback estimate
   }
 
-  const inputCost = ((usage.promptTokens ?? 0) / 1_000_000) * 0.1;
-  const outputCost = ((usage.completionTokens ?? 0) / 1_000_000) * 0.3;
+  const inputCost = ((usage.promptTokenCount ?? 0) / 1_000_000) * 0.10;
+  const outputCost = ((usage.candidatesTokenCount ?? 0) / 1_000_000) * 0.40;
 
   return Math.max(inputCost + outputCost, 0.001); // Minimum cost floor
 }

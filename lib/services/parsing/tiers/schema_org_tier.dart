@@ -19,8 +19,10 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
   SchemaOrgTier({IngredientParsingStrategy? ingredientStrategy})
       : _ingredientStrategy = ingredientStrategy ?? IngredientParsingStrategy();
 
+  static const tierIdentifier = 'SchemaOrg';
+
   @override
-  String get tierName => 'SchemaOrg';
+  String get tierName => tierIdentifier;
 
   @override
   int get priority => 1;
@@ -90,7 +92,7 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
     final portions = _extractPortions(data);
 
     // Extract ingredients
-    final ingredients = await _extractIngredients(data);
+    final ingredients = await _extractIngredients(data, context);
 
     // Extract instructions
     final instructions = _extractInstructions(data);
@@ -182,6 +184,7 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
 
   Future<FieldResult<List<ParsedIngredient>>> _extractIngredients(
     Map<String, dynamic> data,
+    ParsingContext context,
   ) async {
     final rawIngredients = data['recipeIngredient'];
 
@@ -195,7 +198,10 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
         .where((s) => s.isNotEmpty)
         .toList();
 
-    return _ingredientStrategy.parseLines(lines);
+    return _ingredientStrategy.parseLines(
+      lines,
+      ocrCorrection: context.isOcrSource,
+    );
   }
 
   FieldResult<List<String>> _extractInstructions(Map<String, dynamic> data) {

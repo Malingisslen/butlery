@@ -96,6 +96,11 @@ import 'package:butlery/services/parsing/crf/remote_weight_loader.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/repositories/parsing_correction_repository.dart';
 
+// On-device BERT NER for ingredient parsing
+import 'package:butlery/services/parsing/ner/onnx_ner_service.dart';
+import 'package:butlery/services/parsing/ner/ner_model_manager.dart';
+import 'package:butlery/services/parsing/ner/neural_ingredient_parser.dart';
+
 // Ingredient substitution service
 import 'package:butlery/services/ingredient_substitution_service.dart';
 
@@ -163,6 +168,10 @@ class ContentModule implements DIModule {
         ParsingCorrectionRepository,
         RemoteWeightLoader,
         IngredientParsingStrategy,
+        // On-device BERT NER
+        NerModelManager,
+        OnnxNerService,
+        NeuralIngredientParser,
         // Ingredient substitution
         IngredientSubstitutionService,
       ];
@@ -302,10 +311,26 @@ class ContentModule implements DIModule {
         () => RemoteWeightLoader(),
       );
 
-      // Shared ingredient parsing strategy (CRF + remote weight updates)
+      // On-device BERT NER model manager + inference service
+      container.registerLazySingleton<NerModelManager>(
+        () => NerModelManager(),
+      );
+      container.registerLazySingleton<OnnxNerService>(
+        () => OnnxNerService(),
+        dispose: (s) => s.dispose(),
+      );
+      container.registerLazySingleton<NeuralIngredientParser>(
+        () => NeuralIngredientParser(
+          nerService: container<OnnxNerService>(),
+          modelManager: container<NerModelManager>(),
+        ),
+      );
+
+      // Shared ingredient parsing strategy (CRF → BERT NER → regex fallback)
       container.registerLazySingleton<IngredientParsingStrategy>(
         () => IngredientParsingStrategy(
           remoteLoader: container<RemoteWeightLoader>(),
+          neuralParser: container<NeuralIngredientParser>(),
         ),
       );
 
@@ -313,17 +338,16 @@ class ContentModule implements DIModule {
       // Provides quality-based parsing with Swedish text support
       container.registerLazySingleton<RecipeParserService>(
         () {
-          final authRepo = container<auth.AuthRepository>();
-          final userId =
-              (authRepo as FirebaseAuthRepository).currentUser?.uid ??
-                  'anonymous';
+          final authRepo =
+              container<auth.AuthRepository>() as FirebaseAuthRepository;
           return RecipeParserService(
-            userId: userId,
+            getCurrentUserId: () => authRepo.currentUser?.uid ?? 'anonymous',
             siteConfigRepository: container<SiteConfigRepository>(),
             llmService: container<LlmService>(),
             ingredientStrategy: container<IngredientParsingStrategy>(),
           );
         },
+        dispose: (s) => s.close(),
       );
 
       // Ingredient registry — enriches static KnownIngredients from Firestore
