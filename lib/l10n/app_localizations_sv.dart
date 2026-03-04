@@ -3534,6 +3534,16 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importStep3ReviewEdit => 'Steg 3: Granska och redigera';
 
   @override
+  String importParseQualityWarning(int quality) {
+    return 'Receptet tolkades med $quality% konfidens. Granska fälten nedan.';
+  }
+
+  @override
+  String importFieldsNeedReview(int count) {
+    return '$count fält kan behöva justeras';
+  }
+
+  @override
   String menuCardMoreRecipes(int count) {
     return '+ $count fler recept';
   }

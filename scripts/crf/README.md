@@ -24,26 +24,16 @@ End-to-end pipeline for training CRF weights for on-device ingredient parsing.
 
 5. **Manual review** — correct ~500 lines for gold-standard validation. Focus on novel patterns the regex parser misses (ranges, compound names, prep phrases).
 
-6. **Export user corrections** (optional) — convert user corrections to training data:
+6. **Retrain with user corrections** (optional) — single command exports corrections from Firestore, converts to CoNLL (with format validation), merges, and retrains:
    ```bash
-   # Step 1: Export from Firestore → JSON
-   cd functions
-   npx ts-node src/admin/export-corrections.ts --output ../scripts/crf/data/corrections.json
-
-   # Step 2: Convert JSON → CoNLL
-   cd ..
-   dart run scripts/crf/export_corrections.dart
-
-   # Step 3: Merge with existing training data
-   cat scripts/crf/data/training.conll scripts/crf/data/corrections_training.conll > merged.conll
+   ./scripts/crf/retrain_with_corrections.sh
    ```
-   Only needed when sufficient user corrections have accumulated. Alias learning handles
-   the highest-value corrections (name fixes) automatically via Cloud Functions.
+   Prerequisites: `firebase login`, `npm install` in functions/, `pip install python-crfsuite scikit-learn`.
+   Only needed when sufficient user corrections have accumulated.
 
-7. **Train** — train the CRF model and export weights:
+7. **Train from scratch** (without corrections) — train the CRF model on base training data only:
    ```bash
-   pip install python-crfsuite scikit-learn
-   python scripts/crf/train_crf.py --input training.conll --output assets/data/crf_ingredient_weights.json
+   python scripts/crf/train_crf.py --input scripts/crf/data/training.conll --output assets/data/crf_ingredient_weights.json
    ```
 
 8. **Test** — verify the Dart-side CRF tier:
