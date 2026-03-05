@@ -1,6 +1,7 @@
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
+import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.dart';
 import 'package:butlery/services/parsing/parsers/swedish_line_classifier.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
@@ -8,14 +9,19 @@ import 'package:html_unescape/html_unescape.dart';
 
 /// Tier 3: Rule-based Swedish text parsing.
 ///
-/// Uses the SwedishLineClassifier to parse unstructured text from
-/// Instagram, TikTok, YouTube descriptions, and other social media sources.
-/// Also serves as fallback for URL content that lacks structured data.
+/// Uses the SwedishLineClassifier (or NeuralLineClassifier when available)
+/// to parse unstructured text from Instagram, TikTok, YouTube descriptions,
+/// and other social media sources. Also serves as fallback for URL content
+/// that lacks structured data.
 class RuleBasedTier extends ParsingTier with QualityScoring {
   final IngredientParsingStrategy _ingredientStrategy;
+  final NeuralLineClassifier? _neuralClassifier;
 
-  RuleBasedTier({IngredientParsingStrategy? ingredientStrategy})
-      : _ingredientStrategy = ingredientStrategy ?? IngredientParsingStrategy();
+  RuleBasedTier({
+    IngredientParsingStrategy? ingredientStrategy,
+    NeuralLineClassifier? neuralClassifier,
+  })  : _ingredientStrategy = ingredientStrategy ?? IngredientParsingStrategy(),
+        _neuralClassifier = neuralClassifier;
 
   static const tierIdentifier = 'RuleBased';
 
@@ -54,7 +60,10 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
     }
 
     // Classify and parse (cached across tiers)
-    final structure = context.parseStructureCached(text);
+    final structure = context.parseStructureCached(
+      text,
+      neuralClassifier: _neuralClassifier,
+    );
 
     if (!structure.isValid) {
       return TierResult.noData(

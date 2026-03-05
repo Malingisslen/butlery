@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
+import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.dart';
 import 'package:butlery/services/parsing/parsers/swedish_line_classifier.dart';
 import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 
@@ -147,11 +148,41 @@ class ParsingContext {
   String? _structureCacheKey;
 
   /// Returns cached structure if text matches, otherwise parses fresh.
-  ParsedRecipeStructure parseStructureCached(String text) {
+  ///
+  /// If [neuralClassifier] is provided and its model is available, uses
+  /// neural classification. Otherwise falls back to rule-based.
+  ParsedRecipeStructure parseStructureCached(
+    String text, {
+    NeuralLineClassifier? neuralClassifier,
+  }) {
     if (_cachedStructure != null && _structureCacheKey == text) {
       return _cachedStructure!;
     }
-    final result = SwedishLineClassifier.instance.parseStructure(text);
+    final result = neuralClassifier != null && neuralClassifier.isAvailable
+        ? neuralClassifier.parseStructure(text)
+        : SwedishLineClassifier.instance.parseStructure(text);
+    _cachedStructure = result;
+    _structureCacheKey = text;
+    return result;
+  }
+
+  /// Async version that can use neural classification via ONNX.
+  ///
+  /// Preferred when a [NeuralLineClassifier] is available — the async path
+  /// actually runs the ONNX model instead of falling back to rule-based.
+  Future<ParsedRecipeStructure> parseStructureCachedAsync(
+    String text, {
+    NeuralLineClassifier? neuralClassifier,
+  }) async {
+    if (_cachedStructure != null && _structureCacheKey == text) {
+      return _cachedStructure!;
+    }
+    final ParsedRecipeStructure result;
+    if (neuralClassifier != null && neuralClassifier.isAvailable) {
+      result = await neuralClassifier.parseStructureAsync(text);
+    } else {
+      result = SwedishLineClassifier.instance.parseStructure(text);
+    }
     _cachedStructure = result;
     _structureCacheKey = text;
     return result;

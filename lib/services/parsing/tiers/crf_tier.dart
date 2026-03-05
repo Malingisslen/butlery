@@ -6,6 +6,7 @@ import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/services/parsing/crf/crf_ingredient_parser.dart';
 import 'package:butlery/services/parsing/crf/crf_viterbi_decoder.dart';
+import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
 
@@ -27,8 +28,13 @@ class CrfTier extends ParsingTier with QualityScoring {
 
   /// Optional injected parser for testing.
   final CrfIngredientParser? _injectedParser;
+  final NeuralLineClassifier? _neuralClassifier;
 
-  CrfTier({CrfIngredientParser? parser}) : _injectedParser = parser;
+  CrfTier({
+    CrfIngredientParser? parser,
+    NeuralLineClassifier? neuralClassifier,
+  })  : _injectedParser = parser,
+        _neuralClassifier = neuralClassifier;
 
   static const tierIdentifier = 'CRF';
 
@@ -74,7 +80,10 @@ class CrfTier extends ParsingTier with QualityScoring {
       );
     }
 
-    final structure = context.parseStructureCached(text);
+    final structure = context.parseStructureCached(
+      text,
+      neuralClassifier: _neuralClassifier,
+    );
 
     if (!structure.isValid) {
       return TierResult.noData(

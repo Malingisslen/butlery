@@ -105,16 +105,6 @@
         ]
       }
     ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/stop-analyze.sh"
-          }
-        ]
-      }
-    ]
+    "Stop": []
   }
 }

@@ -17,6 +17,7 @@ import 'package:butlery/services/parsing/cache/local_recipe_cache.dart';
 import 'package:butlery/services/parsing/common/recipe_merger.dart';
 import 'package:butlery/services/parsing/ingredient_conversion.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
+import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.dart';
 import 'package:butlery/services/parsing/tiers/llm_tier.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
@@ -125,6 +126,7 @@ class RecipeParserService extends BaseService {
 
   final SiteConfigRepository? _siteConfigRepository;
   final LlmService? _llmService;
+  final NeuralLineClassifier? _neuralLineClassifier;
   final String Function() _getCurrentUserId;
 
   /// Current user ID, resolved at call time to handle login/logout.
@@ -165,9 +167,11 @@ class RecipeParserService extends BaseService {
     SiteConfigRepository? siteConfigRepository,
     LlmService? llmService,
     IngredientParsingStrategy? ingredientStrategy,
+    NeuralLineClassifier? neuralLineClassifier,
   })  : _getCurrentUserId = getCurrentUserId,
         _siteConfigRepository = siteConfigRepository,
-        _llmService = llmService {
+        _llmService = llmService,
+        _neuralLineClassifier = neuralLineClassifier {
     // Shared strategy: CRF when weights available, regex fallback
     final strategy = ingredientStrategy ?? IngredientParsingStrategy();
     _ingredientStrategy = strategy;
@@ -178,7 +182,10 @@ class RecipeParserService extends BaseService {
         configLoader: _siteConfigRepository?.getConfigIfExists,
         ingredientStrategy: strategy,
       ),
-      RuleBasedTier(ingredientStrategy: strategy),
+      RuleBasedTier(
+        ingredientStrategy: strategy,
+        neuralClassifier: neuralLineClassifier,
+      ),
       LlmTier(llmService: _llmService),
     ];
   }
@@ -199,6 +206,21 @@ class RecipeParserService extends BaseService {
     if (repo != null) {
       // Fire and forget - don't block initialization
       repo.seedConfigsIfEmpty();
+    }
+
+    // Initialize neural line classifier in background (fire-and-forget)
+    final neuralClassifier = _neuralLineClassifier;
+    if (neuralClassifier != null) {
+      Future(() async {
+        try {
+          final ready = await neuralClassifier.ensureInitialized();
+          if (ready) {
+            AppLogger.info('$serviceName: Neural line classifier ready');
+          }
+        } catch (e) {
+          AppLogger.debug('$serviceName: Neural classifier init failed: $e');
+        }
+      });
     }
 
     AppLogger.info('$serviceName: Initialized with ${_tiers.length} tiers');
