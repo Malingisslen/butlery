@@ -240,7 +240,7 @@ class SwedishLineClassifier {
     final lines = text.split(RegExp(r'\r?\n'));
     final classified = lines.map(classifyLine).toList();
     final contextual = _viterbi.classifyWithContext(classified);
-    return _groupIntoSections(contextual);
+    return groupIntoSections(contextual);
   }
 
   /// Extract classified lines by type with Viterbi context.
@@ -254,7 +254,15 @@ class SwedishLineClassifier {
   /// Get confidence-weighted recipe structure from text.
   ParsedRecipeStructure parseStructure(String text) {
     final sections = classifyAndGroup(text);
+    return extractStructureFromSections(sections);
+  }
 
+  /// Extracts [ParsedRecipeStructure] from grouped sections.
+  ///
+  /// Shared between rule-based and neural classifiers.
+  static ParsedRecipeStructure extractStructureFromSections(
+    List<RecipeSection> sections,
+  ) {
     String? title;
     final ingredients = <String>[];
     final instructions = <String>[];
@@ -436,7 +444,11 @@ class SwedishLineClassifier {
     return false;
   }
 
-  List<RecipeSection> _groupIntoSections(List<ClassifiedLine> lines) {
+  /// Groups classified lines into recipe sections.
+  ///
+  /// Shared between rule-based and neural classifiers — both produce
+  /// [ClassifiedLine] lists that need the same grouping logic.
+  static List<RecipeSection> groupIntoSections(List<ClassifiedLine> lines) {
     final sections = <RecipeSection>[];
     var currentType = LineSectionType.mixed;
     var currentLines = <ClassifiedLine>[];

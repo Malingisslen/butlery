@@ -90,6 +90,9 @@ nul
 !scripts/ner/train_bert_ner.py
 !scripts/ner/distill_to_student.py
 !scripts/ner/export_onnx.py
+!scripts/line_classifier/train_line_classifier.py
+!scripts/line_classifier/generate_silver_data.py
+!scripts/line_classifier/deploy_model.py
 
 # Temp analysis files
 *tmp_analyze*
@@ -115,6 +118,10 @@ scripts/crf/data/training.conll
 scripts/ner/output/
 scripts/ner/__pycache__/
 scripts/line_classifier/.venv/
+scripts/line_classifier/Lib/
+scripts/line_classifier/Scripts/
+scripts/line_classifier/output/
+scripts/line_classifier/__pycache__/
 scripts/output/crf_eval*.txt
 
 # Python venv artifacts

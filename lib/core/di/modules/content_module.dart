@@ -102,6 +102,11 @@ import 'package:butlery/services/parsing/ner/onnx_ner_service.dart';
 import 'package:butlery/services/parsing/ner/ner_model_manager.dart';
 import 'package:butlery/services/parsing/ner/neural_ingredient_parser.dart';
 
+// On-device neural line classifier
+import 'package:butlery/services/parsing/line_classifier/line_classifier_model_manager.dart';
+import 'package:butlery/services/parsing/line_classifier/onnx_line_classifier_service.dart';
+import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.dart';
+
 // Ingredient substitution service
 import 'package:butlery/services/ingredient_substitution_service.dart';
 
@@ -173,6 +178,10 @@ class ContentModule implements DIModule {
         NerModelManager,
         OnnxNerService,
         NeuralIngredientParser,
+        // On-device neural line classifier
+        LineClassifierModelManager,
+        OnnxLineClassifierService,
+        NeuralLineClassifier,
         // Ingredient substitution
         IngredientSubstitutionService,
       ];
@@ -332,6 +341,21 @@ class ContentModule implements DIModule {
         ),
       );
 
+      // On-device neural line classifier (same pattern as NER)
+      container.registerLazySingleton<LineClassifierModelManager>(
+        () => LineClassifierModelManager(storage: container<FirebaseStorage>()),
+      );
+      container.registerLazySingleton<OnnxLineClassifierService>(
+        () => OnnxLineClassifierService(),
+        dispose: (s) => s.dispose(),
+      );
+      container.registerLazySingleton<NeuralLineClassifier>(
+        () => NeuralLineClassifier(
+          classifierService: container<OnnxLineClassifierService>(),
+          modelManager: container<LineClassifierModelManager>(),
+        ),
+      );
+
       // Shared ingredient parsing strategy (CRF → BERT NER → regex fallback)
       container.registerLazySingleton<IngredientParsingStrategy>(
         () => IngredientParsingStrategy(
@@ -351,6 +375,7 @@ class ContentModule implements DIModule {
             siteConfigRepository: container<SiteConfigRepository>(),
             llmService: container<LlmService>(),
             ingredientStrategy: container<IngredientParsingStrategy>(),
+            neuralLineClassifier: container<NeuralLineClassifier>(),
           );
         },
         dispose: (s) => s.close(),
