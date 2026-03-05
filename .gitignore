@@ -87,6 +87,9 @@ nul
 # One-off scripts
 *.py
 !scripts/crf/train_crf.py
+!scripts/ner/train_bert_ner.py
+!scripts/ner/distill_to_student.py
+!scripts/ner/export_onnx.py
 
 # Temp analysis files
 *tmp_analyze*
@@ -110,6 +113,9 @@ scripts/crf/data/raw_ingredients.txt
 scripts/crf/data/training.conll
 *.crfsuite
 scripts/ner/output/
+scripts/ner/__pycache__/
+scripts/line_classifier/.venv/
+scripts/output/crf_eval*.txt
 
 # Python venv artifacts
 # Note: can't use /Scripts/ blanket — conflicts with scripts/ on case-insensitive Windows
