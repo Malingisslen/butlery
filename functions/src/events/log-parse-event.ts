@@ -1,10 +1,9 @@
 /**
  * Parse Event Logging - Server-side analytics for recipe parsing
  *
- * P1-4 Security: Structured tier arrays/maps are rejected to prevent
- * forged execution histories. Simple validated scalars (successfulTier,
- * finalQuality, usedLlm, totalCostSek) are accepted — same trust level
- * as parseTimeMs.
+ * P1-4 Security: Tier attempts array is validated per-entry (max 10,
+ * tier names checked against VALID_TIERS, values clamped). Client also
+ * sends domain and unknownDomain flag for site coverage analytics.
  */
 
 import * as functions from "firebase-functions";
@@ -99,6 +98,16 @@ function validateParserVersion(version: unknown): string | null {
 }
 
 /**
+ * Interface for a single tier attempt entry from the client.
+ */
+interface TierAttemptEntry {
+  tier?: string;
+  success?: boolean;
+  quality?: number;
+  durationMs?: number;
+}
+
+/**
  * Interface for parse event data
  */
 interface ParseEventData {
@@ -108,10 +117,13 @@ interface ParseEventData {
   fromCache?: boolean;
   parseTimeMs?: number;
   parserVersion?: string;
+  domain?: string;
   successfulTier?: string;
   finalQuality?: number;
   usedLlm?: boolean;
   totalCostSek?: number;
+  tierAttempts?: TierAttemptEntry[];
+  unknownDomain?: boolean;
 }
 
 /**
@@ -152,11 +164,21 @@ export const logParseEvent = functions.https.onCall(
       );
     }
 
-    // P1-4: Only accept validated scalars (no structured tier arrays/maps)
+    // Validate tier attempts array (max 10 entries, validated per-entry)
+    const tierAttempts = Array.isArray(data.tierAttempts)
+      ? data.tierAttempts.slice(0, 10).map((entry: TierAttemptEntry) => ({
+          tier: typeof entry.tier === "string" && VALID_TIERS.includes(entry.tier) ? entry.tier : "unknown",
+          success: Boolean(entry.success),
+          quality: typeof entry.quality === "number" ? clamp(entry.quality, 0, 1) : 0,
+          durationMs: typeof entry.durationMs === "number" ? clamp(entry.durationMs, 0, 60000) : 0,
+        }))
+      : null;
+
+    // P1-4: Accept validated scalars + validated tier attempts array
     const trustedFields = {
       userId,
       url: sanitizedUrl,
-      domain: extractDomain(data.url),
+      domain: typeof data.domain === "string" ? data.domain.toLowerCase().replace(/^www\./, "") : extractDomain(data.url),
       source: validateSource(data.source),
       success: Boolean(data.success),
       fromCache: Boolean(data.fromCache),
@@ -167,6 +189,8 @@ export const logParseEvent = functions.https.onCall(
       finalQuality: typeof data.finalQuality === "number" ? clamp(data.finalQuality, 0, 1) : null,
       usedLlm: typeof data.usedLlm === "boolean" ? data.usedLlm : null,
       totalCostSek: typeof data.totalCostSek === "number" ? clamp(data.totalCostSek, 0, 10) : null,
+      ...(tierAttempts ? { tierAttempts } : {}),
+      ...(data.unknownDomain === true ? { unknownDomain: true } : {}),
     };
 
     try {

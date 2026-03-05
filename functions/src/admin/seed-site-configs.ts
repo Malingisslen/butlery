@@ -62,8 +62,11 @@ function isAdmin(uid: string, token?: admin.auth.DecodedIdToken): boolean {
 interface SiteConfigData {
   domain: string;
   titleSelector?: string;
+  titleSelectorFallback?: string;
   ingredientsSelector?: string;
+  ingredientsSelectorFallback?: string;
   instructionsSelector?: string;
+  instructionsSelectorFallback?: string;
   portionsSelector?: string;
   timeSelector?: string;
   imageSelector?: string;
@@ -82,12 +85,15 @@ interface SiteConfigData {
  * They should be validated and updated as sites change their markup.
  */
 const SITE_CONFIGS: SiteConfigData[] = [
-  // ICA - Sweden's largest grocery chain
+  // ICA - Sweden's largest grocery chain (redesigns frequently)
   {
     domain: "ica.se",
     titleSelector: "h1.recipe-header__title",
+    titleSelectorFallback: "h1[class*='recipe']",
     ingredientsSelector: ".ingredients-list-group__card li",
+    ingredientsSelectorFallback: "[class*='ingredient'] li",
     instructionsSelector: ".cooking-steps-main__step",
+    instructionsSelectorFallback: "[class*='cooking-step'], [class*='instruction'] li",
     portionsSelector: ".recipe-header__servings",
     timeSelector: ".recipe-header__time",
     imageSelector: ".recipe-header__image img",
@@ -115,12 +121,15 @@ const SITE_CONFIGS: SiteConfigData[] = [
     lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
   },
 
-  // Köket - Popular Swedish recipe site
+  // Köket - Popular Swedish recipe site (redesigns frequently)
   {
     domain: "koket.se",
     titleSelector: "h1.recipe-title",
+    titleSelectorFallback: "h1[class*='recipe']",
     ingredientsSelector: ".ingredients-list li",
+    ingredientsSelectorFallback: "[class*='ingredient'] li",
     instructionsSelector: ".instructions-step",
+    instructionsSelectorFallback: "[class*='instruction'] li, [class*='method'] li",
     portionsSelector: ".portions-value",
     timeSelector: ".cooking-time",
     imageSelector: ".recipe-image img",
@@ -196,12 +205,49 @@ const SITE_CONFIGS: SiteConfigData[] = [
   {
     domain: "alltommat.se",
     titleSelector: "h1.article-title",
+    titleSelectorFallback: "h1",
     ingredientsSelector: ".recipe-ingredients li",
+    ingredientsSelectorFallback: "[class*='ingredient'] li",
     instructionsSelector: ".recipe-method li",
+    instructionsSelectorFallback: "[class*='method'] li, [class*='instruction'] li",
     portionsSelector: ".recipe-servings",
     timeSelector: ".recipe-time",
     isSupported: true,
     qualityScore: 0.8,
+    successCount: 0,
+    failureCount: 0,
+    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+  },
+
+  // Receptfavoriter - Swedish recipe aggregator (no schema.org)
+  // HTML uses standard h1 + ul/li for ingredients + ol/li for instructions
+  {
+    domain: "receptfavoriter.se",
+    titleSelector: "h1",
+    ingredientsSelector: "ul li",
+    instructionsSelector: "ol li",
+    portionsSelector: "p",
+    timeSelector: "ul li",
+    imageSelector: ".teaser img, img[src*='recept']",
+    isSupported: true,
+    qualityScore: 0.75,
+    successCount: 0,
+    failureCount: 0,
+    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+  },
+
+  // Landleys Kök - Swedish food blog (no schema.org, uses FoodiePress plugin)
+  {
+    domain: "landleyskok.se",
+    titleSelector: "h2",
+    titleSelectorFallback: "h1",
+    ingredientsSelector: ".foodiepress-wrapper p",
+    ingredientsSelectorFallback: "[class*='recipe'] p",
+    instructionsSelector: ".howto li",
+    instructionsSelectorFallback: "[class*='instruction'] li",
+    imageSelector: "img.lazyload, .wp-block-image img",
+    isSupported: true,
+    qualityScore: 0.7,
     successCount: 0,
     failureCount: 0,
     lastUpdated: admin.firestore.FieldValue.serverTimestamp(),

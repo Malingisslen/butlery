@@ -71,10 +71,15 @@ MAX_LENGTH = 64  # Lines are short, 64 tokens is plenty
 
 # --- Data Loading ---
 
-def load_golden(path: str) -> list[tuple[str, str]]:
-    """Load golden dataset: list of (text, label)."""
+def load_golden(path: str, exclude_recipe_ids: set[int] | None = None) -> list[tuple[str, str]]:
+    """Load golden dataset: list of (text, label).
+
+    Optionally exclude specific recipe_ids for held-out test set.
+    """
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
+    if exclude_recipe_ids:
+        data = [item for item in data if item.get("recipe_id") not in exclude_recipe_ids]
     return [(item["text"], item["label"]) for item in data]
 
 
@@ -462,6 +467,8 @@ def main():
     parser.add_argument("--epochs-teacher", type=int, default=5)
     parser.add_argument("--epochs-student", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=16)
+    parser.add_argument("--test-recipe-ids", type=int, nargs="+", default=None,
+                        help="Recipe IDs to exclude from training (held-out test set)")
     args = parser.parse_args()
 
     output = Path(args.output)
@@ -471,8 +478,11 @@ def main():
 
     # Load data for stages that need it
     train_data = None
+    exclude_ids = set(args.test_recipe_ids) if args.test_recipe_ids else None
     if args.stage in ("all", "teacher", "distill"):
-        golden = load_golden(args.golden)
+        golden = load_golden(args.golden, exclude_recipe_ids=exclude_ids)
+        if exclude_ids:
+            print(f"Excluded recipe IDs from training: {sorted(exclude_ids)}")
         silver = load_silver(args.silver) if args.silver else None
         train_data = combine_data(golden, silver)
         print(f"Training data: {len(train_data)} samples")

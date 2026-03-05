@@ -91,6 +91,7 @@ nul
 !scripts/ner/distill_to_student.py
 !scripts/ner/export_onnx.py
 !scripts/line_classifier/train_line_classifier.py
+!scripts/line_classifier/evaluate_model.py
 !scripts/line_classifier/generate_silver_data.py
 !scripts/line_classifier/deploy_model.py
 
