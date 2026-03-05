@@ -149,8 +149,9 @@ class ParsingContext {
 
   /// Returns cached structure if text matches, otherwise parses fresh.
   ///
-  /// If [neuralClassifier] is provided and its model is available, uses
-  /// neural classification. Otherwise falls back to rule-based.
+  /// **Deprecated:** Always falls back to rule-based even when neural
+  /// classifier is available (ONNX is async). Use [parseStructureCachedAsync].
+  @Deprecated('Use parseStructureCachedAsync() for neural classifier support.')
   ParsedRecipeStructure parseStructureCached(
     String text, {
     NeuralLineClassifier? neuralClassifier,

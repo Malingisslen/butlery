@@ -60,7 +60,7 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
     }
 
     // Classify and parse (cached across tiers)
-    final structure = context.parseStructureCached(
+    final structure = await context.parseStructureCachedAsync(
       text,
       neuralClassifier: _neuralClassifier,
     );

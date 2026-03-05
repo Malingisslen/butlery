@@ -75,6 +75,7 @@ void main() {
     test('falls back to SwedishLineClassifier when model unavailable', () {
       mockService.setAvailable(false);
 
+      // ignore: deprecated_member_use_from_same_package
       final result = classifier.parseStructure(
         'Pannkakor\n\n2 dl mjölk\n3 ägg\n\nBlanda allt.',
       );

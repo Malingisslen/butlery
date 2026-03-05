@@ -245,9 +245,11 @@ mixin QualityScoring {
       return FieldResult.failed('Could not parse instructions');
     }
 
-    return FieldResult.lowConfidence(
+    final score = scoreInstructions(cleaned);
+    return FieldResult.fromConfidenceScore(
       cleaned,
-      'Extracted via Swedish line classification',
+      score,
+      'Swedish line classification',
     );
   }
 

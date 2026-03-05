@@ -61,18 +61,10 @@ class NeuralLineClassifier {
 
   /// Parse text into a recipe structure using neural classification.
   ///
-  /// If the neural model is available, classifies all lines in a single
-  /// batch pass, applies Viterbi context correction, and groups into sections.
-  ///
-  /// Falls back to [SwedishLineClassifier] if the model is unavailable.
+  /// **Deprecated:** Always falls back to rule-based because ONNX inference
+  /// is async. Use [parseStructureAsync] instead.
+  @Deprecated('Always falls back to rule-based. Use parseStructureAsync().')
   ParsedRecipeStructure parseStructure(String text) {
-    if (!_classifierService.isAvailable) {
-      return SwedishLineClassifier.instance.parseStructure(text);
-    }
-
-    // Neural classification is async but parseStructure must be sync
-    // to match the existing interface. Use the sync fallback here —
-    // the async path is exposed via parseStructureAsync.
     return SwedishLineClassifier.instance.parseStructure(text);
   }
 
