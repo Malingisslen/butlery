@@ -40,7 +40,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /home/user/butlery/.claude/hooks/pre-compact.sh"
+            "command": "bash .claude/hooks/pre-compact.sh"
           }
         ]
       }
@@ -51,7 +51,27 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /home/user/butlery/.claude/hooks/inject-checkpoint.sh"
+            "command": "bash .claude/hooks/inject-checkpoint.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/plan-review-gate.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/bash-firewall.sh"
           }
         ]
       }
@@ -74,8 +94,27 @@
             "command": "powershell -ExecutionPolicy Bypass -File C:/Butlery/butlery/.claude/hooks/notify.ps1 -Type input"
           }
         ]
+      },
+      {
+        "matcher": "elicitation_dialog",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -ExecutionPolicy Bypass -File C:/Butlery/butlery/.claude/hooks/notify.ps1 -Type input"
+          }
+        ]
       }
     ],
-    "Stop": []
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/stop-analyze.sh"
+          }
+        ]
+      }
+    ]
   }
 }

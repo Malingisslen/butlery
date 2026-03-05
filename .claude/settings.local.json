@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__linear__list_issues",
+      "mcp__linear__list_issue_labels",
+      "mcp__linear__list_teams",
+      "mcp__linear__list_issue_statuses",
+      "mcp__linear__create_issue_label",
+      "mcp__linear__save_issue"
+    ]
+  }
+}

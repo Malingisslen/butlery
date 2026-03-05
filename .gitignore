@@ -74,6 +74,7 @@ test/**/results/*.log
 .claude/cache/
 .claude/cache/**
 .claude/hooks/sessions/
+.claude/linear-tracker.json
 nul
 
 # Tasks directory (except lessons.md)
