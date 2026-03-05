@@ -19,6 +19,7 @@ import 'package:butlery/services/social/modules/social_participant_resolver_modu
 
 class SocialRecipeService extends ChangeNotifier
     with StreamManagementMixin, ErrorHandlingMixin {
+  /// @deprecated V1 repo — only used for shareContent(). Migrate to V2 coordinators.
   final SocialRecipeRepository _repository;
   final UserService _userService;
   final UnifiedRecipeService _recipeService;
@@ -94,8 +95,10 @@ class SocialRecipeService extends ChangeNotifier
     final currentUserId = _permissionService.currentUserId!;
 
     try {
-      _sharedRecipes = await _repository.getSharedRecipes(currentUserId);
-      _sharedMenus = await _repository.getSharedMenus(currentUserId);
+      _sharedRecipes =
+          await _sharedRecipeRepository.getSharedRecipesForUser(currentUserId);
+      _sharedMenus =
+          await _sharedMenuRepository.getSharedMenusForUser(currentUserId);
     } catch (e) {
       AppLogger.error('Failed to load shared content', e);
       _sharedRecipes = [];
@@ -127,7 +130,7 @@ class SocialRecipeService extends ChangeNotifier
   /// Local state update removed - status now managed server-side only.
   Future<bool> markSharedRecipeAsViewed(String recipeId, String userId) async {
     try {
-      await _repository.markSharedRecipeAsViewed(recipeId, userId);
+      await _sharedRecipeRepository.markAsViewed(recipeId, userId);
       // Status tracking now handled by repository subcollections (Issue #014)
       // Optionally refresh to get updated viewCount, or rely on next load
       return true;
@@ -142,7 +145,7 @@ class SocialRecipeService extends ChangeNotifier
   /// Local state update removed - status now managed server-side only.
   Future<bool> markSharedMenuAsViewed(String menuId, String userId) async {
     try {
-      await _repository.markSharedMenuAsViewed(menuId, userId);
+      await _sharedMenuRepository.markAsViewed(menuId, userId);
       // Status tracking now handled by repository subcollections (Issue #014)
       // Optionally refresh to get updated viewCount, or rely on next load
       return true;
@@ -179,7 +182,7 @@ class SocialRecipeService extends ChangeNotifier
       if (success != null) {
         // Mark as imported
         if (_permissionService.isAuthenticated) {
-          await _repository.markSharedRecipeAsImported(
+          await _sharedRecipeRepository.markAsImportedOrJoined(
               recipeId, _permissionService.currentUserId!);
         }
         AppLogger.success('Recipe imported successfully');
@@ -221,7 +224,7 @@ class SocialRecipeService extends ChangeNotifier
       if (allImported) {
         // Mark as imported
         if (_permissionService.isAuthenticated) {
-          await _repository.markSharedMenuAsImported(
+          await _sharedMenuRepository.markAsImportedOrJoined(
               menuId, _permissionService.currentUserId!);
         }
         AppLogger.success('Menu imported successfully');
@@ -241,7 +244,7 @@ class SocialRecipeService extends ChangeNotifier
         _error = 'User not authenticated';
         return false;
       }
-      await _repository.dismissSharedRecipe(
+      await _sharedRecipeRepository.markAsDismissed(
           recipeId, _permissionService.currentUserId!);
       AppLogger.info('Recipe dismissed');
       return true;
@@ -259,7 +262,7 @@ class SocialRecipeService extends ChangeNotifier
         _error = 'User not authenticated';
         return false;
       }
-      await _repository.dismissSharedMenu(
+      await _sharedMenuRepository.markAsDismissed(
           menuId, _permissionService.currentUserId!);
       AppLogger.info('Menu dismissed');
       return true;
@@ -277,7 +280,7 @@ class SocialRecipeService extends ChangeNotifier
         AppLogger.error('User not authenticated');
         return false;
       }
-      await _repository.undismissSharedRecipe(
+      await _sharedRecipeRepository.undismiss(
           recipeId, _permissionService.currentUserId!);
       AppLogger.info('Recipe restored');
       return true;
@@ -294,7 +297,7 @@ class SocialRecipeService extends ChangeNotifier
         AppLogger.error('User not authenticated');
         return false;
       }
-      await _repository.undismissSharedMenu(
+      await _sharedMenuRepository.undismiss(
           menuId, _permissionService.currentUserId!);
       AppLogger.info('Menu restored');
       return true;
