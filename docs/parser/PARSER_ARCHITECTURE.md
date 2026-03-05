@@ -10,7 +10,7 @@ Multi-tier recipe extraction system that converts web URLs, social media posts, 
 | Tiers | 5 (SchemaOrg → SiteConfig → RuleBased → CRF → LLM) |
 | Ingredient cascade | CRF → BERT NER → Gemini fallback |
 | LLM | Gemini 2.0 Flash via Cloud Functions |
-| On-device ML | CRF weights + ONNX BERT NER model |
+| On-device ML | CRF weights + ONNX BERT NER + ONNX Line Classifier |
 
 ---
 
@@ -25,7 +25,7 @@ URL / Text / Photo
 │                                                       │
 │   Tier 1: SchemaOrg  ──→  JSON-LD / Microdata        │
 │   Tier 2: SiteConfig ──→  Per-domain CSS selectors    │
-│   Tier 3: RuleBased  ──→  Swedish line classification │
+│   Tier 3: RuleBased  ──→  Neural + rule-based line classification │
 │   Tier 4: CRF        ──→  On-device sequence labeling │
 │   Tier 5: LLM        ──→  Gemini 2.0 Flash (cloud)   │
 │                                                       │
@@ -56,7 +56,7 @@ URL / Text / Photo
 |------|----------|-------|------|----------|
 | **SchemaOrg** | JSON-LD / Microdata via `RecipeScraper` | <100ms | Free | Major recipe sites with structured data |
 | **SiteConfig** | Per-domain CSS selectors from Firestore | <200ms | Free | Known sites without schema.org |
-| **RuleBased** | Swedish line classification (`SwedishLineClassifier`) + Viterbi | <500ms | Free | Plain text, copy-pasted recipes |
+| **RuleBased** | Neural line classifier (ONNX) + Swedish rule-based + Viterbi | <500ms | Free | Plain text, copy-pasted recipes |
 | **CRF** | Conditional Random Field sequence labeling | <100ms | Free | Ingredient line parsing (all tiers) |
 | **LLM** | Gemini 2.0 Flash via Cloud Functions | 2-5s | ~$0.10/M tokens | Fallback for ambiguous/complex content |
 
@@ -87,6 +87,19 @@ On-device Conditional Random Field model trained on Swedish ingredient lines.
 - **Caching**: Downloaded to app support directory, checked every 12 hours
 - **Confidence threshold**: 0.7 — lines below this fall through to Gemini
 - **Infrastructure**: `NerModelManager` extends `RemoteModelLoader` base class
+
+### Neural Line Classifier (On-Device)
+
+4-layer student model distilled from KB-BERT, classifies recipe lines into 7 types.
+
+- **Model**: ONNX INT8 quantized (~20MB), runs via `flutter_onnxruntime`
+- **Classes**: ingredient, instruction, title, metadata, sectionHeader, empty, noise
+- **Training data**: 612-line golden dataset (26 recipes, 8 sources)
+- **Accuracy**: 100% validation (student model, 20 epochs distillation)
+- **Versioning**: Firebase Storage `models/line_classifier/v{N}/` with `latest_version.txt`
+- **Infrastructure**: `LineClassifierModelManager` extends `RemoteModelLoader`
+- **Fallback**: If model unavailable, uses rule-based `SwedishLineClassifier`
+- **Integration**: Used by `RuleBasedTier` and `CrfTier` via `ParsingContext`
 
 ### Gemini Fallback
 
@@ -180,6 +193,10 @@ lib/services/parsing/
 │   └── remote_weight_loader.dart    # Firebase Storage weight updates
 ├── feedback/
 │   └── recipe_diff_calculator.dart  # User correction tracking
+├── line_classifier/
+│   ├── line_classifier_model_manager.dart  # ONNX model download + versioning
+│   ├── neural_line_classifier.dart         # Neural classifier wrapper
+│   └── onnx_line_classifier_service.dart   # ONNX Runtime bridge
 ├── ner/
 │   ├── ner_model_manager.dart       # ONNX model download + versioning
 │   ├── neural_ingredient_parser.dart # BERT NER inference wrapper
@@ -214,6 +231,12 @@ lib/models/parsing/
 functions/src/llm/
 └── gemini-client.ts                 # Gemini 2.0 Flash API client
 
+scripts/line_classifier/
+├── train_line_classifier.py    # KB-BERT fine-tune + distill + ONNX export
+├── generate_silver_data.py     # Silver data generation
+├── deploy_model.py             # Firebase Storage upload
+└── data/line_classification_golden.json  # 612-line golden dataset
+
 scripts/ner/
 ├── train_bert_ner.py                # KB-BERT fine-tuning
 ├── distill_to_student.py            # 12→4 layer distillation
@@ -228,10 +251,6 @@ test/
 ---
 
 ## Future Vision
-
-### Neural Line Classification
-
-Replace hand-crafted `_scoreAsIngredient()`/`_scoreAsInstruction()` with DistilBERT sentence embeddings + logistic regression. Keep Viterbi transition matrix but learn emission probabilities from data. Expected impact: +10-15% on unstructured text.
 
 ### On-Device SLM
 

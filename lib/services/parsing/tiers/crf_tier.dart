@@ -80,7 +80,7 @@ class CrfTier extends ParsingTier with QualityScoring {
       );
     }
 
-    final structure = context.parseStructureCached(
+    final structure = await context.parseStructureCachedAsync(
       text,
       neuralClassifier: _neuralClassifier,
     );
