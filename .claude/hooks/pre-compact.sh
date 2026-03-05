@@ -5,9 +5,29 @@
 
 set -euo pipefail
 
-PROJECT_DIR="/home/user/butlery"
-MEMORY_DIR="/root/.claude/projects/-home-user-butlery/memory"
+# Cross-platform Python detection
+PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null || echo "python3")
+
+# Use CLAUDE_PROJECT_DIR (provided by Claude Code) or detect via git
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
+
+# Derive memory dir: ~/.claude/projects/<encoded-path>/memory
+# Path encoding: normalize to forward slashes, handle git-bash /c/ -> C:, replace :/ with -
+MEMORY_DIR=$($PYTHON -c "
+import os, re, sys
+p = sys.argv[1].replace(os.sep, '/')
+# Git Bash /c/... -> C:/...
+if len(p) > 2 and p[0] == '/' and p[2] == '/':
+    p = p[1].upper() + ':' + p[2:]
+encoded = re.sub(r'[:/]', '-', p)
+home = os.path.expanduser('~').replace(os.sep, '/')
+print(home + '/.claude/projects/' + encoded + '/memory')
+" "$PROJECT_DIR")
+
 CHECKPOINT_FILE="$MEMORY_DIR/current-state.md"
+
+# Ensure memory dir exists
+mkdir -p "$MEMORY_DIR"
 
 cd "$PROJECT_DIR"
 
@@ -18,13 +38,11 @@ STAGED_FILES=$(git diff --cached --name-only 2>/dev/null | head -20)
 UNTRACKED_FILES=$(git ls-files --others --exclude-standard 2>/dev/null | head -10)
 RECENT_COMMITS=$(git log --oneline -10 2>/dev/null || echo "none")
 
-# Gather task state from Claude Code's persistent todos (~/.claude/todos/)
-# and from /tasks/todo.md (plan-mode plans).
+# Gather task state from Claude Code's persistent todos and /tasks/todo.md
 TASK_STATE=""
 
 # Read Claude Code's persistent task files
-# Check all known locations: ~/.claude/todos/ (v2.1.x), .claude/tasks/ (newer)
-TASK_STATE=$(python3 -c "
+TASK_STATE=$($PYTHON -c "
 import json, os, glob
 
 search_dirs = [
@@ -46,7 +64,7 @@ for todo_dir in search_dirs:
             for t in todos:
                 icon = icons.get(t.get('status', 'pending'), '[ ]')
                 print(f\"{icon} {t.get('content', 'unknown')}\")
-            exit(0)  # Found active tasks, done
+            exit(0)
         except (json.JSONDecodeError, IOError):
             continue
 " 2>/dev/null || true)

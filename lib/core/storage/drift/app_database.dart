@@ -7,6 +7,8 @@ import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:sqlcipher_flutter_libs/sqlcipher_flutter_libs.dart';
+import 'package:sqlite3/open.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 import 'package:butlery/core/storage/drift/tables/offline_recipes.dart';
@@ -127,6 +129,10 @@ const _dbEncryptionKeyName = 'drift_db_encryption_key';
 /// Opens a connection to the encrypted SQLite database using SQLCipher
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
+    // Use SQLCipher native library instead of default sqlite3
+    await applyWorkaroundToOpenSqlCipherOnOldAndroidVersions();
+    open.overrideFor(OperatingSystem.android, openCipherOnAndroid);
+
     final dbFolder = await getApplicationDocumentsDirectory();
     // Use a new filename to avoid conflicts with old unencrypted database
     final file = File(p.join(dbFolder.path, 'butlery_drift_encrypted.sqlite'));
@@ -134,7 +140,9 @@ LazyDatabase _openConnection() {
     // Get or generate the encryption key
     final encryptionKey = await _getDatabaseEncryptionKey();
 
-    return NativeDatabase.createInBackground(
+    // Use NativeDatabase (not createInBackground) because background isolates
+    // don't inherit the open.overrideFor SQLCipher library override
+    return NativeDatabase(
       file,
       setup: (db) {
         // Set the encryption key using SQLCipher PRAGMA
