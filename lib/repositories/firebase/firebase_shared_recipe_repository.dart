@@ -218,7 +218,7 @@ class FirebaseSharedRecipeRepository
     // Check if user is owner or member via subcollection
     final isOwner = sharedRecipe.sharedByUserId == uid;
     final isMember = await this.isMember(recipeId, uid);
-    final canAccess = isOwner || isMember || sharedRecipe.allowCollaboration;
+    final canAccess = isOwner || isMember;
 
     if (!canAccess) {
       throw PermissionDeniedException('Cannot access this shared recipe');
