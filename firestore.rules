@@ -327,30 +327,32 @@ service cloud.firestore {
 
     match /shared_recipes/{shareId} {
 
-      // Can read specific document if you're in the sharedWithUserIds list or the sharedByUserId
+      // Can list recipes you created (for "my shared recipes" view)
+      allow list: if isAuthenticated()
+        && request.auth.uid == resource.data.sharedByUserId;
+
+      // Can read specific document if you're the owner or a member (Issue #014: subcollection-based)
       allow get: if isAuthenticated() && (
         request.auth.uid == resource.data.sharedByUserId ||
-        request.auth.uid in resource.data.sharedWithUserIds
+        exists(/databases/$(database)/documents/shared_recipes/$(shareId)/members/$(request.auth.uid))
       );
 
-      // Can create if you're the sharedByUserId and you're in the shared list
+      // Can create if you're the sharedByUserId (Issue #014: sharedWithUserIds removed, members in subcollection)
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
-        && request.auth.uid in request.resource.data.sharedWithUserIds
-        && request.resource.data.sharedWithUserIds is list
-        && hasRequiredFields(['sharedByUserId', 'sharedWithUserIds', 'recipeId', 'sharedAt']);
+        && hasRequiredFields(['sharedByUserId', 'originalRecipeId', 'sharedAt']);
 
-      // Can update if you're the sharedByUserId or in the shared list
+      // Owner can update any field; members can update non-ownership fields only
       allow update: if isAuthenticated() && (
         request.auth.uid == resource.data.sharedByUserId ||
-        request.auth.uid in resource.data.get('sharedWithUserIds', [])
+        (exists(/databases/$(database)/documents/shared_recipes/$(shareId)/members/$(request.auth.uid))
+         && !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['sharedByUserId', 'originalRecipeId', 'sharedAt']))
       );
 
-      // Can delete if you're the sharedByUserId or in sharedWithUserIds (to remove from your list)
-      allow delete: if isAuthenticated() && (
-        request.auth.uid == resource.data.sharedByUserId ||
-        request.auth.uid in resource.data.sharedWithUserIds
-      );
+      // Can delete if you're the owner
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.sharedByUserId;
 
       // ========================================
       // SUBCOLLECTIONS (Issue #014: Unlimited Sharing)
@@ -1511,6 +1513,15 @@ service cloud.firestore {
     // Authenticated users need read access for ingredient lookup during
     // tag generation. Write access restricted to admin (Cloud Functions).
     match /ingredients/{ingredientId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // ========================================
+    // INGREDIENT SUBSTITUTIONS - Read-only reference data
+    // ========================================
+
+    match /ingredient_substitutions/{docId} {
       allow read: if isAuthenticated();
       allow write: if false;
     }

@@ -163,21 +163,30 @@ class UniversalShareDialogViewModel extends ChangeNotifier
     try {
       // Share to friends if any selected
       if (friendUserIds.isNotEmpty) {
-        await _socialRecipeCoordinator.shareRecipeWithFriends(
+        final success = await _socialRecipeCoordinator.shareRecipeWithFriends(
           recipeId: recipe.id,
           friendIds: friendUserIds,
           message: message,
           allowCollaboration: allowCollaboration,
         );
+        if (!success) {
+          _setError(AppLocale.current.errorCouldNotUpdate('delning'));
+          return false;
+        }
       }
 
       // Share to groups if any selected
       if (groupIds != null && groupIds.isNotEmpty) {
-        await _socialRecipeCoordinator.shareRecipeWithGroups(
+        final groupSuccess =
+            await _socialRecipeCoordinator.shareRecipeWithGroups(
           recipe.id,
           groupIds,
           ResourcePermission.read,
         );
+        if (!groupSuccess) {
+          _setError(AppLocale.current.errorCouldNotUpdate('gruppdelning'));
+          return false;
+        }
       }
 
       return true;
@@ -199,15 +208,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier
     String? message,
     bool allowCollaboration = false,
   }) async {
-    AppLogger.info('🔍🔍🔍 DEBUG VIEWMODEL: shareMenu() CALLED');
-    AppLogger.info(
-        '🔍 DEBUG: friendUserIds = $friendUserIds (${friendUserIds.length} items)');
-    AppLogger.info('🔍 DEBUG: groupIds = $groupIds');
-    AppLogger.info('🔍 DEBUG: menuName = $menuName');
-
     if (friendUserIds.isEmpty && (groupIds?.isEmpty ?? true)) {
-      AppLogger.warning(
-          '🔍 DEBUG: Early return - no friends or groups selected!');
       _setError(AppLocale.current.errorNoFriendsOrGroupsSelected);
       return false;
     }

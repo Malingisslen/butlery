@@ -270,9 +270,9 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     // Check for other errors
     if (!result.isSuccess) {
       _setPhase(ImportPhase.error);
-      setError(result.errorMessage ?? AppLocale.current.errorUnknown);
-      final failResult =
-          ImportFailed(result.errorMessage ?? AppLocale.current.errorUnknown);
+      final localizedError = _localizeImportError(result.errorMessage);
+      setError(localizedError);
+      final failResult = ImportFailed(localizedError);
       _lastResult = failResult;
       return failResult;
     }
@@ -368,6 +368,47 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   }
 
   // Private Helpers
+
+  /// Maps English error messages from ImportManager to localized strings.
+  String _localizeImportError(String? errorMessage) {
+    if (errorMessage == null) return AppLocale.current.errorUnknown;
+
+    final lower = errorMessage.toLowerCase();
+    final l10n = AppLocale.current;
+
+    if (lower.contains('no import strategy') ||
+        lower.contains('could not parse')) {
+      return l10n.importErrorCouldNotParseRecipe;
+    }
+    if (lower.contains('no recipe found')) {
+      return l10n.importErrorNoRecipeFound;
+    }
+    if (lower.contains('could not reach') ||
+        lower.contains('network') ||
+        lower.contains('timeout')) {
+      return l10n.importErrorCouldNotReachPage;
+    }
+    if (lower.contains('invalid url')) {
+      return l10n.importErrorInvalidUrl;
+    }
+    if (lower.contains('login required') || lower.contains('authentication')) {
+      return l10n.importErrorLoginRequired;
+    }
+    if (lower.contains('could not read') || lower.contains('ocr')) {
+      return l10n.importErrorCouldNotReadImage;
+    }
+    if (lower.contains('could not save')) {
+      return l10n.importErrorCouldNotSaveRecipe;
+    }
+    if (lower.contains('cancelled') || lower.contains('canceled')) {
+      return l10n.importErrorCancelled;
+    }
+    if (lower.contains('no internet')) {
+      return l10n.importErrorNoInternet;
+    }
+
+    return l10n.importErrorUnexpected;
+  }
 
   void _setPhase(ImportPhase phase) {
     if (isDisposed) return;
