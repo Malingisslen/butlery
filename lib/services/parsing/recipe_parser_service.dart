@@ -263,6 +263,7 @@ class RecipeParserService extends BaseService {
           success: true,
           fromCache: true,
           parseTimeMs: stopwatch.elapsedMilliseconds,
+          domain: context.domain,
         );
         return ParseResult.success(
           cached,
@@ -275,12 +276,16 @@ class RecipeParserService extends BaseService {
     // Reliable domains get a higher bar so cheap tiers work harder before
     // falling back to LLM (e.g. 0.7 base → 0.85 effective)
     var effectiveThreshold = qualityThreshold;
+    var isUnknownDomain = false;
     if (_siteConfigRepository != null && context.domain != null) {
       final config =
           await _siteConfigRepository.getConfigIfExists(context.domain!);
       if (config != null && config.isReliable) {
         effectiveThreshold = (qualityThreshold + _reliableDomainBoost)
             .clamp(0.0, _maxEffectiveThreshold);
+      } else if (config == null && context.source == ImportSource.url) {
+        // Track domains without site configs to prioritize adding them
+        isUnknownDomain = true;
       }
     }
 
@@ -299,6 +304,9 @@ class RecipeParserService extends BaseService {
         success: false,
         fromCache: false,
         parseTimeMs: stopwatch.elapsedMilliseconds,
+        domain: context.domain,
+        tierResults: tierData.tierResults,
+        unknownDomain: isUnknownDomain,
       );
       return ParseResult.failure(
         'Could not extract recipe from content',
@@ -331,6 +339,7 @@ class RecipeParserService extends BaseService {
       success: true,
       fromCache: false,
       parseTimeMs: stopwatch.elapsedMilliseconds,
+      domain: context.domain,
       successfulTier: successfulTier?.tierName,
       finalQuality: result.overallQuality,
       usedLlm: tierData.tierResults.any(
@@ -340,6 +349,8 @@ class RecipeParserService extends BaseService {
         0,
         (sum, t) => sum + (t.costSek ?? 0),
       ),
+      tierResults: tierData.tierResults,
+      unknownDomain: isUnknownDomain,
     );
     return ParseResult.success(result, totalTime: stopwatch.elapsed);
   }
@@ -374,6 +385,7 @@ class RecipeParserService extends BaseService {
         success: false,
         fromCache: false,
         parseTimeMs: stopwatch.elapsedMilliseconds,
+        tierResults: tierData.tierResults,
       );
       return ParseResult.failure(
         'Could not extract recipe from text',
@@ -399,6 +411,7 @@ class RecipeParserService extends BaseService {
         0,
         (sum, t) => sum + (t.costSek ?? 0),
       ),
+      tierResults: tierData.tierResults,
     );
     return ParseResult.success(result, totalTime: stopwatch.elapsed);
   }
@@ -758,10 +771,13 @@ class RecipeParserService extends BaseService {
     required bool success,
     required bool fromCache,
     required int parseTimeMs,
+    String? domain,
     String? successfulTier,
     double? finalQuality,
     bool? usedLlm,
     double? totalCostSek,
+    List<TierResult>? tierResults,
+    bool unknownDomain = false,
   }) {
     // Fire and forget - don't await, don't fail on error
     _functions.httpsCallable('logParseEvent').call<Map<String, dynamic>>({
@@ -771,10 +787,21 @@ class RecipeParserService extends BaseService {
       'fromCache': fromCache,
       'parseTimeMs': parseTimeMs,
       'parserVersion': parserVersion,
+      if (domain != null) 'domain': domain,
       if (successfulTier != null) 'successfulTier': successfulTier,
       if (finalQuality != null) 'finalQuality': finalQuality,
       if (usedLlm != null) 'usedLlm': usedLlm,
       if (totalCostSek != null) 'totalCostSek': totalCostSek,
+      if (tierResults != null)
+        'tierAttempts': tierResults
+            .map((t) => {
+                  'tier': t.tierName,
+                  'success': t.success,
+                  'quality': t.quality,
+                  'durationMs': t.duration.inMilliseconds,
+                })
+            .toList(),
+      if (unknownDomain) 'unknownDomain': true,
     }).then((_) {
       // Success - do nothing
     }).catchError((e) {
