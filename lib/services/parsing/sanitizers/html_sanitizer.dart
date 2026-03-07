@@ -13,14 +13,11 @@ class HtmlSanitizer {
 
   HtmlSanitizer._();
 
-  /// Pattern for detecting script injection attempts.
+  /// Pattern for detecting script injection attempts that sanitize() cannot handle.
+  /// Note: <script>, javascript:, expression(), vbscript: are all stripped by
+  /// sanitize() and should NOT be checked here — they appear in normal HTML.
   static final _scriptPatterns = [
-    RegExp(r'<script\b', caseSensitive: false),
-    RegExp(r'javascript:', caseSensitive: false),
-    RegExp(r'on\w+\s*=', caseSensitive: false), // onclick=, onerror=, etc.
     RegExp(r'data:\s*text/html', caseSensitive: false),
-    RegExp(r'expression\s*\(', caseSensitive: false), // CSS expression()
-    RegExp(r'vbscript:', caseSensitive: false),
   ];
 
   /// Pattern for detecting potentially malicious URLs.
@@ -139,7 +136,14 @@ class HtmlSanitizer {
 
     // State-machine approach for dangerous block tags (avoids ReDoS)
     for (final tag in _dangerousBlockTags) {
-      result = _removeTagWithContent(result, tag);
+      result = _removeTagWithContent(
+        result,
+        tag,
+        // Preserve <script type="application/ld+json"> (structured data)
+        preserveWhen: tag == 'script'
+            ? (openingTag) => openingTag.contains('application/ld+json')
+            : null,
+      );
     }
 
     // Remove dangerous self-closing/void tags
@@ -178,8 +182,17 @@ class HtmlSanitizer {
 
   /// State-machine tag removal: finds opening tag, then scans for
   /// matching close tag. Avoids backtracking-prone regex on nested content.
-  static String _removeTagWithContent(String html, String tagName) {
+  ///
+  /// If [preserveWhen] is provided, tags whose opening tag matches the
+  /// predicate are kept instead of removed (e.g. JSON-LD script blocks).
+  static String _removeTagWithContent(
+    String html,
+    String tagName, {
+    bool Function(String openingTag)? preserveWhen,
+  }) {
     final openPattern = RegExp('<$tagName\\b', caseSensitive: false);
+    final lowerHtml = html.toLowerCase();
+    final closeTag = '</$tagName>';
     final result = StringBuffer();
     var searchStart = 0;
 
@@ -190,13 +203,31 @@ class HtmlSanitizer {
         break;
       }
 
-      // Write everything before the tag
-      result.write(html.substring(searchStart, searchStart + openMatch.start));
+      final absOpenStart = searchStart + openMatch.start;
+      final closeIdx = lowerHtml.indexOf(closeTag, absOpenStart);
 
-      // Find the closing tag from the open position
-      final closeTag = '</$tagName>';
-      final closeIdx =
-          html.toLowerCase().indexOf(closeTag, searchStart + openMatch.start);
+      // Check if this tag should be preserved
+      if (preserveWhen != null) {
+        final tagEnd = html.indexOf('>', absOpenStart);
+        if (tagEnd >= 0) {
+          final openingTag = lowerHtml.substring(absOpenStart, tagEnd + 1);
+          if (preserveWhen(openingTag)) {
+            // Keep the entire block
+            if (closeIdx >= 0) {
+              result.write(
+                  html.substring(searchStart, closeIdx + closeTag.length));
+              searchStart = closeIdx + closeTag.length;
+              continue;
+            } else {
+              result.write(html.substring(searchStart));
+              break;
+            }
+          }
+        }
+      }
+
+      // Write everything before the tag
+      result.write(html.substring(searchStart, absOpenStart));
 
       if (closeIdx >= 0) {
         searchStart = closeIdx + closeTag.length;

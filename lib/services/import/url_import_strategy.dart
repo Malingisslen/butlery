@@ -131,7 +131,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   Future<ImportResult?> _tryEnhancedParser(
       String url, Map<String, dynamic>? options) async {
     final parser = _recipeParser;
-    if (parser == null || options?['useEnhancedParser'] != true) return null;
+    if (parser == null) return null;
 
     final htmlContent = await _fetcher.fetchHtmlWithTimeout(url);
     if (htmlContent == null) return null;

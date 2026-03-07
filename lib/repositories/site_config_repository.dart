@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 
 import 'package:butlery/models/parsing/site_config.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -16,6 +15,9 @@ class SiteConfigRepository {
   /// In-memory cache of site configs.
   final Map<String, _CachedConfig> _cache = {};
 
+  /// Whether default configs have been ensured this session.
+  bool _defaultsEnsured = false;
+
   /// How long cached configs remain valid.
   static const _cacheDuration = Duration(hours: 1);
 
@@ -26,37 +28,211 @@ class SiteConfigRepository {
   CollectionReference<Map<String, dynamic>> get _collection =>
       _firestore.collection(FirestoreCollections.siteConfigs);
 
-  /// Seed site configs if the collection is empty.
+  /// Ensure configs exist for known recipe sites.
   ///
-  /// This is a one-time operation that populates the site_configs collection
-  /// with CSS selectors for Swedish recipe sites. It calls the seedSiteConfigs
-  /// Cloud Function which requires authentication.
-  ///
-  /// This is non-blocking - if seeding fails, parsing still works (just without
-  /// site-specific selectors from Firestore).
-  Future<void> seedConfigsIfEmpty() async {
+  /// Reads all default config docs in parallel, then batch-writes any missing
+  /// ones. Skips entirely if already called this session.
+  Future<void> ensureDefaultConfigs() async {
+    if (_defaultsEnsured) return;
+
     try {
-      final snapshot = await _collection.limit(1).get();
+      final docs = await Future.wait(
+        _defaultConfigs.map((c) => _collection.doc(c.domain).get()),
+      );
 
-      if (snapshot.docs.isEmpty) {
-        AppLogger.info(
-            'SiteConfigRepository: Collection empty, seeding configs...');
-
-        final result = await FirebaseFunctions.instance
-            .httpsCallable('seedSiteConfigs')
-            .call<Map<String, dynamic>>({});
-
-        final data = result.data;
-        final count = data['count'] ?? 0;
-        AppLogger.info('SiteConfigRepository: Seeded $count site configs');
-      } else {
-        AppLogger.debug('SiteConfigRepository: Site configs already exist');
+      final missing = <SiteConfig>[];
+      for (var i = 0; i < docs.length; i++) {
+        if (!docs[i].exists) {
+          missing.add(_defaultConfigs[i]);
+        }
       }
+
+      if (missing.isNotEmpty) {
+        final batch = _firestore.batch();
+        for (final config in missing) {
+          batch.set(_collection.doc(config.domain), config.toFirestore());
+        }
+        await batch.commit();
+        AppLogger.debug(
+            'SiteConfigRepository: Added ${missing.length} missing configs');
+      }
+
+      _defaultsEnsured = true;
     } catch (e) {
-      // Non-blocking - parsing still works without site configs
-      AppLogger.warning('SiteConfigRepository: Failed to seed configs: $e');
+      AppLogger.warning(
+          'SiteConfigRepository: Failed to ensure default configs: $e');
     }
   }
+
+  static final _defaultConfigs = [
+    const SiteConfig(
+      domain: 'ica.se',
+      titleSelector: 'h1.recipe-title',
+      titleSelectorFallback: '[itemprop="name"]',
+      ingredientsSelector: '[itemprop="recipeIngredient"]',
+      ingredientsSelectorFallback: '.ingredient-list li',
+      instructionsSelector: '.recipe-steps li',
+      instructionsSelectorFallback: '[itemprop="recipeInstructions"] li',
+      portionsSelector: '[itemprop="recipeYield"]',
+      timeSelector: '[itemprop="totalTime"]',
+      imageSelector: '[itemprop="image"]',
+      descriptionSelector: '[itemprop="description"]',
+      isSupported: true,
+      qualityScore: 0.9,
+      notes: 'Schema.org JSON-LD + CSS selectors',
+    ),
+    const SiteConfig(
+      domain: 'koket.se',
+      titleSelector: 'h1.recipe-title',
+      titleSelectorFallback: '[itemprop="name"]',
+      ingredientsSelector: '[itemprop="recipeIngredient"]',
+      ingredientsSelectorFallback: '.ingredient-list li',
+      instructionsSelector: '.recipe-steps li',
+      instructionsSelectorFallback: '[itemprop="recipeInstructions"] li',
+      portionsSelector: '[itemprop="recipeYield"]',
+      timeSelector: '[itemprop="totalTime"]',
+      imageSelector: '[itemprop="image"]',
+      descriptionSelector: '[itemprop="description"]',
+      isSupported: true,
+      qualityScore: 0.85,
+      notes: 'Schema.org JSON-LD + CSS selectors',
+    ),
+    const SiteConfig(
+      domain: 'arla.se',
+      titleSelector: 'h1.recipe-title',
+      titleSelectorFallback: '[itemprop="name"]',
+      ingredientsSelector: '[itemprop="recipeIngredient"]',
+      ingredientsSelectorFallback: '.ingredient-list li',
+      instructionsSelector: '.recipe-steps li',
+      instructionsSelectorFallback: '[itemprop="recipeInstructions"] li',
+      portionsSelector: '[itemprop="recipeYield"]',
+      timeSelector: '[itemprop="totalTime"]',
+      imageSelector: '[itemprop="image"]',
+      descriptionSelector: '[itemprop="description"]',
+      isSupported: true,
+      qualityScore: 0.9,
+      notes: 'Schema.org JSON-LD + CSS selectors',
+    ),
+    const SiteConfig(
+      domain: 'recept.se',
+      titleSelector: 'h1.recipe-title',
+      titleSelectorFallback: '[itemprop="name"]',
+      ingredientsSelector: '[itemprop="recipeIngredient"]',
+      ingredientsSelectorFallback: '.ingredient-list li',
+      instructionsSelector: '.recipe-steps li',
+      instructionsSelectorFallback: '[itemprop="recipeInstructions"] li',
+      portionsSelector: '[itemprop="recipeYield"]',
+      timeSelector: '[itemprop="totalTime"]',
+      imageSelector: '[itemprop="image"]',
+      descriptionSelector: '[itemprop="description"]',
+      isSupported: true,
+      qualityScore: 0.85,
+      notes: 'Recipe aggregator, schema.org markup',
+    ),
+    const SiteConfig(
+      domain: 'tasteline.com',
+      titleSelector: '[itemprop="name"]',
+      titleSelectorFallback: 'h1',
+      ingredientsSelector: '[itemprop="recipeIngredient"]',
+      ingredientsSelectorFallback: '.ingredients li',
+      instructionsSelector: '[itemprop="recipeInstructions"] li',
+      instructionsSelectorFallback: '.instructions li',
+      portionsSelector: '[itemprop="recipeYield"]',
+      timeSelector: '[itemprop="totalTime"]',
+      imageSelector: '[itemprop="image"]',
+      descriptionSelector: '[itemprop="description"]',
+      isSupported: true,
+      qualityScore: 0.8,
+    ),
+    const SiteConfig(
+      domain: 'coop.se',
+      titleSelector: '[itemprop="name"]',
+      titleSelectorFallback: 'h1',
+      ingredientsSelector: '[itemprop="recipeIngredient"]',
+      ingredientsSelectorFallback: '.ingredient-list li',
+      instructionsSelector: '[itemprop="recipeInstructions"] li',
+      instructionsSelectorFallback: '.recipe-instructions li',
+      portionsSelector: '[itemprop="recipeYield"]',
+      timeSelector: '[itemprop="totalTime"]',
+      imageSelector: '[itemprop="image"]',
+      descriptionSelector: '[itemprop="description"]',
+      isSupported: true,
+      qualityScore: 0.8,
+    ),
+    const SiteConfig(
+      domain: 'recepten.se',
+      titleSelector: '[itemprop="name"]',
+      titleSelectorFallback: 'h1',
+      ingredientsSelector: '[itemprop="recipeIngredient"]',
+      ingredientsSelectorFallback: '.ingredients li',
+      instructionsSelector: '[itemprop="recipeInstructions"] li',
+      portionsSelector: '[itemprop="recipeYield"]',
+      timeSelector: '[itemprop="totalTime"]',
+      imageSelector: '[itemprop="image"]',
+      isSupported: true,
+      qualityScore: 0.75,
+    ),
+    const SiteConfig(
+      domain: 'mathem.se',
+      titleSelector: '[itemprop="name"]',
+      titleSelectorFallback: 'h1',
+      ingredientsSelector: '[itemprop="recipeIngredient"]',
+      instructionsSelector: '[itemprop="recipeInstructions"] li',
+      portionsSelector: '[itemprop="recipeYield"]',
+      timeSelector: '[itemprop="totalTime"]',
+      imageSelector: '[itemprop="image"]',
+      isSupported: true,
+      qualityScore: 0.75,
+    ),
+    const SiteConfig(
+      domain: 'hemtrevligt.se',
+      titleSelector: '[itemprop="name"]',
+      titleSelectorFallback: 'h1',
+      ingredientsSelector: '[itemprop="recipeIngredient"]',
+      instructionsSelector: '[itemprop="recipeInstructions"] li',
+      portionsSelector: '[itemprop="recipeYield"]',
+      timeSelector: '[itemprop="totalTime"]',
+      imageSelector: '[itemprop="image"]',
+      isSupported: true,
+      qualityScore: 0.7,
+    ),
+    const SiteConfig(
+      domain: 'alltommat.se',
+      titleSelector: '[itemprop="name"]',
+      titleSelectorFallback: 'h1',
+      ingredientsSelector: '[itemprop="recipeIngredient"]',
+      instructionsSelector: '[itemprop="recipeInstructions"] li',
+      portionsSelector: '[itemprop="recipeYield"]',
+      timeSelector: '[itemprop="totalTime"]',
+      imageSelector: '[itemprop="image"]',
+      isSupported: true,
+      qualityScore: 0.8,
+    ),
+    const SiteConfig(
+      domain: 'bonappetit.com',
+      titleSelector: '[itemprop="name"]',
+      titleSelectorFallback: 'h1',
+      ingredientsSelector: '[itemprop="recipeIngredient"]',
+      instructionsSelector: '[itemprop="recipeInstructions"] li',
+      portionsSelector: '[itemprop="recipeYield"]',
+      timeSelector: '[itemprop="totalTime"]',
+      imageSelector: '[itemprop="image"]',
+      isSupported: true,
+      qualityScore: 0.85,
+    ),
+    const SiteConfig(
+      domain: 'allrecipes.com',
+      titleSelector: '[itemprop="name"]',
+      titleSelectorFallback: 'h1',
+      ingredientsSelector: '[itemprop="recipeIngredient"]',
+      instructionsSelector: '[itemprop="recipeInstructions"] li',
+      portionsSelector: '[itemprop="recipeYield"]',
+      timeSelector: '[itemprop="totalTime"]',
+      imageSelector: '[itemprop="image"]',
+      isSupported: true,
+      qualityScore: 0.85,
+    ),
+  ];
 
   /// Load a site config for a domain.
   ///
@@ -124,6 +300,13 @@ class SiteConfigRepository {
       AppLogger.warning(
         'SiteConfigRepository: Failed to load config for $normalizedDomain: $e',
       );
+    }
+
+    // Fallback: check built-in defaults (Firestore write may not have completed yet)
+    final builtIn =
+        _defaultConfigs.where((c) => c.domain == normalizedDomain).firstOrNull;
+    if (builtIn != null && builtIn.isSupported && builtIn.hasSelectors) {
+      return builtIn;
     }
 
     return null;

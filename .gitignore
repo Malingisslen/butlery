@@ -138,3 +138,6 @@ scripts/get_gprof
 scripts/get_objgraph
 scripts/undill
 share/
+
+# ML training outputs (too large for git)
+scripts/line_classifier/output_v2/

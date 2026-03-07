@@ -201,11 +201,11 @@ class RecipeParserService extends BaseService {
     );
     await _cache.init();
 
-    // Seed site configs if empty (one-time, non-blocking)
+    // Ensure default site configs exist (non-blocking)
     final repo = _siteConfigRepository;
     if (repo != null) {
       // Fire and forget - don't block initialization
-      repo.seedConfigsIfEmpty();
+      repo.ensureDefaultConfigs();
     }
 
     // Initialize neural line classifier in background (fire-and-forget)
@@ -247,6 +247,14 @@ class RecipeParserService extends BaseService {
     // Check security
     if (!context.isSecure) {
       AppLogger.warning('$serviceName: Content failed security check');
+      _logParseEvent(
+        url: url,
+        source: context.source.name,
+        success: false,
+        fromCache: false,
+        parseTimeMs: stopwatch.elapsedMilliseconds,
+        domain: context.domain,
+      );
       return ParseResult.failure(
         'Content failed security validation',
         totalTime: stopwatch.elapsed,
@@ -780,33 +788,42 @@ class RecipeParserService extends BaseService {
     bool unknownDomain = false,
   }) {
     // Fire and forget - don't await, don't fail on error
-    _functions.httpsCallable('logParseEvent').call<Map<String, dynamic>>({
-      'url': url,
-      'source': source,
-      'success': success,
-      'fromCache': fromCache,
-      'parseTimeMs': parseTimeMs,
-      'parserVersion': parserVersion,
-      if (domain != null) 'domain': domain,
-      if (successfulTier != null) 'successfulTier': successfulTier,
-      if (finalQuality != null) 'finalQuality': finalQuality,
-      if (usedLlm != null) 'usedLlm': usedLlm,
-      if (totalCostSek != null) 'totalCostSek': totalCostSek,
-      if (tierResults != null)
-        'tierAttempts': tierResults
-            .map((t) => {
-                  'tier': t.tierName,
-                  'success': t.success,
-                  'quality': t.quality,
-                  'durationMs': t.duration.inMilliseconds,
-                })
-            .toList(),
-      if (unknownDomain) 'unknownDomain': true,
-    }).then((_) {
-      // Success - do nothing
-    }).catchError((e) {
-      // Silently ignore analytics errors - don't disrupt parsing
-      AppLogger.debug('$serviceName: Parse event logging failed: $e');
-    });
+    try {
+      final payload = <String, dynamic>{
+        'url': url,
+        'source': source,
+        'success': success,
+        'fromCache': fromCache,
+        'parseTimeMs': parseTimeMs,
+        'parserVersion': parserVersion,
+        if (domain != null) 'domain': domain,
+        if (successfulTier != null) 'successfulTier': successfulTier,
+        if (finalQuality != null) 'finalQuality': finalQuality,
+        if (usedLlm != null) 'usedLlm': usedLlm,
+        if (totalCostSek != null) 'totalCostSek': totalCostSek,
+        if (tierResults != null)
+          'tierAttempts': tierResults
+              .map((t) => <String, dynamic>{
+                    'tier': t.tierName,
+                    'success': t.success,
+                    'quality': t.quality,
+                    'durationMs': t.duration.inMilliseconds,
+                  })
+              .toList(),
+        if (unknownDomain) 'unknownDomain': true,
+      };
+      // Fire-and-forget — ignore result, log errors
+      unawaited(
+        _functions
+            .httpsCallable('logParseEvent')
+            .call<Map<String, dynamic>>(payload)
+            .then((_) {})
+            .catchError((Object e) {
+          AppLogger.debug('$serviceName: Parse event logging failed: $e');
+        }),
+      );
+    } catch (e) {
+      AppLogger.debug('$serviceName: Parse event payload error: $e');
+    }
   }
 }
