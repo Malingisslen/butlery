@@ -239,6 +239,7 @@ class IngredientParsingStrategy {
   List<int> getUncertainLineIndices(List<ParsedIngredient> parsed) {
     final uncertain = <int>[];
     for (var i = 0; i < parsed.length; i++) {
+      if (parsed[i].name.isEmpty) continue; // Skip group headers
       if (parsed[i].confidence.score < _uncertaintyThreshold) {
         uncertain.add(i);
       }

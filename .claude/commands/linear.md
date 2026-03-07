@@ -10,7 +10,10 @@ Linear issue tracker skill suite. Dispatches to subcommands based on the first a
 If the user runs `/linear` with no arguments (empty or blank), display this quick reference and stop:
 
 ```
-/linear scan              — Analyze code, create tickets in Triage
+/linear scan              — Balanced analysis: bugs + hygiene + ideas
+/linear scan deep         — Deep bug/security dive (ultrathink agents)
+/linear scan creative     — Product improvement focus: UX, features, rework
+/linear scan hygiene      — Lint, deps, file size, TODOs only
 /linear ticket <thought>  — Quick-capture an idea or bug
 /linear backlog           — Browse & pick a ticket to implement
 /linear clean             — Hygiene: stale tickets, priority inflation
@@ -70,29 +73,43 @@ No effort estimates in tickets (unreliable). Effort is judged at query time in `
 
 ### `scan`
 
-Smart, gap-aware analysis that creates tickets in Triage.
+Smart, gap-aware analysis that creates tickets in Triage. Has four modes:
 
-**Steps:**
+#### Modes
+
+- **`scan`** (no modifier) — Balanced scan. Runs hygiene checks + code analysis + creative ideas. Target output: ~40% bugs/security, ~30% hygiene/tech-debt, ~30% ideas/improvements.
+- **`scan deep`** or **`scan ultrathink`** — Deep bug/security dive using parallel agents. Focused on finding correctness, security, concurrency, and data-integrity issues through exhaustive code reading.
+- **`scan creative`** — Product improvement focus. Minimal bug-hunting. Instead: UX friction, feature gaps, refactoring opportunities, architecture rethinks, modern tech adoption. Uses web searches for industry benchmarking.
+- **`scan hygiene`** — Quick automated checks only: `dart analyze`, `flutter pub outdated`, file sizes, TODO/FIXME age, architecture pattern violations. No deep code reading.
+
+User can also add free-form focus hints: `/linear scan deep auth and social` or `/linear scan creative onboarding flow`.
+
+#### Common Steps (all modes)
+
 1. Read existing Linear issues (`list_issues`) to know what's already tracked
 2. Check `git log --since="last scan"` (read lastScanDate from tracker) to see what changed recently
 3. Determine focus: combine gap-awareness (areas with no tickets), context-driven (recent changes), and rotation (what hasn't been deeply analyzed — check lastScanFocus in tracker)
-4. Run analysis tools in parallel:
-   - `dart analyze --fatal-infos` — any error or warning
-   - `flutter pub outdated` — major version behind or known CVE
-   - File size checks — >500 lines (check `docs/architecture/ACCEPTED_LARGE_FILES.md` first)
-   - Architecture pattern checks — direct Firebase access, mixed data sources
-   - Test coverage gaps — service/ViewModel with 0 test coverage
-   - TODO/FIXME grep — any older than 30 days (check git blame)
-   - Security — any OWASP M1-M10 violation
+4. Run analysis (mode-specific — see below)
 5. Verify each finding against actual code (never trust documents as truth)
 6. Check deduplication (see system above)
 7. Create tickets in Triage with: 1 type label + 1+ area labels + priority + structured body
 8. Update `.claude/linear-tracker.json` with new mappings
-9. Report summary: "Created X tickets: Y bugs, Z security, W ideas"
+9. Report summary: "Created X tickets: Y bugs, Z security, W tech-debt, V ideas"
 
 **Batching rule:** Same issue in N files = 1 ticket ("Fix X across N files"), not N tickets.
 
-**Thresholds (no ticket below these):**
+#### Hygiene Analysis (runs in `scan` and `scan hygiene`)
+
+Run these automated checks in parallel:
+- `dart analyze --fatal-infos` — any error or warning
+- `flutter pub outdated` — major version behind or known CVE
+- File size checks — >500 lines (check `docs/architecture/ACCEPTED_LARGE_FILES.md` first)
+- Architecture pattern checks — direct Firebase access, mixed data sources
+- Test coverage gaps — service/ViewModel with 0 test coverage
+- TODO/FIXME grep — any older than 30 days (check git blame)
+- Security — any OWASP M1-M10 violation
+
+**Hygiene thresholds (no ticket below these):**
 | Category | Threshold |
 |----------|-----------|
 | Lint | Any error or warning from `dart analyze` |
@@ -102,6 +119,65 @@ Smart, gap-aware analysis that creates tickets in Triage.
 | Dependencies | Major version behind or known CVE |
 | Architecture | Direct Firebase access, mixed data sources |
 | TODOs | Any TODO/FIXME older than 30 days |
+
+#### Deep Analysis (runs in `scan deep` / `scan ultrathink`)
+
+Launch 4-6 parallel Explore agents, each assigned a focused code area. Agents perform exhaustive code reading looking for bugs, security issues, race conditions, logic errors, data integrity problems, and edge cases. Report findings with exact file paths, line numbers, severity, and suggested fixes.
+
+#### Creative Analysis (runs in `scan` and `scan creative`)
+
+This is where the AI thinks like a product designer, senior architect, and tech lead — not just a bug finder. No rigid thresholds. Trust your judgment about what would genuinely improve the product.
+
+**Creative categories:**
+
+| Category | What to look for | Label |
+|----------|-----------------|-------|
+| **UX friction** | Flows that work but feel wrong — too many taps, missing feedback, confusing navigation, dead-ends, no undo, poor empty states, missing loading/error states | `idea` |
+| **Feature gaps** | Missing capabilities users would expect from a modern recipe app — compare to competitors, look at the user journeys and find holes | `idea` |
+| **Refactoring** | Working code that's unnecessarily complex, duplicated patterns begging for abstraction, wrong abstraction level, code that fights itself | `tech-debt` |
+| **Rework** | Entire subsystems where the design is fundamentally wrong — worth rebuilding. Signs: 3+ bug tickets in the same area, workarounds layered on workarounds | `tech-debt` |
+| **Modern tech** | Opportunities to adopt newer Flutter/Dart/Firebase features, better libraries, modern patterns that would simplify the codebase | `tech-debt` or `idea` |
+| **Performance wins** | Not bugs, but opportunities for noticeably faster UX — lazy loading, prefetching, caching strategies, reducing unnecessary rebuilds | `performance` |
+| **DX improvements** | Things that make the codebase harder to work with — inconsistent patterns, missing shared infrastructure, testability blockers | `tech-debt` |
+
+**Creative analysis techniques:**
+
+1. **Web research** — Use `WebSearch` and `WebFetch` to research:
+   - How top recipe apps (Paprika, Mealime, Whisk, Cookpad, Tasty) handle similar features
+   - Modern Flutter architecture patterns and best practices (Riverpod vs Provider, go_router patterns, offline-first strategies)
+   - Industry standards for the feature area being scanned (e.g., WCAG for accessibility, Schema.org for recipe data, PWA best practices for web)
+   - New Flutter/Dart features that could simplify existing code
+   - Firebase best practices and newer APIs that replace older patterns in the codebase
+
+2. **User journey walkthrough** — Mentally walk through key user journeys and identify friction:
+   - New user: install → register → onboard → first recipe → first cook
+   - Returning user: open app → find recipe → cook → rate
+   - Social user: share recipe → friend receives → imports → cooks together
+   - Power user: bulk import → organize with tags → plan week menu → generate shopping list
+
+3. **Architecture smell detection** — Look for systemic problems, not just individual bugs:
+   - Which subsystems have the most bug tickets? (check tracker) → candidate for rework
+   - Where do workarounds cluster? → the underlying design is fighting the use case
+   - What patterns are used inconsistently? → standardize or pick one
+   - What's the simplest version of this that would still work? → over-engineering detector
+
+4. **"What would a staff engineer say?"** — For each area scanned, ask: if a senior engineer joined the team tomorrow and reviewed this code, what would they flag as the biggest improvement opportunity?
+
+**Creative ticket format** (different from bug tickets):
+
+```markdown
+## Opportunity
+What could be better and why it matters to users or developers.
+
+## Current State
+How it works today (briefly).
+
+## Proposed Improvement
+Concrete vision of the better state. Include references to how other apps/frameworks handle this if relevant.
+
+## Effort vs Impact
+Brief assessment: is this a quick win or a major undertaking? What's the user-visible payoff?
+```
 
 **Context-aware:** If triggered mid-coding session (context window has active work), spawn a background agent to protect context. If triggered at session start, run inline.
 
