@@ -1,4 +1,62 @@
 {
-  "status": "CLEAR — all tickets created",
-  "tickets": []
+  "pendingSince": "2026-03-06",
+  "scanFocus": "ultrathink-deep-scan-13-parsing-sharing-firebase-functions-lint",
+  "tickets": [
+    {
+      "findingKey": "neural-classifier-lifecycle-bugs",
+      "title": "Fix neural line classifier lifecycle and parsing pipeline bugs (6 issues)",
+      "labels": ["Bug", "parsing"],
+      "priority": 3,
+      "description": "## Finding\n\n### 1. NeuralLineClassifier missing dispose() + _initAttempted never reset\nNo `dispose()` method. `_initAttempted` permanently latched. After `OnnxLineClassifierService.dispose()`, classifier permanently dead until app restart.\n\n### 2. OnnxLineClassifierService race condition\n`_classifyChunk` accesses `_session!` without lock. Concurrent `dispose()` causes null dereference.\n\n### 3. _initFailed/initialized state mismatch\n`onnx_line_classifier_service.dart:77-79` — Both `_initFailed=true` AND `_initialized=true` set. Prevents retry.\n\n### 4. Unbounded input in parseStructureAsync\nNo line limit on `text.split()`. Large pastes cause CPU/memory pressure.\n\n### 5. _lastTierFailures race condition\n`recipe_parser_service.dart` — `_lastTierFailures` instance field mutated per-parse. Two concurrent `parseFromUrl` calls share and overwrite, producing wrong user messages.\n\n### 6. CrfTier is dead code\n`crf_tier.dart` defined but never added to `_tiers` in `RecipeParserService`. Priority conflicts with LlmTier (both priority=4).\n\n## Why It Matters\nClassifier permanently disabled after transient failure. Race condition produces wrong error messages. Dead code adds confusion.\n\n## Suggested Fix\n1. Add `dispose()` to NeuralLineClassifier that resets `_initAttempted`\n2. Add `_disposed` guard in `_classifyChunk`\n3. `_initialized` only true on SUCCESS\n4. Add `maxLines = 2000` guard\n5. Make `_lastTierFailures` a local variable passed through the call chain\n6. Either integrate CrfTier or delete it"
+    },
+    {
+      "findingKey": "sharing-flow-data-integrity-bugs",
+      "title": "Fix sharing flow data integrity bugs (6 issues across social services)",
+      "labels": ["Bug", "social"],
+      "priority": 2,
+      "description": "## Finding\n\n### 1. markAsViewed skips counter decrement\n`firebase_shared_recipe_repository.dart` — Override calls only `addView`, bypassing `decrementUnreadCounter`. Badge counter permanently wrong. Same in menu/shopping repos.\n\n### 2. importSharedRecipe copies personalTagIds across user boundaries\n`social_recipe_service.dart:178` — Copies owner's personal tag UUIDs into recipient's recipe. Dangling refs.\n\n### 3. importSharedMenu partial failure leaves orphan data\nAlready-created recipes not rolled back on partial failure.\n\n### 4. shareRecipeToGroups passes groupId as friendId\n`social_recipe_service.dart:468-476` — Passes group ID as user ID to V1 repo. Malformed sharing records.\n\n### 5. Sort is a no-op\n`base_shared_content_repository.dart:674` — `sort((a, b) => 0)` does nothing.\n\n### 6. Base class markAsViewed is dead code\nAll 3 concrete repos override markAsViewed, bypassing base. Base method writes to non-existent `viewedByUserIds` field.\n\n## Why It Matters\nBadge count permanently wrong, imported recipes have dangling tags, group sharing silently fails.\n\n## Suggested Fix\n1. Override `markAsViewed` to also call `decrementUnreadCounter`\n2. Clear `personalTagIds` when importing\n3. Add rollback or continue-on-error\n4. Fix group sharing to resolve members\n5. Implement date-based sort\n6. Remove dead base class method or fix overrides to call super"
+    },
+    {
+      "findingKey": "cloud-functions-admin-idor",
+      "title": "Fix Cloud Functions admin endpoint authorization gaps (4 IDOR/access control bugs)",
+      "labels": ["security", "backend"],
+      "priority": 1,
+      "description": "## Finding\n\nMultiple Cloud Functions admin/analytics endpoints only check `context.auth` but not admin claims:\n\n### 1. getSiteConfigStats missing admin check\n`functions/src/admin/seed-site-configs.ts:325-368`\n\n### 2. getRetagStatus IDOR\n`functions/src/admin/bulk-retag.ts:405-483` — Any user can query any user's recipe stats via `userId` param.\n\n### 3. getUnmatchedIngredientStats missing admin check\n`functions/src/analytics/track-unmatched-ingredients.ts:162-193`\n\n### 4. getCorrectionStats leaks PII (userIds)\n`functions/src/analytics/analyze-corrections.ts:299-357`\n\n## Why It Matters\nOWASP A01:2021 Broken Access Control. Any authenticated user can access admin data and enumerate other users.\n\n## Suggested Fix\nAdd admin claim check to all 4 functions."
+    },
+    {
+      "findingKey": "cloud-functions-cors-ratelimiter-ssrf",
+      "title": "Fix Cloud Functions security: CORS wildcard, rate limiter fail-open, notification SSRF, path traversal",
+      "labels": ["security", "backend"],
+      "priority": 2,
+      "description": "## Finding\n\n### 1. CORS wildcard on LLM functions\n`structure-recipe.ts:71`, `ocr-recipe-image.ts:67` — `cors: true` accepts ANY origin. CSRF cost amplification.\n\n### 2. Rate limiter fails open\n`rate_limiter.ts:309-313` — Global LLM limit fails open when Firestore unavailable.\n\n### 3. Notification imageUrl not validated\n`send-notification.ts:175-176` — Unvalidated URL passed to FCM. Potential SSRF.\n\n### 4. Rate limit records client-writable\n`rate_limiter.ts:124-134` — Rate limit state in `users/{userId}/rateLimits/` may be writable by client if Firestore rules allow user subcollection writes.\n\n### 5. Path traversal in cleanup-recipe-storage\n`cleanup-recipe-storage.ts:113` — `decodeURIComponent(match[1])` then `startsWith` check. Encoded `../` in URLs can traverse past ownership check.\n\n### 6. Auto-alias approval race condition\n`analyze-corrections.ts:261-293` — Read-check-approve not in transaction. Concurrent corrections can cause duplicate alias writes.\n\n## Why It Matters\nCost amplification, rate limit bypass, SSRF, path traversal, data corruption.\n\n## Suggested Fix\n1. Restrict CORS to specific origins\n2. Global limit fail closed\n3. Apply `isAllowedUrl()` to notification imageUrl\n4. Deny user writes to `rateLimits/**` in Firestore rules\n5. Normalize path after decoding (remove `..` segments)\n6. Wrap alias approval in Firestore transaction"
+    },
+    {
+      "findingKey": "cloud-functions-pii-logging",
+      "title": "Fix PII logging in Cloud Functions (3 locations)",
+      "labels": ["security", "backend"],
+      "priority": 3,
+      "description": "## Finding\n\n### 1. onSuggestionCreated logs PII\n`functions/src/ingredients/on-suggestion-created.ts:50-59` — Logs userId, ingredientName, recipeContext at INFO level.\n\n### 2. LLM functions use console.log with userId and imageUrl\n`structure-recipe.ts:142-144`, `ocr-recipe-image.ts:113-115` — `console.log` (not `functions.logger`) leaks user UIDs and full imageUrls into Cloud Logs.\n\n### 3. onFeedbackCreated logs userId\n`feedback/on-feedback-created.ts:16-18` — userId at INFO level.\n\n## Why It Matters\nGDPR compliance risk. Dietary preferences are special category data. Log retention makes deletion requests harder.\n\n## Suggested Fix\n1. Reduce to DEBUG for detailed fields, hash userId\n2. Replace `console.log` with `functions.logger.*`, apply `scrubUrlParams()`\n3. Omit userId from INFO-level feedback logs"
+    },
+    {
+      "findingKey": "firestore-rules-gaps",
+      "title": "Fix 3 Firestore security rule bugs (engagements, isCollaborative, list query)",
+      "labels": ["security", "backend"],
+      "priority": 2,
+      "description": "## Finding\n\n### 1. Missing collectionGroup('engagements') rule\n`getImportedRecipesForUser` uses `collectionGroup('engagements')` but no `/{path=**}/engagements/{userId}` rule exists. Query denied in production. Imported recipes feature silently broken.\n\n### 2. shared_menus collaborator rule uses wrong field name\nFirestore rule line 589 checks `isCollaborative` but the SharedMenu model uses `allowCollaboration`. Rule condition is never true — blocks all collaborative menu self-joins.\n\n### 3. list rule uses resource.data (unavailable for list queries)\n`shared_recipes` rule line 332 checks `resource.data.sharedByUserId` on list operations. `resource.data` is not available for list queries — always evaluates to null, denying all list queries.\n\n## Why It Matters\nImported recipes broken, collaborative menus broken, list queries broken. Three separate features silently fail due to rule bugs.\n\n## Suggested Fix\n1. Add `/{path=**}/engagements/{userId}` collection group rule\n2. Change `isCollaborative` to `allowCollaboration` in shared_menus rule\n3. Use query-based validation or remove the list rule"
+    },
+    {
+      "findingKey": "share-dialog-import-functional-bugs",
+      "title": "Fix share dialog and import pipeline functional bugs (5 issues)",
+      "labels": ["Bug", "social", "import"],
+      "priority": 2,
+      "description": "## Finding\n\n### 1. loadFriends stub returns empty list — friends never load in share dialog\n`utils/social_content_features.dart:63` — `loadFriends(dynamic service)` always returns `[]`. Called from `UniversalShareDialogViewModel`. Share dialog never displays friends.\n\n### 2. createInvitationLinkInternal returns example.com stub in production\n`services/unified/friends/friends_internal_operations.dart:222` — Returns `https://example.com/invite/$invitationId`. Called in production flow (`friends_invitations_operations.dart:253`). Users receive broken invitation links.\n\n### 3. UniversalShareDialogViewModel missing isDisposed guard\nExtends `ChangeNotifier` (not `BaseViewModel`), has no disposed guard. `_setSharing`, `_setError`, `_clearError` call `notifyListeners()` unconditionally. Crashes if dialog dismissed during share operation.\n\n### 4. skipLlm option not passed to LLM fallback\n`url_import_strategy.dart` — `retryWithoutLlm` passes `{'skipLlm': true}` but `UrlImportStrategy.import` only passes options to `_tryEnhancedParser`, not to `_llmFallback.tryExtraction`. LLM still runs on retry.\n\n### 5. Double HTTP fetch when enhanced parser returns no result\n`url_import_strategy.dart` — `_tryEnhancedParser` fetches HTML, then if it fails, `import()` fetches same URL again.\n\n## Why It Matters\nFriends never shown in share dialog, invitation links broken, app crashes on dialog dismiss, LLM retry doesn't actually skip LLM.\n\n## Suggested Fix\n1. Implement `loadFriends` properly using UnifiedFriendsService\n2. Use `DeepLinkService` base URL for invitation links\n3. Extend BaseViewModel or add isDisposed guard\n4. Pass skipLlm option through to LLM fallback\n5. Cache HTML content between enhanced parser and fallback"
+    },
+    {
+      "findingKey": "lint-suppression-dynamic-type-cleanup",
+      "title": "Clean up lint suppressions, dynamic type abuse, and code quality anti-patterns",
+      "labels": ["tech-debt", "recipe"],
+      "priority": 4,
+      "description": "## Finding\n\n### Lint suppressions\n- `result_displayer.dart` — file-level `use_build_context_synchronously`\n- `user_profile_edit_view.dart` — file-level `deprecated_member_use`\n- `unified_recipe_service.dart:360-366` — exception-as-control-flow init check\n- 9 files with `unused_import` due to dynamic `_parent` fields\n- `tagging_service.dart:476` — production `print()` with ignore:avoid_print\n\n### Dynamic type safety\n- `comment_item_widgets.dart` — `dynamic comment` instead of typed model\n- `universal_share_dialog.dart:43` — `dynamic content`\n- `social_formatters.dart` — `dynamic user` instead of UserProfile\n- `shopping_list_generator.dart` — `recipe as dynamic` cast\n- `user_display_models.dart` — `dynamic user` factories\n\n## Why It Matters\nFile-level suppressions hide bugs. Dynamic types bypass compile-time safety.\n\n## Suggested Fix\n1. Add mounted guards, remove file-level suppressions\n2. Replace dynamic with proper model types\n3. Replace late-field exception pattern with boolean flag\n4. Fix _parent typing to eliminate unused_import hacks"
+    }
+  ]
 }
