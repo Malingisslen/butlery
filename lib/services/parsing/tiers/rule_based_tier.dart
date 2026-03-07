@@ -4,8 +4,8 @@ import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.dart';
 import 'package:butlery/services/parsing/parsers/swedish_line_classifier.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
+import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
-import 'package:html_unescape/html_unescape.dart';
 
 /// Tier 3: Rule-based Swedish text parsing.
 ///
@@ -98,52 +98,10 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
 
     // If it looks like HTML, strip tags
     if (content.contains('<')) {
-      return _stripHtmlTags(content);
+      return HtmlSanitizer.stripToPlainText(content);
     }
 
     return content;
-  }
-
-  /// Strip HTML tags and normalize whitespace.
-  String _stripHtmlTags(String html) {
-    // Remove script and style content first
-    var text = html.replaceAll(
-      RegExp(r'<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>',
-          caseSensitive: false),
-      '',
-    );
-    text = text.replaceAll(
-      RegExp(r'<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>',
-          caseSensitive: false),
-      '',
-    );
-
-    // Replace block elements with newlines
-    text = text.replaceAll(
-      RegExp(r'<(?:br|p|div|li|tr|h[1-6])[^>]*>', caseSensitive: false),
-      '\n',
-    );
-
-    // Remove remaining tags
-    text = text.replaceAll(RegExp(r'<[^>]+>'), '');
-
-    // Decode HTML entities
-    text = _decodeHtmlEntities(text);
-
-    // Normalize whitespace
-    text = text
-        .replaceAll(RegExp(r'\t+'), ' ')
-        .replaceAll(RegExp(r' +'), ' ')
-        .replaceAll(RegExp(r'\n{3,}'), '\n\n');
-
-    return text.trim();
-  }
-
-  static final _htmlUnescape = HtmlUnescape();
-
-  /// Decode HTML entities (full spec coverage via html_unescape package).
-  String _decodeHtmlEntities(String text) {
-    return _htmlUnescape.convert(text);
   }
 
   Future<ParsedRecipe?> _convertToRecipe(

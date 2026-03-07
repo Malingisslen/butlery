@@ -7,6 +7,7 @@ import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/services/parsing/crf/crf_ingredient_parser.dart';
 import 'package:butlery/services/parsing/crf/crf_viterbi_decoder.dart';
 import 'package:butlery/services/parsing/line_classifier/neural_line_classifier.dart';
+import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
 
@@ -72,7 +73,7 @@ class CrfTier extends ParsingTier with QualityScoring {
     }
 
     // Use SwedishLineClassifier for line classification (same as RuleBasedTier)
-    final text = _extractText(context);
+    final text = _extractPlainText(context);
     if (text.isEmpty) {
       return TierResult.noData(
         tierName: tierName,
@@ -140,13 +141,10 @@ class CrfTier extends ParsingTier with QualityScoring {
     }
   }
 
-  String _extractText(ParsingContext context) {
+  String _extractPlainText(ParsingContext context) {
     final content = context.sanitizedContent;
     if (content.contains('<')) {
-      return content
-          .replaceAll(RegExp(r'<[^>]+>'), '\n')
-          .replaceAll(RegExp(r'\n{3,}'), '\n\n')
-          .trim();
+      return HtmlSanitizer.stripToPlainText(content);
     }
     return content;
   }

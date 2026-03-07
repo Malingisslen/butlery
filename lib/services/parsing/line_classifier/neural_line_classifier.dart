@@ -18,7 +18,8 @@ class NeuralLineClassifier {
   final LineClassifierModelManager _modelManager;
   final _viterbi = const ViterbiContextProcessor();
 
-  bool _initAttempted = false;
+  DateTime? _lastInitFailure;
+  static const _initRetryDelay = Duration(minutes: 5);
 
   NeuralLineClassifier({
     required OnnxLineClassifierService classifierService,
@@ -31,16 +32,20 @@ class NeuralLineClassifier {
 
   /// Initialize the model (download if needed, load into ONNX Runtime).
   ///
-  /// Safe to call multiple times — only attempts once unless [dispose] resets.
+  /// Retries after 5 minutes if initialization fails (e.g., network issues).
   Future<bool> ensureInitialized() async {
     if (_classifierService.isAvailable) return true;
-    if (_initAttempted) return false;
-    _initAttempted = true;
+
+    if (_lastInitFailure != null &&
+        DateTime.now().difference(_lastInitFailure!) < _initRetryDelay) {
+      return false;
+    }
 
     try {
       final modelFiles = await _modelManager.ensureModelAvailable();
       if (modelFiles == null) {
         AppLogger.debug('$_serviceName: Model not available, using rule-based');
+        _lastInitFailure = DateTime.now();
         return false;
       }
 
@@ -50,11 +55,15 @@ class NeuralLineClassifier {
       );
 
       if (success) {
+        _lastInitFailure = null;
         AppLogger.info('$_serviceName: Neural classifier ready');
+      } else {
+        _lastInitFailure = DateTime.now();
       }
       return success;
     } catch (e) {
       AppLogger.debug('$_serviceName: Initialization failed: $e');
+      _lastInitFailure = DateTime.now();
       return false;
     }
   }
