@@ -2,18 +2,6 @@
 class HtmlUtilities {
   HtmlUtilities._();
 
-  /// Strips HTML tags and normalizes whitespace.
-  static String stripHtmlTags(String html) {
-    return html
-        .replaceAll(
-            RegExp(r'<script[^>]*>[\s\S]*?</script>', multiLine: true), ' ')
-        .replaceAll(
-            RegExp(r'<style[^>]*>[\s\S]*?</style>', multiLine: true), ' ')
-        .replaceAll(RegExp(r'<[^>]+>'), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
-  }
-
   /// Extracts page title from HTML using og:title, <title>, or <h1>.
   static String? extractTitleFromHtml(String html) {
     final ogTitleMatch = RegExp(

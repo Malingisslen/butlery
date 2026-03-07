@@ -198,13 +198,13 @@ class HtmlSanitizer {
     var searchStart = 0;
 
     while (searchStart < html.length) {
-      final openMatch = openPattern.firstMatch(html.substring(searchStart));
+      final openMatch = openPattern.allMatches(html, searchStart).firstOrNull;
       if (openMatch == null) {
         result.write(html.substring(searchStart));
         break;
       }
 
-      final absOpenStart = searchStart + openMatch.start;
+      final absOpenStart = openMatch.start;
       final closeIdx = lowerHtml.indexOf(closeTag, absOpenStart);
 
       // Check if this tag should be preserved
