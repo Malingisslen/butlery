@@ -389,6 +389,9 @@ class HtmlSanitizer {
     caseSensitive: false,
   );
   static final _tagPattern = RegExp(r'<[^>]+>');
+  static final _tabPattern = RegExp(r'\t+');
+  static final _multiSpacePattern = RegExp(r' +');
+  static final _excessNewlinePattern = RegExp(r'\n{3,}');
 
   /// Strip HTML to plain text with entity decoding and whitespace normalization.
   ///
@@ -403,9 +406,9 @@ class HtmlSanitizer {
     text = _htmlUnescape.convert(text);
 
     return text
-        .replaceAll(RegExp(r'\t+'), ' ')
-        .replaceAll(RegExp(r' +'), ' ')
-        .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+        .replaceAll(_tabPattern, ' ')
+        .replaceAll(_multiSpacePattern, ' ')
+        .replaceAll(_excessNewlinePattern, '\n\n')
         .trim();
   }
 }
