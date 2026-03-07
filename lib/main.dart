@@ -112,7 +112,7 @@ Future<void> main() async {
       if (!kDebugMode)
         FirebaseAppCheck.instance.activate(
           providerWeb: ReCaptchaV3Provider(
-            const String.fromEnvironment('RECAPTCHA_SITE_KEY'),
+            '6Ldv4zcsAAAAAlSR-dDTTuDTcjgr7pYvPazzGPDo',
           ),
           providerAndroid: const AndroidPlayIntegrityProvider(),
           providerApple: const AppleDeviceCheckProvider(),

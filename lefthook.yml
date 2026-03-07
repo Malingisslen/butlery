@@ -14,9 +14,10 @@ pre-commit:
       priority: 1
 
     # Scan for potential secrets in staged files
+    # firebase_options.dart excluded (standard FlutterFire file with client-side API keys)
     secret-scan:
       glob: "*.{dart,ts,json,yaml,yml,env}"
-      run: "grep -rlE '(AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|sk-[a-zA-Z0-9]{20,}|-----BEGIN (RSA|EC) PRIVATE KEY)' {staged_files} && echo Potential secrets detected! && exit 1 || true"
+      run: "echo {staged_files} | tr ' ' '\n' | grep -v firebase_options.dart | xargs -r grep -lE '(AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}|sk-[a-zA-Z0-9]{20,}|-----BEGIN (RSA|EC) PRIVATE KEY)' && echo Potential secrets detected! && exit 1 || true"
 
     # Run Flutter analyze (fatal on infos)
     analyze:
