@@ -126,8 +126,8 @@ scripts/line_classifier/__pycache__/
 scripts/output/crf_eval*.txt
 
 # Python venv artifacts
-# Note: can't use /Scripts/ blanket — conflicts with scripts/ on case-insensitive Windows
-/Lib/
+# Note: can't use /Lib/ or /Scripts/ blanket — conflicts with lib/ and scripts/ on case-insensitive Windows
+/Lib/site-packages/
 Scripts/*.cfg
 Scripts/*.pth
 Scripts/python*

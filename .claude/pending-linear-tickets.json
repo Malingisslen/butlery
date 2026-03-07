@@ -2,694 +2,130 @@
   "pendingSince": "2026-03-07",
   "batches": [
     {
-      "scanFocus": "ultrathink-deep-scan-16-theming-concurrency-tests-widgets-accessibility-contracts",
+      "scanFocus": "creative-ultrathink-scan-23-monetization-multidevice-lifecycle-household-import-delight",
       "tickets": [
         {
-          "findingKey": "missing-async-init-guards-double-init",
-          "title": "Fix missing async init guards causing double-init races in 3 services",
+          "findingKey": "monetization-entitlement-iap-infrastructure",
+          "title": "Add entitlement and IAP infrastructure for future monetization readiness",
           "labels": [
-            "Bug",
-            "backend"
-          ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. UnifiedRecipeService.initialize() â€” no _isInitializing guard\n`lib/services/unified/unified_recipe_service.dart:442â€“530`\n\nOnly checks `_isInitialized` (completed state), not in-progress. Two callers (bootstrap + auth-state-change) can both enter the body simultaneously. Both call `_recipes.clear()`, both set up `_authSubscription` (first leaks), both start `_cacheModule.startFirebaseSync()`. Result: duplicate stream subscriptions, transient blank recipe lists, notifyListeners storm.\n\nCorrect pattern exists at `SharedContentCoordinatorViewModel:209`: `if (_isInitialized || _isInitializing) return;`\n\n### 2. FriendsStateManager.initialize() â€” same missing guard\n`lib/services/unified/friends/friends_state_manager.dart:63â€“97`\n\nBoth FriendsViewModel constructor and re-auth events can call initialize() simultaneously. Both pass `_isInitialized == false`, both call `Future.wait([_loadFriends...])`, both call `_setupRealtimeListeners()` which cancels and re-creates subscriptions â€” but the first call's subscriptions get cancelled before delivering data.\n\n### 3. FriendsProfileCacheManager.loadUserProfilesForRequests() â€” duplicate requests\n`lib/viewmodels/friends/friends_profile_cache_manager.dart:27â€“82`\n\n`_isLoadingUserProfiles` is a UI flag, not a re-entrancy guard. Two concurrent calls both compute the same uncached user IDs, make duplicate Firestore reads.\n\n## Why It Matters\nDouble-init causes leaked stream subscriptions, duplicate Firestore listeners, transient blank states on app start.\n\n## Suggested Fix\n1-2. Add `bool _isInitializing = false` guard matching SharedContentCoordinatorViewModel pattern\n3. Add `if (_isLoadingUserProfiles) return` re-entrancy guard"
-        },
-        {
-          "findingKey": "stale-closures-uncancellable-retries-data-loss",
-          "title": "Fix stale closures and uncancellable retries causing silent data loss (5 locations)",
-          "labels": [
-            "Bug",
-            "backend"
-          ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. PersonalRecipeModule sync retry captures stale recipe â€” DATA LOSS\n`lib/services/unified/modules/personal_recipe_module.dart:724â€“807`\n\nRetry closure captures the `recipe` object from the original failed call, not the current version in `_recipes`. If the user edits between failed sync and retry (at 5s, 10s, 20s intervals), retry overwrites the newer version in Firestore.\n\n### 2. SocialOperationsInitializer.scheduleRetry() â€” unbounded recursive retry\n`lib/services/unified/helpers/social_operations_initializer.dart:98â€“113`\n\nNo max retry count, no cancellation token. `delay.inSeconds * 2` with sub-1s initial delay produces tight loop.\n\n### 3. RetaggingScheduler â€” _isRetagging is not an async lock\n`lib/services/tagging/retagging_scheduler.dart:57â€“95`\n\nPeriodic timer + scheduled call both enter `_performRetagging()`, causing duplicate `_saveRecipe()`. Also `Future.delayed(5s)` survives dispose().\n\n### 4. FriendsViewModel stale closure in Future.delayed\n`lib/viewmodels/friends_viewmodel.dart:399â€“408`\n\nCallback fires between `_isDisposed = true` and `super.dispose()` â€” assertion errors during logout.\n\n## Why It Matters\nFinding 1 causes silent data loss. Findings 2-3 cause unbounded retries or duplicate writes.\n\n## Suggested Fix\n1. Re-read recipe from `_recipes[recipe.id]` at retry time\n2. Add max retry count, store Timer reference for cancellation\n3. Use Completer-based lock; cancel Future.delayed in dispose\n4. Check _isDisposed after super.dispose()"
-        },
-        {
-          "findingKey": "cache-drift-presence-deadlock-search-mixing",
-          "title": "Fix cache counter drift, presence stream deadlock, and search term mixing (3 concurrency bugs)",
-          "labels": [
-            "Bug",
-            "social",
-            "recipe"
-          ],
-          "priority": 2,
-          "description": "## Finding\n\n### 1. IntelligentCacheManager â€” memory counter drift â†’ unbounded growth\n`lib/services/performance/intelligent_cache_manager.dart:257â€“294, 460â€“471`\n\nTwo Timer.periodic callbacks and clearCache() concurrently mutate `_currentMemoryUsage`. clearCache() sets counter to 0 while prefetch is mid-await. After await resumes, `_cacheRecipe` adds `+= size` on zeroed counter. Counter drifts, `_ensureMemoryAvailable()` never evicts â†’ OOM.\n\n### 2. PresenceService â€” asyncMap + inner await for deadlocks\n`lib/services/presence_service.dart:391â€“409`\n\n`asyncMap` on broadcast stream with inner `await for (... in streams[i].take(1))`. If streams[i] doesn't emit, await for hangs indefinitely, stalling all presence updates. 3+ participant scenario triggers it.\n\n### 3. SharedContentSearchViewModel â€” stale _searchQuery across sequential awaits\n`lib/viewmodels/shared_content/shared_content_search_viewmodel.dart:295â€“370`\n\n`_searchQuery` is a field, not local copy. Between three sequential `await _searchContent(...)` calls, a keystroke changes it. Recipe results from \"piz\" mixed with menu results from \"pizza\".\n\n## Why It Matters\nFinding 1 causes OOM. Finding 2 causes stale presence. Finding 3 causes incorrect search results.\n\n## Suggested Fix\n1. Snapshot `_currentMemoryUsage` or use Completer-based lock\n2. Replace `asyncMap` + `await for` with `Rx.combineLatest`\n3. Snapshot `final query = _searchQuery` at method start; cancel in-flight search on new query"
-        },
-        {
-          "findingKey": "trivial-test-assertions-false-coverage",
-          "title": "Fix 55+ trivial test assertions giving false coverage confidence across 15 test files",
-          "labels": [
-            "test-gap"
-          ],
-          "priority": 2,
-          "description": "## Finding\n\n### expect(true, isTrue) placeholder assertions (30+ tests)\nTests that always pass regardless of implementation:\n- `notification_service_test.dart:148,198,220,245,267,309` â€” 6 tests\n- `messaging_service_test.dart:816,1330,1340,1411,1464` â€” 5 tests (3 for unimplemented methods)\n- `recipe_social_stats_test.dart:746,801` â€” rating aggregates\n- `realtime_event_handler_test.dart:301,317` â€” notifications\n- `startup_optimization_manager_test.dart:116,125` â€” service registration\n- `performance_monitoring_service_test.dart:129,138` â€” initialize\n- `intelligent_cache_manager_test.dart:249,322` â€” initialize + preload\n- Plus 7 more files with 1 placeholder each\n\n### url_import_strategy_test.dart â€” 29 tests with only expect(strategy, isNotNull)\nLines 207â€“458: Tests named for specific behaviors but only assert non-null. Entire extraction pipeline has zero real assertions.\n\n### Tests for unimplemented methods\n`messaging_service_test.dart:1334,1404,1457` â€” tests for addReaction/removeReaction/updatePresence that don't exist.\n\n## Why It Matters\nThese create phantom coverage. url_import_strategy_test alone has 29 tests that pass even if the entire implementation were deleted.\n\n## Suggested Fix\n1. Replace `expect(true, isTrue)` with actual state/interaction assertions\n2. url_import_strategy_test: assert extracted title, ingredients, instructions\n3. Delete tests for unimplemented methods\n4. Replace `isA<String?>()` with content verification"
-        },
-        {
-          "findingKey": "flaky-timing-tests-skipped-tests",
-          "title": "Fix 13+ flaky timing tests and 20+ improperly skipped tests",
-          "labels": [
-            "test-gap"
+            "idea",
+            "backend",
+            "account"
           ],
           "priority": 3,
-          "description": "## Finding\n\n### Flaky: Future.delayed without fakeAsync in unit tests\n- `collaborative_status_viewmodel_test.dart` â€” 13Ã— `Future.delayed(100-200ms)` for async state propagation\n- `rate_limiter_test.dart:71,84,432` â€” 3Ã— `Future.delayed(1100ms)` for token bucket refill\n\n### Improperly skipped with no resolution plan\n- `firebase_connectivity_repository_test.dart` â€” 7 tests skip: 'Requires Flutter bindings'\n- `friend_relationship_repository_test.dart` â€” 3 tests skip: 'FieldValue.increment'\n- `friend_category_repository_test.dart` â€” 3 tests skip: 'FieldValue.arrayUnion/Remove'\n- `group_invitation_repository_test.dart` â€” 4 tests skip: 'FieldValue.serverTimestamp'\n- `startup_optimization_manager_test.dart` â€” 3 tests skip: 'singleton state persistence'\n\n### Singleton state leaking between tests\n- `startup_optimization_manager_test.dart` â€” singleton retains initialized state\n\n## Why It Matters\nFlaky tests erode CI trust. Skipped tests create false coverage confidence.\n\n## Suggested Fix\n1. Replace Future.delayed with fakeAsync + async.elapse()\n2. Add TestWidgetsFlutterBinding.ensureInitialized() for connectivity tests\n3. Use fake_cloud_firestore FieldValue support or mock at service layer\n4. Add singleton reset capability"
+          "description": "## Opportunity\nZero monetization infrastructure exists. No concept of premium/tier/subscription in the entire codebase. Every monetization strategy requires a single authoritative is-this-user-allowed check.\n\n## Current State\n- UserProfile has no subscriptionStatus, userTier, or plan field\n- FeatureFlagService (Firebase Remote Config) exists with rollout support but all flags are infrastructure flags, none are feature entitlements\n- ImportRateLimiter has Firestore-persisted, window-based rate limiting -- mature but uniform per-user, not tier-aware\n- No IAP packages in pubspec.yaml (no RevenueCat, no in_app_purchase)\n- DataExportService is GDPR-complete (removes subscription compliance blocker)\n- rate_limit_dialog.dart exists as natural insertion point for upgrade prompts\n\n## Proposed Improvement\n1. Add userTier to UserProfile + EntitlementService wrapping FeatureFlagService\n2. Add RevenueCat integration for cross-platform IAP\n3. Add tier-aware constants to ImportRateLimiter\n4. Add recipe count enforcement via UserCounters\n5. Add UpgradePromptSheet reusable paywall widget\n6. Add conversion analytics events\n\n## Effort vs Impact\nLarge (2-3 weeks for IAP). Blocking for any future monetization.\n\n_Source: creative-ultrathink scan #23_"
         },
         {
-          "findingKey": "widget-architecture-duplication-nesting-setstate",
-          "title": "Fix widget architecture: duplicated card subtrees, deep nesting, context threading, setState anti-patterns (10+ views)",
+          "findingKey": "collection-stats-dashboard-milestones-value",
+          "title": "Add collection stats dashboard with cooking milestones and value demonstration",
           "labels": [
-            "tech-debt",
-            "social",
+            "idea",
+            "recipe"
+          ],
+          "priority": 2,
+          "description": "## Opportunity\nThe app accumulates valuable data but never shows users what they have built. RecipeQueryViewModel.recipeInsights computes 12+ metrics but NO UI consumes it.\n\n## Current State\n- recipeInsights getter (recipe_query_viewmodel.dart:395) computes: totalRecipes, favoriteCount, recentlyCookedCount, highRatedCount, mealType/tag distribution\n- getMostUsedMealTypes(), getMostUsedTags(), getCookingFrequencyByMealType() -- all implemented, zero UI\n- ProfileMenu shows only 3 numbers: recipes, menus, friends\n- No cookCount field -- markAsCooked() overwrites single lastCookedAt (recipe_operations.dart:277)\n- No milestone celebrations -- ActivityType.achievementUnlocked exists but zero logic\n\n## Proposed Improvement\n1. Add cookCount: int to RecipeCore (increment, not overwrite)\n2. Create StatsView consuming recipeInsights\n3. Add milestone celebrations at thresholds (first recipe, 10th cook, 50 recipes)\n4. Add first-recipe celebration overlay\n\n## Effort vs Impact\nSmall-medium. Very high engagement impact -- data already exists.\n\n_Source: creative-ultrathink scan #23_"
+        },
+        {
+          "findingKey": "cross-device-cooking-session-sync-offline-qr",
+          "title": "Add cross-device cooking session sync with offline pre-save and QR handoff",
+          "labels": [
+            "idea",
+            "recipe"
+          ],
+          "priority": 2,
+          "description": "## Opportunity\nRecipe apps are uniquely multi-device: browse on laptop, cook from phone/tablet. CookingModeViewModel (43 lines) is pure in-memory -- portion scaling lost on app close. No offline pre-save before cooking.\n\n## Current State\n- CookingModeViewModel holds _currentPortions in memory only -- zero persistence\n- No recentlyViewed array anywhere\n- OfflineService.saveRecipeOffline() exists but NEVER called before cooking mode\n- No QR code library -- no way to scan recipe from laptop to phone\n\n## Proposed Improvement\n1. Write cooking_sessions/{userId}/current Firestore doc on cooking mode open\n2. Call OfflineService.saveRecipeOffline(recipe) in CookingModeView.initState\n3. Add recentlyViewed array (capped to 10) on RecipeDetailView open\n4. Add qr_flutter + Show QR code action in recipe detail\n5. Persist portion scaling to SharedPreferences per-recipe\n\n## Effort vs Impact\nMedium. High impact for multi-device cooking.\n\n_Source: creative-ultrathink scan #23_"
+        },
+        {
+          "findingKey": "cooking-mode-accessibility-fonts-touch-semantics",
+          "title": "Fix cooking mode accessibility: hardcoded fonts, small touch targets, zero Semantics, no checkoff",
+          "labels": [
+            "bug",
+            "recipe"
+          ],
+          "priority": 2,
+          "description": "## Finding\nCookingModeView has multiple accessibility issues:\n\n### 1. Hardcoded font sizes ignore system text scale\ncooking_mode_view.dart:247 (fontSize:16) and line 342 (fontSize:18) override styles directly.\n\n### 2. Portion buttons below touch target minimum\nLine 277: buttons are 36x36px -- below 48px Material Design minimum.\n\n### 3. Zero Semantics wrappers\nNeither ingredient list items, portion counter, step numbers, nor close button have semantic labels.\n\n### 4. No ingredient checkoff interaction\nNo way to tap ingredients to cross them off while cooking.\n\n### 5. Orientation forced on all devices\nLine 29-32: forces landscape regardless of device. No kIsWeb guard.\n\n## Suggested Fix\nIncrease buttons to 48x48. Add Semantics. Respect text scale. Guard orientation. Add ingredient tap-to-checkoff.\n\n_Source: creative-ultrathink scan #23_"
+        },
+        {
+          "findingKey": "web-platform-gaps-deeplinks-keyboard-print-clipboard",
+          "title": "Fix web platform gaps: deep links broken, no keyboard shortcuts, no print, no clipboard auto-detect",
+          "labels": [
+            "bug",
+            "recipe",
+            "backend"
+          ],
+          "priority": 1,
+          "description": "## Finding\n### 1. Web deep links never processed (P1)\ndeep_link_handler.dart line 46-49 returns early for kIsWeb. Uri.base never parsed at startup. Shared recipe links only work on Android.\n\n### 2. No keyboard shortcuts\nZero LogicalKeyboardKey/Shortcuts usage. No Cmd+F for search, no Space for cooking steps, no Escape for modals.\n\n### 3. No print recipe\nNo print CSS, no print layout, no Print button for web users.\n\n### 4. No clipboard monitoring on app resume\nNo WidgetsBindingObserver that reads clipboard for recipe URLs on resume.\n\n## Suggested Fix\nParse Uri.base on web startup. Add Shortcuts widget. Add print button behind kIsWeb guard. Add clipboard monitoring.\n\n_Source: creative-ultrathink scan #23_"
+        },
+        {
+          "findingKey": "tablet-two-column-layout-responsive-cooking",
+          "title": "Add tablet-optimized layouts: two-column recipe detail, responsive cooking mode, adaptive image heights",
+          "labels": [
+            "idea",
             "recipe"
           ],
           "priority": 3,
-          "description": "## Finding\n\n### Duplicated widget subtrees\n1. `shared_recipe_card.dart`, `shared_menu_card.dart`, `shared_shopping_list_card.dart` â€” identical outer skeleton and _buildHeader across all three\n2. `privacy_policy_view.dart`, `terms_of_service_view.dart`, `community_guidelines_view.dart` â€” identical _buildContactButton footer\n3. `notification_preferences_view.dart:118,165,220,333,358` â€” SwitchListTile thumbColor block duplicated 5Ã—\n\n### Deep nesting (10+ levels)\n4. `recipe_detail_content.dart:183â€“279` â€” ingredient row 11 levels deep\n5. `recipe_detail_view.dart:94â€“563` â€” main build 12+ levels\n\n### Context threading through static methods\n6. shared_*_card.dart â€” context passed through 4 levels of static method calls\n\n### setState anti-patterns\n7. `recipe_detail_view.dart:539,548` â€” empty setState(() {}) forces full view rebuild\n8. `mfa_settings_view.dart:70,121â€“130,134` â€” 3Ã— setState in single async method\n\n### Unnecessary StatefulWidgets\n9. `emoji_reaction_picker.dart:68â€“111` â€” StatefulWidget for single bool hover\n10. `search_input_widget.dart:17â€“75` â€” StatefulWidget solely for empty setState on text change\n\n## Why It Matters\nDuplicated subtrees mean bugs fixed in one card aren't fixed in others. Deep nesting defeats rebuild optimization. Empty setState causes full-subtree rebuilds.\n\n## Suggested Fix\n1. Extract SharedContentCardShell + SharedContentCardHeader\n2. Extract LegalContactFooter widget\n3. Extract _butlerySwitchTheme() helper\n4-5. Extract _IngredientRow and _RecipeTitleSection\n6. Convert static classes to proper StatelessWidget subclasses\n7-8. Use ViewModel notifyListeners instead of parent setState\n9-10. Convert to StatelessWidget with AnimatedBuilder"
+          "description": "## Opportunity\nResponsive infrastructure is thorough (6 breakpoints, ResponsiveBuilder, AdaptiveNavigationScaffold) but key views do not use it.\n\n## Current State\n- RecipeDetailView is single-column even on 1200px browser. ResponsiveUtils.useMasterDetail() exists but never called.\n- SliverAppBar hero image hardcoded at expandedHeight: 200.0 -- narrow on tablet\n- SmartImportView uses maxWidth: 600 but no adaptive desktop variant\n- Cooking mode fonts do not scale with ResponsiveUtils.getFontSizeMultiplier()\n\n## Proposed Improvement\n1. Two-column RecipeDetailView on tablet/desktop\n2. Responsive expandedHeight based on screen height\n3. Desktop SmartImportView with side-by-side form + preview\n4. Cooking mode fonts scale with getFontSizeMultiplier()\n\n## Effort vs Impact\nMedium. High impact for web/tablet reading experience.\n\n_Source: creative-ultrathink scan #23_"
         },
         {
-          "findingKey": "service-contract-findByTitle-notifications-fcm",
-          "title": "Fix service contract bugs: findByTitle never matches, notification prefs dual collection, FCM token deletion (6 issues)",
+          "findingKey": "recipe-lifecycle-archival-cookcount-filter-notes",
+          "title": "Add recipe lifecycle: archival, cookCount tracking, never-cooked filter, per-cook notes, broken URL check",
           "labels": [
-            "Bug",
-            "backend"
-          ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. findByTitle() never matches â€” duplicate detection broken\n`lib/repositories/firebase/firebase_recipe_repository.dart:567â€“577`\n\nQuery uses lowercase but toFirestore() stores original case. Firestore exact comparison â†’ never matches.\n\n### 2. Notification preferences in two different Firestore collections\nLegacy: `notification_preferences` vs New: `user_notification_preferences`. UI writes to legacy, interface reads from new â†’ always defaults.\n\n### 3. removeFCMToken ignores token parameter, deletes ALL tokens\n`lib/repositories/firebase/firebase_notifications_repository.dart:374â€“378`\n\nMulti-device users lose push for all devices when one signs out.\n\n### 4. setActiveList is in-memory only\n`lib/repositories/firebase/firebase_shopping_repository.dart:292â€“294`\n\nLost on cold start. getActiveList() returns null.\n\n### 5. toFirestore() writes DateTime, fromFirestore() reads Timestamp\n`notifications_repository.dart:143` and `ratings_repository.dart:78`. Latent crash on base class create() path.\n\n### 6. Two parallel NotificationRepository classes\nLegacy (not DI-registered) vs new (DI-registered). NotificationService bypasses DI.\n\n## Why It Matters\nFinding 1: All import duplicate detection broken. Finding 2: Notification prefs never persist. Finding 3: Multi-device push broken on logout.\n\n## Suggested Fix\n1. Store normalizedTitle in toFirestore(), query against that\n2. Consolidate to one collection; delete legacy repository\n3. Use FieldValue.arrayRemove([token]) for specific token\n4. Persist _activeListId via SharedPreferences\n5. Use Timestamp.fromDate() in toFirestore\n6. Merge into single DI-registered repository"
-        },
-        {
-          "findingKey": "accessibility-contrast-autofocus-responsive-focus",
-          "title": "Fix accessibility gaps: auth contrast fail, missing autofocus, responsive wrappers, focus management (14 locations)",
-          "labels": [
-            "Bug",
-            "account"
+            "idea",
+            "recipe"
           ],
           "priority": 2,
-          "description": "## Finding\n\n### WCAG contrast failure\n1. `auth_view.dart:128â€“131` â€” Tagline ~1.9:1 contrast, needs 4.5:1\n\n### Missing autofocus\n2. `auth_view.dart:543â€“553` â€” Password reset dialog no autofocus\n\n### Link semantics\n3. `auth_view.dart:439â€“472` â€” GestureDetector on bare Text, no tap target, no Semantics(link: true)\n\n### Missing responsive wrappers\n4. `faq_view.dart:28â€“30` â€” No Center + ConstrainedBox\n5. `onboarding_view.dart:61` + `onboarding_allergen_page.dart:65` â€” No max-width, fixed crossAxisCount: 2\n\n### Keyboard/focus\n6. `account_security_view.dart:148â€“215` â€” 5 TextFields no Tab progression\n7. `tag_detail_view.dart:75â€“79` â€” Edit mode no requestFocus()\n\n### Tap targets (new locations)\n8-10. cooking_mode close (40px), stepper (36px), Lagat idag shrinkWrap\n\n### Cooking mode\n11. Non-Expanded Row overflows at 1.3x text scale\n12. Forces landscape with no portrait fallback\n\n### Screen reader\n13. `mina_recept_view.dart:520â€“539` â€” Selection state not in Semantics\n14. `auth_view.dart:105â€“108` â€” Decorative image not excluded\n\n## Why It Matters\nContrast failure affects all users. Missing keyboard nav breaks web. 36px tap targets fail mobile accessibility.\n\n## Suggested Fix\n1. Increase tagline opacity or use cs.onPrimary\n2. Add autofocus: true\n3. Replace GestureDetector with TextButton + Semantics\n4-5. Add Center + ConstrainedBox\n6. Add FocusNode chain + textInputAction\n7. Call requestFocus() after setState\n8-10. Increase to 48dp\n11. Wrap label in Expanded\n13. Add Semantics(selected: isSelected)\n14. Add excludeFromSemantics: true"
-        }
-      ]
-    },
-    {
-      "scanFocus": "ultrathink-deep-scan-17-cloud-functions-firestore-rules-lifecycle-platform-parsing-di",
-      "tickets": [
-        {
-          "findingKey": "cloud-functions-auth-validation-gaps",
-          "title": "Fix Cloud Functions auth gaps: 4 missing admin checks, rate limit key mismatch, imageUrl SSRF, LLM cost abuse (9 issues)",
-          "labels": [
-            "security",
-            "backend"
-          ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. Missing admin authorization (4 functions)\n`functions/src/admin/` â€” `cleanupOrphanedData`, `migrateUserData`, `forceReindex`, `bulkDeleteUsers` check `auth.uid` exists but never verify admin role/claim. Any authenticated user can call them.\n\n### 2. Rate limiter key mismatch\n`functions/src/middleware/rateLimiter.ts` â€” key uses `req.ip` but behind Cloud Run proxy, `req.ip` is always the proxy IP. All users share one rate limit bucket.\n\n### 3. imageUrl SSRF in recipe import\n`functions/src/import/processRecipeImport.ts` â€” accepts user-supplied `imageUrl`, fetches it server-side with no URL validation. Can probe internal GCP metadata endpoint (`169.254.169.254`).\n\n### 4. LLM API cost abuse\n`functions/src/ai/generateTags.ts` â€” no per-user daily quota. Single user can trigger unlimited OpenAI API calls.\n\n### 5-9. Input validation gaps\nMissing field length limits on recipe title (can store 1MB string), missing Content-Type validation, no request body size limit on 3 endpoints.\n\n## Why It Matters\nAdmin functions callable by any user = full data wipe possible. SSRF = GCP credential theft. No LLM quota = unbounded cost.\n\n## Suggested Fix\n1. Add `verifyAdminClaim(context)` helper checking custom claims\n2. Use `req.headers['x-forwarded-for']` or Cloud Run `X-Cloud-Trace-Context`\n3. Validate URL scheme (https only) + block private IP ranges\n4. Add per-user daily call counter in Firestore\n5-9. Add express-validator middleware with field length limits"
+          "description": "## Opportunity\nRecipe collections grow but never shrink or reorganize. Users accumulate hundreds but only cook from ~20.\n\n## Current State\n- No isArchived/archivedAt field -- recipes exist or are hard-deleted\n- lastCookedAt exists but no cookCount -- cannot answer how often do I cook this\n- No lastViewedAt -- never-opened imports invisible\n- No per-cook notes\n- sourceUrl stored but never validated for liveness\n- ContentFingerprint only does exact matching -- no retrospective fuzzy dedup\n- SortCriteria has title/time but no lastCooked\n\n## Proposed Improvement\n1. Add cookCount field, increment on markAsCooked\n2. Add SortCriteria.lastCooked and never-cooked filter\n3. Add isArchived flag for soft-hide\n4. Add per-cook notes (cookingNotes subcollection)\n5. Add broken URL checker\n6. Add retrospective duplicate scan\n\n## Effort vs Impact\nMedium. High -- transforms collection from static to living.\n\n_Source: creative-ultrathink scan #23_"
         },
         {
-          "findingKey": "cloud-functions-idempotency-error-handling",
-          "title": "Fix Cloud Functions: idempotency failures, OOM cleanup, N+1 queries, wrong timeout config (9 issues)",
+          "findingKey": "seasonal-proactive-surfacing-contextual-suggestions",
+          "title": "Add seasonal proactive surfacing and contextual time-of-day recipe suggestions",
           "labels": [
-            "Bug",
-            "backend"
+            "idea",
+            "recipe"
           ],
           "priority": 2,
-          "description": "## Finding\n\n### 1. Non-idempotent onCreate triggers\n`functions/src/triggers/onRecipeCreate.ts`, `onUserCreate.ts` â€” Cloud Functions can retry on timeout. These create denormalized docs without checking if they already exist â†’ duplicate data on retry.\n\n### 2. cleanupOrphanedData fetches all docs into memory\n`functions/src/admin/cleanupOrphanedData.ts` â€” `const allRecipes = await db.collection('recipes').get()` loads entire collection. Will OOM at ~10k recipes.\n\n### 3. N+1 query in generateWeeklyDigest\n`functions/src/scheduled/weeklyDigest.ts` â€” loops users, fetches recipes one-by-one inside loop instead of batch query.\n\n### 4. Wrong timeout/memory on v2 functions\n3 functions set `timeoutSeconds: 60` (v1 syntax) in v2 `onCall` options â€” silently ignored, gets default 60s which may be too short for batch operations.\n\n### 5-9. Error handling gaps\n5 functions catch errors but return `{success: true}` anyway, 2 functions don't catch at all (unhandled rejection â†’ cold start on next call).\n\n## Why It Matters\nNon-idempotent triggers cause duplicate data. OOM crashes cleanup function. N+1 causes weekly digest timeout.\n\n## Suggested Fix\n1. Check document existence before create in triggers\n2. Use paginated query with `startAfter` cursor\n3. Batch user recipe queries with `where('userId', 'in', chunk)`\n4. Use `timeoutSeconds` in `GlobalOptions` or per-function `HttpsOptions`\n5-9. Return error status on catch, add try-catch to unguarded functions"
+          "description": "## Opportunity\nSeason tags (var/sommar/host/vinter) and holiday tags (jul, lucia, pask, midsommar) are computed on every recipe but never proactively surfaced. DateTime.now() is used nowhere in the display layer.\n\n## Current State\n- TagPhase4Mood generates season tags from ingredient seasonality + name-inference fallback\n- Swedish holidays detected: jul, lucia, pask, midsommar, kraftskiva, nyar\n- Manual filter by season works but user must know to look\n- No time-of-day awareness\n- No NotificationStrategy for seasonal/forgotten recipes\n\n## Proposed Improvement\n1. Add In Season Now section on home screen using DateTime.now() Swedish season mapping\n2. Add contextual greeting: God morgon/eftermiddag/kvall with meal-appropriate suggestion\n3. Add Forgotten favorites shelf: rating >= 4, lastCookedAt > 90 days\n4. Add seasonal push notification\n\n## Effort vs Impact\nSmall-medium. High discovery and engagement impact -- data already exists.\n\n_Source: creative-ultrathink scan #23_"
         },
         {
-          "findingKey": "firestore-rules-missing-camelcase-denorm-collections",
-          "title": "Fix CRITICAL: Firestore rules missing for camelCase denorm collections + 8 more collections (menu/shopping sharing broken)",
+          "findingKey": "household-accounts-shared-collection-allergen-assignment",
+          "title": "Add household accounts: shared recipe collection, allergen aggregation, cooking assignment",
           "labels": [
-            "security",
-            "backend",
-            "social",
-            "shopping"
-          ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. Denormalized collections use camelCase, rules use snake_case\n`firestore.rules` has rules for `shared_recipes`, `shared_menus`, `shared_shopping_lists` but app code writes to `sharedRecipes`, `sharedMenus`, `sharedShoppingLists`. Rules never match â†’ default deny â†’ all sharing silently fails.\n\n### 2. 8 collections with no rules at all\n- `userPresence` â€” presence writes blocked\n- `recipeEngagements` â€” likes/comments blocked\n- `menuTemplates` â€” menu template CRUD blocked\n- `shoppingListItems` (subcollection) â€” item add/remove blocked\n- `friendCategories` â€” category management blocked\n- `groupInvitations` â€” group invite flow blocked\n- `userNotificationPreferences` â€” notification prefs blocked\n- `recipeImportQueue` â€” import queue blocked\n\n### 3. Collection naming inconsistency\nMix of camelCase (`userPresence`) and snake_case (`user_profiles`) across codebase. No naming convention enforced.\n\n## Why It Matters\nCRITICAL: All social sharing features (recipes, menus, shopping lists) are silently broken in production. Firestore default-deny means writes succeed client-side (optimistic) but fail server-side.\n\n## Suggested Fix\n1. Add rules for camelCase collection names matching app code\n2. Add rules for all 8 missing collections with proper auth checks\n3. Document naming convention, migrate to consistent style in next major version"
-        },
-        {
-          "findingKey": "firestore-rules-logic-bugs-reactions-ownership",
-          "title": "Fix Firestore rule logic bugs: menu reads permanently denied, reactions blocked, ownership hijack (7 issues)",
-          "labels": [
-            "security",
-            "backend",
+            "idea",
             "social"
           ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. Menu read rule permanently denies after unshare\n`firestore.rules:847` â€” `resource.data.sharedWith` checked but field removed on unshare instead of set to empty array. `resource.data.sharedWith` â†’ field doesn't exist â†’ rule throws â†’ deny. Owner also locked out.\n\n### 2. Reactions subcollection create blocked\n`firestore.rules:923` â€” requires `request.resource.data.userId == request.auth.uid` but client sends `authorId` field instead.\n\n### 3. Recipe ownership hijack via update\n`firestore.rules:312` â€” update rule checks `request.auth.uid == resource.data.userId` but doesn't prevent changing `userId` field. User can transfer ownership to themselves for any recipe they can update.\n\n### 4. Comment delete allows any participant\n`firestore.rules:945` â€” delete rule checks group membership but not comment authorship. Any group member can delete anyone's comments.\n\n### 5-7. Minor logic issues\n5. `get()` in rules counts toward quota but result uncached across rule evaluations\n6. `hasAll` used where `hasAny` intended for permission check\n7. Timestamp validation allows future dates (no `<= request.time` check)\n\n## Why It Matters\nFinding 1: Menus permanently inaccessible after unshare. Finding 3: Any collaborator can steal recipe ownership.\n\n## Suggested Fix\n1. Check `'sharedWith' in resource.data && request.auth.uid in resource.data.sharedWith` with existence guard\n2. Change field name to `authorId` in rule or `userId` in client\n3. Add `!('userId' in request.resource.data) || request.resource.data.userId == resource.data.userId` to prevent ownership change\n4. Add `resource.data.authorId == request.auth.uid || isOwner()` to comment delete\n5-7. Cache get() results, fix hasAllâ†’hasAny, add timestamp bounds"
+          "priority": 3,
+          "description": "## Opportunity\nMost recipe apps are single-player. Families cook together. Butlery has strong multi-user infrastructure aimed at friends but no household concept.\n\n## Current State\n- Recipes strictly single-owner. CollaborativeRecipeRepository provides real-time sessions but not permanent co-ownership.\n- DefaultFriendCategories auto-creates Familj category but it is just a label\n- RealtimeMenu has full participants model but no per-day cook assignee\n- UserAllergenPreferences per-user. MenuGenerator filters single user. No union.\n- No GroupType.household flag. No pantry/inventory model.\n- Portion scaling single integer (1-20), no composite 2 adults + 2 kids\n\n## Proposed Improvement\n1. Add Household model with memberIds + auto-shared recipe collection\n2. Add HouseholdAllergenService.union() for MenuGenerator\n3. Add MenuDayAssignment with assigneeId per day/meal\n4. Add shared pantry model\n5. Add composite portion scaling\n\n## Effort vs Impact\nLarge. Very high differentiation.\n\n_Source: creative-ultrathink scan #23_"
         },
         {
-          "findingKey": "app-lifecycle-deeplink-fcm-auth-critical",
-          "title": "Fix app lifecycle: deep link dropped on cold start, FCM navigation unwired, auth token expiry swallowed (3 critical bugs)",
+          "findingKey": "collaborative-shopping-no-realtime-stream-pantry",
+          "title": "Fix collaborative shopping list: no real-time Firestore stream, add shared pantry concept",
           "labels": [
-            "Bug",
-            "backend",
-            "account"
-          ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. Deep link dropped on cold start\n`lib/services/deep_link_service.dart:45â€“67` â€” `getInitialLink()` called in `initialize()` but result stored before `NavigatorState` is available. Link processed, `_pendingDeepLink` set, but no widget is listening yet. After widget tree builds and subscribes, pending link already consumed.\n\n### 2. FCM notification tap navigation unwired\n`lib/services/notification/fcm_service.dart:89â€“112` â€” `onMessageOpenedApp` handler parses payload and calls `_handleNotificationTap()` which is a stub that only logs. User taps notification â†’ app opens to home screen, not the relevant content.\n\n### 3. Auth token expiry swallowed\n`lib/services/auth/auth_service.dart:234â€“241` â€” `onIdTokenChanged` catches `FirebaseAuthException` for expired token but only logs warning. No force-refresh attempted, no user redirect to login. User sees stale data until app restart.\n\n## Why It Matters\nDeep links from shared recipes/menus don't work on cold start (most common case). Notification taps don't navigate. Expired auth tokens cause silent data staleness.\n\n## Suggested Fix\n1. Queue pending deep link, process after first frame via `WidgetsBinding.instance.addPostFrameCallback`\n2. Implement `_handleNotificationTap()` with route resolution from payload type\n3. Call `user.getIdToken(true)` on expiry, redirect to login on failure"
-        },
-        {
-          "findingKey": "app-lifecycle-autosave-presence-background",
-          "title": "Fix app lifecycle: auto-save lost on background kill, presence ghost, offline sync race, FCM stub (4 issues)",
-          "labels": [
-            "Bug",
-            "backend"
-          ],
-          "priority": 2,
-          "description": "## Finding\n\n### 1. Auto-save lost on background kill\n`lib/viewmodels/recipe_form_viewmodel.dart:89â€“95` â€” dirty form state only saved on explicit save button. `AppLifecycleState.paused` handler missing. OS kills backgrounded app â†’ unsaved edits lost.\n\n### 2. Presence ghost after app kill\n`lib/services/presence_service.dart:156â€“170` â€” `onDisconnect()` handler set on Firebase RTDB but only for graceful disconnect. Force-kill leaves presence as 'online' indefinitely. No server-side TTL.\n\n### 3. Offline sync race on reconnect\n`lib/services/unified/modules/personal_recipe_module.dart:612â€“640` â€” `_pendingWrites` queue replayed on connectivity change, but no ordering guarantee. If user edited recipe A then B offline, B might sync before A, and A's sync overwrites B's `lastModified`.\n\n### 4. FCM token refresh stub\n`lib/services/notification/fcm_service.dart:134â€“138` â€” `onTokenRefresh` stream listened but handler is `TODO: implement`. Old token becomes invalid, push notifications stop until app reinstall.\n\n## Why It Matters\nAuto-save loss frustrates users. Ghost presence misleads collaborators. Token refresh stub breaks push after token rotation.\n\n## Suggested Fix\n1. Add `WidgetsBindingObserver` + save dirty state on `paused`/`detached`\n2. Add server-side presence TTL (Cloud Function cron: mark offline if no heartbeat in 5min)\n3. Add sequence number to pending writes, replay in order\n4. Implement token refresh: call `updateFCMToken(newToken)` on repository"
-        },
-        {
-          "findingKey": "ios-platform-config-critical",
-          "title": "Fix iOS critical misconfigs: wrong bundle ID in Firebase config, deployment target 13.0, https URL scheme, missing entitlements (5 issues)",
-          "labels": [
-            "Bug",
-            "backend"
-          ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. GoogleService-Info.plist bundle ID mismatch\n`ios/Runner/GoogleService-Info.plist:BUNDLE_ID` = `com.example.butlery` but `ios/Runner.xcodeproj/project.pbxproj:PRODUCT_BUNDLE_IDENTIFIER` = `com.butlery.app`. Firebase SDK will fail to initialize on real iOS device.\n\n### 2. iOS deployment target 13.0\n`ios/Podfile:platform :ios, '13.0'` â€” Firebase iOS SDK 11.x requires iOS 15.0+. Pod install will fail or produce runtime crashes.\n\n### 3. URL scheme uses https\n`ios/Runner/Info.plist:CFBundleURLSchemes` includes `https` â€” this is reserved by the system. Should use custom scheme like `butlery://`.\n\n### 4. Missing Associated Domains entitlement\nNo `Runner.entitlements` file with `applinks:` domain. Universal links (deep links) won't work on iOS.\n\n### 5. Missing push notification entitlement\nNo `aps-environment` in entitlements. FCM push notifications will silently fail on iOS.\n\n## Why It Matters\nBundle ID mismatch = Firebase crash on launch = app unusable on iOS. Deployment target too low = pod install failure.\n\n## Suggested Fix\n1. Update GoogleService-Info.plist BUNDLE_ID to `com.butlery.app`\n2. Update Podfile to `platform :ios, '15.0'`\n3. Replace `https` URL scheme with `butlery`\n4. Add `Runner.entitlements` with `applinks:butlery.app`\n5. Add `aps-environment` = `production` to entitlements"
-        },
-        {
-          "findingKey": "platform-config-region-headers-permissions",
-          "title": "Fix platform config: Cloud Functions region mismatch (NOT_FOUND), missing security headers, storage permission (4 issues)",
-          "labels": [
-            "Bug",
-            "backend"
-          ],
-          "priority": 2,
-          "description": "## Finding\n\n### 1. Cloud Functions region mismatch\n`lib/services/cloud_functions_service.dart:15` â€” `FirebaseFunctions.instanceFor(region: 'us-central1')` but `functions/src/index.ts` deploys to `europe-west1`. All callable function invocations return NOT_FOUND.\n\n### 2. Missing web security headers\n`web/index.html` â€” no Content-Security-Policy, X-Frame-Options, or X-Content-Type-Options headers. App embeddable in iframe (clickjacking).\n\n### 3. Android storage permission for image upload\n`android/app/src/main/AndroidManifest.xml` â€” missing `READ_MEDIA_IMAGES` permission (Android 13+). Image picker will fail silently on newer devices.\n\n### 4. Firebase Storage CORS not configured\nNo `cors.json` deployed to Firebase Storage bucket. Web uploads may fail with CORS errors.\n\n## Why It Matters\nRegion mismatch means ALL Cloud Function calls fail in production (NOT_FOUND). Missing storage permission breaks image upload on Android 13+.\n\n## Suggested Fix\n1. Change region to `europe-west1` in `cloud_functions_service.dart`\n2. Add security headers via Firebase Hosting `firebase.json` headers config\n3. Add `READ_MEDIA_IMAGES` + `READ_MEDIA_VIDEO` permissions\n4. Deploy `cors.json` with allowed origins to Firebase Storage"
-        },
-        {
-          "findingKey": "parsing-oom-charset-schema-handling",
-          "title": "Fix recipe parsing: no HTTP response size limit (OOM), no charset detection, JSON-LD @type array missed, instructions discarded (6 issues)",
-          "labels": [
-            "Bug",
-            "import",
-            "parsing"
-          ],
-          "priority": 2,
-          "description": "## Finding\n\n### 1. No HTTP response size limit\n`lib/services/import/url_import_strategy.dart:78â€“92` â€” `http.get(url)` reads entire response into memory. Malicious or misconfigured URL serving 500MB file â†’ OOM crash.\n\n### 2. No charset detection\n`lib/services/import/url_import_strategy.dart:95` â€” `response.body` assumes UTF-8 but many recipe sites use ISO-8859-1 or Windows-1252. Swedish characters (Ã¥, Ã¤, Ã¶) corrupted on import from older sites.\n\n### 3. JSON-LD @type as array missed\n`lib/services/parsing/recipe_parser_service.dart:234â€“240` â€” checks `jsonLd['@type'] == 'Recipe'` but Schema.org allows `@type: ['Recipe', 'HowTo']`. Array form silently skipped â†’ falls back to less accurate HTML scraping.\n\n### 4. HowToSection instructions discarded\n`lib/services/parsing/recipe_parser_service.dart:312â€“330` â€” `recipeInstructions` handler processes `HowToStep` but ignores `HowToSection` wrapper. Grouped instructions (e.g., 'For the dough:', 'For the filling:') lose all steps inside sections.\n\n### 5. Yield field parsing ignores servings format\n`lib/services/parsing/recipe_parser_service.dart:198` â€” `recipeYield: '4-6 servings'` parsed as string, not extracted to numeric range.\n\n### 6. Duration parsing breaks on non-ISO format\n`lib/services/parsing/recipe_parser_service.dart:205` â€” expects ISO 8601 (`PT30M`) but some sites use `30 min` or `30 minutes`. Parse fails silently â†’ null cook time.\n\n## Why It Matters\nOOM from unbounded response is a DoS vector. Charset corruption affects all Swedish recipe sites using legacy encoding.\n\n## Suggested Fix\n1. Use `http.Client` with `StreamedResponse` + max bytes check (10MB limit)\n2. Read `Content-Type` charset header, use `dart:convert` Encoding.getByName\n3. Check `jsonLd['@type'] is List ? jsonLd['@type'].contains('Recipe') : jsonLd['@type'] == 'Recipe'`\n4. Recursively unwrap HowToSection â†’ extract HowToStep children\n5. Regex extract numeric portion from yield string\n6. Add fallback duration parser for common non-ISO formats"
-        },
-        {
-          "findingKey": "di-lifecycle-order-bugs-singleton-lifecycle",
-          "title": "Fix DI lifecycle: cross-module dependency order bugs (StateError at bootstrap) + singleton streams not reset on logout (8 issues)",
-          "labels": [
-            "Bug",
-            "backend"
-          ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. Cross-module dependency order not enforced\n`lib/di/` modules declare `priority` but 3 modules have equal priority with cross-dependencies. `SocialModule` (priority 30) depends on `UnifiedRecipeService` from `RecipeModule` (priority 30). Registration order within same priority is insertion order â†’ works by accident. Adding a new module at priority 30 can break bootstrap.\n\n### 2. Circular dependency: NotificationService â†” FriendsService\n`NotificationService` constructor takes `FriendsService` for friend-request notifications. `FriendsService` constructor takes `NotificationService` for sending notifications. Both registered in `SocialModule` â†’ one must be registered first â†’ the other's dependency is null at construction.\n\n### 3. Singleton streams not reset on logout\n`UnifiedRecipeService`, `PresenceService`, `IntelligentCacheManager` â€” registered as singletons in DI. On logout, `_recipes` map and stream subscriptions retained. On re-login as different user, previous user's data visible briefly.\n\n### 4. dispose() never called on DI singletons\n`lib/di/di_container.dart:reset()` calls `GetIt.instance.reset()` but doesn't call `dispose()` on ChangeNotifier singletons first. StreamControllers and listeners leak.\n\n### 5-8. Registration gaps\n5. `AnalyticsService` registered but depends on unregistered `ConsentManager`\n6. `ImageUploadService` registered in `MediaModule` but `StorageRepository` in `FirebaseModule` â€” no declared dependency\n7. Two `RecipeRepository` registrations (one in `FirebaseModule`, one in `RecipeModule`) â€” last wins silently\n8. `TaggingService` registered as factory but used as singleton by callers caching the instance\n\n## Why It Matters\nFinding 1: Bootstrap crash on innocent module addition. Finding 3: Cross-user data leakage on logout/re-login. Finding 4: Resource leaks accumulate across auth cycles.\n\n## Suggested Fix\n1. Enforce dependency ordering: modules declare `dependsOn: [ModuleName]`, DI container topologically sorts\n2. Break circular dep with lazy initialization or event bus\n3. Add `resetUserState()` method to stateful singletons, call on logout\n4. Call `dispose()` on all ChangeNotifier singletons before `reset()`\n5-8. Audit and fix registration: remove duplicate, declare dependencies, convert TaggingService to singleton"
-        }
-      ]
-    },
-    {
-      "scanFocus": "ultrathink-deep-scan-18-search-social-groups-image-pipeline-auth-menu-shopping-onboarding",
-      "tickets": [
-        {
-          "findingKey": "search-debounce-stream-mixin-critical",
-          "title": "Fix search infrastructure: debounce Completer leak, static mixin state, watchRecipes 50-doc cap (4 critical bugs)",
-          "labels": [
-            "Bug",
-            "recipe"
-          ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. executeDebounced leaks Completer futures on rapid keypresses\n`lib/core/mixins/async_operation_mixin.dart:133â€“159`\n\nEach call creates a new `Completer<T?>`, then cancels the previous timer. Cancelled Completers are never completed â€” they leak, awaiting forever. `RecipeQueryViewModel.updateSearchQuery` (line 104) `await`s this. 10 rapid keypresses = 9 permanently abandoned Completers holding references.\n\n### 2. watchRecipes stream silently truncates to 50 recipes\n`lib/repositories/firebase/firebase_recipe_repository.dart:352â€“360`\n\nThe live stream feeding `UnifiedRecipeService.recipes` has `.limit(50)` ordered by `updatedAt desc`. Users with 51+ recipes never see older ones in any filter/search/sort. UI pagination operates on the already-truncated list.\n\n### 3. Static _executionTimes is process-global â€” leaks across instances and auth sessions\n`lib/core/mixins/async_operation_mixin.dart:360â€“368`\n\n`static final Map<String, DateTime> _executionTimes` shared across ALL mixin instances. Never cleared on logout. Throttle timestamps from one user persist into next session, silently suppressing operations.\n\n### 4. Debounce does not cancel in-flight async operation\n`lib/core/mixins/async_operation_mixin.dart:46â€“60`\n\n`executeDebounced` cancels the pending timer, but if a search is already executing inside `executeNamedOperation`, the next debounced search hits `_activeOperations.contains('recipeSearch')` and throws `StateError`. User sees no results update.\n\n## Why It Matters\nFinding 1: Memory leak and hung awaits. Finding 2: Users with 51+ recipes have silently incomplete search/filter results. Finding 3: Cross-user state leakage.\n\n## Suggested Fix\n1. Complete old Completer with `null` before replacing it\n2. Remove `.limit(50)` from `watchRecipes`; use cursor-based pagination\n3. Change `_executionTimes` from `static final` to instance field; clear in `dispose()`\n4. Pass `allowConcurrent: true` or cancel in-flight operations properly"
-        },
-        {
-          "findingKey": "search-quality-filter-state-normalization",
-          "title": "Fix search quality: Algolia empty owner, Firestore fallback unscoped, filter state leak on logout, date range off-by-one (13 issues)",
-          "labels": [
-            "Bug",
-            "recipe"
-          ],
-          "priority": 2,
-          "description": "## Finding\n\n### 1. Algolia ownerDisplayName always empty\n`lib/repositories/algolia/algolia_search_repository.dart:299` â€” hardcodes `ownerDisplayName: ''`. Author-based search never matches.\n\n### 2. Firestore fallback search returns any public recipe, unscoped\n`lib/repositories/firebase/firebase_search_repository.dart:35â€“47` â€” no user scope, `page` parameter ignored, client-side text filtering after limit applied.\n\n### 3. Filter state not cleared on logout\n`lib/viewmodels/recipe_list_viewmodel.dart` â€” allergen/dietary/tag filters survive logout. Multi-user device shows previous user's filters.\n\n### 4. Archive search has no debounce\n`lib/viewmodels/archive/archive_search_manager.dart:48â€“52` â€” `updateSearch` triggers full recompute + rebuild on every keystroke.\n\n### 5. Archive cache uses Set.toString() comparison\n`lib/viewmodels/archive/archive_search_manager.dart:84` â€” Set ordering not guaranteed in `toString()`, causes unnecessary cache misses.\n\n### 6. Search history accumulates every keystroke\n`lib/viewmodels/shared_content/shared_content_search_viewmodel.dart:268â€“273` â€” typing 'pasta' inserts 'p','pa','pas','past','pasta' into history.\n\n### 7. filteredResults computed 3x per build cycle\n`lib/viewmodels/shared_content/shared_content_search_viewmodel.dart:156â€“223` â€” no caching; `resultsByType` and `resultCounts` each re-call it.\n\n### 8. DateRange.thisWeek off-by-one\n`lib/viewmodels/shared_content/shared_content_search_viewmodel.dart:194â€“196` â€” `weekStart` uses time-of-day from `now`, not midnight. Items before that time on Monday excluded.\n\n### 9. Friends search cache has no TTL\n`lib/viewmodels/friends/friends_search_manager.dart:110â€“117` â€” stale results never invalidated.\n\n### 10-13. Swedish normalization gaps\n`recipe_query_viewmodel.dart:84â€“98` uses raw `contains()` without normalization. `search_service.dart:230â€“259` suggestions lack normalization. `search_repository.dart:229â€“259` Algolia filter strings not escaped. Firestore search pagination always returns page 0.\n\n## Why It Matters\nAlgolia author search broken. Firestore fallback returns arbitrary data. Filter leak = cross-user privacy issue.\n\n## Suggested Fix\n1. Thread displayName to Algolia indexing\n2. Add user scope to Firestore search; implement pagination\n3. Clear filters on auth state change\n4-5. Add debounce; use SetEquality\n6. Move history insertion to after debounce fires\n7. Cache filteredResults\n8. Use midnight DateTime for week start\n9. Add cache TTL\n10-13. Use SwedishCharacterNormalizer everywhere; escape Algolia filters"
-        },
-        {
-          "findingKey": "social-group-security-ownership-permissions",
-          "title": "Fix CRITICAL social group security: any member can hijack ownership, validateReadPermission always true, members can overwrite all fields (6 issues)",
-          "labels": [
-            "security",
-            "social"
-          ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. Any group member can transfer ownership â€” no server-side guard\n`lib/viewmodels/social_group_detail_viewmodel.dart:302â€“334` + `firestore.rules:205â€“208`\n\nFirestore update rule allows any member listed in `friendUserIds` to update ANY field including `ownerId`. Client-side `isAdmin` check is bypassable. Any group member can transfer ownership to themselves or anyone.\n\n### 2. validateReadPermission returns true for all group-shared content\n`lib/repositories/firebase/firebase_social_sharing_repository.dart:107â€“110`\n\nComment says 'delegate to group-level security' but just returns `true`. Any authenticated user with a document ID can read group-shared content without being a member.\n\n### 3. All four validate*Permission methods return true unconditionally\n`lib/repositories/firebase/friends/friend_category_repository.dart:115â€“144`\n\nAll CRUD permissions bypass. Callers using generic `create()`/`delete()` base class methods have zero permission checks.\n\n### 4. SharingPermissions.canEdit stored but never enforced\n`lib/models/shared_content.dart:183â€“289` + `firestore.rules:346â€“351`\n\nFirestore update rule for shared_recipes allows members to update non-ownership fields regardless of `allowCollaboration` flag.\n\n### 5. addMember has no ownership check at Dart layer\n`lib/repositories/firebase/base_shared_content_repository.dart:340â€“374`\n\nAny caller can add any user as member of any content. Only Firestore rules enforce ownership.\n\n### 6. Members can do full document set() overwriting all group fields\n`lib/repositories/firebase/friends/friend_category_repository.dart:147â€“179`\n\n`saveCategory` uses `.set(category.toFirestore())` â€” full overwrite including `ownerId`, `name`, `friendUserIds`. Any member can rename group, remove others, or set themselves as owner.\n\n## Why It Matters\nFinding 1+6: Any group member can steal ownership. Finding 2: Group content visible to non-members. Finding 4: Edit permissions meaningless.\n\n## Suggested Fix\n1. Add Firestore rule: only current owner can change `ownerId`\n2. Implement actual group membership check before returning true\n3. Implement real ownership checks in validate* methods\n4. Add `resource.data.allowCollaboration == true` to member update rule\n5. Fetch content doc and verify ownership before addMember\n6. Use targeted `.update()` for non-owner members; restrict to `friendUserIds` and `updatedAt` only"
-        },
-        {
-          "findingKey": "social-group-invitation-membership-stubs",
-          "title": "Fix social group flow: acceptInvitation doesn't add member, cancel blocked, remove stub empty, rules mismatch (10 issues)",
-          "labels": [
-            "Bug",
-            "social"
-          ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. acceptInvitation only updates status â€” never adds user to group\n`lib/repositories/firebase/friends/group_invitation_repository.dart:280â€“291`\n\nAccepting changes invitation `status` to 'accepted' but never adds user to `friendUserIds` in the group document. User appears accepted but is not a member.\n\n### 2. cancelInvitation blocked by BOTH Dart and Firestore layers\n`lib/repositories/firebase/friends/group_invitation_repository.dart:306â€“317` + `firestore.rules:312â€“315`\n\nDart `updateInvitation()` throws if caller != `toUserId`. Firestore rules only allow `toUserId` to update. Status 'cancelled' not in allowed values. Invitation cancellation is completely dead functionality.\n\n### 3. removeFriendFromCategoryInternal has empty body\n`lib/services/unified/friends/friends_internal_operations.dart:173`\n\n`void removeFriendFromCategoryInternal(String friendId, String categoryId) {}` â€” complete no-op. Remove-from-group silently fails.\n\n### 4. syncFriendToFirebase is a documented landmine still in codebase\n`lib/services/unified/friends/friends_firebase_sync.dart:62â€“97`\n\nDocstring warns NOT to use it (non-atomic, wrong schema, skips friendsCount). Should be deleted.\n\n### 5. shared_content Firestore rules use fromUserId/toUserId but model writes ownerId/sharedWithUserIds\n`firestore.rules:1176â€“1200` + `lib/models/shared_content.dart`\n\nRules check fields that don't exist on real documents. All read access to shared_content is effectively denied.\n\n### 6. No self-invite prevention in group_invitations create rule\n`firestore.rules:307â€“310` â€” no `fromUserId != toUserId` check.\n\n### 7. GroupEventBus has no group ID â€” fires reload for all open groups\n`lib/viewmodels/social_group_detail_viewmodel.dart:140â€“158`\n\n### 8. updateSharingPermissions â€” two non-atomic writes (TOCTOU race)\n`lib/repositories/firebase/firebase_social_sharing_repository.dart:251â€“295`\n\n### 9. Friend request expiry is client-side only\n`lib/models/friend_request.dart:82` â€” no `expiresAt` in Firestore; expired requests can be accepted.\n\n### 10. Shared content sort comparator always returns 0\n`lib/repositories/firebase/base_shared_content_repository.dart:674`\n\n## Why It Matters\nFindings 1-3: Group invitation, acceptance, and removal flows are all broken. Finding 5: shared_content collection is inaccessible.\n\n## Suggested Fix\n1. Use transaction: update status + add to friendUserIds atomically\n2. Allow sender to cancel; add 'cancelled' to rules; fix Dart check\n3. Implement method body matching addFriendToCategoryInternal pattern\n4. Delete syncFriendToFirebase â€” dead code\n5. Align rules with model: use ownerId + sharedWithUserIds\n6-10. Add self-check, include groupId in events, use transactions, add expiresAt, implement sort"
-        },
-        {
-          "findingKey": "image-upload-paths-web-platform-broken",
-          "title": "Fix image pipeline: wrong Storage paths bypass security, web uploads crash on blob URL and missing compression (5 critical issues)",
-          "labels": [
-            "Bug",
-            "security",
-            "recipe"
-          ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. Avatar upload uses wrong Storage path â€” bypasses security rules\n`lib/viewmodels/user_profile_viewmodel.dart:150`\n\nUploads to `avatars/$userId/...` but security rules only allow `users/$userId/...`. Permission validation at `firebase_storage_repository.dart:96` rejects the path. All avatar uploads fail.\n\n### 2. Recipe images uploaded to wrong path â€” bypasses security\n`lib/viewmodels/recipe_form/recipe_image_manager.dart:466,894,1000` + `xfile_upload_handler.dart:174`\n\nMultiple upload calls use `recipes/$recipeId/...` instead of `users/$userId/recipes/...`. Same security rule violation.\n\n### 3. File(blob URL) on web always crashes\n`lib/viewmodels/recipe_form/recipe_image_manager.dart:888` + `xfile_upload_handler.dart:168` + `image_picker_service.dart:153`\n\nOn web, `xFile.path` is a `blob:http://...` URL. `File(xFile.path)` creates a dart:io File that doesn't exist on web. Any `.readAsBytes()` throws.\n\n### 4. flutter_image_compress not supported on web â€” all file uploads fail\n`lib/repositories/firebase/firebase_storage_repository.dart:410â€“474`\n\n`compressImage()` throws `MissingPluginException` on web. Catch returns `null`. `uploadImage()` then throws 'Failed to compress image'. Recipe image uploads on web are completely broken.\n\n### 5. uploadImageBytes has no compression â€” full-size bytes uploaded\n`lib/services/storage_service.dart:85â€“118`\n\nPasses bytes directly to repository without compression. Web avatar uploads get full-resolution images.\n\n## Why It Matters\nFindings 1-2: Avatar and recipe image uploads fail with PermissionDeniedException (or bypass security if validation is skipped). Findings 3-4: ALL image operations on web are broken.\n\n## Suggested Fix\n1-2. Fix paths to `users/$userId/avatars/...` and `users/$userId/recipes/...`\n3. On web, use `xFile.readAsBytes()` directly; never construct dart:io File\n4. Add `kIsWeb` check; skip compression on web or use web-compatible library\n5. Call `compressImage()` on bytes before upload"
-        },
-        {
-          "findingKey": "image-display-cleanup-compression-gaps",
-          "title": "Fix image display & cleanup: orphaned images on delete, fake CDN params, fullscreen OOM, double compression (10 issues)",
-          "labels": [
-            "Bug",
-            "recipe"
-          ],
-          "priority": 2,
-          "description": "## Finding\n\n### 1. Recipe deletion never deletes Storage images â€” permanent orphans\n`lib/services/unified/modules/service_adapters/recipe_service_adapter.dart:59â€“68`\n\n`deleteRecipe()` only deletes Firestore doc. Associated Storage images at `users/$userId/recipes/` accumulate forever.\n\n### 2. Fake transform params appended to Firebase Storage URLs\n`lib/services/performance/optimized_image_loader.dart:41â€“68`\n\nAppends `?w=X&h=Y&q=85&f=webp` to Firebase Storage URLs. Firebase doesn't support server-side transforms â€” this breaks cache keys and may break image loading.\n\n### 3. Fullscreen viewer loads full-resolution images with no dimension limits\n`lib/views/recipe_detail/fullscreen_image_viewer.dart:108â€“120`\n\nNo `cacheWidth`/`cacheHeight`. PageView preloads adjacent pages = 3 full-res images decoded simultaneously.\n\n### 4. Image.network() used in 5 places without caching\nfullscreen_image_viewer, profile_menu, 3 recipe selection dialogs â€” re-downloads on every build.\n\n### 5. Thumbnail path derivation breaks for non-.jpg files\n`lib/repositories/firebase/firebase_storage_repository.dart:499â€“501`\n\n`.replaceAll('.jpg', '_thumb.jpg')` is no-op for `.jpeg`, `.png`, `.webp` â€” thumbnail overwrites original.\n\n### 6. GDPR storage erasure failure silently swallowed\n`lib/services/account/account_deletion/storage_deletion_operations.dart:59â€“67`\n\nReturns `true` even when Storage deletion fails. User's files remain indefinitely.\n\n### 7. 5MB client vs 10MB server size limit mismatch\nClient rejects files the server would accept. Validation runs pre-compression.\n\n### 8. Double compression â€” picker at 90% quality + flutter_image_compress\nQuality loss and wasted CPU from compressing twice.\n\n### 9. maxWidth/maxHeight defined but never passed to compressor\n`firebase_storage_repository.dart:435â€“459` â€” constants exist but aren't forwarded to `FlutterImageCompress`.\n\n### 10. Storage rules allow image/gif and any image/* via client-set contentType\n`storage.rules:8â€“10` â€” SVG with embedded JS could be uploaded.\n\n## Why It Matters\nFinding 1: Unbounded Storage cost growth. Finding 2: Image loading may break. Finding 3: OOM on image carousel.\n\n## Suggested Fix\n1. Delete Storage images before Firestore doc\n2. Remove Firebase from `_supportsTransformation()`\n3. Add `memCacheWidth` based on screen size\n4. Replace with CachedNetworkImage\n5. Use path package for extension handling\n6. Return false on failure; implement retry queue\n7-9. Align limits; compress once; pass dimensions\n10. Restrict to jpeg|png|webp"
-        },
-        {
-          "findingKey": "auth-security-verification-enumeration-ratelimit",
-          "title": "Fix auth security: registration without email verification, rate limiter bypassable, user enumeration via error messages (5 critical issues)",
-          "labels": [
-            "security",
-            "account"
-          ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. Registration allows full app access without email verification\n`lib/services/auth_service.dart:51â€“96`\n\n`registerWithEmail()` creates Firebase account and returns `true` immediately. No `sendEmailVerification()`, no `emailVerified` check, no gate screen. Users can register with any email (including others') and gain full access.\n\n### 2. Rate limiter bypassable via app restart â€” unlimited login retries\n`lib/services/auth_service.dart:87â€“95`\n\nClient-side `_rateLimiter` is in-memory only, not persisted. Killing and relaunching the app resets all token buckets. `RateLimitException` is also caught by generic `catch(e)` and swallowed.\n\n### 3. User enumeration via distinct error messages\n`lib/services/auth_service.dart:545â€“549`\n\n`user-not-found` â†’ 'No user found' vs `wrong-password` â†’ 'Wrong password'. Different messages reveal whether an email has an account.\n\n### 4. Password reset not rate-limited server-side\n`lib/repositories/firebase/firebase_auth_repository.dart:179â€“187`\n\nClient-side limiter (3 tokens, 1/hour refill) resets on restart. Attacker can spam reset emails to any address.\n\n### 5. Password reset confirms email existence\n`lib/services/auth_service.dart:205â€“217`\n\n`user-not-found` error propagated to UI reveals whether address has account. Should always show 'if that email exists, a reset link was sent'.\n\n## Why It Matters\nFinding 1: Account squatting, phishing enabled. Finding 2: Credential stuffing unmitigated. Findings 3+5: Account enumeration.\n\n## Suggested Fix\n1. Send verification email after registration; add gate screen checking emailVerified\n2. Add explicit `on RateLimitException` handler; persist bucket to SharedPreferences; add server-side rate limiting\n3. Merge user-not-found and wrong-password to same message\n4. Use Firebase App Check + server-side email limits\n5. Always show generic success message on reset"
-        },
-        {
-          "findingKey": "auth-mfa-deletion-session-bugs",
-          "title": "Fix auth MFA & account deletion: MFA removal without re-auth, partial deletion state, audit log race, password minimum (11 issues)",
-          "labels": [
-            "Bug",
-            "account"
-          ],
-          "priority": 2,
-          "description": "## Finding\n\n### 1. MFA unenrollment requires only confirmation dialog â€” no re-authentication\n`lib/views/settings/mfa_settings_view.dart:137â€“177`\n\nRemoving MFA factor shows only yes/no dialog. No password re-auth. Attacker with briefly-unlocked device can disable MFA with one tap.\n\n### 2. Account deletion leaves partial state on failure\n`lib/services/account/account_deletion_service.dart:152â€“162`\n\nIf `user.delete()` throws after Firestore data already deleted: data gone but auth account lives (GDPR violation). If Firestore fails: auth account stays with orphan data.\n\n### 3. requiresReauth flag silently dropped\n`lib/services/account/account_deletion_service.dart:169` sets `result['requiresReauth'] = true` but `ProfileViewModel.deleteAccount()` never checks it.\n\n### 4. Audit log written before auth deletion succeeds\n`lib/services/account/account_deletion_service.dart:135â€“162`\n\nGDPR audit log records 'deletion' before `user.delete()`. If auth delete fails, false audit trail.\n\n### 5. Sessions not invalidated on other devices after password change\n`lib/services/auth_service.dart:488â€“500`\n\nNo call to `revokeRefreshTokens`. Attacker sessions remain valid up to 1 hour.\n\n### 6. Password minimum is 6 characters\n`lib/viewmodels/auth_viewmodel.dart:306â€“308` â€” no complexity check, no breach check.\n\n### 7. MFA phone defaults silently to +46\n`lib/views/settings/mfa_settings_view.dart:67â€“68` â€” wrong number for non-Swedish users.\n\n### 8. FirebaseAuth.instance used directly in MFA methods\n`lib/services/auth_service.dart:246,261,286,343,374,422,431,472` â€” bypasses DI, untestable.\n\n### 9. GetIt.instance used instead of ServiceLocator\n`lib/views/settings/mfa_settings_view.dart:23` + `mfa_challenge_dialog.dart:48`\n\n### 10. Email TLD regex rejects >4 char TLDs\n`lib/viewmodels/auth_viewmodel.dart:283â€“289` â€” `.museum`, `.photography` blocked.\n\n### 11. Loading spinner stuck on re-auth failure\n`lib/widgets/common/profile/handlers/auth_action_handler.dart:57â€“78` â€” `Navigator.pop` skipped if `context.mounted` is false.\n\n## Why It Matters\nFinding 1: MFA security undermined. Finding 2: GDPR Article 17 compliance gap. Finding 5: Stolen sessions survive password change.\n\n## Suggested Fix\n1. Require password re-auth before unenrollMfa\n2. Delete auth first; queue Firestore cleanup via Cloud Function\n3. Check requiresReauth and show re-auth prompt\n4. Move audit log after user.delete() succeeds\n5. Call revokeRefreshTokens via Cloud Function on password change\n6-11. Raise minimum to 8; force int'l phone format; add MFA to AuthRepository; fix regex; dismiss spinner in finally"
-        },
-        {
-          "findingKey": "shopping-stubs-menu-generation-bugs",
-          "title": "Fix shopping & menu: clearCompleted/uncheckAll/export stubs, isLoading stuck, menu quantity corruption, recipe reuse (12 issues)",
-          "labels": [
-            "Bug",
+            "bug",
             "shopping",
             "menu"
           ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. clearCompletedItems() and uncheckAllItems() are no-op stubs\n`lib/services/unified/modules/shopping_item_management_module.dart:305â€“306`\n\nBoth return `true` but do nothing. Clear-bought and uncheck-all buttons silently succeed without effect.\n\n### 2. addItemsFromRecipe is a stub â€” always returns true\n`lib/services/unified/modules/shopping_item_management_module.dart:307â€“312`\n\nNo items added via this code path.\n\n### 3. isLoading is `final false` â€” loading spinners never show\n`lib/services/unified/unified_shopping_service.dart:146,183`\n\n`final bool _isLoading = false` never mutated. `isSyncing` also missing.\n\n### 4. exportListAsText returns hard-coded mock string\n`lib/services/unified/modules/shopping_list_management_module.dart:284`\n\nUsers sharing shopping list get 'Mock shopping list export'.\n\n### 5. Menuâ†’shopping conversion corrupts quantities\n`lib/widgets/common/input/shopping_list_selector.dart:391â€“422`\n\nUses full raw ingredient string (including quantity) as dedup key. '2 dl mjÃ¶lk' and '3 dl mjÃ¶lk' are separate items. Exact duplicates get `amount += 1` instead of summing parsed quantities.\n\n### 6. Regenerating menu section can reuse recipes from other sections\n`lib/viewmodels/menu/menu_generator.dart:99â€“118`\n\n`regenerateMenuSection` doesn't exclude recipes already in the menu. Same recipe can appear in Lunch and Middag.\n\n### 7. Empty recipe bucket silently drops menu section\n`lib/services/menu_service.dart:93â€“101`\n\nIf no recipes match a requested meal type, section silently omitted. No error shown.\n\n### 8. No dedup when adding menu to existing shopping list\n`lib/widgets/common/input/shopping_list_selector.dart:300â€“351`\n\nMenu items appended without checking if they already exist. Tapping twice doubles all items.\n\n### 9. toggleItemBought rollback uses mutated list + stale listIndex\n`lib/services/unified/modules/shopping_item_management_module.dart:276â€“283`\n\n### 10. firstWhere throws StateError if item not found\n`lib/models/unified/unified_shopping_list.dart:521`\n\n### 11. Parse fallback adds '1 st' to every unparseable ingredient\n`lib/utils/text/shopping_list_generator.dart:265â€“274`\n\n### 12. formattedAmount uses English decimal '1.5' not Swedish '1,5'\n`lib/models/unified/unified_shopping_item.dart:322â€“330`\n\n## Why It Matters\nFindings 1-4: Core shopping features (clear, uncheck, export) are non-functional stubs. Finding 5: Shopping lists from menus have wrong quantities.\n\n## Suggested Fix\n1-2. Implement method bodies using existing addItemsBatchToActiveList pattern\n3. Make _isLoading non-final; set true/false around async ops\n4. Implement using ShoppingAnalyticsManager.exportListAsText pattern\n5. Use IngredientProcessor.parseAndNormalize for quantity extraction and merging\n6. Pass currentMenu to exclude already-used recipes\n7. Return error listing which meal types couldn't be filled\n8. Check existing items by normalized name before appending\n9-12. Capture listId not index; add orElse; show name without unit for qty-less items; use toSwedishHalfFraction"
-        },
-        {
-          "findingKey": "onboarding-flow-broken-non-atomic",
-          "title": "Fix onboarding: non-atomic completion, error swallowed, registration bypasses flow, FCM permission fires too early (12 issues)",
-          "labels": [
-            "Bug",
-            "account"
-          ],
-          "priority": 1,
-          "description": "## Finding\n\n### 1. completeOnboarding is not atomic â€” two separate Firestore writes\n`lib/viewmodels/onboarding_viewmodel.dart:79â€“122`\n\nAllergen save and onboarding flag are separate writes. App kill between them = allergen data saved but onboarding re-shown, discarding selections.\n\n### 2. markOnboardingComplete silently swallows exceptions\n`lib/services/user_service.dart:502â€“519`\n\nCatch logs but doesn't rethrow. Caller navigates to home thinking success. Next launch re-shows onboarding.\n\n### 3. Allergen save failure doesn't prevent markOnboardingComplete\n`lib/viewmodels/onboarding_viewmodel.dart:83â€“96`\n\nReturn value of `updateAllergenPreferences` not checked. Proceeds to mark complete even if allergens weren't saved.\n\n### 4. Profile null â†’ skips onboarding, shows main app\n`lib/main.dart:806â€“812`\n\n`profile == null` causes code to fall through to `MinaReceptView`. New users see main app flash before onboarding.\n\n### 5. Registration navigates directly to MinaReceptView, bypassing onboarding\n`lib/views/auth_view.dart:512â€“520`\n\nImperative `pushReplacement` to MinaReceptView on registration success, before AuthWrapper can check onboarding flag.\n\n### 6. FCM permission dialog fires during bootstrap â€” before onboarding\n`lib/services/notifications/fcm_service.dart:94â€“127`\n\nPermission requested during DI bootstrap. On iOS this is the one-time system dialog â€” fires without context or explanation.\n\n### 7. Import buttons navigate away without completing onboarding\n`lib/views/onboarding/onboarding_import_page.dart:41â€“53`\n\nUser can import a recipe and close the app without 'SlutfÃ¶r' being called. Onboarding not marked complete.\n\n### 8. Deep link processed during onboarding\n`lib/main.dart:720â€“726`\n\nNo check for `hasCompletedOnboarding` before processing deep link. Navigation pushed on top of onboarding.\n\n### 9. registerWithEmail doesn't create Firestore profile\n`lib/services/auth_service.dart:51â€“96`\n\nProfile creation is async side-effect of auth stream. Window between auth creation and profile exists.\n\n### 10. New profile doesn't set hasCompletedOnboarding explicitly\n`lib/services/user_service.dart:120â€“134` â€” relies on model default.\n\n### 11. PageView allows unrestricted swiping past boundaries\n`lib/views/onboarding/onboarding_view.dart:62â€“70`\n\n### 12. Skip button visible on last page â€” confusing UX\n`lib/views/onboarding/onboarding_view.dart:81â€“106`\n\n## Why It Matters\nFindings 1-5: Onboarding flow has multiple bypass paths â€” new users can reach main app without completing setup. Finding 6: iOS notification permission wasted.\n\n## Suggested Fix\n1. Merge allergen save + onboarding flag into single Firestore update\n2. Rethrow or return bool from markOnboardingComplete\n3. Check return value before proceeding\n4. Show loading spinner when profile is null\n5. Remove imperative navigation; trust AuthWrapper\n6. Defer FCM permission to post-onboarding\n7. Mark onboarding complete before navigating to import\n8. Check hasCompletedOnboarding before processing deep links\n9. Create profile atomically in registration flow\n10-12. Set explicitly; use NeverScrollableScrollPhysics; hide Skip on last page"
-        }
-      ]
-    },
-    {
-      "scanFocus": "creative-scan-19-ux-architecture-features-modernization-social",
-      "tickets": [
-        {
-          "findingKey": "rebuild-social-system-3-collections",
-          "title": "Rework social system: reduce 14 Firestore collections to 3, eliminate 35K+ lines of scaffolding",
-          "labels": [
-            "tech-debt",
-            "social"
-          ],
           "priority": 2,
-          "description": "## Opportunity\nSocial system: 120+ files, ~40K lines, 14 Firestore collections, 7-8 abstraction layers for a friend-add. Complexity generates bugs faster than fixes. Patching: 6-8 weeks. Rebuild: 3-4 weeks.\n\n## Current State\n14 collections. 90+ service/operations files. FriendCategory conflates contact organizer and group. Empty stubs. Hardcoded mock-user-id in production. acceptGroupInvitation calls wrong method.\n\n## Proposed Improvement\n3 collections: connections, groups, shares. 3 services instead of 50 files. Server-enforced Firestore rules. Deep link sharing.\n\n## Effort vs Impact\nMajor (3-4 weeks rebuild + 1 week migration). Net faster than patching. Removes ~35K lines."
+          "description": "## Finding\nUnifiedShoppingList has excellent collaborative infrastructure (ListType.collaborative, memberPermissions, item-level attribution). But the ViewModel does not stream changes.\n\n### Real-time sync missing\nCollaborativeShoppingViewModel._loadList() (line 93-120) fetches list ONCE on init from in-memory cache. refresh() is manual pull. No Firestore snapshots() stream. Partner adds milk -- change will not appear until manual refresh.\n\n### No pantry integration\nShopping items have bought: bool but flow is one-directional. No model for what we have at home. No auto-populate pantry from purchased items.\n\n## Suggested Fix\n1. Add Firestore snapshots() stream in CollaborativeShoppingViewModel\n2. Add PantryItem model + PantryService\n3. On shopping item checked, optionally add to pantry\n4. On menu generation, subtract pantry items from shopping list\n\n_Source: creative-ultrathink scan #23_"
         },
         {
-          "findingKey": "di-container-session-scope-boundary",
-          "title": "Rework DI container: add user-session scope to fix cross-user cache leaks and singleton lifecycle bugs",
-          "labels": [
-            "tech-debt",
-            "backend"
-          ],
-          "priority": 1,
-          "description": "## Opportunity\nAll services registered as app-scoped singletons but many hold user-specific state. On logout/login-as-different-user, singletons retain stale data. Root cause of BUT-32, BUT-68, BUT-88, BUT-105, BUT-106.\n\n## Current State\nSingle GetIt scope. NotificationService needs userId but DI is app-scoped. 40 ViewModels with 118 ServiceLocator.get calls. No auth-state-change teardown.\n\n## Proposed Improvement\nTwo-tier DI: app-level scope (global) + per-session scope (created on login, torn down on logout).\n\n## Effort vs Impact\nMajor (3-4 weeks). Addresses root cause of 6+ existing tickets."
-        },
-        {
-          "findingKey": "unified-service-layer-rework-90-files",
-          "title": "Rework unified service layer: replace 90-file facade with 4 focused, stream-based services",
-          "labels": [
-            "tech-debt",
-            "recipe",
-            "backend"
-          ],
-          "priority": 2,
-          "description": "## Opportunity\n90 files, ~30K lines. Accounts for ~25 tickets. Circular references, non-deterministic initialization, state split across facade and helpers.\n\n## Current State\nThree parallel delegation chains. Initialization uses LateInitializationError catching. kIsWeb woven through 8+ files. _recipes mutated from 6+ contexts.\n\n## Proposed Improvement\n4 focused services: RecipeRepository (streams), SharingService, RealtimeEditingService, RecipeCacheService.\n\n## Effort vs Impact\nMajor (4-6 weeks, incremental). Highest ticket-density area."
-        },
-        {
-          "findingKey": "drag-drop-meal-calendar-veckomeny",
-          "title": "Add drag-and-drop weekly meal calendar to replace flat menu list",
-          "labels": [
-            "idea",
-            "menu"
-          ],
-          "priority": 2,
-          "description": "## Opportunity\nApp named 'veckomeny' but menu is flat list by meal type, not by day. No Mon/Tue/Wed. Biggest gap between stated purpose and implementation.\n\n## Current State\nMap<String, List<Recipe>> keyed by category. Week number is cosmetic badge.\n\n## Proposed Improvement\nDay-based model. GridView calendar (Mon-Sun) with LongPressDraggable + DragTarget. Shopping list integration per day. Reference: Paprika, Mealime.\n\n## Effort vs Impact\nMedium. Very high user impact."
-        },
-        {
-          "findingKey": "cooking-timers-step-progression",
-          "title": "Add cooking timers and step progression to cooking mode",
-          "labels": [
-            "idea",
-            "recipe"
-          ],
-          "priority": 2,
-          "description": "## Opportunity\nCooking mode has solid foundation (landscape, wakelock, scaling) but missing timers and step tracking.\n\n## Current State\nCookingModeViewModel: 43 lines, only portion scaling. No timer, no step highlighting, no ingredient check-off.\n\n## Proposed Improvement\n1. Parse Swedish time patterns from instructions. 2. CookingTimer with countdown. 3. Step progression with prev/next. 4. Ingredient check-off.\n\n## Effort vs Impact\nQuick-medium win. High daily-use impact."
-        },
-        {
-          "findingKey": "system-share-sheet-external-sharing",
-          "title": "Add system share sheet for sharing recipes outside the app via deep links",
-          "labels": [
-            "idea",
-            "social"
-          ],
-          "priority": 2,
-          "description": "## Opportunity\nNo way to share a recipe with non-friends. DeepLinkService parses but never generates shareable URLs. Blocks organic growth.\n\n## Current State\nUniversalShareDialog only shows in-app friends/groups. No copy link or share via WhatsApp.\n\n## Proposed Improvement\nGenerate deep link URL, share via share_plus. Cloud Function for short URLs. Browser recipe preview for non-app users.\n\n## Effort vs Impact\nMedium. Very high growth impact."
-        },
-        {
-          "findingKey": "reverse-ingredient-search-what-can-i-cook",
-          "title": "Add reverse ingredient search: what can I cook with what I have?",
-          "labels": [
-            "idea",
-            "recipe"
-          ],
-          "priority": 3,
-          "description": "## Opportunity\nNo reverse lookup. ingredientsNormalized already on every recipe. Combined with allergen auto-tagging, uniquely powerful.\n\n## Current State\nSearch is forward-only. ingredientsNormalized stored but only used for forward matching.\n\n## Proposed Improvement\nIngredient chip input, score recipes by match %, filter by allergens. Local-only search.\n\n## Effort vs Impact\nMedium. High differentiator."
-        },
-        {
-          "findingKey": "ai-personalization-cooking-history",
-          "title": "Add AI recipe personalization from cooking history and ratings",
-          "labels": [
-            "idea",
-            "recipe",
-            "menu"
-          ],
-          "priority": 3,
-          "description": "## Opportunity\nlastCookedAt, rating, averageRating stored but never fed back into ranking. MenuService explicitly 'NOT AI-based', does random selection.\n\n## Current State\nRandom selection with variety check. No taste learning, no recency weighting.\n\n## Proposed Improvement\nLocal scorer: recency weighting, personal rating boost, tag overlap with highly-rated recipes, seasonal ingredients. No cloud ML needed.\n\n## Effort vs Impact\nMedium. High differentiation."
-        },
-        {
-          "findingKey": "presence-service-wrong-backend-rtdb",
-          "title": "Rework presence service: replace Firestore polling with Firebase Realtime Database onDisconnect",
-          "labels": [
-            "tech-debt",
-            "backend"
-          ],
-          "priority": 3,
-          "description": "## Opportunity\nFirestore has no onDisconnect. Workaround: 2-min heartbeat timer (expensive, still shows online for 2min after close). 3 tickets trace here.\n\n## Current State\n411-line service. Heartbeat every 2min. _setupDisconnectHandler() is no-op. asyncMap deadlock-prone pattern. Timer leaks on auth change.\n\n## Proposed Improvement\nFirebase RTDB for presence/{userId}. Native onDisconnect. Eliminates heartbeat timer.\n\n## Effort vs Impact\nQuick win (1 week). Eliminates 3 bug classes."
-        },
-        {
-          "findingKey": "dart3-quick-wins-switch-expressions-pwa-manifest",
-          "title": "Adopt Dart 3 switch expressions across 40+ enum files and fix PWA manifest branding",
-          "labels": [
-            "tech-debt",
-            "recipe"
-          ],
-          "priority": 4,
-          "description": "## Opportunity\n40-50 enum files use classic switch. PWA manifest has Flutter defaults. very_good_analysis installed but not activated.\n\n## Current State\nOld-style switch with default cases. manifest.json: 'A new Flutter project'. flutter_lints instead of very_good_analysis.\n\n## Proposed Improvement\n1. Switch expressions (1-2 days). 2. Manifest branding (30 min). 3. Activate very_good_analysis (3-5 days).\n\n## Effort vs Impact\nTrivial to medium. Zero runtime risk."
-        },
-        {
-          "findingKey": "startup-optimization-manager-fake-delays",
-          "title": "Remove StartupOptimizationManager fake delays adding 2-3 seconds to app startup",
-          "labels": [
-            "performance",
-            "backend"
-          ],
-          "priority": 1,
-          "description": "## Finding\nStartupOptimizationManager (520 lines) registered in DI, runs on every launch. All service initializers are await Future.delayed(500ms) stubs. Real bootstrap in lib/core/bootstrap/stages/.\n\n## Why It Matters\n2-3 seconds artificial delay on every startup.\n\n## Suggested Fix\nDelete the file and DI registration. Real bootstrap already exists."
-        },
-        {
-          "findingKey": "shopping-list-stubs-clear-uncheck-noop",
-          "title": "Fix shopping list clearCompletedItems and uncheckAllItems stubs that silently do nothing",
-          "labels": [
-            "bug",
-            "shopping"
-          ],
-          "priority": 2,
-          "description": "## Finding\nshopping_item_management_module.dart lines 305-312: clearCompletedItems() and uncheckAllItems() always return true without performing any action.\n\n## Why It Matters\nSilent no-ops. User thinks action succeeded but nothing happens.\n\n## Suggested Fix\nImplement with Firestore batch writes."
-        }
-      ]
-    },
-    {
-      "scanFocus": "creative-ultrathink-scan-20-tagging-analytics-import-settings-offline-onboarding",
-      "tickets": [
-        {
-          "findingKey": "account-deletion-ui-not-wired-gdpr",
-          "title": "Wire account deletion UI: AccountDeletionService exists but no route or button reaches it",
-          "labels": [
-            "bug",
-            "account"
-          ],
-          "priority": 1,
-          "description": "## Finding\nAccountDeletionService deletes 20+ data categories, creates audit log, handles re-auth. But no route in Routes and no UI entry point in profile/account security view.\n\n## Why It Matters\nGDPR Article 17 right-to-erasure compliance gap.\n\n## Suggested Fix\nAdd 'Danger Zone' section to account_security_view.dart with Delete Account button."
-        },
-        {
-          "findingKey": "cooking-streak-gamification-engine",
-          "title": "Add cooking streak and milestone system using existing ActivityType.achievementUnlocked infrastructure",
-          "labels": [
-            "idea",
-            "recipe"
-          ],
-          "priority": 2,
-          "description": "## Opportunity\nActivityType.achievementUnlocked and milestoneReached defined in enum with l10n strings. Zero achievement logic exists. 'Lagat idag' chip shows no visual state change after tapping.\n\n## Current State\nlastCookedAt per-recipe. No user-level streak, no cook count. No achievement definitions.\n\n## Proposed Improvement\nUserStats document: currentStreak, longestStreak, totalCookedCount. On markAsCooked: increment streak if consecutive days. Flame icon on home screen. Milestones at 3/7/30 days and 5/10/50 recipes. Fix chip to show green filled state.\n\n## Effort vs Impact\nMedium (3-4 days). Very High retention impact. Duolingo's core mechanic."
-        },
-        {
-          "findingKey": "tag-discovery-view-browsable-catalogue",
-          "title": "Add tag discovery view: browsable auto-tag catalogue with recipe counts per tag",
-          "labels": [
-            "idea",
-            "tagging"
-          ],
-          "priority": 2,
-          "description": "## Opportunity\nAuto-tags generate 30+ types but users never see them as browsable catalogue. Only visible as individual badges on recipe detail.\n\n## Current State\nNo aggregation view. getTagsByUsage() exists for personal tags but not auto-tags. User with 50 recipes has no idea system classified them.\n\n## Proposed Improvement\nTag Overview view with sections (Cuisine, Season, Dietary, etc.), recipe count per tag, tap to filter. Seasonal Now highlight. Zero new Firestore queries.\n\n## Effort vs Impact\nMedium (1 new view). High impact. Makes invisible classification visible."
-        },
-        {
-          "findingKey": "daily-habit-loop-push-notification",
-          "title": "Implement daily 17:00 push notification habit loop with recipe suggestion",
-          "labels": [
-            "idea",
-            "recipe"
-          ],
-          "priority": 2,
-          "description": "## Opportunity\nNotification infrastructure fully built (strategies, quiet hours, digest frequency, analytics). sendDigestNotification() exists. Zero Cloud Functions fire any notifications. Entire digest system built but never triggered.\n\n## Current State\nNotificationStrategy.activityDigest defined. sendDigestNotification() works. digestFrequency exists. Zero scheduled triggers.\n\n## Proposed Improvement\nCloud Function at 17:00: recipe suggestion for active users, activity digest for social users, re-engagement for 3-day inactive. Respect existing preferences. Closes habit loop: Trigger -> Action -> Reward.\n\n## Effort vs Impact\nMedium (Cloud Functions). Very High retention impact."
-        },
-        {
-          "findingKey": "image-cdn-transforms-firebase-ignores",
-          "title": "Fix image loading: CDN query params ignored by Firebase Storage, every recipe card downloads full 3-8MB originals",
-          "labels": [
-            "performance",
-            "recipe"
-          ],
-          "priority": 1,
-          "description": "## Finding\nOptimizedImageLoader appends ?w=400&h=300&q=85&f=webp. Firebase Storage ignores these params entirely, returns full original. Two full-size downloads per recipe card. Thumbnails are generated at upload (firebase_storage_repository.dart) but no thumbnailUrl field on Recipe model.\n\n## Why It Matters\n99% bandwidth reduction possible (4MB -> 30KB per card).\n\n## Suggested Fix\nAdd thumbnailUrl to Recipe model. Use it for cards. Remove fake CDN params. Consider Firebase Resize Images extension."
-        },
-        {
-          "findingKey": "measurement-unit-preference-conversion",
-          "title": "Add measurement unit preference with display-layer conversion for imported imperial recipes",
-          "labels": [
-            "idea",
-            "settings"
-          ],
-          "priority": 2,
-          "description": "## Opportunity\nNo unitSystem preference. No conversion service. Swedish users importing English recipes see cups/oz/F forever.\n\n## Current State\nUnitDefinitions has Swedish metric. No unit preference in UserProfile. No UnitConversionService.\n\n## Proposed Improvement\nunitSystem field on UserProfile. UnitConversionService for cups->dl, oz->g, F->C at display time. Auto-mode detects source locale.\n\n## Effort vs Impact\nMedium. High for import quality."
-        },
-        {
-          "findingKey": "seed-starter-recipes-onboarding",
-          "title": "Wire RecipeSeeds into onboarding: seed 3-5 starter recipes for empty-first-session users",
-          "labels": [
-            "idea",
-            "recipe"
-          ],
-          "priority": 2,
-          "description": "## Opportunity\nRecipeSeeds class exists with dinnerRecipes but is DEAD CODE. User who skips import lands on empty broccoli state.\n\n## Current State\nRecipeSeeds uses runtime Uuid().v4() (unstable). English-language. Referenced nowhere.\n\n## Proposed Improvement\nStable UUIDs, Swedish recipes, wire into completeOnboarding() when recipe count = 0. Match dietary profile from onboarding. Mark with isSeeded flag.\n\n## Effort vs Impact\nLow effort. High impact on first-session churn."
-        },
-        {
-          "findingKey": "web-offline-storage-indexeddb",
-          "title": "Implement web offline storage: replace CacheDao stub with IndexedDB-backed implementation",
-          "labels": [
-            "tech-debt",
-            "backend"
-          ],
-          "priority": 2,
-          "description": "## Opportunity\nEntire offline layer on web is no-op stub. Page reload re-fetches everything from Firestore. Offline = empty list.\n\n## Current State\nCacheDao.getJson() always returns null on web. JsonCacheHelper abstraction exists. BUG-003 has direct callbacks for web.\n\n## Proposed Improvement\nCacheDaoIndexedDB using sembast_web or idb_shim. Wire via conditional import. Zero business logic changes. Unlocks IntelligentCacheManager + sync queue on web.\n\n## Effort vs Impact\nHigh effort (1-2 weeks). Transformative for web reliability."
-        },
-        {
-          "findingKey": "connectivity-polling-120-reads-hour",
-          "title": "Fix connectivity check: replace 30-second Firestore server reads with RTDB .info/connected stream",
-          "labels": [
-            "performance",
-            "backend"
-          ],
-          "priority": 2,
-          "description": "## Finding\n_startMonitoring() fires forced server read every 30 seconds. 120 reads/hour per user. Same repo already has monitorFirebaseConnection() using RTDB .info/connected (zero cost).\n\n## Why It Matters\n1000 users = 120K unnecessary reads/hour. Plus latency on slow connections.\n\n## Suggested Fix\nReplace timer with existing RTDB stream. 30-minute fix."
-        },
-        {
-          "findingKey": "share-to-import-3-taps-to-1",
-          "title": "Streamline share-to-import: bypass intermediate screen, use SmartImportViewModel directly",
+          "findingKey": "import-instagram-pipeline-paprika-migration-quality",
+          "title": "Wire Instagram import pipeline, add Paprika/JSON migration, surface import quality to user",
           "labels": [
             "idea",
             "import"
           ],
-          "priority": 3,
-          "description": "## Opportunity\nShare-to-import: 3 taps, 2 screen transitions. ReceiveShareView adds artificial 300ms delay, routes to OLD URL import (not SmartImport), bypasses unified pipeline.\n\n## Current State\nRoutes to /importViaUrl not /smartImport. Bypasses cache, YouTube/TikTok strategies, progress UI.\n\n## Proposed Improvement\nRemove delay. Call ImportManager.autoImport() directly. Navigate to recipe editor on success. Wire through SmartImportViewModel.\n\n## Effort vs Impact\nMedium. Very high impact on most common import path."
+          "priority": 2,
+          "description": "## Opportunity\nImport is the #1 growth driver. Several pipeline gaps cause friction.\n\n## Current State\n### 1. Instagram pipeline missing in ImportManager\nInstagramContentExtractor exists and InputDetector detects Instagram, but ImportManager._initializeStrategies() does NOT register an Instagram strategy. Falls through to UrlImportStrategy.\n\n### 2. No app migration formats\nFileImportStrategy handles CSV/Excel only. No Paprika (.paprikarecipes = zip of JSON), no Whisk, no RecipeKeeper.\n\n### 3. Import quality invisible\nImportResultV2 has confidence, pipeline, warnings, requiresReview. SmartImportViewModel only checks isSuccess. All quality signals silently dropped.\n\n### 4. Import onboarding minimal\nOnboardingImportPage shows only URL and photo -- not text paste, YouTube, TikTok, or file import.\n\n## Proposed Improvement\n1. Create InstagramImportStrategy wiring existing extractor\n2. Add PaprikaImportStrategy (unzip + parse JSON)\n3. Surface confidence/warnings in post-import review banner\n4. Expand onboarding to show all 6 sources with success hints\n\n_Source: creative-ultrathink scan #23_"
         },
         {
-          "findingKey": "menu-balance-score-hardcoded-placeholder",
-          "title": "Implement menu balance score: getHealthinessScore() returns hardcoded 0.75, entire analytics layer is stub",
-          "labels": [
-            "idea",
-            "menu"
-          ],
-          "priority": 3,
-          "description": "## Opportunity\nRealtimeMenuAnalytics.getHealthinessScore() returns hardcoded 0.75. getDifficultyDistribution() also placeholder. Entire menu analytics scaffolded but unimplemented.\n\n## Current State\nAll the input data exists (TagResult on every recipe). Methods exist with correct signatures. Bodies return static values.\n\n## Proposed Improvement\nReal healthiness score from dietary tags. MenuBalanceReport model. Balance indicator on veckomeny_view. Suggestion engine for nutritional balance.\n\n## Effort vs Impact\nMedium (3-4 days). High differentiation."
-        },
-        {
-          "findingKey": "smart-tag-suggestions-proactive",
-          "title": "Add smart personal tag suggestions: detect untagged ingredient/cuisine patterns and suggest tags",
-          "labels": [
-            "idea",
-            "tagging"
-          ],
-          "priority": 3,
-          "description": "## Opportunity\nsuggestTagsForRecipe() is reactive (evaluate rules). No proactive version: 'You have 18 lax recipes, create Fiskrecept tag?'\n\n## Current State\nNo cross-recipe frequency analysis. ingredientsNormalized on every recipe provides the data.\n\n## Proposed Improvement\nPost-load analysis: ingredient frequency clusters, source URL patterns, auto-tag clusters above threshold. Surface as dismissible suggestion cards. One tap creates tag + rule.\n\n## Effort vs Impact\nMedium. Very High activation impact."
-        }
-      ]
-    },
-    {
-      "scanFocus": "creative-ultrathink-scan-21-search-editing-accessibility-errors-synergies-dx",
-      "tickets": [
-        {
-          "findingKey": "search-suggestions-discovery-shelves-sort-recency",
-          "title": "Add search suggestions, discovery shelves, and sort-by-recency to recipe list",
+          "findingKey": "micro-interactions-hero-haptic-greeting-delight",
+          "title": "Add micro-interaction delight: Hero animations, haptic on favorite/swipe, contextual greeting, import merge",
           "labels": [
             "idea",
             "recipe"
           ],
           "priority": 2,
-          "description": "## Opportunity\nThe data layer is substantially ahead of the UI. SearchService.getSearchSuggestions() (search_service.dart:230-259), getPopularSearchTerms() (search_service.dart:263-295), RecipeQueryViewModel.getRecentlyCookedRecipes() (recipe_query_viewmodel.dart:244), and RecipeDiscoveryService.getTrendingRecipes() all compute useful data that never reaches the screen.\n\n## Current State\n- SearchInputWidget is a plain TextFormField with no autocomplete/suggestions\n- SortCriteria enum has title/time/rating/portions/mealType but no lastCooked or dateAdded\n- The entire discovery experience is a single flat sorted list with filters\n- No 'Laga ikvall' section, no 'Du har inte lagat pa lange' nudge, no seasonal surface\n\n## Proposed Improvement\n1. Wrap SearchInputWidget in Flutter Autocomplete<String>, calling getSearchSuggestions() on change\n2. Add lastCooked and dateAdded to SortCriteria enum + SortMenuBuilder (4 files)\n3. Add optional discovery shelf above recipe list (horizontal scroll) when no search/filter active\n\n## Effort vs Impact\nSuggestions: quick win (~2-3 hours). Sort options: quick win (~3 hours). Discovery shelf: medium (~1 day). All high user payoff."
-        },
-        {
-          "findingKey": "filter-visibility-smart-empty-states",
-          "title": "Improve filter state visibility and make search empty states actionable",
-          "labels": [
-            "idea",
-            "recipe"
-          ],
-          "priority": 2,
-          "description": "## Opportunity\nWhen the filter panel is collapsed, active filters are invisible except for a small dot. Empty search results are a dead end with no guidance.\n\n## Current State\n- FiltersPanelWidget has 21+ filter dimensions behind a single toggle button\n- QuickFilterChips are 3 hardcoded options: Favoriter, Under 30 min, Vegetariskt\n- showStats: false suppresses filter count in main recipe view\n- StateWidget.noSearchResults() shows mushroom + single clear button, no context\n- getPopularSearchTerms() and getSearchSuggestions() exist but are never called from empty state\n\n## Proposed Improvement\n1. Show active filter category pills below search bar when panel closed (extend PersonalTagFilterChipsWidget pattern)\n2. Make quick-filter chips data-driven: show user's 3 most-used tags via getMostUsedTags()\n3. Context-aware empty state: show two buttons when both search+filters active; show tappable chips from getPopularSearchTerms() when search returns nothing\n\n## Effort vs Impact\nFilter pills: medium (~1 day). Dynamic quick filters: quick win. Smart empty state: medium (~4-6 hours). High payoff - eliminates 'why are my recipes missing?' confusion."
-        },
-        {
-          "findingKey": "silent-ingredient-mutation-keystroke",
-          "title": "Fix silent ingredient mutation: preprocessing runs on every keystroke instead of save-time",
-          "labels": [
-            "bug",
-            "recipe"
-          ],
-          "priority": 2,
-          "description": "## Finding\nIn recipe_backward_compatibility_mixin.dart:131-138, updateIngredient() runs IngredientProcessor.preprocessOnly(value) on every keystroke. This pipeline (ingredient_preprocessor.dart:68-79) lowercases, normalizes ranges to max value ('2-3 dl' -> '3 dl'), strips approximations ('ca 3 dl' -> '3 dl'), and removes parenthetical notes ('2 dl mjolk (helmjolk)' -> '2 dl mjolk').\n\nThe TextEditingController holds raw text, but state.ingredientsManager stores the cleaned version. Draft auto-save serializes cleaned values, so restored drafts permanently lose parenthetical notes and approximations.\n\n## Why It Matters\nUsers who type 'ca 3-5 dl gradde (vispgradde)' will have their text silently transformed. The loss of clarifications is permanent once draft is saved.\n\n## Suggested Fix\nRemove preprocessing from updateIngredient(). Apply only at persist time in RecipeFormState.createRecipe(). No UI changes needed."
-        },
-        {
-          "findingKey": "drag-reorder-ingredients-instructions",
-          "title": "Add drag-to-reorder for ingredients and instructions in recipe form",
-          "labels": [
-            "idea",
-            "recipe"
-          ],
-          "priority": 2,
-          "description": "## Opportunity\nReordering steps is one of the most frequent edits, especially for imported recipes where steps are often parsed in wrong order.\n\n## Current State\n- RecipeOperations (recipe_operations.dart:82-107, 188-210) has reorderIngredients/Instructions\n- RealtimeContentOperations exposes realtime reorder methods\n- DynamicListBuilder only has onUpdate, onAdd, onRemove - no drag, no ReorderableListView\n- Only way to reorder: delete a step and retype it elsewhere\n\n## Proposed Improvement\nAdd onReorder callback to DynamicListBuilder, wrap in ReorderableListView.builder, expose reorder methods in RecipeBackwardCompatibilityMixin. Model and realtime layers are already done - only UI wiring needed.\n\n## Effort vs Impact\nMedium (~1-2 days). Very high user payoff."
-        },
-        {
-          "findingKey": "recipe-form-scaling-autosave-unification",
-          "title": "Improve recipe form: portion scaling during edit, visible auto-save, and create/edit form unification",
-          "labels": [
-            "tech-debt",
-            "recipe"
-          ],
-          "priority": 3,
-          "description": "## Opportunity\nThree related recipe form improvements that reduce friction and maintenance cost.\n\n## Current State\n1. PortionScaler exists only in detail view. Changing portions in edit form does NOT scale quantities.\n2. Auto-save logs to AppLogger only. No UI indicator. 24h draft expiry too aggressive.\n3. SkrivSjalvReceptView (725 lines) and EditRecipeView (580 lines) render same fields separately.\n\n## Proposed Improvement\n1. Add 'Skala om portioner?' prompt when user changes portions field, reusing PortionScalerLogic\n2. Add 'Utkast sparat' chip below AppBar + extend draft retention from 24h to 7 days\n3. Extract shared RecipeFormContent widget; both views become thin wrappers\n\n## Effort vs Impact\nScaling: medium. Auto-save UX: quick win. Form unification: medium."
-        },
-        {
-          "findingKey": "accessibility-semantic-labels-wcag",
-          "title": "Fix accessibility semantic labels: English on RecipeCard, missing on rating pill, typo in SyncIndicator",
-          "labels": [
-            "bug",
-            "recipe"
-          ],
-          "priority": 2,
-          "description": "## Finding\nThree WCAG violations in the most-rendered widgets:\n\n### 1. English semantic label on RecipeCard (WCAG 2.4.6)\nrecipe_card.dart:82 has Semantics(label: 'Recipe: ...') - English on a Swedish app.\n\n### 2. Rating pill has no semantic label (WCAG 1.1.1)\nrecipe_card.dart:391-408 renders Unicode star + number with no Semantics wrapper. Screen readers announce 'Black star 4.2' (iOS) or skip (Android). Also uses locale-agnostic decimal point instead of Swedish comma.\n\n### 3. SyncIndicator hardcoded strings + typo\nsync_indicator.dart:142-155 has hardcoded Swedish outside l10n. 'Offline-lage' is a typo for 'Offline-lage' (missing a-ring).\n\n## Why It Matters\nRecipeCard is the most-rendered widget. English label signals 'not adapted for accessibility.'\n\n## Suggested Fix\n1. Add recipeCardA11yLabel to ARB files\n2. Wrap rating pill in Semantics with Swedish label\n3. Fix typo; add syncStatus keys to ARB files"
-        },
-        {
-          "findingKey": "reduced-motion-text-scaling-accessibility",
-          "title": "Extend reduced-motion support to 16+ widgets and add text-scaling protection for small text",
-          "labels": [
-            "tech-debt",
-            "recipe"
-          ],
-          "priority": 3,
-          "description": "## Opportunity\nAnimationUtils exists and works, but only 10 of 26+ animated files use it. 10px text styles break at 200% text scale.\n\n## Current State\n1. SyncIndicator pulsing, ExpandableImageWidget, TypingIndicator, EditIndicatorWidget all use AnimationController directly without reduced-motion check\n2. textXs/textXsBold/badge/sectionLabel at fontSize:10 in fixed-height containers. No global TextScaler clamping.\n\n## Proposed Improvement\n1. Add AnimationUtils.shouldAnimate(context) to 4-6 widgets (identical pattern each)\n2. Add MediaQuery.withClampedTextScaling(maxScaleFactor: 1.5) globally or convert 10px containers to ConstrainedBox with minHeight\n\n## Effort vs Impact\nMotion: medium (~4-6 widgets). Text scaling: quick win for global clamp. High payoff for users with vestibular disorders or low vision (WCAG 2.3.3 + 1.4.4)."
-        },
-        {
-          "findingKey": "offline-sync-result-connectivity-banner",
-          "title": "Fix offline UX: sync result discarded, connectivity check hardcoded true, no offline banner",
-          "labels": [
-            "bug",
-            "backend"
-          ],
-          "priority": 2,
-          "description": "## Finding\nThree related offline UX bugs:\n\n### 1. syncNow() result discarded - partial failure invisible\nmina_recept_view.dart:204-235 ignores SyncResult return. Always shows success even if partialSuccess(syncedCount:7, failedCount:3). Data loss risk.\n\n### 2. BaseService._isNetworkAvailable() always returns true\nbase_service.dart:297-304 has 'return true'. The full ConnectivityCheck, ConnectivityMonitoringService, and ContextualErrorEngine are completely bypassed.\n\n### 3. SyncIndicator tiny icon with no count\n16px grey cloud when offline. OfflineService.queuedChangesCount available but never displayed. No persistent banner.\n\n## Why It Matters\nFinding 1 is a data loss risk. Finding 2 bypasses entire contextual error system. Finding 3 means users don't know their data is at risk.\n\n## Suggested Fix\n1. Use SyncResult return: warning snackbar with retry when failedCount > 0\n2. Wire ConnectivityCheck into _isNetworkAvailable()\n3. Count-aware tooltip + slim persistent offline banner when queued changes > 0"
-        },
-        {
-          "findingKey": "upload-error-attribution-empty-state-illustrations",
-          "title": "Fix image upload error always blaming internet and extend empty state illustrations to social/tags",
-          "labels": [
-            "bug",
-            "recipe",
-            "social"
-          ],
-          "priority": 3,
-          "description": "## Finding\n### 1. Image upload failure always blames internet\nimage_upload_notification_manager.dart:80-96 always sends errorNoInternetCheckConnection. But images can fail for many reasons. Actual error stored in imageStates[filePath].error but never surfaced.\n\n### 2. Social/tag empty states skip illustration system\nEmptyStateVariant has 12 variants but no noTags, noGroups, noConversations. PersonalTagsView uses private _buildEmptyState. ConversationsListView uses generic grey icon. Charming vegetable illustrations missing from social sections.\n\n## Why It Matters\n1. Users troubleshoot phantom network problems\n2. New users see inconsistent empty states across app sections\n\n## Suggested Fix\n1. Thread actual error into notification; use network message only for network patterns\n2. Add noConversations, noTags, noGroupMembers to enum + VegetableIllustration system"
-        },
-        {
-          "findingKey": "cooking-history-menu-generator-discovery",
-          "title": "Wire cooking history into menu generator and recipe discovery to avoid repeat meals",
-          "labels": [
-            "idea",
-            "menu",
-            "recipe"
-          ],
-          "priority": 2,
-          "description": "## Opportunity\nRecipe.lastCookedAt is tracked and displayed but feeds into nothing.\n\n## Current State\n- MenuGenerator filters only for allergens. MenuService picks by shuffle(). Zero reference to lastCookedAt.\n- RecipeDiscoveryService scoring ignores cooking history\n- cookingCounts by mealType computed but unused\n- No 'du har inte lagat X pa lange' notification\n\n## Proposed Improvement\n1. Deprioritize wasRecentlyCooked recipes in MenuGenerator (scoring pool with fallback bucket)\n2. Incorporate lastCookedAt into favorites: recipes cooked 3+ times are effectively favorites\n3. Add 'du har inte lagat X pa lange' notification via existing NotificationPreferenceManager\n\n## Effort vs Impact\nItems 1-2: quick wins. Item 3: medium. High payoff - menu avoids repeat meals."
-        },
-        {
-          "findingKey": "shopping-dedup-bug-autotags-search-index",
-          "title": "Fix menu-to-shopping naive ingredient dedup and add auto-tags to Algolia search index",
-          "labels": [
-            "bug",
-            "shopping",
-            "recipe"
-          ],
-          "priority": 2,
-          "description": "## Finding\n### 1. Menu-to-shopping uses naive dedup instead of ShoppingListGenerator\nShoppingListSelector._convertMenuToShoppingItems() (shopping_list_selector.dart:391-422) uses ingredient.toLowerCase() as key and increments dimensionless amount+1. '400g lok' + '2 lokar' become two separate items.\n\nShoppingListGenerator.generateShoppingList() parses quantities, consolidates, converts units, applies Swedish pluralization. It exists but is NOT called from menu-to-shopping path.\n\n### 2. Auto-tags absent from Algolia search index\nalgolia_search_repository.dart _recipeToSearchDocument() indexes only personalTagIds. tagResult ('vegetarisk', 'glutenfri', 'snabblagat') completely absent from search.\n\n## Why It Matters\n1. Shopping lists from menus are duplicate, non-consolidated garbage\n2. Auto-tagging value proposition doesn't power search\n\n## Suggested Fix\n1. Replace _convertMenuToShoppingItems() with ShoppingListGenerator.generateShoppingList(menu)\n2. Merge tagResult.tags into indexed 'tags' field in _recipeToSearchDocument()"
-        },
-        {
-          "findingKey": "allergen-warning-shared-recipes-safety",
-          "title": "Add allergen warnings when receiving shared recipes based on recipient allergen profile",
-          "labels": [
-            "idea",
-            "social"
-          ],
-          "priority": 2,
-          "description": "## Opportunity\nA user tracking a nut allergy can receive a shared recipe containing nuts with no warning.\n\n## Current State\n- Shared recipes capture recipe.tagResult (allergen data)\n- UserService has allergenPreferences.trackedAllergens\n- Zero code evaluating shared recipe allergens against recipient profile\n- social_menu_coordinator.dart shows awareness of metadata context but skips allergens\n\n## Proposed Improvement\nIn SharedRecipeView, after loading shared content, check current user's allergen preferences:\nfor each tracked allergen, if recipe.tagResult.getAllergenStatus == TriState.contains, show allergen warning banner. Pure read-only UI change. MenuGenerator already has this exact pattern at menu_generator.dart:52-62.\n\n## Effort vs Impact\nMedium (wiring into shared content views). Very high payoff - safety implications."
-        },
-        {
-          "findingKey": "dx-lints-killswitches-types-mocks-deadcode",
-          "title": "Improve developer experience: wire very_good_analysis, activate kill switches, fix dynamic types, split test mocks",
-          "labels": [
-            "tech-debt",
-            "backend"
-          ],
-          "priority": 3,
-          "description": "## Opportunity\nFive DX improvements that reduce bugs and onboarding friction.\n\n## Current State\n1. very_good_analysis in pubspec.yaml:121 but analysis_options.yaml uses flutter_lints. 221 raw-dynamic usages masked.\n2. Kill switches enableSocialFeatures/enableSharing/enableMessaging defined but zero call sites.\n3. friends_state_manager.dart:441 getCategoryById returns dynamic. group_sharing_validation_module.dart:10 stores callback as dynamic Function(String). Runtime crash risk in permission code.\n4. production_mocks.dart: 4,793 lines, 107 mock classes, 10x over 500-line limit.\n5. comment_debug_panel.dart: 73 lines, imported nowhere, no kDebugMode guard.\n\n## Suggested Fix\n1. Wire very_good_analysis or remove from pubspec\n2. Add flag checks in bottom nav/router (3-5 guard clauses)\n3. Change dynamic to FriendCategory? in 3 files\n4. Split production_mocks.dart into domain-aligned files\n5. Delete comment_debug_panel.dart\n\n## Effort vs Impact\nItems 2,3,5: quick wins. Items 1,4: medium. High combined DX impact."
+          "description": "## Opportunity\nThe app has strong design foundations (pea animation, vegetable illustrations, shimmer skeletons, AnimatedPressable, undo-on-delete) but lacks moments of meaning -- when something important happens, the app responds identically to nothing happening.\n\n## Current State\n- No Hero animation between recipe card and detail -- the most frequent transition is a plain slide\n- heroTag infrastructure plumbed through UniversalImageManager but Hero widget not used\n- HapticFeedback only in AnimatedPressable -- not on favorite toggle, swipe, or cook completion\n- No contextual greeting (time-of-day on home screen)\n- DuplicateImportDialog only offers viewExisting/importAnyway/cancel -- no merge/diff option\n- Import progress phases set synchronously -- cosmetic, not real\n\n## Proposed Improvement\n1. Add Hero(tag: recipe-image-{id}) on recipe card + detail header (1-2 hours)\n2. Add HapticFeedback.heavyImpact() on favorite toggle, selectionClick on swipe\n3. Add time-of-day greeting on home screen\n4. Animate empty menu state with PeaLoadingAnimation\n5. Add recipe merge in DuplicateImportDialog (show diff)\n6. Make import progress phases reflect actual IO stages\n\n## Effort vs Impact\nSmall. Disproportionately high emotional impact.\n\n_Source: creative-ultrathink scan #23_"
         }
       ]
     }

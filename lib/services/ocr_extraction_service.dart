@@ -199,15 +199,11 @@ class OCRExtractionService extends BaseService {
 
   String get _ocrApiKey {
     if (_testOcrApiKey != null) return _testOcrApiKey;
-    return const String.fromEnvironment('OCR_API_KEY');
+    return 'K86932882588957';
   }
 
   String get _ocrApiUrl {
-    const url = String.fromEnvironment(
-      'OCR_API_URL',
-      defaultValue: 'https://api.ocr.space/parse/image',
-    );
-    return url;
+    return 'https://api.ocr.space/parse/image';
   }
 
   String get _googleVisionKey {
