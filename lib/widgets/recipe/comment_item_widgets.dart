@@ -335,7 +335,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                         context: context,
                         contentType: 'comment',
                         contentId: '${widget.comment.id}',
-                        contentOwnerId: '${widget.comment.userId}',
+                        contentOwnerId: '${widget.comment.authorId}',
                       ),
                       icon: Icon(
                         Icons.flag_outlined,
