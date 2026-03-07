@@ -1,4 +1,5 @@
 import 'package:butlery/core/utils/logger.dart';
+import 'package:html_unescape/html_unescape.dart';
 
 /// Security-focused HTML and content sanitizer.
 ///
@@ -371,6 +372,41 @@ class HtmlSanitizer {
     }
 
     return false;
+  }
+
+  static final _htmlUnescape = HtmlUnescape();
+
+  static final _scriptPattern = RegExp(
+    r'<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>',
+    caseSensitive: false,
+  );
+  static final _stylePattern = RegExp(
+    r'<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>',
+    caseSensitive: false,
+  );
+  static final _blockElementPattern = RegExp(
+    r'<(?:br|p|div|li|tr|h[1-6])[^>]*>',
+    caseSensitive: false,
+  );
+  static final _tagPattern = RegExp(r'<[^>]+>');
+
+  /// Strip HTML to plain text with entity decoding and whitespace normalization.
+  ///
+  /// Removes script/style blocks, replaces block elements with newlines,
+  /// strips remaining tags, decodes HTML entities, and normalizes whitespace.
+  static String stripToPlainText(String html) {
+    var text =
+        html.replaceAll(_scriptPattern, '').replaceAll(_stylePattern, '');
+
+    text = text.replaceAll(_blockElementPattern, '\n');
+    text = text.replaceAll(_tagPattern, '');
+    text = _htmlUnescape.convert(text);
+
+    return text
+        .replaceAll(RegExp(r'\t+'), ' ')
+        .replaceAll(RegExp(r' +'), ' ')
+        .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+        .trim();
   }
 }
 

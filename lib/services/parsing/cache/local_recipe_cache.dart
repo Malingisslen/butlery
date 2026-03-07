@@ -91,12 +91,11 @@ class LocalRecipeCache {
   ///
   /// Uses first 5000 characters to balance uniqueness vs performance.
   static String hashContent(String content) {
-    final normalized = content
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim()
-        .substring(0, content.length > 5000 ? 5000 : content.length);
+    final normalized = content.replaceAll(RegExp(r'\s+'), ' ').trim();
+    final truncated =
+        normalized.length > 5000 ? normalized.substring(0, 5000) : normalized;
 
-    final hash = sha256.convert(utf8.encode(normalized));
+    final hash = sha256.convert(utf8.encode(truncated));
     return hash.toString().substring(0, 16);
   }
 

@@ -213,6 +213,6 @@ class CrfViterbiDecoder {
   }
 
   double _transitionScore(BioLabel from, BioLabel to) {
-    return weights.transitionWeights[from]?[to] ?? 0.0;
+    return weights.transitionWeights[from]?[to] ?? -5.0;
   }
 }

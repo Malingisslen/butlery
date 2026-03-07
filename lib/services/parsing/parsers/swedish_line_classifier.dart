@@ -395,9 +395,10 @@ class SwedishLineClassifier {
     }
 
     // Cooking verbs anywhere
+    final wordSet = words.toSet();
     var verbCount = 0;
     for (final verb in _swedishCookingVerbs) {
-      if (words.contains(verb)) {
+      if (wordSet.contains(verb)) {
         verbCount++;
       }
     }

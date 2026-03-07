@@ -81,11 +81,12 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     try {
       final url = input.trim();
 
-      // Tier 1: Enhanced parser (if enabled)
-      final parserResult = await _tryEnhancedParser(url, options);
-      if (parserResult != null) return parserResult;
-
+      // Fetch HTML once — shared across all tiers
       final htmlResult = await _fetcher.fetchHtmlWithTimeout(url);
+
+      // Tier 1: Enhanced parser (if enabled)
+      final parserResult = await _tryEnhancedParser(url, htmlResult, options);
+      if (parserResult != null) return parserResult;
 
       if (htmlResult != null) {
         // Tier 2: Structured data (site-specific or schema.org)
@@ -129,12 +130,9 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   Future<ImportResult?> _tryEnhancedParser(
-      String url, Map<String, dynamic>? options) async {
+      String url, String? htmlContent, Map<String, dynamic>? options) async {
     final parser = _recipeParser;
-    if (parser == null) return null;
-
-    final htmlContent = await _fetcher.fetchHtmlWithTimeout(url);
-    if (htmlContent == null) return null;
+    if (parser == null || htmlContent == null) return null;
 
     final parseResult =
         await parser.parseFromUrl(url: url, htmlContent: htmlContent);

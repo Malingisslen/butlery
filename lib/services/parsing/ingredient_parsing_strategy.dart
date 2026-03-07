@@ -35,8 +35,9 @@ class IngredientParsingStrategy {
       NeuralIngredientParser.confidenceThreshold;
 
   CrfIngredientParser? _crfParser;
-  bool _crfLoadFailed = false;
   bool _initialized = false;
+  DateTime? _lastInitFailure;
+  static const _initRetryDelay = Duration(minutes: 5);
   bool _remoteCheckStarted = false;
   bool _nerInitStarted = false;
   DateTime? _nerLastAttempt;
@@ -70,33 +71,34 @@ class IngredientParsingStrategy {
   /// for updated remote weights from Firebase Storage.
   Future<void> _ensureInitialized() async {
     if (_initialized || _injectedParser != null) return;
-    _initialized = true;
 
-    if (_crfLoadFailed) return;
+    // After a failure, wait before retrying
+    if (_lastInitFailure != null &&
+        DateTime.now().difference(_lastInitFailure!) < _initRetryDelay) {
+      return;
+    }
 
     try {
       final jsonString = await rootBundle.loadString(_weightsPath);
       final weights = CrfWeights.fromJson(jsonString);
 
-      // Use Firebase-enriched ingredients for CRF food detection when available
       final registry = ServiceLocator.tryGet<IngredientRegistryService>();
       final enriched = registry?.allIngredients;
 
       final extractor = CrfFeatureExtractor(enrichedIngredients: enriched);
       final decoder = CrfViterbiDecoder(weights: weights, extractor: extractor);
       _crfParser = CrfIngredientParser(decoder);
+      _initialized = true;
+      _lastInitFailure = null;
       AppLogger.info('$_serviceName: CRF weights loaded'
           '${enriched != null ? ' (${enriched.length} enriched ingredients)' : ''}');
 
-      // Check for newer remote weights in background (non-blocking)
       _tryLoadRemoteWeightsInBackground();
-
-      // Initialize BERT NER model in background (download-on-first-use)
       _tryInitNerInBackground();
     } catch (e) {
       AppLogger.warning('$_serviceName: CRF weights unavailable, '
           'using regex fallback: $e');
-      _crfLoadFailed = true;
+      _lastInitFailure = DateTime.now();
     }
   }
 

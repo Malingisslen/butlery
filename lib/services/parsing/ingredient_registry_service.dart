@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:butlery/constants/known_ingredients.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -15,6 +17,9 @@ class IngredientRegistryService extends BaseService {
 
   /// Whether Firestore ingredients have been loaded.
   bool _isEnriched = false;
+
+  /// Guard against concurrent enrichment calls.
+  Completer<void>? _enrichCompleter;
 
   /// Compound names from Firestore (ingredients with isCompoundName=true).
   Set<String>? _compoundNames;
@@ -43,13 +48,14 @@ class IngredientRegistryService extends BaseService {
   /// Safe to call multiple times — only loads once.
   Future<void> enrichFromFirestore() async {
     if (_isEnriched) return;
+    if (_enrichCompleter != null) return _enrichCompleter!.future;
+
+    _enrichCompleter = Completer<void>();
 
     try {
-      // Start with static ingredients and compound names
       final combined = Set<String>.from(KnownIngredients.all);
       final compoundNameSet = Set<String>.from(KnownIngredients.compoundNames);
 
-      // Add all Firestore ingredient names (Swedish)
       final groups = [
         'protein',
         'vegetable',
@@ -63,25 +69,29 @@ class IngredientRegistryService extends BaseService {
         'beverage',
       ];
 
-      for (final group in groups) {
-        try {
-          final ingredients = await _ingredientRepository.getByGroup(group);
-          for (final item in ingredients) {
-            combined.add(item.swedish.toLowerCase());
-            // Also add aliases
+      // Load all groups in parallel
+      final results = await Future.wait(
+        groups.map((group) async {
+          try {
+            return await _ingredientRepository.getByGroup(group);
+          } catch (_) {
+            return <dynamic>[]; // Skip individual group failures
+          }
+        }),
+      );
+
+      for (final ingredients in results) {
+        for (final item in ingredients) {
+          combined.add(item.swedish.toLowerCase().trim());
+          for (final alias in item.aliasesSv) {
+            combined.add(alias.toLowerCase().trim());
+          }
+          if (item.isCompoundName) {
+            compoundNameSet.add(item.swedish.toLowerCase().trim());
             for (final alias in item.aliasesSv) {
-              combined.add(alias.toLowerCase());
-            }
-            // Collect compound names from Firestore
-            if (item.isCompoundName) {
-              compoundNameSet.add(item.swedish.toLowerCase());
-              for (final alias in item.aliasesSv) {
-                compoundNameSet.add(alias.toLowerCase());
-              }
+              compoundNameSet.add(alias.toLowerCase().trim());
             }
           }
-        } catch (_) {
-          // Skip individual group failures
         }
       }
 
@@ -95,11 +105,13 @@ class IngredientRegistryService extends BaseService {
         serviceName,
       );
     } catch (e) {
-      // Firestore unavailable — fall back to static registry
       AppLogger.debug(
         'Could not enrich from Firestore, using static registry: $e',
         serviceName,
       );
+    } finally {
+      _enrichCompleter!.complete();
+      _enrichCompleter = null;
     }
   }
 }

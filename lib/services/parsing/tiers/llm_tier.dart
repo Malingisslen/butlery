@@ -6,6 +6,7 @@ import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/services/llm/llm_models.dart';
 import 'package:butlery/services/llm/llm_service.dart';
+import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -233,7 +234,7 @@ class LlmTier extends ParsingTier with QualityScoring {
 
     // If HTML, strip tags
     if (text.contains('<')) {
-      text = _stripHtml(text);
+      text = HtmlSanitizer.stripToPlainText(text);
     }
 
     // Truncate to reasonable length
@@ -242,34 +243,6 @@ class LlmTier extends ParsingTier with QualityScoring {
     }
 
     return text.trim();
-  }
-
-  /// Strip HTML tags.
-  String _stripHtml(String html) {
-    var text = html;
-
-    // Remove script and style
-    text = text.replaceAll(
-      RegExp(r'<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>',
-          caseSensitive: false),
-      '',
-    );
-    text = text.replaceAll(
-      RegExp(r'<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>',
-          caseSensitive: false),
-      '',
-    );
-
-    // Replace block elements with newlines
-    text = text.replaceAll(
-      RegExp(r'<(?:br|p|div|li|tr)[^>]*>', caseSensitive: false),
-      '\n',
-    );
-
-    // Remove tags
-    text = text.replaceAll(RegExp(r'<[^>]+>'), '');
-
-    return text;
   }
 
   /// Check for suspicious patterns that might indicate injection.
