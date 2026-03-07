@@ -136,6 +136,9 @@ class SwedishLineClassifier {
   /// Swedish cooking verbs — delegates to shared PreparationWords constant.
   static const _swedishCookingVerbs = PreparationWords.cookingVerbs;
 
+  /// Whitespace split pattern (shared across scoring methods).
+  static final _whitespaceSplit = RegExp(r'\s+');
+
   /// Pattern for quantity at line start (ingredient indicator).
   static final _quantityPattern = RegExp(
     r'^(\d+[\.,]?\d*|½|¼|¾|\d+\s*½|\d+\s*¼|\d+\s*¾|\d+/\d+)\s*',
@@ -191,9 +194,15 @@ class SwedishLineClassifier {
       );
     }
 
+    // Pre-compute shared text analysis for scoring methods
+    final lower = trimmed.toLowerCase();
+    final words = lower.split(_whitespaceSplit);
+    final wordSet = words.toSet();
+
     // Calculate scores for ingredient vs instruction
-    final ingredientScore = _scoreAsIngredient(trimmed);
-    final instructionScore = _scoreAsInstruction(trimmed);
+    final ingredientScore = _scoreAsIngredient(trimmed, lower, words, wordSet);
+    final instructionScore =
+        _scoreAsInstruction(trimmed, lower, words, wordSet);
 
     // Determine classification
     if (ingredientScore > 0.6 && ingredientScore > instructionScore) {
@@ -330,10 +339,13 @@ class SwedishLineClassifier {
     return _timePattern.hasMatch(text) || _portionsPattern.hasMatch(text);
   }
 
-  double _scoreAsIngredient(String text) {
+  double _scoreAsIngredient(
+    String text,
+    String lower,
+    List<String> words,
+    Set<String> wordSet,
+  ) {
     var score = 0.0;
-    final lower = text.toLowerCase();
-    final words = lower.split(RegExp(r'\s+'));
 
     // Quantity at start is strong indicator (but not step numbers like "1.")
     if (_quantityPattern.hasMatch(text) && !_stepPattern.hasMatch(text)) {
@@ -353,7 +365,6 @@ class SwedishLineClassifier {
 
     // Food words — use word-set matching to prevent substring false positives
     // (e.g. "ost" matching inside "rostad")
-    final wordSet = words.toSet();
     var foodWordCount = 0;
     for (final food in _swedishFoodWords) {
       if (food.contains(' ')) {
@@ -378,10 +389,13 @@ class SwedishLineClassifier {
     return score.clamp(0.0, 1.0);
   }
 
-  double _scoreAsInstruction(String text) {
+  double _scoreAsInstruction(
+    String text,
+    String lower,
+    List<String> words,
+    Set<String> wordSet,
+  ) {
     var score = 0.0;
-    final lower = text.toLowerCase();
-    final words = lower.split(RegExp(r'\s+'));
 
     // Step number at start
     if (_stepPattern.hasMatch(text)) {
@@ -395,7 +409,6 @@ class SwedishLineClassifier {
     }
 
     // Cooking verbs anywhere
-    final wordSet = words.toSet();
     var verbCount = 0;
     for (final verb in _swedishCookingVerbs) {
       if (wordSet.contains(verb)) {

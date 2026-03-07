@@ -14,6 +14,7 @@ import 'package:butlery/utils/recipe_scraper.dart';
 import 'package:butlery/services/import/extractors/schema_org_recipe_extractor.dart';
 import 'package:butlery/services/import/utilities/html_utilities.dart';
 import 'package:butlery/services/import/heuristics/ingredient_line_detector.dart';
+import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
 import 'package:butlery/services/import/fallbacks/llm_extraction_fallback.dart';
 
@@ -196,7 +197,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   Future<ImportResult?> _tryHtmlTextParse(String html, String url) async {
-    final plainText = HtmlUtilities.stripHtmlTags(html);
+    final plainText = HtmlSanitizer.stripToPlainText(html);
     if (plainText.length <= 100) return null;
 
     final textStrategy = TextImportStrategy();
@@ -221,7 +222,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   ImportResult? _createUserAssistedResult(String html, String url) {
-    final plainText = HtmlUtilities.stripHtmlTags(html);
+    final plainText = HtmlSanitizer.stripToPlainText(html);
     if (plainText.length <= 50) return null;
 
     AppLogger.info('UrlImportStrategy: Returning for user-assisted import');
