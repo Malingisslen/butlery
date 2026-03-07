@@ -17,6 +17,7 @@ import 'package:butlery/services/llm/llm_service.dart';
 import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/import/import_rate_limiter.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
+import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
 
 /// Service for LLM-based recipe enhancement in the import pipeline.
 class LlmEnhancementService extends BaseService {
@@ -363,7 +364,7 @@ class LlmEnhancementService extends BaseService {
       title: extracted.title,
       description: extracted.description ?? '',
       mealType: mealType,
-      portions: extracted.portions ?? 4,
+      portions: extracted.portions ?? ParsingTier.kDefaultPortions,
       timeMinutes: extracted.totalTimeMinutes ?? 0,
       ingredients: extracted.ingredients.map((i) => i.formatted).toList(),
       instructions: extracted.instructions,

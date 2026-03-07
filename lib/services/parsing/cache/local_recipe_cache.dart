@@ -87,11 +87,11 @@ class LocalRecipeCache {
     return hash.toString().substring(0, 32);
   }
 
+  static const _hashContentMaxChars = 5000;
+
   /// Generate content hash from input text.
   ///
   /// Uses first [_hashContentMaxChars] characters to balance uniqueness vs performance.
-  static const _hashContentMaxChars = 5000;
-
   static String hashContent(String content) {
     final normalized = content.replaceAll(RegExp(r'\s+'), ' ').trim();
     final truncated = normalized.length > _hashContentMaxChars
