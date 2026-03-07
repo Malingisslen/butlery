@@ -68,15 +68,6 @@ class NeuralLineClassifier {
     }
   }
 
-  /// Parse text into a recipe structure using neural classification.
-  ///
-  /// **Deprecated:** Always falls back to rule-based because ONNX inference
-  /// is async. Use [parseStructureAsync] instead.
-  @Deprecated('Always falls back to rule-based. Use parseStructureAsync().')
-  ParsedRecipeStructure parseStructure(String text) {
-    return SwedishLineClassifier.instance.parseStructure(text);
-  }
-
   /// Async version that actually uses the neural model.
   ///
   /// Preferred entry point — callers that can await should use this.

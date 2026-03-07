@@ -11,12 +11,10 @@ import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
 
-/// Tier 4: CRF-based ingredient parsing.
+/// Standalone CRF-based ingredient parsing tier (not in the main pipeline).
 ///
-/// Uses a lightweight on-device CRF model to parse ingredient lines into
-/// structured components. Replaces the regex-based IngredientParser for
-/// ingredient parsing while keeping SwedishLineClassifier for line
-/// classification and instruction extraction.
+/// Used for testing and standalone CRF evaluation. In production, CRF parsing
+/// runs inside RuleBasedTier via IngredientParsingStrategy.
 ///
 /// Falls back gracefully when weights are unavailable — shouldSkip returns
 /// true and the next tier (LLM) handles it.

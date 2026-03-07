@@ -37,7 +37,7 @@ class CrfIngredientParser {
     final trimmed = line.trim();
 
     // Group headers (e.g., "Fyllning:", "Deg:") → empty ingredient
-    if (trimmed.endsWith(':') && trimmed.length < 40) {
+    if (trimmed.endsWith(':') && trimmed.length > 1 && trimmed.length < 40) {
       return ParsedIngredient(
         name: '',
         originalLine: line,

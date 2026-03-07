@@ -38,6 +38,8 @@ class IngredientParsingStrategy {
   bool _initialized = false;
   DateTime? _lastInitFailure;
   static const _initRetryDelay = Duration(minutes: 5);
+
+  /// Intentionally never reset — remote weights checked once per session.
   bool _remoteCheckStarted = false;
   bool _nerInitStarted = false;
   DateTime? _nerLastAttempt;

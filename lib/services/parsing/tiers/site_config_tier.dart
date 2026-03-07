@@ -293,13 +293,16 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
 
   FieldResult<int> _parsePortions(String? text) {
     if (text == null || text.isEmpty) {
-      return FieldResult.lowConfidence(4, 'Defaulting to 4 portions');
+      return FieldResult.lowConfidence(
+        ParsingTier.kDefaultPortions,
+        'Defaulting to ${ParsingTier.kDefaultPortions} portions',
+      );
     }
 
     final match = RegExp(r'(\d+)').firstMatch(text);
     if (match != null) {
       final num = int.tryParse(match.group(1) ?? '');
-      if (num != null && num > 0 && num <= 100) {
+      if (num != null && num > 0 && num <= ParsingTier.kMaxPortions) {
         return FieldResult.mediumConfidence(num, 'Extracted from page');
       }
     }

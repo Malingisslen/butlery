@@ -55,6 +55,7 @@ class LlmTier extends ParsingTier with QualityScoring {
   });
 
   static const tierIdentifier = 'LLM';
+  static const _maxTextLength = 15000;
 
   @override
   String get tierName => tierIdentifier;
@@ -237,9 +238,9 @@ class LlmTier extends ParsingTier with QualityScoring {
       text = HtmlSanitizer.stripToPlainText(text);
     }
 
-    // Truncate to reasonable length
-    if (text.length > 15000) {
-      text = text.substring(0, 15000);
+    // Truncate to fit LLM token budget (~4k tokens at ~3.7 chars/token)
+    if (text.length > _maxTextLength) {
+      text = text.substring(0, _maxTextLength);
     }
 
     return text.trim();
@@ -279,23 +280,22 @@ class LlmTier extends ParsingTier with QualityScoring {
     return true;
   }
 
+  static final _suspiciousPatterns = [
+    RegExp(r'<script', caseSensitive: false),
+    RegExp(r'javascript:', caseSensitive: false),
+    RegExp(r'{{.*}}'), // Template injection
+    RegExp(r'\$\{.*\}'), // String interpolation
+    RegExp(r'__proto__'),
+    RegExp(r'constructor\s*\('),
+  ];
+
   /// Check for suspicious patterns that might indicate injection.
   bool _hasSuspiciousPatterns(String value) {
-    final patterns = [
-      RegExp(r'<script', caseSensitive: false),
-      RegExp(r'javascript:', caseSensitive: false),
-      RegExp(r'{{.*}}'), // Template injection
-      RegExp(r'\$\{.*\}'), // String interpolation
-      RegExp(r'__proto__'),
-      RegExp(r'constructor\s*\('),
-    ];
-
-    for (final pattern in patterns) {
+    for (final pattern in _suspiciousPatterns) {
       if (pattern.hasMatch(value)) {
         return true;
       }
     }
-
     return false;
   }
 
@@ -350,9 +350,10 @@ class LlmTier extends ParsingTier with QualityScoring {
       }
     }
 
-    // Portions: 1-100 if present
+    // Portions: 1-kMaxPortions if present
     if (extracted.portions != null &&
-        (extracted.portions! < 1 || extracted.portions! > 100)) {
+        (extracted.portions! < 1 ||
+            extracted.portions! > ParsingTier.kMaxPortions)) {
       errors.add('portions_range');
     }
 
@@ -400,7 +401,10 @@ class LlmTier extends ParsingTier with QualityScoring {
           : FieldResult.failed('Invalid title from LLM'),
       portions: hasValidPortions && extracted.portions != null
           ? FieldResult.mediumConfidence(extracted.portions!, 'LLM extraction')
-          : FieldResult.lowConfidence(4, 'Defaulting to 4'),
+          : FieldResult.lowConfidence(
+              ParsingTier.kDefaultPortions,
+              'Defaulting to ${ParsingTier.kDefaultPortions} portions',
+            ),
       ingredients: hasValidIngredients
           ? _convertIngredients(extracted.ingredients)
           : FieldResult.failed('Invalid ingredients from LLM'),
@@ -447,7 +451,10 @@ class LlmTier extends ParsingTier with QualityScoring {
       title: FieldResult.mediumConfidence(extracted.title, 'LLM extraction'),
       portions: extracted.portions != null
           ? FieldResult.mediumConfidence(extracted.portions!, 'LLM extraction')
-          : FieldResult.lowConfidence(4, 'Defaulting to 4'),
+          : FieldResult.lowConfidence(
+              ParsingTier.kDefaultPortions,
+              'Defaulting to ${ParsingTier.kDefaultPortions} portions',
+            ),
       ingredients: ingredients,
       instructions: instructions,
       totalTime: totalTime != null

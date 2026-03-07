@@ -157,7 +157,7 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
       final match = RegExp(r'(\d+)').firstMatch(yield_);
       if (match != null) {
         final num = int.tryParse(match.group(1) ?? '');
-        if (num != null && num > 0 && num <= 100) {
+        if (num != null && num > 0 && num <= ParsingTier.kMaxPortions) {
           return FieldResult.success(num);
         }
       }
@@ -171,7 +171,7 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
           final match = RegExp(r'(\d+)').firstMatch(item);
           if (match != null) {
             final num = int.tryParse(match.group(1) ?? '');
-            if (num != null && num > 0 && num <= 100) {
+            if (num != null && num > 0 && num <= ParsingTier.kMaxPortions) {
               return FieldResult.success(num);
             }
           }
@@ -179,7 +179,10 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
       }
     }
 
-    return FieldResult.lowConfidence(4, 'Defaulting to 4 portions');
+    return FieldResult.lowConfidence(
+      ParsingTier.kDefaultPortions,
+      'Defaulting to ${ParsingTier.kDefaultPortions} portions',
+    );
   }
 
   Future<FieldResult<List<ParsedIngredient>>> _extractIngredients(

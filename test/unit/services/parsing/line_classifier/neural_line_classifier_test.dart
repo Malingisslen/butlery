@@ -72,11 +72,11 @@ void main() {
   });
 
   group('fallback behavior', () {
-    test('falls back to SwedishLineClassifier when model unavailable', () {
+    test('falls back to SwedishLineClassifier when model unavailable',
+        () async {
       mockService.setAvailable(false);
 
-      // ignore: deprecated_member_use_from_same_package
-      final result = classifier.parseStructure(
+      final result = await classifier.parseStructureAsync(
         'Pannkakor\n\n2 dl mjölk\n3 ägg\n\nBlanda allt.',
       );
 
