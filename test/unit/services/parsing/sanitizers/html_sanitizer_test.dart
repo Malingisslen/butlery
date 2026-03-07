@@ -115,6 +115,33 @@ void main() {
 
         expect(result, equals('Safe'));
       });
+
+      test('should preserve JSON-LD script tags', () {
+        final input =
+            '<div>Hello</div>'
+            '<script type="application/ld+json">{"@type":"Recipe","name":"Pancakes"}</script>'
+            '<script>alert("xss")</script>'
+            '<p>World</p>';
+        final result = sanitizer.sanitize(input);
+
+        expect(result, contains('application/ld+json'));
+        expect(result, contains('Pancakes'));
+        expect(result, isNot(contains('alert')));
+        expect(result, contains('Hello'));
+        expect(result, contains('World'));
+      });
+
+      test('should preserve multiple JSON-LD blocks', () {
+        final input =
+            '<script type="application/ld+json">{"@type":"Recipe"}</script>'
+            '<script>evil()</script>'
+            '<script type="application/ld+json">{"@type":"BreadcrumbList"}</script>';
+        final result = sanitizer.sanitize(input);
+
+        expect(result, contains('"@type":"Recipe"'));
+        expect(result, contains('"@type":"BreadcrumbList"'));
+        expect(result, isNot(contains('evil')));
+      });
     });
 
     // ---------------------------------------------------------------
@@ -540,15 +567,12 @@ void main() {
         expect(result.issues, isEmpty);
       });
 
-      test('should return critical for script injection', () {
+      test('should not flag script tags (handled by sanitize())', () {
         final result = sanitizer.check('<script>alert("xss")</script>');
 
-        expect(result.hasCriticalIssues, isTrue);
-        expect(result.isClean, isFalse);
-        expect(
-          result.issues.any((i) => i.type == IssueType.scriptInjection),
-          isTrue,
-        );
+        expect(result.isClean, isTrue,
+            reason:
+                'Script tags are stripped by sanitize(), not rejected by check()');
       });
 
       test('should return warning for homoglyphs (not critical)', () {
@@ -562,20 +586,21 @@ void main() {
         expect(result.issues.first.severity, IssueSeverity.warning);
       });
 
-      test('should detect event handler patterns', () {
+      test('should not flag event handler attributes (handled by sanitize())',
+          () {
         final result = sanitizer.check('<div onclick="evil()">');
 
-        expect(result.hasCriticalIssues, isTrue);
-        expect(
-          result.issues.any((i) => i.type == IssueType.scriptInjection),
-          isTrue,
-        );
+        expect(result.isClean, isTrue,
+            reason:
+                'Event handlers are stripped by sanitize(), not rejected by check()');
       });
 
-      test('should detect javascript: protocol', () {
+      test('should not flag javascript: protocol (handled by sanitize())', () {
         final result = sanitizer.check('href="javascript:void(0)"');
 
-        expect(result.hasCriticalIssues, isTrue);
+        expect(result.isClean, isTrue,
+            reason:
+                'javascript: URLs are neutralized by sanitize(), not rejected by check()');
       });
     });
 
