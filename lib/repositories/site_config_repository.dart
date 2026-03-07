@@ -392,9 +392,11 @@ class SiteConfigRepository {
   String _normalizeDomain(String domain) {
     var normalized = domain.toLowerCase().trim();
 
-    // Remove www prefix
+    // Remove common subdomains
     if (normalized.startsWith('www.')) {
       normalized = normalized.substring(4);
+    } else if (normalized.startsWith('m.')) {
+      normalized = normalized.substring(2);
     }
 
     // Remove trailing slash

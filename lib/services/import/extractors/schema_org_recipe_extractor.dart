@@ -18,7 +18,7 @@ class SchemaOrgRecipeExtractor {
         instructions: extractInstructions(data),
         portions: extractYield(data),
         timeMinutes: extractTime(data),
-        mealType: 'Lunch',
+        mealType: 'Middag',
         imageUrls: extractImages(data),
         sourceUrl: sourceUrl,
         createdAt: DateTime.now(),

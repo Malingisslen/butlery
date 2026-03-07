@@ -274,7 +274,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         instructions: instructions,
         portions: parsed.portions.value,
         timeMinutes: parsed.totalTime.value?.inMinutes,
-        mealType: 'Lunch',
+        mealType: 'Middag',
         imageUrls: parsed.imageUrl != null ? [parsed.imageUrl!] : [],
         sourceUrl: url,
         createdAt: DateTime.now(),
