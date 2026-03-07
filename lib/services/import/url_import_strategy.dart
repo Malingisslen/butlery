@@ -257,7 +257,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     final cache = ServiceLocator.tryGet<ParsedRecipeCache>();
     if (cache != null) {
       cache.store(url, parsed);
-      AppLogger.debug('📊 Stored ParsedRecipe in cache for: $url');
+      AppLogger.debug('Stored ParsedRecipe in cache for: $url');
     }
 
     final ingredients =

@@ -314,7 +314,7 @@
             "social"
           ],
           "priority": 2,
-          "description": "## Opportunity\nThe social system spans 120+ files and ~40,000 lines of code across 14 Firestore collections, with 7-8 abstraction layers for a simple friend-add. The complexity generates bugs faster than they can be fixed — BUG-016/017/018 are all workarounds for architectural issues, not root cause fixes. Patching is estimated at 6-8 weeks with debt remaining; rebuilding is 3-4 weeks and eliminates the debt.\n\n## Current State\n- 14 Firestore collections (friend_requests, group_invitations, shared_content, shared_recipes, shared_menus, shared_shopping_lists, shared_personal_tags, public_profiles, users/{id}/friends, users/{id}/friendCategories, users/{id}/categoryMemberships, plus 3 denormalized variants)\n- 90+ service/operations files under unified/friends/ and unified/operations/\n- FriendCategory conflates \"contact organizer\" and \"group\" concepts\n- Empty stub classes (FriendsSyncService, FriendsPresenceService, FriendsCacheService)\n- Hardcoded mock-user-id in production permission check (FriendsViewModel:327)\n- acceptGroupInvitation calls updateSentInvitation instead of updateReceived\n\n## Proposed Improvement\nReplace with 3 Firestore collections: `connections` (friend requests + friendships), `groups` (with inline memberIds and pendingInvites), `shares` (all content types). 3 services instead of 50 files. Server-enforced Firestore rules instead of application-layer permission checks. Deep link sharing with `linkToken` field on shares.\n\nReference: Samsung Food uses a flat sharing model. Cookpad uses simple follow/collection patterns. Neither needs 14 collections for their social features.\n\n## Effort vs Impact\nMajor undertaking (3-4 weeks rebuild + 1 week migration). But net faster than patching (6-8 weeks). Eliminates entire classes of bugs and removes ~35,000 lines of code. The single highest-impact architectural improvement available."
+          "description": "## Opportunity\nSocial system: 120+ files, ~40K lines, 14 Firestore collections, 7-8 abstraction layers for a friend-add. Complexity generates bugs faster than fixes. Patching: 6-8 weeks. Rebuild: 3-4 weeks.\n\n## Current State\n14 collections. 90+ service/operations files. FriendCategory conflates contact organizer and group. Empty stubs. Hardcoded mock-user-id in production. acceptGroupInvitation calls wrong method.\n\n## Proposed Improvement\n3 collections: connections, groups, shares. 3 services instead of 50 files. Server-enforced Firestore rules. Deep link sharing.\n\n## Effort vs Impact\nMajor (3-4 weeks rebuild + 1 week migration). Net faster than patching. Removes ~35K lines."
         },
         {
           "findingKey": "di-container-session-scope-boundary",
@@ -324,7 +324,7 @@
             "backend"
           ],
           "priority": 1,
-          "description": "## Opportunity\nThe DI container registers everything as app-scoped singletons, but many services hold user-specific state. On logout/login-as-different-user, singletons retain stale data from the previous user. This is the root cause behind BUT-32 (PersonalTagViewModel stale data), BUT-68 (NotificationService not registered), BUT-88 (ChangeNotifierProvider disposes shared singletons), BUT-105, and BUT-106 (cross-user cache leaks). Fixing each individually does not address the systemic absence of a lifecycle boundary.\n\n## Current State\n- Single GetIt scope for all services (app-scoped)\n- NotificationService requires userId but DI container is app-scoped — cannot register correctly\n- 40 ViewModels with 118 ServiceLocator.get calls, no compile-time registration guarantees\n- Health check declares success even when services are unregistered (BUT-68)\n- No auth-state-change teardown mechanism for user-scoped services\n\n## Proposed Improvement\nTwo-tier DI: (1) app-level GetIt scope for global services (Firebase instances, repositories, auth), (2) per-session GetIt scope created on login, torn down on logout, for all user-scoped services and ViewModels. This eliminates the stale-singleton-across-sessions class of bug entirely. NotificationService lives in session scope and is properly disposed on logout.\n\nReference: Riverpod's ProviderScope/ProviderContainer offers this model natively, but the same can be achieved with two GetIt instances.\n\n## Effort vs Impact\nMajor (3-4 weeks). Addresses the root cause running through 6+ existing tickets. Without this, every user-scoped service will continue to independently re-implement auth-state-change cleanup, and new bugs of this class will keep appearing."
+          "description": "## Opportunity\nAll services registered as app-scoped singletons but many hold user-specific state. On logout/login-as-different-user, singletons retain stale data. Root cause of BUT-32, BUT-68, BUT-88, BUT-105, BUT-106.\n\n## Current State\nSingle GetIt scope. NotificationService needs userId but DI is app-scoped. 40 ViewModels with 118 ServiceLocator.get calls. No auth-state-change teardown.\n\n## Proposed Improvement\nTwo-tier DI: app-level scope (global) + per-session scope (created on login, torn down on logout).\n\n## Effort vs Impact\nMajor (3-4 weeks). Addresses root cause of 6+ existing tickets."
         },
         {
           "findingKey": "unified-service-layer-rework-90-files",
@@ -335,7 +335,7 @@
             "backend"
           ],
           "priority": 2,
-          "description": "## Opportunity\nThe unified service layer (lib/services/unified/) spans 90 files and ~30,000 lines. It accounts for or enables ~25 of the 122 filed tickets. The original monolith was decomposed into facade + operations + modules + helpers + coordinators, but the decomposition created circular references, non-deterministic initialization, and state ownership split across the facade and all its helpers.\n\n## Current State\n- Three parallel delegation chains for the same concept (focused modules AND legacy feature interfaces)\n- Initialization uses exceptions for control flow (catching LateInitializationError on late final fields)\n- Platform forking (kIsWeb) woven through 8+ files as BUG-003 patches\n- _recipes list mutated from 6+ different contexts with notifyListeners callbacks from each\n- 90 files for 4 features (personal CRUD, social sharing, realtime editing, shopping)\n\n## Proposed Improvement\n4 focused services that each own their own state: RecipeRepository (single source of truth via streams), SharingService (social/collaborative), RealtimeEditingService (realtime sessions), RecipeCacheService (persistence). ViewModels subscribe to streams rather than getting callbacks. Platform branch lives in one place: repository's initialize() method.\n\n## Effort vs Impact\nMajor (4-6 weeks, can be done incrementally). The highest ticket-density area in the codebase. Each future bug fix in this layer takes longer than it should because of the abstraction depth."
+          "description": "## Opportunity\n90 files, ~30K lines. Accounts for ~25 tickets. Circular references, non-deterministic initialization, state split across facade and helpers.\n\n## Current State\nThree parallel delegation chains. Initialization uses LateInitializationError catching. kIsWeb woven through 8+ files. _recipes mutated from 6+ contexts.\n\n## Proposed Improvement\n4 focused services: RecipeRepository (streams), SharingService, RealtimeEditingService, RecipeCacheService.\n\n## Effort vs Impact\nMajor (4-6 weeks, incremental). Highest ticket-density area."
         },
         {
           "findingKey": "drag-drop-meal-calendar-veckomeny",
@@ -345,7 +345,7 @@
             "menu"
           ],
           "priority": 2,
-          "description": "## Opportunity\nThe app is named around \"veckomeny\" (weekly menu) but the current view is a flat list of recipes grouped by meal type, not by day. There is no concept of Monday/Tuesday/Wednesday, no calendar UI, no ability to assign pasta to Wednesday and fish to Friday. This is the biggest gap between the app's stated purpose and its implemented feature set.\n\n## Current State\nVeckomenyView shows week number as a cosmetic badge. Menu is Map<String, List<Recipe>> keyed by category (\"Middag\"), not by date. Users cannot track what they planned for today or auto-generate a shopping list for \"this week's dinners\" with confidence.\n\n## Proposed Improvement\nDay-based Map<DateTime, List<MenuEntry>> model. GridView calendar (Mon-Sun) with Flutter's LongPressDraggable + DragTarget for recipe assignment. Integrate with shopping list generation (\"generate list for selected days\"). Show today's meals prominently on the home screen.\n\nReference: Paprika has a calendar grid with drag-and-drop. Mealime shows weekly calendar with per-day slots. Both set user expectations for this feature.\n\n## Effort vs Impact\nMedium effort (model change + calendar widget + migration of save/load). Very high user impact — this is the core feature the app's name promises."
+          "description": "## Opportunity\nApp named 'veckomeny' but menu is flat list by meal type, not by day. No Mon/Tue/Wed. Biggest gap between stated purpose and implementation.\n\n## Current State\nMap<String, List<Recipe>> keyed by category. Week number is cosmetic badge.\n\n## Proposed Improvement\nDay-based model. GridView calendar (Mon-Sun) with LongPressDraggable + DragTarget. Shopping list integration per day. Reference: Paprika, Mealime.\n\n## Effort vs Impact\nMedium. Very high user impact."
         },
         {
           "findingKey": "cooking-timers-step-progression",
@@ -355,7 +355,7 @@
             "recipe"
           ],
           "priority": 2,
-          "description": "## Opportunity\nCooking mode has a solid foundation (landscape split-view, wakelock, portion scaling) but is missing the two features users need most during active cooking: timers and step tracking. Without timers, users switch to the clock app mid-cooking. Without step progression, all instructions compete for attention equally.\n\n## Current State\nCookingModeViewModel manages only portion scaling (43 lines). No timer state, no countdown widget, no per-step highlighting. All instructions shown as a scrollable list simultaneously. No ingredient check-off capability.\n\n## Proposed Improvement\n1. Parse durations from instruction text (\"koka i 8 minuter\" -> 8-min timer) using Swedish time patterns\n2. Add CookingTimer model with countdown overlay on instructions panel\n3. Add currentStepIndex to ViewModel with prev/next buttons and visual highlighting of active step\n4. Add ingredient check-off (Set<int> checkedIngredients, toggle on tap, render with strikethrough)\n\nReference: Mealime auto-suggests timers from step text. Kitchen Stories has voice prompts. Even within Butlery's split-view design, step highlighting reduces cognitive load.\n\n## Effort vs Impact\nQuick-medium win. Timer + step progression can be built incrementally. The cooking mode VM is small and self-contained. High daily-use impact for anyone who actually cooks with the app."
+          "description": "## Opportunity\nCooking mode has solid foundation (landscape, wakelock, scaling) but missing timers and step tracking.\n\n## Current State\nCookingModeViewModel: 43 lines, only portion scaling. No timer, no step highlighting, no ingredient check-off.\n\n## Proposed Improvement\n1. Parse Swedish time patterns from instructions. 2. CookingTimer with countdown. 3. Step progression with prev/next. 4. Ingredient check-off.\n\n## Effort vs Impact\nQuick-medium win. High daily-use impact."
         },
         {
           "findingKey": "system-share-sheet-external-sharing",
@@ -365,7 +365,7 @@
             "social"
           ],
           "priority": 2,
-          "description": "## Opportunity\nThere is no way to share a recipe with someone who is not already a Butlery friend. DeepLinkService parses recipeShare deep links, but nothing generates a shareable URL for the system share dialog. This is the single highest-impact missing social feature — it blocks organic growth entirely.\n\n## Current State\nUniversalShareDialog only shows in-app friends/groups as share targets. No \"copy link\" or \"share via WhatsApp/SMS\" option. Deep link types are defined (recipeShare, menuShare, shoppingListShare, friendInvitation) but only parsed on receive, never generated for sending.\n\n## Proposed Improvement\nGenerate deep link URL for any shared content -> share via system share sheet (share_plus already in pubspec.yaml). Cloud Function creates short URL at butlery.app/r/{linkToken}. Non-Butlery recipients see recipe preview in browser with install prompt. Add \"copy link\" and \"share externally\" options to UniversalShareDialog alongside existing friend/group targets.\n\nReference: Samsung Food and Cookpad both support link-based sharing. This is table stakes for any social feature in 2026.\n\n## Effort vs Impact\nMedium effort (deep link generation + Cloud Function + share sheet integration). Very high growth impact — enables organic user acquisition through recipe sharing."
+          "description": "## Opportunity\nNo way to share a recipe with non-friends. DeepLinkService parses but never generates shareable URLs. Blocks organic growth.\n\n## Current State\nUniversalShareDialog only shows in-app friends/groups. No copy link or share via WhatsApp.\n\n## Proposed Improvement\nGenerate deep link URL, share via share_plus. Cloud Function for short URLs. Browser recipe preview for non-app users.\n\n## Effort vs Impact\nMedium. Very high growth impact."
         },
         {
           "findingKey": "reverse-ingredient-search-what-can-i-cook",
@@ -375,7 +375,7 @@
             "recipe"
           ],
           "priority": 3,
-          "description": "## Opportunity\nUsers cannot enter ingredients they have and get matching recipes. Search is forward-only (recipe -> ingredients). Butlery already has ingredientsNormalized on every recipe, making reverse lookup technically feasible without a new data pipeline. Combined with Butlery's allergen auto-tagging, this could be uniquely powerful: \"what can I cook with what I have, safe for my allergens.\"\n\n## Current State\nNo reverse ingredient lookup exists. ingredientsNormalized field is stored on RecipeCore but only used for forward search matching. No \"I have these ingredients\" UI.\n\n## Proposed Improvement\nUI: ingredient chip input (\"I have: [potatis] [lax] [gradde]\"). Service: score recipes by ingredient match percentage against user's input, filtered by allergen preferences. Display: ranked results with match percentage and missing ingredients list. Local-only search initially (no cloud needed).\n\nReference: Yummly's \"What's in your fridge?\" is a flagship feature. Supercook.com is entirely built around this concept.\n\n## Effort vs Impact\nMedium effort (UI + scoring service leveraging existing normalized data). High differentiator potential, especially combined with allergen awareness that competitors lack."
+          "description": "## Opportunity\nNo reverse lookup. ingredientsNormalized already on every recipe. Combined with allergen auto-tagging, uniquely powerful.\n\n## Current State\nSearch is forward-only. ingredientsNormalized stored but only used for forward matching.\n\n## Proposed Improvement\nIngredient chip input, score recipes by match %, filter by allergens. Local-only search.\n\n## Effort vs Impact\nMedium. High differentiator."
         },
         {
           "findingKey": "ai-personalization-cooking-history",
@@ -386,7 +386,7 @@
             "menu"
           ],
           "priority": 3,
-          "description": "## Opportunity\nRecipeCore already stores lastCookedAt, rating, averageRating, and ratingCount — the raw data for taste learning exists but is never fed back into ranking or suggestions. MenuService is explicitly documented as \"NOT AI/LLM-based\" and does simple random selection. No \"because you cooked X, try Y\" logic exists.\n\n## Current State\nMenuGenerator filters by meal type and allergens, then selects randomly with a variety check. No taste learning loop. No recency weighting. No rating influence on suggestions.\n\n## Proposed Improvement\nBuild a lightweight local scorer in MenuService that weights recipes by: recency of last cooked (avoid repetition), personal rating (surface favorites), tag overlap with highly-rated recipes (taste profiling), and seasonal ingredients. No cloud ML needed — a deterministic score function covers 80% of the value. Apply to both menu generation and a new \"suggested for you\" section.\n\nReference: Deglaze and Whisk learn user preferences. The data is already collected in Butlery — it just needs the feedback loop.\n\n## Effort vs Impact\nMedium effort (scoring function + integration with menu generator + suggested section). High differentiation — knowing a Swedish household's actual cooking habits is a unique advantage."
+          "description": "## Opportunity\nlastCookedAt, rating, averageRating stored but never fed back into ranking. MenuService explicitly 'NOT AI-based', does random selection.\n\n## Current State\nRandom selection with variety check. No taste learning, no recency weighting.\n\n## Proposed Improvement\nLocal scorer: recency weighting, personal rating boost, tag overlap with highly-rated recipes, seasonal ingredients. No cloud ML needed.\n\n## Effort vs Impact\nMedium. High differentiation."
         },
         {
           "findingKey": "presence-service-wrong-backend-rtdb",
@@ -396,7 +396,7 @@
             "backend"
           ],
           "priority": 3,
-          "description": "## Opportunity\nThe presence service uses Firestore, which does not support onDisconnect. The service's own comment acknowledges this. The workaround is a 2-minute heartbeat timer that writes to Firestore per online user (expensive) and still shows users as online for up to 2 minutes after they close the app. Three tickets (BUT-39 polling patterns, BUT-112 timer leaks, BUT-72 orphan presence) trace directly to this design mismatch.\n\n## Current State\n411-line service with: heartbeat timer every 2 minutes (expensive), _setupDisconnectHandler() that is a no-op (Firestore has no onDisconnect), asyncMap with await-for-take(1) that can deadlock on empty batch streams, timer leaks on auth change (no listener for sign-out).\n\n## Proposed Improvement\nReplace with Firebase Realtime Database for the single presence/{userId} path. RTDB has native onDisconnect support, eliminating the heartbeat timer entirely. The multi-batch stream merge becomes a single RTDB query. Typing indicator timers remain but RTDB onDisconnect handles cleanup on app crash.\n\n## Effort vs Impact\nQuick win (1 week). Eliminates 3 bug classes permanently. Adding RTDB alongside Firestore for this one use case is straightforward."
+          "description": "## Opportunity\nFirestore has no onDisconnect. Workaround: 2-min heartbeat timer (expensive, still shows online for 2min after close). 3 tickets trace here.\n\n## Current State\n411-line service. Heartbeat every 2min. _setupDisconnectHandler() is no-op. asyncMap deadlock-prone pattern. Timer leaks on auth change.\n\n## Proposed Improvement\nFirebase RTDB for presence/{userId}. Native onDisconnect. Eliminates heartbeat timer.\n\n## Effort vs Impact\nQuick win (1 week). Eliminates 3 bug classes."
         },
         {
           "findingKey": "dart3-quick-wins-switch-expressions-pwa-manifest",
@@ -406,7 +406,7 @@
             "recipe"
           ],
           "priority": 4,
-          "description": "## Opportunity\nTwo low-risk quick wins that improve code quality and web presence:\n\n1. Switch expressions: 40-50 enum extension files use classic switch statements instead of Dart 3 switch expressions. Switch expressions enable exhaustiveness checking without default cases, catching missed enum variants at compile time.\n\n2. PWA manifest: web/manifest.json still has Flutter defaults — name \"butlery\", description \"A new Flutter project.\", theme color #0175C2 (Flutter blue). index.html meta description also says \"A new Flutter project.\"\n\n## Current State\n- Enums like ConditionType, TierResult, ImportResultV2 use switch (this) { case X: return ...; default: ... } pattern\n- web/manifest.json has placeholder content with no categories, screenshots, or correct branding\n- very_good_analysis is in dev_dependencies but analysis_options.yaml includes flutter_lints instead\n\n## Proposed Improvement\n1. Migrate enum extensions to switch expressions (mechanical, file-by-file, 1-2 days)\n2. Update manifest.json: branded name, Swedish description, forestGreen theme color, food/lifestyle categories\n3. Bonus: activate very_good_analysis ruleset (one-line change + lint fix sweep, 3-5 days)\n\n## Effort vs Impact\nItems 1+2 are trivial (<2 days combined). Item 3 is medium (3-5 days for lint fixes). All zero-risk at runtime. Switch expressions add compile-time safety; manifest fixes install UX."
+          "description": "## Opportunity\n40-50 enum files use classic switch. PWA manifest has Flutter defaults. very_good_analysis installed but not activated.\n\n## Current State\nOld-style switch with default cases. manifest.json: 'A new Flutter project'. flutter_lints instead of very_good_analysis.\n\n## Proposed Improvement\n1. Switch expressions (1-2 days). 2. Manifest branding (30 min). 3. Activate very_good_analysis (3-5 days).\n\n## Effort vs Impact\nTrivial to medium. Zero runtime risk."
         },
         {
           "findingKey": "startup-optimization-manager-fake-delays",
@@ -416,7 +416,7 @@
             "backend"
           ],
           "priority": 1,
-          "description": "## Finding\nStartupOptimizationManager (lib/services/performance/startup_optimization_manager.dart, 520 lines) is registered in DI and runs on every app launch. Its service initializer methods (_initializeFirebase, _initializeAuth, etc.) all consist of comments followed by await Future.delayed(Duration(milliseconds: 500)). No real initialization logic exists — the delays are stubs. StartupMetrics tracks timing data that measures only the hardcoded delays. The real bootstrap sequence already exists in lib/core/bootstrap/stages/.\n\n## Why It Matters\nAdds 2-3 seconds of artificial delay to every app startup in production. Users experience a noticeably slower launch for no reason.\n\n## Suggested Fix\nDelete the entire file and remove the DI registration in performance_module.dart. The real bootstrap sequence in lib/core/bootstrap/stages/ handles actual initialization. Verify no other code depends on StartupOptimizationManager before removing."
+          "description": "## Finding\nStartupOptimizationManager (520 lines) registered in DI, runs on every launch. All service initializers are await Future.delayed(500ms) stubs. Real bootstrap in lib/core/bootstrap/stages/.\n\n## Why It Matters\n2-3 seconds artificial delay on every startup.\n\n## Suggested Fix\nDelete the file and DI registration. Real bootstrap already exists."
         },
         {
           "findingKey": "shopping-list-stubs-clear-uncheck-noop",
@@ -426,7 +426,7 @@
             "shopping"
           ],
           "priority": 2,
-          "description": "## Finding\nIn shopping_item_management_module.dart (lines 305-312), clearCompletedItems() and uncheckAllItems() are stub methods that always return true without performing any action. Users who tap \"clear completed\" or \"uncheck all\" get no error but nothing happens.\n\n## Why It Matters\nSilent no-ops are worse than missing features — the user thinks the action succeeded. This affects daily shopping list usage.\n\n## Suggested Fix\nImplement clearCompletedItems() to filter items where isChecked == true and batch-delete them. Implement uncheckAllItems() to batch-update all items setting isChecked = false. Both should use Firestore batch writes for atomicity."
+          "description": "## Finding\nshopping_item_management_module.dart lines 305-312: clearCompletedItems() and uncheckAllItems() always return true without performing any action.\n\n## Why It Matters\nSilent no-ops. User thinks action succeeded but nothing happens.\n\n## Suggested Fix\nImplement with Firestore batch writes."
         }
       ]
     },
@@ -441,7 +441,7 @@
             "account"
           ],
           "priority": 1,
-          "description": "## Finding\nAccountDeletionService is comprehensive (deletes 20+ data categories, creates audit log, handles requires-recent-login). But no route exists in Routes and no UI entry point exists in the profile sheet or account security view. The service is built but the door is locked.\n\n## Why It Matters\nGDPR Article 17 right-to-erasure requires users to be able to delete their account. This is a compliance gap, not a feature gap.\n\n## Suggested Fix\nAdd a 'Danger Zone' collapsible section at the bottom of account_security_view.dart with a 'Delete Account' button that calls AccountDeletionService. Requires re-authentication confirmation dialog. The service already handles all data deletion logic."
+          "description": "## Finding\nAccountDeletionService deletes 20+ data categories, creates audit log, handles re-auth. But no route in Routes and no UI entry point in profile/account security view.\n\n## Why It Matters\nGDPR Article 17 right-to-erasure compliance gap.\n\n## Suggested Fix\nAdd 'Danger Zone' section to account_security_view.dart with Delete Account button."
         },
         {
           "findingKey": "cooking-streak-gamification-engine",
@@ -451,7 +451,7 @@
             "recipe"
           ],
           "priority": 2,
-          "description": "## Opportunity\nThe 'Lagat idag' button is the central behavioral signal but it leads nowhere. ActivityType.achievementUnlocked and milestoneReached are defined in the enum and referenced in ActivityFeedItem.description with l10n strings, but zero achievement logic exists. No streak computation anywhere.\n\n## Current State\nlastCookedAt stores per-recipe timestamp. No user-level 'cooked today' state, no streak counter. The 'Lagat idag' chip shows no visual state change after tapping (same outline button). No cook count displayed anywhere.\n\n## Proposed Improvement\n1. Add UserStats Firestore document: currentStreak, longestStreak, lastCookedDate, totalCookedCount\n2. On markAsCooked: check lastCookedDate — if yesterday, increment streak; if today, no-op; if older, reset to 1\n3. Display streak as flame icon + count in recipe list header\n4. Milestones: 3/7/30-day streak, 5/10/50 recipe milestones, 5+ cuisine diversity — fire ActivityType.milestoneReached\n5. Fix 'Lagat idag' chip: change to green filled state with checkmark after tapping, show lastCookedText on recipe cards\n\nReference: Duolingo's primary retention driver is the streak. A cooking streak is directly applicable.\n\n## Effort vs Impact\nMedium effort (3-4 days). Very High retention impact. The single highest-leverage gamification feature."
+          "description": "## Opportunity\nActivityType.achievementUnlocked and milestoneReached defined in enum with l10n strings. Zero achievement logic exists. 'Lagat idag' chip shows no visual state change after tapping.\n\n## Current State\nlastCookedAt per-recipe. No user-level streak, no cook count. No achievement definitions.\n\n## Proposed Improvement\nUserStats document: currentStreak, longestStreak, totalCookedCount. On markAsCooked: increment streak if consecutive days. Flame icon on home screen. Milestones at 3/7/30 days and 5/10/50 recipes. Fix chip to show green filled state.\n\n## Effort vs Impact\nMedium (3-4 days). Very High retention impact. Duolingo's core mechanic."
         },
         {
           "findingKey": "tag-discovery-view-browsable-catalogue",
@@ -461,7 +461,7 @@
             "tagging"
           ],
           "priority": 2,
-          "description": "## Opportunity\nThe auto-tag system generates 30+ tag types (cuisine, mood, season, difficulty, texture, sustainability) but users never see them as a browsable catalogue. Tags are only visible as individual badges on recipe detail. A user who imports 50 recipes has no idea the system already classified them by cuisine, season, and dietary status.\n\n## Current State\nTagResult.tags is a Set<String> on each recipe. TagDisplayUtils has priority ordering. PersonalTagsView only shows user-created tags. No aggregation view exists. getTagsByUsage() exists for personal tags but no equivalent for auto-tags.\n\n## Proposed Improvement\nA 'Tag Overview' entry point accessible from MinaReceptView showing:\n- Scrollable tag cloud organized by section (Allergens, Dietary, Cuisine, Mood, Season, Difficulty)\n- Recipe count per tag ('8 vegetariska', '3 thai-recept')\n- Tap any tag to immediately filter the recipe list\n- 'Seasonal Now' highlight section showing recipes matching current season\n\nThe data already exists on every recipe. Zero new Firestore queries needed — pure client-side aggregation.\n\n## Effort vs Impact\nMedium effort (1 new view + aggregation). High impact — makes invisible classification work visible. The tagging backend is architecturally ahead of its UX."
+          "description": "## Opportunity\nAuto-tags generate 30+ types but users never see them as browsable catalogue. Only visible as individual badges on recipe detail.\n\n## Current State\nNo aggregation view. getTagsByUsage() exists for personal tags but not auto-tags. User with 50 recipes has no idea system classified them.\n\n## Proposed Improvement\nTag Overview view with sections (Cuisine, Season, Dietary, etc.), recipe count per tag, tap to filter. Seasonal Now highlight. Zero new Firestore queries.\n\n## Effort vs Impact\nMedium (1 new view). High impact. Makes invisible classification visible."
         },
         {
           "findingKey": "daily-habit-loop-push-notification",
@@ -471,4 +471,89 @@
             "recipe"
           ],
           "priority": 2,
-          "description": 
+          "description": "## Opportunity\nNotification infrastructure fully built (strategies, quiet hours, digest frequency, analytics). sendDigestNotification() exists. Zero Cloud Functions fire any notifications. Entire digest system built but never triggered.\n\n## Current State\nNotificationStrategy.activityDigest defined. sendDigestNotification() works. digestFrequency exists. Zero scheduled triggers.\n\n## Proposed Improvement\nCloud Function at 17:00: recipe suggestion for active users, activity digest for social users, re-engagement for 3-day inactive. Respect existing preferences. Closes habit loop: Trigger -> Action -> Reward.\n\n## Effort vs Impact\nMedium (Cloud Functions). Very High retention impact."
+        },
+        {
+          "findingKey": "image-cdn-transforms-firebase-ignores",
+          "title": "Fix image loading: CDN query params ignored by Firebase Storage, every recipe card downloads full 3-8MB originals",
+          "labels": [
+            "performance",
+            "recipe"
+          ],
+          "priority": 1,
+          "description": "## Finding\nOptimizedImageLoader appends ?w=400&h=300&q=85&f=webp. Firebase Storage ignores these params entirely, returns full original. Two full-size downloads per recipe card. Thumbnails are generated at upload (firebase_storage_repository.dart) but no thumbnailUrl field on Recipe model.\n\n## Why It Matters\n99% bandwidth reduction possible (4MB -> 30KB per card).\n\n## Suggested Fix\nAdd thumbnailUrl to Recipe model. Use it for cards. Remove fake CDN params. Consider Firebase Resize Images extension."
+        },
+        {
+          "findingKey": "measurement-unit-preference-conversion",
+          "title": "Add measurement unit preference with display-layer conversion for imported imperial recipes",
+          "labels": [
+            "idea",
+            "settings"
+          ],
+          "priority": 2,
+          "description": "## Opportunity\nNo unitSystem preference. No conversion service. Swedish users importing English recipes see cups/oz/F forever.\n\n## Current State\nUnitDefinitions has Swedish metric. No unit preference in UserProfile. No UnitConversionService.\n\n## Proposed Improvement\nunitSystem field on UserProfile. UnitConversionService for cups->dl, oz->g, F->C at display time. Auto-mode detects source locale.\n\n## Effort vs Impact\nMedium. High for import quality."
+        },
+        {
+          "findingKey": "seed-starter-recipes-onboarding",
+          "title": "Wire RecipeSeeds into onboarding: seed 3-5 starter recipes for empty-first-session users",
+          "labels": [
+            "idea",
+            "recipe"
+          ],
+          "priority": 2,
+          "description": "## Opportunity\nRecipeSeeds class exists with dinnerRecipes but is DEAD CODE. User who skips import lands on empty broccoli state.\n\n## Current State\nRecipeSeeds uses runtime Uuid().v4() (unstable). English-language. Referenced nowhere.\n\n## Proposed Improvement\nStable UUIDs, Swedish recipes, wire into completeOnboarding() when recipe count = 0. Match dietary profile from onboarding. Mark with isSeeded flag.\n\n## Effort vs Impact\nLow effort. High impact on first-session churn."
+        },
+        {
+          "findingKey": "web-offline-storage-indexeddb",
+          "title": "Implement web offline storage: replace CacheDao stub with IndexedDB-backed implementation",
+          "labels": [
+            "tech-debt",
+            "backend"
+          ],
+          "priority": 2,
+          "description": "## Opportunity\nEntire offline layer on web is no-op stub. Page reload re-fetches everything from Firestore. Offline = empty list.\n\n## Current State\nCacheDao.getJson() always returns null on web. JsonCacheHelper abstraction exists. BUG-003 has direct callbacks for web.\n\n## Proposed Improvement\nCacheDaoIndexedDB using sembast_web or idb_shim. Wire via conditional import. Zero business logic changes. Unlocks IntelligentCacheManager + sync queue on web.\n\n## Effort vs Impact\nHigh effort (1-2 weeks). Transformative for web reliability."
+        },
+        {
+          "findingKey": "connectivity-polling-120-reads-hour",
+          "title": "Fix connectivity check: replace 30-second Firestore server reads with RTDB .info/connected stream",
+          "labels": [
+            "performance",
+            "backend"
+          ],
+          "priority": 2,
+          "description": "## Finding\n_startMonitoring() fires forced server read every 30 seconds. 120 reads/hour per user. Same repo already has monitorFirebaseConnection() using RTDB .info/connected (zero cost).\n\n## Why It Matters\n1000 users = 120K unnecessary reads/hour. Plus latency on slow connections.\n\n## Suggested Fix\nReplace timer with existing RTDB stream. 30-minute fix."
+        },
+        {
+          "findingKey": "share-to-import-3-taps-to-1",
+          "title": "Streamline share-to-import: bypass intermediate screen, use SmartImportViewModel directly",
+          "labels": [
+            "idea",
+            "import"
+          ],
+          "priority": 3,
+          "description": "## Opportunity\nShare-to-import: 3 taps, 2 screen transitions. ReceiveShareView adds artificial 300ms delay, routes to OLD URL import (not SmartImport), bypasses unified pipeline.\n\n## Current State\nRoutes to /importViaUrl not /smartImport. Bypasses cache, YouTube/TikTok strategies, progress UI.\n\n## Proposed Improvement\nRemove delay. Call ImportManager.autoImport() directly. Navigate to recipe editor on success. Wire through SmartImportViewModel.\n\n## Effort vs Impact\nMedium. Very high impact on most common import path."
+        },
+        {
+          "findingKey": "menu-balance-score-hardcoded-placeholder",
+          "title": "Implement menu balance score: getHealthinessScore() returns hardcoded 0.75, entire analytics layer is stub",
+          "labels": [
+            "idea",
+            "menu"
+          ],
+          "priority": 3,
+          "description": "## Opportunity\nRealtimeMenuAnalytics.getHealthinessScore() returns hardcoded 0.75. getDifficultyDistribution() also placeholder. Entire menu analytics scaffolded but unimplemented.\n\n## Current State\nAll the input data exists (TagResult on every recipe). Methods exist with correct signatures. Bodies return static values.\n\n## Proposed Improvement\nReal healthiness score from dietary tags. MenuBalanceReport model. Balance indicator on veckomeny_view. Suggestion engine for nutritional balance.\n\n## Effort vs Impact\nMedium (3-4 days). High differentiation."
+        },
+        {
+          "findingKey": "smart-tag-suggestions-proactive",
+          "title": "Add smart personal tag suggestions: detect untagged ingredient/cuisine patterns and suggest tags",
+          "labels": [
+            "idea",
+            "tagging"
+          ],
+          "priority": 3,
+          "description": "## Opportunity\nsuggestTagsForRecipe() is reactive (evaluate rules). No proactive version: 'You have 18 lax recipes, create Fiskrecept tag?'\n\n## Current State\nNo cross-recipe frequency analysis. ingredientsNormalized on every recipe provides the data.\n\n## Proposed Improvement\nPost-load analysis: ingredient frequency clusters, source URL patterns, auto-tag clusters above threshold. Surface as dismissible suggestion cards. One tap creates tag + rule.\n\n## Effort vs Impact\nMedium. Very High activation impact."
+        }
+      ]
+    }
+  ]
+}

@@ -147,26 +147,6 @@ class ParsingContext {
   ParsedRecipeStructure? _cachedStructure;
   String? _structureCacheKey;
 
-  /// Returns cached structure if text matches, otherwise parses fresh.
-  ///
-  /// **Deprecated:** Always falls back to rule-based even when neural
-  /// classifier is available (ONNX is async). Use [parseStructureCachedAsync].
-  @Deprecated('Use parseStructureCachedAsync() for neural classifier support.')
-  ParsedRecipeStructure parseStructureCached(
-    String text, {
-    NeuralLineClassifier? neuralClassifier,
-  }) {
-    if (_cachedStructure != null && _structureCacheKey == text) {
-      return _cachedStructure!;
-    }
-    final result = neuralClassifier != null && neuralClassifier.isAvailable
-        ? neuralClassifier.parseStructure(text)
-        : SwedishLineClassifier.instance.parseStructure(text);
-    _cachedStructure = result;
-    _structureCacheKey = text;
-    return result;
-  }
-
   /// Async version that can use neural classification via ONNX.
   ///
   /// Preferred when a [NeuralLineClassifier] is available — the async path

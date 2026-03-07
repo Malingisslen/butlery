@@ -89,11 +89,14 @@ class LocalRecipeCache {
 
   /// Generate content hash from input text.
   ///
-  /// Uses first 5000 characters to balance uniqueness vs performance.
+  /// Uses first [_hashContentMaxChars] characters to balance uniqueness vs performance.
+  static const _hashContentMaxChars = 5000;
+
   static String hashContent(String content) {
     final normalized = content.replaceAll(RegExp(r'\s+'), ' ').trim();
-    final truncated =
-        normalized.length > 5000 ? normalized.substring(0, 5000) : normalized;
+    final truncated = normalized.length > _hashContentMaxChars
+        ? normalized.substring(0, _hashContentMaxChars)
+        : normalized;
 
     final hash = sha256.convert(utf8.encode(truncated));
     return hash.toString().substring(0, 16);
@@ -201,11 +204,10 @@ class LocalRecipeCache {
   /// Clear all cache entries for this user.
   Future<void> clear() async {
     try {
-      // Get all entries for user and delete them
       final entries = await _cacheDao.getParseCacheForUser(userId);
-      for (final entry in entries) {
-        await _cacheDao.deleteParsedRecipe(entry.cacheKey);
-      }
+      await Future.wait(
+        entries.map((e) => _cacheDao.deleteParsedRecipe(e.cacheKey)),
+      );
       AppLogger.info('LocalRecipeCache: Cleared');
     } catch (e) {
       AppLogger.warning('LocalRecipeCache: Clear failed: $e');

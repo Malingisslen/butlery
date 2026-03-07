@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
@@ -20,6 +18,12 @@ import 'package:butlery/core/utils/logger.dart';
 /// Tiers are executed in order until one produces a result
 /// meeting the quality threshold.
 abstract class ParsingTier {
+  /// Maximum valid portions value across all tiers.
+  static const kMaxPortions = 100;
+
+  /// Default portions when extraction fails.
+  static const kDefaultPortions = 4;
+
   /// Unique name for this tier.
   String get tierName;
 
@@ -115,33 +119,6 @@ abstract class ParsingTier {
 
       return result;
     }
-  }
-}
-
-/// Mixin providing timeout handling utilities.
-mixin TimeoutHandling {
-  /// Execute a function with timeout, returning null on timeout or error.
-  Future<T?> withTimeoutOrNull<T>(
-    Future<T> Function() operation,
-    Duration timeout,
-  ) async {
-    try {
-      return await operation().timeout(timeout);
-    } on TimeoutException {
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /// Execute multiple operations concurrently with individual timeouts.
-  Future<List<T?>> withConcurrentTimeouts<T>(
-    List<Future<T> Function()> operations,
-    Duration timeout,
-  ) async {
-    return Future.wait(
-      operations.map((op) => withTimeoutOrNull(op, timeout)),
-    );
   }
 }
 
@@ -280,7 +257,10 @@ mixin QualityScoring {
       portions: structure.portions != null
           ? FieldResult.mediumConfidence(
               structure.portions!, 'Extracted from text')
-          : FieldResult.lowConfidence(4, 'Defaulting to 4 portions'),
+          : FieldResult.lowConfidence(
+              ParsingTier.kDefaultPortions,
+              'Defaulting to ${ParsingTier.kDefaultPortions} portions',
+            ),
       ingredients: ingredients,
       instructions: instructions,
       totalTime: structure.totalTime != null
