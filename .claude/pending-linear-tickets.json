@@ -554,6 +554,144 @@
           "description": "## Opportunity\nsuggestTagsForRecipe() is reactive (evaluate rules). No proactive version: 'You have 18 lax recipes, create Fiskrecept tag?'\n\n## Current State\nNo cross-recipe frequency analysis. ingredientsNormalized on every recipe provides the data.\n\n## Proposed Improvement\nPost-load analysis: ingredient frequency clusters, source URL patterns, auto-tag clusters above threshold. Surface as dismissible suggestion cards. One tap creates tag + rule.\n\n## Effort vs Impact\nMedium. Very High activation impact."
         }
       ]
+    },
+    {
+      "scanFocus": "creative-ultrathink-scan-21-search-editing-accessibility-errors-synergies-dx",
+      "tickets": [
+        {
+          "findingKey": "search-suggestions-discovery-shelves-sort-recency",
+          "title": "Add search suggestions, discovery shelves, and sort-by-recency to recipe list",
+          "labels": [
+            "idea",
+            "recipe"
+          ],
+          "priority": 2,
+          "description": "## Opportunity\nThe data layer is substantially ahead of the UI. SearchService.getSearchSuggestions() (search_service.dart:230-259), getPopularSearchTerms() (search_service.dart:263-295), RecipeQueryViewModel.getRecentlyCookedRecipes() (recipe_query_viewmodel.dart:244), and RecipeDiscoveryService.getTrendingRecipes() all compute useful data that never reaches the screen.\n\n## Current State\n- SearchInputWidget is a plain TextFormField with no autocomplete/suggestions\n- SortCriteria enum has title/time/rating/portions/mealType but no lastCooked or dateAdded\n- The entire discovery experience is a single flat sorted list with filters\n- No 'Laga ikvall' section, no 'Du har inte lagat pa lange' nudge, no seasonal surface\n\n## Proposed Improvement\n1. Wrap SearchInputWidget in Flutter Autocomplete<String>, calling getSearchSuggestions() on change\n2. Add lastCooked and dateAdded to SortCriteria enum + SortMenuBuilder (4 files)\n3. Add optional discovery shelf above recipe list (horizontal scroll) when no search/filter active\n\n## Effort vs Impact\nSuggestions: quick win (~2-3 hours). Sort options: quick win (~3 hours). Discovery shelf: medium (~1 day). All high user payoff."
+        },
+        {
+          "findingKey": "filter-visibility-smart-empty-states",
+          "title": "Improve filter state visibility and make search empty states actionable",
+          "labels": [
+            "idea",
+            "recipe"
+          ],
+          "priority": 2,
+          "description": "## Opportunity\nWhen the filter panel is collapsed, active filters are invisible except for a small dot. Empty search results are a dead end with no guidance.\n\n## Current State\n- FiltersPanelWidget has 21+ filter dimensions behind a single toggle button\n- QuickFilterChips are 3 hardcoded options: Favoriter, Under 30 min, Vegetariskt\n- showStats: false suppresses filter count in main recipe view\n- StateWidget.noSearchResults() shows mushroom + single clear button, no context\n- getPopularSearchTerms() and getSearchSuggestions() exist but are never called from empty state\n\n## Proposed Improvement\n1. Show active filter category pills below search bar when panel closed (extend PersonalTagFilterChipsWidget pattern)\n2. Make quick-filter chips data-driven: show user's 3 most-used tags via getMostUsedTags()\n3. Context-aware empty state: show two buttons when both search+filters active; show tappable chips from getPopularSearchTerms() when search returns nothing\n\n## Effort vs Impact\nFilter pills: medium (~1 day). Dynamic quick filters: quick win. Smart empty state: medium (~4-6 hours). High payoff - eliminates 'why are my recipes missing?' confusion."
+        },
+        {
+          "findingKey": "silent-ingredient-mutation-keystroke",
+          "title": "Fix silent ingredient mutation: preprocessing runs on every keystroke instead of save-time",
+          "labels": [
+            "bug",
+            "recipe"
+          ],
+          "priority": 2,
+          "description": "## Finding\nIn recipe_backward_compatibility_mixin.dart:131-138, updateIngredient() runs IngredientProcessor.preprocessOnly(value) on every keystroke. This pipeline (ingredient_preprocessor.dart:68-79) lowercases, normalizes ranges to max value ('2-3 dl' -> '3 dl'), strips approximations ('ca 3 dl' -> '3 dl'), and removes parenthetical notes ('2 dl mjolk (helmjolk)' -> '2 dl mjolk').\n\nThe TextEditingController holds raw text, but state.ingredientsManager stores the cleaned version. Draft auto-save serializes cleaned values, so restored drafts permanently lose parenthetical notes and approximations.\n\n## Why It Matters\nUsers who type 'ca 3-5 dl gradde (vispgradde)' will have their text silently transformed. The loss of clarifications is permanent once draft is saved.\n\n## Suggested Fix\nRemove preprocessing from updateIngredient(). Apply only at persist time in RecipeFormState.createRecipe(). No UI changes needed."
+        },
+        {
+          "findingKey": "drag-reorder-ingredients-instructions",
+          "title": "Add drag-to-reorder for ingredients and instructions in recipe form",
+          "labels": [
+            "idea",
+            "recipe"
+          ],
+          "priority": 2,
+          "description": "## Opportunity\nReordering steps is one of the most frequent edits, especially for imported recipes where steps are often parsed in wrong order.\n\n## Current State\n- RecipeOperations (recipe_operations.dart:82-107, 188-210) has reorderIngredients/Instructions\n- RealtimeContentOperations exposes realtime reorder methods\n- DynamicListBuilder only has onUpdate, onAdd, onRemove - no drag, no ReorderableListView\n- Only way to reorder: delete a step and retype it elsewhere\n\n## Proposed Improvement\nAdd onReorder callback to DynamicListBuilder, wrap in ReorderableListView.builder, expose reorder methods in RecipeBackwardCompatibilityMixin. Model and realtime layers are already done - only UI wiring needed.\n\n## Effort vs Impact\nMedium (~1-2 days). Very high user payoff."
+        },
+        {
+          "findingKey": "recipe-form-scaling-autosave-unification",
+          "title": "Improve recipe form: portion scaling during edit, visible auto-save, and create/edit form unification",
+          "labels": [
+            "tech-debt",
+            "recipe"
+          ],
+          "priority": 3,
+          "description": "## Opportunity\nThree related recipe form improvements that reduce friction and maintenance cost.\n\n## Current State\n1. PortionScaler exists only in detail view. Changing portions in edit form does NOT scale quantities.\n2. Auto-save logs to AppLogger only. No UI indicator. 24h draft expiry too aggressive.\n3. SkrivSjalvReceptView (725 lines) and EditRecipeView (580 lines) render same fields separately.\n\n## Proposed Improvement\n1. Add 'Skala om portioner?' prompt when user changes portions field, reusing PortionScalerLogic\n2. Add 'Utkast sparat' chip below AppBar + extend draft retention from 24h to 7 days\n3. Extract shared RecipeFormContent widget; both views become thin wrappers\n\n## Effort vs Impact\nScaling: medium. Auto-save UX: quick win. Form unification: medium."
+        },
+        {
+          "findingKey": "accessibility-semantic-labels-wcag",
+          "title": "Fix accessibility semantic labels: English on RecipeCard, missing on rating pill, typo in SyncIndicator",
+          "labels": [
+            "bug",
+            "recipe"
+          ],
+          "priority": 2,
+          "description": "## Finding\nThree WCAG violations in the most-rendered widgets:\n\n### 1. English semantic label on RecipeCard (WCAG 2.4.6)\nrecipe_card.dart:82 has Semantics(label: 'Recipe: ...') - English on a Swedish app.\n\n### 2. Rating pill has no semantic label (WCAG 1.1.1)\nrecipe_card.dart:391-408 renders Unicode star + number with no Semantics wrapper. Screen readers announce 'Black star 4.2' (iOS) or skip (Android). Also uses locale-agnostic decimal point instead of Swedish comma.\n\n### 3. SyncIndicator hardcoded strings + typo\nsync_indicator.dart:142-155 has hardcoded Swedish outside l10n. 'Offline-lage' is a typo for 'Offline-lage' (missing a-ring).\n\n## Why It Matters\nRecipeCard is the most-rendered widget. English label signals 'not adapted for accessibility.'\n\n## Suggested Fix\n1. Add recipeCardA11yLabel to ARB files\n2. Wrap rating pill in Semantics with Swedish label\n3. Fix typo; add syncStatus keys to ARB files"
+        },
+        {
+          "findingKey": "reduced-motion-text-scaling-accessibility",
+          "title": "Extend reduced-motion support to 16+ widgets and add text-scaling protection for small text",
+          "labels": [
+            "tech-debt",
+            "recipe"
+          ],
+          "priority": 3,
+          "description": "## Opportunity\nAnimationUtils exists and works, but only 10 of 26+ animated files use it. 10px text styles break at 200% text scale.\n\n## Current State\n1. SyncIndicator pulsing, ExpandableImageWidget, TypingIndicator, EditIndicatorWidget all use AnimationController directly without reduced-motion check\n2. textXs/textXsBold/badge/sectionLabel at fontSize:10 in fixed-height containers. No global TextScaler clamping.\n\n## Proposed Improvement\n1. Add AnimationUtils.shouldAnimate(context) to 4-6 widgets (identical pattern each)\n2. Add MediaQuery.withClampedTextScaling(maxScaleFactor: 1.5) globally or convert 10px containers to ConstrainedBox with minHeight\n\n## Effort vs Impact\nMotion: medium (~4-6 widgets). Text scaling: quick win for global clamp. High payoff for users with vestibular disorders or low vision (WCAG 2.3.3 + 1.4.4)."
+        },
+        {
+          "findingKey": "offline-sync-result-connectivity-banner",
+          "title": "Fix offline UX: sync result discarded, connectivity check hardcoded true, no offline banner",
+          "labels": [
+            "bug",
+            "backend"
+          ],
+          "priority": 2,
+          "description": "## Finding\nThree related offline UX bugs:\n\n### 1. syncNow() result discarded - partial failure invisible\nmina_recept_view.dart:204-235 ignores SyncResult return. Always shows success even if partialSuccess(syncedCount:7, failedCount:3). Data loss risk.\n\n### 2. BaseService._isNetworkAvailable() always returns true\nbase_service.dart:297-304 has 'return true'. The full ConnectivityCheck, ConnectivityMonitoringService, and ContextualErrorEngine are completely bypassed.\n\n### 3. SyncIndicator tiny icon with no count\n16px grey cloud when offline. OfflineService.queuedChangesCount available but never displayed. No persistent banner.\n\n## Why It Matters\nFinding 1 is a data loss risk. Finding 2 bypasses entire contextual error system. Finding 3 means users don't know their data is at risk.\n\n## Suggested Fix\n1. Use SyncResult return: warning snackbar with retry when failedCount > 0\n2. Wire ConnectivityCheck into _isNetworkAvailable()\n3. Count-aware tooltip + slim persistent offline banner when queued changes > 0"
+        },
+        {
+          "findingKey": "upload-error-attribution-empty-state-illustrations",
+          "title": "Fix image upload error always blaming internet and extend empty state illustrations to social/tags",
+          "labels": [
+            "bug",
+            "recipe",
+            "social"
+          ],
+          "priority": 3,
+          "description": "## Finding\n### 1. Image upload failure always blames internet\nimage_upload_notification_manager.dart:80-96 always sends errorNoInternetCheckConnection. But images can fail for many reasons. Actual error stored in imageStates[filePath].error but never surfaced.\n\n### 2. Social/tag empty states skip illustration system\nEmptyStateVariant has 12 variants but no noTags, noGroups, noConversations. PersonalTagsView uses private _buildEmptyState. ConversationsListView uses generic grey icon. Charming vegetable illustrations missing from social sections.\n\n## Why It Matters\n1. Users troubleshoot phantom network problems\n2. New users see inconsistent empty states across app sections\n\n## Suggested Fix\n1. Thread actual error into notification; use network message only for network patterns\n2. Add noConversations, noTags, noGroupMembers to enum + VegetableIllustration system"
+        },
+        {
+          "findingKey": "cooking-history-menu-generator-discovery",
+          "title": "Wire cooking history into menu generator and recipe discovery to avoid repeat meals",
+          "labels": [
+            "idea",
+            "menu",
+            "recipe"
+          ],
+          "priority": 2,
+          "description": "## Opportunity\nRecipe.lastCookedAt is tracked and displayed but feeds into nothing.\n\n## Current State\n- MenuGenerator filters only for allergens. MenuService picks by shuffle(). Zero reference to lastCookedAt.\n- RecipeDiscoveryService scoring ignores cooking history\n- cookingCounts by mealType computed but unused\n- No 'du har inte lagat X pa lange' notification\n\n## Proposed Improvement\n1. Deprioritize wasRecentlyCooked recipes in MenuGenerator (scoring pool with fallback bucket)\n2. Incorporate lastCookedAt into favorites: recipes cooked 3+ times are effectively favorites\n3. Add 'du har inte lagat X pa lange' notification via existing NotificationPreferenceManager\n\n## Effort vs Impact\nItems 1-2: quick wins. Item 3: medium. High payoff - menu avoids repeat meals."
+        },
+        {
+          "findingKey": "shopping-dedup-bug-autotags-search-index",
+          "title": "Fix menu-to-shopping naive ingredient dedup and add auto-tags to Algolia search index",
+          "labels": [
+            "bug",
+            "shopping",
+            "recipe"
+          ],
+          "priority": 2,
+          "description": "## Finding\n### 1. Menu-to-shopping uses naive dedup instead of ShoppingListGenerator\nShoppingListSelector._convertMenuToShoppingItems() (shopping_list_selector.dart:391-422) uses ingredient.toLowerCase() as key and increments dimensionless amount+1. '400g lok' + '2 lokar' become two separate items.\n\nShoppingListGenerator.generateShoppingList() parses quantities, consolidates, converts units, applies Swedish pluralization. It exists but is NOT called from menu-to-shopping path.\n\n### 2. Auto-tags absent from Algolia search index\nalgolia_search_repository.dart _recipeToSearchDocument() indexes only personalTagIds. tagResult ('vegetarisk', 'glutenfri', 'snabblagat') completely absent from search.\n\n## Why It Matters\n1. Shopping lists from menus are duplicate, non-consolidated garbage\n2. Auto-tagging value proposition doesn't power search\n\n## Suggested Fix\n1. Replace _convertMenuToShoppingItems() with ShoppingListGenerator.generateShoppingList(menu)\n2. Merge tagResult.tags into indexed 'tags' field in _recipeToSearchDocument()"
+        },
+        {
+          "findingKey": "allergen-warning-shared-recipes-safety",
+          "title": "Add allergen warnings when receiving shared recipes based on recipient allergen profile",
+          "labels": [
+            "idea",
+            "social"
+          ],
+          "priority": 2,
+          "description": "## Opportunity\nA user tracking a nut allergy can receive a shared recipe containing nuts with no warning.\n\n## Current State\n- Shared recipes capture recipe.tagResult (allergen data)\n- UserService has allergenPreferences.trackedAllergens\n- Zero code evaluating shared recipe allergens against recipient profile\n- social_menu_coordinator.dart shows awareness of metadata context but skips allergens\n\n## Proposed Improvement\nIn SharedRecipeView, after loading shared content, check current user's allergen preferences:\nfor each tracked allergen, if recipe.tagResult.getAllergenStatus == TriState.contains, show allergen warning banner. Pure read-only UI change. MenuGenerator already has this exact pattern at menu_generator.dart:52-62.\n\n## Effort vs Impact\nMedium (wiring into shared content views). Very high payoff - safety implications."
+        },
+        {
+          "findingKey": "dx-lints-killswitches-types-mocks-deadcode",
+          "title": "Improve developer experience: wire very_good_analysis, activate kill switches, fix dynamic types, split test mocks",
+          "labels": [
+            "tech-debt",
+            "backend"
+          ],
+          "priority": 3,
+          "description": "## Opportunity\nFive DX improvements that reduce bugs and onboarding friction.\n\n## Current State\n1. very_good_analysis in pubspec.yaml:121 but analysis_options.yaml uses flutter_lints. 221 raw-dynamic usages masked.\n2. Kill switches enableSocialFeatures/enableSharing/enableMessaging defined but zero call sites.\n3. friends_state_manager.dart:441 getCategoryById returns dynamic. group_sharing_validation_module.dart:10 stores callback as dynamic Function(String). Runtime crash risk in permission code.\n4. production_mocks.dart: 4,793 lines, 107 mock classes, 10x over 500-line limit.\n5. comment_debug_panel.dart: 73 lines, imported nowhere, no kDebugMode guard.\n\n## Suggested Fix\n1. Wire very_good_analysis or remove from pubspec\n2. Add flag checks in bottom nav/router (3-5 guard clauses)\n3. Change dynamic to FriendCategory? in 3 files\n4. Split production_mocks.dart into domain-aligned files\n5. Delete comment_debug_panel.dart\n\n## Effort vs Impact\nItems 2,3,5: quick wins. Items 1,4: medium. High combined DX impact."
+        }
+      ]
     }
   ]
 }
