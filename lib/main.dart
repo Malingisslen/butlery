@@ -44,7 +44,6 @@ import 'package:butlery/widgets/common/dialogs/session_timeout_warning_dialog.da
 import 'package:butlery/services/theme_service.dart';
 
 // Material You dynamic color
-import 'package:dynamic_color/dynamic_color.dart';
 
 // Memory pressure handling
 import 'package:butlery/services/performance/intelligent_cache_manager.dart';
@@ -625,49 +624,43 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       onPanDown: (_) => _sessionTimeoutService?.recordActivity(),
       onScaleStart: (_) => _sessionTimeoutService?.recordActivity(),
       behavior: HitTestBehavior.translucent,
-      // Material You dynamic color support (Android 12+)
-      // Falls back to brand colors on older devices and iOS
-      child: DynamicColorBuilder(
-        builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-          return MaterialApp(
-            navigatorKey: _navigatorKey,
-            navigatorObservers: observers,
-            title: 'Butlery',
-            theme: AppTheme.dynamicLightTheme(lightDynamic),
-            darkTheme: AppTheme.dynamicDarkTheme(darkDynamic),
-            themeMode: _themeService?.themeMode ?? ThemeMode.system,
-            debugShowCheckedModeBanner: false,
-            // Localization configuration
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: AppLocalizations.supportedLocales,
-            locale: _localeProvider.locale,
-            home: const InitializationWrapper(),
-            onUnknownRoute: AppRouter.handleUnknownRoute,
-            onGenerateRoute: AppRouter.generateRoute,
-            // Universal fix for Android nav bar overlay + beta feedback FAB overlay
-            builder: (context, child) {
-              if (child == null) return const SizedBox.shrink();
-              return SafeArea(
-                top: false, // Let AppBar handle top
-                bottom: true, // Always protect bottom from system nav bar
-                left: false,
-                right: false,
-                child: Stack(
-                  children: [
-                    RepaintBoundary(
-                      key: feedbackRepaintBoundaryKey,
-                      child: child,
-                    ),
-                    const FeedbackFAB(),
-                  ],
+      child: MaterialApp(
+        navigatorKey: _navigatorKey,
+        navigatorObservers: observers,
+        title: 'Butlery',
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: _themeService?.themeMode ?? ThemeMode.system,
+        debugShowCheckedModeBanner: false,
+        // Localization configuration
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: _localeProvider.locale,
+        home: const InitializationWrapper(),
+        onUnknownRoute: AppRouter.handleUnknownRoute,
+        onGenerateRoute: AppRouter.generateRoute,
+        // Universal fix for Android nav bar overlay + beta feedback FAB overlay
+        builder: (context, child) {
+          if (child == null) return const SizedBox.shrink();
+          return SafeArea(
+            top: false, // Let AppBar handle top
+            bottom: true, // Always protect bottom from system nav bar
+            left: false,
+            right: false,
+            child: Stack(
+              children: [
+                RepaintBoundary(
+                  key: feedbackRepaintBoundaryKey,
+                  child: child,
                 ),
-              );
-            },
+                const FeedbackFAB(),
+              ],
+            ),
           );
         },
       ),

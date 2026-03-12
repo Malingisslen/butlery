@@ -4,9 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/modules/comment_crud_operations.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
-import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
-import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:get_it/get_it.dart';
 import '../../../../../test_support/base_unit_test.dart';
 import '../../../../../infrastructure/mocks/production_mocks.dart';
@@ -15,7 +13,6 @@ void main() {
   group('CommentCrudOperations', () {
     late MockCommentsRepository mockCommentsRepository;
     late CommentCrudOperations operations;
-    late Recipe testRecipe;
     late RecipeComment testComment;
 
     setUpAll(() async {
@@ -49,30 +46,6 @@ void main() {
       );
 
       // Create test data
-      testRecipe = Recipe(
-        core: RecipeCore(
-          id: 'recipe_1',
-          title: 'Test Recipe',
-          description: 'A test recipe',
-          ingredients: ['ingredient 1'],
-          instructions: ['step 1'],
-          mealType: 'Middag',
-          createdBy: 'user_123',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        ),
-        type: RecipeType.collaborative,
-        socialData: RecipeSocialData(
-          ownerId: 'user_123',
-          ownerDisplayName: 'Test Owner',
-          memberPermissions: {
-            'user_123': ResourcePermission.owner,
-            'user_456': ResourcePermission.editor,
-            'user_789': ResourcePermission.viewer,
-          },
-        ),
-      );
-
       testComment = RecipeComment(
         id: 'comment_1',
         recipeId: 'recipe_1',
@@ -112,8 +85,6 @@ void main() {
           content: 'Great recipe!',
           authorId: 'user_456',
           authorDisplayName: 'Test User',
-          canCommentValidator: (_) => true,
-          recipeGetter: (id) => testRecipe,
         );
 
         // Assert
@@ -126,61 +97,17 @@ void main() {
             )).called(1);
       });
 
-      test('should fail with empty content', () async {
-        // Act
-        final commentId = await operations.createComment(
-          recipeId: 'recipe_1',
-          content: '  ',
-          authorId: 'user_456',
-          authorDisplayName: 'Test User',
-          canCommentValidator: (_) => true,
-          recipeGetter: (id) => testRecipe,
+      test('should throw with empty content', () async {
+        // Act & Assert
+        expect(
+          () => operations.createComment(
+            recipeId: 'recipe_1',
+            content: '  ',
+            authorId: 'user_456',
+            authorDisplayName: 'Test User',
+          ),
+          throwsArgumentError,
         );
-
-        // Assert
-        expect(commentId, isNull);
-        verifyNever(() => mockCommentsRepository.addComment(
-              recipeId: any(named: 'recipeId'),
-              userId: any(named: 'userId'),
-              content: any(named: 'content'),
-              parentCommentId: any(named: 'parentCommentId'),
-            ));
-      });
-
-      test('should fail when recipe not found', () async {
-        // Act
-        final commentId = await operations.createComment(
-          recipeId: 'recipe_1',
-          content: 'Great recipe!',
-          authorId: 'user_456',
-          authorDisplayName: 'Test User',
-          canCommentValidator: (_) => true,
-          recipeGetter: (id) => null,
-        );
-
-        // Assert
-        expect(commentId, isNull);
-        verifyNever(() => mockCommentsRepository.addComment(
-              recipeId: any(named: 'recipeId'),
-              userId: any(named: 'userId'),
-              content: any(named: 'content'),
-              parentCommentId: any(named: 'parentCommentId'),
-            ));
-      });
-
-      test('should fail when user lacks permission', () async {
-        // Act
-        final commentId = await operations.createComment(
-          recipeId: 'recipe_1',
-          content: 'Great recipe!',
-          authorId: 'user_456',
-          authorDisplayName: 'Test User',
-          canCommentValidator: (_) => false,
-          recipeGetter: (id) => testRecipe,
-        );
-
-        // Assert
-        expect(commentId, isNull);
         verifyNever(() => mockCommentsRepository.addComment(
               recipeId: any(named: 'recipeId'),
               userId: any(named: 'userId'),
@@ -215,8 +142,6 @@ void main() {
           authorId: 'user_789',
           authorDisplayName: 'Reply User',
           parentCommentId: 'comment_1',
-          canCommentValidator: (_) => true,
-          recipeGetter: (id) => testRecipe,
         );
 
         // Assert

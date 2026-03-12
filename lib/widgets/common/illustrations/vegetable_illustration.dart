@@ -4,6 +4,7 @@
 /// with consistent sizing and styling for empty states.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Types of vegetable illustrations available.
@@ -114,15 +115,15 @@ class VegetableIllustration extends StatelessWidget {
   }
 
   static const _fallbackColors = {
-    VegetableType.broccoli: Color(0xFF4A7C59), // Forest green
+    VegetableType.broccoli: AppColors.forestGreen,
     VegetableType.mushroom: Color(0xFFA08060), // Brown
-    VegetableType.peaPod: Color(0xFF4A7C59), // Forest green
+    VegetableType.peaPod: AppColors.forestGreen,
     VegetableType.carrot: Color(0xFFE07020), // Orange
     VegetableType.redOnion: Color(0xFF8B2252), // Purple-red
   };
 
   Color _getFallbackColor(VegetableType type) {
-    return _fallbackColors[type] ?? const Color(0xFF4A7C59);
+    return _fallbackColors[type] ?? AppColors.forestGreen;
   }
 }
 

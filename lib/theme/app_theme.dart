@@ -16,16 +16,6 @@ class AppTheme {
   /// Creates the complete dark theme for the application.
   static ThemeData get darkTheme => createTheme(AppColors.darkColorScheme);
 
-  /// Creates a light theme with a dynamic color scheme.
-  static ThemeData dynamicLightTheme(ColorScheme? dynamicScheme) {
-    return createTheme(dynamicScheme ?? AppColors.lightColorScheme);
-  }
-
-  /// Creates a dark theme with a dynamic color scheme.
-  static ThemeData dynamicDarkTheme(ColorScheme? dynamicScheme) {
-    return createTheme(dynamicScheme ?? AppColors.darkColorScheme);
-  }
-
   /// Creates theme configuration from color scheme.
   static ThemeData createTheme(ColorScheme colorScheme) {
     final isDark = colorScheme.brightness == Brightness.dark;

@@ -3,7 +3,6 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  dynamic_color
   file_selector_linux
   flutter_onnxruntime
   flutter_secure_storage_linux
