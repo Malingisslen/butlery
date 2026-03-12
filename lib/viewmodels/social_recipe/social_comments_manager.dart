@@ -154,6 +154,7 @@ class SocialCommentsManager extends ChangeNotifier {
     } catch (e) {
       _commentsError = AppLocale.current.errorGeneric;
       AppLogger.error('Failed to post comment for recipe $recipeId: $e');
+      rethrow;
     } finally {
       _isPostingComment = false;
       notifyListeners();
@@ -203,6 +204,10 @@ class SocialCommentsManager extends ChangeNotifier {
       text: recipeComment.text,
       createdAt: recipeComment.createdAt,
       parentCommentId: recipeComment.parentCommentId,
+      likeCount: recipeComment.likeCount,
+      reactions: recipeComment.reactions.isNotEmpty
+          ? recipeComment.reactions
+          : null,
     );
   }
 

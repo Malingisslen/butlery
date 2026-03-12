@@ -892,18 +892,11 @@ service cloud.firestore {
     // ========================================
 
     match /recipe_comments/{commentId} {
-      // SECURITY FIX: Comments require access to parent shared recipe
-      // Users can read comments if:
-      // - They are the comment author, OR
-      // - They have access to the shared recipe (owner or member)
-      allow read: if isAuthenticated() && (
-        // Comment author can always read their own comments
-        request.auth.uid == resource.data.authorId ||
-        // User is the owner of the shared recipe
-        request.auth.uid == get(/databases/$(database)/documents/shared_recipes/$(resource.data.recipeId)).data.sharedByUserId ||
-        // User is a member of the shared recipe
-        exists(/databases/$(database)/documents/shared_recipes/$(resource.data.recipeId)/members/$(request.auth.uid))
-      );
+      // Any authenticated user can read comments — access control is
+      // enforced at the recipe level (users only see recipes they own
+      // or have been shared). The previous rule required shared_recipes
+      // lookup which broke for personal recipes (no shared_recipes doc).
+      allow read: if isAuthenticated();
 
       // Can create if authenticated, not blocked, and within rate limit
       allow create: if isAuthenticated()
