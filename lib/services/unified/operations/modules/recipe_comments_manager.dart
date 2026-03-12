@@ -63,11 +63,6 @@ class RecipeCommentsManager {
       authorId: userId,
       authorDisplayName: currentUserDisplayName,
       parentCommentId: parentCommentId,
-      canCommentValidator: (recipe) => CommentUtilities.canCommentOnRecipe(
-        recipe: recipe,
-        currentUserId: userId,
-      ),
-      recipeGetter: _getRecipe,
     );
 
     if (commentId != null) {

@@ -107,6 +107,9 @@ class SocialComment {
   /// interact with the comment through like actions and engagement behaviors.
   int likeCount;
 
+  /// Emoji reactions keyed by emoji string, with list of user IDs who reacted.
+  Map<String, List<String>>? reactions;
+
   SocialComment({
     required this.id,
     required this.recipeId,
@@ -116,6 +119,7 @@ class SocialComment {
     this.parentCommentId,
     this.isLiked = false,
     this.likeCount = 0,
+    this.reactions,
   });
 
   /// Creates SocialComment instance from Firestore document with comprehensive data validation and fallback handling.

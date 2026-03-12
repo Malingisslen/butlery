@@ -1,7 +1,6 @@
 // lib/services/unified/operations/modules/comment_crud_operations.dart
 
 import 'dart:async';
-import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
@@ -27,58 +26,37 @@ class CommentCrudOperations {
         _analyticsService =
             analyticsService ?? ServiceLocator.get<AnalyticsService>();
 
-  /// Create comment with validation
+  /// Create comment — access control enforced by Firestore security rules
   Future<String?> createComment({
     required String recipeId,
     required String content,
     required String authorId,
     required String authorDisplayName,
     String? parentCommentId,
-    required bool Function(Recipe) canCommentValidator,
-    required Recipe? Function(String) recipeGetter,
   }) async {
-    try {
-      AppLogger.info('💬 Creating comment for recipe $recipeId');
+    AppLogger.info('💬 Creating comment for recipe $recipeId');
 
-      if (content.trim().isEmpty) {
-        AppLogger.error('❌ Comment content cannot be empty');
-        return null;
-      }
-
-      // Validate recipe exists and user has access
-      final recipe = recipeGetter(recipeId);
-      if (recipe == null) {
-        AppLogger.error('❌ Cannot add comment: Recipe not found');
-        return null;
-      }
-
-      if (!canCommentValidator(recipe)) {
-        AppLogger.error(
-            '❌ User does not have permission to comment on this recipe');
-        return null;
-      }
-
-      // Create comment using repository
-      final comment = await _commentsRepository.addComment(
-        recipeId: recipeId,
-        userId: authorId,
-        content: content.trim(),
-        parentCommentId: parentCommentId,
-      );
-
-      AppLogger.success('✅ Comment created with ID: ${comment.id}');
-
-      // Track comment created analytics
-      await _analyticsService.logCommentCreated(
-        recipeId: recipeId,
-        commentLength: content.trim().length,
-      );
-
-      return comment.id;
-    } catch (e) {
-      AppLogger.error('❌ Failed to create comment', e);
-      return null;
+    if (content.trim().isEmpty) {
+      throw ArgumentError('Comment content cannot be empty');
     }
+
+    // Create comment using repository — Firestore rules enforce access
+    final comment = await _commentsRepository.addComment(
+      recipeId: recipeId,
+      userId: authorId,
+      content: content.trim(),
+      parentCommentId: parentCommentId,
+    );
+
+    AppLogger.success('✅ Comment created with ID: ${comment.id}');
+
+    // Track comment created analytics
+    await _analyticsService.logCommentCreated(
+      recipeId: recipeId,
+      commentLength: content.trim().length,
+    );
+
+    return comment.id;
   }
 
   /// Get comments for recipe with pagination
