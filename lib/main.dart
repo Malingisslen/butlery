@@ -90,81 +90,82 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
-  // CRITICAL: Initialize Flutter bindings first - required for any Flutter services
-  WidgetsFlutterBinding.ensureInitialized();
+  // Wrap entire main body in runZonedGuarded so ensureInitialized and runApp
+  // share the same zone (prevents zone mismatch assertion on startup).
+  runZonedGuarded(
+    () async {
+      // CRITICAL: Initialize Flutter bindings first - required for any Flutter services
+      WidgetsFlutterBinding.ensureInitialized();
 
-  // Limit image cache to prevent unbounded memory growth
-  PaintingBinding.instance.imageCache.maximumSize = 100;
-  PaintingBinding.instance.imageCache.maximumSizeBytes =
-      50 * 1024 * 1024; // 50 MB
+      // Limit image cache to prevent unbounded memory growth
+      PaintingBinding.instance.imageCache.maximumSize = 100;
+      PaintingBinding.instance.imageCache.maximumSizeBytes =
+          50 * 1024 * 1024; // 50 MB
 
-  try {
-    // Initialize Firebase with configuration from compile-time --dart-define
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+      try {
+        // Initialize Firebase with configuration from compile-time --dart-define
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
 
-    // Default Crashlytics to disabled until consent is verified (GDPR)
-    // App Check can proceed immediately (security, not analytics)
-    await Future.wait([
-      if (!kIsWeb)
-        FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false),
-      if (!kDebugMode)
-        FirebaseAppCheck.instance.activate(
-          providerWeb: ReCaptchaV3Provider(
-            '6Ldv4zcsAAAAAlSR-dDTTuDTcjgr7pYvPazzGPDo',
-          ),
-          providerAndroid: const AndroidPlayIntegrityProvider(),
-          providerApple: const AppleDeviceCheckProvider(),
-        ),
-    ]);
+        // Default Crashlytics to disabled until consent is verified (GDPR)
+        // App Check can proceed immediately (security, not analytics)
+        await Future.wait([
+          if (!kIsWeb)
+            FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false),
+          if (!kDebugMode)
+            FirebaseAppCheck.instance.activate(
+              providerWeb: ReCaptchaV3Provider(
+                '6Ldv4zcsAAAAAlSR-dDTTuDTcjgr7pYvPazzGPDo',
+              ),
+              providerAndroid: const AndroidPlayIntegrityProvider(),
+              providerApple: const AppleDeviceCheckProvider(),
+            ),
+        ]);
 
-    // Set up error handlers (sync, after Crashlytics enabled)
-    if (kIsWeb) {
-      // Web: show Flutter error widget so errors are visible (not just console)
-      FlutterError.onError = (errorDetails) {
-        FlutterError.presentError(errorDetails);
-      };
-    } else {
-      FlutterError.onError = (errorDetails) {
-        FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-        if (kDebugMode) {
-          FlutterError.presentError(errorDetails);
+        // Set up error handlers (sync, after Crashlytics enabled)
+        if (kIsWeb) {
+          // Web: show Flutter error widget so errors are visible (not just console)
+          FlutterError.onError = (errorDetails) {
+            FlutterError.presentError(errorDetails);
+          };
+        } else {
+          FlutterError.onError = (errorDetails) {
+            FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+            if (kDebugMode) {
+              FlutterError.presentError(errorDetails);
+            }
+          };
+
+          PlatformDispatcher.instance.onError = (error, stack) {
+            FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+            return true;
+          };
         }
-      };
 
-      PlatformDispatcher.instance.onError = (error, stack) {
-        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-        return true;
-      };
-    }
+        // Initialize modular system FIRST - this sets up the DI container and ServiceLocator
+        await _initializeModularSystem();
 
-    // Initialize modular system FIRST - this sets up the DI container and ServiceLocator
-    await _initializeModularSystem();
+        // Skip startup optimization manager - it conflicts with the modular bootstrap system
+        // The modular system already handles all initialization properly
 
-    // Skip startup optimization manager - it conflicts with the modular bootstrap system
-    // The modular system already handles all initialization properly
-
-    // Run app inside guarded zone to catch async errors
-    runZonedGuarded(
-      () {
         runApp(const ButleryApp());
-      },
-      (error, stack) {
-        if (!kIsWeb) {
-          FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-        }
-      },
-    );
-  } catch (e, stackTrace) {
-    runApp(
-      _ErrorApp(
-        kDebugMode
-            ? 'Application failed to initialize: $e\n\nStack trace:\n$stackTrace'
-            : 'Application failed to initialize. Please restart.',
-      ),
-    );
-  }
+      } catch (e, stackTrace) {
+        runApp(
+          _ErrorApp(
+            kDebugMode
+                ? 'Application failed to initialize: $e\n\nStack trace:\n$stackTrace'
+                : 'Application failed to initialize. Please restart.',
+          ),
+        );
+      }
+    },
+    (error, stack) {
+      if (!kIsWeb) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      }
+    },
+  );
 }
 
 Future<void> _initializeModularSystem() async {
