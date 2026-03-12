@@ -312,50 +312,6 @@ class SiteConfigRepository {
     return null;
   }
 
-  /// Report a successful parse from a domain.
-  ///
-  /// Increments the success count and updates quality score.
-  Future<void> reportSuccess(String domain) async {
-    final normalizedDomain = _normalizeDomain(domain);
-
-    try {
-      await _collection.doc(normalizedDomain).set(
-        {
-          'successCount': FieldValue.increment(1),
-          'lastUpdated': FieldValue.serverTimestamp(),
-        },
-        SetOptions(merge: true),
-      );
-
-      // Invalidate cache
-      _cache.remove(normalizedDomain);
-    } catch (e) {
-      AppLogger.debug('SiteConfigRepository: Failed to report success: $e');
-    }
-  }
-
-  /// Report a failed parse from a domain.
-  ///
-  /// Increments the failure count.
-  Future<void> reportFailure(String domain) async {
-    final normalizedDomain = _normalizeDomain(domain);
-
-    try {
-      await _collection.doc(normalizedDomain).set(
-        {
-          'failureCount': FieldValue.increment(1),
-          'lastUpdated': FieldValue.serverTimestamp(),
-        },
-        SetOptions(merge: true),
-      );
-
-      // Invalidate cache
-      _cache.remove(normalizedDomain);
-    } catch (e) {
-      AppLogger.debug('SiteConfigRepository: Failed to report failure: $e');
-    }
-  }
-
   /// Get all supported site configs.
   Future<List<SiteConfig>> getSupportedConfigs() async {
     try {

@@ -325,6 +325,88 @@ class WebScraper {
     }
   }
 
+  /// Fetches raw HTML from a URL via headless browser.
+  /// Use when simple HTTP fails (bot protection, JS-rendered pages).
+  Future<String?> fetchRawHtml(String url, pd.SourcePlatform platform) async {
+    if (_isDisposed) return null;
+
+    // Clean up any previous WebView
+    if (_headlessWebView != null) {
+      try {
+        _headlessWebView?.dispose();
+      } catch (_) {}
+      _headlessWebView = null;
+    }
+
+    final completer = Completer<String?>();
+    bool hasCompleted = false;
+
+    final timeoutTimer = Timer(_extractionTimeout, () {
+      if (!hasCompleted && !_isDisposed) {
+        hasCompleted = true;
+        completer.complete(null);
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _safeCleanup();
+        });
+      }
+    });
+
+    try {
+      _headlessWebView = HeadlessInAppWebView(
+        initialUrlRequest: URLRequest(url: WebUri(url)),
+        initialSettings: InAppWebViewSettings(
+          userAgent: _getUserAgent(platform),
+          javaScriptEnabled: true,
+          domStorageEnabled: true,
+          databaseEnabled: false,
+          clearCache: true,
+        ),
+        onProgressChanged: (controller, progress) {
+          if (_isDisposed || hasCompleted) return;
+
+          if (progress == 100 && !hasCompleted) {
+            // Wait briefly for JS to finish rendering
+            Future.delayed(const Duration(milliseconds: 500), () async {
+              if (hasCompleted || _isDisposed) return;
+              hasCompleted = true;
+              timeoutTimer.cancel();
+
+              try {
+                final html = await controller.getHtml();
+                completer.complete(html);
+              } catch (e) {
+                completer.complete(null);
+              }
+
+              await Future.delayed(const Duration(milliseconds: 500));
+              _safeCleanup();
+            });
+          }
+        },
+        onReceivedError: (controller, request, error) {
+          if (hasCompleted || _isDisposed) return;
+          hasCompleted = true;
+          timeoutTimer.cancel();
+          completer.complete(null);
+          Future.delayed(const Duration(milliseconds: 500), () {
+            _safeCleanup();
+          });
+        },
+      );
+
+      await _headlessWebView?.run();
+    } catch (e) {
+      timeoutTimer.cancel();
+      if (!hasCompleted) {
+        hasCompleted = true;
+        completer.complete(null);
+      }
+      _safeCleanup();
+    }
+
+    return completer.future;
+  }
+
   /// Dispose method to clean up resources
   void dispose() {
     _safeCleanup();

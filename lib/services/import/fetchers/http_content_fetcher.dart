@@ -48,6 +48,31 @@ class HttpContentFetcher {
     }
   }
 
+  /// Fetches raw HTML via headless browser (for sites that block simple HTTP).
+  Future<String?> tryWebScraperHtml(String url) async {
+    try {
+      final detector = pd.PlatformDetector();
+      final platform = detector.detectPlatform(url);
+      final webUrl = detector.convertToWebUrl(url);
+
+      final webScraper = _webScraperFactory?.call() ?? WebScraper();
+
+      try {
+        final html = await webScraper.fetchRawHtml(webUrl, platform);
+        if (html != null && html.length > 100) {
+          return html;
+        }
+        return null;
+      } finally {
+        webScraper.dispose();
+      }
+    } catch (e) {
+      AppLogger.warning(
+          'HttpContentFetcher: WebScraper HTML fetch failed for $url: $e');
+      return null;
+    }
+  }
+
   /// Attempts extraction using WebScraper for platform-specific handling.
   Future<String?> tryWebScraper(String url) async {
     try {

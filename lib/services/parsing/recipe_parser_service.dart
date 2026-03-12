@@ -1,6 +1,4 @@
-import 'dart:async';
-
-import 'package:cloud_functions/cloud_functions.dart';
+import 'package:butlery/services/parsing/parse_event_logger.dart';
 
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/circuit_breaker.dart';
@@ -153,8 +151,8 @@ class RecipeParserService extends BaseService {
     resetTime: const Duration(minutes: 2),
   );
 
-  /// Firebase Functions for server-side analytics.
-  final FirebaseFunctions _functions = FirebaseFunctions.instance;
+  /// Server-side parse event logger.
+  final ParseEventLogger _parseEventLogger = ParseEventLogger();
 
   /// Parsing tiers in execution order.
   late final List<ParsingTier> _tiers;
@@ -326,17 +324,6 @@ class RecipeParserService extends BaseService {
     // Cache result
     if (useCache) {
       await _cacheResult(context, result);
-    }
-
-    // Report success/failure to site config
-    final repo = _siteConfigRepository;
-    final domain = context.domain;
-    if (repo != null && domain != null) {
-      if (result.overallQuality >= qualityThreshold) {
-        await repo.reportSuccess(domain);
-      } else {
-        await repo.reportFailure(domain);
-      }
     }
 
     final successfulTier =
@@ -787,43 +774,27 @@ class RecipeParserService extends BaseService {
     List<TierResult>? tierResults,
     bool unknownDomain = false,
   }) {
-    // Fire and forget - don't await, don't fail on error
-    try {
-      final payload = <String, dynamic>{
-        'url': url,
-        'source': source,
-        'success': success,
-        'fromCache': fromCache,
-        'parseTimeMs': parseTimeMs,
-        'parserVersion': parserVersion,
-        if (domain != null) 'domain': domain,
-        if (successfulTier != null) 'successfulTier': successfulTier,
-        if (finalQuality != null) 'finalQuality': finalQuality,
-        if (usedLlm != null) 'usedLlm': usedLlm,
-        if (totalCostSek != null) 'totalCostSek': totalCostSek,
-        if (tierResults != null)
-          'tierAttempts': tierResults
-              .map((t) => <String, dynamic>{
-                    'tier': t.tierName,
-                    'success': t.success,
-                    'quality': t.quality,
-                    'durationMs': t.duration.inMilliseconds,
-                  })
-              .toList(),
-        if (unknownDomain) 'unknownDomain': true,
-      };
-      // Fire-and-forget — ignore result, log errors
-      unawaited(
-        _functions
-            .httpsCallable('logParseEvent')
-            .call<Map<String, dynamic>>(payload)
-            .then((_) {})
-            .catchError((Object e) {
-          AppLogger.debug('$serviceName: Parse event logging failed: $e');
-        }),
-      );
-    } catch (e) {
-      AppLogger.debug('$serviceName: Parse event payload error: $e');
-    }
+    _parseEventLogger.logEvent(
+      url: url,
+      source: source,
+      success: success,
+      fromCache: fromCache,
+      parseTimeMs: parseTimeMs,
+      parserVersion: parserVersion,
+      domain: domain,
+      successfulTier: successfulTier,
+      finalQuality: finalQuality,
+      usedLlm: usedLlm,
+      totalCostSek: totalCostSek,
+      tierAttempts: tierResults
+          ?.map((t) => <String, dynamic>{
+                'tier': t.tierName,
+                'success': t.success,
+                'quality': t.quality,
+                'durationMs': t.duration.inMilliseconds,
+              })
+          .toList(),
+      unknownDomain: unknownDomain,
+    );
   }
 }

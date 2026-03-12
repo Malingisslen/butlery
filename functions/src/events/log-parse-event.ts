@@ -19,7 +19,10 @@ const getDb = () => admin.firestore();
 const VALID_SOURCES = ["url", "text", "instagram", "tiktok", "youtube", "ocr"];
 
 /** Valid parsing tier names (must match Dart-side tier identifiers). */
-const VALID_TIERS = ["SchemaOrg", "SiteConfig", "RuleBased", "LLM", "SelectiveEnhance"];
+const VALID_TIERS = [
+  "SchemaOrg", "SiteConfig", "RuleBased", "LLM", "SelectiveEnhance",
+  "StructuredExtraction", "WebScraper", "HtmlTextParse", "UserAssisted",
+];
 
 /**
  * Sanitize URL by removing sensitive query parameters
@@ -195,6 +198,25 @@ export const logParseEvent = functions.https.onCall(
 
     try {
       await getDb().collection("parse_events").add(trustedFields);
+
+      // Update site_configs success/failure counts (server-side, replaces dead client writes)
+      if (trustedFields.domain) {
+        const siteUpdate: Record<string, unknown> = trustedFields.success
+          ? {
+              successCount: admin.firestore.FieldValue.increment(1),
+              lastSuccessAt: admin.firestore.FieldValue.serverTimestamp(),
+            }
+          : {
+              failureCount: admin.firestore.FieldValue.increment(1),
+              lastFailureAt: admin.firestore.FieldValue.serverTimestamp(),
+            };
+        siteUpdate.lastUpdated = admin.firestore.FieldValue.serverTimestamp();
+
+        await getDb()
+          .collection("site_configs")
+          .doc(trustedFields.domain)
+          .set(siteUpdate, { merge: true });
+      }
 
       functions.logger.info("Parse event logged", {
         userId,
