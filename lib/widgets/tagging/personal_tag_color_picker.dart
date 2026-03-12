@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_shadows.dart';
@@ -35,13 +36,14 @@ class PersonalTagColors {
   /// When [hex] is null/empty, returns [fallback] if provided, otherwise
   /// a default green matching the brand primary in light mode.
   static Color fromHex(String? hex, {Color? fallback}) {
-    if (hex == null || hex.isEmpty) return fallback ?? const Color(0xFF4A7C59);
+    if (hex == null || hex.isEmpty) return fallback ?? AppColors.forestGreen;
 
     String colorStr = hex.replaceAll('#', '');
     if (colorStr.length == 6) {
       colorStr = 'FF$colorStr';
     }
-    return Color(int.tryParse(colorStr, radix: 16) ?? 0xFF4A7C59);
+    final parsed = int.tryParse(colorStr, radix: 16);
+    return parsed != null ? Color(parsed) : AppColors.forestGreen;
   }
 }
 

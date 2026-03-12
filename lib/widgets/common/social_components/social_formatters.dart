@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Social formatting utilities for display names, numbers, and time.
@@ -75,15 +76,15 @@ class SocialFormatters {
     }
     // Fallback for callers without context (light-mode hardcoded)
     return {
-      'primary': const Color(0xFF4A7C59),
-      'secondary': const Color(0xFF4A7C59)
+      'primary': AppColors.forestGreen,
+      'secondary': AppColors.forestGreen
           .withValues(alpha: AppDimensions.opacityVeryLight),
-      'success': const Color(0xFF4A7C59),
-      'warning': const Color(0xFF636A72),
-      'danger': const Color(0xFFC44536),
+      'success': AppColors.forestGreen,
+      'warning': AppColors.textMedium,
+      'danger': AppColors.error,
       'info':
-          const Color(0xFF4A7C59).withValues(alpha: AppDimensions.opacityDark),
-      'muted': const Color(0xFF636A72),
+          AppColors.forestGreen.withValues(alpha: AppDimensions.opacityDark),
+      'muted': AppColors.textMedium,
     };
   }
 }

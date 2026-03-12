@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Fullscreen image viewer for recipe images
@@ -125,7 +126,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                         child: Icon(
                           Icons.error_outline,
                           size: AppDimensions.iconSizeXxl,
-                          color: Colors.white54,
+                          color: AppColors.cardWhite54,
                         ),
                       );
                     },
