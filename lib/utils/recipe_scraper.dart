@@ -66,7 +66,8 @@ Map<String, dynamic>? extractRecipeFromHtml(String html) {
   // Fallback extraction: Parse Microdata format for broader compatibility
   final document = html_parser.parse(html);
   final recipeElements = document.querySelectorAll(
-    '[itemscope][itemtype="http://schema.org/Recipe"]',
+    '[itemscope][itemtype="http://schema.org/Recipe"], '
+    '[itemscope][itemtype="https://schema.org/Recipe"]',
   );
   if (recipeElements.isNotEmpty) {
     final recipeElem = recipeElements.first;
@@ -75,6 +76,19 @@ Map<String, dynamic>? extractRecipeFromHtml(String html) {
 
   // No recipe data found in supported formats
   return null;
+}
+
+/// Checks whether a JSON-LD @type value represents a Recipe.
+/// Handles plain string ("Recipe"), URL-format ("https://schema.org/Recipe"),
+/// and array-wrapped variants (["Recipe"]).
+bool _isRecipeType(dynamic type) {
+  if (type is String) {
+    return type == 'Recipe' || type.endsWith('/Recipe');
+  }
+  if (type is List) {
+    return type.any((item) => item is String && _isRecipeType(item));
+  }
+  return false;
 }
 
 /// Private helper: extracts JSON-LD of type "Recipe" if present.
@@ -93,20 +107,20 @@ Map<String, dynamic>? _extractJsonLd(String html) {
       // If JSON-LD is a list, search through each object
       if (decoded is List) {
         for (final item in decoded) {
-          if (item is Map<String, dynamic> && item['@type'] == 'Recipe') {
+          if (item is Map<String, dynamic> && _isRecipeType(item['@type'])) {
             return Map<String, dynamic>.from(item);
           }
         }
       }
       // If JSON-LD is a single object
       else if (decoded is Map<String, dynamic> &&
-          decoded['@type'] == 'Recipe') {
+          _isRecipeType(decoded['@type'])) {
         return Map<String, dynamic>.from(decoded);
       }
       // Handle @graph pattern (common in WordPress/Yoast SEO)
       else if (decoded is Map<String, dynamic> && decoded['@graph'] is List) {
         for (final item in (decoded['@graph'] as List)) {
-          if (item is Map<String, dynamic> && item['@type'] == 'Recipe') {
+          if (item is Map<String, dynamic> && _isRecipeType(item['@type'])) {
             return Map<String, dynamic>.from(item);
           }
         }

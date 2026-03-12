@@ -286,6 +286,98 @@ void main() {
       });
     });
 
+    group('URL-format and array-wrapped @type', () {
+      test('should match URL-format @type with https', () {
+        const html = '''
+        <html>
+          <script type="application/ld+json">
+          {"@type": "https://schema.org/Recipe", "name": "URL Type Recipe"}
+          </script>
+        </html>
+        ''';
+
+        final result = extractRecipeFromHtml(html);
+        expect(result, isNotNull);
+        expect(result!['name'], equals('URL Type Recipe'));
+      });
+
+      test('should match URL-format @type with http', () {
+        const html = '''
+        <html>
+          <script type="application/ld+json">
+          {"@type": "http://schema.org/Recipe", "name": "HTTP Recipe"}
+          </script>
+        </html>
+        ''';
+
+        final result = extractRecipeFromHtml(html);
+        expect(result, isNotNull);
+        expect(result!['name'], equals('HTTP Recipe'));
+      });
+
+      test('should match array-wrapped @type ["Recipe"]', () {
+        const html = '''
+        <html>
+          <script type="application/ld+json">
+          {"@type": ["Recipe"], "name": "Array Recipe"}
+          </script>
+        </html>
+        ''';
+
+        final result = extractRecipeFromHtml(html);
+        expect(result, isNotNull);
+        expect(result!['name'], equals('Array Recipe'));
+      });
+
+      test('should match array-wrapped URL-format @type', () {
+        const html = '''
+        <html>
+          <script type="application/ld+json">
+          {"@type": ["https://schema.org/Recipe"], "name": "Array URL Recipe"}
+          </script>
+        </html>
+        ''';
+
+        final result = extractRecipeFromHtml(html);
+        expect(result, isNotNull);
+        expect(result!['name'], equals('Array URL Recipe'));
+      });
+
+      test('should match URL-format @type inside @graph', () {
+        const html = '''
+        <html>
+          <script type="application/ld+json">
+          {
+            "@context": "https://schema.org",
+            "@graph": [
+              {"@type": "WebSite", "name": "Blog"},
+              {"@type": "https://schema.org/Recipe", "name": "Graph URL Recipe"}
+            ]
+          }
+          </script>
+        </html>
+        ''';
+
+        final result = extractRecipeFromHtml(html);
+        expect(result, isNotNull);
+        expect(result!['name'], equals('Graph URL Recipe'));
+      });
+
+      test('should match Microdata with https schema.org URL', () {
+        const html = '''
+        <html>
+          <div itemscope itemtype="https://schema.org/Recipe">
+            <h1 itemprop="name">HTTPS Microdata Recipe</h1>
+          </div>
+        </html>
+        ''';
+
+        final result = extractRecipeFromHtml(html);
+        expect(result, isNotNull);
+        expect(result!['name'], equals('HTTPS Microdata Recipe'));
+      });
+    });
+
     group('Microdata Extraction', () {
       test('should extract complete recipe from Microdata', () {
         const html = '''
