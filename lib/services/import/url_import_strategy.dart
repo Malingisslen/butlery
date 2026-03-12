@@ -17,6 +17,7 @@ import 'package:butlery/services/import/heuristics/ingredient_line_detector.dart
 import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
 import 'package:butlery/services/import/fallbacks/llm_extraction_fallback.dart';
+import 'package:butlery/services/parsing/parse_event_logger.dart';
 
 /// Imports recipes from web URLs using multi-tier extraction (structured data, scraping, LLM fallback).
 class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
@@ -24,6 +25,7 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
 
   final HttpContentFetcher _fetcher;
   final LlmExtractionFallback _llmFallback;
+  final ParseEventLogger _eventLogger = ParseEventLogger();
   RecipeParserService? _parserService;
 
   UrlImportStrategy({
@@ -81,44 +83,81 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       {Map<String, dynamic>? options}) async {
     try {
       final url = input.trim();
+      final stopwatch = Stopwatch()..start();
+      final domain = _extractDomain(url);
 
-      // Fetch HTML once — shared across all tiers
-      final htmlResult = await _fetcher.fetchHtmlWithTimeout(url);
+      // Fetch HTML — try simple HTTP first
+      final httpHtml = await _fetcher.fetchHtmlWithTimeout(url);
 
-      // Tier 1: Enhanced parser (if enabled)
-      final parserResult = await _tryEnhancedParser(url, htmlResult, options);
+      // Tier 1: Enhanced parser on HTTP HTML
+      final parserResult = await _tryEnhancedParser(url, httpHtml, options);
       if (parserResult != null) return parserResult;
 
-      if (htmlResult != null) {
-        // Tier 2: Structured data (site-specific or schema.org)
-        final structuredResult = _tryStructuredExtraction(htmlResult, url);
-        if (structuredResult != null) return structuredResult;
+      // Tier 2: Structured data on HTTP HTML
+      if (httpHtml != null) {
+        final structuredResult = _tryStructuredExtraction(httpHtml, url);
+        if (structuredResult != null) {
+          _logImportEvent(url, domain, 'StructuredExtraction', true, stopwatch);
+          return structuredResult;
+        }
       }
 
-      // Tier 3: Web scraper fallback
+      // Tier 3: Headless browser HTML — retry parser + structured extraction
+      // Covers JS-rendered pages and sites blocking simple HTTP
+      final scraperHtml = await _fetcher.tryWebScraperHtml(url);
+      if (scraperHtml != null) {
+        final scraperParserResult =
+            await _tryEnhancedParser(url, scraperHtml, options);
+        if (scraperParserResult != null) return scraperParserResult;
+
+        final scraperStructuredResult =
+            _tryStructuredExtraction(scraperHtml, url);
+        if (scraperStructuredResult != null) {
+          _logImportEvent(url, domain, 'StructuredExtraction', true, stopwatch);
+          return scraperStructuredResult;
+        }
+      }
+
+      // Tier 4: Web scraper text extraction fallback
       final scraperResult = await _tryWebScraperFallback(url);
-      if (scraperResult != null) return scraperResult;
-
-      // Tier 3.5: HTML text parse
-      if (htmlResult != null && htmlResult.length > 100) {
-        final textResult = await _tryHtmlTextParse(htmlResult, url);
-        if (textResult != null) return textResult;
+      if (scraperResult != null) {
+        _logImportEvent(url, domain, 'WebScraper', true, stopwatch);
+        return scraperResult;
       }
 
-      // Tier 4: LLM extraction
-      if (htmlResult != null && htmlResult.length > 100) {
+      // Use best available HTML for remaining tiers
+      final bestHtml = scraperHtml ?? httpHtml;
+
+      // Tier 5: HTML text parse
+      if (bestHtml != null && bestHtml.length > 100) {
+        final textResult = await _tryHtmlTextParse(bestHtml, url);
+        if (textResult != null) {
+          _logImportEvent(url, domain, 'HtmlTextParse', true, stopwatch);
+          return textResult;
+        }
+      }
+
+      // Tier 6: LLM extraction
+      if (bestHtml != null && bestHtml.length > 100) {
         final llmResult =
-            await _llmFallback.tryExtraction(htmlResult, url, strategyName);
-        if (llmResult != null) return llmResult;
+            await _llmFallback.tryExtraction(bestHtml, url, strategyName);
+        if (llmResult != null) {
+          _logImportEvent(url, domain, 'LLM', true, stopwatch, usedLlm: true);
+          return llmResult;
+        }
       }
 
-      // Tier 5: User-assisted import
-      if (htmlResult != null && htmlResult.length > 100) {
-        final assistedResult = _createUserAssistedResult(htmlResult, url);
-        if (assistedResult != null) return assistedResult;
+      // Tier 7: User-assisted import
+      if (bestHtml != null && bestHtml.length > 100) {
+        final assistedResult = _createUserAssistedResult(bestHtml, url);
+        if (assistedResult != null) {
+          _logImportEvent(url, domain, 'UserAssisted', true, stopwatch);
+          return assistedResult;
+        }
       }
 
-      return _createFailureResult(url, htmlResult);
+      _logImportEvent(url, domain, null, false, stopwatch);
+      return _createFailureResult(url, bestHtml);
     } catch (e) {
       return ImportResult.failure(
         'Error importing from URL: ${e.toString()}',
@@ -247,6 +286,34 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
         'html_fetched': htmlResult != null,
         'html_length': htmlResult?.length ?? 0,
       },
+    );
+  }
+
+  String? _extractDomain(String url) {
+    try {
+      final uri = Uri.parse(url);
+      return uri.host.replaceFirst(RegExp(r'^www\.'), '').toLowerCase();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _logImportEvent(
+    String url,
+    String? domain,
+    String? successfulTier,
+    bool success,
+    Stopwatch stopwatch, {
+    bool? usedLlm,
+  }) {
+    _eventLogger.logEvent(
+      url: url,
+      source: 'url',
+      success: success,
+      parseTimeMs: stopwatch.elapsedMilliseconds,
+      domain: domain,
+      successfulTier: successfulTier,
+      usedLlm: usedLlm,
     );
   }
 
