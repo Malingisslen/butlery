@@ -1,3 +1,4 @@
+import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
@@ -114,6 +115,17 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
     );
     if (ingredients.value == null || ingredients.value!.isEmpty) {
       return null;
+    }
+
+    // Defense-in-depth: reject nav garbage from URL sources.
+    // Real ingredients nearly always have quantities; nav text never does.
+    if (context.source == ImportSource.url &&
+        structure.ingredients.length > 3) {
+      final linesWithQuantity =
+          structure.ingredients.where((l) => l.contains(RegExp(r'\d'))).length;
+      if (linesWithQuantity / structure.ingredients.length < 0.4) {
+        return null;
+      }
     }
 
     final instructions = parseInstructionLines(structure.instructions);
