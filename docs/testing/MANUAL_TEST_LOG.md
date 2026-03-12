@@ -1,8 +1,8 @@
 # Manual Testing Log - Butlery App
 
 **Created**: 2026-01-07
-**Last Updated**: 2026-03-07 (BUG-029 fixed, log condensed)
-**Status**: Complete — 455/467 completed (97.4%), 412 passed, 2 failed, 21 blocked, 0 open bugs. All tests in terminal state (0 pending).
+**Last Updated**: 2026-03-13 (BUG-030/031 fixed, comment E2E tests completed)
+**Status**: Complete — 458/467 completed (98.1%), 416 passed, 1 failed, 9 blocked, 0 open bugs. All tests in terminal state (0 pending).
 
 ---
 
@@ -26,9 +26,9 @@
 | 13. Responsive Design | 9 | 9 | 9 | 0 | 0 |
 | 14. Accessibility | 7 | 6 | 6 | 0 | 0 |
 | 15. Error Handling | 13 | 13 | 13 | 0 | 0 |
-| 16. Social E2E Tests | 35 | 35 | 24 | 1 | 9 |
+| 16. Social E2E Tests | 35 | 35 | 27 | 0 | 11 |
 | 17. Import Tagging Verification | 32 | 32 | 20 | 1 | 0 |
-| **TOTAL** | **467** | **455** | **412** | **2** | **20** |
+| **TOTAL** | **467** | **458** | **416** | **1** | **22** |
 
 ---
 
@@ -65,6 +65,8 @@
 | BUG-027 | Recipe sharing silently fails — Firestore rules block V2 model | 16 | High | FIXED |
 | BUG-028 | Import error messages shown in English instead of Swedish | 4 | Medium | FIXED |
 | BUG-029 | Comments show "posted" success but don't persist to Firestore | 16 | High | FIXED |
+| BUG-030 | App renders blank screen on web after zone mismatch fix | - | Critical | FIXED |
+| BUG-031 | Delete comment fails with "Kunde inte ta bort kommentar" | 16 | High | FIXED |
 
 **BUG-003**: Firestore rules rejected `errorReason`/schemaVersion v2 + null repository on web auth state change. Updated rules + callback pattern.
 Verified 2026-01-07.
@@ -148,6 +150,14 @@ Verified 2026-03-04.
 Fixes: Added `rethrow`, removed client-side permission gate, simplified Firestore read rule to `isAuthenticated()`, added `reactions` field to `SocialComment`, fixed `userId`→`authorId` reference, passed through `likeCount`/`reactions` in model conversion.
 Files: `social_comments_manager.dart`, `comment_crud_operations.dart`, `recipe_comments_manager.dart`, `firestore.rules`, `social_comment.dart`, `comment_item_widgets.dart`.
 Verified 2026-03-07 — comment posted, persisted, and renders correctly in Chrome.
+
+**BUG-030**: Commit a81ef484 moved `WidgetsFlutterBinding.ensureInitialized()` inside `runZonedGuarded`, causing Flutter web to fail to render (blank screen, no error). Fix: moved binding init back to root zone, kept only Firebase init + `runApp` inside guarded zone.
+File: `main.dart`.
+Verified 2026-03-13 — app renders login page correctly on web.
+
+**BUG-031**: `CommentCrudOperations.getCommentById()` threw `UnimplementedError('Direct comment lookup by ID not yet implemented')`. `RecipeCommentsManager.deleteComment()` calls this before deletion to get parent/recipe info. Exception propagated, deletion never reached Firestore. Fix: implemented `getCommentById` using `_commentsRepository.read(commentId)` (already available via `Repository<T>` interface).
+File: `comment_crud_operations.dart`.
+Verified 2026-03-13 — comment deleted successfully, count decremented.
 
 ### Open Bugs
 
@@ -267,9 +277,9 @@ See full test case details in:
 
 | Test ID | Test | Status | Result | Notes |
 |---------|------|--------|--------|-------|
-| COMMENT-E2E-01 | Comment on shared recipe | Completed | FAIL | **BUG-029 FIXED 2026-03-07**: Silent failure masking + redundant permission gate. Comments now persist. |
-| COMMENT-E2E-02 | Reply to comment | Blocked | - | Blocked by BUG-029 (needs re-verification) |
-| COMMENT-E2E-03 | Delete own comment | Blocked | - | Blocked by BUG-029 (needs re-verification) |
+| COMMENT-E2E-01 | Comment on shared recipe | Completed | PASS | BUG-029 FIXED. Re-verified 2026-03-13 — comment persists correctly. |
+| COMMENT-E2E-02 | Reply to comment | Completed | PASS | Reply posted, renders nested under parent. Verified 2026-03-13. |
+| COMMENT-E2E-03 | Delete own comment | Completed | PASS | **BUG-031 FIXED 2026-03-13**: `getCommentById()` threw UnimplementedError. Delete confirmed working. |
 | RATING-E2E-01 | Rate shared recipe | Completed | PASS | |
 | RATING-E2E-02 | Change rating | Completed | PASS | |
 
@@ -401,6 +411,17 @@ All tag categories verified against existing recipes:
 
 **Session 28 (2026-03-07):** BUG-029 FIXED — 5-layer failure in comments: silent exception masking, redundant permission gate, Firestore read rules blocking personal recipes, missing `reactions` field on `SocialComment`, wrong property name in report widget. All fixed. Comment posted, persisted, and renders correctly. Test log condensed for readability.
 **Updated Progress:** 455/467 tests (97.4%), 412 passed, 2 failed, 0 open bugs.
+
+**Session 29 (2026-03-13, comment E2E + bug fixes via Preview/Chrome):**
+- **Bugs fixed:**
+  - BUG-030: App blank screen on web — `WidgetsFlutterBinding.ensureInitialized()` was inside `runZonedGuarded` (commit a81ef484). Moved back to root zone.
+  - BUG-031: Comment delete failed — `getCommentById()` threw `UnimplementedError`. Implemented using existing `Repository.read()` method.
+- **Test results:**
+  - COMMENT-E2E-01 (Comment on shared recipe): PASS — re-verified, comment persists after BUG-029 fix
+  - COMMENT-E2E-02 (Reply to comment): PASS — reply posted, renders nested under parent
+  - COMMENT-E2E-03 (Delete own comment): PASS — BUG-031 fixed, comment deleted successfully
+  - TAG-IMP-23 (ICA URL import): Still FAIL — confirmed ICA.se parser issue, fetch succeeds but analysis fails ("Kunde inte tolka receptet"). External site format change, not a regression.
+- **Updated Progress:** 458/467 tests (98.1%), 416 passed, 1 failed, 0 open bugs.
 
 ---
 
