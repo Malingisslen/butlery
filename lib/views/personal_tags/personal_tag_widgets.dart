@@ -283,8 +283,14 @@ class PersonalTagGroupSection extends StatelessWidget {
       viewModel: viewModel,
       trailing: PopupMenuButton<String>(
         icon: const Icon(Icons.more_vert, size: AppDimensions.iconSizeM),
-        onSelected: (value) =>
-            PersonalTagDialogs.handleGroupAction(context, value, group),
+        onSelected: (value) {
+          // Defer to next frame so PopupMenu fully dismisses before dialog opens
+          // Fixes BUG-033 (RenderBox assertion during popup dismiss animation)
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!context.mounted) return;
+            PersonalTagDialogs.handleGroupAction(context, value, group);
+          });
+        },
         itemBuilder: (context) => [
           PopupMenuItem(
             value: 'rename',

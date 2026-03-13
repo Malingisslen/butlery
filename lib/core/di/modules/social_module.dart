@@ -181,7 +181,7 @@ class SocialModule implements DIModule {
             notifyListeners: () {}, // Coordinators are services, not ViewModels
             getRecipe: (id) async => recipeService.getRecipeById(id),
             saveRecipe: (recipe) async {
-              return await recipeService.updateRecipe(recipe);
+              return await recipeService.saveRecipeForSocialModule(recipe);
             },
           );
         },
