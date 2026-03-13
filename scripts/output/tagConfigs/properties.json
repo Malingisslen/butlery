@@ -22,6 +22,7 @@
     "lupin",
     "meat",
     "mollusc",
+    "needs-cooking",
     "mustard",
     "nightshade",
     "peanut",
@@ -34,6 +35,7 @@
     "soy",
     "sulfites",
     "tree-nut",
+    "vegan-friendly",
     "wheat"
   ]
 }

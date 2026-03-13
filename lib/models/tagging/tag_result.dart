@@ -74,6 +74,11 @@ class TagResult {
   /// Null for successful tagging, contains error description on failure.
   final String? errorReason;
 
+  /// Whether any matched ingredients have 'draft' status (AI-generated, unvalidated).
+  /// When true, allergen/dietary classifications may be less reliable.
+  /// Not stored in Firestore — derived at tagging time.
+  final bool hasDraftIngredients;
+
   /// Creates a TagResult with the given properties.
   ///
   /// CRIT-2: Coverage is validated to be in [0.0, 1.0] range.
@@ -90,6 +95,7 @@ class TagResult {
     this.isPartial = false,
     this.decisions,
     this.errorReason,
+    this.hasDraftIngredients = false,
     bool? hasCoverageAnomaly,
   })  : coverage = _validateAndClampCoverage(coverage),
         hasCoverageAnomaly =

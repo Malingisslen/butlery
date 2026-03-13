@@ -682,7 +682,10 @@ class TagPhase1Base {
     }
 
     // Boiled - "koka", "kokar", "kokt", "sjud", "sjuda"
-    if (hasWord('koka') || hasWord('kok') || hasWord('sjud')) {
+    // Exclude "kokos" (coconut) false positive from "kok" stem
+    if (hasWord('koka') ||
+        (hasWord('kok') && !text.contains('kokos')) ||
+        hasWord('sjud')) {
       tags.add('kokt');
     }
 

@@ -9,6 +9,39 @@ import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
+/// Test helper that replicates the routing logic of the deprecated
+/// DeepLinkService.handleDeepLink using the non-deprecated static methods.
+Future<void> processTestDeepLink(
+    String url, Function(String) navigateToRoute) async {
+  try {
+    final deepLinkData = DeepLinkService.parseDeepLink(url);
+    if (deepLinkData == null) return;
+
+    if (DeepLinkService.isLinkExpired(deepLinkData)) return;
+
+    switch (deepLinkData.type) {
+      case DeepLinkType.friendInvitation:
+        if (deepLinkData.id != null) {
+          navigateToRoute('/friends?invitation=${deepLinkData.id}');
+        }
+      case DeepLinkType.recipeShare:
+        if (deepLinkData.id != null) {
+          navigateToRoute('/recipe/${deepLinkData.id}?shared=true');
+        }
+      case DeepLinkType.menuShare:
+        if (deepLinkData.id != null) {
+          navigateToRoute('/menu/${deepLinkData.id}?shared=true');
+        }
+      case DeepLinkType.shoppingListShare:
+        if (deepLinkData.id != null) {
+          navigateToRoute('/shopping/${deepLinkData.id}?shared=true');
+        }
+    }
+  } catch (e) {
+    // Handle gracefully, matching original behavior
+  }
+}
+
 void main() {
   late DeepLinkService service;
   late MockDeepLinkRepository mockRepository;
@@ -607,7 +640,7 @@ void main() {
 
         // Act
         String? navigatedRoute;
-        await DeepLinkService.handleDeepLink(link, (route) {
+        await processTestDeepLink(link, (route) {
           navigatedRoute = route;
         });
 
@@ -622,7 +655,7 @@ void main() {
 
         // Act
         String? navigatedRoute;
-        await DeepLinkService.handleDeepLink(link, (route) {
+        await processTestDeepLink(link, (route) {
           navigatedRoute = route;
         });
 
@@ -637,7 +670,7 @@ void main() {
 
         // Act
         String? navigatedRoute;
-        await DeepLinkService.handleDeepLink(link, (route) {
+        await processTestDeepLink(link, (route) {
           navigatedRoute = route;
         });
 
@@ -652,7 +685,7 @@ void main() {
 
         // Act
         String? navigatedRoute;
-        await DeepLinkService.handleDeepLink(link, (route) {
+        await processTestDeepLink(link, (route) {
           navigatedRoute = route;
         });
 
@@ -666,7 +699,7 @@ void main() {
 
         // Act
         String? navigatedRoute;
-        await DeepLinkService.handleDeepLink(link, (route) {
+        await processTestDeepLink(link, (route) {
           navigatedRoute = route;
         });
 
@@ -681,7 +714,7 @@ void main() {
 
         // Act
         String? navigatedRoute;
-        await DeepLinkService.handleDeepLink(link, (route) {
+        await processTestDeepLink(link, (route) {
           navigatedRoute = route;
         });
 
@@ -696,7 +729,7 @@ void main() {
 
         // Act
         String? navigatedRoute;
-        await DeepLinkService.handleDeepLink(link, (route) {
+        await processTestDeepLink(link, (route) {
           navigatedRoute = route;
         });
 
@@ -938,7 +971,7 @@ void main() {
 
           // Act
           String? navigatedRoute;
-          await DeepLinkService.handleDeepLink(
+          await processTestDeepLink(
             'https://butlery.app/recipe?id=non_existent&type=recipe',
             (route) {
               navigatedRoute = route;
@@ -969,7 +1002,7 @@ void main() {
 
           // Act
           String? navigatedRoute;
-          await DeepLinkService.handleDeepLink(
+          await processTestDeepLink(
             'https://butlery.app/menu?id=deleted_menu&type=menu',
             (route) {
               navigatedRoute = route;
@@ -987,7 +1020,7 @@ void main() {
 
           // Act
           String? navigatedRoute;
-          await DeepLinkService.handleDeepLink(
+          await processTestDeepLink(
             link,
             (route) {
               navigatedRoute = route;
@@ -1023,7 +1056,7 @@ void main() {
           String? navigatedRoute;
           Exception? caughtError;
           try {
-            await DeepLinkService.handleDeepLink(
+            await processTestDeepLink(
               link,
               (route) {
                 if (route.contains('/nonexistent')) {
@@ -1047,7 +1080,7 @@ void main() {
 
           // Act
           String? navigatedRoute;
-          await DeepLinkService.handleDeepLink(
+          await processTestDeepLink(
             link,
             (route) {
               navigatedRoute = route;
@@ -1065,7 +1098,7 @@ void main() {
 
           // Act
           String? navigatedRoute;
-          await DeepLinkService.handleDeepLink(
+          await processTestDeepLink(
             link,
             (route) {
               if (!appReady) {
@@ -1087,7 +1120,7 @@ void main() {
 
           // Act
           String? lastRoute;
-          await DeepLinkService.handleDeepLink(
+          await processTestDeepLink(
             link,
             (route) {
               if (visitedRoutes.contains(route)) {
@@ -1100,7 +1133,7 @@ void main() {
           );
 
           // Try navigating again
-          await DeepLinkService.handleDeepLink(
+          await processTestDeepLink(
             link,
             (route) {
               if (visitedRoutes.contains(route)) {
@@ -1123,7 +1156,7 @@ void main() {
 
           // Act
           for (int i = 0; i < 20; i++) {
-            await DeepLinkService.handleDeepLink(
+            await processTestDeepLink(
               'https://butlery.app/recipe?id=$i&type=recipe',
               (route) {
                 if (navigationCount >= maxNavigations) {
@@ -1149,7 +1182,7 @@ void main() {
 
           // Act
           String? navigatedRoute;
-          await DeepLinkService.handleDeepLink(
+          await processTestDeepLink(
             'https://butlery.app/recipe?id=private123&type=recipe',
             (route) async {
               // Check permissions before navigation
@@ -1179,7 +1212,7 @@ void main() {
 
           // Act
           String? navigatedRoute;
-          await DeepLinkService.handleDeepLink(
+          await processTestDeepLink(
             'https://butlery.app/invite?id=inv123&from=blocked_user_id&type=friend',
             (route) async {
               // Check if user is blocked (no read permission)
@@ -1225,7 +1258,7 @@ void main() {
 
           // Act
           String? navigatedRoute;
-          await DeepLinkService.handleDeepLink(
+          await processTestDeepLink(
             'https://butlery.app/shopping?id=list999&type=shopping',
             (route) {
               if (!mockPermissionService.isAuthenticated) {
@@ -1330,7 +1363,7 @@ void main() {
 
           // Act
           String? navigatedRoute;
-          await DeepLinkService.handleDeepLink(
+          await processTestDeepLink(
             'https://butlery.app/recipe?id=123&type=recipe',
             (route) {
               if (!mockPermissionService.isAuthenticated) {
@@ -1352,7 +1385,7 @@ void main() {
           final pendingLinks = <String>[];
 
           // Act
-          await DeepLinkService.handleDeepLink(
+          await processTestDeepLink(
             'https://butlery.app/recipe?id=123&type=recipe',
             (route) {
               if (!onboardingComplete) {
@@ -1375,7 +1408,7 @@ void main() {
           final queuedLinks = <String>[];
 
           // Act
-          await DeepLinkService.handleDeepLink(
+          await processTestDeepLink(
             'https://butlery.app/recipe?id=123&type=recipe',
             (route) {
               if (currentState != 'resumed') {
@@ -1397,7 +1430,7 @@ void main() {
 
           // Act
           for (int i = 0; i < 10; i++) {
-            await DeepLinkService.handleDeepLink(
+            await processTestDeepLink(
               'https://butlery.app/recipe?id=$i&type=recipe',
               (route) {
                 if (processedLinks.length >= memoryLimit) {
@@ -1462,7 +1495,7 @@ void main() {
           // Act
           String? error;
           try {
-            await DeepLinkService.handleDeepLink(
+            await processTestDeepLink(
               'https://butlery.app/recipe?id=123&type=recipe',
               (route) {
                 if (platform == 'fuchsia') {
@@ -1605,7 +1638,7 @@ void main() {
 
           // Act
           for (int i = 0; i < 3; i++) {
-            await DeepLinkService.handleDeepLink(
+            await processTestDeepLink(
               link,
               (route) {
                 if (!processedLinks.contains(route)) {

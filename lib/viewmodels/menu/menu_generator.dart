@@ -24,11 +24,15 @@ class MenuGenerator {
   /// Whether to filter out recipes containing user's tracked allergens.
   bool filterByAllergens;
 
+  /// Whether to filter out recipes that don't match user's dietary preferences.
+  bool filterByDietary;
+
   MenuGenerator({
     required MenuService menuService,
     required UnifiedRecipeService recipeService,
     required UserService userService,
     this.filterByAllergens = true,
+    this.filterByDietary = true,
   })  : _menuService = menuService,
         _recipeService = recipeService,
         _userService = userService;
@@ -37,25 +41,58 @@ class MenuGenerator {
     if (!_recipeService.isInitialized) {
       return [];
     }
-    final recipes = _recipeService.recipes;
-    if (!filterByAllergens) return recipes;
-    return _filterByAllergenPreferences(recipes);
+    var recipes = _recipeService.recipes;
+    if (filterByAllergens) {
+      recipes = _filterByAllergenPreferences(recipes);
+    }
+    if (filterByDietary) {
+      recipes = _filterByDietaryPreferences(recipes);
+    }
+    return recipes;
   }
 
   /// Filters out recipes that CONTAIN any of the user's tracked allergens.
-  /// Recipes with UNKNOWN status are kept (may be safe, user can verify).
+  /// When includeUnknownInMenu is false, also excludes UNKNOWN status recipes.
   List<Recipe> _filterByAllergenPreferences(List<Recipe> recipes) {
     final prefs = _userService.allergenPreferences;
     if (!prefs.hasTrackedAllergens) return recipes;
 
     final tracked = prefs.trackedAllergens;
+    final includeUnknown = prefs.includeUnknownInMenu;
+    return recipes.where((recipe) {
+      final tagResult = recipe.tagResult;
+      if (tagResult == null) {
+        return includeUnknown; // No tag data = respect preference
+      }
+
+      for (final allergen in tracked) {
+        final status = tagResult.getAllergenStatus(allergen);
+        if (status == TriState.contains) {
+          return false;
+        }
+        if (!includeUnknown && status == TriState.unknown) {
+          return false;
+        }
+      }
+      return true;
+    }).toList();
+  }
+
+  /// Filters out recipes that don't match user's tracked dietary preferences.
+  /// A recipe passes if it is FREE for ALL tracked dietary preferences.
+  /// Recipes with UNKNOWN dietary status are kept (same safety-first approach).
+  List<Recipe> _filterByDietaryPreferences(List<Recipe> recipes) {
+    final prefs = _userService.allergenPreferences;
+    if (!prefs.hasTrackedDietary) return recipes;
+
+    final tracked = prefs.trackedDietary;
     return recipes.where((recipe) {
       final tagResult = recipe.tagResult;
       if (tagResult == null) return true; // No tag data = keep
 
-      for (final allergen in tracked) {
-        if (tagResult.getAllergenStatus(allergen) == TriState.contains) {
-          return false; // Exclude recipes that CONTAIN tracked allergens
+      for (final diet in tracked) {
+        if (tagResult.getDietaryStatus(diet) == TriState.contains) {
+          return false; // Exclude recipes that violate tracked dietary preferences
         }
       }
       return true;

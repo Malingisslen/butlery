@@ -62,7 +62,7 @@ class DietaryConfig {
       excludedProperties: ['meat'],
       // H8: Use actual ingredient properties (not 'shellfish' which doesn't exist)
       requiredProperties: ['fish', 'crustacean', 'mollusc'],
-      description: 'Ingen kött + minst en fisk/skaldjur',
+      description: 'Ingen kött (vegetariska rätter ingår)',
     ),
     DietaryEntry(
       key: 'graviditetssäker',

@@ -62,6 +62,12 @@ class TagResultDisplay extends StatelessWidget {
         // All badges inline in a single Wrap
         _buildInlineBadges(context),
 
+        // Draft ingredient warning
+        if (tagResult.hasDraftIngredients) ...[
+          const SizedBox(height: AppDimensions.spacingM),
+          _buildDraftWarning(context),
+        ],
+
         // Coverage section
         if (showCoverage) ...[
           const SizedBox(height: AppDimensions.spacingL),
@@ -161,6 +167,29 @@ class TagResultDisplay extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDraftWarning(BuildContext context) {
+    final warningColor = context.butleryColors.warning;
+    return Row(
+      children: [
+        Icon(
+          Icons.info_outline,
+          size: AppDimensions.iconSizeS,
+          color: warningColor,
+        ),
+        const SizedBox(width: AppDimensions.spacingXs),
+        Expanded(
+          child: Text(
+            'Viss ingrediensdata är overifierad',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: warningColor,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

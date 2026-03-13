@@ -43,7 +43,7 @@ class TagGenerator {
         _phase2 = phase2 ?? TagPhase2Derived(),
         _phase3 = phase3 ?? TagPhase3Complex(),
         _phase4 = phase4 ?? TagPhase4Mood(),
-        _phase5 = phase5 ?? TagPhase5Cuisine();
+        _phase5 = phase5 ?? TagPhase5Cuisine(firebaseConfig: firebaseConfig);
 
   /// Generates tags for a recipe given its ingredient lookup result.
   ///
@@ -217,6 +217,9 @@ class TagGenerator {
         phase4Result == null ||
         !hasPhase5Tags;
 
+    // Check for draft ingredients (AI-generated, unvalidated data)
+    final hasDraft = ingredients.matched.any((i) => i.status == 'draft');
+
     return TagResult(
       tags: resolvedTags,
       allergenStatus: phase1Result.allergenStatus,
@@ -226,6 +229,7 @@ class TagGenerator {
       generatedAt: DateTime.now(),
       generatorVersion: kTagGeneratorVersion,
       isPartial: isPartial,
+      hasDraftIngredients: hasDraft,
       // H3: Include decision logs from Phase 1
       decisions:
           phase1Result.decisions.isNotEmpty ? phase1Result.decisions : null,
