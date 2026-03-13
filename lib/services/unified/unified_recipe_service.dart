@@ -236,7 +236,7 @@ class UnifiedRecipeService extends ChangeNotifier
       setError: _setError,
       notifyListeners: notifyListeners,
       getRecipe: (String id) async => getRecipeById(id),
-      saveRecipe: _saveRecipeForSocialModule,
+      saveRecipe: saveRecipeForSocialModule,
     );
 
     _realtimeModule = RealtimeRecipeModule(
@@ -580,7 +580,9 @@ class UnifiedRecipeService extends ChangeNotifier
 
   Future<bool> markAsCooked(String recipeId) async =>
       _personalCrud.markAsCooked(recipeId);
-  Future<bool> _saveRecipeForSocialModule(Recipe recipe) async =>
+  /// Save a recipe from the social module - handles both personal and collaborative types.
+  /// Unlike [updateRecipe], this does not reject collaborative recipes.
+  Future<bool> saveRecipeForSocialModule(Recipe recipe) async =>
       _utilityOps.saveRecipeForSocialModule(recipe);
   Future<String?> createCollaborativeRecipe({
     required String title,
@@ -611,7 +613,7 @@ class UnifiedRecipeService extends ChangeNotifier
       personalTagIds: personalTagIds,
     );
 
-    // Note: Recipe is already added to _recipes in _saveRecipeForSocialModule
+    // Note: Recipe is already added to _recipes in saveRecipeForSocialModule
     // No need to add it again here
 
     return recipeId;

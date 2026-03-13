@@ -214,7 +214,7 @@ class ShareTargetSelectionEnhanced {
 
     return ListView.separated(
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: filteredFriends.length,
       separatorBuilder: (context, index) => Divider(
@@ -317,7 +317,7 @@ class ShareTargetSelectionEnhanced {
 
     return ListView.separated(
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: filteredGroups.length,
       separatorBuilder: (context, index) => Divider(

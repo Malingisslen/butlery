@@ -89,18 +89,25 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
-  // Wrap entire main body in runZonedGuarded so ensureInitialized and runApp
-  // share the same zone (prevents zone mismatch assertion on startup).
+  // CRITICAL: Initialize Flutter bindings in the ROOT zone.
+  // Moving this inside runZonedGuarded causes silent render failure on web.
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Limit image cache to prevent unbounded memory growth
+  PaintingBinding.instance.imageCache.maximumSize = 100;
+  PaintingBinding.instance.imageCache.maximumSizeBytes =
+      50 * 1024 * 1024; // 50 MB
+
+  // Set up error handlers early (before any async work)
+  if (kIsWeb) {
+    FlutterError.onError = (errorDetails) {
+      FlutterError.presentError(errorDetails);
+    };
+  }
+
+  // Wrap Firebase init and runApp in runZonedGuarded to catch async errors
   runZonedGuarded(
     () async {
-      // CRITICAL: Initialize Flutter bindings first - required for any Flutter services
-      WidgetsFlutterBinding.ensureInitialized();
-
-      // Limit image cache to prevent unbounded memory growth
-      PaintingBinding.instance.imageCache.maximumSize = 100;
-      PaintingBinding.instance.imageCache.maximumSizeBytes =
-          50 * 1024 * 1024; // 50 MB
-
       try {
         // Initialize Firebase with configuration from compile-time --dart-define
         await Firebase.initializeApp(
@@ -122,13 +129,8 @@ Future<void> main() async {
             ),
         ]);
 
-        // Set up error handlers (sync, after Crashlytics enabled)
-        if (kIsWeb) {
-          // Web: show Flutter error widget so errors are visible (not just console)
-          FlutterError.onError = (errorDetails) {
-            FlutterError.presentError(errorDetails);
-          };
-        } else {
+        // Set up native error handlers (after Crashlytics available)
+        if (!kIsWeb) {
           FlutterError.onError = (errorDetails) {
             FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
             if (kDebugMode) {
@@ -144,9 +146,6 @@ Future<void> main() async {
 
         // Initialize modular system FIRST - this sets up the DI container and ServiceLocator
         await _initializeModularSystem();
-
-        // Skip startup optimization manager - it conflicts with the modular bootstrap system
-        // The modular system already handles all initialization properly
 
         runApp(const ButleryApp());
       } catch (e, stackTrace) {

@@ -183,11 +183,7 @@ class CommentCrudOperations {
     required String commentId,
   }) async {
     try {
-      // Use the repository's base getById method if it exists
-      // For now, we'll need to get all comments and filter
-      // This should be improved in the repository implementation
-      throw UnimplementedError(
-          'Direct comment lookup by ID not yet implemented');
+      return await _commentsRepository.read(commentId);
     } catch (e) {
       AppLogger.error('❌ Failed to get comment by ID', e);
       return null;
@@ -199,9 +195,8 @@ class CommentCrudOperations {
     required String commentId,
   }) async {
     try {
-      // For now, we'll say comment exists if we can find it in any recipe
-      // This should be improved with a proper repository method
-      return false; // Placeholder implementation
+      final comment = await _commentsRepository.read(commentId);
+      return comment != null;
     } catch (e) {
       AppLogger.error('❌ Failed to check comment existence', e);
       return false;
