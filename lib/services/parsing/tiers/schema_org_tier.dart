@@ -197,7 +197,7 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
 
     final lines = rawIngredients
         .whereType<String>()
-        .map((s) => s.trim())
+        .map((s) => _stripPriceAnnotation(s.trim()))
         .where((s) => s.isNotEmpty)
         .toList();
 
@@ -357,5 +357,16 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
       return description.trim();
     }
     return null;
+  }
+
+  /// Strips price annotations like "($0.18)", "$7.95*" from ingredient text.
+  static String _stripPriceAnnotation(String s) {
+    // Remove any dollar-amount pattern (with optional trailing asterisks)
+    var cleaned = s.replaceAll(RegExp(r'\s*\$[\d.,]+\*{0,2}'), '');
+    // Remove standalone empty parens left behind: "()"
+    cleaned = cleaned.replaceAll(RegExp(r'\s*\(\s*\)'), '');
+    // Clean up dangling comma before closing paren: "(foo, )" → "(foo)"
+    cleaned = cleaned.replaceAll(RegExp(r',\s*\)'), ')');
+    return cleaned.trim();
   }
 }

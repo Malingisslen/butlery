@@ -49,13 +49,13 @@ class SchemaOrgRecipeExtractor {
 
     if (ingredients is List) {
       return ingredients
-          .map((e) => e.toString().trim())
+          .map((e) => _cleanIngredient(e.toString()))
           .where((e) => e.isNotEmpty)
           .toList();
     }
 
     if (ingredients is String && ingredients.trim().isNotEmpty) {
-      return [ingredients.trim()];
+      return [_cleanIngredient(ingredients)];
     }
 
     return [];
@@ -98,6 +98,14 @@ class SchemaOrgRecipeExtractor {
     }
 
     return [];
+  }
+
+  /// Strips price annotations like "($0.18)", "$7.95*" from ingredient text.
+  static String _cleanIngredient(String raw) {
+    var cleaned = raw.replaceAll(RegExp(r'\s*\$[\d.,]+\*{0,2}'), '');
+    cleaned = cleaned.replaceAll(RegExp(r'\s*\(\s*\)'), '');
+    cleaned = cleaned.replaceAll(RegExp(r',\s*\)'), ')');
+    return cleaned.trim();
   }
 
   static int? extractYield(Map<String, dynamic> data) {
