@@ -1,5 +1,8 @@
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/firebase_tag_config.dart'
+    as firebase_config;
+import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/services/tagging/config/cuisine_config.dart';
 import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
@@ -14,10 +17,18 @@ import 'package:butlery/services/tagging/phases/tag_phase4_mood.dart';
 ///
 /// Supports 17 world cuisines including Swedish, Mediterranean, Asian, etc.
 ///
+/// If [firebaseConfig] is provided, uses Firebase-backed cuisine definitions
+/// (admin-editable without app release). Falls back to hardcoded static config.
+///
 /// ## CRIT-7 Fix: Fallback Support
 /// Phase 5 only needs Phase 1's ingredient lookup to detect cuisines.
 /// If Phases 2-4 timeout or fail, Phase 5 can still run using [calculateFromPhase1].
 class TagPhase5Cuisine {
+  final firebase_config.FirebaseTagConfig? _firebaseConfig;
+
+  TagPhase5Cuisine({firebase_config.FirebaseTagConfig? firebaseConfig})
+      : _firebaseConfig = firebaseConfig;
+
   /// Calculates Phase 5 cuisine tags (full chain).
   ///
   /// Use this when all phases completed successfully.
@@ -30,21 +41,7 @@ class TagPhase5Cuisine {
   /// Use this when Phases 2-4 failed or timed out but we still want cuisine detection.
   /// Only requires Phase 1 results (ingredient lookup).
   Phase5ResultPartial calculateFromPhase1(Phase1Result p1, Recipe recipe) {
-    final tags = <String>{};
-
-    // MED-4: Validate cuisine config is loaded
-    if (CuisineConfig.cuisines.isEmpty) {
-      AppLogger.warning(
-        'CuisineConfig.cuisines is empty - cuisine detection disabled',
-        'TagPhase5Cuisine',
-      );
-    }
-
-    for (final cuisine in CuisineConfig.cuisines) {
-      if (cuisine.matches(recipe, p1.lookup)) {
-        tags.add(cuisine.tag);
-      }
-    }
+    final tags = _detectCuisines(recipe, p1.lookup);
 
     return Phase5ResultPartial(
       tags: tags,
@@ -57,7 +54,36 @@ class TagPhase5Cuisine {
     dynamic lookup,
     Phase4Result? p4,
   ) {
+    final tags = _detectCuisines(recipe, lookup as IngredientLookupResult);
+
+    return Phase5Result(
+      tags: tags,
+      phase4: p4!,
+    );
+  }
+
+  /// Core cuisine detection using Firebase config with static fallback.
+  Set<String> _detectCuisines(Recipe recipe, IngredientLookupResult lookup) {
     final tags = <String>{};
+
+    // Use Firebase cuisine entries if available
+    final firebaseCuisines = _firebaseConfig?.cuisines.enabledEntries;
+    if (firebaseCuisines != null && firebaseCuisines.isNotEmpty) {
+      for (final cuisine in firebaseCuisines) {
+        if (_matchesFirebaseCuisine(cuisine, recipe, lookup)) {
+          tags.add(cuisine.getTag('sv'));
+        }
+      }
+      return tags;
+    }
+
+    // Fall back to static config
+    if (CuisineConfig.cuisines.isEmpty) {
+      AppLogger.warning(
+        'CuisineConfig.cuisines is empty - cuisine detection disabled',
+        'TagPhase5Cuisine',
+      );
+    }
 
     for (final cuisine in CuisineConfig.cuisines) {
       if (cuisine.matches(recipe, lookup)) {
@@ -65,10 +91,69 @@ class TagPhase5Cuisine {
       }
     }
 
-    return Phase5Result(
-      tags: tags,
-      phase4: p4!,
-    );
+    return tags;
+  }
+
+  /// Matches a recipe against a Firebase cuisine entry, respecting matchMode.
+  bool _matchesFirebaseCuisine(
+    firebase_config.CuisineEntry cuisine,
+    Recipe recipe,
+    IngredientLookupResult lookup,
+  ) {
+    final titleMatch = _hasTitleMatch(cuisine, recipe);
+    final ingredientMatch = _hasIngredientMatch(cuisine, lookup);
+
+    switch (cuisine.matchMode) {
+      case firebase_config.CuisineMatchMode.titleOnly:
+        return titleMatch;
+      case firebase_config.CuisineMatchMode.ingredientsOnly:
+        return ingredientMatch;
+      case firebase_config.CuisineMatchMode.titleAndIngredients:
+        return titleMatch && ingredientMatch;
+      case firebase_config.CuisineMatchMode.titleOrIngredients:
+        return titleMatch || ingredientMatch;
+    }
+  }
+
+  bool _hasTitleMatch(
+    firebase_config.CuisineEntry cuisine,
+    Recipe recipe,
+  ) {
+    final title = recipe.core.title.toLowerCase();
+    for (final keyword in cuisine.titleKeywords) {
+      if (title.contains(keyword.toLowerCase())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool _hasIngredientMatch(
+    firebase_config.CuisineEntry cuisine,
+    IngredientLookupResult lookup,
+  ) {
+    int matches = 0;
+
+    for (final ingredient in lookup.matched) {
+      final name = ingredient.swedish.toLowerCase();
+      final group = ingredient.group.toLowerCase();
+
+      for (final keyword in cuisine.ingredientKeywords) {
+        if (name.contains(keyword.toLowerCase())) {
+          matches++;
+          break;
+        }
+      }
+
+      for (final groupPattern in cuisine.ingredientGroups) {
+        if (group.contains(groupPattern.toLowerCase())) {
+          matches++;
+          break;
+        }
+      }
+    }
+
+    return matches >= cuisine.minIngredientMatches;
   }
 }
 

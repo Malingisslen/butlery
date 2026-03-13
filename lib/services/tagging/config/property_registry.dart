@@ -56,6 +56,8 @@ class PropertyRegistry {
     'nightshade', // Tomato, potato, peppers, eggplant, chili
 
     // Practical
+    'vegan-friendly',
+    'needs-cooking',
     'doesnt-freeze-well',
     'raw-safe',
   };

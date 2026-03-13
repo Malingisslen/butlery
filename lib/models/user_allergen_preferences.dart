@@ -20,12 +20,17 @@ class UserAllergenPreferences {
   /// Show coverage percentage.
   final bool showCoverage;
 
+  /// Whether to include recipes with UNKNOWN allergen status in menu generation.
+  /// When false, only recipes with FREE status pass allergen filtering.
+  final bool includeUnknownInMenu;
+
   const UserAllergenPreferences({
     required this.trackedAllergens,
     required this.trackedDietary,
     this.showOnCards = true,
     this.showOnDetail = true,
     this.showCoverage = true,
+    this.includeUnknownInMenu = true,
   });
 
   /// Default preferences with common allergens.
@@ -43,6 +48,7 @@ class UserAllergenPreferences {
     showOnCards: true,
     showOnDetail: true,
     showCoverage: true,
+    includeUnknownInMenu: true,
   );
 
   /// Creates from Firestore map.
@@ -69,6 +75,11 @@ class UserAllergenPreferences {
         'showCoverage',
         defaultValue: true,
       ),
+      includeUnknownInMenu: SerializationUtils.safeBool(
+        data,
+        'includeUnknownInMenu',
+        defaultValue: true,
+      ),
     );
   }
 
@@ -80,6 +91,7 @@ class UserAllergenPreferences {
       'showOnCards': showOnCards,
       'showOnDetail': showOnDetail,
       'showCoverage': showCoverage,
+      'includeUnknownInMenu': includeUnknownInMenu,
     };
   }
 
@@ -90,6 +102,7 @@ class UserAllergenPreferences {
     bool? showOnCards,
     bool? showOnDetail,
     bool? showCoverage,
+    bool? includeUnknownInMenu,
   }) {
     return UserAllergenPreferences(
       trackedAllergens: trackedAllergens ?? this.trackedAllergens,
@@ -97,6 +110,7 @@ class UserAllergenPreferences {
       showOnCards: showOnCards ?? this.showOnCards,
       showOnDetail: showOnDetail ?? this.showOnDetail,
       showCoverage: showCoverage ?? this.showCoverage,
+      includeUnknownInMenu: includeUnknownInMenu ?? this.includeUnknownInMenu,
     );
   }
 
@@ -154,7 +168,8 @@ class UserAllergenPreferences {
           _setEquals(trackedDietary, other.trackedDietary) &&
           showOnCards == other.showOnCards &&
           showOnDetail == other.showOnDetail &&
-          showCoverage == other.showCoverage;
+          showCoverage == other.showCoverage &&
+          includeUnknownInMenu == other.includeUnknownInMenu;
 
   static bool _setEquals<T>(Set<T> a, Set<T> b) =>
       a.length == b.length && a.containsAll(b);
@@ -166,6 +181,7 @@ class UserAllergenPreferences {
         showOnCards,
         showOnDetail,
         showCoverage,
+        includeUnknownInMenu,
       );
 
   @override

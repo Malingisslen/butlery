@@ -34,6 +34,10 @@ class AllergenStatusBadge extends StatelessWidget {
   /// Optional custom label override.
   final String? label;
 
+  /// Optional coverage percentage (0-100) shown alongside UNKNOWN badges.
+  /// When provided and status is UNKNOWN, appends "(X% täckning)" to the label.
+  final int? coveragePercent;
+
   const AllergenStatusBadge({
     super.key,
     required this.allergen,
@@ -41,6 +45,7 @@ class AllergenStatusBadge extends StatelessWidget {
     this.compact = false,
     this.showLabel = true,
     this.label,
+    this.coveragePercent,
   });
 
   @override
@@ -99,25 +104,34 @@ class AllergenStatusBadge extends StatelessWidget {
 
   String _getDisplayLabel(BuildContext context) {
     final entry = AllergenConfig.getByKey(allergen);
+    String baseLabel;
     if (entry != null) {
       switch (status) {
         case TriState.free:
-          return entry.freeTag ?? context.l10n.allergenFreeLabel(entry.key);
+          baseLabel =
+              entry.freeTag ?? context.l10n.allergenFreeLabel(entry.key);
         case TriState.contains:
-          return entry.containsTag;
+          baseLabel = entry.containsTag;
         case TriState.unknown:
-          return context.l10n.allergenUnknownLabel(entry.key);
+          baseLabel = context.l10n.allergenUnknownLabel(entry.key);
+      }
+    } else {
+      // Fallback for unknown allergen keys
+      switch (status) {
+        case TriState.free:
+          baseLabel = context.l10n.allergenFreeLabel(allergen);
+        case TriState.contains:
+          baseLabel = context.l10n.allergenContainsLabel(allergen);
+        case TriState.unknown:
+          baseLabel = context.l10n.allergenUnknownLabel(allergen);
       }
     }
-    // Fallback for unknown allergen keys
-    switch (status) {
-      case TriState.free:
-        return context.l10n.allergenFreeLabel(allergen);
-      case TriState.contains:
-        return context.l10n.allergenContainsLabel(allergen);
-      case TriState.unknown:
-        return context.l10n.allergenUnknownLabel(allergen);
+
+    // Append coverage % for UNKNOWN status when available
+    if (status == TriState.unknown && coveragePercent != null) {
+      return '$baseLabel ($coveragePercent% täckning)';
     }
+    return baseLabel;
   }
 }
 
