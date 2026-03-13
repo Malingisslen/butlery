@@ -1,3 +1,5 @@
+import 'package:html_unescape/html_unescape.dart';
+
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
@@ -14,6 +16,7 @@ import 'package:butlery/utils/recipe_scraper.dart';
 /// data from HTML content. It's the fastest and most reliable tier
 /// for websites that implement schema.org Recipe markup.
 class SchemaOrgTier extends ParsingTier with QualityScoring {
+  static final _unescape = HtmlUnescape();
   final IngredientParsingStrategy _ingredientStrategy;
 
   SchemaOrgTier({IngredientParsingStrategy? ingredientStrategy})
@@ -132,13 +135,13 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
   FieldResult<String> _extractTitle(Map<String, dynamic> data) {
     final name = data['name'];
     if (name is String && name.isNotEmpty) {
-      return FieldResult.success(name.trim());
+      return FieldResult.success(_unescape.convert(name.trim()));
     }
 
     // Fallback to headline
     final headline = data['headline'];
     if (headline is String && headline.isNotEmpty) {
-      return FieldResult.success(headline.trim());
+      return FieldResult.success(_unescape.convert(headline.trim()));
     }
 
     return FieldResult.failed('No title in schema.org data');

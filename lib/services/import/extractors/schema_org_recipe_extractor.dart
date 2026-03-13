@@ -1,9 +1,11 @@
+import 'package:html_unescape/html_unescape.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 /// Extracts Recipe objects from schema.org JSON-LD data.
 class SchemaOrgRecipeExtractor {
   static const _uuid = Uuid();
+  static final _unescape = HtmlUnescape();
 
   SchemaOrgRecipeExtractor._();
 
@@ -32,14 +34,15 @@ class SchemaOrgRecipeExtractor {
   static String extractTitle(Map<String, dynamic> data) {
     final name = data['name'];
     if (name != null && name.toString().trim().isNotEmpty) {
-      return name.toString().trim();
+      return _unescape.convert(name.toString().trim());
     }
     return 'Imported Recipe';
   }
 
   static String extractDescription(Map<String, dynamic> data) {
     final desc = data['description'];
-    return desc?.toString().trim() ?? '';
+    final raw = desc?.toString().trim() ?? '';
+    return raw.isNotEmpty ? _unescape.convert(raw) : '';
   }
 
   static List<String> extractIngredients(Map<String, dynamic> data) {
