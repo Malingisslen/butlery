@@ -378,6 +378,53 @@ void main() {
       });
     });
 
+    group('JSON-LD attribute quoting variants', () {
+      test('should extract recipe from single-quoted type attribute', () {
+        const html = '''
+        <html>
+          <script type='application/ld+json'>
+          {"@type": "Recipe", "name": "Single Quote Recipe"}
+          </script>
+        </html>
+        ''';
+
+        final result = extractRecipeFromHtml(html);
+
+        expect(result, isNotNull);
+        expect(result!['name'], equals('Single Quote Recipe'));
+      });
+
+      test('should extract recipe from unquoted type attribute', () {
+        const html = '''
+        <html>
+          <script type=application/ld+json>
+          {"@type": "Recipe", "name": "Unquoted Recipe"}
+          </script>
+        </html>
+        ''';
+
+        final result = extractRecipeFromHtml(html);
+
+        expect(result, isNotNull);
+        expect(result!['name'], equals('Unquoted Recipe'));
+      });
+
+      test('existing double-quoted type attribute still works', () {
+        const html = '''
+        <html>
+          <script type="application/ld+json">
+          {"@type": "Recipe", "name": "Double Quote Recipe"}
+          </script>
+        </html>
+        ''';
+
+        final result = extractRecipeFromHtml(html);
+
+        expect(result, isNotNull);
+        expect(result!['name'], equals('Double Quote Recipe'));
+      });
+    });
+
     group('Microdata Extraction', () {
       test('should extract complete recipe from Microdata', () {
         const html = '''

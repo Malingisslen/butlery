@@ -28,7 +28,12 @@ class HttpContentFetcher {
       try {
         final response = await client.get(
           Uri.parse(url),
-          headers: {'User-Agent': _userAgent},
+          headers: {
+            'User-Agent': _userAgent,
+            'Accept':
+                'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9,sv;q=0.8',
+          },
         ).timeout(_fetchTimeout);
 
         if (response.statusCode == 200) {

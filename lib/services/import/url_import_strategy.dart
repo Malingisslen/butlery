@@ -88,6 +88,8 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
 
       // Fetch HTML — try simple HTTP first
       final httpHtml = await _fetcher.fetchHtmlWithTimeout(url);
+      AppLogger.debug(
+          'UrlImportStrategy: HTTP fetch for $domain → ${httpHtml == null ? "null" : "${httpHtml.length} chars"}');
 
       // Tier 1: Enhanced parser on HTTP HTML
       final parserResult = await _tryEnhancedParser(url, httpHtml, options);
@@ -105,6 +107,8 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       // Tier 3: Headless browser HTML — retry parser + structured extraction
       // Covers JS-rendered pages and sites blocking simple HTTP
       final scraperHtml = await _fetcher.tryWebScraperHtml(url);
+      AppLogger.debug(
+          'UrlImportStrategy: WebScraper HTML for $domain → ${scraperHtml == null ? "null" : "${scraperHtml.length} chars"}');
       if (scraperHtml != null) {
         final scraperParserResult =
             await _tryEnhancedParser(url, scraperHtml, options);
