@@ -39,12 +39,18 @@ class RecipeSiteContentExtractor {
             for (const script of scripts) {
               const data = JSON.parse(script.textContent);
 
+              function isRecipeType(t) {
+                if (typeof t === 'string') return t === 'Recipe' || t.endsWith('/Recipe');
+                if (Array.isArray(t)) return t.some(i => typeof i === 'string' && isRecipeType(i));
+                return false;
+              }
+
               // Handle single recipe or array of recipes
               const recipes = Array.isArray(data) ? data : [data];
 
               for (const item of recipes) {
-                if (item['@type'] === 'Recipe' || (item['@graph'] && item['@graph'].some(g => g['@type'] === 'Recipe'))) {
-                  const recipe = item['@type'] === 'Recipe' ? item : item['@graph'].find(g => g['@type'] === 'Recipe');
+                if (isRecipeType(item['@type']) || (item['@graph'] && item['@graph'].some(g => isRecipeType(g['@type'])))) {
+                  const recipe = isRecipeType(item['@type']) ? item : item['@graph'].find(g => isRecipeType(g['@type']));
 
                   let recipeText = '';
 

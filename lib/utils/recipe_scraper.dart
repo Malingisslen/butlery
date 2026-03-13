@@ -95,7 +95,7 @@ bool _isRecipeType(dynamic type) {
 Map<String, dynamic>? _extractJsonLd(String html) {
   // Hittar just <script type="application/ld+json">…</script> (dubbel‐citat).
   final jsonLdRegex = RegExp(
-    r'<script[^>]*type="application/ld\+json"[^>]*>([\s\S]*?)</script>',
+    r"""<script[^>]*type=["']?application/ld\+json["']?[^>]*>([\s\S]*?)</script>""",
     caseSensitive: false,
   );
 
