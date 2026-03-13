@@ -177,11 +177,14 @@ class UniversalShareDialogViewModel extends ChangeNotifier
 
       // Share to groups if any selected
       if (groupIds != null && groupIds.isNotEmpty) {
+        final permission = allowCollaboration
+            ? ResourcePermission.editor
+            : ResourcePermission.read;
         final groupSuccess =
             await _socialRecipeCoordinator.shareRecipeWithGroups(
           recipe.id,
           groupIds,
-          ResourcePermission.read,
+          permission,
         );
         if (!groupSuccess) {
           _setError(AppLocale.current.errorCouldNotUpdate('gruppdelning'));
