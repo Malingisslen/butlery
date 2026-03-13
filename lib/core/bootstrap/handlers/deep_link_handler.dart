@@ -12,6 +12,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 
 /// Deep link handler for processing incoming shared content.
@@ -44,6 +45,11 @@ class DeepLinkHandler {
       // Check if platform supports deep links via receive_intent
       // Web platform doesn't support this plugin
       if (kIsWeb) {
+        // On web, read the browser URL for deep link parameters
+        final uri = Uri.base;
+        if (uri.path.length > 1 || uri.queryParameters.isNotEmpty) {
+          _pendingDeepLink = uri.toString();
+        }
         _isInitialized = true;
         return;
       }
@@ -189,11 +195,13 @@ class DeepLinkHandler {
     final recipeId = params['id'];
 
     if (recipeId != null && _isValidFirestoreId(recipeId)) {
-      if (context.mounted) {
-        // Navigate to recipe detail view with recipe ID as query parameter
+      // Fetch full Recipe object — router expects Recipe, not String ID
+      final recipeRepo = ServiceLocator.get<RecipeRepository>();
+      final recipe = await recipeRepo.read(recipeId);
+      if (recipe != null && context.mounted) {
         Navigator.of(context).pushNamed(
           Routes.receptDetalj,
-          arguments: recipeId,
+          arguments: recipe,
         );
       }
     }

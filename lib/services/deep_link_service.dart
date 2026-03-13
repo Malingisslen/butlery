@@ -56,8 +56,7 @@ import 'package:butlery/core/base/base_service.dart';
 /// );
 /// // Create short URL for sharing
 /// final shortUrl = await DeepLinkService.generateShortUrl(inviteUrl);
-/// // Handle incoming deep link
-/// await DeepLinkService.handleDeepLink(shortUrl, (route) => navigateTo(route));
+/// // Deep links are handled by DeepLinkHandler (in core/bootstrap/handlers)
 /// ```
 class DeepLinkService extends BaseService {
   @override
@@ -377,7 +376,11 @@ class DeepLinkService extends BaseService {
     AppLogger.debug('URL scheme handlers registered');
   }
 
-  /// Handle incoming deep link and navigate appropriately
+  /// Handle incoming deep link and navigate appropriately.
+  ///
+  /// Dead code — deep link handling is done by DeepLinkHandler
+  /// (in core/bootstrap/handlers). This method is never called at runtime.
+  @Deprecated('Use DeepLinkHandler.processDeepLink instead')
   static Future<void> handleDeepLink(
       String url, Function(String) navigateToRoute) async {
     try {
@@ -387,13 +390,11 @@ class DeepLinkService extends BaseService {
         return;
       }
 
-      // Check if link is expired (older than 7 days)
       if (isLinkExpired(deepLinkData)) {
         AppLogger.warning('Deep link expired: $url');
         return;
       }
 
-      // Navigate based on deep link type
       switch (deepLinkData.type) {
         case DeepLinkType.friendInvitation:
           if (deepLinkData.id != null) {
