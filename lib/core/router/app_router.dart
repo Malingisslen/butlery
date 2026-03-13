@@ -285,6 +285,13 @@ class AppRouter {
               const FaqView(), settings, RouteAnimationType.slideFromRight);
 
         default:
+          // Deep link paths are handled by DeepLinkHandler before router —
+          // gracefully fall back to home if they reach here
+          const deepLinkPaths = ['/recipe', '/invite', '/menu', '/shopping'];
+          if (deepLinkPaths.any((p) => routeName.startsWith(p))) {
+            return _buildRoute(
+                const MinaReceptView(), settings, RouteAnimationType.fade);
+          }
           return _errorRoute('Unknown route: ${settings.name}');
       }
     } catch (e) {
