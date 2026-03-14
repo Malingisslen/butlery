@@ -41,6 +41,7 @@ class FeedbackFAB extends StatelessWidget {
         label: context.l10n.feedbackSendLabel,
         button: true,
         child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: () => _onTap(context),
           child: Container(
             width: AppDimensions.minTouchTarget,
