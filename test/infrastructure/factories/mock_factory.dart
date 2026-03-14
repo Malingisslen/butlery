@@ -248,21 +248,6 @@ class MockFactory {
     return production.MockGroupsRepository();
   }
 
-  /// Create mock social recipe repository
-  static production.MockSocialRecipeRepository createSocialRecipeRepository({
-    User? currentUser,
-    List<SharedRecipe>? sharedRecipes,
-    List<SharedMenu>? sharedMenus,
-  }) {
-    final mock = production.MockSocialRecipeRepository();
-    mock.setSocialRecipeState(
-      currentUser: currentUser,
-      sharedRecipes: sharedRecipes,
-      sharedMenus: sharedMenus,
-    );
-    return mock;
-  }
-
   /// Create mock analytics repository
   static production.MockAnalyticsRepository createAnalyticsRepository() {
     // Using the mock from production_mocks.dart

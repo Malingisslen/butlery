@@ -220,7 +220,7 @@ class SocialDeletionOperations {
 
       // Menus shared with user
       final sharedWithSnapshot = await _firestore
-          .collection('shared_menus')
+          .collection(FirestoreCollections.sharedMenus)
           .where('sharedWith', arrayContains: userId)
           .get();
 
@@ -236,7 +236,7 @@ class SocialDeletionOperations {
 
       // Menus owned by user
       final ownedSnapshot = await _firestore
-          .collection('shared_menus')
+          .collection(FirestoreCollections.sharedMenus)
           .where('ownerId', isEqualTo: userId)
           .get();
 
@@ -264,7 +264,7 @@ class SocialDeletionOperations {
 
       // Lists shared with user
       final sharedWithSnapshot = await _firestore
-          .collection('shared_shopping_lists')
+          .collection(FirestoreCollections.sharedShoppingLists)
           .where('sharedWith', arrayContains: userId)
           .get();
 
@@ -280,7 +280,7 @@ class SocialDeletionOperations {
 
       // Lists owned by user
       final ownedSnapshot = await _firestore
-          .collection('shared_shopping_lists')
+          .collection(FirestoreCollections.sharedShoppingLists)
           .where('ownerId', isEqualTo: userId)
           .get();
 

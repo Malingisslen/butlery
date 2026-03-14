@@ -41,6 +41,10 @@ const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
       "userSharedShoppingLists",
       "ingredients",
       "counters",
+      "connection_tests",
+      "unified_recipes",
+      "conversations",
+      "unified_shopping_lists",
     ],
   },
   { name: "public_profiles" },
@@ -112,6 +116,15 @@ const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   { name: "reports" },
   { name: "userFriends" },
   { name: "userSettings" },
+  { name: "friend_categories" },
+  { name: "lapsed_user_events" },
+  { name: "notification_preferences" },
+  { name: "parsing_analytics" },
+  { name: "shopping_list_invitations" },
+  { name: "userSharedMenus" },
+  { name: "userSharedShoppingLists" },
+  { name: "user_devices" },
+  { name: "tag_configs" },
 ];
 
 const COLLECTIONS_TO_KEEP = [
@@ -170,6 +183,30 @@ async function deleteCollection(
   return totalDeleted;
 }
 
+/**
+ * Recursively delete a document and all its subcollections (any depth).
+ */
+async function deleteDocRecursive(
+  docRef: admin.firestore.DocumentReference,
+  subCounts: Record<string, number>,
+  dryRun: boolean
+): Promise<void> {
+  const subCollections = await docRef.listCollections();
+  for (const subCol of subCollections) {
+    // Delete docs in this subcollection (each may have its own subs)
+    const subDocRefs = await subCol.listDocuments();
+    for (const subDocRef of subDocRefs) {
+      await deleteDocRecursive(subDocRef, subCounts, dryRun);
+    }
+    const count = await deleteCollection(subCol.firestore, subCol.path, dryRun);
+    subCounts[subCol.id] = (subCounts[subCol.id] || 0) + count;
+  }
+
+  if (!dryRun) {
+    await docRef.delete();
+  }
+}
+
 async function deleteWithSubcollections(
   db: admin.firestore.Firestore,
   target: CollectionTarget,
@@ -177,46 +214,16 @@ async function deleteWithSubcollections(
 ): Promise<{ parentCount: number; subCounts: Record<string, number> }> {
   const subCounts: Record<string, number> = {};
 
-  if (!target.subcollections?.length) {
-    const parentCount = await deleteCollection(db, target.name, dryRun);
-    return { parentCount, subCounts };
+  const docRefs = await db.collection(target.name).listDocuments();
+  let parentCount = docRefs.length;
+
+  for (const docRef of docRefs) {
+    await deleteDocRecursive(docRef, subCounts, dryRun);
   }
 
-  // Process parent docs in batches to find subcollections
-  let parentCount = 0;
-  let lastDoc: admin.firestore.DocumentSnapshot | undefined;
-
-  while (true) {
-    let query = db.collection(target.name).limit(100);
-    if (lastDoc) {
-      query = query.startAfter(lastDoc) as typeof query;
-    }
-    const snapshot = await query.get();
-    if (snapshot.empty) break;
-
-    for (const doc of snapshot.docs) {
-      // Delete each subcollection for this parent doc
-      for (const sub of target.subcollections!) {
-        const subPath = `${target.name}/${doc.id}/${sub}`;
-        const count = await deleteCollection(db, subPath, dryRun);
-        subCounts[sub] = (subCounts[sub] || 0) + count;
-      }
-
-      if (!dryRun) {
-        await doc.ref.delete();
-      }
-      parentCount++;
-    }
-
-    lastDoc = snapshot.docs[snapshot.docs.length - 1];
-    if (snapshot.size < 100) break;
-  }
-
-  // If dry-run, get parent count via aggregate
-  if (dryRun) {
-    const countSnapshot = await db.collection(target.name).count().get();
-    parentCount = countSnapshot.data().count;
-  }
+  // Also delete any real (non-phantom) docs via batch query
+  const topCount = await deleteCollection(db, target.name, dryRun);
+  if (topCount > parentCount) parentCount = topCount;
 
   return { parentCount, subCounts };
 }

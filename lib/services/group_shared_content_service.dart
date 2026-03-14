@@ -100,7 +100,7 @@ class GroupSharedContentService extends BaseService {
 
       // Query shopping lists shared with at least one group member
       final snapshot = await _firestore
-          .collection(FirestoreCollections.sharedShoppingListsDenorm)
+          .collection(FirestoreCollections.sharedShoppingLists)
           .where('sharedWithUserIds', arrayContainsAny: allMemberIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
@@ -229,7 +229,7 @@ class GroupSharedContentService extends BaseService {
   ) {
     try {
       return _firestore
-          .collection(FirestoreCollections.sharedShoppingListsDenorm)
+          .collection(FirestoreCollections.sharedShoppingLists)
           .where('sharedWithUserIds', arrayContainsAny: group.friendUserIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)

@@ -30,7 +30,6 @@ import 'package:butlery/repositories/firebase/firebase_notification_repository.d
 // ActivityRepository removed - dead code
 import 'package:butlery/models/notification_batch.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
-import 'package:butlery/repositories/interfaces/social_recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
@@ -654,49 +653,6 @@ class MockNotificationsRepository extends Mock
   List<UserNotification> get notifications => _notifications;
   Map<String, NotificationPreferences> get userPreferences => _userPreferences;
   int get unreadCount => _unreadCount;
-
-  // All other methods left without implementation to allow stubbing with when()
-}
-
-/// Mock implementation of SocialRecipeRepository
-class MockSocialRecipeRepository extends Mock
-    implements SocialRecipeRepository {
-  // Configuration state
-  FakeFirebaseFirestore get _fakeFirestore => FirestoreSingleton.instance;
-  User? _currentUser;
-  List<SharedRecipe> _sharedRecipes = [];
-  List<SharedMenu> _sharedMenus = [];
-
-  /// Configure mock state
-  void setSocialRecipeState({
-    User? currentUser,
-    List<SharedRecipe>? sharedRecipes,
-    List<SharedMenu>? sharedMenus,
-  }) {
-    _currentUser = currentUser;
-    if (sharedRecipes != null) _sharedRecipes = sharedRecipes;
-    if (sharedMenus != null) _sharedMenus = sharedMenus;
-  }
-
-  // Implement the required getters
-  @override
-  CollectionReference<Map<String, dynamic>> get sharedRecipesRef =>
-      _fakeFirestore.collection('shared_recipes');
-
-  @override
-  CollectionReference<Map<String, dynamic>> get sharedMenusRef =>
-      _fakeFirestore.collection('shared_menus');
-
-  @override
-  CollectionReference<Map<String, dynamic>> get sharedContentRef =>
-      _fakeFirestore.collection('shared_content');
-
-  @override
-  CollectionReference<Map<String, dynamic>> get recipeCommentsRef =>
-      _fakeFirestore.collection('recipe_comments');
-
-  @override
-  User? get currentUser => _currentUser;
 
   // All other methods left without implementation to allow stubbing with when()
 }
@@ -4297,24 +4253,6 @@ class MockSocialRecipeService extends Mock implements SocialRecipeService {
 
   @override
   Future<List<UserProfile>> getMenuParticipants(String menuId) async => [];
-
-  // ===== SHARING METHODS =====
-
-  /// ⭐ FIXED: Correct return types matching production interface (Future void)
-  @override
-  Future<void> shareRecipeToFriends(
-      String recipeId, List<String> friendIds) async {}
-
-  @override
-  Future<void> shareRecipeToGroups(
-      String recipeId, List<String> groupIds) async {}
-
-  @override
-  Future<void> shareMenuToFriends(
-      String menuId, List<String> friendIds) async {}
-
-  @override
-  Future<void> shareMenuToGroups(String menuId, List<String> groupIds) async {}
 
   // ===== INTERACTION METHODS =====
 
