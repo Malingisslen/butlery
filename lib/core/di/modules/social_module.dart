@@ -16,8 +16,6 @@ import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
-import 'package:butlery/repositories/interfaces/social_recipe_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_social_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
@@ -68,7 +66,6 @@ class SocialModule implements DIModule {
         UnifiedFriendsService,
         CommentsRepository,
         RatingsRepository,
-        SocialRecipeRepository,
         SocialRecipeService,
         DeepLinkRepository,
         DeepLinkService,
@@ -127,12 +124,6 @@ class SocialModule implements DIModule {
             authRepository: container<AuthRepository>()),
       );
 
-      container.registerLazySingleton<SocialRecipeRepository>(
-        () => FirebaseSocialRecipeRepository(
-          authRepository: container<AuthRepository>(),
-        ),
-      );
-
       // Phase 1 shared content repositories (Issue #014)
       container.registerLazySingleton<FirebaseSharedRecipeRepository>(
         () => FirebaseSharedRecipeRepository(
@@ -153,7 +144,6 @@ class SocialModule implements DIModule {
       // because it depends on services from other modules that may not be available yet
       container.registerLazySingleton<SocialRecipeService>(
         () => SocialRecipeService(
-          repository: container<SocialRecipeRepository>(),
           userService: container<UserService>(),
           recipeService: container<UnifiedRecipeService>(),
           permissionService: container<PermissionService>(),
@@ -395,7 +385,6 @@ class SocialModule implements DIModule {
         'UnifiedFriendsService': container<UnifiedFriendsService>(),
         'CommentsRepository': container<CommentsRepository>(),
         'RatingsRepository': container<RatingsRepository>(),
-        'SocialRecipeRepository': container<SocialRecipeRepository>(),
         'DeepLinkRepository': container<DeepLinkRepository>(),
         'DeepLinkService': container<DeepLinkService>(),
         'ConnectivityRepository': container<ConnectivityRepository>(),

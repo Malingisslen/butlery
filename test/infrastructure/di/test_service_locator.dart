@@ -23,7 +23,6 @@ import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
-import 'package:butlery/repositories/interfaces/social_recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 
@@ -204,7 +203,6 @@ class TestServiceLocator {
       NotificationsRepository,
       MessagingRepository,
       FriendsRepository,
-      SocialRecipeRepository,
       AnalyticsRepository,
       CollaborativeRecipeRepository,
     ];
@@ -341,11 +339,6 @@ class TestServiceLocator {
     // Groups Repository (no interface exists, register as concrete type)
     getIt.registerSingleton(
       MockFactory.createGroupsRepository(),
-    );
-
-    // Social Recipe Repository
-    getIt.registerSingleton<SocialRecipeRepository>(
-      MockFactory.createSocialRecipeRepository(),
     );
 
     // Analytics Repository

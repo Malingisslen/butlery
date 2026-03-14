@@ -48,10 +48,6 @@ abstract final class FirestoreCollections {
   static const String butleryArchive = 'butlery_archive';
   static const String activityFeed = 'activity_feed';
 
-  // Denormalized top-level collections (camelCase in Firestore)
-  static const String sharedRecipesDenorm = 'sharedRecipes';
-  static const String sharedMenusDenorm = 'sharedMenus';
-  static const String sharedShoppingListsDenorm = 'sharedShoppingLists';
   static const String shoppingListTemplates = 'shoppingListTemplates';
 
   // ── User subcollections (under users/{userId}/) ──

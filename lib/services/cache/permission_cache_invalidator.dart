@@ -59,7 +59,7 @@ class PermissionCacheInvalidator {
     // Listen to shared recipes
     _subscriptions.add(
       _firestore
-          .collection(FirestoreCollections.sharedRecipesDenorm)
+          .collection(FirestoreCollections.sharedRecipes)
           .where('participantIds', arrayContains: userId)
           .snapshots()
           .listen(
@@ -72,7 +72,7 @@ class PermissionCacheInvalidator {
     // Listen to shared menus
     _subscriptions.add(
       _firestore
-          .collection(FirestoreCollections.sharedMenusDenorm)
+          .collection(FirestoreCollections.sharedMenus)
           .where('participantIds', arrayContains: userId)
           .snapshots()
           .listen(
@@ -85,7 +85,7 @@ class PermissionCacheInvalidator {
     // Listen to shared shopping lists
     _subscriptions.add(
       _firestore
-          .collection(FirestoreCollections.sharedShoppingListsDenorm)
+          .collection(FirestoreCollections.sharedShoppingLists)
           .where('participantIds', arrayContains: userId)
           .snapshots()
           .listen(
