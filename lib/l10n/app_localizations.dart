@@ -5292,7 +5292,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupRecipeImportedSuccess.
   ///
   /// In sv, this message translates to:
-  /// **'Receptet "{title}" har importerats'**
+  /// **'Receptet \"{title}\" har importerats'**
   String groupRecipeImportedSuccess(String title);
 
   /// No description provided for @groupRecipeImportFailed.

@@ -332,10 +332,11 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
 
         await Future.wait(
           unviewedRecipes.map((recipe) async {
-            await _socialRecipeCoordinator.markRecipeAsViewed(recipe.id);
-            // Reload status to update coordinator's cache (Issue #014)
-            await _socialRecipeCoordinator.loadStatusForRecipe(
-                recipe.id, userId);
+            final success =
+                await _socialRecipeCoordinator.markRecipeAsViewed(recipe.id);
+            if (success) {
+              _socialRecipeCoordinator.setViewedStatus(recipe.id, true);
+            }
           }),
         );
 

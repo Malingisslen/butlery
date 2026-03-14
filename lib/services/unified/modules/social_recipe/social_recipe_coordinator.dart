@@ -395,9 +395,16 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   /// Loads status for multiple recipes to populate cache efficiently.
   Future<void> loadStatusForAllRecipes(
       List<SharedRecipe> recipes, String userId) async {
-    await Future.wait(
-      recipes.map((recipe) => loadStatusForRecipe(recipe.id, userId)),
-    );
+    // Batch to avoid unbounded concurrent Firestore reads (3 reads per recipe)
+    const batchSize = 5;
+    for (var i = 0; i < recipes.length; i += batchSize) {
+      final end =
+          (i + batchSize < recipes.length) ? i + batchSize : recipes.length;
+      final batch = recipes.sublist(i, end);
+      await Future.wait(
+        batch.map((recipe) => loadStatusForRecipe(recipe.id, userId)),
+      );
+    }
   }
 
   /// Check if recipe is dismissed using cache
@@ -412,6 +419,11 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   /// Falls back to false if not cached.
   bool isRecipeViewed(String recipeId) {
     return _viewedStatusCache[recipeId] ?? false;
+  }
+
+  /// Directly update the viewed status cache without a Firestore round-trip.
+  void setViewedStatus(String recipeId, bool viewed) {
+    _viewedStatusCache[recipeId] = viewed;
   }
 
   /// Check if recipe is imported using cache

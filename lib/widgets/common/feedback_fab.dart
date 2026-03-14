@@ -10,7 +10,7 @@ import 'package:flutter/rendering.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -27,41 +27,47 @@ class FeedbackFAB extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Only show for authenticated users
-    final authRepo = ServiceLocator.tryGet<AuthRepository>();
-    if (authRepo == null || authRepo.currentUserId == null) {
-      return const SizedBox.shrink();
-    }
+    final authService = ServiceLocator.tryGet<AuthService>();
+    if (authService == null) return const SizedBox.shrink();
 
-    final cs = Theme.of(context).colorScheme;
-    return Positioned(
-      bottom: 80,
-      right: 16,
-      child: Semantics(
-        label: context.l10n.feedbackSendLabel,
-        button: true,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => _onTap(context),
-          child: Container(
-            width: AppDimensions.minTouchTarget,
-            height: AppDimensions.minTouchTarget,
-            decoration: BoxDecoration(
-              color: cs.surface,
-              boxShadow: AppShadows.card,
-            ),
-            child: Center(
-              child: Text(
-                '!',
-                style: AppTextStyles.headlineBold.copyWith(
-                  color: cs.primary,
-                  fontSize: 24,
+    return ListenableBuilder(
+      listenable: authService,
+      builder: (context, _) {
+        if (!authService.isAuthenticated) {
+          return const SizedBox.shrink();
+        }
+
+        final cs = Theme.of(context).colorScheme;
+        return Positioned(
+          bottom: 80,
+          right: 16,
+          child: Semantics(
+            label: context.l10n.feedbackSendLabel,
+            button: true,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _onTap(context),
+              child: Container(
+                width: AppDimensions.minTouchTarget,
+                height: AppDimensions.minTouchTarget,
+                decoration: BoxDecoration(
+                  color: cs.surface,
+                  boxShadow: AppShadows.card,
+                ),
+                child: Center(
+                  child: Text(
+                    '!',
+                    style: AppTextStyles.headlineBold.copyWith(
+                      color: cs.primary,
+                      fontSize: 24,
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

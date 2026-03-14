@@ -339,9 +339,11 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
 
         await Future.wait(
           unviewedMenus.map((menu) async {
-            await _socialMenuCoordinator.markMenuAsViewed(menu.id);
-            // Reload status to update coordinator's cache (Issue #014)
-            await _socialMenuCoordinator.loadStatusForMenu(menu.id, userId);
+            final success =
+                await _socialMenuCoordinator.markMenuAsViewed(menu.id);
+            if (success) {
+              _socialMenuCoordinator.setViewedStatus(menu.id, true);
+            }
           }),
         );
 

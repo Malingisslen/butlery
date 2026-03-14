@@ -41,7 +41,7 @@ class EmojiReactionDisplay extends StatelessWidget {
 
         return Semantics(
           button: true,
-          label: '${emojiKey.replaceAll('_', ' ')} reaction, ${userIds.length}',
+          label: '${emojiSemanticsLabel(context, emojiKey)}, ${userIds.length}',
           child: GestureDetector(
             onTap: () => onReactionTap(emojiKey),
             child: Container(
