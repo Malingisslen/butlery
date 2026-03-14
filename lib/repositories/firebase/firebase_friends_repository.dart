@@ -82,6 +82,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     super.firestore,
     AuthRepository? authRepository,
     super.auditRepository,
+    super.timestampProvider,
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         ) {
@@ -89,18 +90,22 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     _friendRequestRepo = FriendRequestRepository(
       firestore: firestore,
       authRepository: this.authRepository,
+      timestampProvider: timestampProvider,
     );
     _friendRelationshipRepo = FriendRelationshipRepository(
       firestore: firestore,
       authRepository: this.authRepository,
+      timestampProvider: timestampProvider,
     );
     _friendCategoryRepo = FriendCategoryRepository(
       firestore: firestore,
       authRepository: this.authRepository,
+      timestampProvider: timestampProvider,
     );
     _groupInvitationRepo = GroupInvitationRepository(
       firestore: firestore,
       authRepository: this.authRepository,
+      timestampProvider: timestampProvider,
     );
   }
   @override
@@ -216,7 +221,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
         // Update the friend request status
         transaction.update(requestRef, {
           'status': FriendRequestStatus.accepted.name,
-          'respondedAt': FieldValue.serverTimestamp(),
+          'respondedAt': timestampProvider.serverTimestamp(),
         });
         AppLogger.debug('✅ Updated request status to accepted');
 
@@ -224,15 +229,15 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
         // BUG-011 fix: Changed from AND to individual checks to handle partial states
         int friendsAdded = 0;
         if (!user1FriendDoc.exists) {
-          transaction
-              .set(user1FriendRef, {'addedAt': FieldValue.serverTimestamp()});
+          transaction.set(
+              user1FriendRef, {'addedAt': timestampProvider.serverTimestamp()});
           AppLogger.debug(
               '➕ Created friend doc: users/${request.fromUserId}/friends/${request.toUserId}');
           friendsAdded++;
         }
         if (!user2FriendDoc.exists) {
-          transaction
-              .set(user2FriendRef, {'addedAt': FieldValue.serverTimestamp()});
+          transaction.set(
+              user2FriendRef, {'addedAt': timestampProvider.serverTimestamp()});
           AppLogger.debug(
               '➕ Created friend doc: users/${request.toUserId}/friends/${request.fromUserId}');
           friendsAdded++;

@@ -9,6 +9,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -52,6 +53,7 @@ void main() {
       repository = FirebaseShoppingRepository(
         firestore: fakeFirestore,
         authRepository: authRepository,
+        timestampProvider: const TestTimestampProvider(),
       );
 
       // Sign in the test user
@@ -411,9 +413,7 @@ void main() {
       });
     });
 
-    group('Item Operations with FieldValue',
-        skip: 'FieldValue operations not supported with FakeFirebaseFirestore',
-        () {
+    group('Item Operations with FieldValue', () {
       test('should add item to shopping list', () async {
         // Arrange
         final list = await repository.create(

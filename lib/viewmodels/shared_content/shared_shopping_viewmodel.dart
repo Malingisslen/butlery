@@ -79,10 +79,12 @@ class SharedShoppingViewModel
     await _socialShoppingCoordinator.loadStatusForAllShoppingLists(
         shoppingLists, userId);
 
-    // Filter out dismissed shopping lists for main content view using cache
+    // Filter out dismissed shopping lists and content from blocked users
+    final blocked = blockedUsers;
     final visibleLists = shoppingLists
         .where((list) =>
-            !_socialShoppingCoordinator.isShoppingListDismissed(list.id))
+            !_socialShoppingCoordinator.isShoppingListDismissed(list.id) &&
+            !blocked.contains(list.sharedByUserId))
         .toList();
 
     AppLogger.info(

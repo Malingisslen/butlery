@@ -12,6 +12,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart'
     as firebase_auth_mocks;
 import 'package:butlery/repositories/firebase/firebase_messaging_repository.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -52,6 +53,7 @@ void main() {
             userId: testUserId,
             user: mockAuth.currentUser,
           ),
+        timestampProvider: const TestTimestampProvider(),
       );
     });
 
@@ -61,9 +63,7 @@ void main() {
       await TestServiceLocator.reset();
     });
 
-    group('FieldValue Operations',
-        skip: 'FieldValue operations not supported with FakeFirebaseFirestore',
-        () {
+    group('FieldValue Operations', () {
       test('should use DateTime.now for message creation', () async {
         // Arrange
         final conversationId = await repository.createDirectConversation(

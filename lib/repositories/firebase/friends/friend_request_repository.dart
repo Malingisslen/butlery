@@ -69,6 +69,7 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
   FriendRequestRepository({
     super.firestore,
     AuthRepository? authRepository,
+    super.timestampProvider,
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         );
@@ -157,7 +158,7 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
           .doc(currentUser)
           .collection('rateLimits')
           .doc('friend_requests'),
-      {'lastWrite': FieldValue.serverTimestamp()},
+      {'lastWrite': timestampProvider.serverTimestamp()},
       SetOptions(merge: true),
     );
     await batch.commit();
@@ -242,7 +243,11 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
     );
   }
 
-  /// Accept a friend request.
+  /// Accept a friend request (status update only, no friendship creation).
+  /// R1 note: This method does fetch-then-update without a transaction.
+  /// The primary runtime path uses FriendsManagementOperations.acceptFriendRequest()
+  /// which calls addMutualFriends (transactional). This method only updates
+  /// request status and is not called from the main UI flow.
   Future<bool> acceptFriendRequest(String requestId) async {
     final req = await fetchRequest(requestId);
     if (req == null) {

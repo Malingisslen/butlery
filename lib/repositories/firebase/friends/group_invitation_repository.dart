@@ -73,6 +73,7 @@ class GroupInvitationRepository
   GroupInvitationRepository({
     super.firestore,
     AuthRepository? authRepository,
+    super.timestampProvider,
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         );
@@ -282,7 +283,7 @@ class GroupInvitationRepository
     try {
       await updateInvitation(invitationId, {
         'status': GroupInvitationStatus.accepted.name,
-        'respondedAt': FieldValue.serverTimestamp(),
+        'respondedAt': timestampProvider.serverTimestamp(),
       });
       return true;
     } catch (e) {
@@ -295,7 +296,7 @@ class GroupInvitationRepository
     try {
       await updateInvitation(invitationId, {
         'status': GroupInvitationStatus.rejected.name,
-        'respondedAt': FieldValue.serverTimestamp(),
+        'respondedAt': timestampProvider.serverTimestamp(),
       });
       return true;
     } catch (e) {
@@ -308,7 +309,7 @@ class GroupInvitationRepository
     try {
       await updateInvitation(invitationId, {
         'status': GroupInvitationStatus.cancelled.name,
-        'respondedAt': FieldValue.serverTimestamp(),
+        'respondedAt': timestampProvider.serverTimestamp(),
       });
       return true;
     } catch (e) {
@@ -465,7 +466,7 @@ class GroupInvitationRepository
       // Update to expired status instead of deleting
       await updateDocuments(expiredRefs, {
         'status': GroupInvitationStatus.expired.name,
-        'expiredAt': FieldValue.serverTimestamp(),
+        'expiredAt': timestampProvider.serverTimestamp(),
       });
     }
 

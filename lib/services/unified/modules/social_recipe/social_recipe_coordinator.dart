@@ -360,20 +360,31 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     }
   }
 
+  /// Get specific shared recipe by ID.
+  /// Used for group content view and deep links where the full SharedRecipe is needed.
+  Future<SharedRecipe?> getSharedRecipeById(String recipeId) async {
+    try {
+      AppLogger.info('📥 Loading shared recipe by ID: $recipeId');
+      return await _sharedRecipeRepository.getSharedRecipe(recipeId);
+    } catch (e) {
+      AppLogger.error('Failed to load shared recipe $recipeId', e);
+      return null;
+    }
+  }
+
   /// Load status for a recipe from repository and cache it
   /// Phase 3 Session 2: Status caching method for ViewModel migration.
   /// Loads viewed, imported, and dismissed status from repository and caches locally.
   Future<void> loadStatusForRecipe(String recipeId, String userId) async {
     try {
-      final viewed = await _sharedRecipeRepository.hasViewed(recipeId, userId);
-      final imported =
-          await _sharedRecipeRepository.hasEngaged(recipeId, userId);
-      final dismissed =
-          await _sharedRecipeRepository.hasDismissed(recipeId, userId);
-
-      _viewedStatusCache[recipeId] = viewed;
-      _importedStatusCache[recipeId] = imported;
-      _dismissedStatusCache[recipeId] = dismissed;
+      final results = await Future.wait([
+        _sharedRecipeRepository.hasViewed(recipeId, userId),
+        _sharedRecipeRepository.hasEngaged(recipeId, userId),
+        _sharedRecipeRepository.hasDismissed(recipeId, userId),
+      ]);
+      _viewedStatusCache[recipeId] = results[0];
+      _importedStatusCache[recipeId] = results[1];
+      _dismissedStatusCache[recipeId] = results[2];
     } catch (e) {
       AppLogger.error('Failed to load status for recipe $recipeId', e);
     }
@@ -384,9 +395,9 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   /// Loads status for multiple recipes to populate cache efficiently.
   Future<void> loadStatusForAllRecipes(
       List<SharedRecipe> recipes, String userId) async {
-    for (final recipe in recipes) {
-      await loadStatusForRecipe(recipe.id, userId);
-    }
+    await Future.wait(
+      recipes.map((recipe) => loadStatusForRecipe(recipe.id, userId)),
+    );
   }
 
   /// Check if recipe is dismissed using cache

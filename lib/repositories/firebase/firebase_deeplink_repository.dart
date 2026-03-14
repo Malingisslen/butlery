@@ -71,6 +71,7 @@ class FirebaseDeepLinkRepository
   FirebaseDeepLinkRepository({
     super.firestore,
     required super.authRepository,
+    super.timestampProvider,
   });
 
   @override
@@ -141,7 +142,7 @@ class FirebaseDeepLinkRepository
         'id': shortCode,
         'longUrl': longUrl,
         'metadata': metadata,
-        'createdAt': FieldValue.serverTimestamp(),
+        'createdAt': timestampProvider.serverTimestamp(),
         'createdBy': currentUserId,
         'clickCount': 0,
       };
@@ -177,7 +178,7 @@ class FirebaseDeepLinkRepository
     try {
       await collection.doc(shortUrl).update({
         'clickCount': FieldValue.increment(1),
-        'lastClickedAt': FieldValue.serverTimestamp(),
+        'lastClickedAt': timestampProvider.serverTimestamp(),
       });
 
       // Also track click history
@@ -185,7 +186,7 @@ class FirebaseDeepLinkRepository
           .doc(shortUrl)
           .collection(FirestoreCollections.clicks)
           .add({
-        'timestamp': FieldValue.serverTimestamp(),
+        'timestamp': timestampProvider.serverTimestamp(),
         'userId': currentUserId,
       });
     } catch (e) {
@@ -200,7 +201,7 @@ class FirebaseDeepLinkRepository
       await collection.doc(linkId).set({
         'id': linkId,
         'metadata': metadata,
-        'updatedAt': FieldValue.serverTimestamp(),
+        'updatedAt': timestampProvider.serverTimestamp(),
         'updatedBy': currentUserId,
       }, SetOptions(merge: true));
 

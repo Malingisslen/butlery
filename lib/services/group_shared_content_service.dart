@@ -99,9 +99,10 @@ class GroupSharedContentService extends BaseService {
       AppLogger.debug('   All IDs for query: $allMemberIds');
 
       // Query shopping lists shared with at least one group member
+      // C5 fix: field is 'sharedToUserIds' in shared_shopping_lists collection
       final snapshot = await _firestore
           .collection(FirestoreCollections.sharedShoppingLists)
-          .where('sharedWithUserIds', arrayContainsAny: allMemberIds)
+          .where('sharedToUserIds', arrayContainsAny: allMemberIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
           .get();
@@ -179,11 +180,12 @@ class GroupSharedContentService extends BaseService {
       AppLogger.debug('   Group members: ${group.friendUserIds}');
       AppLogger.debug('   All IDs for query: $allMemberIds');
 
-      // Try querying shared_recipes collection if it exists
-      // This may need adjustment based on actual recipe sharing structure
+      // TODO: Issue #014 migrated shared_recipes to subcollection-based members.
+      // This query won't find new docs. Needs CollectionGroup query on /members
+      // or a denormalized sharedToUserIds field for backward compatibility.
       final snapshot = await _firestore
           .collection(FirestoreCollections.sharedRecipes)
-          .where('sharedWithUserIds', arrayContainsAny: allMemberIds)
+          .where('sharedByUserId', isEqualTo: currentUserId)
           .orderBy('sharedAt', descending: true)
           .limit(20)
           .get();
@@ -230,7 +232,7 @@ class GroupSharedContentService extends BaseService {
     try {
       return _firestore
           .collection(FirestoreCollections.sharedShoppingLists)
-          .where('sharedWithUserIds', arrayContainsAny: group.friendUserIds)
+          .where('sharedToUserIds', arrayContainsAny: group.friendUserIds)
           .orderBy('sharedAt', descending: true)
           .limit(20)
           .snapshots()
@@ -265,9 +267,12 @@ class GroupSharedContentService extends BaseService {
   /// Stream of recipes shared with group (real-time updates)
   Stream<List<SharedContentItem>> streamSharedRecipes(FriendCategory group) {
     try {
+      final userId = _permissionService.currentUserId;
+      if (userId == null) return Stream.value([]);
+
       return _firestore
           .collection(FirestoreCollections.sharedRecipes)
-          .where('sharedWithUserIds', arrayContainsAny: group.friendUserIds)
+          .where('sharedByUserId', isEqualTo: userId)
           .orderBy('sharedAt', descending: true)
           .limit(20)
           .snapshots()

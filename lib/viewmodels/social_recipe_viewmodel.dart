@@ -5,7 +5,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/models/social/social_comment.dart';
+import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -33,8 +33,7 @@ class SocialRecipeViewModel extends ChangeNotifier {
         _recipeService = recipeService,
         _userService = userService {
     _commentsManager = SocialCommentsManager(_recipeService);
-    _engagementManager =
-        SocialEngagementManager(() => _commentsManager.comments);
+    _engagementManager = SocialEngagementManager();
     _profileManager = SocialProfileManager(_friendsService, _userService);
 
     _commentsManager.addListener(_onManagerChanged);
@@ -53,8 +52,8 @@ class SocialRecipeViewModel extends ChangeNotifier {
   bool get isPostingComment => _commentsManager.isPostingComment;
   bool get isReplying => _commentsManager.isReplying;
   String get newCommentText => _commentsManager.newCommentText;
-  List<SocialComment> get comments => _commentsManager.comments;
-  List<SocialComment> get topLevelComments => _commentsManager.topLevelComments;
+  List<RecipeComment> get comments => _commentsManager.comments;
+  List<RecipeComment> get topLevelComments => _commentsManager.topLevelComments;
 
   // Profile accessors - delegate to profile manager
   List<UserProfile> get friends => _profileManager.friends;
@@ -93,7 +92,7 @@ class SocialRecipeViewModel extends ChangeNotifier {
     await _commentsManager.deleteComment(recipeId, commentId);
   }
 
-  List<SocialComment> getReplies(String parentCommentId) {
+  List<RecipeComment> getReplies(String parentCommentId) {
     return _commentsManager.getReplies(parentCommentId);
   }
 
@@ -119,7 +118,7 @@ class SocialRecipeViewModel extends ChangeNotifier {
     await _profileManager.initialize();
   }
 
-  // Collaborative recipe operations (placeholder implementations)
+  // Collaborative recipe operations (delegated to service layer)
   Future<bool> createCollaborativeRecipe({
     required String name,
     required List<String> memberIds,
@@ -139,8 +138,25 @@ class SocialRecipeViewModel extends ChangeNotifier {
     bool allowMemberInvites = true,
     List<String>? categoryIds,
   }) async {
-    AppLogger.info('Creating collaborative recipe: $name');
-    return false;
+    final recipeId = await _recipeService.createCollaborativeRecipe(
+      title: name,
+      memberIds: memberIds,
+      description: description,
+      ingredients: ingredients,
+      instructions: instructions,
+      imageUrls: imageUrls,
+      mealType: mealType,
+      portions: portions,
+      timeMinutes: timeMinutes,
+      rating: rating,
+      personalTagIds: personalTagIds,
+      sourceUrl: sourceUrl,
+      descriptionCollaborative: descriptionCollaborative,
+      allowGuestViewing: allowGuestViewing,
+      allowMemberInvites: allowMemberInvites,
+      categoryIds: categoryIds,
+    );
+    return recipeId != null;
   }
 
   Future<String?> shareRecipe({
@@ -152,47 +168,71 @@ class SocialRecipeViewModel extends ChangeNotifier {
     bool allowMemberInvites = true,
     List<String>? categoryIds,
   }) async {
-    AppLogger.info('Sharing recipe: $recipeId');
-    return null;
+    return await _recipeService.social.shareRecipe(
+      recipeId: recipeId,
+      memberIds: memberIds,
+      memberDisplayNames: memberDisplayNames,
+      collaborativeDescription: collaborativeDescription,
+      allowGuestViewing: allowGuestViewing,
+      allowMemberInvites: allowMemberInvites,
+      categoryIds: categoryIds,
+    );
   }
 
   Future<String?> makeRecipePersonal(String collaborativeRecipeId) async {
-    AppLogger.info('Making recipe personal: $collaborativeRecipeId');
-    return null;
+    return await _recipeService.social.makeRecipePersonal(
+      collaborativeRecipeId: collaborativeRecipeId,
+    );
   }
 
-  // Member management operations (placeholder implementations)
+  // Member management operations (delegated to service layer)
   Future<bool> addMemberToRecipe(
       String recipeId, String userId, String userDisplayName,
-      {required permission}) async {
-    AppLogger.info('Adding member to recipe: $recipeId');
-    return false;
+      {required ResourcePermission permission}) async {
+    return await _recipeService.addMemberToRecipe(
+      recipeId,
+      userId,
+      permission,
+    );
   }
 
   Future<bool> removeMemberFromRecipe(String recipeId, String userId) async {
-    AppLogger.info('Removing member from recipe: $recipeId');
-    return false;
+    return await _recipeService.removeMemberFromRecipe(recipeId, userId);
   }
 
   Future<bool> updateMemberPermission(
-      String recipeId, String userId, permission) async {
-    AppLogger.info('Updating member permission for recipe: $recipeId');
-    return false;
+      String recipeId, String userId, ResourcePermission permission) async {
+    return await _recipeService.updateMemberPermission(
+      recipeId,
+      userId,
+      permission,
+    );
   }
 
+  /// Synchronous accessor for recipe member permissions.
+  /// For full member details use the async service method directly.
   Map<String, ResourcePermission> getRecipeMembers(String recipeId) {
+    AppLogger.warning('Not yet implemented: getRecipeMembers (sync accessor)');
     return {};
   }
 
   bool canInviteMembers(String recipeId) {
-    return false;
+    return _recipeService.social.canInviteMembers(recipeId);
   }
 
+  /// Synchronous accessor for recipes shared with the current user.
+  /// The underlying service method is async; use the service directly for full results.
   List<Recipe> getSharedWithMe() {
+    AppLogger.warning(
+        'Not yet implemented: getSharedWithMe (sync accessor — use service.social.getSharedWithMe())');
     return [];
   }
 
+  /// Synchronous accessor for recipes shared by the current user.
+  /// The underlying service method is async; use the service directly for full results.
   List<Recipe> getSharedByMe() {
+    AppLogger.warning(
+        'Not yet implemented: getSharedByMe (sync accessor — use service.social.getSharedByMe())');
     return [];
   }
 

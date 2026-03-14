@@ -13,6 +13,7 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/styled/styled_button.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/tagging/tag_result_display.dart';
 
 /// View for managing user allergen and dietary preferences.
 ///
@@ -64,6 +65,12 @@ class _AllergenPreferencesContent extends StatelessWidget {
                   _buildActionsSection(context, viewModel),
                   const SizedBox(height: AppDimensions.spacingXl),
                   _buildRetagSection(context),
+                  const SizedBox(height: AppDimensions.spacingL),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: AppDimensions.paddingS),
+                    child: AllergenDisclaimer(),
+                  ),
                   if (viewModel.hasError) ...[
                     const SizedBox(height: AppDimensions.spacingL),
                     _buildErrorMessage(context, viewModel.error!),
@@ -378,7 +385,8 @@ class _AllergenPreferencesContent extends StatelessWidget {
             getRecipes: () => recipeService.personal
                 .fetchAllUserRecipes(authService.currentUser!.uid),
             // Use raw save to avoid double-tagging via updatePersonalRecipe
-            saveRecipe: (recipe) => recipeService.personal.saveRecipeRaw(recipe),
+            saveRecipe: (recipe) =>
+                recipeService.personal.saveRecipeRaw(recipe),
             onProgress: onProgress,
             // User explicitly requested retag — process all recipes
             forceRetag: true,

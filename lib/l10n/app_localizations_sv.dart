@@ -2878,6 +2878,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get groupCouldNotFetchMenu => 'Kunde inte hämta meny från servern';
 
   @override
+  String get groupCouldNotFetchRecipe => 'Kunde inte hämta recept från servern';
+
+  @override
   String groupCouldNotImportList(String error) {
     return 'Kunde inte importera lista: $error';
   }
@@ -2908,6 +2911,11 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String groupErrorOpeningMenu(String error) {
     return 'Fel vid öppning av meny: $error';
+  }
+
+  @override
+  String groupErrorOpeningRecipe(String error) {
+    return 'Fel vid öppning av recept: $error';
   }
 
   @override
@@ -2996,6 +3004,16 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get groupPasteInAnyApp => 'Klistra in i valfri app';
+
+  @override
+  String groupRecipeImportedSuccess(String title) {
+    return 'Receptet "$title" har importerats';
+  }
+
+  @override
+  String groupRecipeImportFailed(String error) {
+    return 'Kunde inte importera recept: $error';
+  }
 
   @override
   String groupRecipeViewComingSoon(String title) {
@@ -11492,4 +11510,18 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get recipeEditTags => 'Redigera taggar';
+
+  @override
+  String get allergenDisclaimer =>
+      'Allergeninformation är endast vägledande. Verifiera alltid med originalreceptet.';
+
+  @override
+  String allergenToggleSemantics(String allergen) {
+    return 'Växla spårning av $allergen';
+  }
+
+  @override
+  String dietaryToggleSemantics(String dietary) {
+    return 'Växla kostpreferens $dietary';
+  }
 }

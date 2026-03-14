@@ -11,6 +11,7 @@ import 'package:firebase_auth_mocks/firebase_auth_mocks.dart' as auth_mocks;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_change.dart';
 import '../../../infrastructure/mocks/firestore_singleton.dart';
@@ -51,6 +52,7 @@ void main() {
       repository = FirebaseRecipeRepository(
         firestore: fakeFirestore,
         authRepository: authRepository,
+        timestampProvider: const TestTimestampProvider(),
       );
     });
 
@@ -59,9 +61,7 @@ void main() {
       await TestDataIsolator.cleanupTest('recipe_repository_integration_test');
     });
 
-    group('Recipes with FieldValue operations',
-        skip: 'FieldValue operations not supported with FakeFirebaseFirestore',
-        () {
+    group('Recipes with FieldValue operations', () {
       test('should create recipe with server timestamps', () async {
         // Arrange
         final recipe = RecipeBuilder()

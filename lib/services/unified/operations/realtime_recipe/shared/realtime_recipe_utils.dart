@@ -105,19 +105,17 @@ class RealtimeRecipeUtils {
     );
   }
 
-  /// Check if user is actively viewing recipe (presence simulation)
+  /// Check if user is actively viewing recipe.
+  /// Returns false until real presence tracking is implemented.
   static bool isUserActivelyViewing(String userId, String recipeId) {
-    // This would check presence data from Firebase or local tracking
-    // For now, simulate some active users randomly
-    return DateTime.now().millisecond % 3 == 0; // ~33% chance
+    return false;
   }
 
-  /// Get active editors based on recent activity
+  /// Get active editors based on recent edit activity (last 5 minutes).
   static List<String> getActiveEditorsFromRecipe(Recipe recipe) {
     try {
       if (!recipe.isCollaborative) return [];
 
-      // Get members who are currently active (have edited in last 5 minutes)
       final recentThreshold =
           DateTime.now().subtract(const Duration(minutes: 5));
       final activeEditors = <String>[];
@@ -126,16 +124,6 @@ class RealtimeRecipeUtils {
         final lastEditor = recipe.realtimeData?.lastEditedByUserId;
         if (lastEditor != null && !activeEditors.contains(lastEditor)) {
           activeEditors.add(lastEditor);
-        }
-      }
-
-      // Add other members who might be viewing (presence simulation)
-      final allMembers =
-          recipe.socialData?.memberPermissions?.keys.toList() ?? [];
-      for (final memberId in allMembers) {
-        if (!activeEditors.contains(memberId) &&
-            isUserActivelyViewing(memberId, recipe.id)) {
-          activeEditors.add(memberId);
         }
       }
 
@@ -234,11 +222,10 @@ class RealtimeRecipeUtils {
     };
   }
 
-  /// Generate simulated edit history for a recipe
+  /// Generate edit history from real recipe timestamps.
   static List<Map<String, dynamic>> generateEditHistory(Recipe recipe) {
     final history = <Map<String, dynamic>>[];
 
-    // Add creation event
     history.add(createEditHistoryEntry(
       timestamp: recipe.createdAt,
       userId: recipe.core.createdBy ?? '',
@@ -247,7 +234,6 @@ class RealtimeRecipeUtils {
       details: 'Initial recipe creation',
     ));
 
-    // Add last update event if different from creation
     if (recipe.updatedAt
         .isAfter(recipe.createdAt.add(const Duration(seconds: 1)))) {
       history.add(createEditHistoryEntry(
@@ -259,25 +245,6 @@ class RealtimeRecipeUtils {
         action: 'Updated recipe',
         details: 'Recipe content modified',
       ));
-    }
-
-    // Add collaborative events if it's a collaborative recipe
-    if (recipe.isCollaborative &&
-        recipe.socialData?.memberPermissions?.isNotEmpty == true) {
-      for (final member in recipe.socialData!.memberPermissions!.entries) {
-        if (member.key != recipe.socialData!.ownerId) {
-          // Simulate member addition event
-          history.add(createEditHistoryEntry(
-            timestamp: recipe.createdAt.add(const Duration(hours: 1)),
-            userId: recipe.socialData!.ownerId ?? '',
-            userName: recipe.socialData!.ownerDisplayName ?? 'Unknown',
-            action: 'Added collaborator',
-            details:
-                'Added user with ${member.value.toString().split('.').last} permission',
-            targetUserId: member.key,
-          ));
-        }
-      }
     }
 
     // Sort by timestamp (newest first)

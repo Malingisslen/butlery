@@ -185,12 +185,10 @@ class CollaborationManagementModule {
         return true;
       }
 
-      // Add new members (this would typically update Firestore)
-      // await _parent.addRecipeCollaborators(recipeId, newMembers);
-
-      AppLogger.success(
-          'Added ${newMembers.length} new collaborators to recipe: ${recipe.title}');
-      return true;
+      // TODO: Implement Firestore write for adding collaborators
+      AppLogger.warning(
+          'addCollaborators not yet implemented — no Firestore write performed');
+      return false;
     } catch (e) {
       AppLogger.error('Failed to add collaborators', e);
       return false;
@@ -230,12 +228,10 @@ class CollaborationManagementModule {
         return false;
       }
 
-      // Remove members (this would typically update Firestore)
-      // await _parent.removeRecipeCollaborators(recipeId, memberIds);
-
-      AppLogger.success(
-          'Removed ${memberIds.length} collaborators from recipe: ${recipe.title}');
-      return true;
+      // TODO: Implement Firestore write for removing collaborators
+      AppLogger.warning(
+          'removeCollaborators not yet implemented — no Firestore write performed');
+      return false;
     } catch (e) {
       AppLogger.error('Failed to remove collaborators', e);
       return false;
@@ -278,12 +274,10 @@ class CollaborationManagementModule {
         }
       }
 
-      // Update permissions (this would typically update Firestore)
-      // await _parent.updateRecipeMemberPermissions(recipeId, memberPermissions);
-
-      AppLogger.success(
-          'Updated permissions for ${memberPermissions.length} members in recipe: ${recipe.title}');
-      return true;
+      // TODO: Implement Firestore write for updating member permissions
+      AppLogger.warning(
+          'updateMemberPermissions not yet implemented — no Firestore write performed');
+      return false;
     } catch (e) {
       AppLogger.error('Failed to update member permissions', e);
       return false;
@@ -323,12 +317,10 @@ class CollaborationManagementModule {
         return false;
       }
 
-      // Transfer ownership (this would typically update Firestore)
-      // await _parent.transferRecipeOwnership(recipeId, newOwnerId);
-
-      AppLogger.success(
-          'Transferred ownership of recipe: ${recipe.title} to user: $newOwnerId');
-      return true;
+      // TODO: Implement Firestore write for transferring ownership
+      AppLogger.warning(
+          'transferOwnership not yet implemented — no Firestore write performed');
+      return false;
     } catch (e) {
       AppLogger.error('Failed to transfer ownership', e);
       return false;

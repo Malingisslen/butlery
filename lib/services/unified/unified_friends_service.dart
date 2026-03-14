@@ -66,7 +66,6 @@ import 'package:butlery/services/unified/operations/friends_invitations_operatio
 import 'package:butlery/services/unified/operations/social_group_sharing_operations.dart';
 import 'package:butlery/services/unified/friends/friends_state_manager.dart';
 import 'package:butlery/services/unified/friends/friends_internal_operations.dart';
-import 'package:butlery/services/unified/friends/friends_service_stubs.dart';
 import 'package:butlery/services/unified/friends/friends_firebase_sync.dart';
 import 'package:butlery/services/unified/friends/friends_utility_operations.dart';
 
@@ -90,7 +89,6 @@ class UnifiedFriendsService extends ChangeNotifier
 
   // Focused modules (Phase 9 refactoring)
   late final FriendsStateManager _stateManager;
-  late final FriendsServiceCoordinator _serviceCoordinator;
   late final FriendsInternalOperations _internalOps;
   late final FriendsFirebaseSyncOperations _firebaseSyncOps;
   late final FriendsUtilityOperations _utilityOps;
@@ -156,9 +154,7 @@ class UnifiedFriendsService extends ChangeNotifier
   FriendsCategoriesOperations get categories => _categoriesOps;
   FriendsInvitationsOperations get invitations => _invitationsOps;
   SocialGroupSharingOperations get groupSharing => _groupSharingOps;
-  FriendsSyncService get sync => _serviceCoordinator.sync;
-  FriendsPresenceService get presence => _serviceCoordinator.presence;
-  FriendsCacheService get cache => _serviceCoordinator.cache;
+
   Future<void> initialize() async {
     AppLogger.info('🔄 Initializing UnifiedFriendsService facade...');
 
@@ -193,9 +189,6 @@ class UnifiedFriendsService extends ChangeNotifier
       await categories.migrateOwnersAsMembers();
     }
 
-    // Initialize the service coordinator
-    await _serviceCoordinator.initialize();
-
     AppLogger.success(
         '✅ UnifiedFriendsService facade initialized with auth state handling');
   }
@@ -206,9 +199,6 @@ class UnifiedFriendsService extends ChangeNotifier
       repository: _friendsRepository,
       categoryRepository: _categoryRepository,
     );
-
-    // Initialize service coordinator
-    _serviceCoordinator = FriendsServiceCoordinator();
 
     // Initialize internal operations
     _internalOps = FriendsInternalOperations(
@@ -474,9 +464,6 @@ class UnifiedFriendsService extends ChangeNotifier
   void dispose() {
     // Clear friends state manager first
     _stateManager.clearAllData();
-
-    // Dispose service coordinator
-    _serviceCoordinator.dispose();
 
     // Dispose stream subscriptions (async, so we'll do it without await)
     disposeStreamResources();

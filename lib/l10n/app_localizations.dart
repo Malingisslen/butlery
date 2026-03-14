@@ -5091,6 +5091,12 @@ abstract class AppLocalizations {
   /// **'Kunde inte hämta meny från servern'**
   String get groupCouldNotFetchMenu;
 
+  /// No description provided for @groupCouldNotFetchRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta recept från servern'**
+  String get groupCouldNotFetchRecipe;
+
   /// No description provided for @groupCouldNotImportList.
   ///
   /// In sv, this message translates to:
@@ -5144,6 +5150,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Fel vid öppning av meny: {error}'**
   String groupErrorOpeningMenu(String error);
+
+  /// No description provided for @groupErrorOpeningRecipe.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fel vid öppning av recept: {error}'**
+  String groupErrorOpeningRecipe(String error);
 
   /// No description provided for @groupImport.
   ///
@@ -5276,6 +5288,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Klistra in i valfri app'**
   String get groupPasteInAnyApp;
+
+  /// No description provided for @groupRecipeImportedSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet "{title}" har importerats'**
+  String groupRecipeImportedSuccess(String title);
+
+  /// No description provided for @groupRecipeImportFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte importera recept: {error}'**
+  String groupRecipeImportFailed(String error);
 
   /// No description provided for @groupRecipeViewComingSoon.
   ///
@@ -19617,6 +19641,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Redigera taggar'**
   String get recipeEditTags;
+
+  /// No description provided for @allergenDisclaimer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergeninformation är endast vägledande. Verifiera alltid med originalreceptet.'**
+  String get allergenDisclaimer;
+
+  /// No description provided for @allergenToggleSemantics.
+  ///
+  /// In sv, this message translates to:
+  /// **'Växla spårning av {allergen}'**
+  String allergenToggleSemantics(String allergen);
+
+  /// No description provided for @dietaryToggleSemantics.
+  ///
+  /// In sv, this message translates to:
+  /// **'Växla kostpreferens {dietary}'**
+  String dietaryToggleSemantics(String dietary);
 }
 
 class _AppLocalizationsDelegate

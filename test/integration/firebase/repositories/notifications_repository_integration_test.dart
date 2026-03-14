@@ -12,6 +12,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_notifications_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import '../../../infrastructure/mocks/firestore_singleton.dart';
 import '../../../test_support/test_field_values.dart';
@@ -50,6 +51,7 @@ void main() {
       repository = FirebaseNotificationsRepository(
         firestore: fakeFirestore,
         authRepository: authRepository,
+        timestampProvider: const TestTimestampProvider(),
       );
     });
 
@@ -59,9 +61,7 @@ void main() {
           'notifications_repository_integration_test');
     });
 
-    group('Notifications with FieldValue operations',
-        skip: 'FieldValue operations not supported with FakeFirebaseFirestore',
-        () {
+    group('Notifications with FieldValue operations', () {
       test('should create notification with server timestamp', () async {
         // Arrange
         const userId = 'target_user';

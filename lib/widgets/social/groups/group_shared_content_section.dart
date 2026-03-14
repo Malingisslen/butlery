@@ -5,6 +5,8 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
 import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
+import 'package:butlery/views/recipe_detail_view.dart';
 import 'package:butlery/views/veckomeny_view.dart';
 import 'package:butlery/widgets/social/groups/shared_content_card.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -161,14 +163,39 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
     }
   }
 
-  void _showRecipeDetailsDialog(SharedContentItem item) {
-    // Placeholder for recipe details
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(context.l10n.groupRecipeViewComingSoon(item.title)),
-        backgroundColor: context.butleryColors.info,
-      ),
-    );
+  Future<void> _showRecipeDetailsDialog(SharedContentItem item) async {
+    try {
+      final sharedRecipeViewModel = ServiceLocator.get<SharedRecipeViewModel>();
+      final sharedRecipe =
+          await sharedRecipeViewModel.getSharedRecipeById(item.id);
+
+      if (sharedRecipe == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.groupCouldNotFetchRecipe),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+        return;
+      }
+
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) =>
+              RecipeDetailView(recipe: sharedRecipe.contentSnapshot),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.groupErrorOpeningRecipe(e.toString())),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
   }
 
   void _showShoppingListDetailsDialog(SharedContentItem item) {
@@ -192,13 +219,40 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
   }
 
   Future<void> _importRecipe(SharedContentItem item) async {
-    // Placeholder for recipe import functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(context.l10n.groupImportingRecipeComingSoon(item.title)),
-        backgroundColor: context.butleryColors.success,
-      ),
-    );
+    try {
+      final sharedRecipeViewModel = ServiceLocator.get<SharedRecipeViewModel>();
+      final sharedRecipe =
+          await sharedRecipeViewModel.getSharedRecipeById(item.id);
+
+      if (sharedRecipe == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.groupCouldNotFetchRecipe),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+        return;
+      }
+
+      await sharedRecipeViewModel.importSharedRecipe(sharedRecipe);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.groupRecipeImportedSuccess(item.title)),
+          backgroundColor: context.butleryColors.success,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.groupRecipeImportFailed(e.toString())),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
   }
 
   Future<void> _importShoppingList(SharedContentItem item) async {

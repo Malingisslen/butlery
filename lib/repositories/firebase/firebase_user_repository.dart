@@ -63,6 +63,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     super.firestore,
     AuthRepository? authRepository,
     super.auditRepository,
+    super.timestampProvider,
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         );
@@ -217,7 +218,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
 
     await collection.doc(userId).update({
       'isOnline': isOnline,
-      'lastActiveAt': FieldValue.serverTimestamp(),
+      'lastActiveAt': timestampProvider.serverTimestamp(),
     });
 
     logPermissionCheck(
@@ -389,7 +390,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
 
     await collection.doc(userId).update({
       'fcmToken': token,
-      'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
+      'fcmTokenUpdatedAt': timestampProvider.serverTimestamp(),
     });
 
     logPermissionCheck(
@@ -453,8 +454,8 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     final usersCollection = firestore.collection(FirestoreCollections.users);
     await usersCollection.doc(userId).set({
       'uid': userId,
-      'createdAt': FieldValue.serverTimestamp(),
-      'lastActiveAt': FieldValue.serverTimestamp(),
+      'createdAt': timestampProvider.serverTimestamp(),
+      'lastActiveAt': timestampProvider.serverTimestamp(),
       'initialized': true,
     }, SetOptions(merge: true));
   }

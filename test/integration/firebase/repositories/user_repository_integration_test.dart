@@ -11,6 +11,7 @@ import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 import '../../../infrastructure/mocks/firestore_singleton.dart';
 import '../../../infrastructure/builders/user_builder.dart';
 import '../../../test_support/test_field_values.dart';
@@ -48,6 +49,7 @@ void main() {
       repository = FirebaseUserRepository(
         firestore: fakeFirestore,
         authRepository: authRepository,
+        timestampProvider: const TestTimestampProvider(),
       );
     });
 
@@ -56,9 +58,7 @@ void main() {
       await TestDataIsolator.cleanupTest('user_repository_integration_test');
     });
 
-    group('Profile with FieldValue operations',
-        skip: 'FieldValue operations not supported with FakeFirebaseFirestore',
-        () {
+    group('Profile with FieldValue operations', () {
       test('should save profile with server timestamps', () async {
         // Arrange
         final profile = UserBuilder()

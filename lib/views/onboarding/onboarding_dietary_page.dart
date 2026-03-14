@@ -98,55 +98,60 @@ class _DietaryToggleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? cs.primary.withValues(alpha: AppDimensions.opacityLight)
-              : cs.surfaceContainerHighest,
-          border: Border.all(
-            color: isSelected ? cs.primary : cs.outlineVariant,
-            width: isSelected ? 2 : 1,
+    return Semantics(
+      button: true,
+      toggled: isSelected,
+      label: context.l10n.dietaryToggleSemantics(label),
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? cs.primary.withValues(alpha: AppDimensions.opacityLight)
+                : cs.surfaceContainerHighest,
+            border: Border.all(
+              color: isSelected ? cs.primary : cs.outlineVariant,
+              width: isSelected ? 2 : 1,
+            ),
           ),
-        ),
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: AppDimensions.iconSizeXl,
-              color: isSelected ? cs.primary : cs.onSurfaceVariant,
-            ),
-            const SizedBox(width: AppDimensions.spacingMd),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: AppTextStyles.titleMedium.copyWith(
-                      color: isSelected ? cs.primary : cs.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXs),
-                  Text(
-                    description,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (isSelected)
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          child: Row(
+            children: [
               Icon(
-                Icons.check_circle,
-                size: AppDimensions.iconSizeL,
-                color: cs.primary,
+                icon,
+                size: AppDimensions.iconSizeXl,
+                color: isSelected ? cs.primary : cs.onSurfaceVariant,
               ),
-          ],
+              const SizedBox(width: AppDimensions.spacingMd),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: AppTextStyles.titleMedium.copyWith(
+                        color: isSelected ? cs.primary : cs.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Text(
+                      description,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                Icon(
+                  Icons.check_circle,
+                  size: AppDimensions.iconSizeL,
+                  color: cs.primary,
+                ),
+            ],
+          ),
         ),
       ),
     );

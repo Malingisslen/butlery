@@ -5,6 +5,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 
 /// Module handling shopping list template operations.
 /// Provides template CRUD, search, and list generation from templates.
@@ -22,6 +23,7 @@ class ShoppingTemplateOperationsModule {
     required String resourceType,
     required String resourceId,
   }) validateOwnership;
+  final TimestampProvider timestampProvider;
 
   ShoppingTemplateOperationsModule({
     required this.firestore,
@@ -31,6 +33,7 @@ class ShoppingTemplateOperationsModule {
     required this.readList,
     required this.createList,
     required this.validateOwnership,
+    this.timestampProvider = const ServerTimestampProvider(),
   });
 
   /// Save shopping list as reusable template
@@ -69,8 +72,8 @@ class ShoppingTemplateOperationsModule {
       'ownerDisplayName': authRepository.currentUser?.displayName,
       'originalListId': listId,
       'items': list.items.map((item) => item.toFirestore()).toList(),
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
+      'createdAt': timestampProvider.serverTimestamp(),
+      'updatedAt': timestampProvider.serverTimestamp(),
       'isPublic': isPublic,
       'tags': tags ?? <String>[],
       'metadata': {
@@ -113,7 +116,7 @@ class ShoppingTemplateOperationsModule {
     );
 
     final updateData = <String, dynamic>{
-      'updatedAt': FieldValue.serverTimestamp(),
+      'updatedAt': timestampProvider.serverTimestamp(),
     };
 
     if (name != null) updateData['name'] = name.trim();

@@ -2,7 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/models/social/social_comment.dart';
+import 'package:butlery/models/recipe_comment.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
@@ -49,30 +50,29 @@ class UserProfileBuilder {
   }
 }
 
-class SocialCommentBuilder {
-  static SocialComment build({
+class RecipeCommentBuilder {
+  static RecipeComment build({
     String? id,
     String? recipeId,
     String? authorId,
     String? text,
     DateTime? createdAt,
     String? parentCommentId,
-    bool isLiked = false,
-    int likeCount = 0,
+    int likesCount = 0,
   }) {
-    return SocialComment(
+    return RecipeComment(
       id: id ?? 'comment_${DateTime.now().millisecondsSinceEpoch}',
       recipeId: recipeId ?? 'recipe_123',
       authorId: authorId ?? 'user_123',
+      authorDisplayName: 'Test Author',
       text: text ?? 'Test comment',
       createdAt: createdAt ?? DateTime.now(),
       parentCommentId: parentCommentId,
-      isLiked: isLiked,
-      likeCount: likeCount,
+      likesCount: likesCount,
     );
   }
 
-  static SocialComment buildReply({
+  static RecipeComment buildReply({
     String? id,
     String? parentId,
     String? authorId,
@@ -98,7 +98,7 @@ void main() {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(UserProfileBuilder.build());
-      registerFallbackValue(SocialCommentBuilder.build());
+      registerFallbackValue(RecipeCommentBuilder.build());
     });
 
     setUp(() async {
@@ -353,19 +353,19 @@ void main() {
 
       test('should get replies for parent comment', () {
         // Arrange
-        final parentComment = SocialCommentBuilder.build(
+        final parentComment = RecipeCommentBuilder.build(
           id: 'parent_1',
           parentCommentId: null,
         );
-        final reply1 = SocialCommentBuilder.buildReply(
+        final reply1 = RecipeCommentBuilder.buildReply(
           id: 'reply_1',
           parentId: 'parent_1',
         );
-        final reply2 = SocialCommentBuilder.buildReply(
+        final reply2 = RecipeCommentBuilder.buildReply(
           id: 'reply_2',
           parentId: 'parent_1',
         );
-        final otherComment = SocialCommentBuilder.build(
+        final otherComment = RecipeCommentBuilder.build(
           id: 'other_1',
         );
 
@@ -384,7 +384,7 @@ void main() {
 
       test('should return empty list for comment with no replies', () {
         // Arrange
-        final comment = SocialCommentBuilder.build(id: 'lonely_comment');
+        final comment = RecipeCommentBuilder.build(id: 'lonely_comment');
         viewModel.comments.add(comment);
 
         // Act
@@ -398,10 +398,9 @@ void main() {
     group('Social Engagement', () {
       test('should toggle comment like', () async {
         // Arrange
-        final comment = SocialCommentBuilder.build(
+        final comment = RecipeCommentBuilder.build(
           id: 'comment_789',
-          isLiked: false,
-          likeCount: 5,
+          likesCount: 5,
         );
         viewModel.comments.add(comment);
         var notificationCount = 0;
@@ -411,26 +410,24 @@ void main() {
         await viewModel.toggleCommentLike('comment_789');
 
         // Assert
-        expect(comment.isLiked, isTrue);
-        expect(comment.likeCount, equals(6));
+        expect(viewModel.hasLikedComment('comment_789'), isTrue);
         expect(notificationCount, equals(1));
       });
 
       test('should toggle comment unlike', () async {
         // Arrange
-        final comment = SocialCommentBuilder.build(
+        final comment = RecipeCommentBuilder.build(
           id: 'comment_789',
-          isLiked: true,
-          likeCount: 6,
+          likesCount: 6,
         );
         viewModel.comments.add(comment);
 
-        // Act
+        // Like then unlike
+        await viewModel.toggleCommentLike('comment_789');
         await viewModel.toggleCommentLike('comment_789');
 
         // Assert
-        expect(comment.isLiked, isFalse);
-        expect(comment.likeCount, equals(5));
+        expect(viewModel.hasLikedComment('comment_789'), isFalse);
       });
 
       test('should handle toggle like for non-existent comment', () async {
@@ -441,17 +438,14 @@ void main() {
         expect(viewModel.comments, isEmpty);
       });
 
-      test('should check if comment is liked', () {
+      test('should check if comment is liked', () async {
         // Arrange
-        final likedComment = SocialCommentBuilder.build(
-          id: 'liked_comment',
-          isLiked: true,
-        );
-        final unlikedComment = SocialCommentBuilder.build(
-          id: 'unliked_comment',
-          isLiked: false,
-        );
-        viewModel.comments.addAll([likedComment, unlikedComment]);
+        final comment1 = RecipeCommentBuilder.build(id: 'liked_comment');
+        final comment2 = RecipeCommentBuilder.build(id: 'unliked_comment');
+        viewModel.comments.addAll([comment1, comment2]);
+
+        // Like only the first comment
+        await viewModel.toggleCommentLike('liked_comment');
 
         // Act & Assert
         expect(viewModel.hasLikedComment('liked_comment'), isTrue);
@@ -532,19 +526,19 @@ void main() {
     group('Comment Hierarchy', () {
       test('should get top level comments only', () {
         // Arrange
-        final topLevel1 = SocialCommentBuilder.build(
+        final topLevel1 = RecipeCommentBuilder.build(
           id: 'top_1',
           parentCommentId: null,
         );
-        final topLevel2 = SocialCommentBuilder.build(
+        final topLevel2 = RecipeCommentBuilder.build(
           id: 'top_2',
           parentCommentId: null,
         );
-        final reply1 = SocialCommentBuilder.buildReply(
+        final reply1 = RecipeCommentBuilder.buildReply(
           id: 'reply_1',
           parentId: 'top_1',
         );
-        final reply2 = SocialCommentBuilder.buildReply(
+        final reply2 = RecipeCommentBuilder.buildReply(
           id: 'reply_2',
           parentId: 'top_2',
         );
@@ -572,8 +566,8 @@ void main() {
 
       test('should handle all replies (no top level)', () {
         // Arrange
-        final reply1 = SocialCommentBuilder.buildReply(id: 'r1');
-        final reply2 = SocialCommentBuilder.buildReply(id: 'r2');
+        final reply1 = RecipeCommentBuilder.buildReply(id: 'r1');
+        final reply2 = RecipeCommentBuilder.buildReply(id: 'r2');
         viewModel.comments.addAll([reply1, reply2]);
 
         // Act
@@ -647,7 +641,7 @@ void main() {
           recipeId,
           userId,
           displayName,
-          permission: 'editor',
+          permission: ResourcePermission.editor,
         );
 
         // Assert - placeholder implementation returns false
@@ -675,7 +669,7 @@ void main() {
         final result = await viewModel.updateMemberPermission(
           recipeId,
           userId,
-          'admin',
+          ResourcePermission.admin,
         );
 
         // Assert - placeholder implementation returns false
@@ -751,8 +745,8 @@ void main() {
 
       test('should maintain comment state across operations', () async {
         // Arrange
-        final comment1 = SocialCommentBuilder.build(id: 'c1', text: 'First');
-        final comment2 = SocialCommentBuilder.build(id: 'c2', text: 'Second');
+        final comment1 = RecipeCommentBuilder.build(id: 'c1', text: 'First');
+        final comment2 = RecipeCommentBuilder.build(id: 'c2', text: 'Second');
 
         // Act
         viewModel.comments.add(comment1);
@@ -761,8 +755,8 @@ void main() {
 
         // Assert
         expect(viewModel.comments.length, equals(2));
-        expect(viewModel.comments[0].isLiked, isTrue);
-        expect(viewModel.comments[1].isLiked, isFalse);
+        expect(viewModel.hasLikedComment('c1'), isTrue);
+        expect(viewModel.hasLikedComment('c2'), isFalse);
       });
     });
 
