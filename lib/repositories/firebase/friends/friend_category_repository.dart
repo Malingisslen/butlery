@@ -79,6 +79,7 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     super.firestore,
     AuthRepository? authRepository,
     FeatureFlagService? featureFlags,
+    super.timestampProvider,
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         ) {
@@ -284,7 +285,7 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
 
     await _categoriesRef(userId).doc(categoryId).update({
       'friendUserIds': memberIds,
-      'updatedAt': FieldValue.serverTimestamp(),
+      'updatedAt': timestampProvider.serverTimestamp(),
     });
 
     logPermissionCheck(

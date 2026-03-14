@@ -69,6 +69,7 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   FriendRelationshipRepository({
     super.firestore,
     AuthRepository? authRepository,
+    super.timestampProvider,
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         );
@@ -148,13 +149,13 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
       // Create friend documents for whichever side doesn't exist yet
       int docsCreated = 0;
       if (!user1FriendDoc.exists) {
-        transaction
-            .set(user1FriendRef, {'addedAt': FieldValue.serverTimestamp()});
+        transaction.set(
+            user1FriendRef, {'addedAt': timestampProvider.serverTimestamp()});
         docsCreated++;
       }
       if (!user2FriendDoc.exists) {
-        transaction
-            .set(user2FriendRef, {'addedAt': FieldValue.serverTimestamp()});
+        transaction.set(
+            user2FriendRef, {'addedAt': timestampProvider.serverTimestamp()});
         docsCreated++;
       }
 

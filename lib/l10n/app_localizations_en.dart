@@ -2873,6 +2873,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupCouldNotFetchMenu => 'Could not fetch menu from server';
 
   @override
+  String get groupCouldNotFetchRecipe => 'Could not fetch recipe from server';
+
+  @override
   String groupCouldNotImportList(String error) {
     return 'Could not import list: $error';
   }
@@ -2903,6 +2906,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String groupErrorOpeningMenu(String error) {
     return 'Error opening menu: $error';
+  }
+
+  @override
+  String groupErrorOpeningRecipe(String error) {
+    return 'Error opening recipe: $error';
   }
 
   @override
@@ -2991,6 +2999,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get groupPasteInAnyApp => 'Paste in any app';
+
+  @override
+  String groupRecipeImportedSuccess(String title) {
+    return 'Recipe "$title" imported successfully';
+  }
+
+  @override
+  String groupRecipeImportFailed(String error) {
+    return 'Could not import recipe: $error';
+  }
 
   @override
   String groupRecipeViewComingSoon(String title) {
@@ -11461,4 +11479,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recipeEditTags => 'Edit tags';
+
+  @override
+  String get allergenDisclaimer =>
+      'Allergen information is for reference only. Always verify with the original recipe source.';
+
+  @override
+  String allergenToggleSemantics(String allergen) {
+    return 'Toggle $allergen allergen tracking';
+  }
+
+  @override
+  String dietaryToggleSemantics(String dietary) {
+    return 'Toggle $dietary dietary preference';
+  }
 }

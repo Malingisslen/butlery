@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:butlery/repositories/firebase/firebase_comments_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../test_support/test_data_isolator.dart';
@@ -47,6 +48,7 @@ void main() {
       repository = FirebaseCommentsRepository(
         firestore: firestore,
         authRepository: authRepository,
+        timestampProvider: const TestTimestampProvider(),
       );
     });
 
@@ -55,9 +57,7 @@ void main() {
       await TestDataIsolator.cleanupTest('CommentsRepository');
     });
 
-    group('Comments with timestamps',
-        skip: 'FieldValue operations not supported with FakeFirebaseFirestore',
-        () {
+    group('Comments with timestamps', () {
       test('should create comment with server timestamp', () async {
         // Arrange
         const recipeId = 'recipe_123';
@@ -177,9 +177,7 @@ void main() {
       });
     });
 
-    group('Like System with Transactions',
-        skip: 'FieldValue operations not supported with FakeFirebaseFirestore',
-        () {
+    group('Like System with Transactions', () {
       test('should toggle like with transaction and increment counter',
           () async {
         // Arrange
@@ -275,9 +273,7 @@ void main() {
       });
     });
 
-    group('Reply System with Counters',
-        skip: 'FieldValue operations not supported with FakeFirebaseFirestore',
-        () {
+    group('Reply System with Counters', () {
       test('should increment reply count when adding reply', () async {
         // Arrange
         const recipeId = 'recipe_123';
@@ -410,9 +406,7 @@ void main() {
       });
     });
 
-    group('Real-time Updates',
-        skip: 'FieldValue operations not supported with FakeFirebaseFirestore',
-        () {
+    group('Real-time Updates', () {
       test('should receive real-time comment updates', () async {
         // Arrange
         const recipeId = 'recipe_realtime';

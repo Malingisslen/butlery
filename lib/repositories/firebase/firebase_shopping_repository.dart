@@ -85,6 +85,7 @@ class FirebaseShoppingRepository
     super.firestore,
     AuthRepository? authRepository,
     super.auditRepository,
+    super.timestampProvider,
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         ) {
@@ -131,6 +132,7 @@ class FirebaseShoppingRepository
       readList: read,
       createList: create,
       validateOwnership: validateOwnership,
+      timestampProvider: timestampProvider,
     );
   }
 

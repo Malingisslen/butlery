@@ -69,6 +69,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     super.firestore,
     required super.authRepository,
     super.auditRepository,
+    super.timestampProvider,
   });
 
   @override
@@ -163,8 +164,8 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       'authorDisplayName': displayName,
       'text': content,
       'parentCommentId': parentCommentId,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
+      'createdAt': timestampProvider.serverTimestamp(),
+      'updatedAt': timestampProvider.serverTimestamp(),
       'isDeleted': false,
       'likesCount': 0,
       'replyCount': 0,
@@ -180,7 +181,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
           .doc(userId)
           .collection('rateLimits')
           .doc('comments'),
-      {'lastWrite': FieldValue.serverTimestamp()},
+      {'lastWrite': timestampProvider.serverTimestamp()},
       SetOptions(merge: true),
     );
     await batch.commit();
@@ -227,8 +228,8 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
 
     await collection.doc(commentId).update({
       'text': newContent,
-      'updatedAt': FieldValue.serverTimestamp(),
-      'editedAt': FieldValue.serverTimestamp(),
+      'updatedAt': timestampProvider.serverTimestamp(),
+      'editedAt': timestampProvider.serverTimestamp(),
     });
 
     logPermissionCheck(
@@ -321,7 +322,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       // Like - add like and increment count
       batch.set(userLikeDoc, {
         'userId': userId,
-        'likedAt': FieldValue.serverTimestamp(),
+        'likedAt': timestampProvider.serverTimestamp(),
       });
       batch.update(collection.doc(commentId), {
         'likesCount': FieldValue.increment(1),

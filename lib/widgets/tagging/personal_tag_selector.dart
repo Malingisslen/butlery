@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/views/personal_tags_view.dart';
+import 'package:butlery/widgets/common/state/skeleton_components.dart';
 
 /// Widget for selecting personal tags to apply to a recipe.
 ///
@@ -410,46 +411,35 @@ class _MiniTagChip extends StatelessWidget {
   }
 }
 
-/// A simple chip for displaying a tag name without PersonalTag lookup.
-///
-/// Used as fallback when PersonalTag data isn't available.
-class _SimpleTagChip extends StatelessWidget {
-  final String name;
-
-  const _SimpleTagChip({required this.name});
+class _PlaceholderTagChip extends StatelessWidget {
+  const _PlaceholderTagChip();
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    // MED-12: Accessibility label for screen readers
-    return Semantics(
-      label: context.l10n.personalTagA11yLabel(name),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingS,
-            vertical: AppDimensions.spacingXs),
-        decoration: BoxDecoration(
-          color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
-          border: Border.all(
-            color:
-                cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+    return Container(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingS,
+          vertical: AppDimensions.spacingXs),
+      decoration: BoxDecoration(
+        color: cs.primary.withValues(alpha: AppDimensions.opacityVeryLight),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+        border: Border.all(
+          color: cs.primary.withValues(alpha: AppDimensions.opacityMediumLight),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.label_outline,
+              size: AppDimensions.iconSizeXs, color: cs.primary),
+          const SizedBox(width: AppDimensions.spacingXs),
+          SkeletonComponents.skeletonBox(
+            width: 48,
+            height: 12,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.label_outline,
-                size: AppDimensions.iconSizeXs, color: cs.primary),
-            const SizedBox(width: AppDimensions.spacingXs),
-            Text(
-              name,
-              style: AppTextStyles.metadataEmphasized.copyWith(
-                color: cs.primary,
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -595,7 +585,7 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
       spacing: AppDimensions.spacingXs,
       runSpacing: AppDimensions.spacingXs,
       children: [
-        ...displayIds.map((id) => _SimpleTagChip(name: id)),
+        ...displayIds.map((_) => const _PlaceholderTagChip()),
         if (remainingCount > 0)
           Container(
             padding: const EdgeInsets.symmetric(

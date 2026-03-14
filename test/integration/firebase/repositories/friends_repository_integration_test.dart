@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../test_support/test_data_isolator.dart';
 import '../../../test_support/timestamp_test_helper.dart';
@@ -46,6 +47,7 @@ void main() {
       repository = FirebaseFriendsRepository(
         firestore: firestore,
         authRepository: authRepository,
+        timestampProvider: const TestTimestampProvider(),
       );
     });
 
@@ -54,9 +56,7 @@ void main() {
       await TestDataIsolator.cleanupTest('FriendsRepository');
     });
 
-    group('Friend Requests with timestamps',
-        skip: 'FieldValue operations not supported with FakeFirebaseFirestore',
-        () {
+    group('Friend Requests with timestamps', () {
       test('should send friend request with server timestamp', () async {
         // Arrange
         const toUserId = 'target_user_456';
@@ -144,9 +144,7 @@ void main() {
       });
     });
 
-    group('Friend Count tracking',
-        skip: 'FieldValue operations not supported with FakeFirebaseFirestore',
-        () {
+    group('Friend Count tracking', () {
       test('should increment friend count when accepting request', () async {
         // Arrange
         const fromUserId = 'sender_user';

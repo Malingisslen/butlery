@@ -21,7 +21,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// - `menu_templates`: Reusable menu templates
 /// - `menu_activity/{menuId}/activities`: Collaboration activity logs
 /// **FieldValue Operations Abstracted:**
-/// - `FieldValue.serverTimestamp()`: For consistent server-side timestamps
+/// - `timestampProvider.serverTimestamp()`: For consistent server-side timestamps
 /// - `FieldValue.arrayUnion()`: For adding recipes to menu categories
 /// - `FieldValue.arrayRemove()`: For removing recipes from menu categories
 /// - `FieldValue.increment()`: For template usage counters and statistics
@@ -43,6 +43,7 @@ class FirebaseMenuCollaborationRepository
     super.firestore,
     AuthRepository? authRepository,
     super.auditRepository,
+    super.timestampProvider,
   }) : super(authRepository: authRepository ?? FirebaseAuthRepository());
   @override
   String get collectionName => FirestoreCollections.sharedMenus;
@@ -127,7 +128,7 @@ class FirebaseMenuCollaborationRepository
         'allowCollaboration': true,
         'collaboratorIds': collaboratorIds,
         'collaboratorDisplayNames': collaboratorDisplayNames.orEmpty(),
-        'collaborationEnabledAt': FieldValue.serverTimestamp(),
+        'collaborationEnabledAt': timestampProvider.serverTimestamp(),
         'collaborationEnabledBy': userId,
         'collaborationSettings': {
           'allowRating': true,
@@ -202,7 +203,7 @@ class FirebaseMenuCollaborationRepository
       // Update menu snapshot with FieldValue operations
       await collection.doc(menuId).update({
         'menuSnapshot.$category': FieldValue.arrayUnion([recipe.toFirestore()]),
-        'lastUpdatedAt': FieldValue.serverTimestamp(),
+        'lastUpdatedAt': timestampProvider.serverTimestamp(),
         'lastUpdatedBy': userId,
         'lastUpdatedByDisplayName': userDisplayName,
       });
@@ -216,7 +217,7 @@ class FirebaseMenuCollaborationRepository
           'recipe': recipe.toFirestore(),
           'addedBy': userId,
           'addedByDisplayName': userDisplayName,
-          'addedAt': FieldValue.serverTimestamp(),
+          'addedAt': timestampProvider.serverTimestamp(),
           'suggestedBy': suggestedBy,
           'suggestion': suggestion,
           'status': 'approved',
@@ -281,7 +282,7 @@ class FirebaseMenuCollaborationRepository
       // Remove recipe using FieldValue operations
       await collection.doc(menuId).update({
         'menuSnapshot.$category': FieldValue.arrayRemove([recipeToRemove]),
-        'lastUpdatedAt': FieldValue.serverTimestamp(),
+        'lastUpdatedAt': timestampProvider.serverTimestamp(),
         'lastUpdatedBy': userId,
         'lastUpdatedByDisplayName': userDisplayName,
       });
@@ -296,7 +297,7 @@ class FirebaseMenuCollaborationRepository
           'recipeName': recipeToRemove['title'],
           'removedBy': userId,
           'removedByDisplayName': userDisplayName,
-          'removedAt': FieldValue.serverTimestamp(),
+          'removedAt': timestampProvider.serverTimestamp(),
           'reason': reason,
         },
         userId: userId,
@@ -337,7 +338,7 @@ class FirebaseMenuCollaborationRepository
         'comment': comment,
         'ratedBy': userId,
         'ratedByDisplayName': userDisplayName,
-        'ratedAt': FieldValue.serverTimestamp(),
+        'ratedAt': timestampProvider.serverTimestamp(),
       };
 
       await firestore
@@ -435,7 +436,7 @@ class FirebaseMenuCollaborationRepository
         'comment': comment,
         'commentedBy': userId,
         'commentedByDisplayName': userDisplayName,
-        'commentedAt': FieldValue.serverTimestamp(),
+        'commentedAt': timestampProvider.serverTimestamp(),
         'replyToCommentId': replyToCommentId,
         'likes': 0,
         'likedBy': [],
@@ -603,8 +604,8 @@ class FirebaseMenuCollaborationRepository
         'tags': tags.orEmpty(),
         'isTemplate': true,
         'isPublic': false,
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
+        'createdAt': timestampProvider.serverTimestamp(),
+        'updatedAt': timestampProvider.serverTimestamp(),
         'useCount': 0,
         'totalRecipeCount': menuSnapshot.values
             .fold(0, (total, recipes) => total + recipes.length),
@@ -765,7 +766,7 @@ class FirebaseMenuCollaborationRepository
           .add({
         ...activity,
         'menuId': menuId,
-        'timestamp': FieldValue.serverTimestamp(),
+        'timestamp': timestampProvider.serverTimestamp(),
       });
     } catch (e, stackTrace) {
       AppLogger.error('Failed to log menu activity: $e', stackTrace);

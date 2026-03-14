@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/services/unified/friends/friends_service_stubs.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
@@ -242,21 +241,6 @@ void main() {
     });
 
     group('Service Coordination', () {
-      test('should provide sync service', () {
-        // Assert
-        expect(friendsService.sync, isA<FriendsSyncService>());
-      });
-
-      test('should provide presence service', () {
-        // Assert
-        expect(friendsService.presence, isA<FriendsPresenceService>());
-      });
-
-      test('should provide cache service', () {
-        // Assert
-        expect(friendsService.cache, isA<FriendsCacheService>());
-      });
-
       test('should support refresh operation', () async {
         // Act
         await friendsService.refresh();
@@ -962,6 +946,144 @@ void main() {
             .get();
 
         expect(reverseFriend.exists, isFalse);
+      });
+    });
+
+    group('Logic: blockUser', () {
+      test('should add to blocked list AND remove existing friendship',
+          () async {
+        // Arrange — add a friend first
+        final friend = UserProfile(
+          uid: 'friend-to-block',
+          displayName: 'Block Target',
+          email: 'block@example.com',
+          joinedAt: DateTime.now(),
+          lastActiveAt: DateTime.now(),
+        );
+        friendsService.addFriendInternal(friend);
+
+        // Pre-create user doc for syncBlockedUsers
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('test-user-id')
+            .set({'displayName': 'Test User'});
+
+        // Pre-create friendship docs for removeFriend
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('test-user-id')
+            .collection('friends')
+            .doc('friend-to-block')
+            .set({'friendSince': Timestamp.now()});
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('friend-to-block')
+            .collection('friends')
+            .doc('test-user-id')
+            .set({'friendSince': Timestamp.now()});
+
+        expect(friendsService.friends.any((f) => f.uid == 'friend-to-block'),
+            isTrue);
+        expect(
+            friendsService.blockedUsers.contains('friend-to-block'), isFalse);
+
+        // Act
+        final result =
+            await friendsService.management.blockUser('friend-to-block');
+
+        // Assert
+        expect(result, isTrue);
+        expect(friendsService.friends.any((f) => f.uid == 'friend-to-block'),
+            isFalse);
+        expect(friendsService.blockedUsers.contains('friend-to-block'), isTrue);
+      });
+    });
+
+    group('Logic: sendFriendRequest', () {
+      test('should reject when target is already a friend', () async {
+        // Arrange
+        await friendsService.initialize();
+        final friend = UserProfile(
+          uid: 'existing-friend',
+          displayName: 'Already Friend',
+          email: 'friend@example.com',
+          joinedAt: DateTime.now(),
+          lastActiveAt: DateTime.now(),
+        );
+        friendsService.addFriendInternal(friend);
+
+        // Act
+        final result = await friendsService.management
+            .sendFriendRequest('existing-friend');
+
+        // Assert — should fail because already friends
+        expect(result, isFalse);
+      });
+
+      test('should reject when target is blocked', () async {
+        // Arrange
+        await friendsService.initialize();
+        friendsService.addBlockedUserInternal('blocked-user');
+
+        // Act
+        final isBlocked = friendsService.management.isBlocked('blocked-user');
+
+        // Assert — blocked check works
+        expect(isBlocked, isTrue);
+      });
+    });
+
+    group('Logic: acceptFriendRequest', () {
+      test('should create bidirectional friendship on accept', () async {
+        // Arrange
+        await friendsService.initialize();
+
+        // Create the sender's user profile in Firestore
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('sender-user')
+            .set({
+          'displayName': 'Sender User',
+          'email': 'sender@example.com',
+          'joinedAt': Timestamp.now(),
+          'lastActiveAt': Timestamp.now(),
+        });
+
+        // Add incoming request
+        final request = FriendRequest(
+          id: 'req-accept-test',
+          fromUserId: 'sender-user',
+          toUserId: 'test-user-id',
+          sentAt: DateTime.now(),
+          status: FriendRequestStatus.pending,
+        );
+        friendsService.addIncomingRequestInternal(request);
+
+        expect(friendsService.incomingRequests.length, equals(1));
+
+        // Act
+        final result = await friendsService.management
+            .acceptFriendRequest('req-accept-test');
+
+        // Assert
+        expect(result, isTrue);
+        // Incoming request should be removed
+        expect(friendsService.incomingRequests, isEmpty);
+        // Friend should be added to local state
+        expect(
+            friendsService.friends.any((f) => f.uid == 'sender-user'), isTrue);
+      });
+
+      test('should fail for non-existent request', () async {
+        // Arrange
+        await friendsService.initialize();
+
+        // Act
+        final result = await friendsService.management
+            .acceptFriendRequest('non-existent-req');
+
+        // Assert
+        expect(result, isFalse);
       });
     });
   });

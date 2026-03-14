@@ -69,6 +69,7 @@ class FirebaseSharedShoppingRepository
   FirebaseSharedShoppingRepository({
     super.firestore,
     AuthRepository? authRepository,
+    super.timestampProvider,
     SharedShoppingViewRepository? viewRepository,
     SharedShoppingEngagementRepository? engagementRepository,
     SharedShoppingDismissalRepository? dismissalRepository,
@@ -535,7 +536,7 @@ class FirebaseSharedShoppingRepository
       final updateData = {
         'bought': bought,
         'purchasedByUserId': bought ? authRepository.currentUserId : null,
-        'purchasedAt': bought ? FieldValue.serverTimestamp() : null,
+        'purchasedAt': bought ? timestampProvider.serverTimestamp() : null,
       };
 
       await firestore

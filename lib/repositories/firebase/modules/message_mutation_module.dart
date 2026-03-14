@@ -7,6 +7,7 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Message mutation module for write operations (including complex sendMessage).
@@ -15,12 +16,14 @@ class MessageMutationModule {
   final String collectionName;
   final CollectionReference<Map<String, dynamic>> messagesRef;
   final Future<Conversation?> Function(String) readConversation;
+  final TimestampProvider timestampProvider;
 
   MessageMutationModule({
     required this.firestore,
     required this.collectionName,
     required this.messagesRef,
     required this.readConversation,
+    this.timestampProvider = const ServerTimestampProvider(),
   });
 
   /// Send message with atomic conversation update (complex 175-line operation).
@@ -153,7 +156,8 @@ class MessageMutationModule {
       final batch = firestore.batch();
 
       // 1. Write message to messages collection with ORIGINAL status (sending)
-      final messageData = MessageDto.toFirestore(message);
+      final messageData =
+          MessageDto.toFirestore(message, timestampProvider: timestampProvider);
       batch.set(messagesRef.doc(message.id), messageData);
       AppLogger.debug(
           '📤 [MessageMutation] Added message to batch with status: ${message.status}');
@@ -179,7 +183,7 @@ class MessageMutationModule {
             .doc(message.senderId)
             .collection('rateLimits')
             .doc('messages'),
-        {'lastWrite': FieldValue.serverTimestamp()},
+        {'lastWrite': timestampProvider.serverTimestamp()},
         SetOptions(merge: true),
       );
 
@@ -246,19 +250,19 @@ class MessageMutationModule {
     try {
       final updateData = <String, dynamic>{
         'status': status.name,
-        'updatedAt': FieldValue.serverTimestamp(),
+        'updatedAt': timestampProvider.serverTimestamp(),
       };
 
       switch (status) {
         case MessageStatus.delivered:
           updateData['deliveredAt'] = timestamp != null
               ? Timestamp.fromDate(timestamp)
-              : FieldValue.serverTimestamp();
+              : timestampProvider.serverTimestamp();
           break;
         case MessageStatus.read:
           updateData['readAt'] = timestamp != null
               ? Timestamp.fromDate(timestamp)
-              : FieldValue.serverTimestamp();
+              : timestampProvider.serverTimestamp();
           break;
         default:
           break;
@@ -346,8 +350,8 @@ class MessageMutationModule {
       await messagesRef.doc(messageId).update({
         'content': newContent,
         'isEdited': true,
-        'editedAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
+        'editedAt': timestampProvider.serverTimestamp(),
+        'updatedAt': timestampProvider.serverTimestamp(),
       });
 
       AppLogger.debug('Message content updated: $messageId');
@@ -376,7 +380,7 @@ class MessageMutationModule {
   }) async {
     try {
       final batch = firestore.batch();
-      final timestamp = FieldValue.serverTimestamp();
+      final timestamp = timestampProvider.serverTimestamp();
 
       for (final messageId in messageIds) {
         final messageRef = messagesRef.doc(messageId);

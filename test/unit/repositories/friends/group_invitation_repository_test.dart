@@ -7,6 +7,7 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/friends/group_invitation_repository.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
@@ -51,6 +52,7 @@ void main() {
       repository = GroupInvitationRepository(
         firestore: fakeFirestore,
         authRepository: mockAuthRepo,
+        timestampProvider: const TestTimestampProvider(),
       );
     });
 
@@ -299,7 +301,7 @@ void main() {
             .doc(testInvitationId)
             .get();
         expect(doc.data()?['status'], 'accepted');
-      }, skip: 'Requires FieldValue.serverTimestamp support');
+      });
 
       test('should reject invitation as recipient', () async {
         // Arrange
@@ -321,7 +323,7 @@ void main() {
             .doc(testInvitationId)
             .get();
         expect(doc.data()?['status'], 'rejected');
-      }, skip: 'Requires FieldValue.serverTimestamp support');
+      });
 
       test('should cancel invitation as sender', () async {
         // Arrange
@@ -343,7 +345,7 @@ void main() {
             .doc(testInvitationId)
             .get();
         expect(doc.data()?['status'], 'cancelled');
-      }, skip: 'Requires FieldValue.serverTimestamp support');
+      });
 
       test('should reject non-recipient from accepting invitation', () async {
         // Arrange
@@ -595,7 +597,7 @@ void main() {
 
         // Assert - At least one invitation should be marked as expired
         expect(cleanedCount, greaterThanOrEqualTo(1));
-      }, skip: 'Requires FieldValue.serverTimestamp support');
+      });
     });
 
     // ===== EDGE CASES =====

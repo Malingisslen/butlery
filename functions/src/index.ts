@@ -26,6 +26,10 @@ export { cleanupOldAuditLogs, getAuditLogStats } from "./cleanup/cleanup-audit-l
 export { cleanupDeletedIngredients, getDeletedIngredientStats } from "./cleanup/cleanup-deleted-ingredients";
 export { cleanupSharedContentMetadata } from "./cleanup/cleanup-shared-content-metadata";
 export { onRecipeDeleted } from "./cleanup/cleanup-recipe-storage";
+export { cleanupExpiredFriendRequests } from "./cleanup/cleanup-expired-friend-requests";
+
+// Social Cleanup - User deletion and moderation
+export { onUserDeleted } from "./cleanup/on-user-deleted";
 
 // Parse Event Logging - Server-side analytics (P1-4 security)
 export { logParseEvent } from "./events/log-parse-event";
@@ -58,6 +62,9 @@ export { correlateNotificationEffectiveness } from "./analytics/correlate-notifi
 
 // Feedback Functions - Beta user feedback
 export { onFeedbackCreated } from "./feedback/on-feedback-created";
+
+// Content Moderation - Report processing
+export { onReportCreated } from "./feedback/on-report-created";
 
 admin.initializeApp();
 const db = admin.firestore();

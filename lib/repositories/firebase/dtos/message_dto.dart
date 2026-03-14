@@ -23,6 +23,8 @@
 /// - **Efficient Queries**: Optimized data structure for Firestore indexing and real-time streams
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/models/messaging/message.dart';
 
 // MessageStatus is already available through message.dart import
@@ -101,28 +103,16 @@ class MessageDto {
       editedAt: data['editedAt'] != null
           ? (data['editedAt'] as Timestamp).toDate()
           : null,
-      reactions: _parseReactions(data['reactions']),
+      reactions:
+          SerializationUtils.safeStringListMap(data, 'reactions') ?? const {},
     );
   }
 
-  /// Parse reactions map from Firestore data.
-  /// Converts `Map<String, dynamic>` where values are lists into `Map<String, List<String>>`.
-  static Map<String, List<String>> _parseReactions(dynamic raw) {
-    if (raw == null) return const {};
-    if (raw is! Map) return const {};
-    final result = <String, List<String>>{};
-    for (final entry in raw.entries) {
-      final key = entry.key.toString();
-      final value = entry.value;
-      if (value is List) {
-        result[key] = value.map((e) => e.toString()).toList();
-      }
-    }
-    return result;
-  }
-
   /// Convert Message model to Firestore document
-  static Map<String, dynamic> toFirestore(Message message) {
+  static Map<String, dynamic> toFirestore(
+    Message message, {
+    TimestampProvider timestampProvider = const ServerTimestampProvider(),
+  }) {
     return {
       'conversationId': message.conversationId,
       'senderId': message.senderId,
@@ -144,8 +134,8 @@ class MessageDto {
           ? Timestamp.fromDate(message.editedAt!)
           : null,
       if (message.reactions.isNotEmpty) 'reactions': message.reactions,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
+      'createdAt': timestampProvider.serverTimestamp(),
+      'updatedAt': timestampProvider.serverTimestamp(),
     };
   }
 

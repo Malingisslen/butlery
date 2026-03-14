@@ -39,6 +39,7 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     super.firestore,
     AuthRepository? authRepository,
     super.auditRepository,
+    super.timestampProvider,
     FeatureFlagService? featureFlagService,
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
@@ -85,6 +86,7 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
       collectionName: collectionName,
       messagesRef: _messagesRef,
       readConversation: read,
+      timestampProvider: timestampProvider,
     );
   }
   @override

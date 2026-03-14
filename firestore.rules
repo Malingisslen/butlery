@@ -92,16 +92,14 @@ service cloud.firestore {
     }
 
     // H15: Validate that all values in a map are valid TriState strings
-    // Valid values: FREE, CONTAINS, UNKNOWN
+    // Valid values: both legacy uppercase (FREE, CONTAINS, UNKNOWN) and current lowercase
     function _isValidTriStateMap(statusMap) {
-      // If not a map, it's invalid unless null/empty
       return statusMap == null || statusMap.size() == 0 || (
         statusMap is map &&
-        // Firestore rules can't iterate, but we can validate the map exists
-        // and limit its size to prevent abuse. Value validation happens
-        // on read in the Dart layer (TriState.fromFirestore defaults to UNKNOWN).
-        // This is a pragmatic tradeoff since Firestore rules don't support iteration.
-        statusMap.size() <= 50
+        // Limit map size to prevent storage abuse
+        statusMap.size() <= 50 &&
+        // Validate every value is a recognized TriState string
+        statusMap.values().hasOnly(['contains', 'free', 'unknown', 'CONTAINS', 'FREE', 'UNKNOWN'])
       );
     }
 
@@ -193,15 +191,16 @@ service cloud.firestore {
         // Owner has full read/write access
         allow read, write: if isOwner(userId);
 
-        // ✅ CRITICAL FIX: Allow getting specific group by ID (needed for invitation acceptance)
-        // Users can fetch a specific category if they know the ID (from invitation)
-        // List queries are still protected by the owner check above
-        allow get: if isAuthenticated();
-
         // Group members can read the group they're in
         allow read: if isInList('friendUserIds');
 
-        // ✅ CRITICAL FIX: Allow updating if adding yourself OR already a member
+        // S1 fix: get requires membership or pending invitation (not open to any authed user)
+        allow get: if isAuthenticated() && (
+          isInList('friendUserIds') ||
+          request.auth.uid in resource.data.get('pendingInviteUserIds', [])
+        );
+
+        // Allow updating if adding yourself OR already a member
         allow update: if isAuthenticated() && (
           isInList('friendUserIds') ||
           request.auth.uid in request.resource.data.friendUserIds
@@ -247,16 +246,21 @@ service cloud.firestore {
         && request.resource.data.isSearchable is bool;
 
       // BUG-011 fix: Allow friendsCount updates during bidirectional friend creation
-      // Owner can update anything, OR authenticated users can update ONLY friendsCount
-      // This allows the atomic transaction in addMutualFriends() to update both users' counts
+      // Owner can update anything, OR authenticated users can update ONLY friendsCount.
+      // S2 note: Friendship document verification is not added here because
+      // addMutualFriends() creates the friend document and updates the count
+      // in the same transaction — rules see pre-transaction state, so the
+      // friend doc doesn't exist yet when the count update is evaluated.
+      // The ±1 constraint and rate limiting mitigate abuse.
       allow update: if isOwner(userId) || (
         isAuthenticated() &&
         // Only friendsCount field is being changed
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friendsCount']) &&
         // friendsCount change is exactly +1 or -1 (adding or removing friend)
-        // Handle case where friendsCount might be null/0 initially
         (request.resource.data.friendsCount == resource.data.get('friendsCount', 0) + 1 ||
-         request.resource.data.friendsCount == resource.data.get('friendsCount', 0) - 1)
+         request.resource.data.friendsCount == resource.data.get('friendsCount', 0) - 1) &&
+        // Rate limit: max one friendsCount update per 5 seconds
+        rateLimitWrite('friendsCount', 5)
       );
       allow delete: if isOwner(userId);
     }
@@ -303,11 +307,13 @@ service cloud.firestore {
         request.auth.uid == resource.data.toUserId
       );
       
-      // Can create if you're the sender
-      allow create: if isAuthenticated() 
+      // Can create if you're the sender, not blocked by recipient, within rate limit
+      allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.fromUserId
         && request.resource.data.status == 'pending'
-        && hasRequiredFields(['groupId', 'fromUserId', 'toUserId', 'status', 'sentAt']);
+        && hasRequiredFields(['groupId', 'fromUserId', 'toUserId', 'status', 'sentAt'])
+        && isNotBlockedBy(request.resource.data.toUserId)
+        && rateLimitWrite('group_invitations', 10);
       
       // Can update if you're the recipient
       allow update: if isAuthenticated() 
@@ -876,13 +882,18 @@ service cloud.firestore {
     // This collection tracks ALL users viewing recipes (not just collaborative ones).
     
     match /recipePresence/{recipeId} {
-      // Presence documents (per-recipe metadata)
-      allow read: if isAuthenticated();
-      
+      // S8: Restrict presence reads to users who have their own presence
+      // entry (meaning they are currently viewing the recipe).
+      // This prevents arbitrary users from surveilling who views which recipes.
+      allow read: if isAuthenticated()
+        && exists(/databases/$(database)/documents/recipePresence/$(recipeId)/activeUsers/$(request.auth.uid));
+
       match /activeUsers/{userId} {
-        // Users can read all active users (collaborative awareness)
-        allow read: if isAuthenticated();
-        
+        // Users can read active users only if they also have presence (collaborative awareness)
+        allow read: if isAuthenticated()
+          && (request.auth.uid == userId
+            || exists(/databases/$(database)/documents/recipePresence/$(recipeId)/activeUsers/$(request.auth.uid)));
+
         // Users can write their own presence
         allow write: if isAuthenticated() && request.auth.uid == userId;
       }
@@ -892,10 +903,13 @@ service cloud.firestore {
     // ========================================
 
     match /recipe_comments/{commentId} {
-      // Any authenticated user can read comments — access control is
-      // enforced at the recipe level (users only see recipes they own
-      // or have been shared). The previous rule required shared_recipes
-      // lookup which broke for personal recipes (no shared_recipes doc).
+      // S3 tradeoff: Comments are readable by any authenticated user.
+      // Recipe-level access control is enforced client-side (users only
+      // see recipes they own or have been shared). A server-side recipe
+      // ownership check is not feasible here because recipes live under
+      // users/{userId}/recipes and there is no efficient way to look up
+      // the owner from just a recipeId in rules. Blocked user filtering
+      // is also enforced client-side in comment streams.
       allow read: if isAuthenticated();
 
       // Can create if authenticated, not blocked, and within rate limit
@@ -1190,6 +1204,29 @@ service cloud.firestore {
         request.auth.uid == resource.data.fromUserId ||
         request.auth.uid == resource.data.toUserId
       );
+    }
+
+    // ========================================
+    // SHARED PERSONAL TAGS - Cross-user tag sharing
+    // ========================================
+
+    match /shared_personal_tags/{tagId} {
+      // Any authenticated user can read shared tags (link-based sharing)
+      allow read: if isAuthenticated();
+
+      // Only the creator can create (must set themselves as sharedByUserId)
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.sharedByUserId
+        && hasRequiredFields(['tagName', 'sharedByUserId', 'sharedByDisplayName', 'sharedAt'])
+        && rateLimitWrite('shared_personal_tags', 10);
+
+      // Only the creator can update their shared tags
+      allow update: if isAuthenticated()
+        && request.auth.uid == resource.data.sharedByUserId;
+
+      // Only the creator can delete their shared tags
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.sharedByUserId;
     }
 
     // ========================================
@@ -1515,6 +1552,17 @@ service cloud.firestore {
     // ========================================
 
     match /ingredient_substitutions/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // ========================================
+    // TAG CONFIGS - Admin-managed tagging configuration
+    // ========================================
+
+    // Read-only tag configuration documents (allergens, dietary, cuisine,
+    // properties, display). Managed by admin via console/Cloud Functions.
+    match /tagConfigs/{doc} {
       allow read: if isAuthenticated();
       allow write: if false;
     }

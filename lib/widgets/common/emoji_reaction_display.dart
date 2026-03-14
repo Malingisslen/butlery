@@ -39,36 +39,42 @@ class EmojiReactionDisplay extends StatelessWidget {
         final hasReacted = userIds.contains(currentUserId);
         final displayEmoji = kReactionEmojis[emojiKey] ?? emojiKey;
 
-        return GestureDetector(
-          onTap: () => onReactionTap(emojiKey),
-          child: Container(
-            padding: AppDimensions.paddingSymmetric6x2,
-            decoration: BoxDecoration(
-              color: hasReacted
-                  ? cs.primary.withValues(alpha: AppDimensions.opacityVeryLight)
-                  : cs.surface.withValues(alpha: AppDimensions.opacityHalf),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(
+        return Semantics(
+          button: true,
+          label: '${emojiKey.replaceAll('_', ' ')} reaction, ${userIds.length}',
+          child: GestureDetector(
+            onTap: () => onReactionTap(emojiKey),
+            child: Container(
+              padding: AppDimensions.paddingSymmetric6x2,
+              decoration: BoxDecoration(
                 color: hasReacted
                     ? cs.primary
-                        .withValues(alpha: AppDimensions.opacityMediumLight)
-                    : cs.outlineVariant,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(displayEmoji, style: const TextStyle(fontSize: 14)),
-                const SizedBox(width: AppDimensions.spacingXxs),
-                Text(
-                  '${userIds.length}',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: hasReacted ? cs.primary : cs.onSurfaceVariant,
-                    fontWeight:
-                        hasReacted ? FontWeight.w600 : FontWeight.normal,
-                  ),
+                        .withValues(alpha: AppDimensions.opacityVeryLight)
+                    : cs.surface.withValues(alpha: AppDimensions.opacityHalf),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusM),
+                border: Border.all(
+                  color: hasReacted
+                      ? cs.primary
+                          .withValues(alpha: AppDimensions.opacityMediumLight)
+                      : cs.outlineVariant,
                 ),
-              ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(displayEmoji, style: const TextStyle(fontSize: 14)),
+                  const SizedBox(width: AppDimensions.spacingXxs),
+                  Text(
+                    '${userIds.length}',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: hasReacted ? cs.primary : cs.onSurfaceVariant,
+                      fontWeight:
+                          hasReacted ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );

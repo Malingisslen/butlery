@@ -1,3 +1,5 @@
+import 'dart:async';
+
 // ignore: unused_import
 import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent fields
 import 'package:butlery/models/friend_request.dart';
@@ -83,6 +85,11 @@ class FriendsManagementOperations extends BaseService {
         throw Exception('This user has already sent you a friend request');
       }
 
+      // Block enforcement: cannot send friend request to blocked user
+      if (isBlocked(recipientId)) {
+        throw Exception('Cannot send friend request to a blocked user');
+      }
+
       final request = FriendRequest(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         fromUserId: currentUserId!,
@@ -95,16 +102,22 @@ class FriendsManagementOperations extends BaseService {
       // Add to local state (optimistic update)
       _parent.addOutgoingRequestInternal(request);
 
-      // Send to Firebase
-      await _parent.syncFriendRequestToFirebase(request);
+      try {
+        // Send to Firebase
+        await _parent.syncFriendRequestToFirebase(request);
+      } catch (e) {
+        // Rollback optimistic update on Firebase write failure
+        _parent.removeOutgoingRequestInternal(request.id);
+        rethrow;
+      }
 
-      // Send notification to recipient
+      // Send notification to recipient (non-critical, don't rollback on failure)
       final recipientDisplayName = 'User ${recipientId.substring(0, 6)}...';
-      await _sendFriendRequestNotification(
+      unawaited(_sendFriendRequestNotification(
         request,
         currentUserDisplayName ?? 'Unknown User',
         recipientDisplayName,
-      );
+      ));
 
       return true;
     }, operationName: 'Send Friend Request');
@@ -151,11 +164,11 @@ class FriendsManagementOperations extends BaseService {
       );
       await _parent.updateFriendRequestStatus(acceptedRequest);
 
-      // Send notification to the original sender
-      await _sendFriendRequestAcceptedNotification(
+      // Send notification to the original sender (non-critical)
+      unawaited(_sendFriendRequestAcceptedNotification(
         request,
         _parent.currentUserDisplayName ?? 'Unknown User',
-      );
+      ));
 
       // ULTRATHINK FIX: Refresh state from Firebase to ensure consistency
       try {

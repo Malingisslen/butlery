@@ -439,14 +439,14 @@ class SocialMenuCoordinator
   /// Loads viewed, imported, and dismissed status from repository and caches locally.
   Future<void> loadStatusForMenu(String menuId, String userId) async {
     try {
-      final viewed = await _sharedMenuRepository.hasViewed(menuId, userId);
-      final imported = await _sharedMenuRepository.hasEngaged(menuId, userId);
-      final dismissed =
-          await _sharedMenuRepository.hasDismissed(menuId, userId);
-
-      _viewedStatusCache[menuId] = viewed;
-      _importedStatusCache[menuId] = imported;
-      _dismissedStatusCache[menuId] = dismissed;
+      final results = await Future.wait([
+        _sharedMenuRepository.hasViewed(menuId, userId),
+        _sharedMenuRepository.hasEngaged(menuId, userId),
+        _sharedMenuRepository.hasDismissed(menuId, userId),
+      ]);
+      _viewedStatusCache[menuId] = results[0];
+      _importedStatusCache[menuId] = results[1];
+      _dismissedStatusCache[menuId] = results[2];
     } catch (e) {
       AppLogger.error('Failed to load status for menu $menuId', e);
     }
@@ -457,9 +457,9 @@ class SocialMenuCoordinator
   /// Loads status for multiple menus to populate cache efficiently.
   Future<void> loadStatusForAllMenus(
       List<SharedMenu> menus, String userId) async {
-    for (final menu in menus) {
-      await loadStatusForMenu(menu.id, userId);
-    }
+    await Future.wait(
+      menus.map((menu) => loadStatusForMenu(menu.id, userId)),
+    );
   }
 
   /// Check if menu is dismissed using cache

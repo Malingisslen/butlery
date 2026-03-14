@@ -32,7 +32,7 @@ This phase has 0/32 tests completed and verifies the automatic tagging pipeline 
 
 ## Test Execution Rules
 
-- **User A**: malin.gisslen1@gmail.com / test123
+- **User A**: malin.gisslen1@gmail.com / Test1234
 - **User B** (E2E social tests, Phase 16): test.testsson2@gmail.com / TestPass123! — log out User A first, then log in as User B to verify
 - **After each bug fix**: Run `flutter analyze` before marking as fixed
 - **Known Flutter Web limitations**: CanvasKit hit-testing issues with some buttons — document when automation fails but real clicks would work

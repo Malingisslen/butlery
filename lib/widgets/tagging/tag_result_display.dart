@@ -96,6 +96,12 @@ class TagResultDisplay extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingL),
           _buildCoverageSection(context),
         ],
+
+        const SizedBox(height: AppDimensions.spacingL),
+        const Padding(
+          padding: EdgeInsets.only(top: AppDimensions.spacingS),
+          child: AllergenDisclaimer(),
+        ),
       ],
     );
   }
@@ -397,9 +403,9 @@ class CompactAllergenRow extends StatelessWidget {
 
   static const _defaultAllergens = {
     'gluten',
-    'mjolk',
-    'notter',
-    'agg',
+    'mjölk',
+    'nötter',
+    'ägg',
   };
 }
 
@@ -450,5 +456,33 @@ class CompactDietaryRow extends StatelessWidget {
     return dietsToCheck.where((diet) {
       return tagResult.getDietaryStatus(diet) == TriState.free;
     }).toList();
+  }
+}
+
+class AllergenDisclaimer extends StatelessWidget {
+  const AllergenDisclaimer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          Icons.info_outline,
+          size: AppDimensions.iconSize14,
+          color: cs.onSurfaceVariant,
+        ),
+        const SizedBox(width: AppDimensions.spacingXs),
+        Expanded(
+          child: Text(
+            context.l10n.allergenDisclaimer,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

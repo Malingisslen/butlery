@@ -11,7 +11,9 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_permission_helper.dart';
+import 'package:butlery/services/user_service.dart' as user_svc;
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 // Permission modules
 import 'package:butlery/services/permissions/recipe_permission_module.dart';
@@ -142,44 +144,24 @@ class PermissionService extends BaseService {
   /// This is a security-critical check that must be performed before any sensitive operations.
   bool get isAuthenticated => currentUserId != null;
 
-  /// Retrieves comprehensive user profile information for permission validation and UI presentation.
-  /// This method provides detailed user profile information including display name, avatar, online status,
-  /// and account metadata. In the mock implementation, it generates consistent mock data for development.
-  /// In production, this would fetch real user profiles from the authentication system.
-  /// [userId] Unique identifier of the user whose profile should be retrieved
-  /// Returns [UserProfile] with complete user information or `null` if user not found
-  /// **Mock Implementation Features:**
-  /// - Generates consistent mock profiles with realistic data structure
-  /// - Provides predictable online status and account age for testing
-  /// - Maintains referential integrity with provided user ID
-  /// - Simulates realistic user profile attributes for UI development
-  /// **Production Integration:**
-  /// In production, this method would:
-  /// - Query the authentication service for real user profile data
-  /// - Handle authentication errors and user not found scenarios
-  /// - Provide cached user profiles for performance optimization
-  /// - Support privacy settings and user visibility controls
+  /// Retrieves a user profile. Returns current user from auth state,
+  /// or delegates to UserService for other users (cached lookup).
   Future<models.UserProfile?> getUserProfile(String userId) async {
-    // Security: Validate user ID
     if (userId.isEmpty) return null;
 
-    // Check if this is the current user
+    // Return current user from auth state (no Firestore read needed)
     if (userId == currentUserId) {
       return currentUser;
     }
 
-    // For other users, this would query Firestore
-    // For now, return a mock profile
-    final now = DateTime.now();
-    return models.UserProfile(
-      uid: userId,
-      displayName: 'User $userId',
-      email: 'user$userId@example.com',
-      avatarUrl: null,
-      isOnline: false, // Other users assumed offline in mock
-      joinedAt: now.subtract(const Duration(days: 90)),
-      lastActiveAt: now.subtract(const Duration(hours: 2)),
-    );
+    // S7 fix: Delegate to UserService for real profile lookup (cached)
+    try {
+      return await ServiceLocator.get<user_svc.UserService>()
+          .getUserProfile(userId);
+    } catch (e) {
+      AppLogger.warning('Failed to fetch user profile for $userId: $e');
+      return null;
+    }
   }
 
   /// Validates user permission to invite others to collaborate on a specific recipe.

@@ -18,6 +18,7 @@ abstract class BaseSharedContentRepository<T>
   BaseSharedContentRepository({
     super.firestore,
     required super.authRepository,
+    super.timestampProvider,
   });
 
   String get contentTypeName;
@@ -52,7 +53,7 @@ abstract class BaseSharedContentRepository<T>
       await _getUserCountersRef(userId).set({
         counterField: FieldValue.increment(1),
         'totalSharedContent': FieldValue.increment(1),
-        'lastUpdated': FieldValue.serverTimestamp(),
+        'lastUpdated': timestampProvider.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {
       // Log but don't fail - counter is best-effort optimization
@@ -72,7 +73,7 @@ abstract class BaseSharedContentRepository<T>
           if (currentCount > 0) {
             transaction.update(_getUserCountersRef(userId), {
               counterField: FieldValue.increment(-1),
-              'lastUpdated': FieldValue.serverTimestamp(),
+              'lastUpdated': timestampProvider.serverTimestamp(),
             });
           }
         }
@@ -241,7 +242,7 @@ abstract class BaseSharedContentRepository<T>
       final counterField = UserCounterIncrements.fieldForType(counterTypeKey);
       await _getUserCountersRef(userId).set({
         counterField: unreadCount,
-        'lastUpdated': FieldValue.serverTimestamp(),
+        'lastUpdated': timestampProvider.serverTimestamp(),
       }, SetOptions(merge: true));
 
       AppLogger.info(

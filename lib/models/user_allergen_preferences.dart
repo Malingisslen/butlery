@@ -51,13 +51,32 @@ class UserAllergenPreferences {
     includeUnknownInMenu: true,
   );
 
+  static const _asciiToSwedish = {
+    'mjolk': 'mjölk',
+    'notter': 'nötter',
+    'agg': 'ägg',
+    'tradnotter': 'trädnötter',
+    'kraftdjur': 'kräftdjur',
+    'blotdjur': 'blötdjur',
+    'kott': 'kött',
+    'flask': 'fläsk',
+    'notkott': 'nötkött',
+  };
+
+  // Dietary keys are all ASCII-safe (vegetarisk, vegansk, etc.) — no normalization needed.
+  // TODO: Remove once all user documents have been migrated to Swedish keys.
+  static Set<String> _normalizeKeys(Set<String> keys) {
+    return keys.map((k) => _asciiToSwedish[k] ?? k).toSet();
+  }
+
   /// Creates from Firestore map.
   factory UserAllergenPreferences.fromFirestore(Map<String, dynamic>? data) {
     if (data == null) return defaults;
 
     return UserAllergenPreferences(
-      trackedAllergens: _parseStringSet(data['trackedAllergens']) ??
-          defaults.trackedAllergens,
+      trackedAllergens: _normalizeKeys(
+          _parseStringSet(data['trackedAllergens']) ??
+              defaults.trackedAllergens),
       trackedDietary:
           _parseStringSet(data['trackedDietary']) ?? defaults.trackedDietary,
       showOnCards: SerializationUtils.safeBool(

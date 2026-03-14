@@ -1778,6 +1778,7 @@
     }
   },
   "groupCouldNotFetchMenu": "Could not fetch menu from server",
+  "groupCouldNotFetchRecipe": "Could not fetch recipe from server",
   "groupCouldNotImportList": "Could not import list: {error}",
   "@groupCouldNotImportList": {
     "placeholders": {
@@ -1795,6 +1796,14 @@
   "groupDescriptionLabel": "Description (optional)",
   "groupErrorOpeningMenu": "Error opening menu: {error}",
   "@groupErrorOpeningMenu": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupErrorOpeningRecipe": "Error opening recipe: {error}",
+  "@groupErrorOpeningRecipe": {
     "placeholders": {
       "error": {
         "type": "String"
@@ -1879,6 +1888,22 @@
     }
   },
   "groupPasteInAnyApp": "Paste in any app",
+  "groupRecipeImportedSuccess": "Recipe \"{title}\" imported successfully",
+  "@groupRecipeImportedSuccess": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "groupRecipeImportFailed": "Could not import recipe: {error}",
+  "@groupRecipeImportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "groupRecipeViewComingSoon": "Recipe view: {title} (coming soon)",
   "@groupRecipeViewComingSoon": {
     "placeholders": {
@@ -7989,5 +8014,22 @@
   "ingredientDataUnverified": "Some ingredient data is unverified",
   "recipeStartCookingTooltip": "Start cooking",
   "taggingDegradedWarning": "Allergen and dietary data may be unreliable",
-  "recipeEditTags": "Edit tags"
+  "recipeEditTags": "Edit tags",
+  "allergenDisclaimer": "Allergen information is for reference only. Always verify with the original recipe source.",
+  "allergenToggleSemantics": "Toggle {allergen} allergen tracking",
+  "@allergenToggleSemantics": {
+    "placeholders": {
+      "allergen": {
+        "type": "String"
+      }
+    }
+  },
+  "dietaryToggleSemantics": "Toggle {dietary} dietary preference",
+  "@dietaryToggleSemantics": {
+    "placeholders": {
+      "dietary": {
+        "type": "String"
+      }
+    }
+  }
 }

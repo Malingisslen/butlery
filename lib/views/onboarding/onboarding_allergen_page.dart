@@ -11,9 +11,9 @@ class OnboardingAllergenPage extends StatelessWidget {
 
   static const Map<String, IconData> _allergenIcons = {
     'gluten': Icons.grain,
-    'mjolk': Icons.water_drop_outlined,
-    'notter': Icons.eco_outlined,
-    'agg': Icons.egg_outlined,
+    'mjölk': Icons.water_drop_outlined,
+    'nötter': Icons.eco_outlined,
+    'ägg': Icons.egg_outlined,
     'soja': Icons.spa_outlined,
     'fisk': Icons.set_meal_outlined,
     'skaldjur': Icons.catching_pokemon,
@@ -24,9 +24,9 @@ class OnboardingAllergenPage extends StatelessWidget {
     final l10n = context.l10n;
     return switch (key) {
       'gluten' => l10n.onboardingAllergenGluten,
-      'mjolk' => l10n.onboardingAllergenMilk,
-      'notter' => l10n.onboardingAllergenNuts,
-      'agg' => l10n.onboardingAllergenEgg,
+      'mjölk' => l10n.onboardingAllergenMilk,
+      'nötter' => l10n.onboardingAllergenNuts,
+      'ägg' => l10n.onboardingAllergenEgg,
       'soja' => l10n.onboardingAllergenSoy,
       'fisk' => l10n.onboardingAllergenFish,
       'skaldjur' => l10n.onboardingAllergenShellfish,
@@ -104,46 +104,51 @@ class _AllergenToggleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? cs.primary.withValues(alpha: AppDimensions.opacityLight)
-              : cs.surfaceContainerHighest,
-          border: Border.all(
-            color: isSelected ? cs.primary : cs.outlineVariant,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: AppDimensions.iconSizeL,
-              color: isSelected ? cs.primary : cs.onSurfaceVariant,
+    return Semantics(
+      button: true,
+      toggled: isSelected,
+      label: context.l10n.allergenToggleSemantics(label),
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? cs.primary.withValues(alpha: AppDimensions.opacityLight)
+                : cs.surfaceContainerHighest,
+            border: Border.all(
+              color: isSelected ? cs.primary : cs.outlineVariant,
+              width: isSelected ? 2 : 1,
             ),
-            const SizedBox(width: AppDimensions.spacingSm),
-            Expanded(
-              child: Text(
-                label,
-                style: AppTextStyles.labelLarge.copyWith(
-                  color: isSelected ? cs.primary : cs.onSurface,
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingM,
+            vertical: AppDimensions.paddingS,
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: AppDimensions.iconSizeL,
+                color: isSelected ? cs.primary : cs.onSurfaceVariant,
+              ),
+              const SizedBox(width: AppDimensions.spacingSm),
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: isSelected ? cs.primary : cs.onSurface,
+                  ),
                 ),
               ),
-            ),
-            if (isSelected)
-              Icon(
-                Icons.check,
-                size: AppDimensions.iconSizeM,
-                color: cs.primary,
-              ),
-          ],
+              if (isSelected)
+                Icon(
+                  Icons.check,
+                  size: AppDimensions.iconSizeM,
+                  color: cs.primary,
+                ),
+            ],
+          ),
         ),
       ),
     );

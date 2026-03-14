@@ -19,16 +19,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Repository for recipe presence tracking operations
 class FirebaseRecipePresenceRepository {
   final FirestoreRepository _firestoreRepository;
+  final TimestampProvider _timestampProvider;
 
   FirebaseRecipePresenceRepository({
     FirestoreRepository? firestoreRepository,
-  }) : _firestoreRepository =
-            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
+    TimestampProvider? timestampProvider,
+  })  : _firestoreRepository =
+            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
+        _timestampProvider =
+            timestampProvider ?? const ServerTimestampProvider();
 
   /// Get Firestore instance via repository
   FirebaseFirestore get _firestore => _firestoreRepository.firestore;
@@ -58,8 +63,8 @@ class FirebaseRecipePresenceRepository {
         'userId': userId,
         'displayName': displayName,
         'avatarUrl': avatarUrl,
-        'joinedAt': FieldValue.serverTimestamp(),
-        'lastSeen': FieldValue.serverTimestamp(),
+        'joinedAt': _timestampProvider.serverTimestamp(),
+        'lastSeen': _timestampProvider.serverTimestamp(),
         'isActive': true,
       }, SetOptions(merge: true));
 
@@ -89,7 +94,7 @@ class FirebaseRecipePresenceRepository {
           .doc(userId)
           .update({
         'isActive': false,
-        'leftAt': FieldValue.serverTimestamp(),
+        'leftAt': _timestampProvider.serverTimestamp(),
       });
 
       AppLogger.debug('Marked user $userId inactive in recipe $recipeId');
@@ -117,7 +122,7 @@ class FirebaseRecipePresenceRepository {
           .collection(FirestoreCollections.activeUsers)
           .doc(userId)
           .update({
-        'lastSeen': FieldValue.serverTimestamp(),
+        'lastSeen': _timestampProvider.serverTimestamp(),
       });
 
       AppLogger.debug('Updated heartbeat for user $userId in recipe $recipeId');

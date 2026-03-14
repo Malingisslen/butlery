@@ -40,6 +40,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// Status loaded from Firestore subcollections and cached for performance.
 class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   late final SocialRecipeCoordinator _socialRecipeCoordinator;
+
   SharedRecipeViewModel({
     SocialRecipeCoordinator? socialRecipeCoordinator,
   }) {
@@ -67,10 +68,12 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     // Load status for all recipes to populate cache (Issue #014)
     await _socialRecipeCoordinator.loadStatusForAllRecipes(recipes, userId);
 
-    // Filter out dismissed recipes and optionally imported recipes for cleaner inbox
+    // Filter out dismissed recipes, imported recipes, and content from blocked users
+    final blocked = blockedUsers;
     final visibleRecipes = recipes
         .where((recipe) =>
             !_socialRecipeCoordinator.isRecipeDismissed(recipe.id) &&
+            !blocked.contains(recipe.sharedByUserId) &&
             (showImported ||
                 !_socialRecipeCoordinator.isRecipeImported(recipe.id)))
         .toList();
@@ -109,31 +112,8 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     int limit = 25,
     Object? startAfter,
   }) async {
-    final userId = currentUserId;
-    if (userId == null) {
-      throw Exception('No authenticated user found');
-    }
-
-    AppLogger.info('🔄 Loading shared recipes (pagination not used for MVP)');
-
-    // Use existing coordinator method - pagination not needed for MVP
-    final recipes =
-        await _socialRecipeCoordinator.getSharedRecipesForUser(userId);
-
-    // Load status for all recipes to populate cache
-    await _socialRecipeCoordinator.loadStatusForAllRecipes(recipes, userId);
-
-    // Filter out dismissed recipes and optionally imported recipes for cleaner inbox
-    final visibleRecipes = recipes
-        .where((recipe) =>
-            !_socialRecipeCoordinator.isRecipeDismissed(recipe.id) &&
-            (showImported ||
-                !_socialRecipeCoordinator.isRecipeImported(recipe.id)))
-        .toList();
-
-    AppLogger.info(
-        '✅ Loaded ${recipes.length} shared recipes (${visibleRecipes.length} visible, showImported: $showImported)');
-    return visibleRecipes;
+    // Pagination not used for MVP - delegate to standard loading
+    return loadContentFromRepository();
   }
 
   @override
@@ -176,6 +156,17 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
             !_socialRecipeCoordinator.isRecipeImported(recipe.id) &&
             recipe.sharedByUserId != userId)
         .toList();
+  }
+
+  /// Get specific shared recipe by ID.
+  /// Used for group content view and deep links where the full SharedRecipe is needed.
+  Future<SharedRecipe?> getSharedRecipeById(String recipeId) async {
+    return await executeOperation(
+      'Load shared recipe $recipeId',
+      () async {
+        return await _socialRecipeCoordinator.getSharedRecipeById(recipeId);
+      },
+    );
   }
 
   /// Import shared recipe using copy-on-write pattern
@@ -339,11 +330,14 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
                 (recipe) => !_socialRecipeCoordinator.isRecipeViewed(recipe.id))
             .toList();
 
-        for (final recipe in unviewedRecipes) {
-          await _socialRecipeCoordinator.markRecipeAsViewed(recipe.id);
-          // Reload status to update coordinator's cache (Issue #014)
-          await _socialRecipeCoordinator.loadStatusForRecipe(recipe.id, userId);
-        }
+        await Future.wait(
+          unviewedRecipes.map((recipe) async {
+            await _socialRecipeCoordinator.markRecipeAsViewed(recipe.id);
+            // Reload status to update coordinator's cache (Issue #014)
+            await _socialRecipeCoordinator.loadStatusForRecipe(
+                recipe.id, userId);
+          }),
+        );
 
         // Notify UI to refresh
         notifyListeners();

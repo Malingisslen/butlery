@@ -52,7 +52,7 @@ class EmojiReactionPicker extends StatelessWidget {
   }
 }
 
-String _emojiSemanticsLabel(BuildContext context, String key) {
+String emojiSemanticsLabel(BuildContext context, String key) {
   final l10n = context.l10n;
   return switch (key) {
     'thumbs_up' => l10n.reactionThumbsUp,
@@ -88,21 +88,26 @@ class _EmojiButtonState extends State<_EmojiButton> {
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: AppDimensions.animationDurationFast,
-          padding: AppDimensions.paddingAll8,
-          decoration: BoxDecoration(
-            color: _isHovered
-                ? Theme.of(context).colorScheme.surface
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          ),
-          child: Text(
-            widget.emoji,
-            style: const TextStyle(fontSize: 22),
-            semanticsLabel: _emojiSemanticsLabel(context, widget.emojiKey),
+      child: Semantics(
+        button: true,
+        label: emojiSemanticsLabel(context, widget.emojiKey),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: AppDimensions.animationDurationFast,
+            padding: AppDimensions.paddingAll8,
+            decoration: BoxDecoration(
+              color: _isHovered
+                  ? Theme.of(context).colorScheme.surface
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            ),
+            child: ExcludeSemantics(
+              child: Text(
+                widget.emoji,
+                style: const TextStyle(fontSize: 22),
+              ),
+            ),
           ),
         ),
       ),

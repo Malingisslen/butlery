@@ -31,6 +31,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 
 /// Abstract base ViewModel for shared content management.
 /// Provides common patterns for loading, filtering, state management,
@@ -63,7 +64,15 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
 
   /// Show imported content filter (default: false = hide imported for cleaner inbox)
   bool _showImported = false;
+
+  /// Blocked-user set from UnifiedFriendsService (optional dependency).
+  UnifiedFriendsService? _friendsService;
+
+  /// Users blocked by the current user. Content from these users should be filtered out.
+  Set<String> get blockedUsers => _friendsService?.blockedUsers ?? {};
+
   BaseSharedContentViewModel() {
+    _friendsService = ServiceLocator.tryGet<UnifiedFriendsService>();
     AppLogger.info('${contentTypeName}ViewModel initialized');
     // Don't auto-initialize - coordinator will trigger when ready
     // This prevents race condition where currentUserId is null at constructor time

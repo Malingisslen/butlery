@@ -11,6 +11,7 @@ import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 
 abstract class BaseFirebaseRepository<T>
     with PermissionValidationMixin
@@ -18,20 +19,27 @@ abstract class BaseFirebaseRepository<T>
   final FirebaseFirestore _firestore;
   final AuthRepository _authRepository;
   final FirebaseAuditRepository? _auditRepository;
+  final TimestampProvider _timestampProvider;
 
   BaseFirebaseRepository({
     FirebaseFirestore? firestore,
     required AuthRepository authRepository,
     FirebaseAuditRepository? auditRepository,
+    TimestampProvider? timestampProvider,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
         _authRepository = authRepository,
-        _auditRepository = auditRepository;
+        _auditRepository = auditRepository,
+        _timestampProvider =
+            timestampProvider ?? const ServerTimestampProvider();
 
   @protected
   FirebaseFirestore get firestore => _firestore;
 
   @protected
   AuthRepository get authRepository => _authRepository;
+
+  @protected
+  TimestampProvider get timestampProvider => _timestampProvider;
 
   String get collectionName;
   T fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc);

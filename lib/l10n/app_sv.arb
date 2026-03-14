@@ -1778,6 +1778,7 @@
     }
   },
   "groupCouldNotFetchMenu": "Kunde inte hämta meny från servern",
+  "groupCouldNotFetchRecipe": "Kunde inte hämta recept från servern",
   "groupCouldNotImportList": "Kunde inte importera lista: {error}",
   "@groupCouldNotImportList": {
     "placeholders": {
@@ -1795,6 +1796,14 @@
   "groupDescriptionLabel": "Beskrivning (valfritt)",
   "groupErrorOpeningMenu": "Fel vid öppning av meny: {error}",
   "@groupErrorOpeningMenu": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "groupErrorOpeningRecipe": "Fel vid öppning av recept: {error}",
+  "@groupErrorOpeningRecipe": {
     "placeholders": {
       "error": {
         "type": "String"
@@ -1879,6 +1888,22 @@
     }
   },
   "groupPasteInAnyApp": "Klistra in i valfri app",
+  "groupRecipeImportedSuccess": "Receptet \"{title}\" har importerats",
+  "@groupRecipeImportedSuccess": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "groupRecipeImportFailed": "Kunde inte importera recept: {error}",
+  "@groupRecipeImportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "groupRecipeViewComingSoon": "Receptvisning: {title} (kommer snart)",
   "@groupRecipeViewComingSoon": {
     "placeholders": {
@@ -7989,5 +8014,22 @@
   "ingredientDataUnverified": "Viss ingrediensdata är overifierad",
   "recipeStartCookingTooltip": "Börja laga",
   "taggingDegradedWarning": "Allergen- och kostdata kan vara opålitlig",
-  "recipeEditTags": "Redigera taggar"
+  "recipeEditTags": "Redigera taggar",
+  "allergenDisclaimer": "Allergeninformation \u00e4r endast v\u00e4gledande. Verifiera alltid med originalreceptet.",
+  "allergenToggleSemantics": "V\u00e4xla sp\u00e5rning av {allergen}",
+  "@allergenToggleSemantics": {
+    "placeholders": {
+      "allergen": {
+        "type": "String"
+      }
+    }
+  },
+  "dietaryToggleSemantics": "V\u00e4xla kostpreferens {dietary}",
+  "@dietaryToggleSemantics": {
+    "placeholders": {
+      "dietary": {
+        "type": "String"
+      }
+    }
+  }
 }

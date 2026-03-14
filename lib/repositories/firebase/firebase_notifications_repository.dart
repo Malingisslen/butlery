@@ -71,6 +71,7 @@ class FirebaseNotificationsRepository
     super.firestore,
     required super.authRepository,
     super.auditRepository,
+    super.timestampProvider,
   });
 
   @override
@@ -150,7 +151,7 @@ class FirebaseNotificationsRepository
       'body': body,
       'data': data,
       'isRead': false,
-      'createdAt': FieldValue.serverTimestamp(),
+      'createdAt': timestampProvider.serverTimestamp(),
     });
   }
 
@@ -175,7 +176,7 @@ class FirebaseNotificationsRepository
         'body': body,
         'data': data,
         'isRead': false,
-        'createdAt': FieldValue.serverTimestamp(),
+        'createdAt': timestampProvider.serverTimestamp(),
       });
     }
 
@@ -223,7 +224,7 @@ class FirebaseNotificationsRepository
 
     await collection.doc(notificationId).update({
       'isRead': true,
-      'readAt': FieldValue.serverTimestamp(),
+      'readAt': timestampProvider.serverTimestamp(),
     });
 
     logPermissionCheck(
@@ -258,7 +259,7 @@ class FirebaseNotificationsRepository
 
       batch.update(collection.doc(id), {
         'isRead': true,
-        'readAt': FieldValue.serverTimestamp(),
+        'readAt': timestampProvider.serverTimestamp(),
       });
     }
 
@@ -293,7 +294,7 @@ class FirebaseNotificationsRepository
     for (final doc in unreadQuery.docs) {
       batch.update(doc.reference, {
         'isRead': true,
-        'readAt': FieldValue.serverTimestamp(),
+        'readAt': timestampProvider.serverTimestamp(),
       });
     }
 
@@ -366,7 +367,7 @@ class FirebaseNotificationsRepository
         firestore.collection(FirestoreCollections.userFcmTokens);
     await fcmCollection.doc(userId).set({
       'token': token,
-      'updatedAt': FieldValue.serverTimestamp(),
+      'updatedAt': timestampProvider.serverTimestamp(),
     }, SetOptions(merge: true));
   }
 

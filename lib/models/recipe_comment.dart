@@ -184,20 +184,9 @@ class RecipeComment {
           SerializationUtils.safeNullableString(data, 'parentCommentId'),
       replyCount: SerializationUtils.safeInt(data, 'replyCount'),
       isDeleted: SerializationUtils.safeBool(data, 'isDeleted'),
-      reactions: _parseReactions(data['reactions']),
+      reactions:
+          SerializationUtils.safeStringListMap(data, 'reactions') ?? const {},
     );
-  }
-
-  /// Parses Firestore reactions map into typed `Map<String, List<String>>`.
-  static Map<String, List<String>> _parseReactions(dynamic raw) {
-    if (raw == null || raw is! Map) return const {};
-    final result = <String, List<String>>{};
-    for (final entry in (raw as Map<String, dynamic>).entries) {
-      if (entry.value is List) {
-        result[entry.key] = List<String>.from(entry.value as List);
-      }
-    }
-    return result;
   }
 
   /// Converts the recipe comment to JSON format for local caching.
@@ -236,7 +225,8 @@ class RecipeComment {
       parentCommentId: json['parentCommentId'] as String?,
       replyCount: json['replyCount'] as int? ?? 0,
       isDeleted: json['isDeleted'] as bool? ?? false,
-      reactions: _parseReactions(json['reactions']),
+      reactions:
+          SerializationUtils.safeStringListMap(json, 'reactions') ?? const {},
     );
   }
 

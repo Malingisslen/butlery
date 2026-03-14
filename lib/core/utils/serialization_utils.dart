@@ -131,6 +131,21 @@ class SerializationUtils {
         defaultValue: defaultValue);
   }
 
+  /// Parses a map of string keys to string lists, e.g. emoji reactions.
+  /// Returns null when the field is absent or not a map.
+  static Map<String, List<String>>? safeStringListMap(
+      Map<String, dynamic> map, String key) {
+    final raw = map[key];
+    if (raw == null || raw is! Map<String, dynamic>) return null;
+    final result = <String, List<String>>{};
+    for (final entry in raw.entries) {
+      if (entry.value is List) {
+        result[entry.key] = List<String>.from(entry.value as List);
+      }
+    }
+    return result;
+  }
+
   static List<T> safeObjectList<T>(Map<String, dynamic> map, String key,
       T Function(Map<String, dynamic>) fromJson,
       {List<T>? defaultValue}) {

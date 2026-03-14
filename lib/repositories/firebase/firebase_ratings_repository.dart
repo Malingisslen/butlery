@@ -70,6 +70,7 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
     super.firestore,
     required super.authRepository,
     super.auditRepository,
+    super.timestampProvider,
   });
 
   @override
@@ -147,8 +148,8 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
       'userId': userId,
       'rating': rating,
       'review': review,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
+      'createdAt': timestampProvider.serverTimestamp(),
+      'updatedAt': timestampProvider.serverTimestamp(),
     });
 
     // Update recipe statistics
@@ -206,7 +207,7 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
     await collection.doc(ratingId).update({
       'rating': rating,
       'review': review,
-      'updatedAt': FieldValue.serverTimestamp(),
+      'updatedAt': timestampProvider.serverTimestamp(),
     });
 
     // Update recipe statistics

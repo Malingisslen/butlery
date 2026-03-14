@@ -105,8 +105,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
       recipePortions: recipeSnapshot.portions,
       recipeTimeMinutes: recipeSnapshot.timeMinutes,
       recipeDescription: recipeSnapshot.description,
-      // Keep snapshot for backward compatibility during transition
-      recipeSnapshot: recipeSnapshot,
       scope: determinedScope,
       allowImport: allowImport,
       allowCollaboration: allowCollaboration,
@@ -274,7 +272,7 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     }
 
     return allowCollaboration
-        ? EditMode.readOnlyWithFork
+        ? EditMode.collaborative
         : EditMode.readOnlyWithFork;
   }
 
@@ -292,9 +290,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
       if (recipePortions != null) 'recipePortions': recipePortions,
       if (recipeTimeMinutes != null) 'recipeTimeMinutes': recipeTimeMinutes,
       if (recipeDescription != null) 'recipeDescription': recipeDescription,
-      // Keep snapshot for backward compatibility during transition
-      if (_recipeSnapshot != null)
-        'recipeSnapshot': _recipeSnapshot.toFirestore(),
     };
   }
 

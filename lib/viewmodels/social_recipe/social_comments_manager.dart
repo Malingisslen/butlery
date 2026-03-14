@@ -2,9 +2,9 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:butlery/models/social/social_comment.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -13,6 +13,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 class SocialCommentsManager extends ChangeNotifier {
   final UnifiedRecipeService _recipeService;
   ContentFilterService? _contentFilter;
+  UnifiedFriendsService? _friendsService;
 
   bool _isLoadingComments = false;
   String? _commentsError;
@@ -21,17 +22,21 @@ class SocialCommentsManager extends ChangeNotifier {
   String _newCommentText = '';
   String? _replyToCommentId;
 
-  List<SocialComment> _comments = [];
+  List<RecipeComment> _comments = [];
 
   StreamSubscription<List<RecipeComment>>? _commentStreamSubscription;
   String? _watchedRecipeId;
 
   SocialCommentsManager(this._recipeService) {
-    try {
-      _contentFilter = ServiceLocator.get<ContentFilterService>();
-    } catch (_) {
-      // Filter not available — proceed without it
-    }
+    _contentFilter = ServiceLocator.tryGet<ContentFilterService>();
+    _friendsService = ServiceLocator.tryGet<UnifiedFriendsService>();
+  }
+
+  /// BP3: Filter out comments from blocked users.
+  List<RecipeComment> _filterBlockedUsers(List<RecipeComment> comments) {
+    final blocked = _friendsService?.blockedUsers;
+    if (blocked == null || blocked.isEmpty) return comments;
+    return comments.where((c) => !blocked.contains(c.authorId)).toList();
   }
 
   bool get hasComments => _comments.isNotEmpty;
@@ -44,8 +49,8 @@ class SocialCommentsManager extends ChangeNotifier {
   bool get hasProfanityWarning =>
       _contentFilter?.containsProfanity(_newCommentText) ?? false;
   String get newCommentText => _newCommentText;
-  List<SocialComment> get comments => _comments;
-  List<SocialComment> get topLevelComments =>
+  List<RecipeComment> get comments => _comments;
+  List<RecipeComment> get topLevelComments =>
       _comments.where((comment) => comment.parentCommentId == null).toList();
 
   Future<void> refreshComments(String recipeId) async {
@@ -56,9 +61,7 @@ class SocialCommentsManager extends ChangeNotifier {
     try {
       final recipeComments =
           await _recipeService.social.getComments(recipeId: recipeId);
-      _comments = recipeComments
-          .map((comment) => _convertRecipeCommentToSocialComment(comment))
-          .toList();
+      _comments = _filterBlockedUsers(recipeComments);
       AppLogger.info('Comments refreshed successfully for recipe: $recipeId');
     } catch (e) {
       _commentsError = AppLocale.current.errorCouldNotLoad('kommentarer');
@@ -88,9 +91,7 @@ class SocialCommentsManager extends ChangeNotifier {
       _commentStreamSubscription =
           _recipeService.social.getCommentsStream(recipeId).listen(
         (recipeComments) {
-          _comments = recipeComments
-              .map((comment) => _convertRecipeCommentToSocialComment(comment))
-              .toList();
+          _comments = _filterBlockedUsers(recipeComments);
           _isLoadingComments = false;
           _commentsError = null;
           notifyListeners();
@@ -189,26 +190,10 @@ class SocialCommentsManager extends ChangeNotifier {
     }
   }
 
-  List<SocialComment> getReplies(String parentCommentId) {
+  List<RecipeComment> getReplies(String parentCommentId) {
     return _comments
         .where((comment) => comment.parentCommentId == parentCommentId)
         .toList();
-  }
-
-  SocialComment _convertRecipeCommentToSocialComment(
-      RecipeComment recipeComment) {
-    return SocialComment(
-      id: recipeComment.id,
-      recipeId: recipeComment.recipeId,
-      authorId: recipeComment.authorId,
-      text: recipeComment.text,
-      createdAt: recipeComment.createdAt,
-      parentCommentId: recipeComment.parentCommentId,
-      likeCount: recipeComment.likeCount,
-      reactions: recipeComment.reactions.isNotEmpty
-          ? recipeComment.reactions
-          : null,
-    );
   }
 
   @override

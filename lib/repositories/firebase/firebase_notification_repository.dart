@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/models/notification_batch.dart';
@@ -14,6 +15,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 class NotificationRepository {
   final FirebaseFirestore _firestore;
   final String _userId;
+  final TimestampProvider _timestampProvider;
 
   // Cache for notification preferences
   NotificationPreferences? _cachedPreferences;
@@ -25,8 +27,11 @@ class NotificationRepository {
 
   NotificationRepository({
     required String userId,
+    TimestampProvider? timestampProvider,
   })  : _firestore = GetIt.instance<FirebaseFirestore>(),
-        _userId = userId;
+        _userId = userId,
+        _timestampProvider =
+            timestampProvider ?? const ServerTimestampProvider();
 
   /// Get user's notification preferences with caching
   Future<NotificationPreferences> getPreferences() async {
@@ -154,7 +159,7 @@ class NotificationRepository {
         'category': category.toString(),
         'type': type.toString(),
         'data': data,
-        'sentAt': FieldValue.serverTimestamp(),
+        'sentAt': _timestampProvider.serverTimestamp(),
         'delivered': false,
         'opened': false,
       };
@@ -192,8 +197,10 @@ class NotificationRepository {
       await _firestore
           .collection(_historyCollection)
           .doc(notificationId)
-          .update(
-              {'delivered': true, 'deliveredAt': FieldValue.serverTimestamp()});
+          .update({
+        'delivered': true,
+        'deliveredAt': _timestampProvider.serverTimestamp()
+      });
     } catch (e) {
       AppLogger.warning('⚠️ Failed to mark notification as delivered: $e');
     }
@@ -205,7 +212,10 @@ class NotificationRepository {
       await _firestore
           .collection(_historyCollection)
           .doc(notificationId)
-          .update({'opened': true, 'openedAt': FieldValue.serverTimestamp()});
+          .update({
+        'opened': true,
+        'openedAt': _timestampProvider.serverTimestamp()
+      });
     } catch (e) {
       AppLogger.warning('⚠️ Failed to mark notification as opened: $e');
     }
@@ -233,7 +243,7 @@ class NotificationRepository {
           transaction.update(batchDoc, {
             'notifications': notifications,
             'count': notifications.length,
-            'lastUpdated': FieldValue.serverTimestamp(),
+            'lastUpdated': _timestampProvider.serverTimestamp(),
           });
         } else {
           // Create new batch
@@ -242,8 +252,8 @@ class NotificationRepository {
             'batchKey': batchKey,
             'notifications': [notification.toMap()],
             'count': 1,
-            'createdAt': FieldValue.serverTimestamp(),
-            'lastUpdated': FieldValue.serverTimestamp(),
+            'createdAt': _timestampProvider.serverTimestamp(),
+            'lastUpdated': _timestampProvider.serverTimestamp(),
             'scheduledFor': DateTime.now().add(batchWindow),
           });
         }
@@ -499,7 +509,7 @@ class NotificationRepository {
   Future<void> updateTokenTimestamp(String collection, String docId) async {
     try {
       await _firestore.collection(collection).doc(docId).update({
-        'lastUpdated': FieldValue.serverTimestamp(),
+        'lastUpdated': _timestampProvider.serverTimestamp(),
       });
     } catch (e) {
       AppLogger.warning('⚠️ Failed to update token timestamp: $e');

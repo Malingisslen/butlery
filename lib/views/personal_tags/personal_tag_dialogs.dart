@@ -298,6 +298,17 @@ abstract final class PersonalTagDialogs {
                         }
 
                         setState(() => isLoading = true);
+
+                        final exists = await viewModel.tagNameExists(name);
+                        if (exists) {
+                          setState(() => isLoading = false);
+                          if (context.mounted) {
+                            SnackBarUtils.showError(
+                                context, context.l10n.tagAlreadyExists);
+                          }
+                          return;
+                        }
+
                         final success = await viewModel.createTag(name: name);
 
                         if (!dialogContext.mounted) return;

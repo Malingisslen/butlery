@@ -31,6 +31,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Firebase implementation for social content sharing with comprehensive community engagement features.
 /// This repository provides complete social sharing functionality using Firebase Firestore as the
@@ -67,6 +68,7 @@ class FirebaseSocialSharingRepository
     super.firestore,
     required super.authRepository,
     super.auditRepository,
+    super.timestampProvider,
   });
 
   @override
@@ -101,12 +103,30 @@ class FirebaseSocialSharingRepository
     // Recipients can read content shared with them
     if (entity.sharedWithUserIds.contains(userId)) return true;
 
-    // Group members can read content shared with their groups
-    // Note: Group membership validation should be done at a higher level
-    // Here we just check if the user's groups are in the sharing list
+    // S6 fix: Verify actual group membership before granting access
     if (entity.sharedWithGroupIds.isNotEmpty) {
-      // This is a simplified check - in production, verify actual group membership
-      return true; // Delegate to group-level security
+      final results = await Future.wait(
+        entity.sharedWithGroupIds.map((groupId) async {
+          try {
+            final groupDoc = await firestore
+                .collection('users')
+                .doc(entity.ownerId)
+                .collection(FirestoreCollections.userFriendCategories)
+                .doc(groupId)
+                .get();
+            if (groupDoc.exists) {
+              final data = groupDoc.data() ?? {};
+              final members =
+                  SerializationUtils.safeStringList(data, 'friendUserIds');
+              return members.contains(userId);
+            }
+          } catch (_) {
+            // Skip groups we can't read
+          }
+          return false;
+        }),
+      );
+      if (results.any((isMember) => isMember)) return true;
     }
 
     return false;
@@ -339,7 +359,7 @@ class FirebaseSocialSharingRepository
 
     try {
       await collection.doc(contentId).update({
-        'acceptedBy.$userId': FieldValue.serverTimestamp(),
+        'acceptedBy.$userId': timestampProvider.serverTimestamp(),
       });
 
       AppLogger.info('User $userId accepted shared content: $contentId');
@@ -359,7 +379,7 @@ class FirebaseSocialSharingRepository
 
     try {
       await collection.doc(contentId).update({
-        'declinedBy.$userId': FieldValue.serverTimestamp(),
+        'declinedBy.$userId': timestampProvider.serverTimestamp(),
       });
 
       AppLogger.info('User $userId declined shared content: $contentId');

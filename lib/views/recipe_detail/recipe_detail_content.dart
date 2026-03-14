@@ -388,7 +388,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
     final allergenStatus = viewModel.recipe.tagResult?.allergenStatus;
     if (allergenStatus == null) return false;
 
-    // Normalize to ASCII so "mjölk" matches allergen key "mjolk"
+    // Normalize both sides to ASCII for case-insensitive Swedish matching
     final nameNormalized = SwedishCharacterNormalizer.normalize(ingredientName);
     for (final entry in allergenStatus.entries) {
       if (entry.value != TriState.contains) continue;
