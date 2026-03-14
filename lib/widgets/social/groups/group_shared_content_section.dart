@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Section widget displaying shared content (recipes, menus, shopping lists) for a group
 class GroupSharedContentSection extends StatefulWidget {
@@ -171,12 +172,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
 
       if (sharedRecipe == null) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.groupCouldNotFetchRecipe),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        SnackBarUtils.showError(context, context.l10n.groupCouldNotFetchRecipe);
         return;
       }
 
@@ -189,12 +185,8 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.groupErrorOpeningRecipe(e.toString())),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      SnackBarUtils.showError(
+          context, context.l10n.groupErrorOpeningRecipe(e.toString()));
     }
   }
 
@@ -226,32 +218,19 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
 
       if (sharedRecipe == null) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.groupCouldNotFetchRecipe),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        SnackBarUtils.showError(context, context.l10n.groupCouldNotFetchRecipe);
         return;
       }
 
       await sharedRecipeViewModel.importSharedRecipe(sharedRecipe);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.groupRecipeImportedSuccess(item.title)),
-          backgroundColor: context.butleryColors.success,
-        ),
-      );
+      SnackBarUtils.showSuccess(
+          context, context.l10n.groupRecipeImportedSuccess(item.title));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.groupRecipeImportFailed(e.toString())),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      SnackBarUtils.showError(
+          context, context.l10n.groupRecipeImportFailed(e.toString()));
     }
   }
 

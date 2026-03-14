@@ -11,7 +11,7 @@ abstract class TimestampProvider {
   ///
   /// In production: `FieldValue.serverTimestamp()` (sentinel).
   /// In tests: `Timestamp.fromDate(DateTime.now())` (concrete value).
-  dynamic serverTimestamp();
+  Object serverTimestamp();
 }
 
 /// Production implementation that uses Firestore server timestamps.
@@ -19,7 +19,7 @@ class ServerTimestampProvider implements TimestampProvider {
   const ServerTimestampProvider();
 
   @override
-  dynamic serverTimestamp() => FieldValue.serverTimestamp();
+  Object serverTimestamp() => FieldValue.serverTimestamp();
 }
 
 /// Test implementation that returns a concrete Timestamp.
@@ -30,5 +30,5 @@ class TestTimestampProvider implements TimestampProvider {
   const TestTimestampProvider();
 
   @override
-  dynamic serverTimestamp() => Timestamp.fromDate(DateTime.now());
+  Object serverTimestamp() => Timestamp.fromDate(DateTime.now());
 }

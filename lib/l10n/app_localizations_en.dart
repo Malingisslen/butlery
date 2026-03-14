@@ -3002,7 +3002,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String groupRecipeImportedSuccess(String title) {
-    return 'Recipe "$title" imported successfully';
+    return 'Recipe \"$title\" imported successfully';
   }
 
   @override

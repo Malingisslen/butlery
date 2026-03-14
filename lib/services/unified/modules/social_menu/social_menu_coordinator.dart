@@ -457,9 +457,14 @@ class SocialMenuCoordinator
   /// Loads status for multiple menus to populate cache efficiently.
   Future<void> loadStatusForAllMenus(
       List<SharedMenu> menus, String userId) async {
-    await Future.wait(
-      menus.map((menu) => loadStatusForMenu(menu.id, userId)),
-    );
+    const batchSize = 5;
+    for (var i = 0; i < menus.length; i += batchSize) {
+      final end = (i + batchSize < menus.length) ? i + batchSize : menus.length;
+      final batch = menus.sublist(i, end);
+      await Future.wait(
+        batch.map((menu) => loadStatusForMenu(menu.id, userId)),
+      );
+    }
   }
 
   /// Check if menu is dismissed using cache
@@ -474,6 +479,10 @@ class SocialMenuCoordinator
   /// Falls back to false if not cached.
   bool isMenuViewed(String menuId) {
     return _viewedStatusCache[menuId] ?? false;
+  }
+
+  void setViewedStatus(String menuId, bool viewed) {
+    _viewedStatusCache[menuId] = viewed;
   }
 
   /// Check if menu is imported using cache

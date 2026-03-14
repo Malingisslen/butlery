@@ -3007,7 +3007,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String groupRecipeImportedSuccess(String title) {
-    return 'Receptet "$title" har importerats';
+    return 'Receptet \"$title\" har importerats';
   }
 
   @override
