@@ -160,11 +160,15 @@ class RetaggingScheduler {
     // No tags at all
     if (tagResult == null) return true;
 
+    // Skip all_unknown recipes — retagging will produce the same result
+    // until new ingredients are added to the database
+    if (tagResult.isAllUnknown) return false;
+
     // Explicitly marked as failed
-    if (tagResult.generatorVersion == 'failed') return true;
+    if (tagResult.hasFailed) return true;
 
     // Lookup timeout (safe defaults, but should retry)
-    if (tagResult.generatorVersion == 'lookup_timeout') return true;
+    if (tagResult.isLookupTimeout) return true;
 
     // Use the TagResult's own needsRetagging check
     return tagResult.needsRetagging;
@@ -183,8 +187,7 @@ class RetaggingScheduler {
       }
 
       // Check if this is still a failure result
-      if (tagResult.generatorVersion == 'failed' ||
-          tagResult.generatorVersion == 'lookup_timeout') {
+      if (tagResult.hasFailed || tagResult.isLookupTimeout) {
         AppLogger.warning(
           '⚠️ Retagging still failed for: ${recipe.title} '
           '(${tagResult.generatorVersion})',

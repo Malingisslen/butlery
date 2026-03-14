@@ -555,7 +555,11 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
         final contentRecipe = sharedRecipe.contentSnapshot;
         final attributionText = AppLocale.current
             .recipeAttributionText(sharedRecipe.sharedByDisplayName);
-        importedRecipe = contentRecipe.copyWith(sourceUrl: attributionText);
+        // Clear sender's personalTagIds — UUIDs are meaningless in recipient's account
+        importedRecipe = contentRecipe.copyWith(
+          sourceUrl: attributionText,
+          personalTagIds: [],
+        );
       }
 
       final finalRecipe = newTitle != null

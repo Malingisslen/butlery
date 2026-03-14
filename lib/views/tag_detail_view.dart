@@ -182,7 +182,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
       actions: [
         IconButton(
           icon: const Icon(Icons.share),
-          tooltip: 'Dela',
+          tooltip: context.l10n.commonShare,
           onPressed: () => _shareTag(context, tag),
         ),
         IconButton(

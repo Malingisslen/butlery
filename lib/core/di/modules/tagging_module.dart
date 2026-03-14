@@ -33,6 +33,8 @@ import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
 import 'package:butlery/services/tagging/tag_editing_service.dart';
 import 'package:butlery/services/tagging/tag_resolution_service.dart';
+import 'package:butlery/services/tagging/tagging_events_tracker.dart';
+import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 
 // Re-export RetaggingScheduler for app-level integration
 // Note: RetaggingScheduler requires callback functions for recipes,
@@ -63,6 +65,7 @@ class TaggingModule implements DIModule {
         IngredientRepository,
         UserIngredientRepository,
         IngredientLookupService,
+        TaggingEventsTracker,
         TaggingService,
         FirebasePersonalTagRepository,
         FirebasePersonalTagGroupRepository,
@@ -108,12 +111,18 @@ class TaggingModule implements DIModule {
         ),
       );
 
+      // Tagging analytics tracker
+      container.registerLazySingleton<TaggingEventsTracker>(
+        () => TaggingEventsTracker(container<AnalyticsRepository>()),
+      );
+
       // Main tagging service orchestrator
       container.registerLazySingleton<TaggingService>(
         () => TaggingService(
           lookupService: container<IngredientLookupService>(),
           tagConfigService: container<TagConfigService>(),
           userIngredientRepository: container<UserIngredientRepository>(),
+          eventsTracker: container<TaggingEventsTracker>(),
         ),
       );
 

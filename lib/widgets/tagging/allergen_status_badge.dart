@@ -129,7 +129,7 @@ class AllergenStatusBadge extends StatelessWidget {
 
     // Append coverage % for UNKNOWN status when available
     if (status == TriState.unknown && coveragePercent != null) {
-      return '$baseLabel ($coveragePercent% täckning)';
+      return '$baseLabel (${context.l10n.allergenCoverageLabel(coveragePercent!)})';
     }
     return baseLabel;
   }

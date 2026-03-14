@@ -251,7 +251,11 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     if (_recipeSnapshot == null) return null;
     final attributionText =
         AppLocale.current.sharedRecipeAttributionText(sharedByDisplayName);
-    return _recipeSnapshot.copyWith(sourceUrl: attributionText);
+    // Clear sender's personalTagIds — UUIDs are meaningless in recipient's account
+    return _recipeSnapshot.copyWith(
+      sourceUrl: attributionText,
+      personalTagIds: [],
+    );
   }
 
   ResourcePermission get permission {

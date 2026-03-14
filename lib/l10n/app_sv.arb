@@ -7979,5 +7979,15 @@
   "reportDialogTitle": "Rapportera innehåll",
   "reportSubmit": "Skicka rapport",
   "contentFilterWarning": "Texten innehåller olämpligt språk. Vänligen redigera innan du skickar.",
-  "noResults": "Inga resultat"
+  "noResults": "Inga resultat",
+  "allergenCoverageLabel": "{coverage}% täckning",
+  "@allergenCoverageLabel": {
+    "placeholders": {
+      "coverage": { "type": "int" }
+    }
+  },
+  "ingredientDataUnverified": "Viss ingrediensdata är overifierad",
+  "recipeStartCookingTooltip": "Börja laga",
+  "taggingDegradedWarning": "Allergen- och kostdata kan vara opålitlig",
+  "recipeEditTags": "Redigera taggar"
 }

@@ -433,7 +433,8 @@ class ImportManager {
       Recipe recipeToSave = recipe;
       final taggingService = _taggingService;
 
-      if (taggingService != null && recipe.tagResult == null) {
+      if (taggingService != null &&
+          (recipe.tagResult == null || recipe.tagResult!.isPartial)) {
         AppLogger.info('🏷️ Auto-tagging imported recipe: ${recipe.title}');
 
         final tagResult = await taggingService.generateTags(recipe);

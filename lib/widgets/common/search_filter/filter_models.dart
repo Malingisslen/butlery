@@ -109,6 +109,15 @@ class RecipeFilters {
   static String? allergenFilterValue(String filterId) =>
       _allergenFilterValues[filterId];
 
+  /// All allergen filter IDs (e.g. 'gluten-free', 'dairy-free').
+  static final Set<String> allergenFilterIds =
+      Set.unmodifiable(_allergenFilterValues.keys.toSet());
+
+  /// Inverse mapping: allergen key → filter ID (e.g. 'gluten' → 'gluten-free').
+  static final allergenKeyToFilterId = Map.unmodifiable(
+    _allergenFilterValues.map((filterId, key) => MapEntry(key, filterId)),
+  );
+
   /// Look up dietary filter value by ID (no BuildContext needed).
   static String? dietaryFilterValue(String filterId) =>
       _dietaryFilterValues[filterId];

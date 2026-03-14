@@ -235,6 +235,21 @@ class TaggingService extends BaseService {
       status: status,
     );
 
+    // Wire analytics events for recipe tagging and unknown ingredients
+    _eventsTracker?.logRecipeTagged(
+      recipeId: recipe.id,
+      tagCount: tagResult.tags.length,
+      coverage: tagResult.coverage,
+      hasAllergens: tagResult.allergenStatus.isNotEmpty,
+      hasDietary: tagResult.dietaryStatus.isNotEmpty,
+    );
+    if (lookupResult.hasUnknowns) {
+      _eventsTracker?.logUnknownIngredients(
+        unknownIngredients: lookupResult.unmatched,
+        totalIngredients: lookupResult.totalCount,
+      );
+    }
+
     return tagResult;
   }
 
@@ -368,6 +383,9 @@ class TaggingService extends BaseService {
 
         await _userIngredientRepository.create(userId, ingredient);
 
+        // Invalidate LRU cache so the new ingredient is found immediately
+        _lookupService.clearLookupCache();
+
         AppLogger.info('💾 Saved user ingredient: $ingredientName');
       },
       operationName: 'Save user ingredient',
@@ -417,7 +435,7 @@ class TaggingService extends BaseService {
     final recipes = await getRecipes();
     AppLogger.info(
       'Retag: fetched ${recipes.length} recipes for user $userId'
-      ' (forceRetag: $forceRetag)',
+          ' (forceRetag: $forceRetag)',
       'TaggingService',
     );
     final recipesToRetag =

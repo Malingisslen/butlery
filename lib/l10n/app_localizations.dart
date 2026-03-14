@@ -19587,6 +19587,36 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Inga resultat'**
   String get noResults;
+
+  /// No description provided for @allergenCoverageLabel.
+  ///
+  /// In sv, this message translates to:
+  /// **'{coverage}% täckning'**
+  String allergenCoverageLabel(int coverage);
+
+  /// No description provided for @ingredientDataUnverified.
+  ///
+  /// In sv, this message translates to:
+  /// **'Viss ingrediensdata är overifierad'**
+  String get ingredientDataUnverified;
+
+  /// No description provided for @recipeStartCookingTooltip.
+  ///
+  /// In sv, this message translates to:
+  /// **'Börja laga'**
+  String get recipeStartCookingTooltip;
+
+  /// No description provided for @taggingDegradedWarning.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergen- och kostdata kan vara opålitlig'**
+  String get taggingDegradedWarning;
+
+  /// No description provided for @recipeEditTags.
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigera taggar'**
+  String get recipeEditTags;
 }
 
 class _AppLocalizationsDelegate

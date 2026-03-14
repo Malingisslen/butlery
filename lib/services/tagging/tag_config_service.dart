@@ -278,15 +278,20 @@ class TagConfigService extends BaseService {
       collection.doc('display').get(const GetOptions(source: Source.server)),
     ]);
 
-    int totalVersion = 0;
+    final versions = <int>[];
     for (final result in results) {
       final data = result.data();
-      if (data != null) {
-        totalVersion += (data['version'] as int?) ?? 0;
-      }
+      versions.add((data?['version'] as int?) ?? 0);
     }
 
-    return totalVersion;
+    // Order must match _loadFromFirebase: allergens, dietary, cuisines, properties, display
+    return FirebaseTagConfig.combineVersions(
+      versions[0],
+      versions[1],
+      versions[2],
+      versions[3],
+      versions[4],
+    );
   }
 
   /// Loads config from SharedPreferences cache.
