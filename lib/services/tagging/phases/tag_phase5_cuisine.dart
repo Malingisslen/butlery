@@ -100,18 +100,17 @@ class TagPhase5Cuisine {
     Recipe recipe,
     IngredientLookupResult lookup,
   ) {
-    final titleMatch = _hasTitleMatch(cuisine, recipe);
-    final ingredientMatch = _hasIngredientMatch(cuisine, lookup);
-
     switch (cuisine.matchMode) {
       case firebase_config.CuisineMatchMode.titleOnly:
-        return titleMatch;
+        return _hasTitleMatch(cuisine, recipe);
       case firebase_config.CuisineMatchMode.ingredientsOnly:
-        return ingredientMatch;
+        return _hasIngredientMatch(cuisine, lookup);
       case firebase_config.CuisineMatchMode.titleAndIngredients:
-        return titleMatch && ingredientMatch;
+        return _hasTitleMatch(cuisine, recipe) &&
+            _hasIngredientMatch(cuisine, lookup);
       case firebase_config.CuisineMatchMode.titleOrIngredients:
-        return titleMatch || ingredientMatch;
+        return _hasTitleMatch(cuisine, recipe) ||
+            _hasIngredientMatch(cuisine, lookup);
     }
   }
 

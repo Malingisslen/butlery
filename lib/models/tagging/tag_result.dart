@@ -705,6 +705,12 @@ class TagResult {
   /// This is different from needsRetagging which includes version mismatches.
   bool get hasFailed => generatorVersion == 'failed';
 
+  /// Returns true if all ingredients were unknown during tagging.
+  bool get isAllUnknown => generatorVersion == 'all_unknown';
+
+  /// Returns true if ingredient lookup timed out.
+  bool get isLookupTimeout => generatorVersion == 'lookup_timeout';
+
   /// Checks if this result needs retagging due to version mismatch, failure, pending status,
   /// or coverage anomaly.
   ///

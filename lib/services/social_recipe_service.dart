@@ -175,7 +175,7 @@ class SocialRecipeService extends ChangeNotifier
         mealType: recipeToImport.mealType,
         portions: recipeToImport.portions,
         timeMinutes: recipeToImport.timeMinutes,
-        personalTagIds: recipeToImport.personalTagIds,
+        personalTagIds: [], // Clear sender's personalTagIds — UUIDs are meaningless in recipient's account
         rating: recipeToImport.rating,
       );
 

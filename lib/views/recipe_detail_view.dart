@@ -20,11 +20,26 @@ import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/core/constants/routes.dart';
+
+/// Menu actions for the recipe detail overflow menu.
+enum _MenuAction {
+  edit,
+  fork,
+  generateShoppingList,
+  reTag,
+  editTags,
+  delete,
+  toggleCollaboration,
+  source,
+  report,
+}
 
 /// Recipe Detail View - Complete recipe display with metadata, actions, and social features
 /// This view provides comprehensive recipe details including:
@@ -227,7 +242,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         Routes.cookingMode,
                         arguments: recipe,
                       ),
-                      tooltip: 'Borja laga',
+                      tooltip: context.l10n.recipeStartCookingTooltip,
                     ),
                   ),
                   // Favorite toggle
@@ -270,7 +285,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         final menuCs = Theme.of(context).colorScheme;
                         return [
                           PopupMenuItem(
-                            value: 'edit',
+                            value: _MenuAction.edit,
                             child: Row(
                               children: [
                                 Icon(Icons.edit_outlined,
@@ -282,7 +297,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             ),
                           ),
                           PopupMenuItem(
-                            value: 'fork',
+                            value: _MenuAction.fork,
                             child: Row(
                               children: [
                                 Icon(Icons.content_copy_outlined,
@@ -294,7 +309,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             ),
                           ),
                           PopupMenuItem(
-                            value: 'generate_shopping_list',
+                            value: _MenuAction.generateShoppingList,
                             child: Row(
                               children: [
                                 Icon(Icons.shopping_cart_outlined,
@@ -306,7 +321,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             ),
                           ),
                           PopupMenuItem(
-                            value: 're_tag',
+                            value: _MenuAction.reTag,
                             child: Row(
                               children: [
                                 Icon(Icons.local_offer_outlined,
@@ -318,7 +333,19 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             ),
                           ),
                           PopupMenuItem(
-                            value: 'delete',
+                            value: _MenuAction.editTags,
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit_note,
+                                    size: AppDimensions.iconSizeM,
+                                    color: menuCs.primary),
+                                const SizedBox(width: AppDimensions.spacingM),
+                                Text(context.l10n.recipeEditTags),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: _MenuAction.delete,
                             child: Row(
                               children: [
                                 Icon(Icons.delete_outlined,
@@ -340,7 +367,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               ServiceLocator.get<PermissionService>()
                                   .currentUserId)
                             PopupMenuItem(
-                              value: 'toggle_collaboration',
+                              value: _MenuAction.toggleCollaboration,
                               child: Row(
                                 children: [
                                   Icon(
@@ -360,7 +387,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           if (recipe.sourceUrl != null &&
                               recipe.sourceUrl!.isNotEmpty)
                             PopupMenuItem(
-                              value: 'source',
+                              value: _MenuAction.source,
                               child: Row(
                                 children: [
                                   Icon(Icons.link_outlined,
@@ -372,7 +399,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               ),
                             ),
                           PopupMenuItem(
-                            value: 'report',
+                            value: _MenuAction.report,
                             child: Row(
                               children: [
                                 Icon(Icons.flag_outlined,
@@ -385,8 +412,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           ),
                         ];
                       },
-                      onSelected: (value) =>
-                          _handleMenuAction(context, value, viewModel, recipe),
+                      onSelected: (action) =>
+                          _handleMenuAction(context, action, viewModel, recipe),
                     ),
                   ),
                 ],
@@ -480,7 +507,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                           allergenPrefs.trackedAllergens,
                                       userDietaryPrefs:
                                           allergenPrefs.trackedDietary,
-                                      showCoverage: false,
+                                      showCoverage: tagResult.coverage < 1.0,
+                                      isDegraded: ServiceLocator.tryGet<
+                                                  TaggingService>()
+                                              ?.isInDegradedMode ??
+                                          false,
                                     ),
                                   );
                                 },
@@ -587,45 +618,51 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     );
   }
 
-  Future<void> _handleMenuAction(BuildContext context, String action,
+  Future<void> _handleMenuAction(BuildContext context, _MenuAction action,
       RecipeDetailViewModel viewModel, Recipe recipe) async {
     switch (action) {
-      case 'edit':
+      case _MenuAction.edit:
         _actions.editRecipe(context);
-        break;
-      case 'fork':
-        // Create a copy of the recipe
+      case _MenuAction.fork:
         Navigator.pushNamed(context, Routes.redigeraRecept,
             arguments: recipe.copyWith(
               title: '${recipe.title} (Copy)',
             ));
-        break;
-      case 'generate_shopping_list':
+      case _MenuAction.generateShoppingList:
         await _actions.generateShoppingListFromRecipe(context);
-        break;
-      case 're_tag':
+      case _MenuAction.reTag:
         await _actions.retagRecipe(context);
-        break;
-      case 'delete':
+      case _MenuAction.editTags:
+        final overrides = await TagEditorDialog.show(context, recipe);
+        if (overrides != null && context.mounted) {
+          try {
+            final updated = recipe.copyWith(tagOverrides: overrides);
+            final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+            await recipeService.updateRecipe(updated);
+            viewModel.updateRecipe(updated);
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(context.l10n.commonErrorOccurred)),
+              );
+            }
+          }
+        }
+      case _MenuAction.delete:
         await _actions.deleteRecipe(context);
-        // Navigation is handled by RecipeDetailActions.deleteRecipe()
-        break;
-      case 'toggle_collaboration':
+      case _MenuAction.toggleCollaboration:
         await _actions.toggleCollaboration(context);
-        break;
-      case 'source':
+      case _MenuAction.source:
         if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) {
           _actions.handleSourceUrlClick(context, recipe.sourceUrl!);
         }
-        break;
-      case 'report':
+      case _MenuAction.report:
         ReportContentDialog.show(
           context: context,
           contentType: 'recipe',
           contentId: recipe.id,
           contentOwnerId: recipe.createdBy,
         );
-        break;
     }
   }
 }
@@ -680,8 +717,8 @@ class _HeroMenuButton extends StatelessWidget {
   });
 
   final IconData icon;
-  final List<PopupMenuEntry<String>> Function(BuildContext) itemBuilder;
-  final void Function(String) onSelected;
+  final List<PopupMenuEntry<_MenuAction>> Function(BuildContext) itemBuilder;
+  final void Function(_MenuAction) onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -693,7 +730,7 @@ class _HeroMenuButton extends StatelessWidget {
       child: Material(
         color: cs.surface,
         borderRadius: BorderRadius.zero,
-        child: PopupMenuButton<String>(
+        child: PopupMenuButton<_MenuAction>(
           padding: EdgeInsets.zero,
           icon: Icon(
             icon,

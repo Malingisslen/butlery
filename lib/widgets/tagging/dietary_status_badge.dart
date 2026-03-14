@@ -130,9 +130,10 @@ class _StandardBadge extends StatelessWidget {
             vertical: AppDimensions.spacing6),
         decoration: BoxDecoration(
           color: color.withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadius16),
           border: Border.all(
-              color: color.withValues(alpha: AppDimensions.opacityMediumLight)),
+            color: color,
+            width: 1.5,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -182,7 +183,10 @@ class _CompactBadge extends StatelessWidget {
             vertical: AppDimensions.spacingS),
         decoration: BoxDecoration(
           color: color.withValues(alpha: AppDimensions.opacityVeryLight),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+          border: Border.all(
+            color: color,
+            width: 1,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

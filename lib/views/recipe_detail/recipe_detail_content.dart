@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
+import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
 import 'package:butlery/widgets/image/image_config.dart';
@@ -387,12 +388,13 @@ class _RecipeDetailContentState extends State<RecipeDetailContent>
     final allergenStatus = viewModel.recipe.tagResult?.allergenStatus;
     if (allergenStatus == null) return false;
 
-    final nameLower = ingredientName.toLowerCase();
+    // Normalize to ASCII so "mjölk" matches allergen key "mjolk"
+    final nameNormalized = SwedishCharacterNormalizer.normalize(ingredientName);
     for (final entry in allergenStatus.entries) {
       if (entry.value != TriState.contains) continue;
       if (!userAllergenPrefs!.contains(entry.key)) continue;
-      // Check if allergen key appears in the ingredient name
-      if (nameLower.contains(entry.key.toLowerCase())) return true;
+      final keyNormalized = SwedishCharacterNormalizer.normalize(entry.key);
+      if (nameNormalized.contains(keyNormalized)) return true;
     }
     return false;
   }

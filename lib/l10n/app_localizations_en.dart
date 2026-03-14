@@ -11443,4 +11443,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noResults => 'No results';
+
+  @override
+  String allergenCoverageLabel(int coverage) {
+    return '$coverage% coverage';
+  }
+
+  @override
+  String get ingredientDataUnverified => 'Some ingredient data is unverified';
+
+  @override
+  String get recipeStartCookingTooltip => 'Start cooking';
+
+  @override
+  String get taggingDegradedWarning =>
+      'Allergen and dietary data may be unreliable';
+
+  @override
+  String get recipeEditTags => 'Edit tags';
 }

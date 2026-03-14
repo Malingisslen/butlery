@@ -237,22 +237,26 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   /// Get active quick filter IDs from ViewModel state.
   Set<String> _getQuickFilterIds(RecipeListViewModel viewModel) {
     final ids = <String>{};
-    // 'quick' time filter maps to 'quick' chip
     if (viewModel.activeTimeFilters.contains('quick')) {
       ids.add('quick');
     }
-    // 'vegetarian' dietary filter maps to 'vegetarian' chip
     if (viewModel.activeDietaryFilters.contains('vegetarian')) {
       ids.add('vegetarian');
     }
     if (viewModel.favoritesOnly) {
       ids.add('favorites');
     }
+    // Allergen quick-filter chips
+    ids.addAll(viewModel.activeAllergenFilters);
     return ids;
   }
 
   /// Handle quick filter chip toggle.
   void _onQuickFilterToggle(RecipeListViewModel viewModel, String filterId) {
+    if (RecipeFilters.allergenFilterIds.contains(filterId)) {
+      viewModel.toggleAllergenFilter(filterId);
+      return;
+    }
     switch (filterId) {
       case 'quick':
         viewModel.toggleTimeFilter('quick');
@@ -449,12 +453,18 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 resultCount: recipeCount,
                 showStats: false,
               ),
-              QuickFilterChips(
-                options: QuickFilterChips.getDefaultRecipeFilters(context),
-                selectedIds: _getQuickFilterIds(viewModel),
-                onFilterToggle: (filterId) =>
-                    _onQuickFilterToggle(viewModel, filterId),
-                trailing: _buildSortChip(viewModel),
+              Selector<UserService, Set<String>>(
+                selector: (_, svc) => svc.allergenPreferences.trackedAllergens,
+                builder: (context, trackedAllergens, _) => QuickFilterChips(
+                  options: [
+                    ...QuickFilterChips.getDefaultRecipeFilters(context),
+                    ...QuickFilterChips.getAllergenFilters(trackedAllergens),
+                  ],
+                  selectedIds: _getQuickFilterIds(viewModel),
+                  onFilterToggle: (filterId) =>
+                      _onQuickFilterToggle(viewModel, filterId),
+                  trailing: _buildSortChip(viewModel),
+                ),
               ),
             ],
             Expanded(child: _buildContent(viewModel, offlineService)),

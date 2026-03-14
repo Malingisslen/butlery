@@ -7979,5 +7979,15 @@
   "reportDialogTitle": "Report content",
   "reportSubmit": "Submit report",
   "contentFilterWarning": "The text contains inappropriate language. Please edit before submitting.",
-  "noResults": "No results"
+  "noResults": "No results",
+  "allergenCoverageLabel": "{coverage}% coverage",
+  "@allergenCoverageLabel": {
+    "placeholders": {
+      "coverage": { "type": "int" }
+    }
+  },
+  "ingredientDataUnverified": "Some ingredient data is unverified",
+  "recipeStartCookingTooltip": "Start cooking",
+  "taggingDegradedWarning": "Allergen and dietary data may be unreliable",
+  "recipeEditTags": "Edit tags"
 }

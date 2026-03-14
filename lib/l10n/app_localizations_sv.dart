@@ -11474,4 +11474,22 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get noResults => 'Inga resultat';
+
+  @override
+  String allergenCoverageLabel(int coverage) {
+    return '$coverage% täckning';
+  }
+
+  @override
+  String get ingredientDataUnverified => 'Viss ingrediensdata är overifierad';
+
+  @override
+  String get recipeStartCookingTooltip => 'Börja laga';
+
+  @override
+  String get taggingDegradedWarning =>
+      'Allergen- och kostdata kan vara opålitlig';
+
+  @override
+  String get recipeEditTags => 'Redigera taggar';
 }

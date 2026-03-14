@@ -29,20 +29,6 @@
       ]
     },
     {
-      "collectionGroup": "recipe_summaries",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
       "collectionGroup": "public_profiles",
       "queryScope": "COLLECTION",
       "fields": [
@@ -385,76 +371,6 @@
         {
           "fieldPath": "tagResult.generatedAt",
           "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "recipes",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "tagResult.allergenStatus.gluten",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "recipes",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "tagResult.allergenStatus.`mjölk`",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "recipes",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "tagResult.allergenStatus.`nötter`",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "recipes",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "tagResult.dietaryStatus.vegetarisk",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "recipes",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "tagResult.dietaryStatus.vegansk",
-          "order": "ASCENDING"
         }
       ]
     },

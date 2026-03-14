@@ -6,6 +6,7 @@ import 'package:butlery/models/recipe/recipe_factory.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 
 /// Social Recipe Creation Service
@@ -97,8 +98,9 @@ class SocialRecipeCreationService extends BaseService with UserContextMixin {
         }
       }
 
-      // Apply permissions to recipe
+      // Apply permissions and mark for tagging by the RetaggingScheduler
       final recipeWithPermissions = newRecipe.copyWith(
+        tagResult: TagResult.pending(),
         socialData: newRecipe.socialData?.copyWith(
           memberPermissions: permissions,
         ),

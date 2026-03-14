@@ -13,7 +13,9 @@
     "sync-ingredients:dry-run": "npx ts-node src/admin/sync-ingredients.ts --dry-run --verbose",
     "export-ingredients": "npx ts-node src/admin/export-ingredients.ts",
     "seed-tag-configs": "npx ts-node src/admin/seed-tag-configs.ts",
-    "test:parity": "npx ts-node src/__tests__/normalization-parity.test.ts"
+    "test:parity": "npx ts-node src/__tests__/normalization-parity.test.ts",
+    "reset-user-data": "npx ts-node src/admin/reset-user-data.ts",
+    "reset-user-data:dry-run": "npx ts-node src/admin/reset-user-data.ts --dry-run"
   },
   "engines": {
     "node": "20"

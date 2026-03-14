@@ -6,8 +6,21 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/widgets/common/feedback/inline_warning.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 import 'package:butlery/widgets/tagging/dietary_status_badge.dart';
+
+/// Priority-ordered list of dietary keys used by both TagResultDisplay and CompactDietaryRow.
+const _defaultDietaryOrder = [
+  'vegetarisk',
+  'vegansk',
+  'pescetarian',
+  'barnvanlig',
+  'graviditetssaker',
+  'halalanpassad',
+  'kosheranpassad',
+  'notkottsfri',
+];
 
 /// Displays the full tag result from the tagging system.
 ///
@@ -37,6 +50,9 @@ class TagResultDisplay extends StatelessWidget {
   /// Use compact mode for space-constrained layouts.
   final bool compact;
 
+  /// Whether the tagging system is in degraded mode (config validation failed).
+  final bool isDegraded;
+
   const TagResultDisplay({
     super.key,
     required this.tagResult,
@@ -46,6 +62,7 @@ class TagResultDisplay extends StatelessWidget {
     this.onUnknownIngredientsTap,
     this.onRetagRequested,
     this.compact = false,
+    this.isDegraded = false,
   });
 
   @override
@@ -53,6 +70,12 @@ class TagResultDisplay extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Degraded mode warning when tag config validation failed
+        if (isDegraded) ...[
+          _buildDegradedWarning(context),
+          const SizedBox(height: AppDimensions.spacingM),
+        ],
+
         // Version mismatch indicator (if outdated)
         if (tagResult.needsRetagging && !tagResult.hasFailed) ...[
           _buildRetagIndicator(context),
@@ -171,25 +194,18 @@ class TagResultDisplay extends StatelessWidget {
   }
 
   Widget _buildDraftWarning(BuildContext context) {
-    final warningColor = context.butleryColors.warning;
-    return Row(
-      children: [
-        Icon(
-          Icons.info_outline,
-          size: AppDimensions.iconSizeS,
-          color: warningColor,
-        ),
-        const SizedBox(width: AppDimensions.spacingXs),
-        Expanded(
-          child: Text(
-            'Viss ingrediensdata är overifierad',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: warningColor,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-        ),
-      ],
+    return InlineWarning(
+      icon: Icons.info_outline,
+      color: context.butleryColors.warning,
+      text: context.l10n.ingredientDataUnverified,
+    );
+  }
+
+  Widget _buildDegradedWarning(BuildContext context) {
+    return InlineWarning(
+      icon: Icons.warning_amber,
+      color: Theme.of(context).colorScheme.error,
+      text: context.l10n.taggingDegradedWarning,
     );
   }
 
@@ -309,20 +325,7 @@ class TagResultDisplay extends StatelessWidget {
       return userDietaryPrefs!.toList();
     }
 
-    // Default: show all dietary statuses that are FREE
-    // Priority order: most common first
-    const priorityOrder = [
-      'vegetarisk',
-      'vegansk',
-      'pescetarian',
-      'barnvanlig',
-      'graviditetssaker',
-      'halalanpassad',
-      'kosheranpassad',
-      'notkottsfri',
-    ];
-
-    return priorityOrder.where((diet) {
+    return _defaultDietaryOrder.where((diet) {
       final status = tagResult.getDietaryStatus(diet);
       return status == TriState.free;
     }).toList();
@@ -441,23 +444,11 @@ class CompactDietaryRow extends StatelessWidget {
   }
 
   List<String> _getBadgesToShow() {
-    final dietsToCheck = userPrefs ?? _defaultDiets;
+    final dietsToCheck = userPrefs ?? _defaultDietaryOrder;
 
     // Only show FREE status (recipe IS vegan/vegetarian/etc)
     return dietsToCheck.where((diet) {
       return tagResult.getDietaryStatus(diet) == TriState.free;
     }).toList();
   }
-
-  // Priority order: most common first, all diets checked by default
-  static const _defaultDiets = [
-    'vegetarisk',
-    'vegansk',
-    'pescetarian',
-    'barnvanlig',
-    'graviditetssaker',
-    'halalanpassad',
-    'kosheranpassad',
-    'notkottsfri',
-  ];
 }

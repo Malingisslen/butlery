@@ -45,19 +45,29 @@ class FirebaseTagConfig {
     final properties = PropertiesConfigDocument.fromMap(propertiesData);
     final display = DisplayConfigDocument.fromMap(displayData);
 
+    // Positional encoding avoids both sum collisions and Object.hash
+    // non-determinism across VM restarts (important: persisted to SharedPreferences)
     return FirebaseTagConfig(
       allergens: allergens,
       dietary: dietary,
       cuisines: cuisines,
       properties: properties,
       display: display,
-      combinedVersion: allergens.version +
-          dietary.version +
-          cuisines.version +
-          properties.version +
-          display.version,
+      combinedVersion: combineVersions(
+        allergens.version,
+        dietary.version,
+        cuisines.version,
+        properties.version,
+        display.version,
+      ),
       fetchedAt: DateTime.now(),
     );
+  }
+
+  /// Deterministic version combining — stable across VM restarts.
+  /// Uses prime multiplication to avoid collisions (e.g. [3,4] vs [4,3]).
+  static int combineVersions(int a, int b, int c, int d, int e) {
+    return a * 1000003 ^ b * 999983 ^ c * 999979 ^ d * 999961 ^ e * 999931;
   }
 
   /// Validates that all properties referenced in configs exist.
