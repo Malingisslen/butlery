@@ -30,7 +30,6 @@ import 'package:butlery/repositories/firebase/firebase_notification_repository.d
 // ActivityRepository removed - dead code
 import 'package:butlery/models/notification_batch.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
-import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 // ReactionsRepository removed - dead code
@@ -50,6 +49,7 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
+import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -57,7 +57,6 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
-import 'package:butlery/models/shared_content.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
@@ -1297,6 +1296,9 @@ class MockUserService extends Mock implements UserService {
   // Methods left without implementation to allow stubbing
 }
 
+/// Mock implementation of PersonalTagService
+class MockPersonalTagService extends Mock implements PersonalTagService {}
+
 /// Mock implementation of OfflineService
 class MockOfflineService extends Mock implements OfflineService {
   // Configuration state
@@ -2292,91 +2294,6 @@ class MockFriendsCategoriesOperations extends Mock
 
 /// Mock for UnifiedMenuService (Tier 2 - 2 errors)
 class MockUnifiedMenuService extends Mock implements UnifiedMenuService {}
-
-/// Mock for SocialSharingRepository - ⭐ FIXED: Added missing methods
-class MockSocialSharingRepository extends Mock
-    implements SocialSharingRepository {
-  /// Get content shared with current user - ✅ FIXED: Stream return type to match interface
-  @override
-  Stream<List<SharedContent>> getSharedWithMe(String userId) {
-    // Mock implementation - return empty stream by default
-    return Stream.value(<SharedContent>[]);
-  }
-
-  /// Share content to group - ✅ FIXED: Proper interface signature with tracking
-  @override
-  Future<void> shareToGroup(String groupId, SharedContent content) async {
-    // Track the sharing operation for test verification
-    _sharingOperations.add({
-      'groupId': groupId,
-      'content': content,
-    });
-  }
-
-  /// Share content to specific users
-  @override
-  Future<void> shareToUsers(List<String> userIds, SharedContent content) async {
-    // Mock implementation
-  }
-
-  /// Get content shared by the current user
-  @override
-  Stream<List<SharedContent>> getMySharedContent(String userId) {
-    return Stream.value(<SharedContent>[]);
-  }
-
-  /// Update sharing permissions
-  @override
-  Future<void> updateSharingPermissions(
-    String contentId,
-    List<String> addUserIds,
-    List<String> removeUserIds,
-  ) async {
-    // Mock implementation
-  }
-
-  /// Revoke sharing for specific content
-  @override
-  Future<void> revokeSharing(String contentId) async {
-    // Mock implementation
-  }
-
-  /// Accept shared content
-  @override
-  Future<void> acceptSharedContent(String contentId, String userId) async {
-    // Mock implementation
-  }
-
-  /// Decline shared content
-  @override
-  Future<void> declineSharedContent(String contentId, String userId) async {
-    // Mock implementation
-  }
-
-  /// Get sharing statistics
-  @override
-  Future<Map<String, dynamic>> getSharingStats(String userId) async {
-    return <String, dynamic>{};
-  }
-
-  // ===== TEST HELPER PROPERTIES =====
-
-  /// Test helper: Track sharing operations for verification (includes groupId and content)
-  final List<Map<String, dynamic>> _sharingOperations =
-      <Map<String, dynamic>>[];
-  List<Map<String, dynamic>> get sharedContent => _sharingOperations;
-
-  /// Test helper: Clear shared content tracker
-  void clearSharedContent() => _sharingOperations.clear();
-
-  /// Test helper: Add content to tracker (legacy method for backward compatibility)
-  void addSharedContent(SharedContent content) {
-    _sharingOperations.add({
-      'groupId': null, // No groupId for direct additions
-      'content': content,
-    });
-  }
-}
 
 /// Mock for ShoppingShareOperations (Tier 2 - 2 errors)
 class MockShoppingShareOperations extends Mock

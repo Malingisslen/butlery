@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/tagging/config/allergen_config.dart';
+import 'package:butlery/services/tagging/config/dietary_config.dart';
 
 void main() {
   final canonicalKeys = AllergenConfig.allKeys.toSet();
@@ -94,6 +95,56 @@ void main() {
 
       expect(duplicates, isEmpty,
           reason: 'AllergenConfig.all has duplicate keys: $duplicates');
+    });
+  });
+
+  group('Dietary key consistency', () {
+    final dietaryKeys = DietaryConfig.allKeys.toSet();
+
+    test('should have DietaryConfig keys with correct Swedish characters', () {
+      // Guard against bug 1a regression: ASCII-approximated keys
+      // (barnvanlig, graviditetssaker, notkottsfri) silently miss matches
+      const expectedSwedishKeys = {
+        'barnvänlig',
+        'graviditetssäker',
+        'nötkötsfri',
+        'aip-vänlig',
+      };
+      final missing = expectedSwedishKeys.difference(dietaryKeys);
+
+      expect(missing, isEmpty,
+          reason: 'DietaryConfig.allKeys missing expected Swedish-character '
+              'keys: $missing');
+    });
+
+    test('should have no duplicate keys in DietaryConfig', () {
+      final keys = DietaryConfig.allKeys;
+      final duplicates = keys.toList()
+        ..removeWhere((k) => keys.where((k2) => k2 == k).length == 1);
+
+      expect(duplicates, isEmpty,
+          reason: 'DietaryConfig.all has duplicate keys: $duplicates');
+    });
+
+    // CompactDietaryRow and TagResultDisplay use _defaultDietaryOrder
+    // (derived from DietaryConfig.allKeys). This snapshot test guards against
+    // accidental removal of dietary entries.
+    test('should have all expected dietary keys', () {
+      const expectedKeys = {
+        'vegetarisk',
+        'vegansk',
+        'pescetarian',
+        'graviditetssäker',
+        'barnvänlig',
+        'halalanpassad',
+        'kosheranpassad',
+        'nötkötsfri',
+        'aip-vänlig',
+      };
+      final missing = expectedKeys.difference(dietaryKeys);
+
+      expect(missing, isEmpty,
+          reason: 'DietaryConfig.allKeys missing expected keys: $missing');
     });
   });
 }

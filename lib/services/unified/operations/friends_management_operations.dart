@@ -11,6 +11,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 
 import 'package:butlery/services/user_service.dart' as user_svc;
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/notifications/notification_service.dart'
     as notif;
@@ -284,11 +285,9 @@ class FriendsManagementOperations extends BaseService {
       _parent.incomingRequests.removeWhere((r) => r.fromUserId == userId);
       _parent.outgoingRequests.removeWhere((r) => r.toUserId == userId);
 
-      // Add to blocked users
-      _parent.addBlockedUserInternal(userId);
-
-      // Sync to Firebase
-      await _parent.syncBlockedUsers();
+      // Write to blocks collection (real-time stream updates in-memory cache)
+      final blockRepo = ServiceLocator.get<FirebaseBlockRepository>();
+      await blockRepo.blockUser(userId);
 
       AppLogger.success('User blocked');
       return true;
@@ -300,11 +299,9 @@ class FriendsManagementOperations extends BaseService {
 
   Future<bool> unblockUser(String userId) async {
     try {
-      // Remove from blocked users
-      _parent.removeBlockedUserInternal(userId);
-
-      // Sync to Firebase
-      await _parent.syncBlockedUsers();
+      // Delete from blocks collection (real-time stream updates in-memory cache)
+      final blockRepo = ServiceLocator.get<FirebaseBlockRepository>();
+      await blockRepo.unblockUser(userId);
 
       AppLogger.success('User unblocked');
       return true;

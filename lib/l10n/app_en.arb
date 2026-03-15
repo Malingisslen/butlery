@@ -8015,7 +8015,7 @@
   "recipeStartCookingTooltip": "Start cooking",
   "taggingDegradedWarning": "Allergen and dietary data may be unreliable",
   "recipeEditTags": "Edit tags",
-  "allergenDisclaimer": "Allergen information is for reference only. Always verify with the original recipe source.",
+  "allergenDisclaimer": "Allergen information is based on automated analysis and is for guidance only. Always check the original recipe and product packaging. Does not replace medical advice.",
   "allergenToggleSemantics": "Toggle {allergen} allergen tracking",
   "@allergenToggleSemantics": {
     "placeholders": {

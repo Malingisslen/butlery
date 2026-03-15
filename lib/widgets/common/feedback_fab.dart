@@ -20,6 +20,10 @@ import 'package:butlery/widgets/common/feedback_form_dialog.dart';
 /// RepaintBoundary so the FAB can capture screenshots.
 final GlobalKey feedbackRepaintBoundaryKey = GlobalKey();
 
+/// Global key for the app's root Navigator, used by FeedbackFAB to show
+/// dialogs from outside the Navigator subtree.
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
+
 /// Square "!" button positioned at bottom-right that opens a feedback form.
 /// Only visible when the user is authenticated.
 class FeedbackFAB extends StatelessWidget {
@@ -46,7 +50,7 @@ class FeedbackFAB extends StatelessWidget {
             button: true,
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () => _onTap(context),
+              onTap: _onTap,
               child: Container(
                 width: AppDimensions.minTouchTarget,
                 height: AppDimensions.minTouchTarget,
@@ -71,7 +75,10 @@ class FeedbackFAB extends StatelessWidget {
     );
   }
 
-  Future<void> _onTap(BuildContext context) async {
+  Future<void> _onTap() async {
+    final navigator = appNavigatorKey.currentState;
+    if (navigator == null) return;
+
     Uint8List? screenshotBytes;
 
     // Attempt to capture screenshot via the RepaintBoundary
@@ -87,10 +94,10 @@ class FeedbackFAB extends StatelessWidget {
       // Screenshot capture is best-effort; proceed without it
     }
 
-    if (!context.mounted) return;
+    if (!navigator.mounted) return;
 
     showDialog(
-      context: context,
+      context: navigator.context,
       builder: (_) => FeedbackFormDialog(screenshot: screenshotBytes),
     );
   }

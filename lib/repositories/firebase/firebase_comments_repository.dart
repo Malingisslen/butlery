@@ -115,7 +115,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       final comment = await read(resourceId);
       if (comment == null) return false;
       return comment.authorId == userId;
-    } catch (e) {
+    } on PermissionDeniedException {
       return false;
     }
   }
@@ -131,6 +131,31 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
         .get();
 
     return querySnapshot.docs.map((doc) => fromFirestore(doc)).toList();
+  }
+
+  @override
+  Future<PaginatedComments> getCommentsPaginated(
+    String recipeId, {
+    Object? startAfterDocument,
+    int limit = 50,
+  }) async {
+    var query = collection
+        .where('recipeId', isEqualTo: recipeId)
+        .orderBy('createdAt', descending: false)
+        .limit(limit);
+
+    if (startAfterDocument is DocumentSnapshot) {
+      query = query.startAfterDocument(startAfterDocument);
+    }
+
+    final snapshot = await query.get();
+    final comments = snapshot.docs.map((doc) => fromFirestore(doc)).toList();
+
+    return PaginatedComments(
+      comments: comments,
+      lastDocument: snapshot.docs.isNotEmpty ? snapshot.docs.last : null,
+      hasMore: snapshot.docs.length == limit,
+    );
   }
 
   @override
@@ -275,6 +300,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     final querySnapshot = await collection
         .where('parentCommentId', isEqualTo: parentCommentId)
         .orderBy('createdAt', descending: false)
+        .limit(20)
         .get();
 
     return querySnapshot.docs.map((doc) => fromFirestore(doc)).toList();

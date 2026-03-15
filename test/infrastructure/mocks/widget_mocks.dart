@@ -9,13 +9,11 @@ import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
-import 'package:butlery/viewmodels/group_content_viewmodel.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 import '../factories/recipe_factory.dart';
 
@@ -504,130 +502,6 @@ class MockSocialRecipeViewModel extends Mock implements SocialRecipeViewModel {
   }
 }
 
-class MockGroupContentViewModel extends MockBaseViewModel
-    implements GroupContentViewModel {
-  // Activity feed data
-  List<Map<String, dynamic>> _groupActivityFeed = [];
-
-  // State management
-  bool _isLoading = false;
-  bool _hasError = false;
-  String? _error;
-  bool _hasGroupContent = true;
-  bool _hasFilteredContent = true;
-  String _searchQuery = '';
-  int _currentTabIndex = 0;
-  FriendCategory? _currentGroup;
-
-  // GroupContentViewModel interface implementation
-
-  @override
-  List<Map<String, dynamic>> get groupActivityFeed => _groupActivityFeed;
-
-  @override
-  bool get isLoading => _isLoading;
-
-  @override
-  bool get hasError => _hasError;
-
-  @override
-  String? get error => _error;
-
-  @override
-  bool get hasGroupContent => _hasGroupContent;
-
-  @override
-  bool get hasFilteredContent => _hasFilteredContent;
-
-  @override
-  String get searchQuery => _searchQuery;
-
-  @override
-  int get currentTabIndex => _currentTabIndex;
-  FriendCategory? get currentGroup => _currentGroup;
-
-  // GroupContentViewModel methods
-
-  @override
-  Future<void> initialize(FriendCategory group) async {
-    _currentGroup = group;
-    _isLoading = true;
-    notifyListeners();
-
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  @override
-  void setTabIndex(int index) {
-    _currentTabIndex = index;
-    notifyListeners();
-  }
-
-  @override
-  Future<void> loadGroupContent() async {
-    _isLoading = true;
-    _hasError = false;
-    _error = null;
-    notifyListeners();
-
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  @override
-  void clearSearch() {
-    _searchQuery = '';
-    _hasFilteredContent = _hasGroupContent;
-    notifyListeners();
-  }
-
-  @override
-  Future<void> refresh() async {
-    await Future.delayed(const Duration(milliseconds: 100));
-    notifyListeners();
-  }
-
-  // Test helper methods
-
-  void setGroupActivityFeed(List<Map<String, dynamic>> activities) {
-    _groupActivityFeed = activities;
-    notifyListeners();
-  }
-
-  void clearGroupActivityFeed() {
-    _groupActivityFeed.clear();
-    notifyListeners();
-  }
-
-  void setGroupContentState({
-    bool? isLoading,
-    bool? hasError,
-    String? error,
-    bool? hasGroupContent,
-    bool? hasFilteredContent,
-    String? searchQuery,
-    int? currentTabIndex,
-    FriendCategory? currentGroup,
-    List<Map<String, dynamic>>? groupActivityFeed,
-  }) {
-    if (isLoading != null) _isLoading = isLoading;
-    if (hasError != null) _hasError = hasError;
-    if (error != null) _error = error;
-    if (hasGroupContent != null) _hasGroupContent = hasGroupContent;
-    if (hasFilteredContent != null) _hasFilteredContent = hasFilteredContent;
-    if (searchQuery != null) _searchQuery = searchQuery;
-    if (currentTabIndex != null) _currentTabIndex = currentTabIndex;
-    if (currentGroup != null) _currentGroup = currentGroup;
-    if (groupActivityFeed != null) _groupActivityFeed = groupActivityFeed;
-    notifyListeners();
-  }
-}
-
 /// Helper class to create pre-configured mock ViewModels
 class WidgetMockFactory {
   /// Create a mock auth view model with default logged-in state
@@ -683,21 +557,6 @@ class WidgetMockFactory {
       lists: lists ?? [],
       isLoading: isLoading,
     );
-    return mock;
-  }
-
-  /// Create a mock group content view model with activity feed
-  static MockGroupContentViewModel createMockGroupContentViewModel({
-    List<Map<String, dynamic>>? activityFeed,
-    bool isEmpty = false,
-  }) {
-    final mock = MockGroupContentViewModel();
-    if (isEmpty) {
-      mock.setGroupActivityFeed([]);
-    } else {
-      // Use SocialFactory activity data when available, or default
-      mock.setGroupActivityFeed(activityFeed ?? []);
-    }
     return mock;
   }
 

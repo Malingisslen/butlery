@@ -13356,13 +13356,13 @@ abstract class AppLocalizations {
   /// No description provided for @feedbackCategoryFeatureRequest.
   ///
   /// In sv, this message translates to:
-  /// **'Onskemol'**
+  /// **'Önskemål'**
   String get feedbackCategoryFeatureRequest;
 
   /// No description provided for @feedbackCategoryGeneral.
   ///
   /// In sv, this message translates to:
-  /// **'Ovrigt'**
+  /// **'Övrigt'**
   String get feedbackCategoryGeneral;
 
   /// No description provided for @feedbackDescriptionLabel.
@@ -19645,7 +19645,7 @@ abstract class AppLocalizations {
   /// No description provided for @allergenDisclaimer.
   ///
   /// In sv, this message translates to:
-  /// **'Allergeninformation är endast vägledande. Verifiera alltid med originalreceptet.'**
+  /// **'Allergeninformation baseras på automatisk analys och är endast vägledande. Kontrollera alltid originalreceptet och produktförpackningar. Ersätter inte medicinsk rådgivning.'**
   String get allergenDisclaimer;
 
   /// No description provided for @allergenToggleSemantics.

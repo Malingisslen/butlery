@@ -32,7 +32,7 @@ service firebase.storage {
 
     // Shared recipe images - publicly readable, upload-validated writes
     match /shared/recipes/{recipeId}/{allPaths=**} {
-      allow read: if true; // Public read access for shared content
+      allow read: if request.auth != null;
 
       // Allow creating new files if authenticated and setting correct uploader metadata
       // Application must set metadata.uploadedBy = userId when uploading
@@ -56,6 +56,16 @@ service firebase.storage {
     // ML model files - read-only for authenticated users
     match /models/{allPaths=**} {
       allow read: if request.auth != null;
+    }
+
+    // Feedback screenshots - submitting user needs read for getDownloadURL()
+    match /feedback/{userId}/{allPaths=**} {
+      allow read: if request.auth != null
+        && request.auth.uid == userId;
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && isValidImage()
+        && isWithinSizeLimit(10);
     }
 
     // Default deny for all other paths

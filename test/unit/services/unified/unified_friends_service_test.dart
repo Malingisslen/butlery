@@ -10,7 +10,6 @@ import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
-import 'package:butlery/services/unified/operations/social_group_sharing_operations.dart';
 import 'package:butlery/services/user_service.dart' as user_svc;
 
 import '../../../test_support/base_unit_test.dart';
@@ -142,8 +141,6 @@ void main() {
         expect(friendsService.management, isA<FriendsManagementOperations>());
         expect(friendsService.categories, isA<FriendsCategoriesOperations>());
         expect(friendsService.invitations, isA<FriendsInvitationsOperations>());
-        expect(
-            friendsService.groupSharing, isA<SocialGroupSharingOperations>());
       });
 
       test('should setup notification forwarding from state manager', () {
@@ -621,53 +618,7 @@ void main() {
       });
     });
 
-    group('TODO Fix: syncBlockedUsers', () {
-      test('should sync blocked users to Firebase', () async {
-        // Arrange
-        friendsService.blockedUsers.add('blocked-user-1');
-        friendsService.blockedUsers.add('blocked-user-2');
-
-        // Pre-create user document
-        await mockFirestoreRepo.firestore
-            .collection('users')
-            .doc('test-user-id')
-            .set({'displayName': 'Test User'});
-
-        // Act
-        await friendsService.syncBlockedUsers();
-
-        // Assert
-        final userDoc = await mockFirestoreRepo.firestore
-            .collection('users')
-            .doc('test-user-id')
-            .get();
-
-        expect(userDoc.exists, isTrue);
-        final data = userDoc.data()!;
-        expect(data['blockedUsers'], isA<List>());
-        expect(data['blockedUsers'],
-            containsAll(['blocked-user-1', 'blocked-user-2']));
-      });
-
-      test('should handle empty blocked users list', () async {
-        // Arrange
-        await mockFirestoreRepo.firestore
-            .collection('users')
-            .doc('test-user-id')
-            .set({'displayName': 'Test User'});
-
-        // Act
-        await friendsService.syncBlockedUsers();
-
-        // Assert
-        final userDoc = await mockFirestoreRepo.firestore
-            .collection('users')
-            .doc('test-user-id')
-            .get();
-
-        expect(userDoc.data()?['blockedUsers'], isEmpty);
-      });
-    });
+    // syncBlockedUsers tests removed — blocking now uses blocks collection with real-time stream
 
     group('TODO Fix: getFriendsOfUser', () {
       test('should return friends list for a user', () async {
@@ -962,7 +913,7 @@ void main() {
         );
         friendsService.addFriendInternal(friend);
 
-        // Pre-create user doc for syncBlockedUsers
+        // Pre-create user doc for block operation
         await mockFirestoreRepo.firestore
             .collection('users')
             .doc('test-user-id')
@@ -1021,9 +972,12 @@ void main() {
       });
 
       test('should reject when target is blocked', () async {
-        // Arrange
+        // Arrange — pre-populate blocked users in Firestore before initialize
+        await mockFirestoreRepo.firestore
+            .collection('users')
+            .doc('test-user-id')
+            .set({'blockedUsers': ['blocked-user']});
         await friendsService.initialize();
-        friendsService.addBlockedUserInternal('blocked-user');
 
         // Act
         final isBlocked = friendsService.management.isBlocked('blocked-user');

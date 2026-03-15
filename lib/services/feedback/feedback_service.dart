@@ -29,40 +29,45 @@ class FeedbackService extends BaseService {
     String? email,
     Uint8List? screenshot,
   }) async {
-    final result = await executeServiceOperation<bool>(
-      () async {
-        final userId = _authRepository.currentUserId;
-        if (userId == null) throw Exception('User not authenticated');
+    try {
+      final userId = _authRepository.currentUserId;
+      if (userId == null) throw Exception('User not authenticated');
 
-        String? screenshotUrl;
+      String? screenshotUrl;
 
-        if (screenshot != null) {
+      if (screenshot != null) {
+        try {
           screenshotUrl =
               await _feedbackRepository.uploadScreenshot(userId, screenshot);
+        } catch (e) {
+          AppLogger.warning('Screenshot upload failed, submitting without: $e');
         }
+      }
 
-        final entry = FeedbackEntry(
-          id: '', // Firestore will generate
-          userId: userId,
-          category: category,
-          description: description,
-          email: email,
-          screenshotUrl: screenshotUrl,
-          recentInteractions: _interactionLogger.toJsonList(),
-          createdAt: DateTime.now(),
-          deviceInfo: _buildDeviceInfo(),
-        );
+      final entry = FeedbackEntry(
+        id: '', // Firestore will generate
+        userId: userId,
+        category: category,
+        description: description,
+        email: email,
+        screenshotUrl: screenshotUrl,
+        recentInteractions: _interactionLogger.toJsonList(),
+        createdAt: DateTime.now(),
+        deviceInfo: _buildDeviceInfo(),
+      );
 
-        await _feedbackRepository.saveFeedback(entry);
+      await _feedbackRepository.saveFeedback(entry);
 
-        AppLogger.info('Feedback submitted: ${category.name}');
-        return true;
-      },
-      operationName: 'Submit feedback',
-      defaultValue: false,
-    );
-
-    return result ?? false;
+      AppLogger.info('Feedback submitted: ${category.name}');
+      return true;
+    } catch (e, stack) {
+      // Temporary: surface actual error for debugging
+      // ignore: avoid_print
+      print('FEEDBACK SUBMIT FAILED: $e');
+      // ignore: avoid_print
+      print('FEEDBACK STACK: $stack');
+      return false;
+    }
   }
 
   String _buildDeviceInfo() {

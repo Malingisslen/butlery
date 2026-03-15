@@ -10,8 +10,10 @@ import 'package:butlery/core/router/app_router.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -376,9 +378,9 @@ class SharedContentActions {
     if (confirmed != true || !context.mounted) return;
 
     try {
-      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-      final success = await friendsService.groupSharing
-          .removeContentFromAllGroups(contentId: sharedRecipe.id);
+      final coordinator = ServiceLocator.get<SocialRecipeCoordinator>();
+      final success =
+          await coordinator.unshareRecipe(sharedRecipe.originalRecipeId);
 
       if (!context.mounted) return;
 
@@ -411,7 +413,7 @@ class SharedContentActions {
     }
   }
 
-  /// Unshare a menu - removes it from all groups it was shared with
+  /// Unshare a menu - deletes the shared menu document
   static Future<void> unshareMenu(
     BuildContext context,
     SharedMenu sharedMenu,
@@ -428,27 +430,17 @@ class SharedContentActions {
     if (confirmed != true || !context.mounted) return;
 
     try {
-      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-      final success = await friendsService.groupSharing
-          .removeContentFromAllGroups(contentId: sharedMenu.id);
+      final repo = ServiceLocator.get<FirebaseSharedMenuRepository>();
+      await repo.deleteSharedContent(sharedMenu.id);
 
       if (!context.mounted) return;
 
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.unshareSuccess(sharedMenu.menuTitle)),
-            backgroundColor: context.butleryColors.success,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.unshareFailed),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.unshareSuccess(sharedMenu.menuTitle)),
+          backgroundColor: context.butleryColors.success,
+        ),
+      );
     } catch (e) {
       AppLogger.error('Failed to unshare menu', e);
       if (context.mounted) {
@@ -462,7 +454,7 @@ class SharedContentActions {
     }
   }
 
-  /// Unshare a shopping list - removes it from all groups it was shared with
+  /// Unshare a shopping list - deletes the shared shopping list document
   static Future<void> unshareShoppingList(
     BuildContext context,
     SharedShoppingList sharedShoppingList,
@@ -480,28 +472,18 @@ class SharedContentActions {
     if (confirmed != true || !context.mounted) return;
 
     try {
-      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-      final success = await friendsService.groupSharing
-          .removeContentFromAllGroups(contentId: sharedShoppingList.id);
+      final repo = ServiceLocator.get<FirebaseSharedShoppingRepository>();
+      await repo.deleteSharedContent(sharedShoppingList.id);
 
       if (!context.mounted) return;
 
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content:
-                Text(context.l10n.unshareSuccess(sharedShoppingList.listName)),
-            backgroundColor: context.butleryColors.success,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.unshareFailed),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text(context.l10n.unshareSuccess(sharedShoppingList.listName)),
+          backgroundColor: context.butleryColors.success,
+        ),
+      );
     } catch (e) {
       AppLogger.error('Failed to unshare shopping list', e);
       if (context.mounted) {

@@ -12,6 +12,8 @@ import 'package:butlery/services/account/account_deletion/storage_deletion_opera
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
 import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -100,6 +102,7 @@ class AccountDeletionService extends BaseService {
         'shared_menus': _socialOps.deleteSharedMenus(userId),
         'shared_shopping_lists': _socialOps.deleteSharedShoppingLists(userId),
         'reports': _socialOps.deleteUserReports(userId),
+        'block_records': _deleteBlockRecords(userId),
         'preferences': _profileOps.deleteUserPreferences(userId),
         'fcm_tokens': _profileOps.deleteFcmTokens(userId),
         'notification_preferences':
@@ -171,6 +174,18 @@ class AccountDeletionService extends BaseService {
       }
 
       return result;
+    }
+  }
+
+  Future<bool> _deleteBlockRecords(String userId) async {
+    try {
+      final blockRepo = ServiceLocator.get<FirebaseBlockRepository>();
+      await blockRepo.deleteAllBlocksForUser(userId);
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete block records', e);
+      return false;
     }
   }
 

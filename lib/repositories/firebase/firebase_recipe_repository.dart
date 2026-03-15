@@ -16,6 +16,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/performance/firebase_performance_service.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 
 /// Firebase Firestore implementation for recipe data operations and real-time synchronization.
 /// This repository implements the [RecipeRepository] interface using Firebase Firestore
@@ -167,6 +168,18 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     }
   }
 
+  /// Sanitize user-supplied text fields before writing to Firestore.
+  Recipe _sanitizeRecipe(Recipe recipe) {
+    final sanitizer = HtmlSanitizer.instance;
+    return recipe.copyWith(
+      title: sanitizer.sanitizeText(recipe.title),
+      description: sanitizer.sanitizeText(recipe.description),
+      sourceUrl: recipe.core.sourceUrl != null
+          ? sanitizer.sanitizeUrl(recipe.core.sourceUrl!)
+          : null,
+    );
+  }
+
   @override
   Future<Recipe> create(Recipe entity) async {
     return await FirebasePerformanceService.traceOperation(
@@ -197,7 +210,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         );
 
         // MODUL1 Phase 3: Auto-populate normalized ingredients for advanced features
-        Recipe recipeToSave = entity;
+        Recipe recipeToSave = _sanitizeRecipe(entity);
         if (IngredientProcessor.needsNormalization(entity)) {
           final normalizedIngredients =
               IngredientProcessor.normalizeIngredientsForRecipe(
@@ -250,14 +263,14 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         );
 
         // MODUL1 Phase 3: Auto-populate normalized ingredients for advanced features
-        Recipe recipeToSave = entity;
-        if (IngredientProcessor.needsNormalization(entity)) {
+        Recipe recipeToSave = _sanitizeRecipe(entity);
+        if (IngredientProcessor.needsNormalization(recipeToSave)) {
           final normalizedIngredients =
               IngredientProcessor.normalizeIngredientsForRecipe(
-            entity.core.ingredients,
+            recipeToSave.core.ingredients,
           );
 
-          recipeToSave = entity.copyWith(
+          recipeToSave = recipeToSave.copyWith(
             ingredientsNormalized: normalizedIngredients,
           );
         }

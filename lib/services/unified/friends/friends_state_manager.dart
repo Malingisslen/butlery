@@ -4,17 +4,18 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Consolidated friends state manager handling all friend-related state with real-time synchronization
 class FriendsStateManager extends ChangeNotifier {
   final FirebaseFriendsRepository _repository;
   final FriendCategoryRepository _categoryRepository;
+  final FirebaseBlockRepository _blockRepository;
 
   // Internal state
   List<UserProfile> _friends = [];
@@ -35,11 +36,15 @@ class FriendsStateManager extends ChangeNotifier {
   StreamSubscription? _memberCategoriesSubscription; // BUG-018 FIX
   StreamSubscription? _friendsSubscription;
 
+  StreamSubscription? _blockedUsersSubscription;
+
   FriendsStateManager({
     required FirebaseFriendsRepository repository,
     required FriendCategoryRepository categoryRepository,
+    required FirebaseBlockRepository blockRepository,
   })  : _repository = repository,
-        _categoryRepository = categoryRepository;
+        _categoryRepository = categoryRepository,
+        _blockRepository = blockRepository;
 
   List<UserProfile> get friends => List.unmodifiable(_friends);
   List<FriendRequest> get incomingRequests =>
@@ -169,21 +174,12 @@ class FriendsStateManager extends ChangeNotifier {
 
   Future<void> _loadBlockedUsers(String userId) async {
     try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .get();
-      if (userDoc.exists) {
-        final data = userDoc.data();
-        final blocked = data?['blockedUsers'];
-        if (blocked is List) {
-          _blockedUsers
-            ..clear()
-            ..addAll(blocked.cast<String>());
-          AppLogger.debug(
-              'Loaded ${_blockedUsers.length} blocked users from Firestore');
-        }
-      }
+      final blocked = await _blockRepository.getBlockedUserIds();
+      _blockedUsers
+        ..clear()
+        ..addAll(blocked);
+      AppLogger.debug(
+          'Loaded ${_blockedUsers.length} blocked users from blocks collection');
     } catch (e) {
       AppLogger.warning('Failed to load blocked users: $e');
     }
@@ -196,6 +192,7 @@ class FriendsStateManager extends ChangeNotifier {
     _categoriesSubscription?.cancel();
     _memberCategoriesSubscription?.cancel(); // BUG-018 FIX
     _friendsSubscription?.cancel();
+    _blockedUsersSubscription?.cancel();
 
     _incomingRequestsSubscription = null;
     _sentRequestsSubscription = null;
@@ -203,6 +200,7 @@ class FriendsStateManager extends ChangeNotifier {
     _categoriesSubscription = null;
     _memberCategoriesSubscription = null; // BUG-018 FIX
     _friendsSubscription = null;
+    _blockedUsersSubscription = null;
 
     _friends.clear();
     _incomingRequests.clear();
@@ -227,6 +225,7 @@ class FriendsStateManager extends ChangeNotifier {
       _categoriesSubscription?.cancel();
       _memberCategoriesSubscription?.cancel(); // BUG-018 FIX
       _friendsSubscription?.cancel();
+      _blockedUsersSubscription?.cancel();
       AppLogger.debug(
           '🧹 Cancelled existing real-time listeners before setting up new ones');
 
@@ -271,6 +270,20 @@ class FriendsStateManager extends ChangeNotifier {
         },
         onError: (e) {
           AppLogger.warning('Friends stream error: $e');
+        },
+      );
+
+      _blockedUsersSubscription = _blockRepository.watchBlockedUserIds().listen(
+        (blockedIds) {
+          _blockedUsers
+            ..clear()
+            ..addAll(blockedIds);
+          AppLogger.debug(
+              'Real-time update: ${_blockedUsers.length} blocked users');
+          notifyListeners();
+        },
+        onError: (e) {
+          AppLogger.warning('Blocked users stream error: $e');
         },
       );
     } catch (e) {

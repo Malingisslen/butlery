@@ -541,30 +541,7 @@ class MockFactory {
     return mock;
   }
 
-  /// Create mock group content viewmodel
-  static widget.MockGroupContentViewModel createGroupContentViewModel({
-    bool isLoading = false,
-    String? error,
-    bool hasGroupContent = true,
-    bool hasFilteredContent = true,
-    String searchQuery = '',
-    int currentTabIndex = 0,
-    List<Map<String, dynamic>>? groupActivityFeed,
-  }) {
-    final mock = widget.MockGroupContentViewModel();
-    mock.setGroupContentState(
-      isLoading: isLoading,
-      error: error,
-      hasGroupContent: hasGroupContent,
-      hasFilteredContent: hasFilteredContent,
-      searchQuery: searchQuery,
-      currentTabIndex: currentTabIndex,
-      groupActivityFeed: groupActivityFeed ?? [],
-    );
-    return mock;
-  }
-
-  // createActivityService removed - ActivityService was dead code
+  // createGroupContentViewModel removed - legacy shared_content system deleted
 
   /// Create mock recipe form viewmodel
   static widget.MockRecipeFormViewModel createRecipeFormViewModel() {

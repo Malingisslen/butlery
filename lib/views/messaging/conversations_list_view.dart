@@ -1,7 +1,9 @@
 // lib/views/messaging/conversations_list_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 import 'package:butlery/widgets/messaging/conversation_list_item.dart';
 import 'package:butlery/widgets/messaging/new_conversation_dialog.dart';
 import 'package:butlery/widgets/messaging/messaging_ui_components.dart';
@@ -18,22 +20,13 @@ import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
-/// Conversations list view showing all user's messaging conversations
-/// Provides comprehensive conversation management including:
-/// - Real-time conversation list with previews
-/// - Search functionality for conversations
-/// - Unread message indicators
-/// - Pull-to-refresh functionality
-/// - New conversation creation
-/// - Swipe actions for archive/delete
-/// - Integration with existing social features
+/// Conversations list view showing all user's messaging conversations.
+/// Delegates all state management to ConversationsViewModel.
 class ConversationsListView extends StatefulWidget {
   const ConversationsListView({super.key});
 
@@ -44,82 +37,17 @@ class ConversationsListView extends StatefulWidget {
 class _ConversationsListViewState extends State<ConversationsListView> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
-
-  late final MessagingService _messagingService;
-  late final AuthService _authService;
-
-  String? _currentUserId;
-  List<Conversation> _allConversations = [];
-  List<Conversation> _filteredConversations = [];
-  bool _isLoading = true;
-  String _searchQuery = '';
   bool _archivedExpanded = false;
 
   @override
   void initState() {
     super.initState();
-    _messagingService = ServiceLocator.get<MessagingService>();
-    _authService = ServiceLocator.get<AuthService>();
-    _currentUserId = _authService.currentUserId;
-
-    _setupListeners();
-    _loadConversations();
-  }
-
-  void _setupListeners() {
     _searchController.addListener(_onSearchChanged);
   }
 
   void _onSearchChanged() {
-    if (mounted) {
-      setState(() {
-        _searchQuery = _searchController.text.trim().toLowerCase();
-        _filterConversations();
-      });
-    }
-  }
-
-  void _loadConversations() {
-    if (_currentUserId == null) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-      return;
-    }
-
-    _messagingService.getMyConversations().listen((conversations) {
-      if (mounted) {
-        setState(() {
-          _allConversations = conversations;
-          _filterConversations();
-          _isLoading = false;
-        });
-      }
-    });
-  }
-
-  void _filterConversations() {
-    if (_searchQuery.isEmpty) {
-      _filteredConversations = List.from(_allConversations);
-    } else {
-      _filteredConversations = _allConversations.where((conversation) {
-        final title =
-            conversation.getDisplayTitle(_currentUserId ?? '').toLowerCase();
-        final lastMessageContent =
-            conversation.lastMessage?.content.toLowerCase() ?? '';
-
-        return title.contains(_searchQuery) ||
-            lastMessageContent.contains(_searchQuery);
-      }).toList();
-    }
-  }
-
-  Future<void> _refreshConversations() async {
-    // The stream listener will automatically update the UI
-    // This is just for the RefreshIndicator feedback
-    await Future.delayed(AppDimensions.animationDurationLong);
+    final vm = context.read<ConversationsViewModel>();
+    vm.updateSearchQuery(_searchController.text);
   }
 
   void _navigateToChat(Conversation conversation) {
@@ -163,7 +91,6 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         ),
       ],
       body: SafeArea(
-        // Responsive: Center and constrain content on large screens
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -177,10 +104,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             child: FocusTraversalGroup(
               child: Column(
                 children: [
-                  // Search bar
                   _buildSearchBar(),
-
-                  // Conversations list
                   Expanded(
                     child: _buildConversationsList(),
                   ),
@@ -215,67 +139,66 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
 
-    if (_isLoading) {
-      return LoadingWidgets.loadingOverlay(
-        isLoading: true,
-        loadingMessage: l10n.messagingLoadingConversations,
-      );
-    }
+    return Consumer<ConversationsViewModel>(
+      builder: (context, vm, _) {
+        if (vm.isLoadingConversations) {
+          return LoadingWidgets.loadingOverlay(
+            isLoading: true,
+            loadingMessage: l10n.messagingLoadingConversations,
+          );
+        }
 
-    if (_filteredConversations.isEmpty) {
-      if (_searchQuery.isNotEmpty) {
-        return EmptyStates.buildEmptyState(
-          context,
-          variant: EmptyStateVariant.noSearchResults,
-          icon: Icons.search_off,
-          title: l10n.messagingNoConversationsFound,
-          subtitle: l10n.messagingTryAnotherSearch,
-        );
-      } else {
-        return EmptyStates.buildEmptyState(
-          context,
-          variant: EmptyStateVariant.generic,
-          icon: Icons.chat_bubble_outline,
-          title: l10n.messagingNoConversationsYet,
-          subtitle: l10n.messagingStartFirstConversation,
-          customAction: StyledButton.primary(
-            text: l10n.messagingNewConversation,
-            onPressed: _showNewConversationDialog,
+        if (!vm.hasConversations) {
+          if (vm.searchQuery.isNotEmpty) {
+            return EmptyStates.buildEmptyState(
+              context,
+              variant: EmptyStateVariant.noSearchResults,
+              icon: Icons.search_off,
+              title: l10n.messagingNoConversationsFound,
+              subtitle: l10n.messagingTryAnotherSearch,
+            );
+          } else {
+            return EmptyStates.buildEmptyState(
+              context,
+              variant: EmptyStateVariant.generic,
+              icon: Icons.chat_bubble_outline,
+              title: l10n.messagingNoConversationsYet,
+              subtitle: l10n.messagingStartFirstConversation,
+              customAction: StyledButton.primary(
+                text: l10n.messagingNewConversation,
+                onPressed: _showNewConversationDialog,
+              ),
+            );
+          }
+        }
+
+        final pinned = vm.pinnedConversations;
+        final regular = vm.regularConversations;
+        final archived = vm.archivedConversations;
+
+        final items = <Widget>[
+          if (pinned.isNotEmpty) ...[
+            _buildSectionHeader(
+              icon: Icons.push_pin,
+              label: context.l10n.messagingPinned,
+            ),
+            ...pinned.map((c) => _buildConversationItem(vm, c)),
+            Divider(height: 1, color: cs.outlineVariant),
+          ],
+          ...regular.map((c) => _buildConversationItem(vm, c)),
+          if (archived.isNotEmpty) _buildArchivedSection(vm, archived),
+        ];
+
+        return RefreshIndicator(
+          onRefresh: vm.refresh,
+          child: ListView.builder(
+            padding:
+                const EdgeInsets.symmetric(vertical: AppDimensions.paddingS),
+            itemCount: items.length,
+            itemBuilder: (context, index) => items[index],
           ),
         );
-      }
-    }
-
-    // Split into pinned, regular, and archived sections
-    final pinned = _filteredConversations
-        .where((c) => c.isPinned && !c.isArchived)
-        .toList();
-    final regular = _filteredConversations
-        .where((c) => !c.isPinned && !c.isArchived)
-        .toList();
-    final archived = _filteredConversations.where((c) => c.isArchived).toList();
-
-    // Build a flat list of widgets for indexed access by ListView.builder
-    final items = <Widget>[
-      if (pinned.isNotEmpty) ...[
-        _buildSectionHeader(
-          icon: Icons.push_pin,
-          label: context.l10n.messagingPinned,
-        ),
-        ...pinned.map((c) => _buildConversationItem(c)),
-        Divider(height: 1, color: cs.outlineVariant),
-      ],
-      ...regular.map((c) => _buildConversationItem(c)),
-      if (archived.isNotEmpty) _buildArchivedSection(archived),
-    ];
-
-    return RefreshIndicator(
-      onRefresh: _refreshConversations,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: AppDimensions.paddingS),
-        itemCount: items.length,
-        itemBuilder: (context, index) => items[index],
-      ),
+      },
     );
   }
 
@@ -313,7 +236,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     );
   }
 
-  Widget _buildArchivedSection(List<Conversation> archived) {
+  Widget _buildArchivedSection(
+      ConversationsViewModel vm, List<Conversation> archived) {
     final cs = Theme.of(context).colorScheme;
     return Column(
       children: [
@@ -350,22 +274,23 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           ),
         ),
         if (_archivedExpanded)
-          ...archived.map((c) => _buildConversationItem(c)),
+          ...archived.map((c) => _buildConversationItem(vm, c)),
       ],
     );
   }
 
-  Widget _buildConversationItem(Conversation conversation) {
+  Widget _buildConversationItem(
+      ConversationsViewModel vm, Conversation conversation) {
     return Column(
       children: [
         ConversationListItem(
           key: ValueKey(conversation.id),
           conversation: conversation,
-          currentUserId: _currentUserId ?? '',
+          currentUserId: vm.currentUserId ?? '',
           onTap: () => _navigateToChat(conversation),
-          onLongPress: () => _showConversationActions(conversation),
-          onPin: () => _togglePin(conversation),
-          onArchive: () => _toggleArchive(conversation),
+          onLongPress: () => _showConversationActions(vm, conversation),
+          onPin: () => vm.togglePin(conversation.id),
+          onArchive: () => vm.toggleArchive(conversation.id),
         ),
         Divider(
           height: 1,
@@ -376,30 +301,15 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     );
   }
 
-  Future<void> _togglePin(Conversation conversation) async {
-    if (conversation.isPinned) {
-      await _messagingService.unpinConversation(conversation.id);
-    } else {
-      await _messagingService.pinConversation(conversation.id);
-    }
-  }
-
-  Future<void> _toggleArchive(Conversation conversation) async {
-    if (conversation.isArchived) {
-      await _messagingService.unarchiveConversation(conversation.id);
-    } else {
-      await _messagingService.archiveConversation(conversation.id);
-    }
-  }
-
-  void _showConversationActions(Conversation conversation) {
+  void _showConversationActions(
+      ConversationsViewModel vm, Conversation conversation) {
     final l10n = context.l10n;
 
     StyledModalBottomSheet.show(
       context: context,
       child: ModalContentContainer(
         children: [
-          ModalHeaderText(conversation.getDisplayTitle(_currentUserId ?? '')),
+          ModalHeaderText(conversation.getDisplayTitle(vm.currentUserId ?? '')),
           ListTile(
             leading: Icon(
               conversation.isPinned ? Icons.push_pin_outlined : Icons.push_pin,
@@ -409,7 +319,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                 : context.l10n.messagingPin),
             onTap: () {
               Navigator.pop(context);
-              _togglePin(conversation);
+              vm.togglePin(conversation.id);
             },
           ),
           ListTile(
@@ -423,7 +333,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             ),
             onTap: () {
               Navigator.pop(context);
-              _toggleArchive(conversation);
+              vm.toggleArchive(conversation.id);
             },
           ),
           ListTile(
@@ -431,7 +341,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             title: Text(l10n.messagingMarkAsRead),
             onTap: () {
               Navigator.pop(context);
-              _markAsRead(conversation);
+              vm.markConversationAsRead(conversation.id);
             },
           ),
           if (conversation.isGroup) ...[
@@ -448,7 +358,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
               title: Text(l10n.messagingLeaveGroup),
               onTap: () {
                 Navigator.pop(context);
-                _leaveGroup(conversation);
+                _leaveGroup(vm, conversation);
               },
             ),
           ] else ...[
@@ -457,7 +367,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
               title: Text(l10n.messagingViewProfile),
               onTap: () {
                 Navigator.pop(context);
-                _navigateToUserProfile(context, conversation);
+                _navigateToUserProfile(context, vm, conversation);
               },
             ),
           ],
@@ -466,7 +376,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             title: l10n.messagingDeleteConversation,
             onTap: () {
               Navigator.pop(context);
-              _deleteConversation(conversation);
+              _deleteConversation(vm, conversation);
             },
           ),
         ],
@@ -474,11 +384,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     );
   }
 
-  void _markAsRead(Conversation conversation) {
-    _messagingService.markConversationAsRead(conversation.id);
-  }
-
-  void _leaveGroup(Conversation conversation) {
+  void _leaveGroup(ConversationsViewModel vm, Conversation conversation) {
     final l10n = context.l10n;
 
     showDialog(
@@ -496,23 +402,16 @@ class _ConversationsListViewState extends State<ConversationsListView> {
             onPressed: () async {
               Navigator.of(dialogContext).pop();
               final messenger = ScaffoldMessenger.of(context);
-              try {
-                await _messagingService.removeParticipantFromGroup(
-                  conversationId: conversation.id,
-                  participantId: _currentUserId!,
-                );
-                if (mounted) {
+              final success = await vm.leaveGroup(conversation.id);
+              if (mounted) {
+                if (success) {
                   messenger.showSnackBar(
                     SnackBar(content: Text(l10n.messagingLeftGroup)),
                   );
-                }
-              } catch (e) {
-                if (mounted) {
+                } else {
                   messenger.showSnackBar(
                     SnackBar(
-                      content: Text(l10n.messagingCouldNotLeaveGroup(
-                        SnackBarUtils.userFriendlyMessage(context, e),
-                      )),
+                      content: Text(l10n.messagingCouldNotLeaveGroup('')),
                       backgroundColor: Theme.of(context).colorScheme.error,
                     ),
                   );
@@ -526,7 +425,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     );
   }
 
-  void _deleteConversation(Conversation conversation) {
+  void _deleteConversation(
+      ConversationsViewModel vm, Conversation conversation) {
     final l10n = context.l10n;
 
     showDialog(
@@ -542,7 +442,27 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           TextButton(
             onPressed: () async {
               Navigator.of(dialogContext).pop();
-              await _performConversationDeletion(conversation);
+              final messenger = ScaffoldMessenger.of(context);
+              final success = await vm.deleteConversation(conversation.id);
+              if (mounted) {
+                if (success) {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.messagingConversationDeleted(
+                          conversation.title ?? '')),
+                      backgroundColor: context.butleryColors.success,
+                    ),
+                  );
+                } else {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content:
+                          Text(l10n.messagingCouldNotDeleteConversation('')),
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                  );
+                }
+              }
             },
             child: ErrorText(l10n.commonDelete),
           ),
@@ -552,7 +472,6 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   }
 
   void _navigateToGroupInfo(BuildContext context, Conversation conversation) {
-    // Navigate to group detail using existing routes
     Navigator.pushNamed(
       context,
       '/group-detail',
@@ -560,28 +479,23 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     );
   }
 
-  Future<void> _navigateToUserProfile(
-      BuildContext context, Conversation conversation) async {
+  Future<void> _navigateToUserProfile(BuildContext context,
+      ConversationsViewModel vm, Conversation conversation) async {
     final l10n = context.l10n;
 
-    // For direct conversations, get the other participant's profile
     try {
-      // Get the other participant's ID (not the current user)
       final otherParticipantId = conversation.participantIds.firstWhere(
-          (id) => id != _currentUserId,
+          (id) => id != vm.currentUserId,
           orElse: () => conversation.participantIds.first);
 
-      // Try to get the UserProfile from friends service
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
       final friends = friendsService.friends;
 
-      // Find the friend profile
       final UserProfile friendProfile = friends.firstWhere(
         (friend) => friend.uid == otherParticipantId,
         orElse: () => throw Exception('Friend not found'),
       );
 
-      // Navigate to friend profile with UserProfile object
       Navigator.pushNamed(
         context,
         Routes.friendProfile,
@@ -592,43 +506,6 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.messagingCouldNotShowProfile(
-              SnackBarUtils.userFriendlyMessage(context, e),
-            )),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _performConversationDeletion(Conversation conversation) async {
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
-
-    try {
-      // Get messaging service from DI for conversation deletion
-      final messagingService = ServiceLocator.get<MessagingService>();
-
-      // Attempt to delete the conversation
-      await messagingService.deleteConversation(conversation.id);
-
-      // Refresh the conversations list after successful deletion
-      await _refreshConversations();
-
-      if (mounted) {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(
-                l10n.messagingConversationDeleted(conversation.title ?? '')),
-            backgroundColor: context.butleryColors.success,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(l10n.messagingCouldNotDeleteConversation(
               SnackBarUtils.userFriendlyMessage(context, e),
             )),
             backgroundColor: Theme.of(context).colorScheme.error,

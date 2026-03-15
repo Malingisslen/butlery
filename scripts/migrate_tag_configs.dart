@@ -1022,8 +1022,6 @@ Map<String, dynamic> _cuisine({
     'ingredientGroups': ingredientGroups,
     'minIngredientMatches': minIngredientMatches,
     'matchMode': 'title_or_ingredients',
-    'titleMatchWeight': 1.0,
-    'ingredientMatchWeight': 1.0,
     'enabled': true,
     'priority': priority,
   };

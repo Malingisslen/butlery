@@ -3,8 +3,16 @@ import 'package:butlery/models/recipe_comment.dart';
 
 /// Repository interface for recipe comment operations
 abstract class CommentsRepository extends Repository<RecipeComment> {
-  /// Get all comments for a recipe
+  /// Get all comments for a recipe (limited to 50)
   Future<List<RecipeComment>> getCommentsForRecipe(String recipeId);
+
+  /// Get comments with cursor-based pagination.
+  /// Pass [startAfterDocument] from a previous call's result to load the next page.
+  Future<PaginatedComments> getCommentsPaginated(
+    String recipeId, {
+    Object? startAfterDocument,
+    int limit = 50,
+  });
 
   /// Add a new comment to a recipe
   Future<RecipeComment> addComment({
@@ -20,7 +28,7 @@ abstract class CommentsRepository extends Repository<RecipeComment> {
   /// Delete a comment
   Future<void> deleteComment(String commentId);
 
-  /// Get replies to a specific comment
+  /// Get replies to a specific comment (limited to 20)
   Future<List<RecipeComment>> getReplies(String parentCommentId);
 
   /// Like or unlike a comment
@@ -40,6 +48,19 @@ abstract class CommentsRepository extends Repository<RecipeComment> {
 
   /// Get comment statistics for a recipe
   Future<CommentStatistics> getCommentStatistics(String recipeId);
+}
+
+/// Paginated result for comments with cursor for next page
+class PaginatedComments {
+  final List<RecipeComment> comments;
+  final Object? lastDocument;
+  final bool hasMore;
+
+  PaginatedComments({
+    required this.comments,
+    this.lastDocument,
+    required this.hasMore,
+  });
 }
 
 /// Statistics for recipe comments

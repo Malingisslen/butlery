@@ -17,10 +17,10 @@ import 'package:butlery/widgets/messaging/dialogs/add_group_members_dialog.dart'
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Group conversation details view with member management, add/remove operations, and admin controls.
-class GroupDetailView extends StatelessWidget {
+class ConversationGroupDetailView extends StatelessWidget {
   final String conversationId;
 
-  const GroupDetailView({
+  const ConversationGroupDetailView({
     super.key,
     required this.conversationId,
   });

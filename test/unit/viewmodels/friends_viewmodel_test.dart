@@ -18,6 +18,8 @@ void main() {
     late MockUserService mockUserService;
     late MockFriendsManagementOperations mockManagement;
     late MockFriendsCategoriesOperations mockCategories;
+    late MockPermissionService mockPermissionService;
+    late MockAnalyticsService mockAnalyticsService;
 
     // Test data
     final testUserId = 'user123';
@@ -75,6 +77,14 @@ void main() {
       mockUserService = MockUserService();
       mockManagement = MockFriendsManagementOperations();
       mockCategories = MockFriendsCategoriesOperations();
+      mockPermissionService = MockPermissionService();
+      mockAnalyticsService = MockAnalyticsService();
+
+      // Configure auth state
+      mockPermissionService.setPermissionState(
+        currentUserId: 'test-user-123',
+        isAuthenticated: true,
+      );
 
       // Register mocks in test service locator
       TestServiceLocator.registerMock<UnifiedFriendsService>(
@@ -116,10 +126,12 @@ void main() {
         error: null,
       );
 
-      // Create view model
+      // Create view model with explicit dependencies (avoids production ServiceLocator)
       viewModel = FriendsViewModel(
         friendsService: mockFriendsService,
         userService: mockUserService,
+        analyticsService: mockAnalyticsService,
+        permissionService: mockPermissionService,
       );
     });
 
@@ -162,9 +174,9 @@ void main() {
         expect(viewModel.isCreatingGroup, isFalse);
         expect(viewModel.groupCreationError, isNull);
         expect(viewModel.isLoadingUserProfiles, isFalse);
-        // These come from the viewModel's simplified properties
+        // Auth state from PermissionService (via TestServiceLocator)
         expect(viewModel.isAuthenticated, isTrue);
-        expect(viewModel.currentUserId, equals('mock-user-id'));
+        expect(viewModel.currentUserId, equals('test-user-123'));
       });
 
       test('should properly register service listeners', () {
@@ -657,7 +669,8 @@ void main() {
 
         // Act & Assert
         expect(viewModel.canSendFriendRequest('new_user'), isTrue);
-        expect(viewModel.canSendFriendRequest('mock-user-id'), isFalse); // Self
+        expect(
+            viewModel.canSendFriendRequest('test-user-123'), isFalse); // Self
         expect(viewModel.canSendFriendRequest(testFriendId), isTrue);
       });
     });
@@ -816,6 +829,8 @@ void main() {
         final testViewModel = FriendsViewModel(
           friendsService: mockFriendsService,
           userService: mockUserService,
+          analyticsService: mockAnalyticsService,
+          permissionService: mockPermissionService,
         );
 
         // Act
@@ -832,6 +847,8 @@ void main() {
         final testViewModel = FriendsViewModel(
           friendsService: mockFriendsService,
           userService: mockUserService,
+          analyticsService: mockAnalyticsService,
+          permissionService: mockPermissionService,
         );
 
         // Arrange

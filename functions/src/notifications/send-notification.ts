@@ -100,25 +100,36 @@ export const sendNotification = functions.https.onCall(
 
     // Authorization: verify caller can send to target user
     if (callerUid !== targetUserId) {
-      const conversations = await admin
-        .firestore()
-        .collection("conversations")
-        .where("participantIds", "array-contains", callerUid)
+      // Check friendship (direct document lookup — O(1))
+      const friendDoc = await admin.firestore()
+        .collection('users').doc(callerUid)
+        .collection('friends').doc(targetUserId)
         .get();
 
-      const isAuthorized = conversations.docs.some((doc) => {
-        const participants = doc.data().participantIds as string[];
-        return participants?.includes(targetUserId);
-      });
+      if (!friendDoc.exists) {
+        // Check pending friend request in either direction
+        const [sentRequest, receivedRequest] = await Promise.all([
+          admin.firestore()
+            .collection('friend_requests')
+            .where('fromUserId', '==', callerUid)
+            .where('toUserId', '==', targetUserId)
+            .limit(1).get(),
+          admin.firestore()
+            .collection('friend_requests')
+            .where('fromUserId', '==', targetUserId)
+            .where('toUserId', '==', callerUid)
+            .limit(1).get(),
+        ]);
 
-      if (!isAuthorized) {
-        functions.logger.warn(
-          `Unauthorized notification attempt: ${callerUid} -> ${targetUserId}`
-        );
-        throw new functions.https.HttpsError(
-          "permission-denied",
-          "Not authorized to send notifications to this user"
-        );
+        if (sentRequest.empty && receivedRequest.empty) {
+          functions.logger.warn(
+            `Unauthorized notification attempt: ${callerUid} -> ${targetUserId}`
+          );
+          throw new functions.https.HttpsError(
+            'permission-denied',
+            'Not authorized to send notifications to this user'
+          );
+        }
       }
     }
 
@@ -377,21 +388,36 @@ export const sendNotificationBatch = functions.https.onCall(
     )];
 
     if (uniqueTargets.length > 0) {
-      const conversations = await admin
-        .firestore()
-        .collection("conversations")
-        .where("participantIds", "array-contains", callerUid)
-        .get();
+      // Check friendship + friend requests for each unique target
+      const unauthorizedTargets: string[] = [];
 
-      const reachableUserIds = new Set<string>();
-      conversations.docs.forEach((doc) => {
-        const participants = doc.data().participantIds as string[];
-        participants?.forEach((id: string) => reachableUserIds.add(id));
-      });
+      for (const targetId of uniqueTargets) {
+        // Check friendship (direct document lookup — O(1))
+        const friendDoc = await admin.firestore()
+          .collection('users').doc(callerUid)
+          .collection('friends').doc(targetId)
+          .get();
 
-      const unauthorizedTargets = uniqueTargets.filter(
-        (id) => !reachableUserIds.has(id)
-      );
+        if (!friendDoc.exists) {
+          // Check pending friend request in either direction
+          const [sentRequest, receivedRequest] = await Promise.all([
+            admin.firestore()
+              .collection('friend_requests')
+              .where('fromUserId', '==', callerUid)
+              .where('toUserId', '==', targetId)
+              .limit(1).get(),
+            admin.firestore()
+              .collection('friend_requests')
+              .where('fromUserId', '==', targetId)
+              .where('toUserId', '==', callerUid)
+              .limit(1).get(),
+          ]);
+
+          if (sentRequest.empty && receivedRequest.empty) {
+            unauthorizedTargets.push(targetId);
+          }
+        }
+      }
 
       if (unauthorizedTargets.length > 0) {
         functions.logger.warn(

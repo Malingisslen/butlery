@@ -33,7 +33,6 @@ import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 import 'package:butlery/viewmodels/create_shared_list_viewmodel.dart';
 import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart';
 import 'package:butlery/viewmodels/shopping_share_viewmodel.dart';
-import 'package:butlery/viewmodels/group_content_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
@@ -51,7 +50,6 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
-import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
 
 // Dependencies from other modules
 import 'package:butlery/core/di/modules/core_module.dart';
@@ -105,8 +103,6 @@ class UIModule implements DIModule {
         SharedMenuViewModel,
         CreateGroupViewModel,
         GroupInvitationsViewModel,
-        GroupContentViewModel,
-
         // Import ViewModels
         TextImportViewModel,
         UrlImportViewModel,
@@ -244,12 +240,6 @@ class UIModule implements DIModule {
         ),
       );
 
-      // Group Content ViewModel - requires SocialSharingRepository
-      container.registerFactory<GroupContentViewModel>(
-        () => GroupContentViewModel(
-          sharingRepository: container<SocialSharingRepository>(),
-        ),
-      );
       // Text Import ViewModel
       container.registerFactory<TextImportViewModel>(
         () => TextImportViewModel(

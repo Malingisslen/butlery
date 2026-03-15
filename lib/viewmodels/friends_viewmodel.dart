@@ -11,6 +11,7 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/friends/friends_search_manager.dart';
@@ -29,6 +30,7 @@ class FriendsViewModel extends ChangeNotifier
   final UnifiedFriendsService _friendsService;
   final UserService _userService;
   final AnalyticsService _analyticsService;
+  final PermissionService _permissionService;
 
   late final FriendsSearchManager _searchManager;
   late final FriendsProfileCacheManager _profileCacheManager;
@@ -43,10 +45,13 @@ class FriendsViewModel extends ChangeNotifier
     required UnifiedFriendsService friendsService,
     required UserService userService,
     AnalyticsService? analyticsService,
+    PermissionService? permissionService,
   })  : _friendsService = friendsService,
         _userService = userService,
         _analyticsService =
-            analyticsService ?? ServiceLocator.get<AnalyticsService>() {
+            analyticsService ?? ServiceLocator.get<AnalyticsService>(),
+        _permissionService =
+            permissionService ?? ServiceLocator.get<PermissionService>() {
     _searchManager = FriendsSearchManager(friendsService: friendsService);
     _profileCacheManager = FriendsProfileCacheManager(userService: userService);
     _selectionManager = FriendsSelectionManager();
@@ -321,10 +326,9 @@ class FriendsViewModel extends ChangeNotifier
     });
   }
 
-  /// Check if user can be added as friend
-  // Consolidated permission properties (from mixins)
-  bool get isAuthenticated => true; // Simplified auth check
-  String? get currentUserId => 'mock-user-id'; // Simplified user ID
+  /// Auth state from PermissionService (the project's standard auth source)
+  bool get isAuthenticated => _permissionService.isAuthenticated;
+  String? get currentUserId => _permissionService.currentUserId;
 
   bool canSendFriendRequest(String userId) {
     if (!isAuthenticated || currentUserId == userId) return false;

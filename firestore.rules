@@ -104,9 +104,9 @@ service cloud.firestore {
     }
 
     // P3-14: Check if the requesting user is blocked by the target user
+    // Uses dedicated blocks collection with composite-key docs for O(1) lookups
     function isNotBlockedBy(targetUserId) {
-      return !exists(/databases/$(database)/documents/users/$(targetUserId))
-        || !(request.auth.uid in get(/databases/$(database)/documents/users/$(targetUserId)).data.get('blockedUsers', []));
+      return !exists(/databases/$(database)/documents/blocks/$(targetUserId + '_' + request.auth.uid));
     }
 
     // P3-13: Server-side UGC rate limiting via rateLimits subcollection
@@ -200,10 +200,10 @@ service cloud.firestore {
           request.auth.uid in resource.data.get('pendingInviteUserIds', [])
         );
 
-        // Allow updating if adding yourself OR already a member
+        // Allow updating if already a member OR have a pending invitation
         allow update: if isAuthenticated() && (
           isInList('friendUserIds') ||
-          request.auth.uid in request.resource.data.friendUserIds
+          request.auth.uid in resource.data.get('pendingInviteUserIds', [])
         );
       }
       
@@ -285,9 +285,11 @@ service cloud.firestore {
         && rateLimitWrite('friend_requests', 10);
       
       // Can update if you're the recipient (to accept/reject)
-      allow update: if isAuthenticated() 
+      allow update: if isAuthenticated()
         && request.auth.uid == resource.data.toUserId
-        && request.resource.data.status in ['accepted', 'rejected'];
+        && request.resource.data.status in ['accepted', 'rejected']
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'respondedAt']);
       
       // Can delete if you're the sender or recipient
       allow delete: if isAuthenticated() && (
@@ -623,7 +625,9 @@ service cloud.firestore {
       // Can update if you're in the sharedToUserIds (for real-time collaboration)
       allow update: if isAuthenticated() && (
         request.auth.uid == resource.data.sharedByUserId ||
-        request.auth.uid in resource.data.sharedToUserIds
+        (request.auth.uid in resource.data.sharedToUserIds
+         && !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['sharedByUserId', 'sharedToUserIds', 'sharedAt']))
       );
 
       // Can delete if you're the sharedByUserId
@@ -965,8 +969,10 @@ service cloud.firestore {
         && request.auth.uid in request.resource.data.participantIds
         && hasRequiredFields(['participantIds', 'createdAt']);
 
-      // Can update if you're a participant
-      allow update: if isAuthenticated() && request.auth.uid in resource.data.participantIds;
+      // Can update if you're a participant (but cannot modify participantIds or createdAt)
+      allow update: if isAuthenticated() && request.auth.uid in resource.data.participantIds
+        && !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['participantIds', 'createdAt']);
 
       // Can delete if you're a participant
       allow delete: if isAuthenticated() && request.auth.uid in resource.data.participantIds;
@@ -985,10 +991,15 @@ service cloud.firestore {
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.senderId
         && hasRequiredFields(['senderId', 'conversationId', 'content', 'sentAt'])
+        && request.resource.data.content is string
+        && request.resource.data.content.size() <= 5000
         && rateLimitWrite('messages', 5);
 
       // Can update your own messages
-      allow update: if isAuthenticated() && request.auth.uid == resource.data.senderId;
+      allow update: if isAuthenticated()
+        && request.auth.uid == resource.data.senderId
+        && request.resource.data.content is string
+        && request.resource.data.content.size() <= 5000;
 
       // Can delete your own messages
       allow delete: if isAuthenticated() && request.auth.uid == resource.data.senderId;
@@ -1026,7 +1037,9 @@ service cloud.firestore {
       // Can update if you're a collaborator (for real-time collaboration)
       allow update: if isAuthenticated() && (
         request.auth.uid == resource.data.ownerId ||
-        request.auth.uid in resource.data.collaborators
+        (request.auth.uid in resource.data.collaborators
+         && !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['ownerId', 'collaborators', 'createdAt']))
       );
       
       // Can delete if you're the owner
@@ -1080,7 +1093,7 @@ service cloud.firestore {
 
       // Can delete if authenticated and you're the owner
       allow delete: if isAuthenticated()
-        && (request.auth.uid == resource.data.get('ownerId', request.auth.uid));
+        && request.auth.uid == resource.data.ownerId;
     }
 
     // ========================================
@@ -1176,34 +1189,34 @@ service cloud.firestore {
       allow write: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // ========================================
-    // SHARED CONTENT - Generic content sharing system
-    // ========================================
-
+    // Legacy shared_content collection — locked down, use typed collections instead
     match /shared_content/{contentId} {
-      // Can read if you're the sender or recipient
+      allow read, write: if false;
+    }
+
+    // ========================================
+    // BLOCKS - User block relationships (composite-key: {blockerId}_{blockedId})
+    // ========================================
+
+    match /blocks/{blockId} {
+      // Users can read blocks they are involved in (either direction)
       allow read: if isAuthenticated() && (
-        request.auth.uid == resource.data.fromUserId ||
-        request.auth.uid == resource.data.toUserId
+        resource.data.blockerId == request.auth.uid ||
+        resource.data.blockedId == request.auth.uid
       );
 
-      // Can create if you're the sender
+      // Only the blocker can create a block, and must be the blockerId
       allow create: if isAuthenticated()
-        && request.auth.uid == request.resource.data.fromUserId
-        && request.resource.data.fromUserId != request.resource.data.toUserId
-        && hasRequiredFields(['fromUserId', 'toUserId', 'contentType', 'contentData', 'sharedAt']);
+        && request.resource.data.blockerId == request.auth.uid
+        && request.resource.data.blockerId != request.resource.data.blockedId
+        && blockId == request.resource.data.blockerId + '_' + request.resource.data.blockedId;
 
-      // Can update if you're the sender or recipient (for status updates)
-      allow update: if isAuthenticated() && (
-        request.auth.uid == resource.data.fromUserId ||
-        request.auth.uid == resource.data.toUserId
-      );
+      // Blocks are immutable — no updates
+      allow update: if false;
 
-      // Can delete if you're the sender or recipient
-      allow delete: if isAuthenticated() && (
-        request.auth.uid == resource.data.fromUserId ||
-        request.auth.uid == resource.data.toUserId
-      );
+      // Only the blocker can delete (unblock)
+      allow delete: if isAuthenticated()
+        && resource.data.blockerId == request.auth.uid;
     }
 
     // ========================================
@@ -1330,7 +1343,8 @@ service cloud.firestore {
       // SECURITY: User can only create audit logs for themselves (prevents tampering)
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.userId
-        && hasRequiredFields(['userId', 'operation', 'resourceType', 'timestamp']);
+        && hasRequiredFields(['userId', 'operation', 'resourceType', 'timestamp'])
+        && rateLimitWrite('audit_logs', 2);
 
       // No updates or deletes allowed (immutable audit trail)
       allow update, delete: if false;
@@ -1434,7 +1448,8 @@ service cloud.firestore {
 
       // Can create activity if authenticated (logged by collaborators)
       allow create: if isAuthenticated()
-        && hasRequiredFields(['menuId', 'timestamp']);
+        && hasRequiredFields(['menuId', 'userId', 'timestamp'])
+        && request.resource.data.userId == request.auth.uid;
 
       // No updates or deletes allowed (immutable activity trail)
       allow update, delete: if false;
@@ -1448,8 +1463,11 @@ service cloud.firestore {
       // Any authenticated user can read cache entries
       allow read: if isAuthenticated();
 
-      // Any authenticated user can create cache entries
-      allow create: if isAuthenticated();
+      // Authenticated users can create cache entries with ownership and rate limit
+      allow create: if isAuthenticated()
+        && hasRequiredFields(['url', 'title', 'createdBy', 'createdAt'])
+        && request.resource.data.createdBy == request.auth.uid
+        && rateLimitWrite('globalRecipeCache', 30);
 
       // Updates allowed only for access statistics (accessCount, lastAccessedAt)
       // Prevents modification of cached recipe data
@@ -1565,6 +1583,18 @@ service cloud.firestore {
     match /tagConfigs/{doc} {
       allow read: if isAuthenticated();
       allow write: if false;
+    }
+
+    // ========================================
+    // FEEDBACK - Beta user feedback submissions
+    // ========================================
+
+    match /feedback/{feedbackId} {
+      // Users can submit their own feedback
+      allow create: if isAuthenticated()
+        && isCreatingOwnDocument();
+      // No read/update/delete for users — admin-only via console
+      allow read, update, delete: if false;
     }
 
     // ========================================

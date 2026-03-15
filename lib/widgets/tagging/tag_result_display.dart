@@ -6,21 +6,14 @@ import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
+import 'package:butlery/services/tagging/config/dietary_config.dart';
 import 'package:butlery/widgets/common/feedback/inline_warning.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 import 'package:butlery/widgets/tagging/dietary_status_badge.dart';
 
 /// Priority-ordered list of dietary keys used by both TagResultDisplay and CompactDietaryRow.
-const _defaultDietaryOrder = [
-  'vegetarisk',
-  'vegansk',
-  'pescetarian',
-  'barnvanlig',
-  'graviditetssaker',
-  'halalanpassad',
-  'kosheranpassad',
-  'notkottsfri',
-];
+/// Derived from DietaryConfig to prevent key drift.
+final _defaultDietaryOrder = DietaryConfig.allKeys;
 
 /// Displays the full tag result from the tagging system.
 ///

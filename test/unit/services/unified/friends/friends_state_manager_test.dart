@@ -10,6 +10,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/friends/friends_state_manager.dart';
 import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -25,11 +26,15 @@ class MockFirebaseFriendsRepository extends Mock
 class MockFriendCategoryRepository extends Mock
     implements FriendCategoryRepository {}
 
+class MockFirebaseBlockRepository extends Mock
+    implements FirebaseBlockRepository {}
+
 void main() {
   group('FriendsStateManager', () {
     late FriendsStateManager stateManager;
     late MockFirebaseFriendsRepository mockFriendsRepository;
     late MockFriendCategoryRepository mockCategoryRepository;
+    late MockFirebaseBlockRepository mockBlockRepository;
 
     // Stream controllers for testing real-time updates
     late StreamController<List<FriendRequest>> incomingRequestsController;
@@ -53,6 +58,7 @@ void main() {
       // Create mocks
       mockFriendsRepository = MockFirebaseFriendsRepository();
       mockCategoryRepository = MockFriendCategoryRepository();
+      mockBlockRepository = MockFirebaseBlockRepository();
 
       // Create stream controllers
       incomingRequestsController =
@@ -91,10 +97,17 @@ void main() {
       when(() => mockFriendsRepository.fetchSentInvitations(testUserId))
           .thenAnswer((_) async => <GroupInvitation>[]);
 
+      // Configure block repository mock
+      when(() => mockBlockRepository.getBlockedUserIds())
+          .thenAnswer((_) async => <String>{});
+      when(() => mockBlockRepository.watchBlockedUserIds())
+          .thenAnswer((_) => Stream.value(<String>{}));
+
       // Create state manager
       stateManager = FriendsStateManager(
         repository: mockFriendsRepository,
         categoryRepository: mockCategoryRepository,
+        blockRepository: mockBlockRepository,
       );
     });
 
@@ -474,6 +487,7 @@ void main() {
         final disposableManager = FriendsStateManager(
           repository: mockFriendsRepository,
           categoryRepository: mockCategoryRepository,
+          blockRepository: mockBlockRepository,
         );
         await disposableManager.initialize();
 

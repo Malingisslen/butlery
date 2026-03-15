@@ -298,7 +298,6 @@ class ButleryApp extends StatefulWidget {
 }
 
 class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   FirebaseAnalyticsObserver? _analyticsObserver;
   final SnackbarRouteObserver _snackbarObserver = SnackbarRouteObserver();
   final PerformanceNavigatorObserver _performanceObserver =
@@ -398,13 +397,13 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
 
   /// Show session timeout warning dialog
   void _showSessionTimeoutWarning() {
-    if (!mounted || _navigatorKey.currentContext == null) return;
+    if (!mounted || appNavigatorKey.currentContext == null) return;
 
     final remainingSeconds =
         (_sessionTimeoutService?.timeRemaining?.inSeconds ?? 300);
 
     SessionTimeoutWarningDialog.show(
-      context: _navigatorKey.currentContext!,
+      context: appNavigatorKey.currentContext!,
       remainingSeconds: remainingSeconds,
       onExtendSession: () {
         _sessionTimeoutService?.recordActivity();
@@ -624,7 +623,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       onScaleStart: (_) => _sessionTimeoutService?.recordActivity(),
       behavior: HitTestBehavior.translucent,
       child: MaterialApp(
-        navigatorKey: _navigatorKey,
+        navigatorKey: appNavigatorKey,
         navigatorObservers: observers,
         title: 'Butlery',
         theme: AppTheme.lightTheme,
