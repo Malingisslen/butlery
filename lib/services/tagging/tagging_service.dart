@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:butlery/core/base/base_service.dart' hide PermissionService;
+import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';

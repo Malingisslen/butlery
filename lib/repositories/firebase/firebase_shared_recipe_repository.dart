@@ -187,7 +187,13 @@ class FirebaseSharedRecipeRepository
     // Create the shared recipe document
     final recipeId = await createSharedContent(sharedRecipe);
 
+    // Seed creator in sharedToUserIds for group queries
+    await getCollectionRef().doc(recipeId).update({
+      'sharedToUserIds': FieldValue.arrayUnion([sharedRecipe.sharedByUserId]),
+    });
+
     // Add all recipients to members subcollection (Issue #014: Unlimited sharing)
+    // Each addMember call also appends to sharedToUserIds via arrayUnion
     for (final recipientId in recipientIds) {
       await addMember(recipeId, recipientId, addedBy: uid);
     }

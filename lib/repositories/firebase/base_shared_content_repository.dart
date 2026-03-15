@@ -370,6 +370,11 @@ abstract class BaseSharedContentRepository<T>
           .doc(userId)
           .set(member.toFirestore());
 
+      // Maintain denormalized sharedToUserIds for group queries
+      await getCollectionRef().doc(contentId).update({
+        'sharedToUserIds': FieldValue.arrayUnion([userId]),
+      });
+
       // Increment unread counter for the new member
       await incrementUnreadCounter(userId);
 
@@ -425,6 +430,11 @@ abstract class BaseSharedContentRepository<T>
           .collection(FirestoreCollections.members)
           .doc(userId)
           .delete();
+
+      // Maintain denormalized sharedToUserIds for group queries
+      await getCollectionRef().doc(contentId).update({
+        'sharedToUserIds': FieldValue.arrayRemove([userId]),
+      });
 
       AppLogger.success(
           '✅ Removed user $userId from $contentTypeName $contentId');
