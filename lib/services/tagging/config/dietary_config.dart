@@ -47,7 +47,9 @@ class DietaryConfig {
     DietaryEntry(
       key: 'vegetarisk',
       tagSv: 'vegetarisk',
-      excludedProperties: ['meat', 'seafood'],
+      // Use specific properties (not 'seafood') to avoid data integrity risk:
+      // an ingredient might have 'fish' but not 'seafood' in the database
+      excludedProperties: ['meat', 'fish', 'crustacean', 'mollusc'],
       description: 'Ingen ingrediens har kött eller fisk/skaldjur',
     ),
     DietaryEntry(
@@ -116,11 +118,7 @@ class DietaryConfig {
 
   /// Gets a dietary entry by key.
   static DietaryEntry? getByKey(String key) {
-    try {
-      return all.firstWhere((d) => d.key == key);
-    } catch (_) {
-      return null;
-    }
+    return all.where((d) => d.key == key).firstOrNull;
   }
 
   /// All dietary keys.

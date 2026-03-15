@@ -237,6 +237,73 @@ void main() {
         );
         expect(invalidGroup.isValid, isFalse);
       });
+
+      group('boundary cases', () {
+        test('should pass when name is exactly 50 characters', () {
+          final name50 = 'a' * 50;
+          expect(name50.length, 50);
+          expect(PersonalTagGroup.validateName(name50), isNull);
+        });
+
+        test('should fail when name is 51 characters', () {
+          final name51 = 'a' * 51;
+          expect(name51.length, 51);
+          expect(PersonalTagGroup.validateName(name51), isNotNull);
+        });
+
+        test('should fail when name is null', () {
+          expect(PersonalTagGroup.validateName(null), isNotNull);
+        });
+
+        test('should fail when name is empty string', () {
+          expect(PersonalTagGroup.validateName(''), isNotNull);
+        });
+
+        test('should fail when name is only whitespace', () {
+          expect(PersonalTagGroup.validateName('   '), isNotNull);
+        });
+
+        test('should pass when name is a single character', () {
+          // PersonalTagGroup.validateName has no minimum length beyond non-empty
+          expect(PersonalTagGroup.validateName('a'), isNull);
+        });
+
+        test('should pass when name contains a comma', () {
+          // Groups have no comma restriction (unlike PersonalTag)
+          expect(PersonalTagGroup.validateName('Group, Other'), isNull);
+        });
+
+        test('should pass when name is a reserved system tag name', () {
+          // Groups have no reserved name check (unlike PersonalTag)
+          expect(PersonalTagGroup.validateName('sommar'), isNull);
+        });
+
+        test('should pass when name is a reserved dietary name', () {
+          // Groups have no reserved name check (unlike PersonalTag)
+          expect(PersonalTagGroup.validateName('vegetarisk'), isNull);
+        });
+
+        test('should pass when name is a valid unique name', () {
+          expect(PersonalTagGroup.validateName('Svårighetsgrad'), isNull);
+          expect(PersonalTagGroup.validateName('Meal Planning'), isNull);
+        });
+
+        test(
+            'should pass when name has leading/trailing whitespace that trims valid',
+            () {
+          expect(PersonalTagGroup.validateName('  Valid Group  '), isNull);
+        });
+
+        test('should evaluate length after trimming', () {
+          final name49 = 'a' * 49;
+          expect(PersonalTagGroup.validateName('  $name49  '), isNull);
+        });
+
+        test('should fail when trimmed content exceeds 50 characters', () {
+          final name51 = 'a' * 51;
+          expect(PersonalTagGroup.validateName('  $name51  '), isNotNull);
+        });
+      });
     });
 
     group('equality', () {

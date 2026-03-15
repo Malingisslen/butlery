@@ -549,8 +549,7 @@ void main() {
       );
     }
 
-    test(
-        'should exclude UNKNOWN dietary when includeUnknownInMenu is false',
+    test('should exclude UNKNOWN dietary when includeUnknownInMenu is false',
         () {
       when(() => mockUserService.allergenPreferences).thenReturn(
         const UserAllergenPreferences(
@@ -629,6 +628,245 @@ void main() {
 
       final available = menuGenerator.availableRecipes;
       expect(available, isEmpty);
+    });
+  });
+
+  group('MenuGenerator - Multiple Tracked Allergens in Combination', () {
+    TagResult makeTagResult({
+      Map<String, TriState>? dietary,
+      Map<String, TriState>? allergen,
+    }) {
+      return TagResult(
+        tags: {},
+        allergenStatus: allergen ?? {},
+        dietaryStatus: dietary ?? {},
+        coverage: 1.0,
+        generatedAt: DateTime.now(),
+      );
+    }
+
+    Recipe recipeWith(String id, TagResult tagResult) {
+      final base = RecipeFactory.build(id: id, title: id);
+      return Recipe(
+        core: base.core.copyWith(tagResult: tagResult),
+        type: base.type,
+      );
+    }
+
+    test(
+        'should exclude recipe when one of multiple tracked allergens is CONTAINS',
+        () {
+      // User tracks both gluten and mjölk
+      when(() => mockUserService.allergenPreferences).thenReturn(
+        const UserAllergenPreferences(
+          trackedAllergens: {'gluten', 'mjölk'},
+          trackedDietary: {},
+        ),
+      );
+
+      // Recipe is gluten-free but contains mjölk
+      final recipe = recipeWith(
+        'gluten_free_but_milk_contains',
+        makeTagResult(allergen: {
+          'gluten': TriState.free,
+          'mjölk': TriState.contains,
+        }),
+      );
+
+      mockRecipeService.setRecipeState(
+        recipes: [recipe],
+        isInitialized: true,
+      );
+
+      final available = menuGenerator.availableRecipes;
+      expect(available, isEmpty,
+          reason: 'mjölk is CONTAINS so recipe should be excluded');
+    });
+
+    test('should include recipe when all tracked allergens are FREE', () {
+      // User tracks both gluten and mjölk
+      when(() => mockUserService.allergenPreferences).thenReturn(
+        const UserAllergenPreferences(
+          trackedAllergens: {'gluten', 'mjölk'},
+          trackedDietary: {},
+        ),
+      );
+
+      // Recipe is free from both allergens
+      final recipe = recipeWith(
+        'both_free',
+        makeTagResult(allergen: {
+          'gluten': TriState.free,
+          'mjölk': TriState.free,
+        }),
+      );
+
+      mockRecipeService.setRecipeState(
+        recipes: [recipe],
+        isInitialized: true,
+      );
+
+      final available = menuGenerator.availableRecipes;
+      expect(available.length, equals(1));
+      expect(available.first.id, equals('both_free'));
+    });
+
+    test(
+        'should exclude recipe when one tracked allergen is UNKNOWN and strict mode is on',
+        () {
+      // User tracks both, strict mode excludes UNKNOWN
+      when(() => mockUserService.allergenPreferences).thenReturn(
+        const UserAllergenPreferences(
+          trackedAllergens: {'gluten', 'mjölk'},
+          trackedDietary: {},
+          includeUnknownInMenu: false,
+        ),
+      );
+
+      // gluten is UNKNOWN, mjölk is FREE
+      final recipe = recipeWith(
+        'gluten_unknown_milk_free',
+        makeTagResult(allergen: {
+          'gluten': TriState.unknown,
+          'mjölk': TriState.free,
+        }),
+      );
+
+      mockRecipeService.setRecipeState(
+        recipes: [recipe],
+        isInitialized: true,
+      );
+
+      final available = menuGenerator.availableRecipes;
+      expect(available, isEmpty,
+          reason:
+              'gluten is UNKNOWN and includeUnknownInMenu is false so recipe should be excluded');
+    });
+
+    test(
+        'should include recipe when one tracked allergen is UNKNOWN and tolerant mode is on',
+        () {
+      // User tracks both, tolerant mode keeps UNKNOWN
+      when(() => mockUserService.allergenPreferences).thenReturn(
+        const UserAllergenPreferences(
+          trackedAllergens: {'gluten', 'mjölk'},
+          trackedDietary: {},
+          includeUnknownInMenu: true,
+        ),
+      );
+
+      // gluten is UNKNOWN, mjölk is FREE
+      final recipe = recipeWith(
+        'gluten_unknown_milk_free',
+        makeTagResult(allergen: {
+          'gluten': TriState.unknown,
+          'mjölk': TriState.free,
+        }),
+      );
+
+      mockRecipeService.setRecipeState(
+        recipes: [recipe],
+        isInitialized: true,
+      );
+
+      final available = menuGenerator.availableRecipes;
+      expect(available.length, equals(1));
+      expect(available.first.id, equals('gluten_unknown_milk_free'));
+    });
+
+    test(
+        'should filter correctly across a mixed set of recipes with multiple tracked allergens',
+        () {
+      when(() => mockUserService.allergenPreferences).thenReturn(
+        const UserAllergenPreferences(
+          trackedAllergens: {'gluten', 'mjölk'},
+          trackedDietary: {},
+          includeUnknownInMenu: false,
+        ),
+      );
+
+      final allFree = recipeWith(
+        'all_free',
+        makeTagResult(allergen: {
+          'gluten': TriState.free,
+          'mjölk': TriState.free,
+        }),
+      );
+      final oneContains = recipeWith(
+        'one_contains',
+        makeTagResult(allergen: {
+          'gluten': TriState.free,
+          'mjölk': TriState.contains,
+        }),
+      );
+      final oneUnknown = recipeWith(
+        'one_unknown',
+        makeTagResult(allergen: {
+          'gluten': TriState.unknown,
+          'mjölk': TriState.free,
+        }),
+      );
+      final bothContains = recipeWith(
+        'both_contains',
+        makeTagResult(allergen: {
+          'gluten': TriState.contains,
+          'mjölk': TriState.contains,
+        }),
+      );
+
+      mockRecipeService.setRecipeState(
+        recipes: [allFree, oneContains, oneUnknown, bothContains],
+        isInitialized: true,
+      );
+
+      final available = menuGenerator.availableRecipes;
+      // Strict mode: only all-FREE passes
+      expect(available.length, equals(1));
+      expect(available.first.id, equals('all_free'));
+    });
+
+    test(
+        'should pass UNKNOWN recipes in tolerant mode but still reject CONTAINS',
+        () {
+      when(() => mockUserService.allergenPreferences).thenReturn(
+        const UserAllergenPreferences(
+          trackedAllergens: {'gluten', 'mjölk'},
+          trackedDietary: {},
+          includeUnknownInMenu: true,
+        ),
+      );
+
+      final allFree = recipeWith(
+        'all_free',
+        makeTagResult(allergen: {
+          'gluten': TriState.free,
+          'mjölk': TriState.free,
+        }),
+      );
+      final oneContains = recipeWith(
+        'one_contains',
+        makeTagResult(allergen: {
+          'gluten': TriState.free,
+          'mjölk': TriState.contains,
+        }),
+      );
+      final oneUnknown = recipeWith(
+        'one_unknown',
+        makeTagResult(allergen: {
+          'gluten': TriState.unknown,
+          'mjölk': TriState.free,
+        }),
+      );
+
+      mockRecipeService.setRecipeState(
+        recipes: [allFree, oneContains, oneUnknown],
+        isInitialized: true,
+      );
+
+      final available = menuGenerator.availableRecipes;
+      final availableIds = available.map((r) => r.id).toSet();
+      // Tolerant mode: FREE and UNKNOWN pass, CONTAINS still rejected
+      expect(availableIds, equals({'all_free', 'one_unknown'}));
     });
   });
 }

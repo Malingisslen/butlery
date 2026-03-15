@@ -178,7 +178,7 @@ class GroupInvitationCard {
     } else if (context.mounted && service.invitations.hasError) {
       SnackBarUtils.showError(
         context,
-        'Fel: ${service.invitations.error}',
+        service.invitations.error ?? context.l10n.errorGeneric,
       );
     } else if (!success && context.mounted) {
       SnackBarUtils.showError(
@@ -201,7 +201,7 @@ class GroupInvitationCard {
     } else if (context.mounted && service.invitations.hasError) {
       SnackBarUtils.showError(
         context,
-        'Fel: ${service.invitations.error}',
+        service.invitations.error ?? context.l10n.errorGeneric,
       );
     }
   }

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -59,6 +60,20 @@ class FirebasePersonalTagGroupRepository
   Future<bool> validateDeletePermission(
           String userId, String resourceId) async =>
       true;
+
+  // Ownership is structural (user subcollection) — skip per-document
+  // validation and audit logging that the base readAll() does.
+  @override
+  Future<List<PersonalTagGroup>> readAll() async {
+    requireCurrentUserId();
+    try {
+      final snapshot = await getCollectionRef().get();
+      return snapshot.docs.map(fromFirestore).toList();
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to read all PersonalTagGroup: $e', stackTrace);
+      rethrow;
+    }
+  }
 
   /// Gets all groups sorted by sortOrder.
   ///

@@ -23,6 +23,8 @@ import 'package:butlery/views/social/friend_profile_view.dart'
     deferred as friend_profile;
 import 'package:butlery/views/social/shared_shopping_lists_view.dart'
     deferred as shared_shopping_lists;
+import 'package:butlery/views/social/group_detail_view.dart'
+    deferred as group_detail;
 
 /// Deferred module for social/friends related views
 /// This module defers loading of all social views (~52 files, 2-3MB)
@@ -43,6 +45,7 @@ class SocialDeferredModule implements DeferredModule {
         Routes.createSharedShopping,
         Routes.friendProfile,
         Routes.sharedShoppingLists,
+        Routes.groupDetail,
       };
 
   @override
@@ -60,6 +63,7 @@ class SocialDeferredModule implements DeferredModule {
       create_shared_shopping.loadLibrary(),
       friend_profile.loadLibrary(),
       shared_shopping_lists.loadLibrary(),
+      group_detail.loadLibrary(),
     ]);
 
     _isLoaded = true;
@@ -107,6 +111,13 @@ class SocialDeferredModule implements DeferredModule {
 
       case Routes.sharedShoppingLists:
         return shared_shopping_lists.SharedShoppingListsView();
+
+      case Routes.groupDetail:
+        final groupId = settings.arguments as String?;
+        if (groupId == null) {
+          throw ArgumentError('Group ID argument missing for group detail');
+        }
+        return group_detail.GroupDetailView(groupId: groupId);
 
       default:
         throw ArgumentError('Unknown social route: $routeName');

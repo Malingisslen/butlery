@@ -18,6 +18,7 @@ class FriendsSearchManager extends ChangeNotifier {
   String _searchQuery = '';
   List<UserProfile> _searchResults = [];
   String? _searchError;
+  bool _isSearching = false;
   bool _isDisposed = false;
 
   // Performance optimization: Debouncing and caching
@@ -32,6 +33,7 @@ class FriendsSearchManager extends ChangeNotifier {
   String get searchQuery => _searchQuery;
   List<UserProfile> get searchResults => List.unmodifiable(_searchResults);
   String? get searchError => _searchError;
+  bool get isSearching => _isSearching;
   bool get hasSearchResults => _searchResults.isNotEmpty;
   bool get hasSearchQuery => _searchQuery.isNotEmpty;
 
@@ -83,6 +85,9 @@ class FriendsSearchManager extends ChangeNotifier {
       return;
     }
 
+    _isSearching = true;
+    _safeNotifyListeners();
+
     try {
       final results =
           await _friendsService.management.searchUsers(_searchQuery);
@@ -97,12 +102,13 @@ class FriendsSearchManager extends ChangeNotifier {
 
       AppLogger.info(
           '🔍 Search for "$_searchQuery" returned ${_searchResults.length} results');
-      _safeNotifyListeners();
     } catch (e) {
       if (_isDisposed) return;
 
       _searchError = AppLocale.current.errorGeneric;
       AppLogger.error('Search failed: $e');
+    } finally {
+      _isSearching = false;
       _safeNotifyListeners();
     }
   }

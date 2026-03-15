@@ -316,12 +316,32 @@ class GroupInvitationRepository
   }
 
   /// Cancel a sent invitation.
+  /// Uses delete instead of update because Firestore rules only allow the
+  /// recipient (toUserId) to update status. The delete rule permits both parties.
   Future<bool> cancelInvitation(String invitationId) async {
     try {
-      await updateInvitation(invitationId, {
-        'status': GroupInvitationStatus.cancelled.name,
-        'respondedAt': timestampProvider.serverTimestamp(),
-      });
+      final currentUser = requireCurrentUserId();
+      final invitation = await getInvitation(invitationId);
+      if (invitation == null) return false;
+
+      if (currentUser != invitation.fromUserId) {
+        throw PermissionDeniedException(
+          'Only the sender can cancel an invitation',
+          resource: 'group_invitation',
+          operation: 'cancel',
+          userId: currentUser,
+        );
+      }
+
+      await _invitationsRef.doc(invitationId).delete();
+
+      logPermissionCheck(
+        userId: currentUser,
+        resource: 'group_invitation',
+        operation: 'cancel_delete',
+        granted: true,
+        details: 'Deleted invitation $invitationId',
+      );
       return true;
     } catch (e) {
       return false;

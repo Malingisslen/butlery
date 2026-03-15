@@ -5,8 +5,13 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import '../../../../test_support/base_unit_test.dart';
+import '../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
+
+class MockFirebaseBlockRepository extends Mock
+    implements FirebaseBlockRepository {}
 
 void main() {
   group('FriendsManagementOperations', () {
@@ -165,16 +170,185 @@ void main() {
       });
     });
 
-    // User blocking tests removed — blockUser/unblockUser now use
-    // FirebaseBlockRepository directly, needs integration-level testing
+    group('Cancel Friend Request', () {
+      test('should cancel outgoing request and update Firebase', () async {
+        final request = FriendRequest(
+          id: 'req_1',
+          fromUserId: 'current_user',
+          toUserId: 'recipient',
+          status: FriendRequestStatus.pending,
+          sentAt: DateTime.now(),
+        );
 
-    // TODO: Add more comprehensive tests for:
-    // - Friend request sending (needs proper service mocking)
-    // - Friend request acceptance/rejection (needs proper service mocking)
-    // - User discovery features
-    // - Error handling scenarios
+        mockParentService.setFriendsState(
+          outgoingRequests: [request],
+          isInitialized: true,
+        );
+        when(() => mockParentService.removeOutgoingRequestInternal('req_1'))
+            .thenReturn(null);
+        when(() => mockParentService.updateFriendRequestStatus(any()))
+            .thenAnswer((_) async {});
+
+        final success =
+            await managementOperations.cancelFriendRequest('req_1');
+
+        expect(success, isTrue);
+        verify(() => mockParentService.removeOutgoingRequestInternal('req_1'))
+            .called(1);
+        verify(() => mockParentService.updateFriendRequestStatus(any()))
+            .called(1);
+      });
+
+      test('should return false when request not found', () async {
+        mockParentService.setFriendsState(
+          outgoingRequests: [],
+          isInitialized: true,
+        );
+
+        final success =
+            await managementOperations.cancelFriendRequest('nonexistent');
+
+        expect(success, isFalse);
+      });
+    });
+
+    group('Block User Cascade', () {
+      late MockFirebaseBlockRepository mockBlockRepo;
+
+      setUp(() {
+        mockBlockRepo = MockFirebaseBlockRepository();
+        TestServiceLocator.registerMock<FirebaseBlockRepository>(mockBlockRepo);
+        when(() => mockBlockRepo.blockUser(any()))
+            .thenAnswer((_) async {});
+      });
+
+      test('should clean up incoming requests from blocked user', () async {
+        final incomingRequest = FriendRequest(
+          id: 'inc_req_1',
+          fromUserId: 'blocked_person',
+          toUserId: 'current_user',
+          status: FriendRequestStatus.pending,
+          sentAt: DateTime.now(),
+        );
+
+        mockParentService.setFriendsState(
+          friends: [],
+          incomingRequests: [incomingRequest],
+          outgoingRequests: [],
+          isInitialized: true,
+        );
+        when(() =>
+                mockParentService.removeIncomingRequestInternal('inc_req_1'))
+            .thenReturn(null);
+        when(() => mockParentService.updateFriendRequestStatus(any()))
+            .thenAnswer((_) async {});
+
+        final success =
+            await managementOperations.blockUser('blocked_person');
+
+        expect(success, isTrue);
+        verify(() =>
+                mockParentService.removeIncomingRequestInternal('inc_req_1'))
+            .called(1);
+        verify(() => mockParentService.updateFriendRequestStatus(any()))
+            .called(1);
+        verify(() => mockBlockRepo.blockUser('blocked_person')).called(1);
+      });
+
+      test('should clean up outgoing requests to blocked user', () async {
+        final outgoingRequest = FriendRequest(
+          id: 'out_req_1',
+          fromUserId: 'current_user',
+          toUserId: 'blocked_person',
+          status: FriendRequestStatus.pending,
+          sentAt: DateTime.now(),
+        );
+
+        mockParentService.setFriendsState(
+          friends: [],
+          incomingRequests: [],
+          outgoingRequests: [outgoingRequest],
+          isInitialized: true,
+        );
+        when(() =>
+                mockParentService.removeOutgoingRequestInternal('out_req_1'))
+            .thenReturn(null);
+        when(() => mockParentService.updateFriendRequestStatus(any()))
+            .thenAnswer((_) async {});
+
+        final success =
+            await managementOperations.blockUser('blocked_person');
+
+        expect(success, isTrue);
+        verify(() =>
+                mockParentService.removeOutgoingRequestInternal('out_req_1'))
+            .called(1);
+        verify(() => mockBlockRepo.blockUser('blocked_person')).called(1);
+      });
+
+      test('should block user with no prior relationship', () async {
+        mockParentService.setFriendsState(
+          friends: [],
+          incomingRequests: [],
+          outgoingRequests: [],
+          isInitialized: true,
+        );
+
+        final success =
+            await managementOperations.blockUser('stranger');
+
+        expect(success, isTrue);
+        verify(() => mockBlockRepo.blockUser('stranger')).called(1);
+      });
+    });
+
+    group('Search', () {
+      test('searchFriends filters by display name case-insensitively',
+          () {
+        final alice = UserProfile(
+          uid: 'alice',
+          email: 'alice@example.com',
+          displayName: 'Alice Andersson',
+          joinedAt: DateTime.now(),
+          lastActiveAt: DateTime.now(),
+        );
+        final bob = UserProfile(
+          uid: 'bob',
+          email: 'bob@example.com',
+          displayName: 'Bob Berggren',
+          joinedAt: DateTime.now(),
+          lastActiveAt: DateTime.now(),
+        );
+
+        mockParentService.setFriendsState(
+          friends: [alice, bob],
+          isInitialized: true,
+        );
+
+        final results = managementOperations.searchFriends('alice');
+
+        expect(results, hasLength(1));
+        expect(results.first.uid, equals('alice'));
+      });
+
+      test('searchFriends returns empty for no match', () {
+        final alice = UserProfile(
+          uid: 'alice',
+          email: 'alice@example.com',
+          displayName: 'Alice',
+          joinedAt: DateTime.now(),
+          lastActiveAt: DateTime.now(),
+        );
+
+        mockParentService.setFriendsState(
+          friends: [alice],
+          isInitialized: true,
+        );
+
+        final results = managementOperations.searchFriends('zzzz');
+
+        expect(results, isEmpty);
+      });
+    });
   });
 }
-
-// Mock classes for testing
-// Using MockUnifiedFriendsService from production_mocks.dart

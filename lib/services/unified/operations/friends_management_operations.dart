@@ -91,13 +91,10 @@ class FriendsManagementOperations extends BaseService {
         throw Exception('Cannot send friend request to a blocked user');
       }
 
-      final request = FriendRequest(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+      final request = FriendRequest.create(
         fromUserId: currentUserId!,
         toUserId: recipientId,
         message: message,
-        sentAt: DateTime.now(),
-        status: FriendRequestStatus.pending,
       );
 
       // Add to local state (optimistic update)
@@ -281,9 +278,29 @@ class FriendsManagementOperations extends BaseService {
         await removeFriend(userId);
       }
 
-      // Remove any pending friend requests
-      _parent.incomingRequests.removeWhere((r) => r.fromUserId == userId);
-      _parent.outgoingRequests.removeWhere((r) => r.toUserId == userId);
+      // Remove pending friend requests via state manager and clean up Firebase
+      final incomingFromBlocked = _parent.incomingRequests
+          .where((r) => r.fromUserId == userId)
+          .toList();
+      final outgoingToBlocked = _parent.outgoingRequests
+          .where((r) => r.toUserId == userId)
+          .toList();
+
+      for (final request in incomingFromBlocked) {
+        _parent.removeIncomingRequestInternal(request.id);
+        // Delete from Firebase (cancelled requests use delete per C2 fix)
+        await _parent.updateFriendRequestStatus(request.copyWith(
+          status: FriendRequestStatus.cancelled,
+          respondedAt: DateTime.now(),
+        ));
+      }
+      for (final request in outgoingToBlocked) {
+        _parent.removeOutgoingRequestInternal(request.id);
+        await _parent.updateFriendRequestStatus(request.copyWith(
+          status: FriendRequestStatus.cancelled,
+          respondedAt: DateTime.now(),
+        ));
+      }
 
       // Write to blocks collection (real-time stream updates in-memory cache)
       final blockRepo = ServiceLocator.get<FirebaseBlockRepository>();

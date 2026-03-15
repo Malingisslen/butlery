@@ -67,7 +67,10 @@ class PersonalTagService extends BaseService {
 
   Future<void> deleteTag(String tagId) => _crud.deleteTag(tagId);
 
-  Stream<List<PersonalTag>> watchTags() => _crud.watchTags();
+  Stream<List<PersonalTag>> watchTags() {
+    _ensureStreams();
+    return _crud.watchTags();
+  }
 
   Future<bool> tagNameExists(String name, {String? excludeId}) =>
       _crud.tagNameExists(name, excludeId: excludeId);
@@ -102,7 +105,10 @@ class PersonalTagService extends BaseService {
 
   Future<void> deleteGroup(String groupId) => _crud.deleteGroup(groupId);
 
-  Stream<List<PersonalTagGroup>> watchGroups() => _crud.watchGroups();
+  Stream<List<PersonalTagGroup>> watchGroups() {
+    _ensureStreams();
+    return _crud.watchGroups();
+  }
 
   Future<int> getNextGroupSortOrder() => _crud.getNextGroupSortOrder();
 
@@ -351,6 +357,11 @@ class PersonalTagService extends BaseService {
       });
       _streamsInitialized = true;
     } catch (e) {
+      // Clean up partial subscriptions to prevent leaks on retry
+      _tagStreamSub?.cancel();
+      _tagStreamSub = null;
+      _groupStreamSub?.cancel();
+      _groupStreamSub = null;
       AppLogger.warning('PersonalTagService stream setup deferred: $e');
     }
   }

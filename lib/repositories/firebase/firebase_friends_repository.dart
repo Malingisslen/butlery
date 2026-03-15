@@ -415,6 +415,11 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     return await _groupInvitationRepo.updateInvitation(invitationId, data);
   }
 
+  @override
+  Future<void> deleteInvitation(String invitationId) async {
+    await _groupInvitationRepo.cancelInvitation(invitationId);
+  }
+
   /// Fetch received invitations for a user (one-time fetch)
   Future<List<GroupInvitation>> fetchReceivedInvitations(String userId) async {
     final stream = _groupInvitationRepo.receivedInvitationsStream(userId);

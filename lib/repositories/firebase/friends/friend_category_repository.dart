@@ -90,20 +90,15 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     }
   }
 
-  /// Save a friend category for a user.
+  /// Save a friend category for a user (owner-only full write).
   Future<void> saveCategory(String userId, FriendCategory category) async {
-    // ✅ CRITICAL FIX: Allow members to update group owner's category
-    // This is needed when accepting group invitations
     final currentUser = requireCurrentUserId();
 
-    // Check if user is either the owner OR a member of the category
-    final isOwner = currentUser == userId;
-    final isMember = category.friendUserIds.contains(currentUser);
-
-    if (!isOwner && !isMember) {
+    // Only the owner can do a full document write
+    if (currentUser != userId) {
       throw Exception(
-          'Permission denied: User $currentUser cannot modify category owned by $userId. '
-          'User must be owner or member of the category.');
+          'Permission denied: Only the owner can fully save a category. '
+          'Use addSelfToCategory() for member self-addition.');
     }
 
     // Validate required fields
@@ -118,10 +113,28 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     logPermissionCheck(
       userId: currentUser,
       resource: 'friend_category',
-      operation: isOwner ? 'create' : 'update_as_member',
+      operation: 'create',
       granted: true,
-      details:
-          'Category: ${category.id}, Owner: $userId, IsOwner: $isOwner, IsMember: $isMember',
+      details: 'Category: ${category.id}, Owner: $userId',
+    );
+  }
+
+  /// Add the current user to a category's member list (for invitation acceptance).
+  /// Only modifies the friendUserIds field — cannot rename, change owner, or remove members.
+  Future<void> addSelfToCategory(String ownerId, String categoryId) async {
+    final currentUser = requireCurrentUserId();
+
+    await _categoriesRef(ownerId).doc(categoryId).update({
+      'friendUserIds': FieldValue.arrayUnion([currentUser]),
+      'updatedAt': timestampProvider.serverTimestamp(),
+    });
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'friend_category',
+      operation: 'add_self_as_member',
+      granted: true,
+      details: 'Category: $categoryId, Owner: $ownerId',
     );
   }
 

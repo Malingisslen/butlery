@@ -6,10 +6,18 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 
-class OnboardingAllergenPage extends StatelessWidget {
+class OnboardingAllergenPage extends StatefulWidget {
   const OnboardingAllergenPage({super.key});
 
-  static const Map<String, IconData> _allergenIcons = {
+  @override
+  State<OnboardingAllergenPage> createState() => _OnboardingAllergenPageState();
+}
+
+class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
+  bool _showAll = false;
+
+  /// Primary allergens (most common, always visible).
+  static const Map<String, IconData> _primaryAllergenIcons = {
     'gluten': Icons.grain,
     'mjölk': Icons.water_drop_outlined,
     'nötter': Icons.eco_outlined,
@@ -18,6 +26,25 @@ class OnboardingAllergenPage extends StatelessWidget {
     'fisk': Icons.set_meal_outlined,
     'skaldjur': Icons.catching_pokemon,
     'sesam': Icons.grass_outlined,
+  };
+
+  /// Extended allergens (remaining EU-14 + lactose).
+  static const Map<String, IconData> _extendedAllergenIcons = {
+    'laktos': Icons.water_drop_outlined,
+    'selleri': Icons.local_florist_outlined,
+    'senap': Icons.local_florist_outlined,
+    'lupin': Icons.local_florist_outlined,
+    'sulfiter': Icons.science_outlined,
+    'jordnötter': Icons.eco_outlined,
+    'trädnötter': Icons.eco_outlined,
+    'kräftdjur': Icons.catching_pokemon,
+    'blötdjur': Icons.catching_pokemon,
+  };
+
+  /// All allergens combined (precomputed to avoid per-build allocation).
+  static const Map<String, IconData> _allAllergenIcons = {
+    ..._primaryAllergenIcons,
+    ..._extendedAllergenIcons,
   };
 
   static String _allergenLabel(BuildContext context, String key) {
@@ -31,6 +58,15 @@ class OnboardingAllergenPage extends StatelessWidget {
       'fisk' => l10n.onboardingAllergenFish,
       'skaldjur' => l10n.onboardingAllergenShellfish,
       'sesam' => l10n.onboardingAllergenSesame,
+      'laktos' => l10n.onboardingAllergenLactose,
+      'selleri' => l10n.onboardingAllergenCelery,
+      'senap' => l10n.onboardingAllergenMustard,
+      'lupin' => l10n.onboardingAllergenLupin,
+      'sulfiter' => l10n.onboardingAllergenSulfite,
+      'jordnötter' => l10n.onboardingAllergenPeanut,
+      'trädnötter' => l10n.onboardingAllergenTreeNut,
+      'kräftdjur' => l10n.onboardingAllergenCrustacean,
+      'blötdjur' => l10n.onboardingAllergenMollusc,
       _ => key,
     };
   }
@@ -39,6 +75,9 @@ class OnboardingAllergenPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.watch<OnboardingViewModel>();
     final cs = Theme.of(context).colorScheme;
+
+    final allergens = _showAll ? _allAllergenIcons : _primaryAllergenIcons;
+    final allergenEntries = allergens.entries.toList();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl),
@@ -68,9 +107,15 @@ class OnboardingAllergenPage extends StatelessWidget {
                 mainAxisSpacing: AppDimensions.spacingSm,
                 childAspectRatio: 2.5,
               ),
-              itemCount: _allergenIcons.length,
+              itemCount: allergenEntries.length + 1, // +1 for toggle button
               itemBuilder: (context, index) {
-                final entry = _allergenIcons.entries.elementAt(index);
+                if (index == allergenEntries.length) {
+                  return _ShowAllToggle(
+                    showAll: _showAll,
+                    onToggle: () => setState(() => _showAll = !_showAll),
+                  );
+                }
+                final entry = allergenEntries[index];
                 final isSelected = viewModel.isAllergenSelected(entry.key);
                 return _AllergenToggleCard(
                   label: _allergenLabel(context, entry.key),
@@ -82,6 +127,52 @@ class OnboardingAllergenPage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ShowAllToggle extends StatelessWidget {
+  final bool showAll;
+  final VoidCallback onToggle;
+
+  const _ShowAllToggle({
+    required this.showAll,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: onToggle,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: cs.outlineVariant),
+        ),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingM,
+          vertical: AppDimensions.paddingS,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              showAll ? Icons.expand_less : Icons.expand_more,
+              size: AppDimensions.iconSizeM,
+              color: cs.primary,
+            ),
+            const SizedBox(width: AppDimensions.spacingXs),
+            Text(
+              showAll
+                  ? context.l10n.onboardingShowFewerAllergens
+                  : context.l10n.onboardingShowAllAllergens,
+              style: AppTextStyles.labelLarge.copyWith(
+                color: cs.primary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

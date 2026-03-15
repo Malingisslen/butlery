@@ -43,11 +43,14 @@ void main() {
     });
 
     group('dietary entry properties', () {
-      test('vegetarisk excludes meat and seafood', () {
+      test('vegetarisk excludes meat and all seafood types', () {
         final veg = DietaryConfig.getByKey('vegetarisk')!;
 
+        // Uses specific properties (not 'seafood') for data integrity
         expect(veg.excludedProperties, contains('meat'));
-        expect(veg.excludedProperties, contains('seafood'));
+        expect(veg.excludedProperties, contains('fish'));
+        expect(veg.excludedProperties, contains('crustacean'));
+        expect(veg.excludedProperties, contains('mollusc'));
       });
 
       test('vegansk excludes animal products', () {

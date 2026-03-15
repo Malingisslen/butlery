@@ -112,11 +112,12 @@ class FiltersPanelWidget extends StatelessWidget {
                         onToggle: onRatingFilterToggle,
                       ),
 
-                      // Allergen-free filters
+                      // Allergen-free filters (all EU-14 + extras)
                       if (onAllergenFilterToggle != null)
                         FilterChipsWidget(
                           title: context.l10n.filterAllergenFree,
-                          options: RecipeFilters.allergenFreeFilters(context),
+                          options:
+                              RecipeFilters.allAllergenFreeFilters(context),
                           activeFilters: activeAllergenFilters,
                           onToggle: onAllergenFilterToggle!,
                         ),
