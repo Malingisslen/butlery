@@ -356,8 +356,8 @@ class GroupInvitationRepository
     final currentUser = requireCurrentUserId();
 
     // Validate ownership for each document before deletion
-    for (final ref in refs) {
-      final doc = await ref.get();
+    final deleteDocs = await Future.wait(refs.map((ref) => ref.get()));
+    for (final doc in deleteDocs) {
       if (doc.exists) {
         final data = doc.data();
         // Check if it's a user-owned document (has userId or fromUserId)
@@ -366,7 +366,7 @@ class GroupInvitationRepository
         if (ownerId != null && ownerId != currentUser) {
           throw PermissionDeniedException(
             'Cannot delete document not owned by user',
-            resource: ref.path,
+            resource: doc.reference.path,
             operation: 'delete',
             userId: currentUser,
           );
@@ -398,8 +398,8 @@ class GroupInvitationRepository
     final currentUser = requireCurrentUserId();
 
     // Validate ownership for each document before update
-    for (final ref in refs) {
-      final doc = await ref.get();
+    final updateDocs = await Future.wait(refs.map((ref) => ref.get()));
+    for (final doc in updateDocs) {
       if (doc.exists) {
         final docData = doc.data();
         // Check if it's a user-owned document (has userId or fromUserId)
@@ -409,7 +409,7 @@ class GroupInvitationRepository
         if (ownerId != null && ownerId != currentUser) {
           throw PermissionDeniedException(
             'Cannot update document not owned by user',
-            resource: ref.path,
+            resource: doc.reference.path,
             operation: 'update',
             userId: currentUser,
           );
@@ -434,21 +434,22 @@ class GroupInvitationRepository
 
   /// Get invitation statistics for a user.
   Future<Map<String, int>> getInvitationStatistics(String userId) async {
-    final receivedQuery = await _invitationsRef
-        .where('toUserId', isEqualTo: userId)
-        .where('status', isEqualTo: GroupInvitationStatus.pending.name)
-        .count()
-        .get();
-
-    final sentQuery = await _invitationsRef
-        .where('fromUserId', isEqualTo: userId)
-        .where('status', isEqualTo: GroupInvitationStatus.pending.name)
-        .count()
-        .get();
+    final results = await Future.wait([
+      _invitationsRef
+          .where('toUserId', isEqualTo: userId)
+          .where('status', isEqualTo: GroupInvitationStatus.pending.name)
+          .count()
+          .get(),
+      _invitationsRef
+          .where('fromUserId', isEqualTo: userId)
+          .where('status', isEqualTo: GroupInvitationStatus.pending.name)
+          .count()
+          .get(),
+    ]);
 
     return {
-      'pendingReceived': receivedQuery.count ?? 0,
-      'pendingSent': sentQuery.count ?? 0,
+      'pendingReceived': results[0].count ?? 0,
+      'pendingSent': results[1].count ?? 0,
     };
   }
 
