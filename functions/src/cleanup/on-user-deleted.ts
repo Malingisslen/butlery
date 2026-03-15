@@ -52,6 +52,7 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
     friendRequestsCleaned: 0,
     groupMembershipsRemoved: 0,
     friendCountsUpdated: 0,
+    feedbackCleaned: 0,
   };
 
   // 1. Remove reverse friendship documents
@@ -66,7 +67,10 @@ async function cleanupUserSocialData(userId: string): Promise<void> {
   // 4. Update friend counts
   results.friendCountsUpdated = await updateFriendCounts(userId);
 
-  // 5. Delete public profile
+  // 5. Clean up feedback submissions and screenshots
+  results.feedbackCleaned = await cleanupFeedback(userId);
+
+  // 6. Delete public profile
   await db.collection("public_profiles").doc(userId).delete();
 
   functions.logger.info(`Cleanup results for ${userId}:`, results);
@@ -230,4 +234,44 @@ async function updateFriendCounts(userId: string): Promise<number> {
   }
 
   return friendsSnapshot.size;
+}
+
+/**
+ * Clean up feedback submissions and screenshots for the deleted user.
+ */
+async function cleanupFeedback(userId: string): Promise<number> {
+  const feedbackDocs = await db
+    .collection('feedback')
+    .where('userId', '==', userId)
+    .get();
+
+  if (feedbackDocs.empty) return 0;
+
+  let batch = db.batch();
+  let batchCount = 0;
+
+  for (const doc of feedbackDocs.docs) {
+    batch.delete(doc.ref);
+    batchCount++;
+    if (batchCount >= BATCH_LIMIT) {
+      await batch.commit();
+      batch = db.batch();
+      batchCount = 0;
+    }
+  }
+
+  if (batchCount > 0) {
+    await batch.commit();
+  }
+
+  // Also delete feedback screenshots from Storage
+  try {
+    await admin.storage().bucket().deleteFiles({
+      prefix: `feedback/${userId}/`,
+    });
+  } catch (error) {
+    functions.logger.warn(`Failed to delete feedback storage for ${userId}: ${error}`);
+  }
+
+  return feedbackDocs.size;
 }

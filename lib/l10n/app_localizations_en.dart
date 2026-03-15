@@ -11482,7 +11482,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allergenDisclaimer =>
-      'Allergen information is for reference only. Always verify with the original recipe source.';
+      'Allergen information is based on automated analysis and is for guidance only. Always check the original recipe and product packaging. Does not replace medical advice.';
 
   @override
   String allergenToggleSemantics(String allergen) {

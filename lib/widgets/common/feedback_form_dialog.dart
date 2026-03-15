@@ -107,6 +107,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                 controller: _descriptionController,
                 maxLines: 5,
                 minLines: 3,
+                maxLength: 2000,
                 decoration: InputDecoration(
                   hintText: context.l10n.feedbackDescriptionHint,
                   border: const OutlineInputBorder(
@@ -124,6 +125,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
+                maxLength: 100,
                 decoration: const InputDecoration(
                   hintText: 'din@email.se',
                   border: OutlineInputBorder(
@@ -226,9 +228,14 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
           SnackBar(content: Text(context.l10n.feedbackThanks)),
         );
       } else {
+        final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n.feedbackSendFailed),
+            backgroundColor: cs.error,
+            content: Text(
+              context.l10n.feedbackSendFailed,
+              style: TextStyle(color: cs.onError),
+            ),
           ),
         );
       }

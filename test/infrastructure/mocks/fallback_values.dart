@@ -21,7 +21,6 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
-import 'package:butlery/models/shared_content.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/social/activity_feed_item.dart';
@@ -155,33 +154,6 @@ class FakeFriendCategory extends Fake implements FriendCategory {
 
   @override
   DateTime get updatedAt => DateTime.now();
-}
-
-/// Fake SharedContent for sharing features
-class FakeSharedContent extends Fake implements SharedContent {
-  @override
-  String get id => 'fake-shared';
-
-  @override
-  String get recipeId => 'fake-recipe';
-
-  @override
-  String get sharedById => 'fake-user';
-
-  @override
-  List<String> get sharedWithIds => [];
-
-  @override
-  DateTime get sharedAt => DateTime.now();
-
-  @override
-  String? get message => null;
-
-  @override
-  bool get isPublic => false;
-
-  @override
-  Map<String, dynamic> get metadata => {};
 }
 
 /// Fake SharedRecipe for social sharing
@@ -322,7 +294,6 @@ void registerAllFallbackValues() {
   // ===== Model Types - Using Fakes =====
   registerFallbackValue(FakeFriendRequest());
   registerFallbackValue(FakeFriendCategory());
-  registerFallbackValue(FakeSharedContent());
   registerFallbackValue(FakeSharedRecipe());
   registerFallbackValue(FakeSharedMenu());
   registerFallbackValue(FakeConversation());

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 
 // Deferred imports for messaging views
 import 'package:butlery/views/messaging/conversations_list_view.dart'
@@ -48,7 +51,10 @@ class MessagingDeferredModule implements DeferredModule {
   Widget buildRoute(String routeName, RouteSettings settings) {
     switch (routeName) {
       case Routes.messages:
-        return conversations.ConversationsListView();
+        return ChangeNotifierProvider(
+          create: (_) => ServiceLocator.get<ConversationsViewModel>(),
+          child: conversations.ConversationsListView(),
+        );
 
       case Routes.chat:
         final conversationId = settings.arguments as String?;

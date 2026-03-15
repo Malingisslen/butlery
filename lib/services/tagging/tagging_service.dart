@@ -21,6 +21,9 @@ import 'package:butlery/services/tagging/tagging_events_tracker.dart';
 /// Timeout duration for tag generation operations.
 const Duration _tagGenerationTimeout = Duration(seconds: 30);
 
+/// Minimum time required for the generate phase to produce useful results.
+const Duration _minGenerateTime = Duration(seconds: 5);
+
 /// Main entry point for the automatic tagging system.
 ///
 /// Orchestrates ingredient lookup and tag generation.
@@ -174,10 +177,11 @@ class TaggingService extends BaseService {
     final elapsed = totalStopwatch.elapsed;
     final remainingTime = _tagGenerationTimeout - elapsed;
 
-    if (remainingTime <= Duration.zero) {
-      // Time exhausted, return Phase 1 only for critical allergen safety
+    if (remainingTime < _minGenerateTime) {
+      // Not enough time for generation, return Phase 1 only for safety
       AppLogger.warning(
-        '⏱️ No time remaining for generation, returning Phase 1 only',
+        '⏱️ Only ${remainingTime.inMilliseconds}ms remaining for generation '
+            '(min ${_minGenerateTime.inSeconds}s), returning Phase 1 only',
         'TaggingService',
       );
       final phase1Result = _tagGenerator.generatePhase1Only(
@@ -449,7 +453,7 @@ class TaggingService extends BaseService {
     }
 
     var retaggedCount = 0;
-    const batchSize = 50;
+    const batchSize = 10;
 
     // M9: Track failures for debugging
     final failedRecipes = <String>[];
@@ -501,6 +505,11 @@ class TaggingService extends BaseService {
       retaggedCount += results.where((success) => success).length;
       // H12: Report actual completed count, not batch end position
       onProgress?.call(retaggedCount, total);
+
+      // Delay between batches to avoid Firestore write spikes
+      if (i + batchSize < recipesToRetag.length) {
+        await Future.delayed(const Duration(seconds: 1));
+      }
     }
 
     // M9: Log summary of failures

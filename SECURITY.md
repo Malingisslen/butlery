@@ -41,13 +41,14 @@ Please report security issues to: **security@butlery.app**
 
 Butlery implements the following security measures:
 
-- End-to-end encryption for sensitive data
-- Secure local storage with encryption
-- SSL certificate pinning for API communications
-- Multi-factor authentication support
-- Biometric authentication options
-- Root/jailbreak detection
-- Code obfuscation in production builds
+- Firebase Authentication with email/password
+- Firestore Security Rules enforcing per-user data isolation
+- Server-side rate limiting on social operations
+- Input validation on allergen-critical data (tagResult, ingredients)
+- HTTPS enforced on all platforms via Firebase SDK
+- PII scrubbing before external API calls
+- Android backup disabled (android:allowBackup="false")
+- Default-deny Firestore rules catch-all
 
 ## Recognition
 

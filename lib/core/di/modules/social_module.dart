@@ -12,6 +12,7 @@ import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
@@ -22,8 +23,6 @@ import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_deeplink_repository.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_connectivity_repository.dart';
-import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_social_sharing_repository.dart';
 
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -71,7 +70,6 @@ class SocialModule implements DIModule {
         DeepLinkService,
         ConnectivityRepository,
         ConnectivityMonitoringService,
-        SocialSharingRepository,
         SocialMenuOperations,
         GroupSharedContentService,
         // Social coordinators for shared content (Issue #014)
@@ -81,6 +79,7 @@ class SocialModule implements DIModule {
         FirebaseReportRepository,
         ReportService,
         ContentFilterService,
+        FirebaseBlockRepository,
       ];
 
   @override
@@ -103,6 +102,11 @@ class SocialModule implements DIModule {
 
       container.registerLazySingleton<FriendsRepository>(
         () => FirebaseFriendsRepository(
+            authRepository: container<AuthRepository>()),
+      );
+
+      container.registerLazySingleton<FirebaseBlockRepository>(
+        () => FirebaseBlockRepository(
             authRepository: container<AuthRepository>()),
       );
 
@@ -307,12 +311,6 @@ class SocialModule implements DIModule {
         ),
       );
 
-      // Social sharing repository
-      container.registerLazySingleton<SocialSharingRepository>(
-        () => FirebaseSocialSharingRepository(
-            authRepository: container<AuthRepository>()),
-      );
-
       // Note: SocialMenuOperations depends on services that may not be available yet
       // We'll register it as lazy singleton to defer creation
       container.registerLazySingleton<SocialMenuOperations>(
@@ -390,7 +388,6 @@ class SocialModule implements DIModule {
         'ConnectivityRepository': container<ConnectivityRepository>(),
         'ConnectivityMonitoringService':
             container<ConnectivityMonitoringService>(),
-        'SocialSharingRepository': container<SocialSharingRepository>(),
         'GroupSharedContentService': container<GroupSharedContentService>(),
       };
 

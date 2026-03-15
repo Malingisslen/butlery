@@ -415,8 +415,6 @@ class TagConfigService extends BaseService {
       'ingredientGroups': entry.ingredientGroups,
       'minIngredientMatches': entry.minIngredientMatches,
       'matchMode': _matchModeToString(entry.matchMode),
-      'titleMatchWeight': entry.titleMatchWeight,
-      'ingredientMatchWeight': entry.ingredientMatchWeight,
       'enabled': entry.enabled,
       'priority': entry.priority,
     };

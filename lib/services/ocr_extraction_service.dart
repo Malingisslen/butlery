@@ -8,6 +8,7 @@ import 'package:crypto/crypto.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/ocr/ocr_usage_tracker.dart';
+import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 
 /// OCR processing result with comprehensive metadata and quality metrics
 class OCRResult {
@@ -199,7 +200,7 @@ class OCRExtractionService extends BaseService {
 
   String get _ocrApiKey {
     if (_testOcrApiKey != null) return _testOcrApiKey;
-    return 'K86932882588957';
+    return const String.fromEnvironment('OCR_SPACE_API_KEY');
   }
 
   String get _ocrApiUrl {
@@ -330,8 +331,8 @@ class OCRExtractionService extends BaseService {
 
       if (json['IsErroredOnProcessing'] == false) {
         final parsedResults = json['ParsedResults'] as List?;
-        final extractedText =
-            parsedResults?.first['ParsedText'] as String? ?? '';
+        final extractedText = HtmlSanitizer.instance
+            .sanitizeText(parsedResults?.first['ParsedText'] as String? ?? '');
 
         return OCRResult(
           text: extractedText,
@@ -394,8 +395,8 @@ class OCRExtractionService extends BaseService {
         final textAnnotations = responses.first['textAnnotations'] as List?;
 
         if (textAnnotations != null && textAnnotations.isNotEmpty) {
-          final extractedText =
-              textAnnotations.first['description'] as String? ?? '';
+          final extractedText = HtmlSanitizer.instance.sanitizeText(
+              textAnnotations.first['description'] as String? ?? '');
 
           return OCRResult(
             text: extractedText,
@@ -444,7 +445,8 @@ class OCRExtractionService extends BaseService {
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
-        final extractedText = json['text'] as String? ?? '';
+        final extractedText =
+            HtmlSanitizer.instance.sanitizeText(json['text'] as String? ?? '');
 
         return OCRResult(
           text: extractedText,

@@ -212,6 +212,65 @@ class ConversationsViewModel extends ChangeNotifier
     }
   }
 
+  bool get hasArchivedConversations =>
+      _allConversations.any((c) => c.isArchived);
+
+  List<Conversation> get pinnedConversations =>
+      _filteredConversations.where((c) => c.isPinned && !c.isArchived).toList();
+
+  List<Conversation> get regularConversations => _filteredConversations
+      .where((c) => !c.isPinned && !c.isArchived)
+      .toList();
+
+  List<Conversation> get archivedConversations =>
+      _filteredConversations.where((c) => c.isArchived).toList();
+
+  Future<void> togglePin(String conversationId) async {
+    if (_isDisposed) return;
+    final conversation =
+        _allConversations.where((c) => c.id == conversationId).firstOrNull;
+    if (conversation == null) return;
+
+    try {
+      if (conversation.isPinned) {
+        await _messagingService.unpinConversation(conversationId);
+      } else {
+        await _messagingService.pinConversation(conversationId);
+      }
+    } catch (e) {
+      AppLogger.error('Failed to toggle pin', e);
+    }
+  }
+
+  Future<void> toggleArchive(String conversationId) async {
+    if (_isDisposed) return;
+    final conversation =
+        _allConversations.where((c) => c.id == conversationId).firstOrNull;
+    if (conversation == null) return;
+
+    try {
+      if (conversation.isArchived) {
+        await _messagingService.unarchiveConversation(conversationId);
+      } else {
+        await _messagingService.archiveConversation(conversationId);
+      }
+    } catch (e) {
+      AppLogger.error('Failed to toggle archive', e);
+    }
+  }
+
+  Future<bool> deleteConversation(String conversationId) async {
+    if (_isDisposed) return false;
+
+    try {
+      await _messagingService.deleteConversation(conversationId);
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to delete conversation', e);
+      return false;
+    }
+  }
+
   Future<void> refresh() async {
     if (_isDisposed) return;
 

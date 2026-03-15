@@ -7716,10 +7716,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get feedbackCategoryBug => 'Bugg';
 
   @override
-  String get feedbackCategoryFeatureRequest => 'Onskemol';
+  String get feedbackCategoryFeatureRequest => 'Önskemål';
 
   @override
-  String get feedbackCategoryGeneral => 'Ovrigt';
+  String get feedbackCategoryGeneral => 'Övrigt';
 
   @override
   String get feedbackDescriptionLabel => 'Beskrivning';
@@ -11513,7 +11513,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get allergenDisclaimer =>
-      'Allergeninformation är endast vägledande. Verifiera alltid med originalreceptet.';
+      'Allergeninformation baseras på automatisk analys och är endast vägledande. Kontrollera alltid originalreceptet och produktförpackningar. Ersätter inte medicinsk rådgivning.';
 
   @override
   String allergenToggleSemantics(String allergen) {

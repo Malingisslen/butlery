@@ -5150,8 +5150,8 @@
   "feedbackSendLabel": "Skicka feedback",
   "feedbackCategoryLabel": "Kategori",
   "feedbackCategoryBug": "Bugg",
-  "feedbackCategoryFeatureRequest": "Onskemol",
-  "feedbackCategoryGeneral": "Ovrigt",
+  "feedbackCategoryFeatureRequest": "Önskemål",
+  "feedbackCategoryGeneral": "Övrigt",
   "feedbackDescriptionLabel": "Beskrivning",
   "feedbackDescriptionHint": "Beskriv vad du upplevde...",
   "feedbackEmailLabel": "E-post (valfritt)",
@@ -8015,7 +8015,7 @@
   "recipeStartCookingTooltip": "Börja laga",
   "taggingDegradedWarning": "Allergen- och kostdata kan vara opålitlig",
   "recipeEditTags": "Redigera taggar",
-  "allergenDisclaimer": "Allergeninformation \u00e4r endast v\u00e4gledande. Verifiera alltid med originalreceptet.",
+  "allergenDisclaimer": "Allergeninformation baseras p\u00e5 automatisk analys och \u00e4r endast v\u00e4gledande. Kontrollera alltid originalreceptet och produktf\u00f6rpackningar. Ers\u00e4tter inte medicinsk r\u00e5dgivning.",
   "allergenToggleSemantics": "V\u00e4xla sp\u00e5rning av {allergen}",
   "@allergenToggleSemantics": {
     "placeholders": {

@@ -187,7 +187,7 @@ class ChatActionHandler {
       if (conversation != null && conversation.isGroup) {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => GroupDetailView(
+            builder: (context) => ConversationGroupDetailView(
               conversationId: conversationId,
             ),
           ),

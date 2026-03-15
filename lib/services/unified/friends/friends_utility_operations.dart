@@ -34,32 +34,6 @@ class FriendsUtilityOperations {
     return all;
   }
 
-  /// Sync blocked users to Firebase
-  Future<void> syncBlockedUsers() async {
-    try {
-      final userId = getCurrentUserId();
-      if (userId == null) {
-        AppLogger.warning('Cannot sync blocked users: No authenticated user');
-        return;
-      }
-
-      // Save blocked users to user document
-      await firestore
-          .collection(FirestoreCollections.users)
-          .doc(userId)
-          .update({
-        'blockedUsers': getBlockedUsers().toList(),
-        'updatedAt': DateTime.now(),
-      });
-
-      AppLogger.success(
-          'Successfully synced ${getBlockedUsers().length} blocked users to Firebase');
-    } catch (e) {
-      AppLogger.error('Failed to sync blocked users to Firebase', e);
-      rethrow;
-    }
-  }
-
   /// Get friends of a specific user
   Future<List<UserProfile>> getFriendsOfUser(String userId) async {
     try {

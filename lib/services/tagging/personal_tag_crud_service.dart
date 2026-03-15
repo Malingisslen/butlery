@@ -105,6 +105,11 @@ class PersonalTagCrudService extends BaseService {
         final oldName = existingTag?.name;
         final nameChanged = oldName != null && oldName != tag.name;
 
+        // Update authoritative tag document first — if this fails, nothing changes
+        final updated = tag.copyWith(updatedAt: DateTime.now());
+        await _tagRepository.update(updated);
+
+        // Then cascade name to recipes — stale recipe names are recoverable via retag
         if (nameChanged) {
           final recipeRepo = _getRecipeRepository();
           if (recipeRepo != null) {
@@ -119,9 +124,6 @@ class PersonalTagCrudService extends BaseService {
             }
           }
         }
-
-        final updated = tag.copyWith(updatedAt: DateTime.now());
-        await _tagRepository.update(updated);
 
         clearCache(tagsCacheKey);
         AppLogger.info('Updated personal tag: ${tag.name}');

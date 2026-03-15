@@ -346,6 +346,13 @@ abstract class BaseSharedContentRepository<T>
     String? avatarUrl,
     String role = 'viewer',
   }) async {
+    final uid = requireCurrentUserId();
+    final content = await read(contentId);
+    if (content == null || !isCreatedBy(content, uid)) {
+      throw PermissionDeniedException(
+          'Only the owner can add members to $contentTypeName');
+    }
+
     try {
       final member = SharedContentMember(
         userId: userId,
@@ -715,7 +722,7 @@ abstract class BaseSharedContentRepository<T>
       final content = await read(resourceId);
       if (content == null) return false;
       return isCreatedBy(content, userId);
-    } catch (e) {
+    } on PermissionDeniedException {
       return false;
     }
   }

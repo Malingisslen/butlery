@@ -458,8 +458,6 @@ class CuisineEntry {
   final List<String> ingredientGroups;
   final int minIngredientMatches;
   final CuisineMatchMode matchMode;
-  final double titleMatchWeight;
-  final double ingredientMatchWeight;
   final bool enabled;
   final int priority;
 
@@ -471,8 +469,6 @@ class CuisineEntry {
     required this.ingredientGroups,
     required this.minIngredientMatches,
     required this.matchMode,
-    required this.titleMatchWeight,
-    required this.ingredientMatchWeight,
     required this.enabled,
     required this.priority,
   });
@@ -497,16 +493,6 @@ class CuisineEntry {
           'matchMode',
           defaultValue: 'title_or_ingredients',
         ),
-      ),
-      titleMatchWeight: SerializationUtils.safeDouble(
-        data,
-        'titleMatchWeight',
-        defaultValue: 1.0,
-      ),
-      ingredientMatchWeight: SerializationUtils.safeDouble(
-        data,
-        'ingredientMatchWeight',
-        defaultValue: 1.0,
       ),
       enabled: SerializationUtils.safeBool(data, 'enabled', defaultValue: true),
       priority: SerializationUtils.safeInt(data, 'priority'),

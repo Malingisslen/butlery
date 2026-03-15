@@ -28,6 +28,7 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase implementation for friend relationship management with bidirectional consistency and analytics.
 /// This repository provides comprehensive friend relationship functionality using Firebase Firestore
@@ -269,7 +270,13 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
     return _userFriendsRef(userId)
         .limit(200) // Limit to 200 friends for stream performance
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => doc.id).toList());
+        .map((snapshot) {
+      if (snapshot.docs.length == 200) {
+        AppLogger.warning(
+            'friendIdsStream for user $userId returned exactly 200 docs — results may be silently truncated');
+      }
+      return snapshot.docs.map((doc) => doc.id).toList();
+    });
   }
 
   /// Stream friend profiles for real-time updates.

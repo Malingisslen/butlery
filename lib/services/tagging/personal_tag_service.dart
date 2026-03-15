@@ -37,6 +37,7 @@ class PersonalTagService extends BaseService {
   StreamSubscription? _tagStreamSub;
   StreamSubscription? _groupStreamSub;
   bool _streamsInitialized = false;
+  int? _cachedTagVersion;
 
   PersonalTagService({
     required PersonalTagCrudService crudService,
@@ -267,7 +268,10 @@ class PersonalTagService extends BaseService {
   }
 
   /// Gets the current tag version as epoch milliseconds.
+  /// Cached and invalidated when tags change via stream subscription.
   Future<int> getCurrentTagVersion() async {
+    if (_cachedTagVersion != null) return _cachedTagVersion!;
+
     final tags = await getAllTags();
     if (tags.isEmpty) return 0;
 
@@ -277,7 +281,8 @@ class PersonalTagService extends BaseService {
         latest = tag.updatedAt;
       }
     }
-    return latest.millisecondsSinceEpoch;
+    _cachedTagVersion = latest.millisecondsSinceEpoch;
+    return _cachedTagVersion!;
   }
 
   /// Checks if a recipe has stale personal tags.
@@ -339,6 +344,7 @@ class PersonalTagService extends BaseService {
     try {
       _tagStreamSub = _tagRepository.watchAllSorted().listen((_) {
         _crud.clearCache(PersonalTagCrudService.tagsCacheKey);
+        _cachedTagVersion = null;
       });
       _groupStreamSub = _groupRepository.watchAllSorted().listen((_) {
         _crud.clearCache(PersonalTagCrudService.groupsCacheKey);
@@ -354,6 +360,7 @@ class PersonalTagService extends BaseService {
     await _tagStreamSub?.cancel();
     await _groupStreamSub?.cancel();
     _streamsInitialized = false;
+    _cachedTagVersion = null;
     _crud.clearAllCache();
   }
 }

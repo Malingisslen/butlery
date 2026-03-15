@@ -20,7 +20,6 @@
 /// - **[FriendsManagementOperations]**: Core friend relationship CRUD operations and status management
 /// - **[FriendsCategoriesOperations]**: Friend categorization and organization with custom groups
 /// - **[FriendsInvitationsOperations]**: Friend request management and invitation workflow handling
-/// - **[SocialGroupSharingOperations]**: Group-based sharing and collaborative cooking features
 /// **Social Features:**
 /// - **Friend Relationships**: Comprehensive friend request, acceptance, and management system
 /// - **Group Management**: Custom friend groups and categories for organized social cooking
@@ -63,8 +62,8 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
 import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
-import 'package:butlery/services/unified/operations/social_group_sharing_operations.dart';
 import 'package:butlery/services/unified/friends/friends_state_manager.dart';
+import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/services/unified/friends/friends_internal_operations.dart';
 import 'package:butlery/services/unified/friends/friends_firebase_sync.dart';
 import 'package:butlery/services/unified/friends/friends_utility_operations.dart';
@@ -97,7 +96,6 @@ class UnifiedFriendsService extends ChangeNotifier
   late final FriendsManagementOperations _managementOps;
   late final FriendsCategoriesOperations _categoriesOps;
   late final FriendsInvitationsOperations _invitationsOps;
-  late final SocialGroupSharingOperations _groupSharingOps;
 
   // Constructor
   UnifiedFriendsService({
@@ -153,8 +151,6 @@ class UnifiedFriendsService extends ChangeNotifier
   FriendsManagementOperations get management => _managementOps;
   FriendsCategoriesOperations get categories => _categoriesOps;
   FriendsInvitationsOperations get invitations => _invitationsOps;
-  SocialGroupSharingOperations get groupSharing => _groupSharingOps;
-
   Future<void> initialize() async {
     AppLogger.info('🔄 Initializing UnifiedFriendsService facade...');
 
@@ -198,6 +194,7 @@ class UnifiedFriendsService extends ChangeNotifier
     _stateManager = FriendsStateManager(
       repository: _friendsRepository,
       categoryRepository: _categoryRepository,
+      blockRepository: ServiceLocator.get<FirebaseBlockRepository>(),
     );
 
     // Initialize internal operations
@@ -237,8 +234,6 @@ class UnifiedFriendsService extends ChangeNotifier
     _managementOps = FriendsManagementOperations(this);
     _categoriesOps = FriendsCategoriesOperations(this);
     _invitationsOps = FriendsInvitationsOperations(this);
-    _groupSharingOps = SocialGroupSharingOperations(this);
-
     AppLogger.debug('Feature interfaces initialized');
   }
 
@@ -393,18 +388,6 @@ class UnifiedFriendsService extends ChangeNotifier
     AppLogger.debug('✅ Removed friend $friendId via state manager');
   }
 
-  /// Internal method to add blocked user
-  void addBlockedUserInternal(String userId) {
-    _stateManager.addBlockedUser(userId);
-    AppLogger.debug('✅ Blocked user $userId via state manager');
-  }
-
-  /// Internal method to remove blocked user
-  void removeBlockedUserInternal(String userId) {
-    _stateManager.removeBlockedUser(userId);
-    AppLogger.debug('✅ Unblocked user $userId via state manager');
-  }
-
   /// Sync friend request to Firebase
   Future<void> syncFriendRequestToFirebase(FriendRequest request) async =>
       await _firebaseSyncOps.syncFriendRequestToFirebase(request);
@@ -427,9 +410,6 @@ class UnifiedFriendsService extends ChangeNotifier
 
   /// Get all friend requests (incoming and outgoing combined)
   List<FriendRequest> get friendRequests => _utilityOps.friendRequests;
-
-  /// Sync blocked users to Firebase
-  Future<void> syncBlockedUsers() async => await _utilityOps.syncBlockedUsers();
 
   /// Search for users by query
   Future<List<UserProfile>> searchUsers(String query) async =>

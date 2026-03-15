@@ -246,11 +246,17 @@ abstract class BaseFirebaseRepository<T>
 
   Future<void> createBatch(List<T> entities) async {
     try {
-      requireCurrentUserId();
+      final userId = requireCurrentUserId();
       final ref = getCollectionRef();
       final batch = _firestore.batch();
 
       for (final entity in entities) {
+        final canCreate = await validateCreatePermission(userId, entity);
+        if (!canCreate) {
+          throw PermissionDeniedException(
+            'User $userId does not have permission to create ${T.toString()} ${getId(entity)}',
+          );
+        }
         batch.set(ref.doc(getId(entity)), toFirestore(entity));
       }
 
@@ -401,12 +407,19 @@ mixin UserScopedFirebaseRepository<T> on BaseFirebaseRepository<T> {
 mixin BatchOperationsFirebaseRepository<T> on BaseFirebaseRepository<T> {
   Future<void> updateBatch(List<T> entities) async {
     try {
-      requireCurrentUserId();
+      final userId = requireCurrentUserId();
       final ref = getCollectionRef();
       final batch = _firestore.batch();
 
       for (final entity in entities) {
-        batch.update(ref.doc(getId(entity)), toFirestore(entity));
+        final docId = getId(entity);
+        final canUpdate = await validateUpdatePermission(userId, docId, entity);
+        if (!canUpdate) {
+          throw PermissionDeniedException(
+            'User $userId does not have permission to update ${T.toString()} $docId',
+          );
+        }
+        batch.update(ref.doc(docId), toFirestore(entity));
       }
 
       await batch.commit();
@@ -419,11 +432,17 @@ mixin BatchOperationsFirebaseRepository<T> on BaseFirebaseRepository<T> {
 
   Future<void> deleteBatch(List<String> ids) async {
     try {
-      requireCurrentUserId();
+      final userId = requireCurrentUserId();
       final ref = getCollectionRef();
       final batch = _firestore.batch();
 
       for (final id in ids) {
+        final canDelete = await validateDeletePermission(userId, id);
+        if (!canDelete) {
+          throw PermissionDeniedException(
+            'User $userId does not have permission to delete ${T.toString()} $id',
+          );
+        }
         batch.delete(ref.doc(id));
       }
 
