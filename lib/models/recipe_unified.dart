@@ -300,7 +300,23 @@ class RecipeCore with JsonSerializableMixin {
   })  : id = id ?? const Uuid().v4(),
         imageUrls = imageUrls ?? [],
         createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+        updatedAt = updatedAt ?? DateTime.now() {
+    // Debug-only: verify personalTagIds and personalTags stay in sync.
+    // Both null or both non-null, and IDs must match when both present.
+    assert(
+      _personalTagsConsistent(),
+      'personalTagIds and personalTags out of sync: '
+      'ids=${personalTagIds?.length}, tags=${personalTags?.length}',
+    );
+  }
+
+  bool _personalTagsConsistent() {
+    if (personalTagIds == null && personalTags == null) return true;
+    if (personalTagIds == null || personalTags == null) return true;
+    if (personalTagIds!.length != personalTags!.length) return false;
+    final tagIdSet = personalTags!.map((t) => t.tagId).toSet();
+    return personalTagIds!.every(tagIdSet.contains);
+  }
 
   /// Create copy with updated values
   /// Note: If critical fields (title, ingredients, instructions) change,

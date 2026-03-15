@@ -64,7 +64,7 @@
       ],
       "requiresFullCoverage": true,
       "description": {
-        "sv": "Ingen kött + minst en fisk/skaldjur"
+        "sv": "Ingen kött (vegetariska rätter ingår)"
       },
       "enabled": true,
       "priority": 3

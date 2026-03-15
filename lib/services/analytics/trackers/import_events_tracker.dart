@@ -60,7 +60,6 @@ class ImportEventsTracker extends BaseTracker {
     required String source,
     String? sessionId,
   }) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(
       name: 'import_cancelled',
       parameters: {

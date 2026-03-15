@@ -122,7 +122,12 @@ class TagPhase3Complex {
       'vira',
       'vik in',
     ];
-    return advancedKeywords.any((k) => instructions.contains(k));
+    return advancedKeywords.any((k) {
+      // Word boundary matching to avoid false positives
+      // (e.g., "emulsionsmaskinen" should not match "emulsion")
+      final pattern = RegExp('(?:^|[\\s,\\.])${RegExp.escape(k)}(?=[\\s,\\.]|\$)');
+      return pattern.hasMatch(instructions);
+    });
   }
 
   bool _isCreamy(Phase1Result p1, Recipe recipe) {

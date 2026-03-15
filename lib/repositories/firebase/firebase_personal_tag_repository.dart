@@ -113,18 +113,28 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
   ///
   /// Returns only tags that exist. Missing IDs are silently ignored.
   /// Useful for resolving recipe.personalTagIds to full PersonalTag objects.
-  /// Uses cache-first since tags are display data that rarely changes.
+  /// Batches into whereIn queries of 30 (Firestore limit) to reduce reads.
   Future<List<PersonalTag>> getByIds(List<String> tagIds) async {
     if (tagIds.isEmpty) return [];
 
     requireCurrentUserId();
     final ref = getCollectionRef();
+    final results = <PersonalTag>[];
 
-    final docs = await Future.wait(
-      tagIds.map((id) => getDocCacheFirst(ref.doc(id))),
-    );
+    // Firestore whereIn supports max 30 values per query
+    const batchSize = 30;
+    for (var i = 0; i < tagIds.length; i += batchSize) {
+      final batch = tagIds.sublist(
+        i,
+        (i + batchSize).clamp(0, tagIds.length),
+      );
+      final snapshot = await ref
+          .where(FieldPath.documentId, whereIn: batch)
+          .get();
+      results.addAll(snapshot.docs.map(fromFirestore));
+    }
 
-    return docs.where((doc) => doc.exists).map(fromFirestore).toList();
+    return results;
   }
 
   /// Reorders tags by updating their sortOrder values.

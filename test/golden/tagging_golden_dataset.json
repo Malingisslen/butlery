@@ -1,0 +1,374 @@
+[
+  {
+    "id": "pasta-carbonara",
+    "title": "Pasta Carbonara",
+    "ingredients": ["pasta", "guanciale", "ägg", "pecorino"],
+    "instructions": ["Koka pasta", "Stek guanciale", "Blanda ihop"],
+    "timeMinutes": 20,
+    "matched": [
+      {"id": "pasta", "swedish": "pasta", "english": "pasta", "group": "grain/pasta-bread", "properties": ["contains-gluten"]},
+      {"id": "guanciale", "swedish": "guanciale", "english": "guanciale", "group": "protein/meat/pork", "properties": ["meat", "pork", "animal-product"]},
+      {"id": "agg", "swedish": "ägg", "english": "egg", "group": "protein/egg", "properties": ["egg", "animal-product"]},
+      {"id": "pecorino", "swedish": "pecorino", "english": "pecorino", "group": "protein/dairy", "properties": ["dairy", "contains-lactose", "animal-product"]}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"gluten": "contains", "mjölk": "contains", "ägg": "contains", "fläsk": "contains"},
+      "dietary": {"vegetarisk": "contains", "vegansk": "contains"},
+      "minCoverage": 1.0
+    }
+  },
+  {
+    "id": "vegansk-linsgryta",
+    "title": "Vegansk linsgryta",
+    "ingredients": ["röda linser", "morot", "lök", "kokosmjölk", "curry"],
+    "instructions": ["Fräs lök och morot", "Tillsätt linser och kokosmjölk", "Koka 20 min"],
+    "timeMinutes": 30,
+    "matched": [
+      {"id": "red-lentils", "swedish": "röda linser", "english": "red lentils", "group": "protein/plant-based/legume", "properties": ["vegan-friendly", "plant-based", "high-fiber"]},
+      {"id": "carrot", "swedish": "morot", "english": "carrot", "group": "vegetable/root", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "onion", "swedish": "lök", "english": "onion", "group": "vegetable/allium", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "coconut-milk", "swedish": "kokosmjölk", "english": "coconut milk", "group": "liquid/plant-milk", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "curry-powder", "swedish": "curry", "english": "curry powder", "group": "spice/blend", "properties": ["vegan-friendly", "plant-based"]}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"gluten": "free", "mjölk": "free", "ägg": "free"},
+      "dietary": {"vegetarisk": "free", "vegansk": "free"},
+      "minCoverage": 1.0,
+      "hasTags": ["under-30-min"]
+    }
+  },
+  {
+    "id": "grillad-lax",
+    "title": "Grillad lax med dill",
+    "ingredients": ["lax", "dill", "citron", "olivolja"],
+    "instructions": ["Grilla laxen", "Servera med dill och citron"],
+    "timeMinutes": 15,
+    "matched": [
+      {"id": "salmon", "swedish": "lax", "english": "salmon", "group": "protein/seafood/fish", "properties": ["fish", "seafood", "animal-product"]},
+      {"id": "dill", "swedish": "dill", "english": "dill", "group": "spice/herb", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "lemon", "swedish": "citron", "english": "lemon", "group": "fruit/citrus", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "olive-oil", "swedish": "olivolja", "english": "olive oil", "group": "liquid/oil", "properties": ["vegan-friendly", "plant-based"]}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"fisk": "contains", "gluten": "free", "mjölk": "free"},
+      "dietary": {"vegetarisk": "contains", "vegansk": "contains"},
+      "minCoverage": 1.0,
+      "hasTags": ["under-15-min"]
+    }
+  },
+  {
+    "id": "skaldjurspasta",
+    "title": "Skaldjurspasta",
+    "ingredients": ["pasta", "räkor", "musslor", "vitlök", "vitt vin"],
+    "instructions": ["Koka pasta", "Fräs skaldjur", "Tillsätt vin"],
+    "timeMinutes": 25,
+    "matched": [
+      {"id": "pasta", "swedish": "pasta", "english": "pasta", "group": "grain/pasta-bread", "properties": ["contains-gluten"]},
+      {"id": "shrimp", "swedish": "räkor", "english": "shrimp", "group": "protein/seafood/shellfish", "properties": ["crustacean", "seafood", "animal-product"]},
+      {"id": "mussels", "swedish": "musslor", "english": "mussels", "group": "protein/seafood/shellfish", "properties": ["mollusc", "seafood", "animal-product"]},
+      {"id": "garlic", "swedish": "vitlök", "english": "garlic", "group": "vegetable/allium", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "white-wine", "swedish": "vitt vin", "english": "white wine", "group": "liquid/alcohol", "properties": ["contains-alcohol"]}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"gluten": "contains", "kräftdjur": "contains", "blötdjur": "contains", "skaldjur": "contains", "alkohol": "contains"},
+      "dietary": {"vegetarisk": "contains", "vegansk": "contains"},
+      "minCoverage": 1.0
+    }
+  },
+  {
+    "id": "jordnotsgryta",
+    "title": "Jordnötsgryta",
+    "ingredients": ["jordnötssmör", "kyckling", "kokosmjölk", "tomat"],
+    "instructions": ["Stek kycklingen", "Tillsätt jordnötssmör och kokosmjölk"],
+    "timeMinutes": 35,
+    "matched": [
+      {"id": "peanut-butter", "swedish": "jordnötssmör", "english": "peanut butter", "group": "protein/plant-based", "properties": ["peanut"]},
+      {"id": "chicken", "swedish": "kyckling", "english": "chicken", "group": "protein/meat/poultry", "properties": ["meat", "animal-product"]},
+      {"id": "coconut-milk", "swedish": "kokosmjölk", "english": "coconut milk", "group": "liquid/plant-milk", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "tomato", "swedish": "tomat", "english": "tomato", "group": "vegetable/fruit", "properties": ["nightshade", "vegan-friendly", "plant-based"]}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"jordnötter": "contains", "nötter": "contains", "kött": "contains"},
+      "dietary": {"vegetarisk": "contains", "vegansk": "contains"},
+      "minCoverage": 1.0
+    }
+  },
+  {
+    "id": "sesamkyckling",
+    "title": "Sesamkyckling",
+    "ingredients": ["kyckling", "sesamfrön", "sojasås", "ris"],
+    "instructions": ["Stek kycklingen med sesam", "Servera med ris"],
+    "timeMinutes": 20,
+    "matched": [
+      {"id": "chicken", "swedish": "kyckling", "english": "chicken", "group": "protein/meat/poultry", "properties": ["meat", "animal-product"]},
+      {"id": "sesame-seeds", "swedish": "sesamfrön", "english": "sesame seeds", "group": "spice/seed", "properties": ["sesame"]},
+      {"id": "soy-sauce", "swedish": "sojasås", "english": "soy sauce", "group": "liquid/condiment", "properties": ["soy", "contains-gluten"]},
+      {"id": "rice", "swedish": "ris", "english": "rice", "group": "grain", "properties": []}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"sesam": "contains", "soja": "contains", "gluten": "contains", "kött": "contains"},
+      "dietary": {"vegetarisk": "contains", "vegansk": "contains"},
+      "minCoverage": 1.0
+    }
+  },
+  {
+    "id": "aggfri-pannkaka",
+    "title": "Äggfri pannkaka",
+    "ingredients": ["vetemjöl", "mjölk", "bakpulver", "socker"],
+    "instructions": ["Blanda ingredienserna", "Stek pannkakor"],
+    "timeMinutes": 15,
+    "matched": [
+      {"id": "wheat-flour", "swedish": "vetemjöl", "english": "wheat flour", "group": "grain/flour", "properties": ["contains-gluten"]},
+      {"id": "milk", "swedish": "mjölk", "english": "milk", "group": "protein/dairy", "properties": ["dairy", "contains-lactose", "animal-product"]},
+      {"id": "baking-powder", "swedish": "bakpulver", "english": "baking powder", "group": "baking/leavening", "properties": []},
+      {"id": "sugar", "swedish": "socker", "english": "sugar", "group": "sweetener", "properties": []}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"gluten": "contains", "mjölk": "contains", "ägg": "free"},
+      "dietary": {"vegansk": "contains"},
+      "minCoverage": 1.0
+    }
+  },
+  {
+    "id": "glutenfri-brownies",
+    "title": "Glutenfria brownies",
+    "ingredients": ["mandelsmör", "ägg", "kakao", "socker"],
+    "instructions": ["Blanda allt", "Grädda i ugnen"],
+    "timeMinutes": 30,
+    "matched": [
+      {"id": "almond-butter", "swedish": "mandelsmör", "english": "almond butter", "group": "protein/plant-based/nut", "properties": ["tree-nut"]},
+      {"id": "egg", "swedish": "ägg", "english": "egg", "group": "protein/egg", "properties": ["egg", "animal-product"]},
+      {"id": "cocoa", "swedish": "kakao", "english": "cocoa", "group": "baking/chocolate", "properties": []},
+      {"id": "sugar", "swedish": "socker", "english": "sugar", "group": "sweetener", "properties": []}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"gluten": "free", "ägg": "contains", "trädnötter": "contains", "nötter": "contains"},
+      "dietary": {"vegansk": "contains"},
+      "minCoverage": 1.0
+    }
+  },
+  {
+    "id": "selleri-senap-soppa",
+    "title": "Soppa med selleri och senap",
+    "ingredients": ["selleri", "senap", "potatis", "grönsaksfond"],
+    "instructions": ["Koka grönsakerna", "Mixa till soppa"],
+    "timeMinutes": 25,
+    "matched": [
+      {"id": "celery", "swedish": "selleri", "english": "celery", "group": "vegetable/stalk", "properties": ["celery", "vegan-friendly", "plant-based"]},
+      {"id": "mustard", "swedish": "senap", "english": "mustard", "group": "liquid/condiment", "properties": ["mustard"]},
+      {"id": "potato", "swedish": "potatis", "english": "potato", "group": "vegetable/root", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "vegetable-broth", "swedish": "grönsaksfond", "english": "vegetable broth", "group": "liquid/broth", "properties": ["vegan-friendly", "plant-based"]}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"selleri": "contains", "senap": "contains", "gluten": "free"},
+      "dietary": {"vegetarisk": "free", "vegansk": "free"},
+      "minCoverage": 1.0
+    }
+  },
+  {
+    "id": "tofu-stir-fry",
+    "title": "Tofu stir-fry",
+    "ingredients": ["tofu", "sojasås", "broccoli", "ris"],
+    "instructions": ["Stek tofu", "Tillsätt grönsaker och soja"],
+    "timeMinutes": 15,
+    "matched": [
+      {"id": "tofu", "swedish": "tofu", "english": "tofu", "group": "protein/plant-based/soy", "properties": ["soy", "vegan-friendly", "plant-based"]},
+      {"id": "soy-sauce", "swedish": "sojasås", "english": "soy sauce", "group": "liquid/condiment", "properties": ["soy", "contains-gluten"]},
+      {"id": "broccoli", "swedish": "broccoli", "english": "broccoli", "group": "vegetable/cruciferous", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "rice", "swedish": "ris", "english": "rice", "group": "grain", "properties": []}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"soja": "contains", "gluten": "contains", "mjölk": "free", "ägg": "free"},
+      "dietary": {"vegetarisk": "free", "vegansk": "free"},
+      "minCoverage": 1.0
+    }
+  },
+  {
+    "id": "lupin-brod",
+    "title": "Lupinbröd",
+    "ingredients": ["lupinmjöl", "vetemjöl", "jäst", "vatten"],
+    "instructions": ["Blanda mjöl", "Jäs och grädda"],
+    "timeMinutes": 90,
+    "matched": [
+      {"id": "lupin-flour", "swedish": "lupinmjöl", "english": "lupin flour", "group": "grain/flour", "properties": ["lupin"]},
+      {"id": "wheat-flour", "swedish": "vetemjöl", "english": "wheat flour", "group": "grain/flour", "properties": ["contains-gluten"]},
+      {"id": "yeast", "swedish": "jäst", "english": "yeast", "group": "baking/leavening", "properties": ["vegan-friendly"]},
+      {"id": "water", "swedish": "vatten", "english": "water", "group": "liquid/water", "properties": []}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"lupin": "contains", "gluten": "contains"},
+      "dietary": {"vegetarisk": "free", "vegansk": "free"},
+      "minCoverage": 1.0
+    }
+  },
+  {
+    "id": "rodvinsas",
+    "title": "Rödvinssås",
+    "ingredients": ["rödvin", "smör", "lök", "fond"],
+    "instructions": ["Fräs lök", "Tillsätt vin och reducera"],
+    "timeMinutes": 20,
+    "matched": [
+      {"id": "red-wine", "swedish": "rödvin", "english": "red wine", "group": "liquid/alcohol", "properties": ["contains-alcohol", "sulfites"]},
+      {"id": "butter", "swedish": "smör", "english": "butter", "group": "protein/dairy", "properties": ["dairy", "contains-lactose", "animal-product"]},
+      {"id": "onion", "swedish": "lök", "english": "onion", "group": "vegetable/allium", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "beef-broth", "swedish": "fond", "english": "beef broth", "group": "liquid/broth", "properties": ["meat", "animal-product"]}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"alkohol": "contains", "sulfiter": "contains", "mjölk": "contains"},
+      "dietary": {"vegetarisk": "contains", "vegansk": "contains"},
+      "minCoverage": 1.0
+    }
+  },
+  {
+    "id": "flaskfile",
+    "title": "Fläskfilé",
+    "ingredients": ["fläskfilé", "potatis", "gräddsås"],
+    "instructions": ["Stek fläsket", "Servera med potatismos och sås"],
+    "timeMinutes": 30,
+    "matched": [
+      {"id": "pork-tenderloin", "swedish": "fläskfilé", "english": "pork tenderloin", "group": "protein/meat/pork", "properties": ["meat", "pork", "animal-product"]},
+      {"id": "potato", "swedish": "potatis", "english": "potato", "group": "vegetable/root", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "cream-sauce", "swedish": "gräddsås", "english": "cream sauce", "group": "sauce", "properties": ["dairy", "contains-lactose", "animal-product"]}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"fläsk": "contains", "kött": "contains", "mjölk": "contains"},
+      "dietary": {"vegetarisk": "contains", "vegansk": "contains", "halalanpassad": "contains"},
+      "minCoverage": 1.0
+    }
+  },
+  {
+    "id": "notkottsburgare",
+    "title": "Nötköttsburgare",
+    "ingredients": ["nötfärs", "hamburgerbröd", "sallad", "tomat"],
+    "instructions": ["Forma och stek burgare", "Montera burgaren"],
+    "timeMinutes": 20,
+    "matched": [
+      {"id": "ground-beef", "swedish": "nötfärs", "english": "ground beef", "group": "protein/meat/beef", "properties": ["meat", "beef", "animal-product"]},
+      {"id": "burger-bun", "swedish": "hamburgerbröd", "english": "burger bun", "group": "grain/bread", "properties": ["contains-gluten"]},
+      {"id": "lettuce", "swedish": "sallad", "english": "lettuce", "group": "vegetable/leafy", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "tomato", "swedish": "tomat", "english": "tomato", "group": "vegetable/fruit", "properties": ["nightshade", "vegan-friendly", "plant-based"]}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"nötkött": "contains", "kött": "contains", "gluten": "contains"},
+      "dietary": {"vegetarisk": "contains", "vegansk": "contains", "nötkötsfri": "contains"},
+      "minCoverage": 1.0
+    }
+  },
+  {
+    "id": "ren-sallad",
+    "title": "Ren sallad",
+    "ingredients": ["sallad", "gurka", "tomat", "olivolja"],
+    "instructions": ["Hacka grönsakerna", "Ringla olivolja"],
+    "timeMinutes": 5,
+    "matched": [
+      {"id": "lettuce", "swedish": "sallad", "english": "lettuce", "group": "vegetable/leafy", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "cucumber", "swedish": "gurka", "english": "cucumber", "group": "vegetable/fruit", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "tomato", "swedish": "tomat", "english": "tomato", "group": "vegetable/fruit", "properties": ["nightshade", "vegan-friendly", "plant-based"]},
+      {"id": "olive-oil", "swedish": "olivolja", "english": "olive oil", "group": "liquid/oil", "properties": ["vegan-friendly", "plant-based"]}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"gluten": "free", "mjölk": "free", "ägg": "free", "nötter": "free", "fisk": "free"},
+      "dietary": {"vegetarisk": "free", "vegansk": "free"},
+      "minCoverage": 1.0
+    }
+  },
+  {
+    "id": "half-unknown",
+    "title": "Halvkänd rätt",
+    "ingredients": ["ris", "okänd ingrediens 1", "okänd ingrediens 2"],
+    "instructions": ["Laga mat"],
+    "timeMinutes": 20,
+    "matched": [
+      {"id": "rice", "swedish": "ris", "english": "rice", "group": "grain", "properties": []}
+    ],
+    "unmatched": ["okänd ingrediens 1", "okänd ingrediens 2"],
+    "expected": {
+      "minCoverage": 0.3
+    }
+  },
+  {
+    "id": "all-unknown",
+    "title": "Helt okänd rätt",
+    "ingredients": ["mystisk sås", "hemlig krydda"],
+    "instructions": ["Blanda ihop"],
+    "timeMinutes": 10,
+    "matched": [],
+    "unmatched": ["mystisk sås", "hemlig krydda"],
+    "expected": {
+      "minCoverage": 0.0
+    }
+  },
+  {
+    "id": "pregnancy-safe",
+    "title": "Graviditetssäker måltid",
+    "ingredients": ["kyckling", "ris", "broccoli", "morot"],
+    "instructions": ["Stek kyckling", "Koka ris och grönsaker"],
+    "timeMinutes": 25,
+    "matched": [
+      {"id": "chicken", "swedish": "kyckling", "english": "chicken", "group": "protein/meat/poultry", "properties": ["meat", "animal-product"]},
+      {"id": "rice", "swedish": "ris", "english": "rice", "group": "grain", "properties": []},
+      {"id": "broccoli", "swedish": "broccoli", "english": "broccoli", "group": "vegetable/cruciferous", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "carrot", "swedish": "morot", "english": "carrot", "group": "vegetable/root", "properties": ["vegan-friendly", "plant-based"]}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"alkohol": "free", "gluten": "free"},
+      "dietary": {"graviditetssäker": "free"},
+      "minCoverage": 1.0
+    }
+  },
+  {
+    "id": "kid-friendly-stew",
+    "title": "Barnvänlig gryta",
+    "ingredients": ["kyckling", "potatis", "morot", "grädde"],
+    "instructions": ["Bryn kyckling", "Koka med grönsaker och grädde"],
+    "timeMinutes": 40,
+    "matched": [
+      {"id": "chicken", "swedish": "kyckling", "english": "chicken", "group": "protein/meat/poultry", "properties": ["meat", "animal-product"]},
+      {"id": "potato", "swedish": "potatis", "english": "potato", "group": "vegetable/root", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "carrot", "swedish": "morot", "english": "carrot", "group": "vegetable/root", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "cream", "swedish": "grädde", "english": "cream", "group": "protein/dairy", "properties": ["dairy", "contains-lactose", "animal-product"]}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"alkohol": "free"},
+      "dietary": {"barnvänlig": "free"},
+      "minCoverage": 1.0
+    }
+  },
+  {
+    "id": "aip-bowl",
+    "title": "AIP-kompatibel skål",
+    "ingredients": ["kyckling", "sötpotatis", "spenat", "olivolja", "avokado"],
+    "instructions": ["Grilla kyckling", "Stek sötpotatis", "Toppa med spenat och avokado"],
+    "timeMinutes": 30,
+    "matched": [
+      {"id": "chicken", "swedish": "kyckling", "english": "chicken", "group": "protein/meat/poultry", "properties": ["meat", "animal-product"]},
+      {"id": "sweet-potato", "swedish": "sötpotatis", "english": "sweet potato", "group": "vegetable/root", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "spinach", "swedish": "spenat", "english": "spinach", "group": "vegetable/leafy", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "olive-oil", "swedish": "olivolja", "english": "olive oil", "group": "liquid/oil", "properties": ["vegan-friendly", "plant-based"]},
+      {"id": "avocado", "swedish": "avokado", "english": "avocado", "group": "fruit", "properties": ["vegan-friendly", "plant-based"]}
+    ],
+    "unmatched": [],
+    "expected": {
+      "allergens": {"gluten": "free", "mjölk": "free", "ägg": "free", "soja": "free", "nötter": "free"},
+      "dietary": {"aip-vänlig": "free"},
+      "minCoverage": 1.0
+    }
+  }
+]

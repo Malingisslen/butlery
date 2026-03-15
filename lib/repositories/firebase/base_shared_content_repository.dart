@@ -679,7 +679,7 @@ abstract class BaseSharedContentRepository<T>
         }
       }
 
-      allContent.sort((a, b) => 0);
+      allContent.sort((a, b) => getContentDate(b).compareTo(getContentDate(a)));
       final limitedContent = allContent.take(limit).toList();
 
       AppLogger.info(
@@ -696,6 +696,9 @@ abstract class BaseSharedContentRepository<T>
   bool shouldShowToUser(T content, String userId);
   bool isViewedByUser(T content, String userId);
   bool isCreatedBy(T content, String userId);
+
+  /// Date used for sorting shared content (most recent first).
+  DateTime getContentDate(T entity);
 
   @override
   Future<bool> validateCreatePermission(String userId, T entity) async {

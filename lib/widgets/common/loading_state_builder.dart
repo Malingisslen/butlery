@@ -269,6 +269,7 @@ class LoadingStateBuilder<T> extends StatelessWidget {
       case EmptyStateVariant.noImages:
       case EmptyStateVariant.noTargets:
       case EmptyStateVariant.noSavedMenus:
+      case EmptyStateVariant.noSharedShoppingLists:
       case EmptyStateVariant.generic:
         // Note: _buildPredefinedEmptyState is called from build() which has context
         return Builder(

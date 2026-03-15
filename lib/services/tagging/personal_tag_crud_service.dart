@@ -467,7 +467,11 @@ class PersonalTagCrudService extends BaseService {
     try {
       return ServiceLocator.get<RecipeRepository>();
     } catch (e) {
-      AppLogger.error('Failed to get recipe repository for tag cascade: $e');
+      AppLogger.warning(
+        'RecipeRepository unavailable for tag cascade — '
+        'recipe documents may retain stale tag data until next retag. '
+        'Error: $e',
+      );
       return null;
     }
   }

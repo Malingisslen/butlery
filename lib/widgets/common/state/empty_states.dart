@@ -195,6 +195,13 @@ class EmptyStates {
           subtitle: l10n.emptyNoSavedMenusSubtitle,
           actionIcon: AdaptiveIcons.add,
         );
+      case EmptyStateVariant.noSharedShoppingLists:
+        return _EmptyStateConfig(
+          icon: Icons.shopping_cart_outlined,
+          title: l10n.emptyNoSharedShoppingListsTitle,
+          subtitle: l10n.emptyNoSharedShoppingListsSubtitle,
+          actionIcon: null,
+        );
       case EmptyStateVariant.generic:
       default:
         return _EmptyStateConfig(

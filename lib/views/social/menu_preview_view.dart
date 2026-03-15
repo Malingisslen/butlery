@@ -22,6 +22,10 @@ import 'package:butlery/widgets/menu/menu_comments_section.dart';
 import 'package:butlery/core/router/app_router.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 
 /// ✅ MenuPreviewView - Visa delad meny med alla recept
 class MenuPreviewView extends StatelessWidget {
@@ -506,12 +510,21 @@ class MenuPreviewView extends StatelessWidget {
     }
   }
 
-  void _shareMenu(BuildContext context) {
-    // Implementera delning av meny-information
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(context.l10n.menuSharingComingSoon(sharedMenu.menuTitle)),
-        backgroundColor: Theme.of(context).colorScheme.secondary,
+  Future<void> _shareMenu(BuildContext context) async {
+    final shareViewModel = ServiceLocator.get<UniversalShareDialogViewModel>();
+    final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+
+    await showDialog(
+      context: context,
+      builder: (context) => ChangeNotifierProvider.value(
+        value: shareViewModel,
+        child: UniversalShareDialog.menu(
+          menu: sharedMenu.menuSnapshot,
+          viewModel: shareViewModel,
+          menuName: sharedMenu.menuTitle,
+          availableFriends: friendsService.friends,
+          availableGroups: friendsService.categoriesList,
+        ),
       ),
     );
   }

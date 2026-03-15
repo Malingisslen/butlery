@@ -36,11 +36,19 @@ class RetaggingScheduler {
   /// Maximum number of recipes to retag in a single session.
   static const _maxRetagsPerSession = 100;
 
+  /// Maximum consecutive failures before skipping a recipe.
+  static const _maxFailuresBeforeSkip = 3;
+
   /// Timer for periodic retagging checks.
   Timer? _periodicTimer;
 
   /// Whether a retagging operation is currently in progress.
   bool _isRetagging = false;
+
+  /// Tracks consecutive failure counts per recipe ID.
+  /// Recipes that fail [_maxFailuresBeforeSkip]+ times are skipped
+  /// until ingredient data changes (cache cleared via [resetFailureTracking]).
+  final Map<String, int> _failureCounts = {};
 
   RetaggingScheduler({
     required TaggingService taggingService,
@@ -164,6 +172,10 @@ class RetaggingScheduler {
     // until new ingredients are added to the database
     if (tagResult.isAllUnknown) return false;
 
+    // Skip recipes that have failed too many times consecutively
+    final failures = _failureCounts[recipe.id] ?? 0;
+    if (failures >= _maxFailuresBeforeSkip) return false;
+
     // Explicitly marked as failed
     if (tagResult.hasFailed) return true;
 
@@ -177,23 +189,29 @@ class RetaggingScheduler {
   /// Retags a single recipe.
   ///
   /// Returns true if retagging succeeded, false otherwise.
+  /// Tracks consecutive failures per recipe to avoid wasting budget.
   Future<bool> _retagRecipe(Recipe recipe) async {
     try {
       final tagResult = await _taggingService.generateTags(recipe);
 
       if (tagResult == null) {
+        _recordFailure(recipe.id);
         AppLogger.warning('⚠️ Retagging returned null for: ${recipe.title}');
         return false;
       }
 
       // Check if this is still a failure result
       if (tagResult.hasFailed || tagResult.isLookupTimeout) {
+        _recordFailure(recipe.id);
         AppLogger.warning(
           '⚠️ Retagging still failed for: ${recipe.title} '
           '(${tagResult.generatorVersion})',
         );
         return false;
       }
+
+      // Success — clear failure tracking
+      _failureCounts.remove(recipe.id);
 
       // Create updated recipe with new tags
       final updatedRecipe = Recipe(
@@ -213,9 +231,27 @@ class RetaggingScheduler {
 
       return true;
     } catch (e) {
+      _recordFailure(recipe.id);
       AppLogger.warning('⚠️ Failed to retag "${recipe.title}": $e');
       return false;
     }
+  }
+
+  void _recordFailure(String recipeId) {
+    _failureCounts[recipeId] = (_failureCounts[recipeId] ?? 0) + 1;
+    final count = _failureCounts[recipeId]!;
+    if (count >= _maxFailuresBeforeSkip) {
+      AppLogger.info(
+        '⏭️ Recipe $recipeId skipped after $_maxFailuresBeforeSkip consecutive failures',
+      );
+    }
+  }
+
+  /// Resets failure tracking, allowing previously-skipped recipes to retry.
+  /// Call when ingredient data changes (e.g., new ingredients added to DB).
+  void resetFailureTracking() {
+    _failureCounts.clear();
+    AppLogger.info('🔄 Retagging failure tracking reset');
   }
 
   /// Manually triggers a retagging operation.

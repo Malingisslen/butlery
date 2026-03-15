@@ -161,6 +161,9 @@ class FirebaseSharedMenuRepository
     return content.sharedByUserId == userId;
   }
 
+  @override
+  DateTime getContentDate(SharedMenu entity) => entity.sharedAt;
+
   /// Create new shared menu with comprehensive validation
   /// Note (Issue #014): recipientIds must be passed separately as sharedToUserIds
   /// is no longer stored in the model (tracked in Firestore subcollections instead).

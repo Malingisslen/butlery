@@ -19,6 +19,7 @@ import 'package:butlery/services/tagging/phases/tag_phase1_base.dart';
 import 'package:butlery/services/tagging/phases/tag_phase2_derived.dart';
 
 import '../../../infrastructure/builders/recipe_builder.dart';
+import '../../../infrastructure/helpers/tagging_test_helper.dart';
 
 void main() {
   late TagPhase2Derived phase2;
@@ -38,10 +39,11 @@ void main() {
 
         final lookup = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('chicken', 'protein/meat/poultry', {'meat', 'poultry'}),
-            _ingredient('rice', 'grain', {}),
-            _ingredient('carrot', 'vegetable', {}),
-            _ingredient('salt', 'seasoning', {}),
+            TaggingTestHelper.ingredient(
+                'chicken', 'protein/meat/poultry', {'meat', 'poultry'}),
+            TaggingTestHelper.ingredient('rice', 'grain', {}),
+            TaggingTestHelper.ingredient('carrot', 'vegetable', {}),
+            TaggingTestHelper.ingredient('salt', 'seasoning', {}),
           ],
           unmatched: ['unknown'],
         );
@@ -71,7 +73,7 @@ void main() {
 
         final matched = List.generate(
           9,
-          (i) => _ingredient('item$i', 'vegetable', {}),
+          (i) => TaggingTestHelper.ingredient('item$i', 'vegetable', {}),
         );
 
         final lookup = IngredientLookupResult.fromLists(
@@ -102,9 +104,9 @@ void main() {
 
         final lookup = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('a', 'vegetable', {}),
-            _ingredient('b', 'vegetable', {}),
-            _ingredient('c', 'vegetable', {}),
+            TaggingTestHelper.ingredient('a', 'vegetable', {}),
+            TaggingTestHelper.ingredient('b', 'vegetable', {}),
+            TaggingTestHelper.ingredient('c', 'vegetable', {}),
           ],
           unmatched: ['unknown'],
         );
@@ -134,8 +136,8 @@ void main() {
 
         final lookup = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('rice', 'grain', {}),
-            _ingredient('carrot', 'vegetable', {}),
+            TaggingTestHelper.ingredient('rice', 'grain', {}),
+            TaggingTestHelper.ingredient('carrot', 'vegetable', {}),
           ],
           unmatched: [],
         );
@@ -163,8 +165,8 @@ void main() {
 
         final lookup = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('rice', 'grain', {}),
-            _ingredient('chili', 'spice', {'is-spicy'}),
+            TaggingTestHelper.ingredient('rice', 'grain', {}),
+            TaggingTestHelper.ingredient('chili', 'spice', {'is-spicy'}),
           ],
           unmatched: [],
         );
@@ -202,8 +204,9 @@ void main() {
 
         final lookup = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('chili', 'spice', {'is-spicy'}),
-            _ingredient('chicken', 'protein/meat/poultry', {'meat'}),
+            TaggingTestHelper.ingredient('chili', 'spice', {'is-spicy'}),
+            TaggingTestHelper.ingredient(
+                'chicken', 'protein/meat/poultry', {'meat'}),
           ],
           unmatched: [],
         );
@@ -231,7 +234,7 @@ void main() {
 
         final lookup = IngredientLookupResult.fromLists(
           matched: [
-            _ingredient('chili', 'spice', {'is-spicy'}),
+            TaggingTestHelper.ingredient('chili', 'spice', {'is-spicy'}),
           ],
           unmatched: ['unknown1', 'unknown2'],
         );
@@ -378,20 +381,6 @@ void main() {
 }
 
 // Helper functions
-
-IngredientData _ingredient(
-  String name,
-  String group,
-  Set<String> properties,
-) {
-  return IngredientData(
-    id: name.toLowerCase().replaceAll(' ', '-'),
-    swedish: name,
-    english: name,
-    group: group,
-    properties: properties,
-  );
-}
 
 IngredientLookupResult _createMinimalLookup() {
   return IngredientLookupResult.fromLists(

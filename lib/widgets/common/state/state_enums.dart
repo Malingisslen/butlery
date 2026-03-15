@@ -24,6 +24,7 @@ enum EmptyStateVariant {
   noImages,
   noTargets,
   noSavedMenus,
+  noSharedShoppingLists,
   generic,
 }
 

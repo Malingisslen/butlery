@@ -22,13 +22,22 @@ import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Friend profile view displaying stats, messaging, and sharing options.
-class FriendProfileView extends StatelessWidget {
+class FriendProfileView extends StatefulWidget {
   final UserProfile friend;
 
   const FriendProfileView({
     super.key,
     required this.friend,
   });
+
+  @override
+  State<FriendProfileView> createState() => _FriendProfileViewState();
+}
+
+class _FriendProfileViewState extends State<FriendProfileView> {
+  bool _isStartingConversation = false;
+
+  UserProfile get friend => widget.friend;
 
   @override
   Widget build(BuildContext context) {
@@ -142,8 +151,17 @@ class FriendProfileView extends StatelessWidget {
                           children: [
                             Flexible(
                               child: OutlinedButton.icon(
-                                onPressed: () => _startConversation(context),
-                                icon: const Icon(Icons.message),
+                                onPressed: _isStartingConversation
+                                    ? null
+                                    : () => _startConversation(context),
+                                icon: _isStartingConversation
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2),
+                                      )
+                                    : const Icon(Icons.message),
                                 label: Text(context.l10n.socialSendMessage),
                               ),
                             ),
@@ -190,31 +208,18 @@ class FriendProfileView extends StatelessWidget {
 
   /// Start or navigate to existing conversation with this friend
   Future<void> _startConversation(BuildContext context) async {
+    setState(() => _isStartingConversation = true);
     try {
-      // Show loading indicator
-      SnackBarUtils.showInfo(context, context.l10n.socialStartingConversation);
-
-      // Get messaging service
       final messagingService = ServiceLocator.get<MessagingService>();
 
-      AppLogger.info(
-          '🔍 [FriendProfileView] Starting conversation with friend: ${friend.uid} (${friend.displayName})');
-
-      // Start or get existing direct conversation
       final conversationId = await messagingService.startDirectConversation(
         otherUserId: friend.uid,
         otherUserDisplayName: friend.displayName,
         otherUserAvatarUrl: friend.avatarUrl,
       );
 
-      AppLogger.success(
-          '✅ [FriendProfileView] Got conversationId: $conversationId');
-      AppLogger.debug(
-          '🔍 [FriendProfileView] Navigating to ChatViewFacade with conversationId: $conversationId');
-
       if (!context.mounted) return;
 
-      // Navigate to chat view
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => ChatViewFacade(
@@ -223,7 +228,7 @@ class FriendProfileView extends StatelessWidget {
         ),
       );
     } catch (e) {
-      AppLogger.error('❌ [FriendProfileView] Failed to start conversation', e);
+      AppLogger.error('Failed to start conversation', e);
       if (!context.mounted) return;
       SnackBarUtils.showError(
         context,
@@ -231,6 +236,10 @@ class FriendProfileView extends StatelessWidget {
           SnackBarUtils.userFriendlyMessage(context, e),
         ),
       );
+    } finally {
+      if (mounted) {
+        setState(() => _isStartingConversation = false);
+      }
     }
   }
 

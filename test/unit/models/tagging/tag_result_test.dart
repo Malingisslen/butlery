@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/tagging/tag_generator.dart'
+    show kTagGeneratorVersion;
 
 void main() {
   group('TagResult', () {
@@ -775,14 +777,13 @@ void main() {
       });
 
       test('needsRetagging is false when version matches', () {
-        // Import the constant to use the current version
         final current = TagResult(
           tags: {'test'},
           allergenStatus: {},
           dietaryStatus: {},
           coverage: 1.0,
           generatedAt: DateTime.now(),
-          generatorVersion: '1.0.0', // Current version
+          generatorVersion: kTagGeneratorVersion,
         );
 
         expect(current.needsRetagging, isFalse);

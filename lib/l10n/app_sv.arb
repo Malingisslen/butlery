@@ -323,6 +323,8 @@
   "emptyNoTargetsSubtitle": "Lägg till vänner eller grupper för att kunna dela innehåll",
   "emptyNoSavedMenusTitle": "Inga sparade menyer",
   "emptyNoSavedMenusSubtitle": "Skapa och spara menyer för att enkelt ladda dem senare",
+  "emptyNoSharedShoppingListsTitle": "Inga delade inköpslistor",
+  "emptyNoSharedShoppingListsSubtitle": "När du samarbetar på inköpslistor med vänner eller familj visas de här.",
   "emptyGenericTitle": "Inget innehåll att visa",
   "recipeName": "Receptnamn",
   "recipeDescription": "Beskrivning",
@@ -4792,6 +4794,8 @@
       }
     }
   },
+  "a11yAllergenStatusRow": "Allergenstatus",
+  "a11yDietaryStatusRow": "Koststatus",
   "a11yShowImage": "Visa bild",
   "a11yShowMore": "Visa {count} till",
   "@a11yShowMore": {

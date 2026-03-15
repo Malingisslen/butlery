@@ -212,14 +212,25 @@ class GroupInvitationRepository
       );
     }
 
-    // Only the recipient can accept/reject an invitation
-    if (currentUser != invitation.toUserId) {
-      throw PermissionDeniedException(
-        'Only the recipient can update an invitation',
-        resource: 'group_invitation',
-        operation: 'update',
-        userId: currentUser,
-      );
+    // Role-based permission: sender can cancel, recipient can accept/reject
+    if (data['status'] == GroupInvitationStatus.cancelled.name) {
+      if (currentUser != invitation.fromUserId) {
+        throw PermissionDeniedException(
+          'Only the sender can cancel an invitation',
+          resource: 'group_invitation',
+          operation: 'cancel',
+          userId: currentUser,
+        );
+      }
+    } else {
+      if (currentUser != invitation.toUserId) {
+        throw PermissionDeniedException(
+          'Only the recipient can update an invitation',
+          resource: 'group_invitation',
+          operation: 'update',
+          userId: currentUser,
+        );
+      }
     }
 
     await _invitationsRef.doc(invitationId).update(data);

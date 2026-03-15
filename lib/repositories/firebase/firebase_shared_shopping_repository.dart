@@ -163,6 +163,9 @@ class FirebaseSharedShoppingRepository
     return content.sharedByUserId == userId;
   }
 
+  @override
+  DateTime getContentDate(SharedShoppingList entity) => entity.sharedAt;
+
   /// Create new shared shopping list with comprehensive validation
   /// Note (Issue #014): recipientIds must be passed separately as sharedToUserIds
   /// is no longer stored in the model (tracked in Firestore subcollections instead).

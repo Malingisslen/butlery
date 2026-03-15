@@ -467,6 +467,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Create and save menus to easily load them later';
 
   @override
+  String get emptyNoSharedShoppingListsTitle => 'No shared shopping lists';
+
+  @override
+  String get emptyNoSharedShoppingListsSubtitle =>
+      'When you collaborate on shopping lists with friends or family, they will appear here.';
+
+  @override
   String get emptyGenericTitle => 'No content to display';
 
   @override
@@ -7007,6 +7014,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String a11yExcludeTag(String tagName, String status) {
     return 'Exclude $tagName, $status';
   }
+
+  @override
+  String get a11yAllergenStatusRow => 'Allergen status';
+
+  @override
+  String get a11yDietaryStatusRow => 'Dietary status';
 
   @override
   String get a11yShowImage => 'Show image';

@@ -1,9 +1,8 @@
-import 'package:butlery/models/tagging/ingredient_data.dart';
-import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../infrastructure/builders/recipe_builder.dart';
+import '../../../infrastructure/helpers/tagging_test_helper.dart';
 
 /// Sprint 3: Tests for hybrid season detection.
 ///
@@ -24,9 +23,11 @@ void main() {
             .withTitle('Summer Salad')
             .withTimeMinutes(15)
             .withIngredients(['tomat', 'gurka']).build();
-        final lookup = _createLookup([
-          _ingredient('tomat', 'vegetable', {}, seasonAvailability: ['sommar']),
-          _ingredient('gurka', 'vegetable', {}, seasonAvailability: ['sommar']),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('tomat', 'vegetable', {},
+              seasonAvailability: ['sommar']),
+          TaggingTestHelper.ingredient('gurka', 'vegetable', {},
+              seasonAvailability: ['sommar']),
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -39,12 +40,13 @@ void main() {
             .withTitle('Autumn Stew')
             .withTimeMinutes(60)
             .withIngredients(['svamp', 'kantarell', 'potato']).build();
-        final lookup = _createLookup([
-          _ingredient('svamp', 'vegetable/mushroom', {},
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('svamp', 'vegetable/mushroom', {},
               seasonAvailability: ['höst']),
-          _ingredient('kantarell', 'vegetable/mushroom', {},
+          TaggingTestHelper.ingredient('kantarell', 'vegetable/mushroom', {},
               seasonAvailability: ['höst']),
-          _ingredient('potato', 'vegetable/root', {}), // No season data
+          TaggingTestHelper.ingredient(
+              'potato', 'vegetable/root', {}), // No season data
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -57,11 +59,12 @@ void main() {
             .withTitle('Simple Dish')
             .withTimeMinutes(30)
             .withIngredients(['tomat', 'gurka', 'ris']).build();
-        final lookup = _createLookup([
-          _ingredient('tomat', 'vegetable', {}, seasonAvailability: ['sommar']),
-          _ingredient('gurka', 'vegetable', {},
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('tomat', 'vegetable', {},
+              seasonAvailability: ['sommar']),
+          TaggingTestHelper.ingredient('gurka', 'vegetable', {},
               seasonAvailability: ['vår']), // Different season
-          _ingredient('ris', 'grain', {},
+          TaggingTestHelper.ingredient('ris', 'grain', {},
               seasonAvailability: ['vinter']), // Different season
         ]);
 
@@ -81,9 +84,11 @@ void main() {
             .withTitle('Spring Dish')
             .withTimeMinutes(30)
             .withIngredients(['sparris', 'rädisor']).build();
-        final lookup = _createLookup([
-          _ingredient('sparris', 'vegetable', {}, seasonAvailability: ['vår']),
-          _ingredient('rädisor', 'vegetable', {}), // No seasonAvailability
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('sparris', 'vegetable', {},
+              seasonAvailability: ['vår']),
+          TaggingTestHelper.ingredient(
+              'rädisor', 'vegetable', {}), // No seasonAvailability
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -97,9 +102,11 @@ void main() {
             .withTitle('Berry Dessert')
             .withTimeMinutes(15)
             .withIngredients(['jordgubb', 'hallon']).build();
-        final lookup = _createLookup([
-          _ingredient('jordgubb', 'fruit/berry', {}), // No seasonAvailability
-          _ingredient('hallon', 'fruit/berry', {}), // No seasonAvailability
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'jordgubb', 'fruit/berry', {}), // No seasonAvailability
+          TaggingTestHelper.ingredient(
+              'hallon', 'fruit/berry', {}), // No seasonAvailability
         ]);
 
         final result = generator.generate(ingredients: lookup, recipe: recipe);
@@ -115,12 +122,12 @@ void main() {
             .withTitle('Seasonal Soup')
             .withTimeMinutes(45)
             .withIngredients(['morot', 'potatis', 'purjolök']).build();
-        final lookup = _createLookup([
-          _ingredient('morot', 'vegetable/root', {},
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('morot', 'vegetable/root', {},
               seasonAvailability: ['höst', 'vinter']),
-          _ingredient('potatis', 'vegetable/root', {},
+          TaggingTestHelper.ingredient('potatis', 'vegetable/root', {},
               seasonAvailability: ['höst', 'vinter']),
-          _ingredient('purjolök', 'vegetable', {},
+          TaggingTestHelper.ingredient('purjolök', 'vegetable', {},
               seasonAvailability: ['vår', 'höst']),
         ]);
 
@@ -139,10 +146,10 @@ void main() {
             .withTitle('Simple Pasta')
             .withTimeMinutes(20)
             .withIngredients(['pasta', 'olivolja']).build();
-        final lookup = _createLookup([
-          _ingredient('pasta', 'grain/pasta-bread', {},
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('pasta', 'grain/pasta-bread', {},
               seasonAvailability: ['vår', 'sommar', 'höst', 'vinter']),
-          _ingredient('olivolja', 'fat/oil', {},
+          TaggingTestHelper.ingredient('olivolja', 'fat/oil', {},
               seasonAvailability: ['vår', 'sommar', 'höst', 'vinter']),
         ]);
 
@@ -162,10 +169,10 @@ void main() {
             .withTitle('Test Recipe')
             .withTimeMinutes(30)
             .withIngredients(['item1', 'item2']).build();
-        final lookup = _createLookup([
-          _ingredient('item1', 'vegetable', {},
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('item1', 'vegetable', {},
               seasonAvailability: ['SOMMAR']), // Uppercase
-          _ingredient('item2', 'vegetable', {},
+          TaggingTestHelper.ingredient('item2', 'vegetable', {},
               seasonAvailability: ['Sommar']), // Mixed case
         ]);
 
@@ -179,10 +186,10 @@ void main() {
             .withTitle('Test Recipe')
             .withTimeMinutes(30)
             .withIngredients(['item1', 'item2']).build();
-        final lookup = _createLookup([
-          _ingredient('item1', 'vegetable', {},
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('item1', 'vegetable', {},
               seasonAvailability: ['invalid_season']),
-          _ingredient('item2', 'vegetable', {},
+          TaggingTestHelper.ingredient('item2', 'vegetable', {},
               seasonAvailability: ['not_a_season']),
         ]);
 
@@ -196,29 +203,4 @@ void main() {
       });
     });
   });
-}
-
-// Helper functions
-
-IngredientData _ingredient(
-  String name,
-  String group,
-  Set<String> properties, {
-  List<String>? seasonAvailability,
-}) {
-  return IngredientData(
-    id: name.toLowerCase().replaceAll(' ', '-'),
-    swedish: name,
-    english: name,
-    group: group,
-    properties: properties,
-    seasonAvailability: seasonAvailability ?? const [],
-  );
-}
-
-IngredientLookupResult _createLookup(List<IngredientData> ingredients) {
-  return IngredientLookupResult.fromLists(
-    matched: ingredients,
-    unmatched: [],
-  );
 }

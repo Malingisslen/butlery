@@ -1,29 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
-import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 import 'package:butlery/widgets/tagging/dietary_status_badge.dart';
 import 'package:butlery/widgets/tagging/tag_result_display.dart';
 
-/// Wraps a widget in MaterialApp with l10n delegates and Butlery theme for testing.
-Widget _testApp({required Widget child}) {
-  return MaterialApp(
-    locale: const Locale('sv'),
-    supportedLocales: AppLocalizations.supportedLocales,
-    localizationsDelegates: const [
-      AppLocalizations.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
-    theme: AppTheme.lightTheme,
-    home: Scaffold(body: SingleChildScrollView(child: child)),
-  );
-}
+import '../../infrastructure/helpers/widget_test_app.dart';
 
 /// Creates a TagResult with specific allergen and dietary statuses for testing.
 TagResult _buildTagResult({
@@ -57,7 +40,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactDietaryRow(
               tagResult: tagResult,
               // No userPrefs - should show all FREE diets from DietaryConfig order
@@ -82,7 +66,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactDietaryRow(
               tagResult: tagResult,
               maxBadges: 10,
@@ -108,7 +93,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactDietaryRow(
               tagResult: tagResult,
               userPrefs: const {'vegetarisk', 'barnvänlig'},
@@ -132,7 +118,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactDietaryRow(
               tagResult: tagResult,
               userPrefs: const {'vegetarisk', 'vegansk'},
@@ -160,7 +147,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactDietaryRow(
               tagResult: tagResult,
               maxBadges: 2,
@@ -184,7 +172,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactDietaryRow(tagResult: tagResult),
           ),
         );
@@ -206,7 +195,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactDietaryRow(
               tagResult: tagResult,
               maxBadges: 10,
@@ -229,7 +219,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactDietaryRow(
               tagResult: tagResult,
               maxBadges: 10,
@@ -252,7 +243,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactDietaryRow(
               tagResult: tagResult,
               maxBadges: 10,
@@ -282,7 +274,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactAllergenRow(
               tagResult: tagResult,
               maxBadges: 10,
@@ -317,7 +310,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactAllergenRow(
               tagResult: tagResult,
               maxBadges: 10,
@@ -357,7 +351,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactAllergenRow(
               tagResult: tagResult,
               maxBadges: 10,
@@ -382,7 +377,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactAllergenRow(
               tagResult: tagResult,
               userPrefs: const {'soja', 'sesam'},
@@ -410,7 +406,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactAllergenRow(
               tagResult: tagResult,
               maxBadges: 2,
@@ -435,7 +432,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactAllergenRow(tagResult: tagResult),
           ),
         );
@@ -457,7 +455,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactAllergenRow(
               tagResult: tagResult,
               maxBadges: 2,
@@ -483,7 +482,8 @@ void main() {
         final tagResult = _buildTagResult(allergenStatus: {});
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactAllergenRow(tagResult: tagResult),
           ),
         );
@@ -505,7 +505,8 @@ void main() {
         );
 
         await tester.pumpWidget(
-          _testApp(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
             child: CompactAllergenRow(tagResult: tagResult),
           ),
         );

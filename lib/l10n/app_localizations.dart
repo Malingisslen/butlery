@@ -878,6 +878,18 @@ abstract class AppLocalizations {
   /// **'Skapa och spara menyer för att enkelt ladda dem senare'**
   String get emptyNoSavedMenusSubtitle;
 
+  /// No description provided for @emptyNoSharedShoppingListsTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga delade inköpslistor'**
+  String get emptyNoSharedShoppingListsTitle;
+
+  /// No description provided for @emptyNoSharedShoppingListsSubtitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'När du samarbetar på inköpslistor med vänner eller familj visas de här.'**
+  String get emptyNoSharedShoppingListsSubtitle;
+
   /// No description provided for @emptyGenericTitle.
   ///
   /// In sv, this message translates to:
@@ -12104,6 +12116,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Exkludera {tagName}, {status}'**
   String a11yExcludeTag(String tagName, String status);
+
+  /// No description provided for @a11yAllergenStatusRow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergenstatus'**
+  String get a11yAllergenStatusRow;
+
+  /// No description provided for @a11yDietaryStatusRow.
+  ///
+  /// In sv, this message translates to:
+  /// **'Koststatus'**
+  String get a11yDietaryStatusRow;
 
   /// No description provided for @a11yShowImage.
   ///

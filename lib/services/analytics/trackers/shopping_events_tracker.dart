@@ -10,7 +10,6 @@ class ShoppingEventsTracker extends BaseTracker {
     required String listType,
     int? initialItemCount,
   }) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(
       name: 'shopping_list_created',
       parameters: {
@@ -26,7 +25,6 @@ class ShoppingEventsTracker extends BaseTracker {
     required String listId,
     String? source,
   }) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(
       name: 'shopping_list_item_added',
       parameters: {'list_id': listId, if (source != null) 'source': source},
@@ -38,7 +36,6 @@ class ShoppingEventsTracker extends BaseTracker {
     required String listId,
     required int itemCount,
   }) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(
       name: 'shopping_list_item_checked',
       parameters: {'list_id': listId, 'item_count': itemCount},
@@ -51,7 +48,6 @@ class ShoppingEventsTracker extends BaseTracker {
     required int recipientCount,
     String? shareMethod,
   }) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(
       name: 'shopping_list_shared',
       parameters: {
@@ -68,7 +64,6 @@ class ShoppingEventsTracker extends BaseTracker {
     required int itemCount,
     int? timeToCompleteMinutes,
   }) async {
-    if (!await hasAnalyticsConsent()) return;
     await logEvent(
       name: 'shopping_list_completed',
       parameters: {

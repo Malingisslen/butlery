@@ -205,8 +205,10 @@ class SocialGroupDetailViewModel extends ChangeNotifier
             await _userService.getUserProfiles(_group!.friendUserIds);
         _members = memberProfiles;
 
-        // Get pending invitations for this group
-        _pendingInvitations = [];
+        // Get pending invitations for this group from sent invitations
+        _pendingInvitations = _friendsService.sentInvitations
+            .where((i) => i.groupId == groupId && i.isPending)
+            .toList();
       } else {
         _members = [];
         _pendingInvitations = [];
@@ -215,10 +217,8 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   }
 
   /// Refresh group data (pull-to-refresh).
+  /// loadGroupData() already calls _friendsService.refresh().
   Future<void> refreshData() async {
-    await Future.wait([
-      _friendsService.refresh(),
-    ]);
     await loadGroupData();
   }
 

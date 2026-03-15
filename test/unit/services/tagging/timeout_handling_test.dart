@@ -1,10 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:butlery/models/tagging/ingredient_data.dart';
-import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/tagging/tag_generator.dart';
 
 import '../../../infrastructure/builders/recipe_builder.dart';
+import '../../../infrastructure/helpers/tagging_test_helper.dart';
 
 /// Tests for TagGenerator timeout handling.
 ///
@@ -29,9 +28,11 @@ void main() {
             .withTitle('Test Recipe')
             .withTimeMinutes(30)
             .withIngredients(['milk', 'eggs']).build();
-        final lookup = _createLookup([
-          _ingredient('milk', 'dairy', {'dairy', 'contains-lactose'}),
-          _ingredient('eggs', 'protein/eggs', {'egg', 'animal-product'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'milk', 'dairy', {'dairy', 'contains-lactose'}),
+          TaggingTestHelper.ingredient(
+              'eggs', 'protein/eggs', {'egg', 'animal-product'}),
         ]);
 
         // Use a Duration.zero timeout - everything should be "timed out"
@@ -54,8 +55,9 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Gluten Recipe')
             .withIngredients(['wheat flour']).build();
-        final lookup = _createLookup([
-          _ingredient('wheat flour', 'grain', {'contains-gluten'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'wheat flour', 'grain', {'contains-gluten'}),
         ]);
 
         final result = generator.generate(
@@ -73,9 +75,11 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Vegan Recipe')
             .withIngredients(['tofu', 'vegetables']).build();
-        final lookup = _createLookup([
-          _ingredient('tofu', 'protein/plant', {'plant-based'}),
-          _ingredient('vegetables', 'vegetable', {'plant-based'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'tofu', 'protein/plant', {'plant-based'}),
+          TaggingTestHelper.ingredient(
+              'vegetables', 'vegetable', {'plant-based'}),
         ]);
 
         final result = generator.generate(
@@ -97,8 +101,8 @@ void main() {
             .withTitle('Normal Recipe')
             .withTimeMinutes(30)
             .withIngredients(['rice']).build();
-        final lookup = _createLookup([
-          _ingredient('rice', 'grain', {}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('rice', 'grain', {}),
         ]);
 
         // No timeout - all phases should complete
@@ -115,8 +119,8 @@ void main() {
             .withTitle('Test Recipe')
             .withTimeMinutes(30)
             .withIngredients(['pasta']).build();
-        final lookup = _createLookup([
-          _ingredient('pasta', 'grain', {'contains-gluten'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('pasta', 'grain', {'contains-gluten'}),
         ]);
 
         // Zero timeout - phases 2-4 should be skipped
@@ -134,8 +138,9 @@ void main() {
             .withTitle('Normal Recipe')
             .withTimeMinutes(30)
             .withIngredients(['chicken']).build();
-        final lookup = _createLookup([
-          _ingredient('chicken', 'protein/meat/poultry', {'meat', 'poultry'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'chicken', 'protein/meat/poultry', {'meat', 'poultry'}),
         ]);
 
         // Generous timeout - all phases should complete
@@ -155,8 +160,9 @@ void main() {
             .withTitle('Preview Recipe')
             .withTimeMinutes(20)
             .withIngredients(['salmon']).build();
-        final lookup = _createLookup([
-          _ingredient('salmon', 'protein/seafood/fish', {'fish', 'seafood'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'salmon', 'protein/seafood/fish', {'fish', 'seafood'}),
         ]);
 
         final result = generator.generatePhase1Only(
@@ -175,9 +181,9 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Nut Recipe')
             .withIngredients(['almonds', 'walnuts']).build();
-        final lookup = _createLookup([
-          _ingredient('almonds', 'nut', {'tree-nut'}),
-          _ingredient('walnuts', 'nut', {'tree-nut'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('almonds', 'nut', {'tree-nut'}),
+          TaggingTestHelper.ingredient('walnuts', 'nut', {'tree-nut'}),
         ]);
 
         final result = generator.generatePhase1Only(
@@ -192,9 +198,11 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Vegetarian Recipe')
             .withIngredients(['tofu', 'broccoli']).build();
-        final lookup = _createLookup([
-          _ingredient('tofu', 'protein/plant', {'plant-based'}),
-          _ingredient('broccoli', 'vegetable', {'plant-based'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'tofu', 'protein/plant', {'plant-based'}),
+          TaggingTestHelper.ingredient(
+              'broccoli', 'vegetable', {'plant-based'}),
         ]);
 
         final result = generator.generatePhase1Only(
@@ -213,8 +221,8 @@ void main() {
             .withTitle('Quick Recipe')
             .withTimeMinutes(15)
             .withIngredients(['lettuce']).build();
-        final lookup = _createLookup([
-          _ingredient('lettuce', 'vegetable', {'plant-based'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient('lettuce', 'vegetable', {'plant-based'}),
         ]);
 
         final result = generator.generate(
@@ -233,8 +241,8 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Kycklinggryta')
             .withIngredients(['kycklingbröst']).build();
-        final lookup = _createLookup([
-          _ingredient(
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
               'kycklingbröst', 'protein/meat/poultry', {'meat', 'poultry'}),
         ]);
 
@@ -252,9 +260,10 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Dairy Recipe')
             .withIngredients(['milk', 'cheese']).build();
-        final lookup = _createLookup([
-          _ingredient('milk', 'dairy', {'dairy', 'contains-lactose'}),
-          _ingredient('cheese', 'dairy', {'dairy'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'milk', 'dairy', {'dairy', 'contains-lactose'}),
+          TaggingTestHelper.ingredient('cheese', 'dairy', {'dairy'}),
         ]);
 
         final result = generator.generate(
@@ -280,9 +289,11 @@ void main() {
         final recipe = RecipeBuilder()
             .withTitle('Shellfish Recipe')
             .withIngredients(['shrimp', 'crab']).build();
-        final lookup = _createLookup([
-          _ingredient('shrimp', 'protein/seafood', {'crustacean', 'seafood'}),
-          _ingredient('crab', 'protein/seafood', {'crustacean', 'seafood'}),
+        final lookup = TaggingTestHelper.createLookup([
+          TaggingTestHelper.ingredient(
+              'shrimp', 'protein/seafood', {'crustacean', 'seafood'}),
+          TaggingTestHelper.ingredient(
+              'crab', 'protein/seafood', {'crustacean', 'seafood'}),
         ]);
 
         final result = generator.generate(
@@ -305,23 +316,4 @@ void main() {
       });
     });
   });
-}
-
-// Helper functions
-
-IngredientData _ingredient(String name, String group, Set<String> properties) {
-  return IngredientData(
-    id: name.toLowerCase().replaceAll(' ', '-'),
-    swedish: name,
-    english: name,
-    group: group,
-    properties: properties,
-  );
-}
-
-IngredientLookupResult _createLookup(List<IngredientData> ingredients) {
-  return IngredientLookupResult.fromLists(
-    matched: ingredients,
-    unmatched: [],
-  );
 }

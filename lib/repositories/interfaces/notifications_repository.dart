@@ -4,51 +4,7 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/notification_preferences.dart';
 export 'package:butlery/models/notification_preferences.dart';
 
-/// Repository interface for push notification and user notification management.
-/// This interface provides comprehensive notification operations including push
-/// notification delivery, notification preferences management, and real-time
-/// notification streaming. It integrates with Firebase Cloud Messaging (FCM)
-/// to deliver timely notifications about social activities, recipe sharing, and
-/// system updates.
-/// **Core Notification Features:**
-/// - **Push Notifications**: Send individual and bulk push notifications via FCM
-/// - **Notification History**: Persistent storage and retrieval of user notifications
-/// - **Real-time Streams**: Live notification updates for reactive UI
-/// - **Preference Management**: User-controlled notification settings and filtering
-/// - **FCM Integration**: Token management and push notification delivery
-/// - **Notification Categorization**: Type-based notification organization and filtering
-/// **Notification Types:**
-/// Supports various notification categories including recipe sharing, friend requests,
-/// group invitations, comments, ratings, collaborative editing, and system updates.
-/// Each type can be individually controlled through user preferences.
-/// **Performance and UX:**
-/// - Implements efficient notification querying with pagination
-/// - Supports batch operations for better performance
-/// - Provides unread count tracking for UI badges
-/// - Enables notification marking and cleanup operations
-/// **Privacy and Control:**
-/// Respects user notification preferences, supports granular notification control,
-/// and provides opt-out mechanisms for different notification categories.
-/// **Usage Examples:**
-/// ```dart
-/// final notificationRepo = ServiceLocator.get<NotificationsRepository>();
-/// // Send notification to user
-/// await notificationRepo.sendNotification(
-///   userId: friendUserId,
-///   type: NotificationType.friendRequest,
-///   title: 'New Friend Request',
-///   body: '${currentUser.name} wants to be your friend!',
-///   data: {'requestId': requestId},
-/// );
-/// // Listen to notifications
-/// notificationRepo.getNotificationsStream(userId).listen((notifications) {
-///   updateNotificationBadge(notifications.where((n) => !n.isRead).length);
-/// });
-/// // Manage preferences using the model's defaults and category settings
-/// var preferences = NotificationPreferences.defaults();
-/// // The model uses categorySettings and typeSettings maps for granular control
-/// await notificationRepo.updateNotificationPreferences(userId, preferences);
-/// ```
+/// Repository interface for notification management with FCM integration and user preferences.
 abstract class NotificationsRepository extends Repository<UserNotification> {
   /// Send a notification to a user
   Future<void> sendNotification({
@@ -113,6 +69,7 @@ abstract class NotificationsRepository extends Repository<UserNotification> {
 class UserNotification {
   final String id;
   final String userId;
+  final String? senderId;
   final NotificationType type;
   final String title;
   final String body;
@@ -124,6 +81,7 @@ class UserNotification {
   UserNotification({
     required this.id,
     required this.userId,
+    this.senderId,
     required this.type,
     required this.title,
     required this.body,
@@ -135,6 +93,7 @@ class UserNotification {
 
   Map<String, dynamic> toFirestore() => {
         'userId': userId,
+        if (senderId != null) 'senderId': senderId,
         'type': type.toString(),
         'title': title,
         'body': body,
@@ -149,6 +108,7 @@ class UserNotification {
       UserNotification(
         id: id,
         userId: data['userId'] ?? '',
+        senderId: data['senderId'] as String?,
         type: NotificationType.values.firstWhere(
           (e) => e.toString() == data['type'],
           orElse: () => NotificationType.optional,

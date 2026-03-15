@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -369,17 +368,11 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
 
   // Share action
   Future<void> _handleShare() async {
-    AppLogger.info('🔍🔍🔍 DEBUG DIALOG: _handleShare() CALLED');
-    AppLogger.info('🔍 DEBUG: _selectedFriendIds = $_selectedFriendIds');
-    AppLogger.info('🔍 DEBUG: _selectedGroupIds = $_selectedGroupIds');
-
     if (_selectedFriendIds.isEmpty && _selectedGroupIds.isEmpty) {
-      AppLogger.warning('🔍 DEBUG: Early return - no selections!');
       return;
     }
 
     try {
-      AppLogger.info('🔍 DEBUG: Proceeding with share...');
       bool shareResult = false;
       final message = _messageController.text.trim();
       final friendIds = _selectedFriendIds.toList();

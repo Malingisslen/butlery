@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/core/di/di_container.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/mock_factory.dart';
@@ -20,6 +22,10 @@ void main() {
     late UserProfile testProfile;
 
     setUpAll(() async {
+      // Initialize production ServiceLocator bridge so UserService constructor
+      // can resolve FirestoreRepository and PermissionService via ServiceLocator.get()
+      production.ServiceLocator.initialize(DIContainer());
+
       await BaseUnitTest.setupUnit();
 
       // Register fallback values for mocktail
