@@ -252,9 +252,18 @@ void main() {
         expect(viewModel.errorMessage, equals('Lösenord kan inte vara tomt'));
       });
 
-      test('should reject password shorter than 6 characters', () async {
+      test('should reject password shorter than 8 characters', () async {
         // Arrange
-        final shortPasswords = ['', '1', '12', '123', '1234', '12345'];
+        final shortPasswords = [
+          '',
+          '1',
+          '12',
+          '123',
+          '1234',
+          '12345',
+          '123456',
+          '1234567'
+        ];
 
         // Act & Assert
         for (final password in shortPasswords) {
@@ -269,19 +278,18 @@ void main() {
             expect(
                 viewModel.errorMessage, equals('Lösenord kan inte vara tomt'));
           } else {
-            expect(viewModel.errorMessage,
-                equals('Lösenord måste vara minst 6 tecken'));
+            expect(viewModel.errorMessage, contains('minst 8 tecken'));
           }
         }
       });
 
-      test('should accept password with exactly 6 characters', () async {
+      test('should accept password with exactly 8 characters', () async {
         // Arrange - Use default successful behavior (shouldSucceed = true)
 
         // Act
         final result = await viewModel.signIn(
           email: 'test@example.com',
-          password: '123456',
+          password: '12345678',
         );
 
         // Assert

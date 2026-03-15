@@ -414,12 +414,31 @@ class FirebaseStorageRepository extends BaseStorageRepository
     int quality = _defaultQuality,
   }) async {
     try {
-      // Read original image
       final bytes = await imageFile.readAsBytes();
+      return await compressImageBytes(
+        bytes,
+        maxWidth: maxWidth,
+        maxHeight: maxHeight,
+        quality: quality,
+      );
+    } catch (e) {
+      AppLogger.error('Image compression failed: $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<Uint8List> compressImageBytes(
+    Uint8List bytes, {
+    int maxWidth = _defaultMaxWidth,
+    int maxHeight = _defaultMaxHeight,
+    int quality = _defaultQuality,
+  }) async {
+    try {
       final originalSize = bytes.length;
 
-      // Skip compression for small images (under 500KB) to save processing time
-      const maxSizeWithoutCompression = 500 * 1024; // 500KB
+      // Skip compression for small images (under 500KB)
+      const maxSizeWithoutCompression = 500 * 1024;
       if (originalSize < maxSizeWithoutCompression) {
         AppLogger.info(
           '⚡ Skipping compression for small image: ${(originalSize / 1024).toStringAsFixed(1)}KB',
@@ -428,29 +447,28 @@ class FirebaseStorageRepository extends BaseStorageRepository
       }
 
       AppLogger.info(
-        '🔄 Compressing image with aspect ratio preservation: ${(originalSize / 1024).toStringAsFixed(1)}KB',
+        '🔄 Compressing image: ${(originalSize / 1024).toStringAsFixed(1)}KB',
       );
 
-      // Compress with aspect-ratio preservation using quality-based approach
+      // Compress with dimension enforcement and aspect-ratio preservation
       var compressed = await FlutterImageCompress.compressWithList(
         bytes,
+        minWidth: maxWidth,
+        minHeight: maxHeight,
         quality: quality,
         format: CompressFormat.jpeg,
-        autoCorrectionAngle: true, // Automatic EXIF rotation
-        keepExif: false, // Remove EXIF data for smaller file size
-        // Let flutter_image_compress handle dimensions automatically to preserve aspect ratio
+        autoCorrectionAngle: true,
+        keepExif: false,
       );
 
-      // If result is still too large, apply additional compression passes
+      // Progressive quality reduction if still too large (max 4 iterations)
       int currentQuality = quality;
       while (compressed.length > 1024 * 1024 && currentQuality > 50) {
         currentQuality -= 10;
-        AppLogger.info(
-          '🔄 Image still large (${formatBytes(compressed.length)}), reducing quality to $currentQuality',
-        );
-
         compressed = await FlutterImageCompress.compressWithList(
           bytes,
+          minWidth: maxWidth,
+          minHeight: maxHeight,
           quality: currentQuality,
           format: CompressFormat.jpeg,
           autoCorrectionAngle: true,
@@ -458,18 +476,16 @@ class FirebaseStorageRepository extends BaseStorageRepository
         );
       }
 
-      final compressedSize = compressed.length;
       final reduction =
-          ((1 - (compressedSize / originalSize)) * 100).toStringAsFixed(1);
-
+          ((1 - (compressed.length / originalSize)) * 100).toStringAsFixed(1);
       AppLogger.info(
-        '✅ Image compressed with aspect ratio preserved: ${formatBytes(originalSize)} → ${formatBytes(compressedSize)} ($reduction% reduction)',
+        '✅ Image compressed: ${formatBytes(originalSize)} → ${formatBytes(compressed.length)} ($reduction% reduction)',
       );
 
       return compressed;
     } catch (e) {
-      AppLogger.error('Image compression failed: $e');
-      return null;
+      AppLogger.error('Image compression failed, using original: $e');
+      return bytes;
     }
   }
 

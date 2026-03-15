@@ -8170,6 +8170,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorGroupNameExists => 'This group name already exists';
 
   @override
+  String get errorOnlyAdminCanAddMembers => 'Only an admin can add members';
+
+  @override
   String get errorOnlyAdminCanRemoveMembers =>
       'Only an admin can remove members';
 
@@ -11578,4 +11581,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String dietaryToggleSemantics(String dietary) {
     return 'Toggle $dietary dietary preference';
   }
+
+  @override
+  String get emailVerificationTitle => 'Verify your email';
+
+  @override
+  String emailVerificationMessage(String email) {
+    return 'We\'ve sent a verification email to $email.';
+  }
+
+  @override
+  String get emailVerificationResend => 'Send again';
+
+  @override
+  String get emailVerificationContinue => 'Continue anyway';
+
+  @override
+  String get emailVerificationSuccess => 'Email verified!';
 }

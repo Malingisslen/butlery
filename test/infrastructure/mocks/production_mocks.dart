@@ -16,6 +16,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'firestore_singleton.dart';
 
 // Production imports
+import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
@@ -4646,3 +4647,7 @@ class SyncError {
   @override
   String toString() => 'SyncError: $message';
 }
+
+// ===== CONSENT =====
+
+class MockConsentService extends Mock implements ConsentService {}

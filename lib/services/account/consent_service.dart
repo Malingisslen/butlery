@@ -19,13 +19,18 @@ class ConsentService extends BaseService {
   final FirebaseAuth _auth;
   final FirebaseConsentRepository _consentRepository;
 
+  // Session cache — consent rarely changes, no need to hit Firestore every call
+  UserConsent? _cachedConsent;
+  String? _cachedUserId;
+  bool _cachePopulated = false;
+
   ConsentService({
     required FirebaseAuth auth,
     required FirebaseConsentRepository consentRepository,
   })  : _auth = auth,
         _consentRepository = consentRepository;
 
-  /// Get current user's consent
+  /// Get current user's consent (cached per session, invalidated on save)
   Future<UserConsent?> getUserConsent() async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) {
@@ -33,11 +38,21 @@ class ConsentService extends BaseService {
       return null;
     }
 
-    return await safeExecute<UserConsent?>(
+    // Return cached result if available for same user (includes null = no consent doc)
+    if (_cachePopulated && _cachedUserId == userId) {
+      return _cachedConsent;
+    }
+
+    final consent = await safeExecute<UserConsent?>(
       () => _consentRepository.getUserConsent(userId),
       operationName: 'Get user consent',
       defaultValue: null,
     );
+
+    _cachedConsent = consent;
+    _cachedUserId = userId;
+    _cachePopulated = true;
+    return consent;
   }
 
   /// Save or update user consent
@@ -74,6 +89,9 @@ class ConsentService extends BaseService {
                 await _consentRepository.saveConsent(userId, consent);
 
             if (success) {
+              _cachedConsent = consent;
+              _cachedUserId = userId;
+              _cachePopulated = true;
               app_logger.AppLogger.info(
                   '[$_logTag] Consent saved for user $userId');
             }

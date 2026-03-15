@@ -281,5 +281,35 @@ class ShoppingListManagementModule {
     }
   }
 
-  String exportListAsText(String listId) => 'Mock shopping list export';
+  String exportListAsText(String listId) {
+    final matches = lists.where((l) => l.id == listId);
+    if (matches.isEmpty) return '';
+    final list = matches.first;
+
+    final buffer = StringBuffer();
+    buffer.writeln('Inköpslista: ${list.name}');
+    buffer.writeln('');
+
+    // Group items by category
+    final categorized = <String, List<UnifiedShoppingItem>>{};
+    for (final item in list.items) {
+      final category =
+          item.category.isEmpty ? ShoppingCategory.other : item.category;
+      categorized.putIfAbsent(category, () => []).add(item);
+    }
+
+    // Sort categories alphabetically for stable output
+    final sortedCategories = categorized.keys.toList()..sort();
+
+    for (final category in sortedCategories) {
+      buffer.writeln(category);
+      for (final item in categorized[category]!) {
+        final check = item.bought ? '☑' : '☐';
+        buffer.writeln('$check ${item.displayText}');
+      }
+      buffer.writeln('');
+    }
+
+    return buffer.toString().trimRight();
+  }
 }

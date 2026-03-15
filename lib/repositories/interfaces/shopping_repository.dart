@@ -19,6 +19,12 @@ abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
   /// Removes an item from the specified shopping list.
   Future<void> removeItem(String listId, String itemId);
 
+  /// Updates an existing item in the specified shopping list atomically.
+  Future<void> updateItem(String listId, UnifiedShoppingItem item);
+
+  /// Removes multiple items from the specified shopping list using batch operations.
+  Future<void> removeItemsBatch(String listId, List<String> itemIds);
+
   // Template operations
   Future<String> saveAsTemplate({
     required String listId,

@@ -6,9 +6,7 @@ import 'package:butlery/models/account/user_consent.dart';
 
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
-
-// Mock ConsentService
-class MockConsentService extends Mock implements ConsentService {}
+import '../../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   group('ConsentViewModel - GDPR Article 7 Compliance Tests', () {

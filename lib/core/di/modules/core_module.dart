@@ -26,11 +26,13 @@ import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_feedback_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
+import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
 // Core services
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/services/theme_service.dart';
@@ -164,6 +166,13 @@ class CoreModule implements DIModule {
         ),
       );
 
+      // MFA service (extracted from AuthService for file size compliance)
+      container.registerLazySingleton<AuthMfaService>(
+        () => AuthMfaService(
+          analyticsService: container<AnalyticsService>(),
+        ),
+      );
+
       // Session timeout service for automatic logout on inactivity
       // Note: Depends on AuthService and AnalyticsService
       container.registerLazySingleton<SessionTimeoutService>(
@@ -188,6 +197,9 @@ class CoreModule implements DIModule {
           recipeService: container(), // Will be provided by content module
           offlineService: container(), // Will be provided by content module
           analyticsService: container<AnalyticsService>(),
+          searchRepository: container.isRegistered<SearchRepository>()
+              ? container<SearchRepository>()
+              : null,
         );
       });
 

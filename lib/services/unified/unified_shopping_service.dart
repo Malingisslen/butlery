@@ -143,7 +143,7 @@ class UnifiedShoppingService extends ChangeNotifier
   // State
   final List<UnifiedShoppingList> _lists = [];
   String? _activeListId;
-  final bool _isLoading = false;
+  bool _isLoading = false;
   String? _error;
 
   // Feature interface getters
@@ -201,12 +201,26 @@ class UnifiedShoppingService extends ChangeNotifier
   }
 
   Future<void> initialize() async {
-    await _initialization.initialize();
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _initialization.initialize();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   /// Load lists - alias for initialize for compatibility
   Future<void> loadLists() async {
-    await _initialization.loadLists();
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _initialization.loadLists();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<String?> createPersonalList(String name,

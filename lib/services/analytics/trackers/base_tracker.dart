@@ -15,10 +15,10 @@ abstract class BaseTracker {
   }
 
   /// Check if user has granted analytics consent
-  /// Returns true if consent not yet configured (graceful degradation)
+  /// Returns false if consent not yet configured (privacy-by-default, GDPR Art.25)
   Future<bool> hasAnalyticsConsent() async {
     if (_consentService == null) {
-      return true;
+      return false;
     }
 
     try {

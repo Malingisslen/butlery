@@ -62,6 +62,15 @@ abstract class StorageRepository {
     int quality = 85,
   });
 
+  /// Compress image from raw bytes (for web platform or bytes-based uploads).
+  /// Returns compressed bytes, or original bytes on failure.
+  Future<Uint8List> compressImageBytes(
+    Uint8List bytes, {
+    int maxWidth = 1200,
+    int maxHeight = 1200,
+    int quality = 85,
+  });
+
   /// Create and upload a thumbnail for an image
   Future<String?> createAndUploadThumbnail({
     required File imageFile,

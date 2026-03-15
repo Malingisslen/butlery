@@ -324,7 +324,7 @@ class SocialDeletionOperations {
       var opCount = 0;
 
       final reportsSnapshot = await _firestore
-          .collection('reports')
+          .collection(FirestoreCollections.reports)
           .where('reporterId', isEqualTo: userId)
           .get();
 

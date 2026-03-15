@@ -11,10 +11,12 @@ import 'package:butlery/services/account/account_deletion/profile_deletion_opera
 import 'package:butlery/services/account/account_deletion/storage_deletion_operations.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
+import 'package:butlery/repositories/interfaces/search_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/core/utils/crypto_utils.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/constants/firestore_collections.dart';
 
@@ -29,7 +31,13 @@ class AccountDeletionService extends BaseService {
   final FirestoreRepository _firestoreRepository;
   final AnalyticsService?
       _analyticsService; // Optional - may not be available on web
+  final SearchRepository? _searchRepository;
   static const String _logTag = 'AccountDeletionService';
+
+  /// GDPR Art.5(1)(e) — audit log retention period.
+  /// Must align with cleanup-audit-logs.ts expireAt TTL query.
+  static const int _auditLogRetentionDays = 180;
+  static const int _searchIndexDeleteChunkSize = 50;
 
   late final ContentDeletionOperations _contentOps;
   late final SocialDeletionOperations _socialOps;
@@ -45,9 +53,11 @@ class AccountDeletionService extends BaseService {
     required OfflineService offlineService,
     AnalyticsService?
         analyticsService, // Optional - may not be available on web
+    SearchRepository? searchRepository,
   })  : _authRepository = authRepository,
         _firestoreRepository = firestoreRepository,
-        _analyticsService = analyticsService {
+        _analyticsService = analyticsService,
+        _searchRepository = searchRepository {
     // Initialize deletion operations with Firestore instance from repository
     final firestore = _firestoreRepository.firestore;
     _contentOps = ContentDeletionOperations(firestore);
@@ -89,50 +99,46 @@ class AccountDeletionService extends BaseService {
         '[$_logTag] Starting account deletion for user: $userId',
       );
 
-      final deletionTasks = <String, Future<bool>>{
-        'recipes': _contentOps.deleteRecipes(userId),
-        'menus': _contentOps.deleteMenus(userId),
-        'shopping_lists': _contentOps.deleteShoppingLists(userId),
-        'personal_tags': _contentOps.deletePersonalTags(userId),
-        'personal_tag_groups': _contentOps.deletePersonalTagGroups(userId),
-        'friend_connections': _socialOps.removeFriendConnections(userId),
-        'messages': _socialOps.deleteMessages(userId),
-        'shared_content': _socialOps.removeFromSharedContent(userId),
-        'comments_ratings': _socialOps.deleteCommentsAndRatings(userId),
-        'shared_menus': _socialOps.deleteSharedMenus(userId),
-        'shared_shopping_lists': _socialOps.deleteSharedShoppingLists(userId),
-        'reports': _socialOps.deleteUserReports(userId),
-        'block_records': _deleteBlockRecords(userId),
-        'preferences': _profileOps.deleteUserPreferences(userId),
-        'fcm_tokens': _profileOps.deleteFcmTokens(userId),
-        'notification_preferences':
+      // Search index cleanup must complete before Firestore deletion (needs IDs)
+      if (_searchRepository != null) {
+        await _runDeletionStep(
+            'search_index_user', result, () => _deleteSearchIndexUser(userId));
+        await _runDeletionStep('search_index_recipes', result,
+            () => _deleteSearchIndexRecipes(userId));
+      }
+
+      final deletionSteps = <String, Future<bool> Function()>{
+        'recipes': () => _contentOps.deleteRecipes(userId),
+        'menus': () => _contentOps.deleteMenus(userId),
+        'shopping_lists': () => _contentOps.deleteShoppingLists(userId),
+        'personal_tags': () => _contentOps.deletePersonalTags(userId),
+        'personal_tag_groups': () =>
+            _contentOps.deletePersonalTagGroups(userId),
+        'friend_connections': () => _socialOps.removeFriendConnections(userId),
+        'messages': () => _socialOps.deleteMessages(userId),
+        'shared_content': () => _socialOps.removeFromSharedContent(userId),
+        'comments_ratings': () => _socialOps.deleteCommentsAndRatings(userId),
+        'shared_menus': () => _socialOps.deleteSharedMenus(userId),
+        'shared_shopping_lists': () =>
+            _socialOps.deleteSharedShoppingLists(userId),
+        'reports': () => _socialOps.deleteUserReports(userId),
+        'block_records': () => _deleteBlockRecords(userId),
+        'preferences': () => _profileOps.deleteUserPreferences(userId),
+        'fcm_tokens': () => _profileOps.deleteFcmTokens(userId),
+        'notification_preferences': () =>
             _profileOps.deleteNotificationPreferences(userId),
-        'notifications': _profileOps.deleteNotifications(userId),
-        'consent_records': _profileOps.deleteConsentRecords(userId),
-        'offline_cache': _storageOps.clearOfflineData(userId),
-        'public_profile': _profileOps.deletePublicProfile(userId),
-        'realtime_recipes': _storageOps.deleteRealtimeRecipes(userId),
-        'activity_feed': _profileOps.deleteActivityFeed(userId),
-        'storage_files': _storageOps.deleteUserStorageFiles(userId),
-        'profile': _profileOps.deleteUserProfile(userId),
+        'notifications': () => _profileOps.deleteNotifications(userId),
+        'consent_records': () => _profileOps.deleteConsentRecords(userId),
+        'offline_cache': () => _storageOps.clearOfflineData(userId),
+        'public_profile': () => _profileOps.deletePublicProfile(userId),
+        'realtime_recipes': () => _storageOps.deleteRealtimeRecipes(userId),
+        'activity_feed': () => _profileOps.deleteActivityFeed(userId),
+        'storage_files': () => _storageOps.deleteUserStorageFiles(userId),
+        'profile': () => _profileOps.deleteUserProfile(userId),
       };
 
-      for (final entry in deletionTasks.entries) {
-        try {
-          final success = await entry.value;
-          if (success) {
-            result['deletedCollections'].add(entry.key);
-          } else {
-            result['failedCollections'].add(entry.key);
-          }
-        } catch (e) {
-          result['failedCollections'].add(entry.key);
-          result['errors'].add('${entry.key}: ${e.toString()}');
-          app_logger.AppLogger.error(
-            '[$_logTag] Failed to delete ${entry.key}',
-            e,
-          );
-        }
+      for (final entry in deletionSteps.entries) {
+        await _runDeletionStep(entry.key, result, entry.value);
       }
 
       if (createAuditLog) {
@@ -177,6 +183,25 @@ class AccountDeletionService extends BaseService {
     }
   }
 
+  Future<void> _runDeletionStep(
+    String name,
+    Map<String, dynamic> result,
+    Future<bool> Function() task,
+  ) async {
+    try {
+      final success = await task();
+      if (success) {
+        result['deletedCollections'].add(name);
+      } else {
+        result['failedCollections'].add(name);
+      }
+    } catch (e) {
+      result['failedCollections'].add(name);
+      result['errors'].add('$name: ${e.toString()}');
+      app_logger.AppLogger.error('[$_logTag] Failed to delete $name', e);
+    }
+  }
+
   Future<bool> _deleteBlockRecords(String userId) async {
     try {
       final blockRepo = ServiceLocator.get<FirebaseBlockRepository>();
@@ -185,6 +210,47 @@ class AccountDeletionService extends BaseService {
     } catch (e) {
       app_logger.AppLogger.error(
           '[$_logTag] Failed to delete block records', e);
+      return false;
+    }
+  }
+
+  Future<bool> _deleteSearchIndexUser(String userId) async {
+    try {
+      await _searchRepository!.removeUser(userId);
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+        '[$_logTag] Failed to remove user from search index',
+        e,
+      );
+      return false;
+    }
+  }
+
+  Future<bool> _deleteSearchIndexRecipes(String userId) async {
+    try {
+      final recipesSnapshot = await _firestore
+          .collection(FirestoreCollections.recipes)
+          .where('userId', isEqualTo: userId)
+          .limit(10000)
+          .get();
+
+      final recipeIds = recipesSnapshot.docs.map((d) => d.id).toList();
+      for (var i = 0; i < recipeIds.length; i += _searchIndexDeleteChunkSize) {
+        final chunk = recipeIds.sublist(
+          i,
+          (i + _searchIndexDeleteChunkSize).clamp(0, recipeIds.length),
+        );
+        await Future.wait(
+          chunk.map((id) => _searchRepository!.removeRecipe(id)),
+        );
+      }
+      return true;
+    } catch (e) {
+      app_logger.AppLogger.error(
+        '[$_logTag] Failed to remove recipes from search index',
+        e,
+      );
       return false;
     }
   }
@@ -198,15 +264,20 @@ class AccountDeletionService extends BaseService {
   }) async {
     return await safeExecute(
           () async {
+            final emailHash = CryptoUtils.sha256Hash(email);
             final auditDoc = await _firestore
                 .collection(FirestoreCollections.deletionAuditLogs)
                 .add({
               'userId': userId,
-              'email': email,
+              'emailHash': emailHash,
               'reason': reason,
               'deletedCollections': deletedCollections,
               'failedCollections': failedCollections,
               'deletionTimestamp': FieldValue.serverTimestamp(),
+              'expireAt': Timestamp.fromDate(
+                DateTime.now()
+                    .add(const Duration(days: _auditLogRetentionDays)),
+              ),
               'gdprCompliant': failedCollections.isEmpty,
             });
             return auditDoc.id;

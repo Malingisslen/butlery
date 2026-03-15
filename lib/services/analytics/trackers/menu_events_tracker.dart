@@ -9,6 +9,7 @@ class MenuEventsTracker extends BaseTracker {
     required int recipeCount,
     required String method,
   }) async {
+    if (!await hasAnalyticsConsent()) return;
     await repository.logMenuGenerated(recipeCount: recipeCount, method: method);
   }
 

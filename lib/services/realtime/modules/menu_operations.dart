@@ -62,9 +62,40 @@ class MenuOperations {
   }) {
     AppLogger.info('📝 Updating basic info for menu: ${menu.menuTitle}');
 
+    // Validate and normalize date if provided
+    DateTime? normalizedDate = createdForDate;
+    if (createdForDate != null) {
+      // Normalize to date-only (strip time component)
+      normalizedDate = DateTime(
+        createdForDate.year,
+        createdForDate.month,
+        createdForDate.day,
+      );
+
+      // Single now reference for consistent comparisons
+      final now = DateTime.now();
+      final todayDateOnly = DateTime(now.year, now.month, now.day);
+
+      // Reject dates >1 year in the future
+      final oneYearFromNow = todayDateOnly.add(const Duration(days: 365));
+      if (normalizedDate.isAfter(oneYearFromNow)) {
+        throw MenuOperationError(
+          operation: MenuOperationType.updateBasicInfo,
+          message: 'Menu date cannot be more than 1 year in the future',
+          resourceId: menu.id,
+        );
+      }
+
+      // Warn (but allow) past dates
+      if (normalizedDate.isBefore(todayDateOnly)) {
+        AppLogger.warning(
+            '⚠️ Menu date is in the past: $normalizedDate', 'MenuOperations');
+      }
+    }
+
     return menu.updateBasicInfo(
       menuTitle: menuTitle,
-      createdForDate: createdForDate,
+      createdForDate: normalizedDate,
       menuNotes: menuNotes,
       favoriteRecipeIds: favoriteRecipeIds,
       originalPrompt: originalPrompt,

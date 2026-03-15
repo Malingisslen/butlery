@@ -46,6 +46,11 @@ service cloud.firestore {
       return request.resource.data[field] == request.time;
     }
 
+    // Check that an update does not modify immutable fields
+    function cannotModify(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
     // CRIT-8: Validate user-defined ingredient structure (allergen safety-critical)
     // Prevents injection of malicious ingredient properties
     function _isValidUserIngredient(ingredient, ingredientId) {
@@ -195,8 +200,21 @@ service cloud.firestore {
       
       // Friend categories/groups
       match /friendCategories/{categoryId} {
-        // Owner has full read/write access
-        allow read, write: if isOwner(userId);
+        // Owner: read access
+        allow read: if isOwner(userId);
+
+        // Owner: create and delete
+        allow create: if isOwner(userId);
+        allow delete: if isOwner(userId);
+
+        // Owner: standard updates — protect immutable fields (ownerId, createdAt)
+        allow update: if isOwner(userId)
+          && cannotModify(['ownerId', 'createdAt']);
+
+        // Owner: ownership transfer — only ownerId + updatedAt may change
+        allow update: if isOwner(userId)
+          && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['ownerId', 'updatedAt']);
 
         // Group members can read the group they're in
         allow read: if isInList('friendUserIds');
@@ -228,6 +246,50 @@ service cloud.firestore {
 
       // P3-06: Rate limit tracking subcollection — owner read/write only
       match /rateLimits/{type} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Shared content counters — cross-user writes for sharing notifications
+      match /counters/{counterId} {
+        allow read: if isOwner(userId);
+        // Any authenticated user can increment counters (sharing notifications)
+        // Rate limited to prevent counter-spam attacks
+        allow create, update: if isAuthenticated()
+          && request.resource.data.keys().hasOnly([
+            'shared_recipes', 'shared_menus', 'shared_shopping_lists',
+            'totalSharedContent', 'lastUpdated'
+          ])
+          && isServerTimestamp('lastUpdated')
+          && rateLimitWrite('shared_content_counter', 5);
+        allow delete: if isOwner(userId);
+      }
+
+      // Conversation memberships — cross-user writes when adding to group chats
+      match /conversationMemberships/{conversationId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isAuthenticated()
+          && request.resource.data.keys().hasOnly([
+            'conversationId', 'conversationTitle', 'isGroup',
+            'lastActivityAt', 'hasUnread', 'joinedAt', 'isArchived'
+          ])
+          && request.resource.data.conversationId == conversationId
+          && rateLimitWrite('conversation_membership', 5);
+      }
+
+      // Category memberships — category owner writes to friend's subcollection
+      match /categoryMemberships/{categoryId} {
+        allow read, delete: if isOwner(userId);
+        // Only the category owner can create memberships for friends
+        allow create, update: if isAuthenticated()
+          && request.resource.data.keys().hasOnly([
+            'categoryId', 'ownerId', 'categoryName', 'categoryEmoji', 'addedAt'
+          ])
+          && request.resource.data.ownerId == request.auth.uid
+          && request.resource.data.categoryId == categoryId;
+      }
+
+      // User settings subcollection — owner-only
+      match /settings/{settingId} {
         allow read, write: if isOwner(userId);
       }
     }
@@ -771,7 +833,9 @@ service cloud.firestore {
         && hasRequiredFields(['ownerId', 'participants', 'participantIds', 'recipe', 'createdAt']);
 
       // Can update if you're a participant (for real-time collaboration)
-      allow update: if isAuthenticated() && isParticipantInRecipe();
+      // Prevent ownership hijack: participants cannot overwrite ownerId or createdAt
+      allow update: if isAuthenticated() && isParticipantInRecipe()
+        && cannotModify(['ownerId', 'createdAt']);
 
       // Can delete if you're the owner
       allow delete: if isAuthenticated()
@@ -817,7 +881,9 @@ service cloud.firestore {
         && hasRequiredFields(['ownerId', 'participants', 'participantIds', 'menuSnapshot', 'createdAt']);
 
       // Can update if you're a participant (for real-time collaboration)
-      allow update: if isAuthenticated() && isParticipantInMenu();
+      // Prevent ownership hijack: participants cannot overwrite ownerId or createdAt
+      allow update: if isAuthenticated() && isParticipantInMenu()
+        && cannotModify(['ownerId', 'createdAt']);
 
       // Can delete if you're the owner
       allow delete: if isAuthenticated()
@@ -864,7 +930,9 @@ service cloud.firestore {
         && hasRequiredFields(['ownerId', 'participants', 'participantIds', 'type', 'createdAt']);
 
       // Can update if you're a participant (for real-time collaboration)
-      allow update: if isAuthenticated() && isParticipantInResource();
+      // Prevent ownership hijack: participants cannot overwrite ownerId or createdAt
+      allow update: if isAuthenticated() && isParticipantInResource()
+        && cannotModify(['ownerId', 'createdAt']);
 
       // Can delete if you're the owner
       allow delete: if isAuthenticated()
@@ -931,6 +999,7 @@ service cloud.firestore {
         && hasRequiredFields(['authorId', 'recipeId', 'text', 'createdAt'])
         && request.resource.data.text.size() > 0
         && request.resource.data.text.size() <= 1000
+        && isServerTimestamp('createdAt')
         && rateLimitWrite('comments', 5);
 
       // Can update only your own comments
@@ -1083,6 +1152,10 @@ service cloud.firestore {
         && request.auth.uid == resource.data.creatorId;
     }
     
+    // ── LEGACY COLLECTIONS (camelCase) ──
+    // Retained for backward compatibility — may still contain user data
+    // from before the snake_case migration. Do NOT build new features on these.
+
     // ========================================
     // SHOPPING LISTS - Top-level personal shopping lists
     // ========================================
@@ -1158,9 +1231,13 @@ service cloud.firestore {
         request.auth.uid in resource.data.sharedWithUserIds
       );
 
+      // Can list shared menus you're involved in
+      allow list: if isAuthenticated();
+
       // Can create if you're the sharer
       allow create: if isAuthenticated()
-        && request.auth.uid == request.resource.data.sharedByUserId;
+        && request.auth.uid == request.resource.data.sharedByUserId
+        && hasRequiredFields(['sharedByUserId', 'sharedWithUserIds', 'menu', 'sharedAt']);
 
       // Can update if you're the sharer
       allow update: if isAuthenticated()
@@ -1294,6 +1371,7 @@ service cloud.firestore {
       // This prevents notification spam attacks
       allow create: if isAuthenticated()
         && hasRequiredFields(["userId", "senderId", "type", "title", "body", "createdAt"])
+        && isServerTimestamp('createdAt')
         && request.resource.data.senderId == request.auth.uid
         && (
           // Allow self-notification (system events)
@@ -1388,7 +1466,8 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.ratedBy
         && request.resource.data.rating >= 1.0
         && request.resource.data.rating <= 5.0
-        && hasRequiredFields(['rating', 'ratedBy', 'ratedByDisplayName', 'ratedAt']);
+        && hasRequiredFields(['rating', 'ratedBy', 'ratedByDisplayName', 'ratedAt'])
+        && isServerTimestamp('ratedAt');
 
       // Can update only your own rating
       allow update: if isAuthenticated()
@@ -1412,7 +1491,8 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.commentedBy
         && request.resource.data.comment.size() > 0
         && request.resource.data.comment.size() <= 1000
-        && hasRequiredFields(['comment', 'commentedBy', 'commentedByDisplayName', 'commentedAt']);
+        && hasRequiredFields(['comment', 'commentedBy', 'commentedByDisplayName', 'commentedAt'])
+        && isServerTimestamp('commentedAt');
 
       // Can update only your own comment
       allow update: if isAuthenticated()
@@ -1459,7 +1539,8 @@ service cloud.firestore {
       // Can create activity if authenticated (logged by collaborators)
       allow create: if isAuthenticated()
         && hasRequiredFields(['menuId', 'userId', 'timestamp'])
-        && request.resource.data.userId == request.auth.uid;
+        && request.resource.data.userId == request.auth.uid
+        && isServerTimestamp('timestamp');
 
       // No updates or deletes allowed (immutable activity trail)
       allow update, delete: if false;
@@ -1605,6 +1686,86 @@ service cloud.firestore {
         && isCreatingOwnDocument();
       // No read/update/delete for users — admin-only via console
       allow read, update, delete: if false;
+    }
+
+    // ========================================
+    // DEEP LINKS - Shareable recipe/content links
+    // ========================================
+
+    match /deep_links/{linkId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.createdBy == request.auth.uid
+        && hasRequiredFields(['longUrl', 'createdAt', 'createdBy']);
+      // Creator can update all fields; any user can update click tracking (rate limited)
+      allow update: if isAuthenticated()
+        && (resource.data.createdBy == request.auth.uid
+          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clickCount', 'lastClickedAt'])
+              && rateLimitWrite('deep_link_click', 10)));
+      allow delete: if isAuthenticated()
+        && resource.data.createdBy == request.auth.uid;
+
+      match /clicks/{clickId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+        allow update, delete: if false;
+      }
+    }
+
+    // ========================================
+    // ACTIVITY FEED - Server-written user activity
+    // ========================================
+
+    match /activity_feed/{activityId} {
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+      allow create, update: if false;  // Server-only writes
+    }
+
+    // ========================================
+    // INGREDIENT SUGGESTIONS - User-submitted ingredients
+    // ========================================
+
+    match /ingredientSuggestions/{suggestionId} {
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && hasRequiredFields(['userId', 'ingredientName', 'originalName', 'status', 'createdAt'])
+        && request.resource.data.ingredientName.size() <= 100;
+      allow update, delete: if false;  // Admin-only via console
+    }
+
+    // ========================================
+    // NOTIFICATION PREFERENCES (legacy) - Distinct from user_notification_preferences
+    // ========================================
+
+    match /notification_preferences/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ========================================
+    // NOTIFICATION HISTORY - Per-notification delivery tracking
+    // ========================================
+
+    match /notification_history/{notificationId} {
+      allow read, delete: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+      allow create, update: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid;
+    }
+
+    // ========================================
+    // NOTIFICATION BATCHES - Batched notification queue
+    // ========================================
+
+    match /notification_batches/{batchKey} {
+      allow read, delete: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+      allow create, update: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid;
     }
 
     // ========================================

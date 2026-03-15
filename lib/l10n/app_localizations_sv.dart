@@ -8193,6 +8193,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get errorGroupNameExists => 'Det här gruppnamnet finns redan';
 
   @override
+  String get errorOnlyAdminCanAddMembers =>
+      'Endast administratör kan lägga till medlemmar';
+
+  @override
   String get errorOnlyAdminCanRemoveMembers =>
       'Endast administratör kan ta bort medlemmar';
 
@@ -11609,4 +11613,21 @@ class AppLocalizationsSv extends AppLocalizations {
   String dietaryToggleSemantics(String dietary) {
     return 'Växla kostpreferens $dietary';
   }
+
+  @override
+  String get emailVerificationTitle => 'Verifiera din e-post';
+
+  @override
+  String emailVerificationMessage(String email) {
+    return 'Vi har skickat ett verifieringsmail till $email.';
+  }
+
+  @override
+  String get emailVerificationResend => 'Skicka igen';
+
+  @override
+  String get emailVerificationContinue => 'Fortsätt ändå';
+
+  @override
+  String get emailVerificationSuccess => 'E-post verifierad!';
 }

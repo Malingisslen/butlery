@@ -214,6 +214,55 @@ class ShoppingItemOperationsModule {
     );
   }
 
+  /// Update an existing item in the shopping list atomically
+  Future<void> updateItem(String listId, UnifiedShoppingItem item) async {
+    final uid = requireCurrentUserId();
+
+    final list = await readList(listId);
+    if (list == null) {
+      throw ResourceNotFoundException(
+        'Shopping list not found',
+        resourceType: 'shopping_list',
+        resourceId: listId,
+      );
+    }
+
+    if (list.type == ListType.collaborative) {
+      final updatedItems = list.items.map((existing) {
+        return existing.id == item.id ? item : existing;
+      }).toList();
+      final updatedList = list.copyWith(
+        items: updatedItems,
+        updatedAt: DateTime.now(),
+        lastActivityAt: DateTime.now(),
+        lastActivityByUserId: uid,
+        lastActivityByDisplayName: authRepository.currentUser?.displayName,
+      );
+      await updateCollaborativeList(updatedList);
+    } else {
+      await validateOwnership(
+        currentUserId: uid,
+        resourceOwnerId: list.ownerId,
+        resourceType: 'shopping_list',
+        resourceId: listId,
+      );
+
+      await getUserCollection(uid)
+          .doc(listId)
+          .collection(FirestoreCollections.items)
+          .doc(item.id)
+          .update(item.toFirestore());
+    }
+
+    logPermissionCheck(
+      userId: uid,
+      resource: 'shopping_item',
+      operation: 'update',
+      granted: true,
+      details: 'List: $listId, Item: ${item.id}, Type: ${list.type}',
+    );
+  }
+
   /// Remove item from shopping list (handles both personal and collaborative)
   Future<void> removeItem(String listId, String itemId) async {
     final uid = requireCurrentUserId();
@@ -272,6 +321,66 @@ class ShoppingItemOperationsModule {
       operation: 'remove',
       granted: true,
       details: 'List: $listId, Item: $itemId, Type: ${list.type}',
+    );
+  }
+
+  /// Remove multiple items from shopping list using batch operations
+  Future<void> removeItemsBatch(String listId, List<String> itemIds) async {
+    if (itemIds.isEmpty) return;
+
+    final uid = requireCurrentUserId();
+
+    final list = await readList(listId);
+    if (list == null) {
+      throw ResourceNotFoundException(
+        'Shopping list not found',
+        resourceType: 'shopping_list',
+        resourceId: listId,
+      );
+    }
+
+    final itemIdSet = itemIds.toSet();
+
+    if (list.type == ListType.collaborative) {
+      final updatedItems =
+          list.items.where((item) => !itemIdSet.contains(item.id)).toList();
+      final updatedList = list.copyWith(
+        items: updatedItems,
+        updatedAt: DateTime.now(),
+        lastActivityAt: DateTime.now(),
+        lastActivityByUserId: uid,
+        lastActivityByDisplayName: authRepository.currentUser?.displayName,
+      );
+      await updateCollaborativeList(updatedList);
+    } else {
+      await validateOwnership(
+        currentUserId: uid,
+        resourceOwnerId: list.ownerId,
+        resourceType: 'shopping_list',
+        resourceId: listId,
+      );
+
+      final itemsCollection = getUserCollection(uid)
+          .doc(listId)
+          .collection(FirestoreCollections.items);
+
+      // Chunk at 500 (Firestore batch limit)
+      for (var i = 0; i < itemIds.length; i += 500) {
+        final chunk = itemIds.sublist(i, (i + 500).clamp(0, itemIds.length));
+        final batch = firestore.batch();
+        for (final itemId in chunk) {
+          batch.delete(itemsCollection.doc(itemId));
+        }
+        await batch.commit();
+      }
+    }
+
+    logPermissionCheck(
+      userId: uid,
+      resource: 'shopping_item',
+      operation: 'batch_remove',
+      granted: true,
+      details: 'List: $listId, Items: ${itemIds.length}, Type: ${list.type}',
     );
   }
 }

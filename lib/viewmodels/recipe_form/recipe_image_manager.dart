@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/services/storage_service.dart';
@@ -459,11 +460,10 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         return;
       }
 
-      // Upload using ImageUploadService (with automatic retry, progress tracking)
+      // Upload using ImageUploadService (path constructed by StorageService)
       final result = await _uploadService.uploadImage(
         file: file,
         userId: userId,
-        path: 'recipes/$recipeId/${file.path.split('/').last}',
       );
 
       if (result.success && result.url != null) {
@@ -884,14 +884,23 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         throw Exception('No authenticated user');
       }
 
-      // Convert XFile to File (works for both mobile and web)
-      final file = File(xFile.path);
+      // Web: blob URLs can't be read by dart:io File — use XFile.readAsBytes()
+      if (kIsWeb || xFile.path.startsWith('blob:')) {
+        final bytes = await xFile.readAsBytes();
+        final result = await _uploadService.uploadImageFromBytes(
+          bytes: bytes,
+          userId: userId,
+          fileName: xFile.name,
+        );
+        AppLogger.info('🌐 WEB_FIX: Web upload result: ${result.url}');
+        return result.success ? result.url : null;
+      }
 
-      // Upload using ImageUploadService (with automatic retry, progress tracking)
+      // Mobile: use File-based upload
+      final file = File(xFile.path);
       final result = await _uploadService.uploadImage(
         file: file,
         userId: userId,
-        path: 'recipes/$recipeId/${xFile.name}',
       );
 
       AppLogger.info('ðŸŒ WEB_FIX: Upload result: ${result.url}');
@@ -997,7 +1006,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       final result = await _uploadService.uploadImage(
         file: imageFile,
         userId: userId,
-        path: 'recipes/$recipeId/${imageFile.path.split('/').last}',
         onProgress: (status) {
           if (_uploadsCanceled || _disposed) return;
 

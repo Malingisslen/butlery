@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -13,7 +14,7 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
   });
 
   @override
-  String get collectionName => 'reports';
+  String get collectionName => FirestoreCollections.reports;
 
   @override
   ContentReport fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {

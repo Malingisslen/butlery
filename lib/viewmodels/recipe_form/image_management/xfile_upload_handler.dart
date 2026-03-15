@@ -1,6 +1,7 @@
 // lib/viewmodels/recipe_form/image_management/xfile_upload_handler.dart
 
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
@@ -164,14 +165,23 @@ class XFileUploadHandler {
         throw Exception('No authenticated user');
       }
 
-      // Convert XFile to File (works for both mobile and web)
-      final file = File(xFile.path);
+      // Web: blob URLs can't be read by dart:io File — use XFile.readAsBytes()
+      if (kIsWeb || xFile.path.startsWith('blob:')) {
+        final bytes = await xFile.readAsBytes();
+        final result = await _uploadService.uploadImageFromBytes(
+          bytes: bytes,
+          userId: userId,
+          fileName: xFile.name,
+        );
+        AppLogger.info('🌐 WEB_FIX: Web upload result: ${result.url}');
+        return result.success ? result.url : null;
+      }
 
-      // Upload using ImageUploadService (with automatic retry, progress tracking)
+      // Mobile: use File-based upload
+      final file = File(xFile.path);
       final result = await _uploadService.uploadImage(
         file: file,
         userId: userId,
-        path: 'recipes/$recipeId/${xFile.name}',
       );
 
       AppLogger.info('🌐 WEB_FIX: Upload result: ${result.url}');

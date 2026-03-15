@@ -4,6 +4,9 @@
 /// logout, and error handling using properly typed mocks.
 library;
 
+// Tests need to call clearError() which is @protected
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,6 +26,17 @@ void main() {
       await BaseUnitTest.setupUnit();
       mockAuthRepository = MockFactory.createAuthRepository();
       mockAnalyticsService = MockFactory.createAnalyticsService();
+
+      // Stub analytics methods used during auth operations
+      when(() => mockAnalyticsService.logSignUp(method: any(named: 'method')))
+          .thenAnswer((_) async {});
+      when(() => mockAnalyticsService.logLogin(method: any(named: 'method')))
+          .thenAnswer((_) async {});
+      when(() => mockAnalyticsService.logLogout()).thenAnswer((_) async {});
+      when(() => mockAnalyticsService.logEvent(
+            name: any(named: 'name'),
+            parameters: any(named: 'parameters'),
+          )).thenAnswer((_) async {});
 
       // Stub the authStateChanges stream to return an empty stream by default
       when(() => mockAuthRepository.authStateChanges())
@@ -99,6 +113,9 @@ void main() {
               any(),
             )).thenAnswer((_) async {});
 
+        when(() => mockAuthRepository.sendEmailVerification())
+            .thenAnswer((_) async {});
+
         // Act
         final result = await authService.registerWithEmail(
           email: 'newuser@example.com',
@@ -116,6 +133,7 @@ void main() {
               any(),
               'New User',
             )).called(1);
+        verify(() => mockAuthRepository.sendEmailVerification()).called(1);
       });
 
       test('should handle registration errors gracefully', () async {
@@ -185,7 +203,7 @@ void main() {
 
         // Assert
         expect(result, false);
-        expect(authService.errorMessage, contains('Ingen användare'));
+        expect(authService.errorMessage, contains('Fel email eller lösenord'));
       });
     });
 
@@ -415,8 +433,9 @@ void main() {
     });
 
     group('Firebase Auth Error Scenarios', () {
-      test('should handle user-not-found error', () async {
-        // Arrange
+      test('should handle user-not-found with generic credentials error',
+          () async {
+        // Arrange — user-not-found now returns generic message (prevents enumeration)
         when(() => mockAuthRepository.signIn(
               email: any(named: 'email'),
               password: any(named: 'password'),
@@ -431,14 +450,14 @@ void main() {
           password: 'password',
         );
 
-        // Assert
+        // Assert — same generic message as wrong-password
         expect(result, false);
-        expect(authService.errorMessage,
-            equals('Ingen användare hittades med denna email.'));
+        expect(authService.errorMessage, contains('Fel email eller lösenord'));
       });
 
-      test('should handle wrong-password error', () async {
-        // Arrange
+      test('should handle wrong-password with generic credentials error',
+          () async {
+        // Arrange — wrong-password now returns generic message (prevents enumeration)
         when(() => mockAuthRepository.signIn(
               email: any(named: 'email'),
               password: any(named: 'password'),
@@ -453,9 +472,40 @@ void main() {
           password: 'wrongpassword',
         );
 
-        // Assert
+        // Assert — same generic message as user-not-found
         expect(result, false);
-        expect(authService.errorMessage, equals('Fel lösenord.'));
+        expect(authService.errorMessage, contains('Fel email eller lösenord'));
+      });
+
+      test(
+          'user-not-found, wrong-password, and invalid-credential all produce identical error',
+          () async {
+        final errorCodes = [
+          'user-not-found',
+          'wrong-password',
+          'invalid-credential'
+        ];
+        final messages = <String>[];
+
+        for (final code in errorCodes) {
+          authService.clearError();
+          when(() => mockAuthRepository.signIn(
+                email: any(named: 'email'),
+                password: any(named: 'password'),
+              )).thenThrow(FirebaseAuthException(code: code));
+
+          await authService.signInWithEmail(
+            email: 'test@example.com',
+            password: 'password',
+          );
+
+          messages.add(authService.errorMessage ?? '');
+        }
+
+        // All three should produce the exact same message
+        expect(messages[0], equals(messages[1]));
+        expect(messages[1], equals(messages[2]));
+        expect(messages[0], contains('Fel email eller lösenord'));
       });
 
       test('should handle email-already-in-use error', () async {
@@ -653,7 +703,7 @@ void main() {
 
         // Assert
         expect(result, false);
-        expect(authService.errorMessage, contains('Fel lösenord'));
+        expect(authService.errorMessage, contains('Fel email eller lösenord'));
         verify(() => mockAuthRepository.signIn(
               email: 'test@example.com',
               password: '',
@@ -712,6 +762,8 @@ void main() {
         when(() => mockAuthRepository.createUser(any(), any()))
             .thenAnswer((_) async => mockCredential);
         when(() => mockAuthRepository.updateDisplayName(any(), any()))
+            .thenAnswer((_) async {});
+        when(() => mockAuthRepository.sendEmailVerification())
             .thenAnswer((_) async {});
 
         // Act - Test with empty string for display name
@@ -875,8 +927,8 @@ void main() {
       test('should provide user-friendly error messages', () async {
         // Arrange
         final technicalErrors = [
-          ('user-not-found', 'Ingen användare hittades'),
-          ('wrong-password', 'Fel lösenord'),
+          ('user-not-found', 'Fel email eller lösenord'),
+          ('wrong-password', 'Fel email eller lösenord'),
           ('invalid-email', 'Ogiltig email'),
           ('weak-password', 'för svagt'),
           ('user-disabled', 'inaktiverats'),
@@ -954,7 +1006,7 @@ void main() {
 
         // Assert
         expect(result1, false);
-        expect(authService.errorMessage, contains('Ingen användare'));
+        expect(authService.errorMessage, contains('Fel email eller lösenord'));
 
         // Arrange - Second error during recovery attempt
         when(() => mockAuthRepository.sendPasswordResetEmail(any()))
@@ -970,7 +1022,8 @@ void main() {
         // Assert - Should update to new error
         expect(result2, false);
         expect(authService.errorMessage, contains('Nätverksfel'));
-        expect(authService.errorMessage, isNot(contains('Ingen användare')));
+        expect(authService.errorMessage,
+            isNot(contains('Fel email eller lösenord')));
       });
     });
 

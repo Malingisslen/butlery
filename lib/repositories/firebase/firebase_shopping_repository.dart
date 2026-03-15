@@ -313,6 +313,14 @@ class FirebaseShoppingRepository
   Future<void> removeItem(String listId, String itemId) async =>
       _itemOpsModule.removeItem(listId, itemId);
 
+  @override
+  Future<void> updateItem(String listId, UnifiedShoppingItem item) async =>
+      _itemOpsModule.updateItem(listId, item);
+
+  @override
+  Future<void> removeItemsBatch(String listId, List<String> itemIds) async =>
+      _itemOpsModule.removeItemsBatch(listId, itemIds);
+
   /// Create or update a personal list for the current user.
   /// Uses base class create/update methods for consistency.
   Future<void> savePersonalList(UnifiedShoppingList list) async {

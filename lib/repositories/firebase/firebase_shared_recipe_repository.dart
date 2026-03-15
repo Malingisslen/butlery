@@ -140,6 +140,7 @@ class FirebaseSharedRecipeRepository
 
   @override
   String getId(SharedRecipe entity) => entity.id;
+
   @override
   bool shouldShowToUser(SharedRecipe content, String userId) {
     // Issue #014 Migration: If content was found via subcollection query,

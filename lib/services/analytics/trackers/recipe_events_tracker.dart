@@ -26,6 +26,7 @@ class RecipeEventsTracker extends BaseTracker {
     bool isFirstTime = true,
     int? daysSinceLastCooked,
   }) async {
+    if (!await hasAnalyticsConsent()) return;
     await repository.logRecipeCooked(
       recipeId: recipeId,
       mealType: mealType,
@@ -42,6 +43,7 @@ class RecipeEventsTracker extends BaseTracker {
     required DateTime createdAt,
     int? daysSinceCreated,
   }) async {
+    if (!await hasAnalyticsConsent()) return;
     await repository.logRecipeDeleted(
       recipeId: recipeId,
       mealType: mealType,

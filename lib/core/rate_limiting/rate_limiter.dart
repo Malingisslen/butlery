@@ -5,11 +5,6 @@ import 'package:butlery/core/utils/logger.dart';
 
 /// Operation types for rate limiting
 enum RateLimitOperation {
-  // Authentication operations
-  login,
-  register,
-  passwordReset,
-
   // Recipe CRUD operations
   createRecipe,
   updateRecipe,
@@ -159,23 +154,6 @@ class RateLimiter {
 
   /// Default rate limit configurations
   static final Map<RateLimitOperation, RateLimitConfig> _defaultConfigs = {
-    // Auth operations - very restrictive (DoS prevention)
-    RateLimitOperation.login: const RateLimitConfig(
-      maxTokens: 5,
-      refillRate: 1,
-      refillInterval: Duration(minutes: 1),
-    ),
-    RateLimitOperation.register: const RateLimitConfig(
-      maxTokens: 3,
-      refillRate: 1,
-      refillInterval: Duration(hours: 1),
-    ),
-    RateLimitOperation.passwordReset: const RateLimitConfig(
-      maxTokens: 3,
-      refillRate: 1,
-      refillInterval: Duration(hours: 1),
-    ),
-
     // Recipe CRUD - moderate limits
     RateLimitOperation.createRecipe: const RateLimitConfig(
       maxTokens: 10,

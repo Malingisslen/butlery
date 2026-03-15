@@ -87,6 +87,9 @@ class UnifiedRecipeService extends ChangeNotifier
   // Explicit initialization tracking (replaces try-catch pattern)
   bool _socialInitialized = false;
 
+  // Cancellable timer for social operations retry
+  Timer? _socialRetryTimer;
+
   // Content operations helper
   late final RecipeContentOperations _contentOps;
 
@@ -342,13 +345,14 @@ class UnifiedRecipeService extends ChangeNotifier
       );
       _socialInitialized = true;
 
-      SocialOperationsInitializer.scheduleRetry(
+      _socialRetryTimer = SocialOperationsInitializer.scheduleRetry(
         this,
         (operations) {
           social = operations;
           _socialInitialized = true;
         },
         const Duration(milliseconds: 500),
+        onTimerCreated: (timer) => _socialRetryTimer = timer,
       );
     }
   }
@@ -580,6 +584,7 @@ class UnifiedRecipeService extends ChangeNotifier
 
   Future<bool> markAsCooked(String recipeId) async =>
       _personalCrud.markAsCooked(recipeId);
+
   /// Save a recipe from the social module - handles both personal and collaborative types.
   /// Unlike [updateRecipe], this does not reject collaborative recipes.
   Future<bool> saveRecipeForSocialModule(Recipe recipe) async =>
@@ -865,10 +870,14 @@ class UnifiedRecipeService extends ChangeNotifier
     // Cancel auth state subscription
     _authSubscription?.cancel();
 
+    // Cancel social operations retry timer
+    _socialRetryTimer?.cancel();
+
     // CRIT-7: Close tagging failure stream
     _taggingFailureController.close();
 
     if (_areModulesInitialized()) {
+      _personalModule.cancelPendingRetries();
       _cacheModule.dispose();
       _realtimeModule.dispose();
     }
